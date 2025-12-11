@@ -5,6 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HoloLoom Workflow Builder</title>
     <style>
+        /* =============================================================================
+           Wave 5.3: Theme System - CSS Variables
+           ============================================================================= */
+        :root {
+            /* Light theme (default) */
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f0f0f0;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-muted: #999;
+            --accent: #667eea;
+            --accent-hover: #5a6fd6;
+            --accent-light: rgba(102, 126, 234, 0.1);
+            --border: #dee2e6;
+            --border-light: #e9ecef;
+            --node-bg: #ffffff;
+            --node-border: #e0e0e0;
+            --canvas-bg: #f0f0f0;
+            --canvas-grid: rgba(0, 0, 0, 0.05);
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --gradient-start: #667eea;
+            --gradient-end: #764ba2;
+            --modal-backdrop: rgba(0, 0, 0, 0.5);
+            --focus-ring: rgba(102, 126, 234, 0.5);
+            --scrollbar-track: #f1f1f1;
+            --scrollbar-thumb: #c1c1c1;
+        }
+
+        [data-theme="dark"] {
+            /* Dark theme */
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --text-muted: #707070;
+            --accent: #667eea;
+            --accent-hover: #7b8ff0;
+            --accent-light: rgba(102, 126, 234, 0.2);
+            --border: #2d2d44;
+            --border-light: #3d3d5c;
+            --node-bg: #1f1f3d;
+            --node-border: #3d3d5c;
+            --canvas-bg: #12121f;
+            --canvas-grid: rgba(255, 255, 255, 0.03);
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-medium: rgba(0, 0, 0, 0.4);
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --gradient-start: #667eea;
+            --gradient-end: #764ba2;
+            --modal-backdrop: rgba(0, 0, 0, 0.7);
+            --focus-ring: rgba(102, 126, 234, 0.6);
+            --scrollbar-track: #1a1a2e;
+            --scrollbar-thumb: #3d3d5c;
+        }
+
+        /* Theme transition */
+        body,
+        .container,
+        .agent-palette,
+        .canvas-area,
+        .canvas-header,
+        .workflow-node,
+        .modal-content,
+        .context-menu,
+        input,
+        select,
+        button {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,9 +93,10 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             height: 100vh;
             overflow: hidden;
+            color: var(--text-primary);
         }
 
         .container {
@@ -172,6 +253,578 @@
 
         .toolbar-btn.primary:hover {
             background: #5568d3;
+        }
+
+        /* ========== Search & Command Palette (Wave 5.1) ========== */
+        .toolbar-search {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 4px 10px;
+            gap: 6px;
+            min-width: 180px;
+            transition: all 0.2s;
+        }
+
+        .toolbar-search:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .toolbar-search input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 13px;
+            width: 100%;
+            color: #333;
+        }
+
+        .toolbar-search input::placeholder {
+            color: #999;
+        }
+
+        .toolbar-search .search-icon {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .toolbar-search .search-shortcut {
+            font-size: 10px;
+            color: #999;
+            background: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        /* Search results dropdown */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            gap: 10px;
+            transition: background 0.15s;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover,
+        .search-result-item.highlighted {
+            background: #f5f5ff;
+        }
+
+        .search-result-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .search-result-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-result-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-result-type {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .search-result-highlight {
+            background: #fff3cd;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .search-no-results {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+        }
+
+        /* Command Palette Modal */
+        .command-palette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 100px;
+            z-index: 10000;
+        }
+
+        .command-palette.active {
+            display: flex;
+        }
+
+        .command-palette-box {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            width: 500px;
+            max-width: 90%;
+            max-height: 70vh;
+            overflow: hidden;
+        }
+
+        .command-palette-input {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            gap: 12px;
+        }
+
+        .command-palette-input input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .command-palette-input input::placeholder {
+            color: #999;
+        }
+
+        .command-palette-results {
+            max-height: calc(70vh - 60px);
+            overflow-y: auto;
+        }
+
+        .command-palette-category {
+            padding: 8px 16px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .command-palette-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            cursor: pointer;
+            gap: 12px;
+            transition: background 0.15s;
+        }
+
+        .command-palette-item:hover,
+        .command-palette-item.highlighted {
+            background: #f5f5ff;
+        }
+
+        .command-palette-item .agent-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        .command-palette-item-info {
+            flex: 1;
+        }
+
+        .command-palette-item-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .command-palette-item-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .command-palette-item-shortcut {
+            font-size: 11px;
+            color: #999;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        /* Breadcrumb Navigation */
+        .breadcrumb-nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        .breadcrumb-item {
+            color: #667eea;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .breadcrumb-item:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.current {
+            color: #333;
+            font-weight: 500;
+            cursor: default;
+        }
+
+        .breadcrumb-item.current:hover {
+            text-decoration: none;
+        }
+
+        .breadcrumb-separator {
+            color: #999;
+        }
+
+        /* Node highlight for search */
+        .workflow-node.search-highlight {
+            box-shadow: 0 0 0 3px #667eea, 0 0 20px rgba(102, 126, 234, 0.4);
+            animation: search-pulse 1s ease-in-out;
+        }
+
+        @keyframes search-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* ========== Context Menus (Wave 5.2) ========== */
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 6px 0;
+            min-width: 180px;
+            z-index: 10000;
+            display: none;
+        }
+
+        .context-menu.active {
+            display: block;
+            animation: context-menu-in 0.15s ease-out;
+        }
+
+        @keyframes context-menu-in {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            transition: background 0.15s;
+        }
+
+        .context-menu-item:hover {
+            background: #f0f4ff;
+        }
+
+        .context-menu-item.disabled {
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .context-menu-item.disabled:hover {
+            background: transparent;
+        }
+
+        .context-menu-item.danger {
+            color: #dc3545;
+        }
+
+        .context-menu-item.danger:hover {
+            background: #fff0f0;
+        }
+
+        .context-menu-item-icon {
+            width: 18px;
+            text-align: center;
+        }
+
+        .context-menu-item-label {
+            flex: 1;
+        }
+
+        .context-menu-item-shortcut {
+            color: #999;
+            font-size: 11px;
+            font-family: monospace;
+        }
+
+        .context-menu-separator {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 6px 0;
+        }
+
+        .context-menu-submenu {
+            position: relative;
+        }
+
+        .context-menu-submenu::after {
+            content: '›';
+            position: absolute;
+            right: 10px;
+            color: #666;
+        }
+
+        /* Auto-save indicator */
+        .auto-save-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: #666;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+        .auto-save-indicator.saving {
+            color: #667eea;
+        }
+
+        .auto-save-indicator.saved {
+            color: #28a745;
+        }
+
+        .auto-save-indicator.error {
+            color: #dc3545;
+        }
+
+        .auto-save-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .auto-save-indicator.saving .auto-save-dot {
+            animation: save-pulse 1s infinite;
+        }
+
+        @keyframes save-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* =============================================================================
+           Wave 5.3: Theme Toggle & Accessibility
+           ============================================================================= */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-light);
+            transform: scale(1.05);
+        }
+
+        .theme-toggle:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+
+        .theme-toggle .icon-sun,
+        .theme-toggle .icon-moon {
+            position: absolute;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .theme-toggle .icon-sun {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .theme-toggle .icon-moon {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        [data-theme="dark"] .theme-toggle .icon-sun {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+
+        [data-theme="dark"] .theme-toggle .icon-moon {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Focus indicators for accessibility */
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        [tabindex]:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* Skip link for accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--accent);
+            color: white;
+            padding: 8px 16px;
+            z-index: 10000;
+            text-decoration: none;
+            border-radius: 0 0 4px 0;
+            transition: top 0.3s ease;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Screen reader only text */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --border: #000;
+                --node-border: #000;
+            }
+            [data-theme="dark"] {
+                --border: #fff;
+                --node-border: #fff;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            body,
+            .container,
+            .agent-palette,
+            .canvas-area,
+            .canvas-header,
+            .workflow-node,
+            .modal-content,
+            .context-menu,
+            input,
+            select,
+            button,
+            .theme-toggle,
+            .theme-toggle .icon-sun,
+            .theme-toggle .icon-moon {
+                transition: none !important;
+            }
+        }
+
+        /* Selection box for batch operations */
+        .selection-box {
+            position: absolute;
+            border: 2px dashed #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Alignment guides */
+        .alignment-guide {
+            position: absolute;
+            background: #667eea;
+            opacity: 0.5;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .alignment-guide.horizontal {
+            height: 1px;
+            left: 0;
+            right: 0;
+        }
+
+        .alignment-guide.vertical {
+            width: 1px;
+            top: 0;
+            bottom: 0;
         }
 
         .canvas-viewport {
@@ -2435,8 +3088,32 @@
                 <div class="workflow-header-left">
                     <div class="workflow-title" contenteditable="true">Untitled Workflow</div>
                     <div class="version-indicator">Version: <span id="versionNumber">v1</span> (<span id="currentBranch">main</span>)</div>
+                    <!-- Auto-Save Indicator (Wave 5.2) -->
+                    <div class="auto-save-indicator" id="autoSaveIndicator" title="Auto-save status">
+                        <span class="auto-save-icon">💾</span>
+                        <span class="auto-save-text">Auto-save enabled</span>
+                    </div>
+                    <!-- Breadcrumb Navigation (Wave 5.1) -->
+                    <nav class="breadcrumb-nav" id="breadcrumbNav" style="display: none;">
+                        <span class="breadcrumb-item" onclick="navigateToRoot()">🏠 Root</span>
+                        <span id="breadcrumbPath"></span>
+                    </nav>
                 </div>
                 <div class="canvas-toolbar">
+                    <!-- Search (Wave 5.1) -->
+                    <div class="toolbar-search" id="toolbarSearch">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="nodeSearchInput" placeholder="Search nodes... (Ctrl+F)"
+                               oninput="handleNodeSearch(this.value)"
+                               onfocus="showSearchResults()"
+                               onblur="setTimeout(() => hideSearchResults(), 200)">
+                        <kbd class="search-kbd">Ctrl+F</kbd>
+                        <div class="search-results" id="searchResults"></div>
+                    </div>
+                    <button class="toolbar-btn" onclick="openCommandPalette()" title="Command Palette (Ctrl+P)">
+                        ⌘ Commands
+                    </button>
+                    <div style="border-left: 1px solid #ddd; height: 30px; margin: 0 8px;"></div>
                     <button class="toolbar-btn" onclick="showTemplatesModal()">
                         📚 Templates
                     </button>
@@ -2489,7 +3166,17 @@
                     <button class="toolbar-btn" onclick="showLayoutPanel()" title="Auto-Layout (L)">
                         📐 Layout
                     </button>
-                    <div style="border-left: 1px solid #ddd; height: 30px; margin: 0 8px;"></div>
+                    <!-- Theme Toggle (Wave 5.3) -->
+                    <button class="toolbar-btn theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode (T)">
+                        <span class="theme-icon sun-icon">☀️</span>
+                        <span class="theme-icon moon-icon" style="display: none;">🌙</span>
+                    </button>
+                    <!-- Auto-Save Indicator (Wave 5.2) -->
+                    <div class="auto-save-indicator" id="autoSaveIndicator" title="Auto-save enabled">
+                        <span class="auto-save-icon">💾</span>
+                        <span class="auto-save-text">Saved</span>
+                    </div>
+                    <div style="border-left: 1px solid var(--border-color, #ddd); height: 30px; margin: 0 8px;"></div>
                     <button class="toolbar-btn primary" onclick="executeWorkflow()">
                         ▶️ Execute
                     </button>
@@ -2919,6 +3606,161 @@
             <div class="modal-footer">
                 <button class="modal-btn secondary" onclick="closeModal('diffModal')">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Command Palette Modal (Wave 5.1) -->
+    <div class="command-palette" id="commandPalette">
+        <div class="command-palette-header">
+            <input type="text" id="commandPaletteInput" placeholder="Search agents, actions, or type a command..."
+                   oninput="handleCommandSearch(this.value)"
+                   onkeydown="handleCommandKeydown(event)">
+        </div>
+        <div class="command-palette-results" id="commandPaletteResults">
+            <div class="command-section">
+                <div class="command-section-title">Recent Agents</div>
+                <div id="recentAgentsSection"></div>
+            </div>
+            <div class="command-section">
+                <div class="command-section-title">All Agents</div>
+                <div id="allAgentsSection"></div>
+            </div>
+            <div class="command-section">
+                <div class="command-section-title">Actions</div>
+                <div id="actionsSection"></div>
+            </div>
+        </div>
+        <div class="command-palette-footer">
+            <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+            <span><kbd>Enter</kbd> Select</span>
+            <span><kbd>Esc</kbd> Close</span>
+        </div>
+    </div>
+
+    <!-- Context Menus (Wave 5.2) -->
+    <!-- Node Context Menu -->
+    <div class="context-menu" id="nodeContextMenu">
+        <div class="context-menu-item" onclick="contextMenuEditConfig()">
+            <span class="context-menu-item-icon">⚙️</span>
+            <span class="context-menu-item-label">Edit Configuration</span>
+        </div>
+        <div class="context-menu-item" onclick="contextMenuDuplicate()">
+            <span class="context-menu-item-icon">📋</span>
+            <span class="context-menu-item-label">Duplicate</span>
+            <span class="context-menu-item-shortcut">Ctrl+D</span>
+        </div>
+        <div class="context-menu-item" onclick="contextMenuCopy()">
+            <span class="context-menu-item-icon">📄</span>
+            <span class="context-menu-item-label">Copy</span>
+            <span class="context-menu-item-shortcut">Ctrl+C</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="contextMenuAddToGroup()">
+            <span class="context-menu-item-icon">📦</span>
+            <span class="context-menu-item-label">Add to Group</span>
+        </div>
+        <div class="context-menu-item" onclick="contextMenuSetBreakpoint()">
+            <span class="context-menu-item-icon">🔴</span>
+            <span class="context-menu-item-label">Toggle Breakpoint</span>
+            <span class="context-menu-item-shortcut">Ctrl+B</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="contextMenuDisconnectAll()">
+            <span class="context-menu-item-icon">✂️</span>
+            <span class="context-menu-item-label">Disconnect All</span>
+        </div>
+        <div class="context-menu-item danger" onclick="contextMenuDelete()">
+            <span class="context-menu-item-icon">🗑️</span>
+            <span class="context-menu-item-label">Delete</span>
+            <span class="context-menu-item-shortcut">Del</span>
+        </div>
+    </div>
+
+    <!-- Canvas Context Menu -->
+    <div class="context-menu" id="canvasContextMenu">
+        <div class="context-menu-item" onclick="contextMenuAddNodeHere()">
+            <span class="context-menu-item-icon">➕</span>
+            <span class="context-menu-item-label">Add Node Here</span>
+        </div>
+        <div class="context-menu-item" onclick="contextMenuPaste()">
+            <span class="context-menu-item-icon">📄</span>
+            <span class="context-menu-item-label">Paste</span>
+            <span class="context-menu-item-shortcut">Ctrl+V</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="selectAllNodes()">
+            <span class="context-menu-item-icon">☑️</span>
+            <span class="context-menu-item-label">Select All</span>
+            <span class="context-menu-item-shortcut">Ctrl+A</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="zoomIn()">
+            <span class="context-menu-item-icon">🔍+</span>
+            <span class="context-menu-item-label">Zoom In</span>
+            <span class="context-menu-item-shortcut">Ctrl++</span>
+        </div>
+        <div class="context-menu-item" onclick="zoomOut()">
+            <span class="context-menu-item-icon">🔍-</span>
+            <span class="context-menu-item-label">Zoom Out</span>
+            <span class="context-menu-item-shortcut">Ctrl+-</span>
+        </div>
+        <div class="context-menu-item" onclick="fitToView()">
+            <span class="context-menu-item-icon">⊡</span>
+            <span class="context-menu-item-label">Fit to View</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item danger" onclick="clearCanvas()">
+            <span class="context-menu-item-icon">🧹</span>
+            <span class="context-menu-item-label">Clear Canvas</span>
+        </div>
+    </div>
+
+    <!-- Connection Context Menu -->
+    <div class="context-menu" id="connectionContextMenu">
+        <div class="context-menu-item" onclick="contextMenuShowDataFlow()">
+            <span class="context-menu-item-icon">📊</span>
+            <span class="context-menu-item-label">Show Data Flow</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item danger" onclick="contextMenuDeleteConnection()">
+            <span class="context-menu-item-icon">✂️</span>
+            <span class="context-menu-item-label">Delete Connection</span>
+        </div>
+    </div>
+
+    <!-- Multi-Select Context Menu -->
+    <div class="context-menu" id="multiSelectContextMenu">
+        <div class="context-menu-item" onclick="createGroupFromSelection()">
+            <span class="context-menu-item-icon">📦</span>
+            <span class="context-menu-item-label">Create Group</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="alignSelectedNodes('left')">
+            <span class="context-menu-item-icon">⬅️</span>
+            <span class="context-menu-item-label">Align Left</span>
+        </div>
+        <div class="context-menu-item" onclick="alignSelectedNodes('center')">
+            <span class="context-menu-item-icon">↔️</span>
+            <span class="context-menu-item-label">Align Center</span>
+        </div>
+        <div class="context-menu-item" onclick="alignSelectedNodes('right')">
+            <span class="context-menu-item-icon">➡️</span>
+            <span class="context-menu-item-label">Align Right</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="distributeSelectedNodes('horizontal')">
+            <span class="context-menu-item-icon">⇔</span>
+            <span class="context-menu-item-label">Distribute Horizontally</span>
+        </div>
+        <div class="context-menu-item" onclick="distributeSelectedNodes('vertical')">
+            <span class="context-menu-item-icon">⇕</span>
+            <span class="context-menu-item-label">Distribute Vertically</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item danger" onclick="deleteSelectedNodes()">
+            <span class="context-menu-item-icon">🗑️</span>
+            <span class="context-menu-item-label">Delete Selected</span>
+            <span class="context-menu-item-shortcut">Del</span>
         </div>
     </div>
 

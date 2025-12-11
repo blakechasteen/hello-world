@@ -125,6 +125,15 @@ from .stages.executors import (
     SpacetimeExecutor,
 )
 
+# Protocol Factory (Phase 3 - Day 13)
+from .protocol_factory import (
+    OrchestratorComponents,
+    create_component_defaults,
+    create_orchestrator_from_protocols,
+    create_pipeline_with_protocols,
+    ProtocolOrchestrator,
+)
+
 __all__ = [
     # Context
     'WeavingContext',
@@ -195,4 +204,11 @@ __all__ = [
     'ConvergenceExecutor',
     'ToolExecutionExecutor',
     'SpacetimeExecutor',
+
+    # Protocol Factory (Phase 3)
+    'OrchestratorComponents',
+    'create_component_defaults',
+    'create_orchestrator_from_protocols',
+    'create_pipeline_with_protocols',
+    'ProtocolOrchestrator',
 ]

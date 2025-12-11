@@ -66,7 +66,7 @@ def create_sample_specs() -> List:
     tags=["output", "react", "typescript"],
     description="TypeScript-friendly React component props"
 )
-@demo_phase("M4: React Component Renderer", emoji="⚛️")
+@demo_phase("M4: React Component Renderer", emoji="[M4]")
 async def demo_m4_react_renderer() -> dict:
     """
     M4: React Component Props - TypeScript-friendly JSON output.

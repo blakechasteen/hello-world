@@ -81,7 +81,7 @@ def create_ar_specs() -> List:
     tags=["output", "ar", "webxr", "3d"],
     description="WebXR-compatible 3D scene output"
 )
-@demo_phase("M5: WebXR AR Renderer", emoji="🥽")
+@demo_phase("M5: WebXR AR Renderer", emoji="[M5]")
 async def demo_m5_ar_renderer() -> dict:
     """
     M5: AR Renderer - WebXR-compatible 3D scene output.

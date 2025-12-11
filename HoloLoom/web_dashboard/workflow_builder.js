@@ -3388,7 +3388,7 @@ function applyZoom() {
     renderConnections();
 }
 
-// Keyboard shortcuts for zoom
+// Keyboard shortcuts for zoom and search
 document.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey) {
         if (e.key === '+' || e.key === '=') {
@@ -3400,7 +3400,19 @@ document.addEventListener('keydown', (e) => {
         } else if (e.key === '0') {
             e.preventDefault();
             resetZoom();
+        } else if (e.key === 'f' || e.key === 'F') {
+            // Ctrl+F: Focus search input (Wave 5.1)
+            e.preventDefault();
+            focusNodeSearch();
+        } else if (e.key === 'p' || e.key === 'P') {
+            // Ctrl+P: Open command palette (Wave 5.1)
+            e.preventDefault();
+            openCommandPalette();
         }
+    }
+    // Escape closes command palette
+    if (e.key === 'Escape') {
+        closeCommandPalette();
     }
 });
 
@@ -5768,6 +5780,1411 @@ if (document.readyState === 'loading') {
     initializeSuggestionListeners();
 }
 
+// ========== SEARCH & NAVIGATION (Wave 5.1) ==========
+
+// State for search and command palette
+let searchResults = [];
+let searchHighlightedNodes = [];
+let commandPaletteSelectedIndex = 0;
+let commandPaletteItems = [];
+let recentAgents = [];
+let currentGroupPath = []; // Breadcrumb path for group navigation
+
+// 5.1.1: Node Search Functions
+function focusNodeSearch() {
+    const input = document.getElementById('nodeSearchInput');
+    if (input) {
+        input.focus();
+        input.select();
+    }
+}
+
+function handleNodeSearch(query) {
+    // Clear previous highlights
+    clearSearchHighlights();
+
+    if (!query || query.trim().length === 0) {
+        hideSearchResults();
+        return;
+    }
+
+    // Fuzzy search across nodes
+    searchResults = fuzzySearchNodes(query.toLowerCase());
+
+    // Show results dropdown
+    renderSearchResults(searchResults);
+
+    // Highlight matching nodes on canvas
+    searchResults.forEach(result => {
+        highlightNode(result.node.id);
+    });
+}
+
+function fuzzySearchNodes(query) {
+    const results = [];
+
+    nodes.forEach(node => {
+        const searchFields = [
+            node.definition?.name || '',
+            node.definition?.category || '',
+            node.definition?.description || '',
+            node.config?.label || '',
+            node.id,
+            ...(node.config ? Object.values(node.config).map(v => String(v)) : [])
+        ].map(s => s.toLowerCase());
+
+        // Calculate match score
+        let score = 0;
+        let matchedField = '';
+
+        searchFields.forEach((field, idx) => {
+            if (field.includes(query)) {
+                // Exact match gets higher score
+                const fieldScore = field === query ? 100 :
+                                   field.startsWith(query) ? 80 : 50;
+                if (fieldScore > score) {
+                    score = fieldScore;
+                    matchedField = field;
+                }
+            } else {
+                // Fuzzy match (all characters present in order)
+                const fuzzyScore = fuzzyMatch(query, field);
+                if (fuzzyScore > score) {
+                    score = fuzzyScore;
+                    matchedField = field;
+                }
+            }
+        });
+
+        if (score > 20) {
+            results.push({
+                node,
+                score,
+                matchedField
+            });
+        }
+    });
+
+    // Sort by score descending
+    return results.sort((a, b) => b.score - a.score).slice(0, 10);
+}
+
+function fuzzyMatch(query, text) {
+    let queryIdx = 0;
+    let score = 0;
+    let consecutive = 0;
+
+    for (let i = 0; i < text.length && queryIdx < query.length; i++) {
+        if (text[i] === query[queryIdx]) {
+            score += 10 + consecutive * 5;
+            consecutive++;
+            queryIdx++;
+        } else {
+            consecutive = 0;
+        }
+    }
+
+    return queryIdx === query.length ? score : 0;
+}
+
+function renderSearchResults(results) {
+    const container = document.getElementById('searchResults');
+    if (!container) return;
+
+    if (results.length === 0) {
+        container.innerHTML = '<div class="search-result-item" style="color: #666;">No nodes found</div>';
+        container.style.display = 'block';
+        return;
+    }
+
+    container.innerHTML = results.map((result, idx) => `
+        <div class="search-result-item${idx === 0 ? ' selected' : ''}"
+             onclick="jumpToNode('${result.node.id}')"
+             data-node-id="${result.node.id}">
+            <span class="search-result-icon">${result.node.definition?.icon || '📦'}</span>
+            <div class="search-result-info">
+                <div class="search-result-name">${result.node.config?.label || result.node.definition?.name || result.node.id}</div>
+                <div class="search-result-type">${result.node.definition?.category || 'Node'}</div>
+            </div>
+        </div>
+    `).join('');
+
+    container.style.display = 'block';
+}
+
+function showSearchResults() {
+    const container = document.getElementById('searchResults');
+    const input = document.getElementById('nodeSearchInput');
+    if (container && input && input.value.trim()) {
+        container.style.display = 'block';
+    }
+}
+
+function hideSearchResults() {
+    const container = document.getElementById('searchResults');
+    if (container) {
+        container.style.display = 'none';
+    }
+}
+
+function highlightNode(nodeId) {
+    const nodeEl = document.getElementById(nodeId);
+    if (nodeEl) {
+        nodeEl.classList.add('search-highlight');
+        searchHighlightedNodes.push(nodeId);
+    }
+}
+
+function clearSearchHighlights() {
+    searchHighlightedNodes.forEach(nodeId => {
+        const nodeEl = document.getElementById(nodeId);
+        if (nodeEl) {
+            nodeEl.classList.remove('search-highlight');
+        }
+    });
+    searchHighlightedNodes = [];
+}
+
+function jumpToNode(nodeId) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    // If node is in a group, navigate to that group first
+    if (node.parentGroup) {
+        navigateToGroup(node.parentGroup);
+    }
+
+    // Center the canvas on the node
+    const canvas = document.getElementById('canvas');
+    if (canvas) {
+        const canvasRect = canvas.getBoundingClientRect();
+        const targetX = canvasRect.width / 2 - node.x;
+        const targetY = canvasRect.height / 2 - node.y;
+
+        // Animate pan to node
+        canvas.style.transition = 'transform 0.3s ease-out';
+        canvas.scrollLeft = node.x - canvasRect.width / 2 + 150;
+        canvas.scrollTop = node.y - canvasRect.height / 2 + 75;
+    }
+
+    // Select the node
+    deselectAll();
+    selectNode(nodeId);
+
+    // Clear search
+    const input = document.getElementById('nodeSearchInput');
+    if (input) {
+        input.value = '';
+    }
+    hideSearchResults();
+    clearSearchHighlights();
+
+    showToast(`Jumped to ${node.definition?.name || nodeId}`, 'info');
+}
+
+// 5.1.2: Command Palette Functions
+function openCommandPalette() {
+    const palette = document.getElementById('commandPalette');
+    if (!palette) return;
+
+    palette.classList.add('active');
+
+    const input = document.getElementById('commandPaletteInput');
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
+
+    // Populate with initial content
+    populateCommandPalette('');
+}
+
+function closeCommandPalette() {
+    const palette = document.getElementById('commandPalette');
+    if (palette) {
+        palette.classList.remove('active');
+    }
+}
+
+function populateCommandPalette(query) {
+    commandPaletteItems = [];
+    commandPaletteSelectedIndex = 0;
+
+    const recentSection = document.getElementById('recentAgentsSection');
+    const allSection = document.getElementById('allAgentsSection');
+    const actionsSection = document.getElementById('actionsSection');
+
+    if (!recentSection || !allSection || !actionsSection) return;
+
+    // Filter agents based on query
+    const matchingAgents = Object.entries(agentDefinitions)
+        .filter(([type, def]) => {
+            if (!query) return true;
+            const searchText = `${def.name} ${def.category} ${def.description}`.toLowerCase();
+            return searchText.includes(query.toLowerCase());
+        })
+        .sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+    // Recent agents (last 5 unique types used)
+    const recentHtml = recentAgents.slice(0, 5).map(type => {
+        const def = agentDefinitions[type];
+        if (!def || (query && !`${def.name} ${def.category}`.toLowerCase().includes(query.toLowerCase()))) return '';
+        commandPaletteItems.push({ type: 'agent', agentType: type });
+        return `
+            <div class="command-item" onclick="addAgentFromPalette('${type}')">
+                <span class="command-item-icon">${def.icon}</span>
+                <div class="command-item-info">
+                    <div class="command-item-name">${def.name}</div>
+                    <div class="command-item-desc">${def.description.substring(0, 50)}...</div>
+                </div>
+                <span class="command-item-kbd">↵</span>
+            </div>
+        `;
+    }).filter(h => h).join('');
+
+    recentSection.innerHTML = recentHtml || '<div style="color: #999; font-size: 12px; padding: 8px;">No recent agents</div>';
+
+    // All agents
+    const allHtml = matchingAgents.map(([type, def]) => {
+        commandPaletteItems.push({ type: 'agent', agentType: type });
+        return `
+            <div class="command-item" onclick="addAgentFromPalette('${type}')">
+                <span class="command-item-icon">${def.icon}</span>
+                <div class="command-item-info">
+                    <div class="command-item-name">${def.name}</div>
+                    <div class="command-item-desc">${def.category}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    allSection.innerHTML = allHtml || '<div style="color: #999; font-size: 12px; padding: 8px;">No matching agents</div>';
+
+    // Actions
+    const actions = [
+        { id: 'clear', icon: '🗑️', name: 'Clear Canvas', desc: 'Remove all nodes', action: 'clearCanvas()' },
+        { id: 'export', icon: '💾', name: 'Export Workflow', desc: 'Save as JSON', action: 'showExportModal()' },
+        { id: 'import', icon: '📁', name: 'Import Workflow', desc: 'Load from file', action: 'importWorkflow()' },
+        { id: 'undo', icon: '↩️', name: 'Undo', desc: 'Revert last change', action: 'undo()' },
+        { id: 'redo', icon: '↪️', name: 'Redo', desc: 'Restore last undo', action: 'redo()' },
+        { id: 'execute', icon: '▶️', name: 'Execute Workflow', desc: 'Run the workflow', action: 'executeWorkflow()' },
+        { id: 'validate', icon: '✓', name: 'Validate', desc: 'Check for errors', action: 'validateWorkflow()' },
+        { id: 'layout', icon: '📐', name: 'Auto-Layout', desc: 'Arrange nodes', action: 'showLayoutPanel()' },
+        { id: 'perf', icon: '📊', name: 'Performance Dashboard', desc: 'View metrics', action: 'showPerfDashboard()' },
+    ].filter(a => !query || `${a.name} ${a.desc}`.toLowerCase().includes(query.toLowerCase()));
+
+    const actionsHtml = actions.map(a => {
+        commandPaletteItems.push({ type: 'action', action: a.action });
+        return `
+            <div class="command-item" onclick="${a.action}; closeCommandPalette();">
+                <span class="command-item-icon">${a.icon}</span>
+                <div class="command-item-info">
+                    <div class="command-item-name">${a.name}</div>
+                    <div class="command-item-desc">${a.desc}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    actionsSection.innerHTML = actionsHtml || '<div style="color: #999; font-size: 12px; padding: 8px;">No matching actions</div>';
+
+    // Update selection highlight
+    updatePaletteSelection();
+}
+
+function handleCommandSearch(query) {
+    populateCommandPalette(query);
+}
+
+function handleCommandKeydown(e) {
+    const items = document.querySelectorAll('#commandPalette .command-item');
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        commandPaletteSelectedIndex = Math.min(commandPaletteSelectedIndex + 1, items.length - 1);
+        updatePaletteSelection();
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        commandPaletteSelectedIndex = Math.max(commandPaletteSelectedIndex - 1, 0);
+        updatePaletteSelection();
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (commandPaletteItems[commandPaletteSelectedIndex]) {
+            const item = commandPaletteItems[commandPaletteSelectedIndex];
+            if (item.type === 'agent') {
+                addAgentFromPalette(item.agentType);
+            } else if (item.type === 'action') {
+                eval(item.action);
+                closeCommandPalette();
+            }
+        }
+    }
+}
+
+function updatePaletteSelection() {
+    const items = document.querySelectorAll('#commandPalette .command-item');
+    items.forEach((item, idx) => {
+        item.classList.toggle('selected', idx === commandPaletteSelectedIndex);
+        if (idx === commandPaletteSelectedIndex) {
+            item.scrollIntoView({ block: 'nearest' });
+        }
+    });
+}
+
+function addAgentFromPalette(agentType) {
+    const canvas = document.getElementById('canvas');
+    const rect = canvas?.getBoundingClientRect();
+
+    // Add to center of visible canvas
+    const x = (rect?.width || 400) / 2 - 100;
+    const y = (rect?.height || 300) / 2 - 50;
+
+    addNode(agentType, x, y);
+
+    // Track recent agents
+    recentAgents = [agentType, ...recentAgents.filter(t => t !== agentType)].slice(0, 10);
+
+    closeCommandPalette();
+    showToast(`Added ${agentDefinitions[agentType]?.name || agentType}`, 'success');
+}
+
+// 5.1.3: Breadcrumb Navigation Functions
+function navigateToRoot() {
+    currentGroupPath = [];
+    updateBreadcrumbs();
+
+    // Show all top-level nodes
+    nodes.forEach(node => {
+        const el = document.getElementById(node.id);
+        if (el) {
+            el.style.display = node.parentGroup ? 'none' : 'block';
+        }
+    });
+
+    renderConnections();
+    showToast('Navigated to root', 'info');
+}
+
+function navigateToGroup(groupId) {
+    const groupNode = nodes.find(n => n.id === groupId);
+    if (!groupNode || groupNode.agentType !== 'group') return;
+
+    // Build path to this group
+    const path = [];
+    let current = groupNode;
+    while (current) {
+        path.unshift({ id: current.id, name: current.config?.label || current.definition?.name || current.id });
+        current = current.parentGroup ? nodes.find(n => n.id === current.parentGroup) : null;
+    }
+
+    currentGroupPath = path;
+    updateBreadcrumbs();
+
+    // Show only nodes in this group
+    nodes.forEach(node => {
+        const el = document.getElementById(node.id);
+        if (el) {
+            const isInGroup = node.parentGroup === groupId;
+            const isTheGroup = node.id === groupId;
+            el.style.display = (isInGroup || isTheGroup) ? 'block' : 'none';
+        }
+    });
+
+    renderConnections();
+    showToast(`Entered group: ${groupNode.config?.label || groupId}`, 'info');
+}
+
+function navigateToBreadcrumb(index) {
+    if (index < 0) {
+        navigateToRoot();
+    } else if (index < currentGroupPath.length - 1) {
+        const groupId = currentGroupPath[index].id;
+        navigateToGroup(groupId);
+    }
+    // If clicking current (last) breadcrumb, do nothing
+}
+
+function updateBreadcrumbs() {
+    const nav = document.getElementById('breadcrumbNav');
+    const pathContainer = document.getElementById('breadcrumbPath');
+
+    if (!nav || !pathContainer) return;
+
+    if (currentGroupPath.length === 0) {
+        nav.style.display = 'none';
+        return;
+    }
+
+    nav.style.display = 'flex';
+
+    const pathHtml = currentGroupPath.map((item, idx) => `
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-item${idx === currentGroupPath.length - 1 ? ' active' : ''}"
+              onclick="navigateToBreadcrumb(${idx})">
+            ${item.name}
+        </span>
+    `).join('');
+
+    pathContainer.innerHTML = pathHtml;
+}
+
+// Initialize search on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Search is ready
+    });
+}
+
+// =============================================================================
+// Wave 5.2: Context Menus & UX Polish
+// =============================================================================
+
+// Context menu state
+let contextMenuTargetNode = null;
+let contextMenuTargetConnection = null;
+let contextMenuPosition = { x: 0, y: 0 };
+let selectedNodes = new Set();
+let copiedNodes = [];
+let autoSaveInterval = null;
+let autoSaveEnabled = true;
+let lastSaveTime = Date.now();
+const AUTO_SAVE_INTERVAL = 30000; // 30 seconds
+
+// Hide all context menus
+function hideAllContextMenus() {
+    const menus = ['nodeContextMenu', 'canvasContextMenu', 'connectionContextMenu', 'multiSelectContextMenu'];
+    menus.forEach(id => {
+        const menu = document.getElementById(id);
+        if (menu) menu.style.display = 'none';
+    });
+}
+
+// Show context menu at position
+function showContextMenu(menuId, x, y) {
+    hideAllContextMenus();
+    const menu = document.getElementById(menuId);
+    if (!menu) return;
+
+    // Position menu
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+    menu.style.display = 'block';
+
+    // Ensure menu stays within viewport
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+        menu.style.left = `${x - rect.width}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+        menu.style.top = `${y - rect.height}px`;
+    }
+}
+
+// Handle canvas right-click
+function handleCanvasContextMenu(e) {
+    e.preventDefault();
+
+    const canvas = document.getElementById('workflowCanvas');
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    // Check if clicked on a node
+    const clickedNode = findNodeAtPosition(clickX, clickY);
+
+    // Check if clicked on a connection
+    const clickedConnection = findConnectionAtPosition(clickX, clickY);
+
+    contextMenuPosition = { x: clickX, y: clickY };
+
+    if (clickedNode) {
+        contextMenuTargetNode = clickedNode;
+        if (selectedNodes.size > 1 && selectedNodes.has(clickedNode.id)) {
+            // Multiple nodes selected, show multi-select menu
+            showContextMenu('multiSelectContextMenu', e.clientX, e.clientY);
+        } else {
+            // Single node
+            showContextMenu('nodeContextMenu', e.clientX, e.clientY);
+        }
+    } else if (clickedConnection) {
+        contextMenuTargetConnection = clickedConnection;
+        showContextMenu('connectionContextMenu', e.clientX, e.clientY);
+    } else {
+        // Empty canvas area
+        showContextMenu('canvasContextMenu', e.clientX, e.clientY);
+    }
+}
+
+// Find node at canvas position
+function findNodeAtPosition(x, y) {
+    // Convert from screen coordinates to node coordinates
+    const transformedX = (x - canvasTransform.offsetX) / canvasTransform.scale;
+    const transformedY = (y - canvasTransform.offsetY) / canvasTransform.scale;
+
+    for (const node of nodes) {
+        const nodeWidth = node.type === 'group' ? (node.config?.width || 300) : 220;
+        const nodeHeight = node.type === 'group' ? (node.config?.height || 200) : 120;
+
+        if (transformedX >= node.x && transformedX <= node.x + nodeWidth &&
+            transformedY >= node.y && transformedY <= node.y + nodeHeight) {
+            return node;
+        }
+    }
+    return null;
+}
+
+// Find connection at canvas position
+function findConnectionAtPosition(x, y) {
+    const transformedX = (x - canvasTransform.offsetX) / canvasTransform.scale;
+    const transformedY = (y - canvasTransform.offsetY) / canvasTransform.scale;
+    const threshold = 10;
+
+    for (const conn of connections) {
+        const fromNode = nodes.find(n => n.id === conn.from);
+        const toNode = nodes.find(n => n.id === conn.to);
+        if (!fromNode || !toNode) continue;
+
+        const fromWidth = fromNode.type === 'group' ? (fromNode.config?.width || 300) : 220;
+        const toWidth = toNode.type === 'group' ? (toNode.config?.width || 300) : 220;
+
+        const startX = fromNode.x + fromWidth;
+        const startY = fromNode.y + 60;
+        const endX = toNode.x;
+        const endY = toNode.y + 60;
+
+        // Check distance to line segment
+        const dist = pointToLineDistance(transformedX, transformedY, startX, startY, endX, endY);
+        if (dist < threshold) {
+            return conn;
+        }
+    }
+    return null;
+}
+
+// Calculate distance from point to line segment
+function pointToLineDistance(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const lengthSq = dx * dx + dy * dy;
+
+    if (lengthSq === 0) return Math.hypot(px - x1, py - y1);
+
+    let t = ((px - x1) * dx + (py - y1) * dy) / lengthSq;
+    t = Math.max(0, Math.min(1, t));
+
+    const closestX = x1 + t * dx;
+    const closestY = y1 + t * dy;
+
+    return Math.hypot(px - closestX, py - closestY);
+}
+
+// Context menu actions - Node
+function contextMenuEditConfig() {
+    hideAllContextMenus();
+    if (contextMenuTargetNode) {
+        editNodeConfig(contextMenuTargetNode.id);
+    }
+}
+
+function contextMenuDuplicate() {
+    hideAllContextMenus();
+    if (contextMenuTargetNode) {
+        duplicateNode(contextMenuTargetNode);
+    }
+}
+
+function contextMenuCopy() {
+    hideAllContextMenus();
+    if (selectedNodes.size > 0) {
+        copiedNodes = Array.from(selectedNodes).map(id => {
+            const node = nodes.find(n => n.id === id);
+            return node ? JSON.parse(JSON.stringify(node)) : null;
+        }).filter(n => n);
+    } else if (contextMenuTargetNode) {
+        copiedNodes = [JSON.parse(JSON.stringify(contextMenuTargetNode))];
+    }
+    showToast(`Copied ${copiedNodes.length} node(s)`, 'info');
+}
+
+function contextMenuAddToGroup() {
+    hideAllContextMenus();
+    if (contextMenuTargetNode) {
+        // Find available groups
+        const groups = nodes.filter(n => n.type === 'group' && n.id !== contextMenuTargetNode.id);
+        if (groups.length === 0) {
+            showToast('No groups available. Create a group first.', 'warning');
+            return;
+        }
+        // For now, add to first available group. Could show a picker modal.
+        addNodeToGroup(contextMenuTargetNode.id, groups[0].id);
+    }
+}
+
+function contextMenuToggleBreakpoint() {
+    hideAllContextMenus();
+    if (contextMenuTargetNode) {
+        contextMenuTargetNode.breakpoint = !contextMenuTargetNode.breakpoint;
+        renderWorkflow();
+        showToast(contextMenuTargetNode.breakpoint ? 'Breakpoint set' : 'Breakpoint removed', 'info');
+    }
+}
+
+function contextMenuDisconnectAll() {
+    hideAllContextMenus();
+    if (contextMenuTargetNode) {
+        saveUndoState();
+        const toRemove = connections.filter(c =>
+            c.from === contextMenuTargetNode.id || c.to === contextMenuTargetNode.id
+        );
+        connections = connections.filter(c =>
+            c.from !== contextMenuTargetNode.id && c.to !== contextMenuTargetNode.id
+        );
+        renderWorkflow();
+        showToast(`Removed ${toRemove.length} connection(s)`, 'success');
+    }
+}
+
+function contextMenuDeleteNode() {
+    hideAllContextMenus();
+    if (contextMenuTargetNode) {
+        deleteNode(contextMenuTargetNode.id);
+    }
+}
+
+// Context menu actions - Canvas
+function contextMenuAddNodeHere() {
+    hideAllContextMenus();
+    // Open command palette with position context
+    openCommandPalette();
+    // Store position for when node is added
+    window.pendingNodePosition = contextMenuPosition;
+}
+
+function contextMenuPaste() {
+    hideAllContextMenus();
+    if (copiedNodes.length === 0) {
+        showToast('Nothing to paste', 'warning');
+        return;
+    }
+
+    saveUndoState();
+
+    // Calculate offset from original position
+    const offsetX = contextMenuPosition.x - (copiedNodes[0].x * canvasTransform.scale + canvasTransform.offsetX);
+    const offsetY = contextMenuPosition.y - (copiedNodes[0].y * canvasTransform.scale + canvasTransform.offsetY);
+
+    const idMapping = {};
+
+    copiedNodes.forEach(nodeToCopy => {
+        const newId = `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        idMapping[nodeToCopy.id] = newId;
+
+        const newNode = {
+            ...JSON.parse(JSON.stringify(nodeToCopy)),
+            id: newId,
+            x: (contextMenuPosition.x - canvasTransform.offsetX) / canvasTransform.scale + (nodeToCopy.x - copiedNodes[0].x),
+            y: (contextMenuPosition.y - canvasTransform.offsetY) / canvasTransform.scale + (nodeToCopy.y - copiedNodes[0].y)
+        };
+
+        nodes.push(newNode);
+    });
+
+    renderWorkflow();
+    showToast(`Pasted ${copiedNodes.length} node(s)`, 'success');
+}
+
+function selectAllNodes() {
+    hideAllContextMenus();
+    selectedNodes.clear();
+    nodes.forEach(node => selectedNodes.add(node.id));
+    renderWorkflow();
+    showToast(`Selected ${nodes.length} node(s)`, 'info');
+}
+
+function contextMenuZoomIn() {
+    hideAllContextMenus();
+    zoomIn();
+}
+
+function contextMenuZoomOut() {
+    hideAllContextMenus();
+    zoomOut();
+}
+
+function fitToView() {
+    hideAllContextMenus();
+    if (nodes.length === 0) {
+        resetZoom();
+        return;
+    }
+
+    // Calculate bounding box of all nodes
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    nodes.forEach(node => {
+        const width = node.type === 'group' ? (node.config?.width || 300) : 220;
+        const height = node.type === 'group' ? (node.config?.height || 200) : 120;
+
+        minX = Math.min(minX, node.x);
+        minY = Math.min(minY, node.y);
+        maxX = Math.max(maxX, node.x + width);
+        maxY = Math.max(maxY, node.y + height);
+    });
+
+    const canvas = document.getElementById('workflowCanvas');
+    const canvasWidth = canvas.clientWidth;
+    const canvasHeight = canvas.clientHeight;
+
+    const contentWidth = maxX - minX + 100; // padding
+    const contentHeight = maxY - minY + 100;
+
+    const scaleX = canvasWidth / contentWidth;
+    const scaleY = canvasHeight / contentHeight;
+    const newScale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x
+
+    canvasTransform.scale = Math.max(0.25, newScale);
+    canvasTransform.offsetX = (canvasWidth - contentWidth * canvasTransform.scale) / 2 - minX * canvasTransform.scale + 50;
+    canvasTransform.offsetY = (canvasHeight - contentHeight * canvasTransform.scale) / 2 - minY * canvasTransform.scale + 50;
+
+    renderWorkflow();
+    showToast('Fit to view', 'info');
+}
+
+function clearCanvas() {
+    hideAllContextMenus();
+    if (nodes.length === 0 && connections.length === 0) {
+        showToast('Canvas is already empty', 'info');
+        return;
+    }
+
+    if (confirm('Are you sure you want to clear the entire canvas? This action can be undone.')) {
+        saveUndoState();
+        nodes.length = 0;
+        connections.length = 0;
+        selectedNodes.clear();
+        renderWorkflow();
+        showToast('Canvas cleared', 'success');
+    }
+}
+
+// Context menu actions - Connection
+function contextMenuShowDataFlow() {
+    hideAllContextMenus();
+    if (contextMenuTargetConnection) {
+        // Highlight the connection and show data flow info
+        showToast(`Data flow: ${contextMenuTargetConnection.from} → ${contextMenuTargetConnection.to}`, 'info');
+        // Future: Show data flow inspector panel
+    }
+}
+
+function contextMenuDeleteConnection() {
+    hideAllContextMenus();
+    if (contextMenuTargetConnection) {
+        saveUndoState();
+        connections = connections.filter(c =>
+            !(c.from === contextMenuTargetConnection.from && c.to === contextMenuTargetConnection.to)
+        );
+        renderWorkflow();
+        showToast('Connection deleted', 'success');
+    }
+}
+
+// Context menu actions - Multi-select
+function contextMenuCreateGroup() {
+    hideAllContextMenus();
+    if (selectedNodes.size > 0) {
+        createGroupFromSelection();
+    }
+}
+
+function alignSelectedNodes(alignment) {
+    hideAllContextMenus();
+    if (selectedNodes.size < 2) {
+        showToast('Select at least 2 nodes to align', 'warning');
+        return;
+    }
+
+    saveUndoState();
+
+    const selectedNodesList = Array.from(selectedNodes).map(id => nodes.find(n => n.id === id)).filter(n => n);
+
+    // Calculate reference point based on alignment type
+    let refValue;
+    switch (alignment) {
+        case 'left':
+            refValue = Math.min(...selectedNodesList.map(n => n.x));
+            selectedNodesList.forEach(n => n.x = refValue);
+            break;
+        case 'right':
+            refValue = Math.max(...selectedNodesList.map(n => {
+                const width = n.type === 'group' ? (n.config?.width || 300) : 220;
+                return n.x + width;
+            }));
+            selectedNodesList.forEach(n => {
+                const width = n.type === 'group' ? (n.config?.width || 300) : 220;
+                n.x = refValue - width;
+            });
+            break;
+        case 'top':
+            refValue = Math.min(...selectedNodesList.map(n => n.y));
+            selectedNodesList.forEach(n => n.y = refValue);
+            break;
+        case 'bottom':
+            refValue = Math.max(...selectedNodesList.map(n => {
+                const height = n.type === 'group' ? (n.config?.height || 200) : 120;
+                return n.y + height;
+            }));
+            selectedNodesList.forEach(n => {
+                const height = n.type === 'group' ? (n.config?.height || 200) : 120;
+                n.y = refValue - height;
+            });
+            break;
+        case 'centerH':
+            const minX = Math.min(...selectedNodesList.map(n => n.x));
+            const maxX = Math.max(...selectedNodesList.map(n => {
+                const width = n.type === 'group' ? (n.config?.width || 300) : 220;
+                return n.x + width;
+            }));
+            const centerX = (minX + maxX) / 2;
+            selectedNodesList.forEach(n => {
+                const width = n.type === 'group' ? (n.config?.width || 300) : 220;
+                n.x = centerX - width / 2;
+            });
+            break;
+        case 'centerV':
+            const minY = Math.min(...selectedNodesList.map(n => n.y));
+            const maxY = Math.max(...selectedNodesList.map(n => {
+                const height = n.type === 'group' ? (n.config?.height || 200) : 120;
+                return n.y + height;
+            }));
+            const centerY = (minY + maxY) / 2;
+            selectedNodesList.forEach(n => {
+                const height = n.type === 'group' ? (n.config?.height || 200) : 120;
+                n.y = centerY - height / 2;
+            });
+            break;
+    }
+
+    renderWorkflow();
+    showToast(`Aligned ${selectedNodes.size} nodes`, 'success');
+}
+
+function distributeSelectedNodes(direction) {
+    hideAllContextMenus();
+    if (selectedNodes.size < 3) {
+        showToast('Select at least 3 nodes to distribute', 'warning');
+        return;
+    }
+
+    saveUndoState();
+
+    const selectedNodesList = Array.from(selectedNodes).map(id => nodes.find(n => n.id === id)).filter(n => n);
+
+    if (direction === 'horizontal') {
+        // Sort by x position
+        selectedNodesList.sort((a, b) => a.x - b.x);
+
+        const firstNode = selectedNodesList[0];
+        const lastNode = selectedNodesList[selectedNodesList.length - 1];
+        const lastWidth = lastNode.type === 'group' ? (lastNode.config?.width || 300) : 220;
+
+        const totalSpan = (lastNode.x + lastWidth) - firstNode.x;
+        const totalNodeWidth = selectedNodesList.reduce((sum, n) => {
+            return sum + (n.type === 'group' ? (n.config?.width || 300) : 220);
+        }, 0);
+        const gap = (totalSpan - totalNodeWidth) / (selectedNodesList.length - 1);
+
+        let currentX = firstNode.x;
+        selectedNodesList.forEach((node, index) => {
+            if (index > 0) {
+                node.x = currentX;
+            }
+            const width = node.type === 'group' ? (node.config?.width || 300) : 220;
+            currentX += width + gap;
+        });
+    } else {
+        // Vertical distribution - sort by y position
+        selectedNodesList.sort((a, b) => a.y - b.y);
+
+        const firstNode = selectedNodesList[0];
+        const lastNode = selectedNodesList[selectedNodesList.length - 1];
+        const lastHeight = lastNode.type === 'group' ? (lastNode.config?.height || 200) : 120;
+
+        const totalSpan = (lastNode.y + lastHeight) - firstNode.y;
+        const totalNodeHeight = selectedNodesList.reduce((sum, n) => {
+            return sum + (n.type === 'group' ? (n.config?.height || 200) : 120);
+        }, 0);
+        const gap = (totalSpan - totalNodeHeight) / (selectedNodesList.length - 1);
+
+        let currentY = firstNode.y;
+        selectedNodesList.forEach((node, index) => {
+            if (index > 0) {
+                node.y = currentY;
+            }
+            const height = node.type === 'group' ? (node.config?.height || 200) : 120;
+            currentY += height + gap;
+        });
+    }
+
+    renderWorkflow();
+    showToast(`Distributed ${selectedNodes.size} nodes ${direction}ly`, 'success');
+}
+
+function deleteSelectedNodes() {
+    hideAllContextMenus();
+    if (selectedNodes.size === 0) {
+        showToast('No nodes selected', 'warning');
+        return;
+    }
+
+    if (confirm(`Delete ${selectedNodes.size} selected node(s)? This action can be undone.`)) {
+        saveUndoState();
+
+        // Remove connections first
+        connections = connections.filter(c =>
+            !selectedNodes.has(c.from) && !selectedNodes.has(c.to)
+        );
+
+        // Remove nodes
+        const toDelete = new Set(selectedNodes);
+        nodes = nodes.filter(n => !toDelete.has(n.id));
+
+        selectedNodes.clear();
+        renderWorkflow();
+        showToast(`Deleted ${toDelete.size} node(s)`, 'success');
+    }
+}
+
+// Duplicate a single node
+function duplicateNode(node) {
+    saveUndoState();
+
+    const newId = `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newNode = {
+        ...JSON.parse(JSON.stringify(node)),
+        id: newId,
+        x: node.x + 30,
+        y: node.y + 30
+    };
+
+    nodes.push(newNode);
+    renderWorkflow();
+    showToast('Node duplicated', 'success');
+}
+
+// Selection handling
+function toggleNodeSelection(nodeId, addToSelection = false) {
+    if (addToSelection) {
+        if (selectedNodes.has(nodeId)) {
+            selectedNodes.delete(nodeId);
+        } else {
+            selectedNodes.add(nodeId);
+        }
+    } else {
+        selectedNodes.clear();
+        selectedNodes.add(nodeId);
+    }
+    renderWorkflow();
+}
+
+function clearSelection() {
+    selectedNodes.clear();
+    renderWorkflow();
+}
+
+// =============================================================================
+// Wave 5.2.2: Auto-Save Functionality
+// =============================================================================
+
+function initAutoSave() {
+    if (autoSaveInterval) {
+        clearInterval(autoSaveInterval);
+    }
+
+    autoSaveInterval = setInterval(() => {
+        if (autoSaveEnabled && nodes.length > 0) {
+            autoSaveWorkflow();
+        }
+    }, AUTO_SAVE_INTERVAL);
+
+    // Save on page unload
+    window.addEventListener('beforeunload', (e) => {
+        if (nodes.length > 0) {
+            autoSaveWorkflow();
+        }
+    });
+}
+
+function autoSaveWorkflow() {
+    try {
+        const draft = {
+            nodes: nodes,
+            connections: connections,
+            timestamp: Date.now(),
+            version: '1.0'
+        };
+
+        localStorage.setItem('workflow_draft', JSON.stringify(draft));
+        lastSaveTime = Date.now();
+
+        updateAutoSaveIndicator('saved');
+
+        // Brief "Saved" indication
+        setTimeout(() => {
+            updateAutoSaveIndicator('idle');
+        }, 2000);
+
+    } catch (error) {
+        console.error('Auto-save failed:', error);
+        updateAutoSaveIndicator('error');
+    }
+}
+
+function updateAutoSaveIndicator(status) {
+    const indicator = document.getElementById('autoSaveIndicator');
+    if (!indicator) return;
+
+    const icon = indicator.querySelector('.auto-save-icon');
+    const text = indicator.querySelector('.auto-save-text');
+
+    switch (status) {
+        case 'saving':
+            if (icon) icon.textContent = '⏳';
+            if (text) text.textContent = 'Saving...';
+            indicator.className = 'auto-save-indicator saving';
+            break;
+        case 'saved':
+            if (icon) icon.textContent = '✓';
+            if (text) text.textContent = 'Saved';
+            indicator.className = 'auto-save-indicator saved';
+            break;
+        case 'error':
+            if (icon) icon.textContent = '⚠';
+            if (text) text.textContent = 'Save failed';
+            indicator.className = 'auto-save-indicator error';
+            break;
+        default: // idle
+            if (icon) icon.textContent = '💾';
+            const timeAgo = Math.round((Date.now() - lastSaveTime) / 1000);
+            if (text) text.textContent = timeAgo < 60 ? 'Just saved' : `Saved ${Math.round(timeAgo / 60)}m ago`;
+            indicator.className = 'auto-save-indicator';
+    }
+}
+
+function loadAutoSavedDraft() {
+    try {
+        const draft = localStorage.getItem('workflow_draft');
+        if (draft) {
+            const parsed = JSON.parse(draft);
+            const timeSince = Date.now() - parsed.timestamp;
+            const minutes = Math.round(timeSince / 60000);
+
+            if (minutes < 60 * 24) { // Less than 24 hours old
+                if (confirm(`Found auto-saved draft from ${minutes < 60 ? minutes + ' minutes' : Math.round(minutes / 60) + ' hours'} ago. Load it?`)) {
+                    nodes.length = 0;
+                    connections.length = 0;
+                    nodes.push(...parsed.nodes);
+                    connections.push(...parsed.connections);
+                    renderWorkflow();
+                    showToast('Draft restored', 'success');
+                    return true;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load auto-saved draft:', error);
+    }
+    return false;
+}
+
+function toggleAutoSave() {
+    autoSaveEnabled = !autoSaveEnabled;
+    showToast(autoSaveEnabled ? 'Auto-save enabled' : 'Auto-save disabled', 'info');
+}
+
+// =============================================================================
+// Wave 5.2.3: Additional Keyboard Shortcuts
+// =============================================================================
+
+function setupContextMenuListeners() {
+    const canvas = document.getElementById('workflowCanvas');
+    if (canvas) {
+        canvas.addEventListener('contextmenu', handleCanvasContextMenu);
+    }
+
+    // Close context menu on click elsewhere
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.context-menu')) {
+            hideAllContextMenus();
+        }
+    });
+
+    // Additional keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Delete selected nodes
+        if (e.key === 'Delete' && selectedNodes.size > 0 && !e.target.matches('input, textarea')) {
+            e.preventDefault();
+            deleteSelectedNodes();
+        }
+
+        // Ctrl+A: Select all
+        if ((e.ctrlKey || e.metaKey) && e.key === 'a' && !e.target.matches('input, textarea')) {
+            e.preventDefault();
+            selectAllNodes();
+        }
+
+        // Ctrl+C: Copy selected
+        if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.target.matches('input, textarea')) {
+            if (selectedNodes.size > 0) {
+                e.preventDefault();
+                contextMenuCopy();
+            }
+        }
+
+        // Ctrl+V: Paste
+        if ((e.ctrlKey || e.metaKey) && e.key === 'v' && !e.target.matches('input, textarea')) {
+            if (copiedNodes.length > 0) {
+                e.preventDefault();
+                // Paste at center of canvas
+                const canvas = document.getElementById('workflowCanvas');
+                contextMenuPosition = {
+                    x: canvas.clientWidth / 2,
+                    y: canvas.clientHeight / 2
+                };
+                contextMenuPaste();
+            }
+        }
+
+        // Ctrl+D: Duplicate selected
+        if ((e.ctrlKey || e.metaKey) && e.key === 'd' && !e.target.matches('input, textarea')) {
+            if (selectedNodes.size > 0) {
+                e.preventDefault();
+                const node = nodes.find(n => selectedNodes.has(n.id));
+                if (node) duplicateNode(node);
+            }
+        }
+
+        // Escape: Clear selection
+        if (e.key === 'Escape' && selectedNodes.size > 0) {
+            clearSelection();
+        }
+    });
+}
+
+// Initialize Wave 5.2 features
+function initWave52Features() {
+    setupContextMenuListeners();
+    initAutoSave();
+
+    // Try to load auto-saved draft on startup
+    if (nodes.length === 0) {
+        loadAutoSavedDraft();
+    }
+}
+
+// Call initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWave52Features);
+} else {
+    initWave52Features();
+}
+
+
+// ==========================================
+// WAVE 5.3: Dark Mode & Theme System
+// ==========================================
+
+// Theme state
+let currentTheme = 'light';
+
+/**
+ * Get the preferred theme based on system preference or saved preference
+ * @returns {string} 'light' or 'dark'
+ */
+function getPreferredTheme() {
+    // Check localStorage first
+    const savedTheme = localStorage.getItem('workflow_builder_theme');
+    if (savedTheme && ['light', 'dark'].includes(savedTheme)) {
+        return savedTheme;
+    }
+
+    // Check system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+
+    return 'light';
+}
+
+/**
+ * Apply the specified theme to the document
+ * @param {string} theme - 'light' or 'dark'
+ */
+function applyTheme(theme) {
+    currentTheme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+
+    // Update theme toggle button icons
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        const sunIcon = themeToggle.querySelector('.sun-icon');
+        const moonIcon = themeToggle.querySelector('.moon-icon');
+
+        if (theme === 'dark') {
+            if (sunIcon) sunIcon.style.display = 'none';
+            if (moonIcon) moonIcon.style.display = 'inline';
+        } else {
+            if (sunIcon) sunIcon.style.display = 'inline';
+            if (moonIcon) moonIcon.style.display = 'none';
+        }
+    }
+
+    // Update SVG elements that might need theming
+    updateSVGTheme(theme);
+
+    // Update minimap background
+    const minimapCanvas = document.getElementById('minimapCanvas');
+    if (minimapCanvas) {
+        minimapCanvas.style.background = theme === 'dark' ? '#1f1f3d' : '#ffffff';
+    }
+
+    // Announce theme change for screen readers
+    announceThemeChange(theme);
+
+    // Save preference
+    localStorage.setItem('workflow_builder_theme', theme);
+
+    console.log(`[Wave 5.3] Theme changed to: ${theme}`);
+}
+
+/**
+ * Toggle between light and dark themes
+ */
+function toggleTheme() {
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    applyTheme(newTheme);
+}
+
+/**
+ * Update SVG elements for theme compatibility
+ * @param {string} theme - 'light' or 'dark'
+ */
+function updateSVGTheme(theme) {
+    // Update connection arrows
+    const arrows = document.querySelectorAll('.connection-arrow');
+    arrows.forEach(arrow => {
+        arrow.style.fill = theme === 'dark' ? '#8b92a5' : '#667eea';
+    });
+
+    // Update connection paths
+    const connections = document.querySelectorAll('.connection-path');
+    connections.forEach(conn => {
+        if (!conn.classList.contains('connection-active') &&
+            !conn.classList.contains('connection-success') &&
+            !conn.classList.contains('connection-error')) {
+            conn.style.stroke = theme === 'dark' ? '#4a4a6a' : '#667eea';
+        }
+    });
+}
+
+/**
+ * Announce theme change for screen readers
+ * @param {string} theme - 'light' or 'dark'
+ */
+function announceThemeChange(theme) {
+    const announcement = document.createElement('div');
+    announcement.setAttribute('role', 'status');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.className = 'sr-only';
+    announcement.textContent = `Theme changed to ${theme} mode`;
+
+    document.body.appendChild(announcement);
+    setTimeout(() => announcement.remove(), 1000);
+}
+
+/**
+ * Initialize theme system
+ */
+function initTheme() {
+    // Apply saved or system preference theme
+    const preferredTheme = getPreferredTheme();
+    applyTheme(preferredTheme);
+
+    // Listen for system preference changes
+    if (window.matchMedia) {
+        const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+        // Only auto-switch if no saved preference
+        darkModeQuery.addEventListener('change', (e) => {
+            const savedTheme = localStorage.getItem('workflow_builder_theme');
+            if (!savedTheme) {
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    }
+
+    // Add keyboard shortcut (T for theme)
+    document.addEventListener('keydown', (e) => {
+        // T key toggles theme (when not in input)
+        if (e.key === 't' || e.key === 'T') {
+            if (!e.target.matches('input, textarea, [contenteditable]')) {
+                e.preventDefault();
+                toggleTheme();
+            }
+        }
+    });
+
+    console.log('[Wave 5.3] Theme system initialized');
+}
+
+/**
+ * Set a specific theme
+ * @param {string} theme - 'light' or 'dark'
+ */
+function setTheme(theme) {
+    if (['light', 'dark'].includes(theme)) {
+        applyTheme(theme);
+    } else {
+        console.warn(`[Wave 5.3] Invalid theme: ${theme}. Use 'light' or 'dark'.`);
+    }
+}
+
+/**
+ * Get current theme
+ * @returns {string} Current theme ('light' or 'dark')
+ */
+function getCurrentTheme() {
+    return currentTheme;
+}
+
+/**
+ * Reset theme to system preference
+ */
+function resetThemeToSystem() {
+    localStorage.removeItem('workflow_builder_theme');
+
+    let systemTheme = 'light';
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        systemTheme = 'dark';
+    }
+
+    applyTheme(systemTheme);
+    console.log('[Wave 5.3] Theme reset to system preference');
+}
+
+// Initialize Wave 5.3 features
+function initWave53Features() {
+    initTheme();
+}
+
+// Call initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWave53Features);
+} else {
+    initWave53Features();
+}
+
 
 // Export for console debugging
 window.workflowBuilder = {
@@ -5820,5 +7237,57 @@ window.workflowBuilder = {
     cycleGroupColor,
     deleteGroupNode,
     addNodeToGroup,
-    removeNodeFromGroup
+    removeNodeFromGroup,
+    // Search & Navigation (Wave 5.1)
+    focusNodeSearch,
+    handleNodeSearch,
+    fuzzySearchNodes,
+    jumpToNode,
+    openCommandPalette,
+    closeCommandPalette,
+    populateCommandPalette,
+    addAgentFromPalette,
+    navigateToRoot,
+    navigateToGroup,
+    navigateToBreadcrumb,
+    updateBreadcrumbs,
+    searchResults,
+    recentAgents,
+    currentGroupPath,
+    // Context Menus & UX (Wave 5.2)
+    hideAllContextMenus,
+    showContextMenu,
+    handleCanvasContextMenu,
+    findNodeAtPosition,
+    findConnectionAtPosition,
+    contextMenuEditConfig,
+    contextMenuDuplicate,
+    contextMenuCopy,
+    contextMenuAddToGroup,
+    contextMenuToggleBreakpoint,
+    contextMenuDisconnectAll,
+    contextMenuDeleteNode,
+    contextMenuAddNodeHere,
+    contextMenuPaste,
+    selectAllNodes,
+    fitToView,
+    clearCanvas,
+    contextMenuShowDataFlow,
+    contextMenuDeleteConnection,
+    contextMenuCreateGroup,
+    alignSelectedNodes,
+    distributeSelectedNodes,
+    deleteSelectedNodes,
+    duplicateNode,
+    toggleNodeSelection,
+    clearSelection,
+    selectedNodes,
+    copiedNodes,
+    // Auto-Save (Wave 5.2)
+    initAutoSave,
+    autoSaveWorkflow,
+    updateAutoSaveIndicator,
+    loadAutoSavedDraft,
+    toggleAutoSave,
+    autoSaveEnabled
 };

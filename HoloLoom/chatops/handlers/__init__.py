@@ -23,6 +23,7 @@ Optional advanced features:
 - conversation_handlers: Multi-turn conversation support (!continue, !context)
 - cluster_handlers: Eggroll distributed cluster management (!cluster)
 - alignment_handlers: Safety guardrails and audit trail commands (!safety, !audit)
+- agent_manager_ws: WebSocket handlers for Agent Manager UI (thread lifecycle, progress, priority)
 """
 
 # Core handler registry - always available
@@ -463,6 +464,64 @@ try:
         "handle_audit_trace",
         "handle_audit_search",
         "handle_alignment_help"
+    ])
+except ImportError:
+    pass
+
+try:
+    from HoloLoom.chatops.handlers.agent_manager_ws import (
+        AgentManagerMessageType,
+        AgentManagerMessage,
+        AgentManagerWSManager,
+        AgentManagerBroadcaster,
+        create_agent_manager_router,
+        get_global_manager as get_global_ws_manager,
+        get_global_broadcaster
+    )
+    __all__.extend([
+        "AgentManagerMessageType",
+        "AgentManagerMessage",
+        "AgentManagerWSManager",
+        "AgentManagerBroadcaster",
+        "create_agent_manager_router",
+        "get_global_ws_manager",
+        "get_global_broadcaster"
+    ])
+except ImportError:
+    pass
+
+try:
+    from HoloLoom.chatops.handlers.workflow_handlers import (
+        register_workflow_handlers,
+        WorkflowHandlers,
+        get_executor_url,
+        set_executor_url,
+        get_generator,
+        set_generator,
+        handle_workflow_list,
+        handle_workflow_run,
+        handle_workflow_status,
+        handle_workflow_validate,
+        handle_workflow_generate,
+        handle_workflow_agents,
+        handle_workflow_optimize,
+        handle_workflow_help
+    )
+    __all__.extend([
+        "register_workflow_handlers",
+        "WorkflowHandlers",
+        "get_executor_url",
+        "set_executor_url",
+        "get_generator",
+        "set_generator",
+        "handle_workflow_list",
+        "handle_workflow_run",
+        "handle_workflow_status",
+        "handle_workflow_validate",
+        "handle_workflow_generate",
+        "handle_workflow_agents",
+        "handle_workflow_optimize",
+        "handle_workflow_help"
     ])
 except ImportError:
     pass

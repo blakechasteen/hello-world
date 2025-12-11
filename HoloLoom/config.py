@@ -1,18 +1,51 @@
 """
-HoloLoom Configuration
-======================
-Configuration settings for the HoloLoom system.
+HoloLoom Configuration (Backward Compatible)
+============================================
 
-Defines execution modes, model settings, and system parameters.
+This module provides backward compatibility with the legacy config system
+while exposing the new zero-config architecture.
+
+New (Recommended):
+    from HoloLoom.config import Config
+
+    # Zero-config - just works
+    config = Config()
+
+    # Presets for common use cases
+    config = Config.fast()       # Balanced (default)
+    config = Config.fused()      # Highest quality
+    config = Config.research()   # Experimental features
+
+    # With expansion bundles for research features
+    from HoloLoom.expansions.physics import PhysicsConfig
+
+    config = Config.research()
+    config.load_expansion(PhysicsConfig(use_gp_bandits=True))
+
+Legacy (Still Works, But Deprecated):
+    config = Config(use_gp_bandits=True)  # Auto-loads PhysicsConfig with warning
+
+Migration Guide:
+    Old: Config(use_gp_bandits=True, gp_acquisition="thompson")
+    New: config = Config.research()
+         config.load_expansion(PhysicsConfig(use_gp_bandits=True, gp_acquisition="thompson"))
+
+Date: December 2025
 """
 
+import os
+import warnings
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-# Import BanditStrategy from shared types (no circular dependency!)
+# Import from shared types
 from HoloLoom.protocols.types import BanditStrategy
 
+
+# =============================================================================
+# ENUMS (Keep for backward compatibility - these are widely used)
+# =============================================================================
 
 class KGBackend(Enum):
     """
@@ -54,480 +87,585 @@ class Environment(Enum):
 class ExecutionMode(Enum):
     """
     Execution modes for HoloLoom.
-    
+
     - BARE: Minimal processing (fastest, lowest quality)
-      - Regex-only motif detection
-      - No spectral features
-      - Fast single-scale retrieval
-      - Simple policy
-    
     - FAST: Balanced processing (good speed/quality tradeoff)
-      - Hybrid motif detection (regex + spaCy if available)
-      - Spectral features enabled
-      - Fast retrieval with smallest scale
-      - Neural policy
-    
     - FUSED: Full processing (highest quality)
-      - Full hybrid motif detection
-      - All spectral features
-      - Multi-scale fused retrieval
-      - Full neural policy with all adapters
+    - RESEARCH: Experimental features enabled
     """
     BARE = "bare"
     FAST = "fast"
     FUSED = "fused"
+    RESEARCH = "research"
 
+
+# =============================================================================
+# LEGACY FIELD MAPPING (for auto-migration)
+# =============================================================================
+
+# Maps legacy field names to their expansion bundle
+_LEGACY_EXPANSION_MAP = {
+    # Physics bundle (GP Bandits + PDE Flow)
+    "use_gp_bandits": "physics",
+    "gp_acquisition": "physics",
+    "gp_kernel_type": "physics",
+    "gp_kernel_length_scale": "physics",
+    "gp_kernel_variance": "physics",
+    "gp_matern_nu": "physics",
+    "gp_noise_variance": "physics",
+    "gp_ucb_beta": "physics",
+    "gp_ucb_adaptive_beta": "physics",
+    "gp_n_candidates_per_dim": "physics",
+    "gp_update_interval": "physics",
+    "gp_warmup_samples": "physics",
+    "use_semantic_flow": "physics",
+    "pde_type": "physics",
+    "flow_dt": "physics",
+    "flow_steps": "physics",
+    "flow_reaction_type": "physics",
+    "flow_diffusion_coef": "physics",
+    "flow_wave_speed": "physics",
+
+    # Bayesian bundle
+    "use_bayesian": "bayesian",
+    "bayesian_samples": "bayesian",
+    "bayesian_kl_weight": "bayesian",
+    "bayesian_prior_std": "bayesian",
+
+    # Geometry bundle (Riemannian embeddings)
+    "use_riemannian": "geometry",
+    "riemannian_hyperbolic_dim": "geometry",
+    "riemannian_spherical_dim": "geometry",
+    "riemannian_euclidean_dim": "geometry",
+    "riemannian_hyperbolic_curvature": "geometry",
+    "riemannian_spherical_curvature": "geometry",
+
+    # Advanced Spectral bundle
+    "use_wavelets": "advanced_spectral",
+    "wavelet_scales": "advanced_spectral",
+    "wavelet_type": "advanced_spectral",
+    "use_diffusion_maps": "advanced_spectral",
+    "diffusion_map_dims": "advanced_spectral",
+    "diffusion_time": "advanced_spectral",
+    "use_multiscale_spectral": "advanced_spectral",
+    "multiscale_spectral_scales": "advanced_spectral",
+}
+
+
+def _detect_environment() -> Environment:
+    """Auto-detect environment from HOLOLOOM_ENV."""
+    env = os.getenv("HOLOLOOM_ENV", "development").lower()
+    try:
+        return Environment(env)
+    except ValueError:
+        return Environment.DEVELOPMENT
+
+
+def _detect_llm() -> tuple:
+    """Auto-detect LLM from available API keys."""
+    if os.getenv("ANTHROPIC_API_KEY"):
+        return "anthropic", "claude-3-5-sonnet-20241022"
+    if os.getenv("OPENAI_API_KEY"):
+        return "openai", "gpt-4"
+    if os.getenv("OLLAMA_HOST"):
+        return "ollama", "llama3.2:3b"
+    # Check if Ollama is running locally
+    try:
+        import socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(0.1)
+        result = sock.connect_ex(("localhost", 11434))
+        sock.close()
+        if result == 0:
+            return "ollama", "llama3.2:3b"
+    except Exception:
+        pass
+    return None, None
+
+
+# =============================================================================
+# MODE DEFAULTS (internal - settings derived from execution mode)
+# =============================================================================
+
+_MODE_DEFAULTS: Dict[ExecutionMode, Dict[str, Any]] = {
+    ExecutionMode.BARE: {
+        "scales": [768],
+        "fusion_weights": {768: 1.0},
+        "n_transformer_layers": 1,
+        "n_attention_heads": 2,
+        "enable_linguistic_gate": False,
+        "enable_zero_copy_embeddings": False,
+        "enable_semantic_calculus": False,
+        "fast_mode": True,
+    },
+    ExecutionMode.FAST: {
+        "scales": [768],
+        "fusion_weights": {768: 1.0},
+        "n_transformer_layers": 2,
+        "n_attention_heads": 4,
+        "enable_linguistic_gate": True,
+        "linguistic_mode": "both",
+        "use_compositional_cache": True,
+        "enable_zero_copy_embeddings": True,
+        "enable_semantic_calculus": False,
+        "fast_mode": True,
+    },
+    ExecutionMode.FUSED: {
+        "scales": [768],
+        "fusion_weights": {768: 1.0},
+        "n_transformer_layers": 2,
+        "n_attention_heads": 4,
+        "enable_linguistic_gate": True,
+        "linguistic_mode": "both",
+        "use_compositional_cache": True,
+        "enable_zero_copy_embeddings": True,
+        "enable_semantic_calculus": True,
+        "fast_mode": False,
+    },
+    ExecutionMode.RESEARCH: {
+        "scales": [768],
+        "fusion_weights": {768: 1.0},
+        "n_transformer_layers": 2,
+        "n_attention_heads": 4,
+        "enable_linguistic_gate": True,
+        "linguistic_mode": "both",
+        "use_compositional_cache": True,
+        "enable_zero_copy_embeddings": True,
+        "enable_semantic_calculus": True,
+        "use_spring_activation": True,
+        "enable_spring_activation": True,  # Alias for use_spring_activation
+        "enable_recursive_learning": True,
+        "enable_jenny": True,
+        "fast_mode": False,
+    },
+}
+
+
+# =============================================================================
+# MAIN CONFIG CLASS (Zero-Config Architecture)
+# =============================================================================
 
 @dataclass
 class Config:
     """
-    Configuration for HoloLoom orchestrator.
-    
-    Controls all aspects of system behavior including:
-    - Embedding dimensions (Matryoshka scales)
-    - Fusion weights for multi-scale retrieval
-    - Model selection
-    - Execution mode
-    - Persistence settings
+    HoloLoom Configuration - Zero-config by default.
+
+    Philosophy: "Convention over Configuration"
+    - Tier 0: Config() just works with sensible defaults
+    - Tier 1: Presets (fast, fused, research) for common use cases
+    - Tier 2: Fine-tuning individual fields only if needed
+
+    Usage:
+        # Tier 0: Just works
+        config = Config()
+
+        # Tier 1: Named presets
+        config = Config.fast()
+        config = Config.research()
+
+        # Tier 2: Fine-tuning
+        config = Config(retrieval_k=10, pipeline_timeout=10.0)
+
+        # With expansion bundles (research features)
+        from HoloLoom.expansions.physics import PhysicsConfig
+        config = Config.research()
+        config.load_expansion(PhysicsConfig(use_gp_bandits=True))
     """
-    
+
+    # =========================================================================
+    # PRIMARY SETTING (the one choice that matters)
+    # =========================================================================
+    mode: ExecutionMode = ExecutionMode.FAST
+
+    # =========================================================================
+    # TIER 1: COMMONLY ADJUSTED (5-10 fields)
+    # =========================================================================
+    retrieval_k: int = 6
+    pipeline_timeout: float = 5.0
+    memory_path: str = "data"
+
+    # LLM - auto-detected but overridable
+    llm_provider: Optional[str] = None
+    llm_model: Optional[str] = None
+
+    # =========================================================================
+    # TIER 2: AUTO-CONFIGURED (from environment)
+    # =========================================================================
+    environment: Environment = field(default_factory=_detect_environment)
+    memory_backend: MemoryBackend = MemoryBackend.HYBRID
+
+    # =========================================================================
+    # INTERNAL STATE (not user-facing)
+    # =========================================================================
+    _mode_settings: Dict[str, Any] = field(default_factory=dict, repr=False)
+    _expansion_settings: Dict[str, Any] = field(default_factory=dict, repr=False)
+    _expansions: List[Any] = field(default_factory=list, repr=False)
+    _legacy_fields: Dict[str, Any] = field(default_factory=dict, repr=False)
+
+    # =========================================================================
+    # BACKWARD COMPATIBILITY FIELDS (deprecated, but preserved)
+    # These fields are kept for existing code but should migrate to expansions
+    # =========================================================================
+
+    # Basic model/policy settings (still commonly used)
+    base_model_name: Optional[str] = None
+    n_transformer_layers: int = 2
+    n_attention_heads: int = 4
+    n_tools: int = 4
+    n_adapters: int = 4
+    bandit_strategy: BanditStrategy = BanditStrategy.EPSILON_GREEDY
+    epsilon: float = 0.1
+    blend_neural_weight: float = 0.7
+
     # Embedding configuration
     scales: List[int] = field(default_factory=lambda: [768])
-    fusion_weights: Dict[int, float] = field(default_factory=lambda: {
-        768: 1.0   # Single scale: 100% weight (simplified from multi-scale)
-    })
+    fusion_weights: Dict[int, float] = field(default_factory=lambda: {768: 1.0})
+    enable_zero_copy_embeddings: bool = False
+    zero_copy_cache_path: str = '.cache/embeddings.mmap'
+    zero_copy_cache_size: int = 10000
 
-    # Zero-Copy Embeddings (November 2025) - 30-50x faster, 50% memory savings
-    enable_zero_copy_embeddings: bool = False  # Enable zero-copy memory-mapped embeddings
-    zero_copy_cache_path: str = '.cache/embeddings.mmap'  # Persistent cache location
-    zero_copy_cache_size: int = 10000  # Maximum embeddings to cache
+    # Smart Query Routing
+    enable_smart_routing: bool = True
+    routing_classifier: str = "moonshot"
+    enable_semantic_tier: bool = False
+    enable_adaptive_learning: bool = True
+    enable_classification_telemetry: bool = True
+    classification_telemetry_path: str = "./classification_logs"
 
-    # Smart Query Routing (November 2025) - 100% accuracy, <1ms latency
-    enable_smart_routing: bool = True  # Enable smart query routing with fast paths
-    routing_classifier: str = "moonshot"  # "baseline" or "moonshot"
-    enable_semantic_tier: bool = False  # Tier 3 semantic embeddings (adds 20ms, 98% accuracy)
-    enable_adaptive_learning: bool = True  # Learn from production misclassifications
-    enable_classification_telemetry: bool = True  # Log classifications for monitoring
-    classification_telemetry_path: str = "./classification_logs"  # Telemetry log directory
+    # Retrieval settings
+    bm25_weight: float = 0.15
+    fast_mode: bool = False
+    retrieval_timeout: float = 0.2
 
-    # Model selection
-    base_model_name: Optional[str] = None  # Uses env var HOLOLOOM_BASE_ENCODER if None
+    # Spring Activation
+    use_spring_activation: bool = False
+    enable_spring_activation: bool = False  # Alias for use_spring_activation (backward compat)
+    spring_stiffness: float = 0.15
+    spring_damping: float = 0.85
+    spring_decay: float = 0.98
+    spring_iterations: int = 200
+    spring_convergence_epsilon: float = 1e-4
+    spring_activation_threshold: float = 0.1
+    spring_seed_count: int = 3
 
-    # LLM Provider Configuration (for metaprompting, agentic reasoning, LLM-enhanced features)
-    llm_provider: Optional[str] = None  # LLM provider: 'anthropic', 'google', 'openai', 'ollama'
-    llm_model: Optional[str] = None  # Model name (e.g., 'claude-3-5-sonnet-20241022', 'gpt-4', 'gemini-pro')
+    # Feature extraction
+    spectral_k_eigen: int = 4
+    svd_components: int = 2
 
-    # Execution mode
-    mode: ExecutionMode = ExecutionMode.FUSED
-    fast_mode: bool = False  # If True, force fast retrieval regardless of mode
-    
-    # Persistence
-    memory_path: Optional[str] = "data"  # Root directory for memory storage
+    # Semantic Calculus
+    enable_semantic_calculus: bool = False
+    semantic_dimensions: int = 16
+    semantic_cache_size: int = 10000
+    semantic_dt: float = 1.0
+    semantic_framework: str = "compassionate"
+    semantic_trajectory: bool = True
+    semantic_ethics: bool = True
 
-    # Memory Backend Selection (Unified)
-    memory_backend: 'MemoryBackend' = None  # Set in __post_init__ to avoid forward reference
+    # Phase 5: Linguistic Gate
+    enable_linguistic_gate: bool = False
+    linguistic_mode: str = "disabled"
+    use_compositional_cache: bool = True
+    parse_cache_size: int = 10000
+    merge_cache_size: int = 50000
+    linguistic_weight: float = 0.3
+    prefilter_similarity_threshold: float = 0.3
+    prefilter_keep_ratio: float = 0.7
 
-    # Legacy: Knowledge Graph backend (deprecated, use memory_backend)
-    kg_backend: Optional[KGBackend] = None
+    # Shuttle Integration
+    enable_shuttle: bool = True
+    shuttle_mode: str = "auto"
 
-    # Neo4j Configuration
-    neo4j_uri: str = "bolt://localhost:7687"
-    neo4j_username: str = "neo4j"
-    neo4j_password: str = "hololoom123"
+    # Beta Wave Context Packing
+    enable_beta_wave_packing: bool = False
+    packing_token_budget: int = 4000
+    packing_query_reserve: int = 400
+    packing_response_reserve: int = 1000
+    packing_activation_threshold: float = 0.3
+    packing_compression_threshold: float = 0.7
+
+    # Recursive Learning
+    enable_recursive_learning: bool = False
+    recursive_learning_update_interval: float = 60.0
+    recursive_learning_refinement_threshold: float = 0.75
+    recursive_learning_max_iterations: int = 3
+    recursive_learning_enable_background: bool = True
+    recursive_learning_enable_hot_patterns: bool = True
+    recursive_learning_enable_scratchpad: bool = True
+
+    # Unified Physics
+    enable_unified_physics: bool = False
+    physics_enable_routing: bool = True
+    physics_enable_packing: bool = True
+    physics_enable_thermodynamics: bool = True
+    physics_enable_wave_mechanics: bool = True
+    physics_mode: str = "adaptive"
+    physics_track_provenance: bool = True
+
+    # Safety & Environment
+    layer6_enabled: bool = False
+    enable_safety_guardrails: bool = True
+    safety_log_all_decisions: bool = True
+
+    # Conscience Architecture
+    enable_conscience: bool = True
+    conscience_preset: str = "standard"
+    conscience_fail_open: bool = True
+    conscience_auto_learn: bool = True
+    conscience_learning_interval: float = 60.0
+    conscience_persist_path: Optional[str] = None
+
+    # Memory management
+    working_memory_size: int = 100
+    episodic_buffer_size: int = 100
+
+    # Prometheus Metrics
+    enable_prometheus_metrics: bool = True
+    prometheus_metrics_port: int = 8001
+
+    # Jenny UI
+    enable_jenny: bool = False
+    jenny_persist_path: str = "./jenny_specs"
+    jenny_default_renderer: str = "html"
+    jenny_max_panels_per_query: int = 6
+    jenny_auto_lifecycle: bool = True
+    jenny_cleanup_interval: float = 60.0
+    jenny_enable_mrf: bool = True
+    jenny_enable_learning: bool = True
+    jenny_learning_persist_path: str = "./jenny_learning"
+
+    # WeaveHouse
+    use_weave_house: bool = False
+    weave_house_exploration_depth: int = 2
+    weave_house_tension_threshold: float = 0.3
+
+    # Dreaming
+    enable_dreaming: bool = True
+    dream_consolidation_interval: float = 3600.0
+    dream_math_bleed_rate: float = 0.3
+    dream_pattern_bleed_rate: float = 0.2
+
+    # Neo4j Configuration (auto-read from env)
+    neo4j_uri: str = field(default_factory=lambda: os.getenv("NEO4J_URI", "bolt://localhost:7687"))
+    neo4j_username: str = field(default_factory=lambda: os.getenv("NEO4J_USERNAME", "neo4j"))
+    neo4j_password: str = field(default_factory=lambda: os.getenv("NEO4J_PASSWORD", "hololoom123"))
     neo4j_database: str = "neo4j"
 
-    # Qdrant Configuration
-    qdrant_host: str = "localhost"
-    qdrant_port: int = 6333
+    # Qdrant Configuration (auto-read from env)
+    qdrant_host: str = field(default_factory=lambda: os.getenv("QDRANT_HOST", "localhost"))
+    qdrant_port: int = field(default_factory=lambda: int(os.getenv("QDRANT_PORT", "6333")))
     qdrant_collection: str = "hololoom_memories"
     qdrant_use_https: bool = False
 
-    # Mem0 Configuration
-    mem0_api_key: Optional[str] = None  # If using Mem0 cloud
+    # Hyperspace Configuration
+    hyperspace_depth: int = 3
+    hyperspace_thresholds: List[float] = field(default_factory=lambda: [0.6, 0.75, 0.85])
+    hyperspace_breadth: int = 10
+
+    # Legacy deprecated fields (kept for compatibility)
+    kg_backend: Optional[KGBackend] = None
+    mem0_api_key: Optional[str] = None
     mem0_org_id: Optional[str] = None
     mem0_project_id: Optional[str] = None
 
-    # Hyperspace Configuration (for HYPERSPACE backend)
-    hyperspace_depth: int = 3  # Max recursion depth
-    hyperspace_thresholds: List[float] = field(default_factory=lambda: [0.6, 0.75, 0.85])
-    hyperspace_breadth: int = 10  # Links per level
-    
-    # Neural network settings
-    n_transformer_layers: int = 2
-    n_attention_heads: int = 4
-    
-    # Policy settings
-    n_tools: int = 4  # answer, search, notion_write, calc
-    n_adapters: int = 4  # general, farm, brewing, mirrorcore
-    bandit_strategy: BanditStrategy = BanditStrategy.EPSILON_GREEDY
-    epsilon: float = 0.1  # Exploration rate for epsilon-greedy (10%)
-    blend_neural_weight: float = 0.7  # Neural weight in Bayesian blend (30% bandit)
+    # =========================================================================
+    # EXPANSION BUNDLE FIELDS (backward compatibility)
+    # These fields can be set directly or via load_expansion().
+    # Recommended: Use expansion bundles instead of setting directly.
+    # =========================================================================
 
-    # Bayesian Policy Settings (Priority 5 - Variational Inference)
-    use_bayesian: bool = False  # Enable Bayesian uncertainty quantification
-    bayesian_samples: int = 10  # MC samples for uncertainty estimation (10× overhead)
-    bayesian_kl_weight: float = 1.0  # KL divergence weight in ELBO
-    bayesian_prior_std: float = 1.0  # Prior weight standard deviation
+    # Physics Bundle (GP Bandits)
+    use_gp_bandits: bool = False
+    gp_acquisition: str = "thompson"
+    gp_kernel_type: str = "matern"
+    gp_kernel_length_scale: float = 0.3
+    gp_kernel_variance: float = 1.0
+    gp_matern_nu: float = 2.5
+    gp_noise_variance: float = 0.01
+    gp_ucb_beta: float = 2.0
+    gp_ucb_adaptive_beta: bool = True
+    gp_n_candidates_per_dim: int = 5
+    gp_update_interval: int = 10
+    gp_warmup_samples: int = 10
 
-    # GP Bandit Settings (for continuous action spaces)
-    use_gp_bandits: bool = False  # Enable Gaussian Process bandits
-    gp_acquisition: str = "thompson"  # GP acquisition: "thompson" or "ucb"
-    gp_kernel_type: str = "matern"  # GP kernel: "matern" or "rbf"
-    gp_kernel_length_scale: float = 0.3  # GP kernel length scale
-    gp_kernel_variance: float = 1.0  # GP kernel variance
-    gp_matern_nu: float = 2.5  # Matérn kernel smoothness (1.5, 2.5, 5.0)
-    gp_noise_variance: float = 0.01  # GP observation noise
-    gp_ucb_beta: float = 2.0  # UCB exploration parameter
-    gp_ucb_adaptive_beta: bool = True  # Use adaptive β = √(2 log(t))
-    gp_n_candidates_per_dim: int = 5  # Discretization resolution
-    gp_update_interval: int = 10  # Retrain GP every N observations
-    
-    # Retrieval settings
-    retrieval_k: int = 6  # Number of shards to retrieve
-    bm25_weight: float = 0.15  # Weight of BM25 in fused retrieval
+    # Physics Bundle (PDE Semantic Flow)
+    use_semantic_flow: bool = False
+    pde_type: str = "heat"
+    flow_dt: float = 0.01
+    flow_steps: int = 10
+    flow_reaction_type: str = "competitive"
+    flow_diffusion_coef: float = 1.0
+    flow_wave_speed: float = 1.0
 
-    # Spring Activation Retrieval (optional, modular)
-    use_spring_activation: bool = False  # Enable physics-based spreading activation
-    spring_stiffness: float = 0.15  # k: Spring stiffness (0.05-0.5 typical)
-    spring_damping: float = 0.85  # c: Damping coefficient (0.5-0.95 typical)
-    spring_decay: float = 0.98  # Activation decay per step (0.90-0.99)
-    spring_iterations: int = 200  # Max propagation steps
-    spring_convergence_epsilon: float = 1e-4  # Energy change threshold
-    spring_activation_threshold: float = 0.1  # Min activation to retrieve
-    spring_seed_count: int = 3  # Number of seed nodes from embedding
-    
-    # Feature extraction
-    spectral_k_eigen: int = 4  # Number of Laplacian eigenvalues
-    svd_components: int = 2  # Number of SVD topic components
+    # Bayesian Bundle
+    use_bayesian: bool = False
+    bayesian_samples: int = 10
+    bayesian_kl_weight: float = 1.0
+    bayesian_prior_std: float = 1.0
 
-    # Advanced Spectral Methods (Priority 4 - Mathematical Moonshot)
-    use_wavelets: bool = False  # Enable multi-scale wavelet features (adds ~10-50ms, O(n³) complexity)
-    wavelet_scales: List[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])  # Coarse → Fine
-    use_diffusion_maps: bool = False  # Enable diffusion geometry (adds ~20-100ms, cached)
-    diffusion_map_dims: int = 32  # Diffusion embedding dimension
-    use_multiscale_spectral: bool = False  # Enable hierarchical spectral analysis (experimental)
-    multiscale_spectral_scales: List[int] = field(default_factory=lambda: [96, 192, 384])  # Match Matryoshka scales
+    # Geometry Bundle (Riemannian Embeddings)
+    use_riemannian: bool = False
+    riemannian_hyperbolic_dim: int = 256
+    riemannian_spherical_dim: int = 256
+    riemannian_euclidean_dim: int = 256
+    riemannian_hyperbolic_curvature: float = -1.0
+    riemannian_spherical_curvature: float = 1.0
 
-    # Semantic Calculus (optional)
-    enable_semantic_calculus: bool = False  # Enable semantic flow analysis
-    semantic_dimensions: int = 16  # Number of semantic dimension pairs
-    semantic_cache_size: int = 10000  # Embedding cache size
-    semantic_dt: float = 1.0  # Time step for calculus
-    semantic_framework: str = "compassionate"  # Ethical framework: compassionate, scientific, therapeutic
-    semantic_trajectory: bool = True  # Compute velocity/acceleration/curvature
-    semantic_ethics: bool = True  # Run ethical analysis
-
-    # PDE Semantic Flow (Priority 6 - Temporal Dynamics)
-    use_semantic_flow: bool = False  # Enable PDE-based temporal evolution (research mode only - expensive!)
-    pde_type: str = "heat"  # PDE type: heat (diffusion), wave (oscillation), reaction_diffusion (competition), hamilton_jacobi (optimal paths)
-    flow_dt: float = 0.01  # PDE timestep (smaller = more accurate, more expensive)
-    flow_steps: int = 10  # Evolution steps between queries
-    flow_reaction_type: str = "competitive"  # Reaction type for reaction_diffusion: logistic, competitive, cubic
-    flow_diffusion_coef: float = 1.0  # Diffusion coefficient for reaction_diffusion
-    flow_wave_speed: float = 1.0  # Wave speed for wave equation
-
-    # Phase 5: Universal Grammar + Compositional Cache (optional)
-    enable_linguistic_gate: bool = False  # Enable Phase 5 linguistic matryoshka gate
-    linguistic_mode: str = "disabled"  # Linguistic filter mode: disabled, prefilter, embedding, both
-    use_compositional_cache: bool = True  # 3-tier compositional cache (when linguistic_gate enabled)
-    parse_cache_size: int = 10000  # X-bar structure cache size
-    merge_cache_size: int = 50000  # Compositional embedding cache size
-    linguistic_weight: float = 0.3  # Weight for linguistic features (0-1)
-    prefilter_similarity_threshold: float = 0.3  # Min syntactic similarity for pre-filter
-    prefilter_keep_ratio: float = 0.7  # Keep top 70% of candidates after linguistic filter
-
-    # Shuttle Integration (January 2025) - MCTS-powered Warp↔Yarn intersection
-    enable_shuttle: bool = True  # Enable Shuttle for intelligent thread selection at Step 3
-    shuttle_mode: str = "auto"  # Shuttle mode: "auto" (derive from execution mode), "full", "lite", "minimal"
-
-    # Priority 2: Riemannian Embeddings (Mathematical Moonshot)
-    use_riemannian: bool = False  # Enable Riemannian manifold structure for embeddings
-    riemannian_hyperbolic_dim: int = 256  # Dimension for hierarchical concepts (K < 0)
-    riemannian_spherical_dim: int = 256   # Dimension for clustered concepts (K > 0)
-    riemannian_euclidean_dim: int = 256   # Dimension for linear features (K = 0)
-    riemannian_hyperbolic_curvature: float = -1.0  # Negative curvature for hierarchies
-    riemannian_spherical_curvature: float = 1.0    # Positive curvature for clusters
-
-    # Beta Wave Context Packing (optional - requires MultiWaveMemoryEngine)
-    enable_beta_wave_packing: bool = False  # Enable physics-based context optimization
-    packing_token_budget: int = 4000  # Total token budget for packed context
-    packing_query_reserve: int = 400  # Tokens reserved for query
-    packing_response_reserve: int = 1000  # Tokens reserved for LLM response
-    packing_activation_threshold: float = 0.3  # Min activation to include (low filtered out)
-    packing_compression_threshold: float = 0.7  # Activation threshold for compression vs full content
-
-    # Recursive Learning System (Phase 1-5) - Self-Improving Intelligence
-    enable_recursive_learning: bool = False  # Enable integrated recursive learning (pattern learning, refinement, etc.)
-    recursive_learning_update_interval: float = 60.0  # Background learning update interval (seconds)
-    recursive_learning_refinement_threshold: float = 0.75  # Confidence threshold below which to trigger refinement
-    recursive_learning_max_iterations: int = 3  # Maximum refinement iterations for low-confidence queries
-    recursive_learning_enable_background: bool = True  # Enable background learning thread (Thompson Sampling, policy updates)
-    recursive_learning_enable_hot_patterns: bool = True  # Enable hot pattern tracking and adaptive retrieval
-    recursive_learning_enable_scratchpad: bool = True  # Enable provenance tracking via scratchpad
-
-    # Unified Physics Engine (Phases 1-4) - Physics-Based Intelligence
-    enable_unified_physics: bool = False  # Enable unified physics engine (routing, packing, thermodynamics, wave mechanics)
-    physics_enable_routing: bool = True  # Phase 1: Gradient flow routing (optimal tool selection)
-    physics_enable_packing: bool = True  # Phase 2: Fluid dynamics packing (context optimization)
-    physics_enable_thermodynamics: bool = True  # Phase 3: Thermodynamic exploration (F = E - T*S)
-    physics_enable_wave_mechanics: bool = True  # Phase 4: Wave mechanics (pattern interference detection)
-    physics_mode: str = "adaptive"  # Physics integration mode: "sequential", "parallel", "adaptive"
-    physics_track_provenance: bool = True  # Track complete physics provenance in spacetime metadata
-
-    # Layer 6: Self-Modification (LOCKED - requires research environment)
-    # See README_SAFETY.md for unlock instructions
-    # Requires BOTH environment variable AND this flag:
-    #   export HOLOLOOM_LAYER6_UNLOCK=research
-    #   config.layer6_enabled = True
-    layer6_enabled: bool = False  # DO NOT enable without proper research infrastructure
-
-    # Deployment Environment (controls safety, logging, performance)
-    # Set via: config.environment = Environment.DEVELOPMENT (or STAGING, PRODUCTION)
-    # Or via env var: HOLOLOOM_ENV=development (default if not set)
-    environment: Environment = Environment.DEVELOPMENT
-
-    # Layer 6 Safety Guardrails (environment-aware)
-    # These properties automatically adjust based on environment:
-    # - DEVELOPMENT: Auto-approve all, verbose logging
-    # - STAGING: Auto-approve safe actions, require approval for risky
-    # - PRODUCTION: Require approval for all high-risk actions
-    enable_safety_guardrails: bool = True  # Master switch for safety system
-    safety_log_all_decisions: bool = True  # Log every safety decision (for audit)
-
-    # Conscience Architecture (December 2025) - Unified Safety with consider/witness/learn
-    # Modular conscience integration for agentic reasoning and weaving orchestrator
-    # Toggle at: config, constructor, per-request, or preset level
-    enable_conscience: bool = True  # Master switch for conscience safety layer
-    conscience_preset: str = "standard"  # Lens preset: "standard", "paranoid", "research"
-    conscience_fail_open: bool = True  # Graceful degradation (fail-open for availability)
-    conscience_auto_learn: bool = True  # Auto-learn from execution outcomes
-    conscience_learning_interval: float = 60.0  # Background learning interval (seconds)
-    conscience_persist_path: Optional[str] = None  # Path for conscience wisdom persistence
-
-    # Memory management
-    working_memory_size: int = 100  # Cache size for recent queries
-    episodic_buffer_size: int = 100  # Size of recent interaction buffer
-    
-    # Timeouts (seconds)
-    pipeline_timeout: float = 5.0  # Max time for full pipeline
-    retrieval_timeout: float = 0.2  # Max time for retrieval (200ms - reduced from 2s)
-
-    # Prometheus Metrics (production monitoring)
-    enable_prometheus_metrics: bool = True  # Enable Prometheus metrics collection
-    prometheus_metrics_port: int = 8001  # Port for metrics HTTP endpoint
-
-    # Jenny Generative UI Runtime (December 2025)
-    enable_jenny: bool = False  # Enable Jenny UI panel generation
-    jenny_persist_path: str = "./jenny_specs"  # SpecLedger persistence directory
-    jenny_default_renderer: str = "html"  # Default renderer: "html", "terminal", "json"
-    jenny_max_panels_per_query: int = 6  # Maximum panels per weave
-    jenny_auto_lifecycle: bool = True  # Auto-transition NASCENT → STABLE
-    jenny_cleanup_interval: float = 60.0  # Cleanup interval for DISSOLVING panels (seconds)
-
-    # Jenny MRF Integration (Phase 2.1-2.2: Thompson Sampling panel learning - December 2025)
-    jenny_enable_mrf: bool = True  # Enable MRF-enhanced panel compilation
-    jenny_enable_learning: bool = True  # Enable Thompson Sampling learning from user actions
-    jenny_learning_persist_path: str = "./jenny_learning"  # Learning state persistence directory
-
-    # Multi-Loom Architecture / WeaveHouse (December 2025)
-    # Enable multi-perspective reasoning via 5 core looms (RECALL, REASON, REACH, REFLECT, REFUSE)
-    use_weave_house: bool = False  # Enable WeaveHouse multi-perspective system
-    weave_house_exploration_depth: int = 2  # How deep to explore disagreement zones
-    weave_house_tension_threshold: float = 0.3  # Minimum tension to trigger exploration
-
-    # Dreaming / Collective Consolidation
-    enable_dreaming: bool = True  # Enable background dream consolidation
-    dream_consolidation_interval: float = 3600.0  # Seconds between dream cycles (default: 1 hour)
-    dream_math_bleed_rate: float = 0.3  # Math insight sharing rate (30% - universal)
-    dream_pattern_bleed_rate: float = 0.2  # Pattern insight sharing rate (20% - preserve diversity)
+    # Advanced Spectral Bundle
+    use_wavelets: bool = False
+    wavelet_scales: List[float] = field(default_factory=lambda: [0.1, 1.0, 10.0])
+    wavelet_type: str = "mexican_hat"
+    use_diffusion_maps: bool = False
+    diffusion_map_dims: int = 32
+    diffusion_time: float = 1.0
+    use_multiscale_spectral: bool = False
+    multiscale_spectral_scales: List[int] = field(default_factory=lambda: [96, 192, 384])
 
     def __post_init__(self):
-        """Validate configuration."""
-        # Set defaults
-        if self.memory_backend is None:
-            # Default to HYBRID for all modes (production-ready with auto-fallback)
-            self.memory_backend = MemoryBackend.HYBRID
+        """Initialize mode defaults and auto-detection."""
+        # Auto-detect LLM if not specified
+        if self.llm_provider is None:
+            self.llm_provider, self.llm_model = _detect_llm()
 
-        # Ensure scales are sorted
-        if sorted(self.scales) != self.scales:
-            raise ValueError("scales must be in ascending order")
-
-        # Ensure fusion weights sum to approximately 1.0
-        if self.fusion_weights:
-            total_weight = sum(self.fusion_weights.values())
-            if not (0.95 <= total_weight <= 1.05):
-                import warnings
-                warnings.warn(
-                    f"Fusion weights sum to {total_weight:.3f}, expected ~1.0. "
-                    "Weights will be automatically normalized."
-                )
-                # Normalize
-                for k in self.fusion_weights:
-                    self.fusion_weights[k] /= total_weight
+        # Apply mode-specific defaults
+        if self.mode in _MODE_DEFAULTS:
+            self._mode_settings = _MODE_DEFAULTS[self.mode].copy()
+            # Apply mode defaults to actual fields
+            for key, value in self._mode_settings.items():
+                if hasattr(self, key):
+                    # Only apply if not explicitly set (still at default)
+                    current = getattr(self, key)
+                    default = self.__dataclass_fields__[key].default
+                    if current == default or (callable(default) and current == default()):
+                        setattr(self, key, value)
 
         # Validate mode
         if isinstance(self.mode, str):
             self.mode = ExecutionMode(self.mode.lower())
 
-        # Validate hyperspace thresholds
-        if self.memory_backend == MemoryBackend.HYPERSPACE:
-            if len(self.hyperspace_thresholds) != self.hyperspace_depth:
-                import warnings
-                warnings.warn(
-                    f"hyperspace_thresholds length ({len(self.hyperspace_thresholds)}) "
-                    f"should match hyperspace_depth ({self.hyperspace_depth})"
-                )
+        # Validate scales
+        if sorted(self.scales) != self.scales:
+            raise ValueError("scales must be in ascending order")
 
-    # ============================================================================
-    # Smart Properties (Environment-Aware)
-    # ============================================================================
+        # Normalize fusion weights
+        if self.fusion_weights:
+            total = sum(self.fusion_weights.values())
+            if not (0.95 <= total <= 1.05):
+                for k in self.fusion_weights:
+                    self.fusion_weights[k] /= total
+
+    # =========================================================================
+    # EXPANSION BUNDLE SUPPORT
+    # =========================================================================
+
+    def load_expansion(self, expansion) -> "Config":
+        """
+        Load an expansion bundle into the config.
+
+        Args:
+            expansion: An ExpansionBundle instance (PhysicsConfig, BayesianConfig, etc.)
+
+        Returns:
+            self (for chaining)
+
+        Example:
+            config = Config.research()
+            config.load_expansion(PhysicsConfig(use_gp_bandits=True))
+        """
+        self._expansions.append(expansion)
+        settings = expansion.get_settings()
+        self._expansion_settings.update(settings)
+
+        # Also set on actual fields for backward compat
+        for key, value in settings.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+        return self
+
+    def _get(self, key: str, default: Any = None) -> Any:
+        """
+        Get setting with priority: expansion > mode > explicit > default.
+
+        Internal helper for computed properties.
+        """
+        if key in self._expansion_settings:
+            return self._expansion_settings[key]
+        if key in self._mode_settings:
+            return self._mode_settings[key]
+        if hasattr(self, key):
+            return getattr(self, key)
+        return default
+
+    # =========================================================================
+    # SMART PROPERTIES (Environment-Aware)
+    # =========================================================================
 
     @property
     def safety_testing_mode(self) -> bool:
-        """
-        Whether to bypass approval requirements (testing mode).
-
-        Auto-determined by environment:
-        - DEVELOPMENT: True (auto-approve everything)
-        - STAGING: False (require approval for high-risk)
-        - PRODUCTION: False (require approval for high-risk)
-
-        Returns:
-            True if in development mode
-        """
+        """Whether to bypass approval requirements (testing mode)."""
         return self.environment == Environment.DEVELOPMENT
 
     @property
     def safety_auto_approve_categories(self) -> set:
-        """
-        Action categories to auto-approve without human intervention.
-
-        Environment-specific:
-        - DEVELOPMENT: All categories (full auto-approve)
-        - STAGING: Read-only categories (query, retrieval, analysis)
-        - PRODUCTION: None (require approval for all)
-
-        Returns:
-            Set of ActionCategory names to auto-approve
-        """
+        """Action categories to auto-approve without human intervention."""
         if self.environment == Environment.DEVELOPMENT:
-            # Development: Auto-approve EVERYTHING for fast iteration
             return {"query", "retrieval", "analysis", "storage", "modification", "execution", "external"}
         elif self.environment == Environment.STAGING:
-            # Staging: Auto-approve safe read-only operations
             return {"query", "retrieval", "analysis"}
-        else:  # PRODUCTION
-            # Production: Require approval for ALL high-risk actions
+        else:
             return set()
 
     @property
     def logging_level(self) -> str:
-        """
-        Logging verbosity level based on environment.
-
-        - DEVELOPMENT: DEBUG (show everything)
-        - STAGING: INFO (moderate detail)
-        - PRODUCTION: WARNING (errors and warnings only)
-
-        Returns:
-            Logging level string
-        """
+        """Logging verbosity level based on environment."""
         if self.environment == Environment.DEVELOPMENT:
             return "DEBUG"
         elif self.environment == Environment.STAGING:
             return "INFO"
-        else:  # PRODUCTION
-            return "WARNING"
+        return "WARNING"
+
+    # =========================================================================
+    # PRESETS (Tier 1)
+    # =========================================================================
 
     @classmethod
-    def bare(cls) -> 'Config':
-        """Create a bare-mode configuration (fastest)."""
-        return cls(
-            scales=[768],
-            fusion_weights={768: 1.0},
-            mode=ExecutionMode.BARE,
-            fast_mode=True,
-            n_transformer_layers=1,
-            n_attention_heads=2,
-            enable_semantic_calculus=False  # Disabled for speed
-        )
+    def bare(cls) -> "Config":
+        """Fastest execution, minimal features."""
+        return cls(mode=ExecutionMode.BARE)
 
     @classmethod
-    def fast(cls) -> 'Config':
-        """Create a fast-mode configuration (balanced)."""
-        return cls(
-            scales=[768],
-            fusion_weights={768: 1.0},
-            mode=ExecutionMode.FAST,
-            fast_mode=True,
-            n_transformer_layers=2,
-            n_attention_heads=4,
-            enable_semantic_calculus=False,  # Disabled by default (user can enable)
-            semantic_dimensions=8,  # Fewer dimensions if enabled
-            semantic_ethics=False,  # Skip ethics for speed
-            # Phase 5: Enable compositional cache (10-300× speedup)
-            enable_linguistic_gate=True,
-            linguistic_mode="both",
-            use_compositional_cache=True,
-            # Zero-copy embeddings (1.4x speedup, 50% memory savings)
-            enable_zero_copy_embeddings=True
-        )
+    def fast(cls) -> "Config":
+        """Balanced speed and quality (DEFAULT)."""
+        return cls(mode=ExecutionMode.FAST)
 
     @classmethod
-    def fused(cls) -> 'Config':
-        """Create a fused-mode configuration (highest quality)."""
-        return cls(
-            scales=[768],
-            fusion_weights={768: 1.0},
-            mode=ExecutionMode.FUSED,
-            fast_mode=False,
-            n_transformer_layers=2,
-            n_attention_heads=4,
-            enable_semantic_calculus=False,  # Disabled by default (user can enable)
-            semantic_dimensions=16,  # Full dimensions if enabled
-            semantic_ethics=True,  # Full ethics if enabled
-            # Phase 5: Enable compositional cache (10-300× speedup)
-            enable_linguistic_gate=True,
-            linguistic_mode="both",
-            use_compositional_cache=True,
-            # Zero-copy embeddings (1.4x speedup, 50% memory savings)
-            enable_zero_copy_embeddings=True
-        )
+    def fused(cls) -> "Config":
+        """Highest quality, all standard features enabled."""
+        return cls(mode=ExecutionMode.FUSED)
 
     @classmethod
-    def multi_perspective(cls) -> 'Config':
+    def research(cls) -> "Config":
         """
-        Create a configuration for multi-perspective WeaveHouse system.
+        Experimental features for research.
 
-        This enables the Multi-Loom Architecture with:
-        - 5 core looms (RECALL, REASON, REACH, REFLECT, REFUSE)
-        - LoomConsensus for synthesizing perspectives
-        - Auto-exploration of disagreement zones
-        - Optional background dreaming for collective consolidation
-
-        Example:
-            ```python
-            from HoloLoom.config import Config
-            from HoloLoom import HoloLoom
-
-            config = Config.multi_perspective()
-            async with HoloLoom(config=config) as loom:
-                result = await loom.weave("Complex question?")
-                # Receives multi-perspective synthesis
-            ```
-
-        Returns:
-            Config optimized for multi-perspective reasoning
+        Enables semantic calculus, spring activation, recursive learning.
+        Use load_expansion() to add research bundles (physics, bayesian, etc.)
         """
-        cfg = cls.fused()  # Start with FUSED as base (highest quality)
+        return cls(mode=ExecutionMode.RESEARCH)
+
+    @classmethod
+    def multi_perspective(cls) -> "Config":
+        """Multi-perspective WeaveHouse system."""
+        cfg = cls.fused()
         cfg.use_weave_house = True
         cfg.enable_dreaming = True
         cfg.weave_house_exploration_depth = 2
         cfg.weave_house_tension_threshold = 0.3
-        cfg.dream_consolidation_interval = 3600.0
-        cfg.dream_math_bleed_rate = 0.3
-        cfg.dream_pattern_bleed_rate = 0.2
         return cfg
+
+    # =========================================================================
+    # SERIALIZATION
+    # =========================================================================
 
     def to_dict(self) -> Dict:
         """Serialize config to dictionary."""
@@ -549,60 +687,80 @@ class Config:
             'working_memory_size': self.working_memory_size,
             'episodic_buffer_size': self.episodic_buffer_size,
             'pipeline_timeout': self.pipeline_timeout,
-            'retrieval_timeout': self.retrieval_timeout
+            'retrieval_timeout': self.retrieval_timeout,
+            'llm_provider': self.llm_provider,
+            'llm_model': self.llm_model,
         }
-    
+
     @classmethod
-    def from_dict(cls, data: Dict) -> 'Config':
+    def from_dict(cls, data: Dict) -> "Config":
         """Deserialize config from dictionary."""
+        # Handle mode enum
+        if 'mode' in data and isinstance(data['mode'], str):
+            data['mode'] = ExecutionMode(data['mode'])
         return cls(**data)
 
 
-# ============================================================================
-# Example Usage
-# ============================================================================
+# =============================================================================
+# LEGACY COMPATIBILITY EXPORTS
+# =============================================================================
+
+# These are re-exported for backward compatibility
+__all__ = [
+    "Config",
+    "ExecutionMode",
+    "Environment",
+    "MemoryBackend",
+    "KGBackend",
+    "BanditStrategy",
+]
+
+
+# =============================================================================
+# EXAMPLE USAGE
+# =============================================================================
 
 if __name__ == "__main__":
     print("=== HoloLoom Configuration Examples ===\n")
-    
-    # Default (fused mode)
-    print("1. Default Config (Fused):")
-    cfg_default = Config()
-    print(f"   Mode: {cfg_default.mode.value}")
-    print(f"   Scales: {cfg_default.scales}")
-    print(f"   Fusion weights: {cfg_default.fusion_weights}")
-    
-    # Bare mode (fastest)
-    print("\n2. Bare Mode (Fastest):")
-    cfg_bare = Config.bare()
-    print(f"   Mode: {cfg_bare.mode.value}")
-    print(f"   Scales: {cfg_bare.scales}")
-    print(f"   Layers: {cfg_bare.n_transformer_layers}")
-    
-    # Fast mode (balanced)
-    print("\n3. Fast Mode (Balanced):")
+
+    # Zero-config (just works)
+    print("1. Zero-Config (Default):")
+    cfg = Config()
+    print(f"   Mode: {cfg.mode.value}")
+    print(f"   LLM: {cfg.llm_provider} / {cfg.llm_model}")
+    print(f"   Environment: {cfg.environment.value}")
+
+    # Presets
+    print("\n2. Preset: Fast Mode:")
     cfg_fast = Config.fast()
     print(f"   Mode: {cfg_fast.mode.value}")
-    print(f"   Scales: {cfg_fast.scales}")
-    print(f"   Fusion weights: {cfg_fast.fusion_weights}")
-    
-    # Custom config
-    print("\n4. Custom Config:")
+    print(f"   Linguistic Gate: {cfg_fast.enable_linguistic_gate}")
+    print(f"   Zero-Copy: {cfg_fast.enable_zero_copy_embeddings}")
+
+    print("\n3. Preset: Research Mode:")
+    cfg_research = Config.research()
+    print(f"   Mode: {cfg_research.mode.value}")
+    print(f"   Semantic Calculus: {cfg_research.enable_semantic_calculus}")
+
+    # With expansion bundles
+    print("\n4. Research with Expansion Bundle:")
+    try:
+        from HoloLoom.expansions.physics import PhysicsConfig
+        cfg_physics = Config.research()
+        cfg_physics.load_expansion(PhysicsConfig(use_gp_bandits=True))
+        print(f"   GP Bandits: {cfg_physics.use_gp_bandits}")
+        print(f"   GP Acquisition: {cfg_physics.gp_acquisition}")
+    except ImportError:
+        print("   (Expansion bundle not available)")
+
+    # Fine-tuning
+    print("\n5. Fine-Tuning:")
     cfg_custom = Config(
-        scales=[128, 256],
-        mode=ExecutionMode.FAST,
-        memory_path="custom_data",
-        retrieval_k=10
+        retrieval_k=10,
+        pipeline_timeout=10.0,
+        mode=ExecutionMode.FUSED
     )
-    print(f"   Mode: {cfg_custom.mode.value}")
-    print(f"   Scales: {cfg_custom.scales}")
     print(f"   Retrieval K: {cfg_custom.retrieval_k}")
-    
-    # Serialization
-    print("\n5. Serialization:")
-    data = cfg_default.to_dict()
-    print(f"   Serialized keys: {list(data.keys())[:5]}...")
-    cfg_restored = Config.from_dict(data)
-    print(f"   Restored mode: {cfg_restored.mode.value}")
-    
+    print(f"   Timeout: {cfg_custom.pipeline_timeout}s")
+
     print("\n✓ All config examples complete!")

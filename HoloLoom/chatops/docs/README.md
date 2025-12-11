@@ -4,7 +4,7 @@
 
 Complete Matrix bot that brings HoloLoom's weaving orchestrator, MCTS decision-making, and hybrid memory system into your Matrix chat rooms.
 
-**Total Commands: 69** (December 2025)
+**Total Commands: 84** (December 2025)
 
 ---
 
@@ -281,6 +281,53 @@ Shows: Active nodes, average load, total tasks, uptime.
 
 ---
 
+### Alignment Commands (7)
+
+| Command | Description |
+|---------|-------------|
+| `!safety check <action>` | Pre-flight risk evaluation |
+| `!safety stats` | Show safety metrics summary |
+| `!safety history [limit]` | Show past safety decisions |
+| `!audit log [type] [limit]` | Show recent audit entries |
+| `!audit trace <id>` | Show reasoning chain trace |
+| `!audit search <query>` | Search audit logs |
+| `!alignment help` | Show alignment commands help |
+
+#### Example: !safety check
+```
+!safety check execute_code {"code": "os.system('rm -rf /')"}
+```
+**Response:**
+- Risk level: CRITICAL
+- Detected patterns: destructive_operation, system_access
+- Recommendation: Block (human approval required)
+
+---
+
+### Workflow Commands (8)
+
+| Command | Description |
+|---------|-------------|
+| `!workflow list` | List saved workflow versions |
+| `!workflow run <json>` | Execute a workflow |
+| `!workflow status` | Show executor service status |
+| `!workflow validate <json>` | Validate workflow structure |
+| `!workflow generate <desc>` | Generate workflow from description |
+| `!workflow agents` | List available agent types |
+| `!workflow optimize <id>` | Get optimization suggestions |
+| `!workflow help` | Show workflow commands help |
+
+#### Example: !workflow generate
+```
+!workflow generate Answer a question with safety checks
+```
+**Response:**
+- Workflow generated with safety guardrails
+- Nodes: Query → Safety → Conditional → Response
+- Ready for execution in Visual Builder
+
+---
+
 ### Utility Commands (4)
 
 | Command | Description |
@@ -309,8 +356,10 @@ Shows: Active nodes, average load, total tasks, uptime.
 | **Ingestion** | 8 | `ingestion_handlers.py` |
 | **Conversation** | 2 | `conversation_handlers.py` |
 | **Cluster** | 4 | `cluster_handlers.py` |
+| **Alignment** | 7 | `alignment_handlers.py` |
+| **Workflow** | 8 | `workflow_handlers.py` |
 | **Utility** | 4 | `handler_registry.py` |
-| **Total** | **69** | |
+| **Total** | **84** | |
 
 ---
 
@@ -421,4 +470,4 @@ MIT License - See main HoloLoom LICENSE
 ---
 
 **Documentation Updated: December 2025**
-**Total Commands: 69**
+**Total Commands: 84**

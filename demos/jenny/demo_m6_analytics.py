@@ -76,7 +76,7 @@ def create_sample_events() -> List[Dict[str, Any]]:
     tags=["core", "analytics", "metrics"],
     description="Event tracking and performance metrics"
 )
-@demo_phase("M6: Analytics Collection", emoji="📊")
+@demo_phase("M6: Analytics Collection", emoji="[M6]")
 async def demo_m6_analytics() -> dict:
     """
     M6: Analytics Collection - Track events and generate metrics.

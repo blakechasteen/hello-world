@@ -116,10 +116,10 @@ class TestExecutionModeParameters:
         """FUSED mode configuration."""
         config = Config.fused()
 
-        # FUSED mode is created (semantic features disabled by default)
+        # FUSED mode is created with maximum features enabled
         assert config.mode == ExecutionMode.FUSED
-        # Semantic calculus can be enabled separately if needed
-        assert config.enable_semantic_calculus is False  # Default off
+        # Semantic calculus is enabled by default in FUSED mode (zero-config architecture)
+        assert config.enable_semantic_calculus is True  # Enabled in FUSED
 
 
 class TestConfigModification:

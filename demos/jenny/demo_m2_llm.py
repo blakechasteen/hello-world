@@ -32,7 +32,7 @@ except ImportError:
     tags=["core", "llm"],
     description="httpx connection pooling, exponential backoff"
 )
-@demo_phase("M2: Async LLM Client Infrastructure", emoji="🔌")
+@demo_phase("M2: Async LLM Client Infrastructure", emoji="[M2]")
 async def demo_m2_async_llm_client() -> dict:
     """
     M2: Async LLM Clients - Connection pooling, exponential backoff.

@@ -31,7 +31,7 @@ except ImportError:
     tags=["core", "infrastructure"],
     description="Singleton registry for extensible renderer plugins"
 )
-@demo_phase("M1: Renderer Registry Pattern", emoji="📋")
+@demo_phase("M1: Renderer Registry Pattern", emoji="[M1]")
 async def demo_m1_renderer_registry() -> dict:
     """
     M1: Renderer Registry Pattern - Singleton, priority-based selection.

@@ -38,7 +38,7 @@ except ImportError:
     tags=["core", "accessibility", "wcag"],
     description="WCAG 2.1 AA compliant accessibility layer"
 )
-@demo_phase("M3: WCAG 2.1 AA Accessibility", emoji="♿")
+@demo_phase("M3: WCAG 2.1 AA Accessibility", emoji="[M3]")
 async def demo_m3_accessibility() -> dict:
     """
     M3: WCAG 2.1 AA Accessibility - ARIA, keyboard nav, focus management.

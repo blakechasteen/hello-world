@@ -294,8 +294,10 @@ except ImportError:
     logger.debug("Prometheus metrics not available (missing dependencies)")
 
 try:
-    from HoloLoom.chatops.handlers.websocket_progress import create_progress_router
-    _progress_router = create_progress_router()
+    from HoloLoom.chatops.handlers.websocket_progress import (
+        create_progress_router, get_global_manager
+    )
+    _progress_router = create_progress_router(get_global_manager())
     if _progress_router:
         app.include_router(_progress_router)
         logger.info("WebSocket progress router mounted at /ws/progress")
