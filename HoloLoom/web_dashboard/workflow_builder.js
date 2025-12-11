@@ -1937,6 +1937,111 @@ function updateConnections() {
     });
 }
 
+// Alias for compatibility and handles group connection routing
+function renderConnections() {
+    const svg = document.getElementById('connectionsLayer');
+    const canvas = document.getElementById('canvas');
+
+    // Resize SVG to match canvas
+    const rect = canvas.getBoundingClientRect();
+    svg.setAttribute('width', rect.width);
+    svg.setAttribute('height', rect.height);
+
+    // Clear existing paths
+    svg.querySelectorAll('path').forEach(p => p.remove());
+
+    connections.forEach(conn => {
+        const fromNode = nodes.find(n => n.id === conn.from);
+        const toNode = nodes.find(n => n.id === conn.to);
+        if (!fromNode || !toNode) return;
+
+        // Check if nodes are inside groups
+        const fromGroup = fromNode.parentGroup ? nodes.find(n => n.id === fromNode.parentGroup) : null;
+        const toGroup = toNode.parentGroup ? nodes.find(n => n.id === toNode.parentGroup) : null;
+
+        // Skip rendering if node is in a collapsed group (unless both ends are in the same collapsed group)
+        const fromCollapsed = fromGroup && fromGroup.config.collapsed;
+        const toCollapsed = toGroup && toGroup.config.collapsed;
+
+        // If both are in the same collapsed group, skip (internal connection hidden)
+        if (fromCollapsed && toCollapsed && fromGroup.id === toGroup.id) {
+            return;
+        }
+
+        // Get source element - use group if collapsed, otherwise use actual node
+        let fromEl, toEl;
+        let sourceNode = fromNode;
+        let targetNode = toNode;
+
+        if (fromCollapsed) {
+            fromEl = document.getElementById(fromGroup.id);
+            sourceNode = fromGroup;
+        } else {
+            fromEl = document.getElementById(conn.from);
+        }
+
+        if (toCollapsed) {
+            toEl = document.getElementById(toGroup.id);
+            targetNode = toGroup;
+        } else {
+            toEl = document.getElementById(conn.to);
+        }
+
+        if (!fromEl || !toEl) return;
+
+        // Calculate port positions
+        let fromX, fromY, toX, toY;
+
+        // For group nodes, use the group's position + size
+        if (fromCollapsed) {
+            fromX = fromGroup.x + (fromGroup.width || fromEl.offsetWidth);
+            fromY = fromGroup.y + (fromGroup.height || fromEl.offsetHeight) / 2;
+        } else {
+            fromX = fromNode.x + fromEl.offsetWidth;
+            fromY = fromNode.y + fromEl.offsetHeight / 2;
+        }
+
+        if (toCollapsed) {
+            toX = toGroup.x;
+            toY = toGroup.y + (toGroup.height || toEl.offsetHeight) / 2;
+        } else {
+            toX = toNode.x;
+            toY = toNode.y + toEl.offsetHeight / 2;
+        }
+
+        // Create curved path
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const dx = toX - fromX;
+        const controlX1 = fromX + Math.abs(dx) * 0.5;
+        const controlX2 = toX - Math.abs(dx) * 0.5;
+
+        const d = `M ${fromX} ${fromY} C ${controlX1} ${fromY}, ${controlX2} ${toY}, ${toX} ${toY}`;
+
+        path.setAttribute('d', d);
+
+        // Style differently if crossing a group boundary
+        const crossesGroup = (fromGroup && !toGroup) || (!fromGroup && toGroup) ||
+                            (fromGroup && toGroup && fromGroup.id !== toGroup.id);
+
+        if (crossesGroup) {
+            path.setAttribute('class', 'connection-line group-crossing');
+        } else {
+            path.setAttribute('class', 'connection-line');
+        }
+
+        path.setAttribute('marker-end', 'url(#arrowhead)');
+        path.dataset.connectionId = conn.id;
+
+        // Store original endpoints for reference
+        path.dataset.originalFrom = conn.from;
+        path.dataset.originalTo = conn.to;
+
+        path.addEventListener('click', () => deleteConnection(conn.id));
+
+        svg.appendChild(path);
+    });
+}
+
 function selectNode(nodeId) {
     deselectAll();
     selectedNode = nodeId;

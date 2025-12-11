@@ -16,9 +16,10 @@ Author: Claude Code
 Date: 2025-12-09
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Set, Callable, Awaitable, Union
-from enum import Enum
+from typing import Dict, List, Optional, Any, Set, Callable, Awaitable, Union, TYPE_CHECKING
 from datetime import datetime
 import asyncio
 import uuid
@@ -32,90 +33,23 @@ from .context_handoff import (
     HandoffStrategy,
 )
 
-# Phase 7.2: Task Delegation System
-from .capability_analyzer import (
-    QueryCapabilityAnalyzer,
-    CapabilityAnalysis,
-    QueryComplexity,
-)
-from .expert_router import (
-    ExpertRouter,
+# Import shared enums from protocol (no circular import)
+from .protocol import (
+    AgentCapability,
+    MessageType,
+    MessagePriority,
+    AgentStatus,
     SelectionStrategy,
-    RoutingDecision,
-    AgentScore,
-)
-from .ensemble_decision import (
-    EnsembleAggregator,
+    QueryComplexity,
     EnsembleStrategy,
-    EnsembleResult,
-    AgentResponse,
 )
 
-
-# ============================================================================
-# Enums and Data Types
-# ============================================================================
-
-class AgentCapability(Enum):
-    """Agent specialization capabilities."""
-    # Research & Analysis
-    RESEARCH = "research"           # Deep exploration, multi-hop reasoning
-    ANALYSIS = "analysis"           # Data analysis, pattern finding
-    VERIFICATION = "verification"   # Fact checking, claim validation
-
-    # Generation & Synthesis
-    SUMMARIZATION = "summarization" # Compress and summarize content
-    GENERATION = "generation"       # Create new content
-    SYNTHESIS = "synthesis"         # Combine multiple sources
-
-    # Code & Technical
-    CODE_REVIEW = "code_review"     # Review and analyze code
-    CODE_GENERATION = "code_generation"  # Write code
-    DEBUGGING = "debugging"         # Find and fix bugs
-
-    # Planning & Coordination
-    PLANNING = "planning"           # Create plans and strategies
-    COORDINATION = "coordination"   # Orchestrate multi-agent workflows
-    DECISION = "decision"           # Make decisions, select actions
-
-    # Domain-Specific
-    MATH = "math"                   # Mathematical reasoning
-    WRITING = "writing"            # Creative and technical writing
-    QA = "qa"                      # Quality assurance
-
-    # General
-    GENERAL = "general"            # General-purpose agent
-
-
-class MessageType(Enum):
-    """Types of inter-agent messages."""
-    REQUEST = "request"             # Ask agent to perform task
-    RESPONSE = "response"           # Response to a request
-    CONTEXT = "context"             # Share context/knowledge
-    STATUS = "status"               # Status update
-    ERROR = "error"                 # Error notification
-    BROADCAST = "broadcast"         # Message to all agents
-    HANDOFF = "handoff"             # Transfer responsibility
-    QUERY = "query"                 # Simple query
-    RESULT = "result"               # Task result
-
-
-class MessagePriority(Enum):
-    """Message priority levels."""
-    LOW = 0
-    NORMAL = 1
-    HIGH = 2
-    URGENT = 3
-    CRITICAL = 4
-
-
-class AgentStatus(Enum):
-    """Agent operational status."""
-    IDLE = "idle"                   # Ready for work
-    BUSY = "busy"                   # Processing task
-    WAITING = "waiting"             # Waiting for input
-    ERROR = "error"                 # Error state
-    OFFLINE = "offline"             # Not available
+# Phase 7.2: Task Delegation imports are lazy to avoid circular imports
+# These are imported inside delegate_task_smart() method
+if TYPE_CHECKING:
+    from .capability_analyzer import QueryCapabilityAnalyzer, CapabilityAnalysis
+    from .expert_router import ExpertRouter, RoutingDecision, AgentScore
+    from .ensemble_decision import EnsembleAggregator, EnsembleResult, AgentResponse
 
 
 # ============================================================================

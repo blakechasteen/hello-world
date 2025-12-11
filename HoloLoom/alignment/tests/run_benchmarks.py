@@ -95,9 +95,9 @@ def main():
 
         # 1. SafetyGuardrails
         print("1/4 Benchmarking SafetyGuardrails...")
-        request = ActionRequest(action="What is AI safety?", category=ActionCategory.QUERY)
+        request = ActionRequest(action_id="What is AI safety?", category=ActionCategory.QUERY)
         results_guardrails = measure_latency(
-            lambda: guardrails.evaluate(request, text_input=request.action)
+            lambda: guardrails.evaluate(request, text_input=request.action_id)
         )
 
         # 2. DeceptionDetector

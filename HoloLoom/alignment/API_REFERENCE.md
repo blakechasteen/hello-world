@@ -18,22 +18,13 @@ ActionRequest(
 )
 ```
 
-**Common mistake:**
-```python
-# ❌ WRONG - Using action_id instead of action
-ActionRequest(action_id="...", category=...)
-
-# ✅ CORRECT
-ActionRequest(action="What is Thompson Sampling?", category=ActionCategory.QUERY)
-```
-
 **Example:**
 ```python
 from HoloLoom.alignment import ActionRequest, ActionCategory
 
 request = ActionRequest(
-    action="What is Thompson Sampling?",
-    category=ActionCategory.INFORMATION_ACCESS,
+    action_id="What is Thompson Sampling?",
+    category=ActionCategory.QUERY,
     context={"user_id": "123"}
 )
 

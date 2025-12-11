@@ -92,7 +92,7 @@ def demo_phase(
                 result["output"] = output
 
                 if show_duration:
-                    print(f"\n  ✓ Completed in {duration_ms:.1f}ms")
+                    print(f"\n  [OK] Completed in {duration_ms:.1f}ms")
 
                 return result
 
@@ -105,7 +105,7 @@ def demo_phase(
                 result["traceback"] = traceback.format_exc()
 
                 if catch_errors:
-                    print(f"\n  ✗ Error after {duration_ms:.1f}ms: {e}")
+                    print(f"\n  [ERR] Error after {duration_ms:.1f}ms: {e}")
                     return result
                 else:
                     raise
@@ -153,28 +153,28 @@ def print_metrics(metrics: Dict[str, Any], indent: int = 2) -> None:
 def print_success(message: str, indent: int = 2) -> None:
     """Print a success message."""
     prefix = " " * indent
-    print(f"{prefix}✓ {message}")
+    print(f"{prefix}[OK] {message}")
 
 
 def print_warning(message: str, indent: int = 2) -> None:
     """Print a warning message."""
     prefix = " " * indent
-    print(f"{prefix}⚠ {message}")
+    print(f"{prefix}[WARN] {message}")
 
 
 def print_error(message: str, indent: int = 2) -> None:
     """Print an error message."""
     prefix = " " * indent
-    print(f"{prefix}✗ {message}")
+    print(f"{prefix}[ERR] {message}")
 
 
 def print_info(message: str, indent: int = 2) -> None:
     """Print an info message."""
     prefix = " " * indent
-    print(f"{prefix}• {message}")
+    print(f"{prefix}* {message}")
 
 
-def print_list(items: List[Any], indent: int = 4, bullet: str = "•") -> None:
+def print_list(items: List[Any], indent: int = 4, bullet: str = "*") -> None:
     """Print a bulleted list."""
     prefix = " " * indent
     for item in items:
@@ -264,16 +264,19 @@ def format_demo_summary(results: List[Dict[str, Any]]) -> str:
     lines.append("  " + "-" * 50)
 
     for result in results:
-        phase = result.get("phase", "Unknown")
+        # Handle both "phase" and "name" keys (for compatibility)
+        phase = result.get("name", result.get("phase", "Unknown"))
         status = result.get("status", "unknown")
         duration = result.get("duration_ms", 0)
 
         if status == "success":
-            status_icon = "✓"
+            status_icon = "[OK]"
         elif status == "error":
-            status_icon = "✗"
+            status_icon = "[ERR]"
+        elif status == "skipped":
+            status_icon = "[SKIP]"
         else:
-            status_icon = "?"
+            status_icon = "[?]"
 
         lines.append(f"    {status_icon} {phase:.<35} {duration:.1f}ms")
 

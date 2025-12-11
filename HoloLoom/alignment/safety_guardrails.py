@@ -146,8 +146,8 @@ class ActionRequest:
 
     @property
     def action(self) -> str:
-        """Backward compatibility: return description as action."""
-        return self.description
+        """Backward compatibility: return action_id as action."""
+        return self.action_id
 
 
 class AdversarialDetector:

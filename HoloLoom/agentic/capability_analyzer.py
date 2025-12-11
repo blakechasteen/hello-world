@@ -16,20 +16,10 @@ Date: 2025-12-09
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Optional
-from enum import Enum
+from typing import Dict, List, Set, Optional, Any
 import re
 
-from .multi_agent import AgentCapability
-
-
-class QueryComplexity(Enum):
-    """Query complexity levels (aligned with routing.query_classifier)."""
-    TRIVIAL = "trivial"      # <10ms: "hi", "thanks"
-    SIMPLE = "simple"        # <50ms: "what is X?"
-    MODERATE = "moderate"    # <100ms: "explain X"
-    COMPLEX = "complex"      # <150ms: "compare X and Y"
-    RESEARCH = "research"    # No limit: "analyze all tradeoffs"
+from .protocol import AgentCapability, QueryComplexity
 
 
 @dataclass

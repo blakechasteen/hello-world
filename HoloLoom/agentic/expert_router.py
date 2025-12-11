@@ -15,24 +15,19 @@ Author: Claude Code
 Date: 2025-12-09
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple
-from enum import Enum
+from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
 import random
 import math
 from datetime import datetime
 from collections import defaultdict
 
-from .multi_agent import AgentRegistry, AgentCapability, AgentInfo, AgentStatus
+from .protocol import AgentCapability, AgentStatus, SelectionStrategy
 
-
-class SelectionStrategy(Enum):
-    """Agent selection strategies."""
-    FASTEST = "fastest"       # Prioritize lowest latency
-    RELIABLE = "reliable"     # Prioritize highest success rate
-    BALANCED = "balanced"     # Balance speed and reliability
-    THOMPSON = "thompson"     # Pure Thompson Sampling (exploration)
-    RANDOM = "random"         # Random selection
+if TYPE_CHECKING:
+    from .multi_agent import AgentRegistry, AgentInfo
 
 
 @dataclass

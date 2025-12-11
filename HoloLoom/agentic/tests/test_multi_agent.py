@@ -145,8 +145,8 @@ class TestEnums:
         assert AgentCapability.ANALYSIS.value == "analysis"
         assert AgentCapability.CODE_REVIEW.value == "code_review"
         assert AgentCapability.SUMMARIZATION.value == "summarization"
-        # Check total count (16 capabilities including GENERAL)
-        assert len(AgentCapability) == 16
+        # Check total count (19 capabilities including GENERAL, DATA_ANALYSIS, CONTENT_CREATION, REASONING)
+        assert len(AgentCapability) == 19
 
     def test_message_type_values(self):
         """MessageType should have expected values."""

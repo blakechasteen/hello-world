@@ -575,7 +575,7 @@ class TestIntegration:
         """Test SafetyGuardrails integration with audit trail."""
         # Evaluate with guardrails
         request = ActionRequest(
-            action="req1",
+            action_id="req1",
             category=ActionCategory.QUERY,
             context={"query": "What is Thompson Sampling?"},
         )
@@ -597,7 +597,7 @@ class TestIntegration:
     def test_02_epistemic_confidence_adjustment(self, guardrails, audit_trail):
         """Test epistemic confidence affects risk assessment."""
         request = ActionRequest(
-            action="req2",
+            action_id="req2",
             category=ActionCategory.SYSTEM,
             context={"description": "Modify configuration"},
         )
@@ -625,7 +625,7 @@ class TestIntegration:
         # Process multiple requests with monitoring
         for i in range(10):
             request = ActionRequest(
-                action=f"req{i}",
+                action_id=f"req{i}",
                 category=ActionCategory.QUERY,
                 context={"query": f"Query {i}"},
             )

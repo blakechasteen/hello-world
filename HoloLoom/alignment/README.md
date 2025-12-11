@@ -165,7 +165,7 @@ from HoloLoom.alignment.safety_guardrails import create_guardrails
 guardrails = create_guardrails()
 
 # Evaluate action
-request = ActionRequest(action="Delete all data", category=ActionCategory.DELETION)
+request = ActionRequest(action_id="Delete all data", category=ActionCategory.DELETION)
 decision = guardrails.evaluate(request)
 
 print(decision.allowed)        # False
@@ -428,7 +428,7 @@ audit = create_audit_trail(persist_path=Path("./logs"))
 
 async def aligned_weave(query):
     # Pre-flight safety check
-    request = ActionRequest(action=query.text, category=ActionCategory.QUERY)
+    request = ActionRequest(action_id=query.text, category=ActionCategory.QUERY)
     decision = guardrails.evaluate(request, text_input=query.text)
 
     if not decision.allowed:

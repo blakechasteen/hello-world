@@ -301,7 +301,7 @@ class TestSafetyGuardrailsIntegration:
     def test_02_get_risk_assessment_prompt(self, guardrails_with_mrf):
         """Test getting MRF risk assessment prompt."""
         request = ActionRequest(
-            action="delete_user",
+            action_id="delete_user",
             category=ActionCategory.DELETION,
             context={"user_id": "123"}
         )
@@ -322,7 +322,7 @@ class TestSafetyGuardrailsIntegration:
     def test_04_get_approval_request_prompt(self, guardrails_with_mrf):
         """Test getting MRF approval request prompt."""
         request = ActionRequest(
-            action="delete_database",
+            action_id="delete_database",
             category=ActionCategory.DELETION,
             context={"database": "prod"}
         )
@@ -346,7 +346,7 @@ class TestGracefulDegradation:
     def test_02_mrf_methods_return_none(self, guardrails_without_mrf):
         """Test MRF methods return None when disabled."""
         request = ActionRequest(
-            action="test",
+            action_id="test",
             category=ActionCategory.QUERY,
             context={}
         )

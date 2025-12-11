@@ -294,7 +294,7 @@ def main():
                 # Track individual components
                 with monitor.track("guardrails"):
                     from HoloLoom.alignment.safety_guardrails import ActionRequest, ActionCategory
-                    request = ActionRequest(action=query_text, category=ActionCategory.QUERY)
+                    request = ActionRequest(action_id=query_text, category=ActionCategory.QUERY)
                     decision = system.guardrails.evaluate(request, text_input=query_text)
 
                 with monitor.track("detector"):
