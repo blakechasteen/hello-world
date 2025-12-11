@@ -25,7 +25,7 @@ from datetime import datetime
 import uuid
 
 from HoloLoom.protocols.types import Query, Context, MemoryShard
-from HoloLoom.fabric.spacetime import Spacetime
+from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.recursive import FullLearningEngine, ActionItemTracker, ActionStatus
 from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
@@ -744,13 +744,38 @@ class AgenticOrchestrator:
         safety_decision = await self._gate_with_safety(query, mode)
         if safety_decision and not safety_decision.allowed:
             # Return blocked result with safety information
-            duration_ms = (datetime.now() - start_time).total_seconds() * 1000
-            return AgenticResult(
-                intent_id=f"intent_{int(start_time.timestamp())}",
-                mode=mode,
-                final_answer=f"[BLOCKED] {safety_decision.reason}",
+            end_time = datetime.now()
+            duration_ms = (end_time - start_time).total_seconds() * 1000
+
+            # Create blocked Spacetime with minimal trace
+            blocked_trace = WeavingTrace(
+                start_time=start_time,
+                end_time=end_time,
+                duration_ms=duration_ms,
+                stage_durations={"safety_gate": duration_ms},
+            )
+            blocked_spacetime = Spacetime(
+                query_text=query.text,
+                response=f"[BLOCKED] {safety_decision.reason}",
+                tool_used="safety_gate",
                 confidence=0.0,
-                verification_passed=False,
+                trace=blocked_trace,
+                metadata={
+                    "blocked": True,
+                    "risk_level": safety_decision.risk_level.value,
+                    "requires_approval": safety_decision.requires_approval,
+                }
+            )
+            blocked_intent = AgenticIntent(
+                intent_id=f"intent_{int(start_time.timestamp())}",
+                original_query=query.text,
+                goal="blocked_by_safety",
+                confidence_threshold=confidence_threshold
+            )
+            return AgenticResult(
+                spacetime=blocked_spacetime,
+                intent=blocked_intent,
+                reasoning_mode=mode,
                 verification=None,
                 steps_taken=[{
                     "type": "safety_gate",

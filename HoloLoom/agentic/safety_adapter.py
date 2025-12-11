@@ -137,6 +137,16 @@ class AgenticSafetyAdapter:
         """Check if safety adapter is fully available."""
         return self._available
 
+    # Zero-width and invisible Unicode characters to strip
+    INVISIBLE_CHARS = frozenset([
+        '\u200b',  # Zero-width space
+        '\u200c',  # Zero-width non-joiner
+        '\u200d',  # Zero-width joiner
+        '\ufeff',  # BOM / Zero-width no-break space
+        '\u2060',  # Word joiner
+        '\u00ad',  # Soft hyphen
+    ])
+
     def _normalize_query(self, query_text: str) -> str:
         """
         Normalize query text to prevent adversarial bypass.
@@ -144,11 +154,16 @@ class AgenticSafetyAdapter:
         Security Features:
         1. Deep copy (TOCTOU protection)
         2. Unicode NFKC normalization (prevents homoglyph attacks)
+        3. Invisible character stripping (prevents bypass via zero-width chars)
 
         NFKC normalization handles:
         - Cyrillic 'а' (U+0430) → Latin 'a' (U+0061)
-        - Zero-width joiners removed
         - Fullwidth characters normalized
+
+        Invisible char stripping handles:
+        - Zero-width space, joiner, non-joiner
+        - BOM character
+        - Word joiner, soft hyphen
 
         Args:
             query_text: Original query text
@@ -164,6 +179,9 @@ class AgenticSafetyAdapter:
         # - Decomposes characters then recomposes with compatibility mappings
         # - Converts homoglyphs to standard ASCII equivalents
         safe_query = unicodedata.normalize('NFKC', safe_query)
+
+        # Strip invisible characters (not handled by NFKC)
+        safe_query = ''.join(c for c in safe_query if c not in self.INVISIBLE_CHARS)
 
         return safe_query
 
@@ -226,7 +244,8 @@ class AgenticSafetyAdapter:
 
             # Step 3: Create action request
             request = ActionRequest(
-                action=f"agentic_{reasoning_mode}",
+                action_id=f"agentic_{reasoning_mode}",
+                description=f"Agentic reasoning: {reasoning_mode}",
                 category=category,
                 context={
                     "query": safe_query,
