@@ -73,7 +73,7 @@ class TestRiskAssessmentPrompts:
 
         # Check for specific content
         assert "delete_user_data" in prompt
-        assert "DELETION" in prompt.lower()
+        assert "deletion" in prompt.lower()
         assert "user_id" in prompt.lower()
 
     def test_02_epistemic_confidence_integration(self):
