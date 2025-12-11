@@ -170,7 +170,7 @@ class TestQueryCapabilityAnalyzer:
 
     def test_convenience_function(self):
         """Test the convenience function."""
-        result = analyze_query_capabilities("Fix this bug in my code")
+        result = analyze_query_capabilities("Debug this error for me")
         assert isinstance(result, CapabilityAnalysis)
         assert result.primary_capability == AgentCapability.DEBUGGING
 

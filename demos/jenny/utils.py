@@ -34,9 +34,18 @@ from datetime import datetime
 # Demo Phase Decorator
 # ============================================================================
 
+def _safe_print(text: str) -> None:
+    """Print text, replacing non-encodable characters."""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        # Fall back to ASCII-safe output
+        print(text.encode('ascii', 'replace').decode('ascii'))
+
+
 def demo_phase(
     name: str,
-    emoji: str = "🔬",
+    emoji: str = "[*]",
     show_duration: bool = True,
     catch_errors: bool = True,
     separator_char: str = "=",
@@ -46,14 +55,14 @@ def demo_phase(
     Decorator for demo phases with standardized output.
 
     Wraps demo functions with:
-    - Formatted header with emoji
+    - Formatted header with emoji/icon
     - Execution timing
     - Error handling with graceful degradation
     - Consistent output format
 
     Args:
         name: Display name for the phase
-        emoji: Emoji prefix for header
+        emoji: Icon/emoji prefix for header (ASCII-safe recommended)
         show_duration: Whether to print duration after execution
         catch_errors: Whether to catch and format exceptions
         separator_char: Character for header separator line
@@ -63,17 +72,17 @@ def demo_phase(
         Decorated function that prints formatted output
 
     Example:
-        @demo_phase("M1: Renderer Registry", emoji="📋")
+        @demo_phase("M1: Renderer Registry", emoji="[M1]")
         async def demo_m1():
             return {"renderers": 3}
     """
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(*args, **kwargs) -> Dict[str, Any]:
-            # Print header
-            print(f"\n{separator_char * separator_width}")
-            print(f"  {emoji} {name}")
-            print(f"{separator_char * separator_width}\n")
+            # Print header (with safe encoding)
+            _safe_print(f"\n{separator_char * separator_width}")
+            _safe_print(f"  {emoji} {name}")
+            _safe_print(f"{separator_char * separator_width}\n")
 
             start_time = time.perf_counter()
             result = {

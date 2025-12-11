@@ -22,6 +22,7 @@ Optional advanced features:
 - prometheus_metrics: Prometheus metrics for job observability
 - conversation_handlers: Multi-turn conversation support (!continue, !context)
 - cluster_handlers: Eggroll distributed cluster management (!cluster)
+- alignment_handlers: Safety guardrails and audit trail commands (!safety, !audit)
 """
 
 # Core handler registry - always available
@@ -428,6 +429,40 @@ try:
         "handle_cluster_nodes",
         "handle_cluster_balance",
         "handle_cluster_help"
+    ])
+except ImportError:
+    pass
+
+try:
+    from HoloLoom.chatops.handlers.alignment_handlers import (
+        register_alignment_handlers,
+        AlignmentHandlers,
+        get_guardrails,
+        set_guardrails,
+        get_audit_trail,
+        set_audit_trail,
+        handle_safety_check,
+        handle_safety_stats,
+        handle_safety_history,
+        handle_audit_log,
+        handle_audit_trace,
+        handle_audit_search,
+        handle_alignment_help
+    )
+    __all__.extend([
+        "register_alignment_handlers",
+        "AlignmentHandlers",
+        "get_guardrails",
+        "set_guardrails",
+        "get_audit_trail",
+        "set_audit_trail",
+        "handle_safety_check",
+        "handle_safety_stats",
+        "handle_safety_history",
+        "handle_audit_log",
+        "handle_audit_trace",
+        "handle_audit_search",
+        "handle_alignment_help"
     ])
 except ImportError:
     pass
