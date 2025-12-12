@@ -241,8 +241,10 @@ skip_covered = false
 # Build Configuration
 # ============================================================================
 [tool.setuptools]
-packages = ["HoloLoom"]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["HoloLoom*"]
 
 [tool.setuptools.package-data]
 HoloLoom = [

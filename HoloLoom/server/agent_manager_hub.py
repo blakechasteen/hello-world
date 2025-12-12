@@ -306,8 +306,11 @@ class AgentManagerHub:
         self._git_repo_path = Path(git_repo_path)
         self._git_store: Optional[Any] = None  # AgentGitStore instance
 
-        # Event callbacks
+        # Event callbacks (global - receive all events with event_type)
         self._event_callbacks: List[Callable[[str, Dict[str, Any]], None]] = []
+
+        # Event-specific handlers (receive only data for their event type)
+        self._event_handlers: Dict[str, List[Callable[[Dict[str, Any]], Any]]] = {}
 
         # Execution queue (priority queue would be better, but simple list for now)
         self._queue: List[str] = []
@@ -1503,19 +1506,56 @@ class AgentManagerHub:
         """Register event callback."""
         self._event_callbacks.append(callback)
 
-    def register_event_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
-        """Register event handler (alias for on_event)."""
-        self._event_callbacks.append(handler)
+    def register_event_handler(
+        self,
+        event_type: str,
+        handler: Callable[[Dict[str, Any]], Any]
+    ) -> None:
+        """
+        Register handler for specific event type.
 
-    def unregister_event_handler(self, handler: Callable[[str, Dict[str, Any]], None]) -> None:
-        """Unregister event handler."""
-        if handler in self._event_callbacks:
-            self._event_callbacks.remove(handler)
+        The handler receives only the event data dict (not event_type).
+
+        Args:
+            event_type: Event type to handle (e.g., "thread_created", "step_progress")
+            handler: Async or sync callable that receives event data dict
+        """
+        if event_type not in self._event_handlers:
+            self._event_handlers[event_type] = []
+        self._event_handlers[event_type].append(handler)
+
+    def unregister_event_handler(
+        self,
+        event_type: str,
+        handler: Callable[[Dict[str, Any]], Any]
+    ) -> None:
+        """
+        Unregister handler for specific event type.
+
+        Args:
+            event_type: Event type the handler was registered for
+            handler: The handler to unregister
+        """
+        if event_type in self._event_handlers:
+            if handler in self._event_handlers[event_type]:
+                self._event_handlers[event_type].remove(handler)
 
     async def _emit_event(self, event_type: str, data: Dict[str, Any]) -> None:
-        """Emit event to all callbacks."""
+        """Emit event to all registered handlers and callbacks."""
         data["timestamp"] = datetime.now().isoformat()
 
+        # Call event-specific handlers (receive only data)
+        if event_type in self._event_handlers:
+            for handler in self._event_handlers[event_type]:
+                try:
+                    if asyncio.iscoroutinefunction(handler):
+                        await handler(data)
+                    else:
+                        handler(data)
+                except Exception as e:
+                    logger.error(f"Event handler error for {event_type}: {e}")
+
+        # Call global callbacks (receive event_type + data)
         for callback in self._event_callbacks:
             try:
                 if asyncio.iscoroutinefunction(callback):

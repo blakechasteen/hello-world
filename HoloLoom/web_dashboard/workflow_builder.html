@@ -19,6 +19,8 @@
             --accent: #667eea;
             --accent-hover: #5a6fd6;
             --accent-light: rgba(102, 126, 234, 0.1);
+            --accent-muted: rgba(102, 126, 234, 0.5);
+            --accent-bg: rgba(102, 126, 234, 0.1);
             --border: #dee2e6;
             --border-light: #e9ecef;
             --node-bg: #ffffff;
@@ -27,16 +29,25 @@
             --canvas-grid: rgba(0, 0, 0, 0.05);
             --shadow: rgba(0, 0, 0, 0.1);
             --shadow-medium: rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
             --success: #28a745;
             --warning: #ffc107;
             --danger: #dc3545;
+            --danger-bg: #fff0f0;
             --info: #17a2b8;
             --gradient-start: #667eea;
             --gradient-end: #764ba2;
             --modal-backdrop: rgba(0, 0, 0, 0.5);
+            --overlay-bg: rgba(0, 0, 0, 0.5);
             --focus-ring: rgba(102, 126, 234, 0.5);
             --scrollbar-track: #f1f1f1;
             --scrollbar-thumb: #c1c1c1;
+            --hover-bg: #f5f5ff;
+            --panel-bg: rgba(255, 255, 255, 0.98);
+            --minimap-bg: rgba(255, 255, 255, 0.9);
+            --toast-bg: #333;
+            --toast-text: #ffffff;
         }
 
         [data-theme="dark"] {
@@ -50,6 +61,8 @@
             --accent: #667eea;
             --accent-hover: #7b8ff0;
             --accent-light: rgba(102, 126, 234, 0.2);
+            --accent-muted: rgba(102, 126, 234, 0.4);
+            --accent-bg: rgba(102, 126, 234, 0.15);
             --border: #2d2d44;
             --border-light: #3d3d5c;
             --node-bg: #1f1f3d;
@@ -58,16 +71,25 @@
             --canvas-grid: rgba(255, 255, 255, 0.03);
             --shadow: rgba(0, 0, 0, 0.3);
             --shadow-medium: rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
             --success: #2ecc71;
             --warning: #f39c12;
             --danger: #e74c3c;
+            --danger-bg: rgba(231, 76, 60, 0.15);
             --info: #3498db;
             --gradient-start: #667eea;
             --gradient-end: #764ba2;
             --modal-backdrop: rgba(0, 0, 0, 0.7);
+            --overlay-bg: rgba(0, 0, 0, 0.7);
             --focus-ring: rgba(102, 126, 234, 0.6);
             --scrollbar-track: #1a1a2e;
             --scrollbar-thumb: #3d3d5c;
+            --hover-bg: rgba(102, 126, 234, 0.15);
+            --panel-bg: rgba(22, 33, 62, 0.98);
+            --minimap-bg: rgba(26, 26, 46, 0.95);
+            --toast-bg: #2d2d44;
+            --toast-text: #eaeaea;
         }
 
         /* Theme transition */
@@ -79,6 +101,11 @@
         .workflow-node,
         .modal-content,
         .context-menu,
+        .command-palette-box,
+        .history-panel,
+        .minimap,
+        .toast,
+        .search-results,
         input,
         select,
         button {
@@ -107,19 +134,19 @@
         /* Left Sidebar - Agent Palette */
         .agent-palette {
             width: 280px;
-            background: rgba(255, 255, 255, 0.95);
-            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
             padding: 20px;
             overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 2px 0 10px var(--shadow-color);
         }
 
         .palette-header {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 20px;
-            color: #333;
-            border-bottom: 2px solid #667eea;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--accent);
             padding-bottom: 10px;
         }
 
@@ -131,14 +158,14 @@
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 10px;
             letter-spacing: 0.5px;
         }
 
         .agent-template {
-            background: white;
-            border: 2px solid #e0e0e0;
+            background: var(--node-bg);
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 10px;
@@ -148,9 +175,9 @@
         }
 
         .agent-template:hover {
-            border-color: #667eea;
+            border-color: var(--accent);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            box-shadow: 0 4px 12px var(--shadow-color);
         }
 
         .agent-template:active {
@@ -169,12 +196,12 @@
         .agent-name {
             font-weight: 500;
             font-size: 14px;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .agent-description {
             font-size: 11px;
-            color: #666;
+            color: var(--text-secondary);
             margin-top: 4px;
             line-height: 1.4;
         }
@@ -183,17 +210,18 @@
         .canvas-area {
             flex: 1;
             position: relative;
-            background:
-                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background: var(--canvas-bg);
+            background-image:
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(var(--grid-color) 1px, transparent 1px);
             background-size: 20px 20px;
             overflow: hidden;
         }
 
         .canvas-header {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--bg-secondary);
             padding: 15px 20px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -210,16 +238,16 @@
         .workflow-title {
             font-size: 16px;
             font-weight: 600;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .version-indicator {
             font-size: 12px;
-            color: #666;
-            background: #f5f5f5;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
             padding: 4px 10px;
             border-radius: 4px;
-            border-left: 3px solid #667eea;
+            border-left: 3px solid var(--accent);
         }
 
         .canvas-toolbar {
@@ -228,8 +256,8 @@
         }
 
         .toolbar-btn {
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: var(--node-bg);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             padding: 8px 16px;
             font-size: 13px;
@@ -238,29 +266,30 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            color: var(--text-primary);
         }
 
         .toolbar-btn:hover {
-            background: #f5f5f5;
-            border-color: #667eea;
+            background: var(--bg-tertiary);
+            border-color: var(--accent);
         }
 
         .toolbar-btn.primary {
-            background: #667eea;
+            background: var(--accent);
             color: white;
-            border-color: #667eea;
+            border-color: var(--accent);
         }
 
         .toolbar-btn.primary:hover {
-            background: #5568d3;
+            background: var(--accent-hover);
         }
 
         /* ========== Search & Command Palette (Wave 5.1) ========== */
         .toolbar-search {
             display: flex;
             align-items: center;
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: var(--node-bg);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             padding: 4px 10px;
             gap: 6px;
@@ -269,8 +298,8 @@
         }
 
         .toolbar-search:focus-within {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--focus-ring);
         }
 
         .toolbar-search input {
@@ -279,22 +308,22 @@
             background: transparent;
             font-size: 13px;
             width: 100%;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .toolbar-search input::placeholder {
-            color: #999;
+            color: var(--text-muted);
         }
 
         .toolbar-search .search-icon {
-            color: #999;
+            color: var(--text-muted);
             font-size: 14px;
         }
 
         .toolbar-search .search-shortcut {
             font-size: 10px;
-            color: #999;
-            background: #f0f0f0;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
             padding: 2px 4px;
             border-radius: 3px;
             font-family: monospace;
@@ -306,10 +335,10 @@
             top: 100%;
             left: 0;
             right: 0;
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px var(--shadow-color);
             max-height: 300px;
             overflow-y: auto;
             z-index: 1000;
@@ -326,9 +355,10 @@
             align-items: center;
             padding: 10px 12px;
             cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-light);
             gap: 10px;
             transition: background 0.15s;
+            color: var(--text-primary);
         }
 
         .search-result-item:last-child {
@@ -337,7 +367,7 @@
 
         .search-result-item:hover,
         .search-result-item.highlighted {
-            background: #f5f5ff;
+            background: var(--hover-bg);
         }
 
         .search-result-icon {
@@ -389,7 +419,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: var(--overlay-bg);
             display: none;
             justify-content: center;
             align-items: flex-start;
@@ -402,9 +432,9 @@
         }
 
         .command-palette-box {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            box-shadow: var(--shadow-lg);
             width: 500px;
             max-width: 90%;
             max-height: 70vh;
@@ -415,7 +445,7 @@
             display: flex;
             align-items: center;
             padding: 16px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--border);
             gap: 12px;
         }
 
@@ -424,11 +454,12 @@
             border: none;
             outline: none;
             font-size: 16px;
-            color: #333;
+            color: var(--text-primary);
+            background: transparent;
         }
 
         .command-palette-input input::placeholder {
-            color: #999;
+            color: var(--text-muted);
         }
 
         .command-palette-results {
@@ -440,7 +471,7 @@
             padding: 8px 16px 4px;
             font-size: 11px;
             font-weight: 600;
-            color: #999;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -456,7 +487,7 @@
 
         .command-palette-item:hover,
         .command-palette-item.highlighted {
-            background: #f5f5ff;
+            background: var(--hover-bg);
         }
 
         .command-palette-item .agent-icon {
@@ -472,18 +503,18 @@
         .command-palette-item-name {
             font-size: 14px;
             font-weight: 500;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .command-palette-item-desc {
             font-size: 12px;
-            color: #666;
+            color: var(--text-secondary);
         }
 
         .command-palette-item-shortcut {
             font-size: 11px;
-            color: #999;
-            background: #f0f0f0;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
             padding: 2px 6px;
             border-radius: 3px;
             font-family: monospace;
@@ -495,24 +526,24 @@
             align-items: center;
             gap: 4px;
             padding: 8px 16px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
             font-size: 13px;
         }
 
         .breadcrumb-item {
-            color: #667eea;
+            color: var(--accent);
             cursor: pointer;
             transition: color 0.15s;
         }
 
         .breadcrumb-item:hover {
-            color: #5568d3;
+            color: var(--accent-hover);
             text-decoration: underline;
         }
 
         .breadcrumb-item.current {
-            color: #333;
+            color: var(--text-primary);
             font-weight: 500;
             cursor: default;
         }
@@ -522,12 +553,12 @@
         }
 
         .breadcrumb-separator {
-            color: #999;
+            color: var(--text-muted);
         }
 
         /* Node highlight for search */
         .workflow-node.search-highlight {
-            box-shadow: 0 0 0 3px #667eea, 0 0 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 0 0 3px var(--accent), 0 0 20px var(--accent-muted);
             animation: search-pulse 1s ease-in-out;
         }
 
@@ -539,10 +570,10 @@
         /* ========== Context Menus (Wave 5.2) ========== */
         .context-menu {
             position: fixed;
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
             border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: var(--shadow-lg);
             padding: 6px 0;
             min-width: 180px;
             z-index: 10000;
@@ -572,16 +603,16 @@
             padding: 8px 14px;
             cursor: pointer;
             font-size: 13px;
-            color: #333;
+            color: var(--text-primary);
             transition: background 0.15s;
         }
 
         .context-menu-item:hover {
-            background: #f0f4ff;
+            background: var(--hover-bg);
         }
 
         .context-menu-item.disabled {
-            color: #999;
+            color: var(--text-muted);
             cursor: not-allowed;
         }
 
@@ -590,11 +621,11 @@
         }
 
         .context-menu-item.danger {
-            color: #dc3545;
+            color: var(--danger);
         }
 
         .context-menu-item.danger:hover {
-            background: #fff0f0;
+            background: var(--danger-bg);
         }
 
         .context-menu-item-icon {
@@ -607,14 +638,14 @@
         }
 
         .context-menu-item-shortcut {
-            color: #999;
+            color: var(--text-muted);
             font-size: 11px;
             font-family: monospace;
         }
 
         .context-menu-separator {
             height: 1px;
-            background: #e0e0e0;
+            background: var(--border);
             margin: 6px 0;
         }
 
@@ -845,24 +876,24 @@
         /* Agent Nodes */
         .workflow-node {
             position: absolute;
-            background: white;
-            border: 2px solid #e0e0e0;
+            background: var(--node-bg);
+            border: 2px solid var(--border-color);
             border-radius: 12px;
             padding: 16px;
             min-width: 200px;
             cursor: move;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px var(--shadow-color);
             transition: all 0.2s;
         }
 
         .workflow-node:hover {
-            border-color: #667eea;
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            border-color: var(--accent);
+            box-shadow: 0 6px 20px var(--accent-glow);
         }
 
         .workflow-node.selected {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--focus-ring);
         }
 
         .workflow-node.dragging {
@@ -870,12 +901,656 @@
             cursor: grabbing;
         }
 
+        /* Wave 5.5: Breakpoint indicator styles */
+        .breakpoint-indicator {
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            background: #e74c3c;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(231, 76, 60, 0.4);
+            transition: transform 0.2s;
+            z-index: 10;
+        }
+
+        .breakpoint-indicator:hover {
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        .workflow-node.has-breakpoint {
+            border-left: 3px solid #e74c3c;
+        }
+
+        /* Wave 5.5: Execution state styles */
+        .workflow-node.execution-pending {
+            border-color: #95a5a6;
+            opacity: 0.7;
+        }
+
+        .workflow-node.execution-running {
+            border-color: #3498db;
+            animation: pulse-blue 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-blue {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+        }
+
+        .workflow-node.execution-success {
+            border-color: #27ae60;
+        }
+
+        .workflow-node.execution-success::after {
+            content: '✓';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: #27ae60;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .workflow-node.execution-error {
+            border-color: #e74c3c;
+        }
+
+        .workflow-node.execution-error::after {
+            content: '✗';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .workflow-node.execution-breakpoint-hit {
+            border-color: #f39c12;
+            animation: pulse-yellow 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse-yellow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.5); }
+            50% { box-shadow: 0 0 0 15px rgba(243, 156, 18, 0); }
+        }
+
+        /* Wave 5.5: Debug toolbar styles */
+        .debug-toolbar {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: var(--bg-secondary, #f8f9fa);
+            border-radius: 6px;
+            margin-left: 8px;
+        }
+
+        .debug-toolbar.active {
+            display: flex;
+        }
+
+        .debug-btn {
+            padding: 6px 10px;
+            border: 1px solid var(--border-color, #ddd);
+            background: var(--bg-primary, white);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .debug-btn:hover {
+            background: var(--hover-bg, #e9ecef);
+        }
+
+        .debug-btn.primary {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .debug-btn.primary:hover {
+            background: #229954;
+        }
+
+        .debug-btn.danger {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+
+        .debug-btn.danger:hover {
+            background: #c0392b;
+        }
+
+        .debug-btn.warning {
+            background: #f39c12;
+            color: white;
+            border-color: #f39c12;
+        }
+
+        .debug-btn.warning:hover {
+            background: #d68910;
+        }
+
+        .debug-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .debug-status {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .debug-status.idle {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .debug-status.running {
+            background: #3498db;
+            color: white;
+        }
+
+        .debug-status.paused {
+            background: #f39c12;
+            color: white;
+        }
+
+        .debug-status.stopped {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* Wave 5.5: Variable inspector panel */
+        .variable-inspector {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            max-height: 350px;
+            background: var(--bg-primary, white);
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+        }
+
+        .variable-inspector.visible {
+            display: block;
+        }
+
+        .inspector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-secondary, #f8f9fa);
+            border-bottom: 1px solid var(--border-color, #ddd);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .inspector-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary, #333);
+        }
+
+        .inspector-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #666;
+            padding: 0;
+        }
+
+        .inspector-close:hover {
+            color: #e74c3c;
+        }
+
+        .inspector-body {
+            padding: 12px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .inspector-section {
+            margin-bottom: 12px;
+        }
+
+        .inspector-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .inspector-json {
+            background: var(--bg-secondary, #f8f9fa);
+            border-radius: 4px;
+            padding: 8px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 100px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .inspector-empty {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-size: 12px;
+        }
+
+        .inspector-node-name {
+            font-size: 12px;
+            color: var(--accent, #667eea);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .inspector-copy-btn {
+            padding: 2px 6px;
+            font-size: 10px;
+            background: var(--bg-primary, white);
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .inspector-copy-btn:hover {
+            background: var(--hover-bg, #e9ecef);
+        }
+
+        /* ===== Wave 5.6: WebSocket & Execution Logs ===== */
+
+        /* Connection Status Indicator */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .connection-status.connected {
+            background: rgba(40, 167, 69, 0.15);
+            color: #28a745;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+
+        .connection-status.connecting {
+            background: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+
+        .connection-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .connection-status.connecting .connection-status-dot {
+            animation: pulse-dot 1s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Execution Logs Panel */
+        .logs-panel {
+            position: fixed;
+            bottom: 0;
+            left: 250px;
+            right: 320px;
+            height: 200px;
+            background: var(--bg-secondary, #fff);
+            border-top: 1px solid var(--border-color, #ddd);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .logs-panel.visible {
+            transform: translateY(0);
+        }
+
+        .logs-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: var(--bg-primary, #f8f9fa);
+            border-bottom: 1px solid var(--border-color, #ddd);
+            flex-shrink: 0;
+        }
+
+        .logs-panel-title {
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logs-panel-title .log-count {
+            background: var(--accent, #667eea);
+            color: white;
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 10px;
+        }
+
+        .logs-panel-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .log-filter-select {
+            padding: 4px 8px;
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 4px;
+            font-size: 11px;
+            background: var(--bg-secondary, #fff);
+            color: var(--text-primary);
+        }
+
+        .log-node-filter {
+            padding: 4px 8px;
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 4px;
+            font-size: 11px;
+            background: var(--bg-secondary, #fff);
+            color: var(--text-primary);
+            min-width: 120px;
+        }
+
+        .logs-panel-btn {
+            padding: 4px 8px;
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 4px;
+            background: var(--bg-secondary, #fff);
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+
+        .logs-panel-btn:hover {
+            background: var(--hover-bg, #e9ecef);
+            color: var(--text-primary);
+        }
+
+        .logs-panel-btn.active {
+            background: var(--accent, #667eea);
+            color: white;
+            border-color: var(--accent, #667eea);
+        }
+
+        .logs-content {
+            flex: 1;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            padding: 8px;
+        }
+
+        .log-entry {
+            display: flex;
+            padding: 3px 6px;
+            border-radius: 3px;
+            margin-bottom: 2px;
+            gap: 8px;
+        }
+
+        .log-entry:hover {
+            background: var(--hover-bg, rgba(0,0,0,0.03));
+        }
+
+        .log-timestamp {
+            color: var(--text-muted, #999);
+            flex-shrink: 0;
+            width: 75px;
+        }
+
+        .log-level {
+            font-weight: 600;
+            flex-shrink: 0;
+            width: 50px;
+            text-transform: uppercase;
+        }
+
+        .log-level.info { color: #17a2b8; }
+        .log-level.warn { color: #ffc107; }
+        .log-level.error { color: #dc3545; }
+        .log-level.debug { color: #6c757d; }
+        .log-level.success { color: #28a745; }
+
+        .log-node {
+            color: var(--accent, #667eea);
+            flex-shrink: 0;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .log-message {
+            flex: 1;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        /* Live execution status on nodes */
+        .node.ws-running {
+            box-shadow: 0 0 0 2px var(--accent, #667eea), 0 0 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .node.ws-running::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 12px;
+            height: 12px;
+            background: var(--accent, #667eea);
+            border-radius: 50%;
+            animation: ws-pulse 1s infinite;
+        }
+
+        @keyframes ws-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        .node.ws-complete {
+            box-shadow: 0 0 0 2px #28a745;
+        }
+
+        .node.ws-complete::after {
+            content: '✓';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 16px;
+            height: 16px;
+            background: #28a745;
+            border-radius: 50%;
+            color: white;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .node.ws-error {
+            box-shadow: 0 0 0 2px #dc3545;
+        }
+
+        .node.ws-error::after {
+            content: '✕';
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 16px;
+            height: 16px;
+            background: #dc3545;
+            border-radius: 50%;
+            color: white;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Node elapsed time indicator */
+        .node-elapsed {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: var(--text-muted, #999);
+            background: var(--bg-secondary, #fff);
+            padding: 1px 6px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color, #ddd);
+            white-space: nowrap;
+        }
+
+        /* Progress bar for workflow */
+        .workflow-progress {
+            position: fixed;
+            top: 60px;
+            left: 250px;
+            right: 320px;
+            height: 3px;
+            background: var(--border-color, #ddd);
+            z-index: 101;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .workflow-progress.visible {
+            opacity: 1;
+        }
+
+        .workflow-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent, #667eea), #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Connection settings modal */
+        .connection-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary, #fff);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            padding: 20px;
+            z-index: 1001;
+            min-width: 320px;
+            display: none;
+        }
+
+        .connection-modal.visible {
+            display: block;
+        }
+
+        .connection-modal-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .connection-modal-field {
+            margin-bottom: 12px;
+        }
+
+        .connection-modal-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .connection-modal-field input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 4px;
+            font-size: 12px;
+            background: var(--bg-primary, #f8f9fa);
+            color: var(--text-primary);
+        }
+
+        .connection-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
         .node-header {
             display: flex;
             align-items: center;
             margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-light);
         }
 
         .node-icon {
@@ -893,14 +1568,14 @@
             flex: 1;
             font-weight: 600;
             font-size: 14px;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .node-delete {
             width: 20px;
             height: 20px;
             border-radius: 4px;
-            background: #ff4444;
+            background: var(--error);
             color: white;
             border: none;
             cursor: pointer;
@@ -917,7 +1592,7 @@
         }
 
         .node-delete:hover {
-            background: #cc0000;
+            background: var(--error-hover);
         }
 
         .node-config {
@@ -1076,8 +1751,8 @@
             width: 24px;
             height: 24px;
             border-radius: 6px;
-            background: rgba(0, 0, 0, 0.1);
-            color: #333;
+            background: var(--shadow);
+            color: var(--text-primary);
             border: none;
             cursor: pointer;
             font-size: 14px;
@@ -1088,7 +1763,7 @@
         }
 
         .group-collapse-btn:hover {
-            background: rgba(0, 0, 0, 0.2);
+            background: var(--shadow-medium);
         }
 
         .group-collapse-btn.collapsed {
@@ -1099,7 +1774,7 @@
             flex: 1;
             font-weight: 600;
             font-size: 14px;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .group-label input {
@@ -1107,13 +1782,13 @@
             border: none;
             font-weight: 600;
             font-size: 14px;
-            color: #333;
+            color: var(--text-primary);
             width: 100%;
             outline: none;
         }
 
         .group-label input:focus {
-            background: rgba(255, 255, 255, 0.8);
+            background: var(--node-bg);
             border-radius: 4px;
             padding: 2px 6px;
             margin: -2px -6px;
@@ -1121,8 +1796,8 @@
 
         .group-node-count {
             font-size: 11px;
-            color: #666;
-            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-secondary);
+            background: var(--shadow);
             padding: 2px 8px;
             border-radius: 10px;
         }
@@ -1137,7 +1812,7 @@
             height: 24px;
             border-radius: 4px;
             background: transparent;
-            color: #666;
+            color: var(--text-secondary);
             border: none;
             cursor: pointer;
             font-size: 12px;
@@ -1266,19 +1941,19 @@
         /* Right Sidebar - Properties Panel */
         .properties-panel {
             width: 320px;
-            background: rgba(255, 255, 255, 0.95);
-            border-left: 1px solid rgba(0, 0, 0, 0.1);
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border);
             padding: 20px;
             overflow-y: auto;
-            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: -2px 0 10px var(--shadow);
         }
 
         .properties-header {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 20px;
-            color: #333;
-            border-bottom: 2px solid #667eea;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--accent);
             padding-bottom: 10px;
         }
 
@@ -1290,61 +1965,66 @@
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 8px;
             letter-spacing: 0.5px;
         }
 
         .property-value {
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: var(--node-bg);
+            border: 1px solid var(--border);
             border-radius: 6px;
             padding: 10px;
             font-size: 13px;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .property-input {
             width: 100%;
             padding: 8px 10px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 13px;
             margin-bottom: 10px;
+            background: var(--node-bg);
+            color: var(--text-primary);
         }
 
         .property-select {
             width: 100%;
             padding: 8px 10px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 13px;
-            background: white;
+            background: var(--node-bg);
+            color: var(--text-primary);
             cursor: pointer;
         }
 
         .property-textarea {
             width: 100%;
             padding: 8px 10px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 13px;
             font-family: monospace;
             resize: vertical;
             min-height: 80px;
+            background: var(--node-bg);
+            color: var(--text-primary);
         }
 
         .property-input:focus,
         .property-select:focus,
         .property-textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
         }
 
         /* Execution Status */
         .execution-status {
-            background: #f8f9fa;
+            background: var(--bg-primary);
             border-radius: 8px;
             padding: 15px;
             margin-top: 20px;
@@ -1361,20 +2041,20 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: #ccc;
+            background: var(--text-muted);
         }
 
         .status-dot.running {
-            background: #4CAF50;
+            background: var(--success);
             animation: pulse 1.5s infinite;
         }
 
         .status-dot.error {
-            background: #ff4444;
+            background: var(--danger);
         }
 
         .status-dot.success {
-            background: #4CAF50;
+            background: var(--success);
         }
 
         @keyframes pulse {
@@ -1389,11 +2069,11 @@
             right: 20px;
             width: 200px;
             height: 150px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(102, 126, 234, 0.5);
+            background: var(--minimap-bg);
+            border: 2px solid var(--accent-muted);
             border-radius: 8px;
             pointer-events: all;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow-md);
             overflow: hidden;
             cursor: pointer;
         }
@@ -1414,8 +2094,8 @@
 
         .minimap-viewport {
             position: absolute;
-            border: 2px solid #667eea;
-            background: rgba(102, 126, 234, 0.1);
+            border: 2px solid var(--accent);
+            background: var(--accent-bg);
             pointer-events: none;
             box-sizing: border-box;
         }
@@ -1427,10 +2107,10 @@
             left: 300px;
             width: 280px;
             max-height: 350px;
-            background: rgba(255, 255, 255, 0.98);
-            border: 2px solid rgba(102, 126, 234, 0.5);
+            background: var(--panel-bg);
+            border: 2px solid var(--accent-muted);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow-md);
             display: none;
             flex-direction: column;
             overflow: hidden;
@@ -1443,7 +2123,7 @@
 
         .history-header {
             padding: 12px 15px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1486,18 +2166,18 @@
             display: flex;
             align-items: center;
             padding: 10px 15px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--border-light);
             cursor: pointer;
             transition: background 0.2s;
         }
 
         .history-item:hover {
-            background: #f8f9ff;
+            background: var(--hover-bg);
         }
 
         .history-item.current {
-            background: #e8f0ff;
-            border-left: 3px solid #667eea;
+            background: var(--accent-bg);
+            border-left: 3px solid var(--accent);
         }
 
         .history-icon {
@@ -1510,7 +2190,7 @@
         .history-desc {
             flex: 1;
             font-size: 12px;
-            color: #333;
+            color: var(--text-primary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -1518,14 +2198,14 @@
 
         .history-time {
             font-size: 10px;
-            color: #999;
+            color: var(--text-muted);
             margin-left: 8px;
         }
 
         .history-empty {
             padding: 30px 20px;
             text-align: center;
-            color: #999;
+            color: var(--text-muted);
             font-size: 13px;
         }
 
@@ -1543,12 +2223,12 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: #333;
-            color: white;
+            background: var(--toast-bg);
+            color: var(--toast-text);
             padding: 12px 20px;
             border-radius: 8px;
             font-size: 14px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-lg);
             z-index: 1000;
             opacity: 0;
             transition: opacity 0.3s;
@@ -1559,11 +2239,11 @@
         }
 
         .toast.success {
-            background: #4CAF50;
+            background: var(--success);
         }
 
         .toast.error {
-            background: #ff4444;
+            background: var(--danger);
         }
 
         /* Color themes for different agent types */
@@ -1586,7 +2266,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: var(--overlay-bg);
         }
 
         .modal.show {
@@ -1596,22 +2276,23 @@
         }
 
         .modal-content {
-            background-color: white;
+            background-color: var(--bg-secondary);
             border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 32px var(--shadow-color);
             max-width: 600px;
             width: 90%;
             max-height: 80vh;
             overflow: auto;
             padding: 30px;
+            color: var(--text-primary);
         }
 
         .modal-header {
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 20px;
-            color: #333;
-            border-bottom: 2px solid #f0f0f0;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-light);
             padding-bottom: 15px;
         }
 
@@ -1628,23 +2309,27 @@
         .modal-input {
             width: 100%;
             padding: 10px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             font-size: 14px;
             font-family: inherit;
             margin-bottom: 15px;
+            background: var(--input-bg);
+            color: var(--text-primary);
         }
 
         .modal-textarea {
             width: 100%;
             padding: 10px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             font-size: 13px;
             font-family: inherit;
             resize: vertical;
             min-height: 80px;
             margin-bottom: 15px;
+            background: var(--input-bg);
+            color: var(--text-primary);
         }
 
         /* Version History List */
@@ -1655,15 +2340,16 @@
 
         .version-item {
             padding: 12px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.2s;
+            color: var(--text-primary);
         }
 
         .version-item:hover {
-            background: #f8f9fa;
+            background: var(--hover-bg);
             border-color: #667eea;
         }
 
@@ -3180,7 +3866,45 @@
                     <button class="toolbar-btn primary" onclick="executeWorkflow()">
                         ▶️ Execute
                     </button>
+                    <!-- Wave 5.5: Debug toolbar -->
+                    <div class="debug-toolbar" id="debugToolbar">
+                        <span class="debug-status idle" id="debugStatus">Idle</span>
+                        <button class="debug-btn primary" id="debugRunBtn" onclick="debugRun()" title="Run (F5)">
+                            ▶️ Run
+                        </button>
+                        <button class="debug-btn warning" id="debugPauseBtn" onclick="debugPause()" title="Pause (F6)" disabled>
+                            ⏸️ Pause
+                        </button>
+                        <button class="debug-btn" id="debugStepOverBtn" onclick="debugStepOver()" title="Step Over (F10)" disabled>
+                            ⏭️ Step
+                        </button>
+                        <button class="debug-btn" id="debugStepIntoBtn" onclick="debugStepInto()" title="Step Into (F11)" disabled>
+                            ⏬ Into
+                        </button>
+                        <button class="debug-btn danger" id="debugStopBtn" onclick="debugStop()" title="Stop (Shift+F5)" disabled>
+                            ⏹️ Stop
+                        </button>
+                        <button class="debug-btn" id="debugToggleInspectorBtn" onclick="toggleVariableInspector()" title="Variable Inspector (I)">
+                            🔍 Inspect
+                        </button>
+                    </div>
+                    <button class="toolbar-btn" onclick="toggleDebugMode()" title="Toggle Debug Mode (D)">
+                        🐛 Debug
+                    </button>
+                    <!-- Wave 5.6: Connection Status -->
+                    <div class="connection-status disconnected" id="connectionStatus" onclick="showConnectionModal()" title="Click to configure connection">
+                        <span class="connection-status-dot"></span>
+                        <span class="connection-status-text">Disconnected</span>
+                    </div>
+                    <button class="toolbar-btn" onclick="toggleLogsPanel()" title="Toggle Execution Logs (L)">
+                        📋 Logs
+                    </button>
                 </div>
+            </div>
+
+            <!-- Wave 5.6: Workflow Progress Bar -->
+            <div class="workflow-progress" id="workflowProgress">
+                <div class="workflow-progress-bar" id="workflowProgressBar"></div>
             </div>
 
             <div class="canvas-viewport" id="canvasViewport">
@@ -3237,6 +3961,83 @@
     </div>
 
     <div class="toast" id="toast"></div>
+
+    <!-- Wave 5.5: Variable Inspector Panel -->
+    <div class="variable-inspector" id="variableInspector">
+        <div class="inspector-header">
+            <span class="inspector-title">🔍 Variable Inspector</span>
+            <button class="inspector-close" onclick="hideVariableInspector()">✕</button>
+        </div>
+        <div class="inspector-body" id="inspectorBody">
+            <div class="inspector-empty">
+                <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+                Select a node during debug to view its variables
+            </div>
+        </div>
+    </div>
+
+    <!-- Wave 5.6: Execution Logs Panel -->
+    <div class="logs-panel" id="logsPanel">
+        <div class="logs-panel-header">
+            <div class="logs-panel-title">
+                📋 Execution Logs <span class="log-count" id="logCount">0</span>
+            </div>
+            <div class="logs-panel-controls">
+                <select class="log-filter-select" id="logLevelFilter" onchange="filterLogs()">
+                    <option value="all">All Levels</option>
+                    <option value="info">Info</option>
+                    <option value="warn">Warnings</option>
+                    <option value="error">Errors</option>
+                    <option value="debug">Debug</option>
+                    <option value="success">Success</option>
+                </select>
+                <select class="log-node-filter" id="logNodeFilter" onchange="filterLogs()">
+                    <option value="all">All Nodes</option>
+                </select>
+                <button class="logs-panel-btn" id="logAutoScrollBtn" onclick="toggleAutoScroll()" title="Auto-scroll">
+                    ⬇️ Auto
+                </button>
+                <button class="logs-panel-btn" onclick="clearLogs()" title="Clear logs">
+                    🗑️ Clear
+                </button>
+                <button class="logs-panel-btn" onclick="exportLogs()" title="Export logs">
+                    💾 Export
+                </button>
+                <button class="logs-panel-btn" onclick="toggleLogsPanel()" title="Close">
+                    ✕
+                </button>
+            </div>
+        </div>
+        <div class="logs-content" id="logsContent">
+            <div style="text-align: center; padding: 20px; color: var(--text-muted, #999);">
+                No logs yet. Execute a workflow to see logs.
+            </div>
+        </div>
+    </div>
+
+    <!-- Wave 5.6: Connection Settings Modal -->
+    <div class="modal-overlay" id="connectionModalOverlay" onclick="hideConnectionModal()"></div>
+    <div class="connection-modal" id="connectionModal">
+        <div class="connection-modal-title">🔌 WebSocket Connection</div>
+        <div class="connection-modal-field">
+            <label for="wsServerUrl">Server URL</label>
+            <input type="text" id="wsServerUrl" value="ws://localhost:8001/ws" placeholder="ws://localhost:8001/ws">
+        </div>
+        <div class="connection-modal-field">
+            <label for="wsAutoReconnect">
+                <input type="checkbox" id="wsAutoReconnect" checked> Auto-reconnect on disconnect
+            </label>
+        </div>
+        <div class="connection-modal-field">
+            <label for="wsReconnectInterval">Reconnect Interval (seconds)</label>
+            <input type="number" id="wsReconnectInterval" value="5" min="1" max="60">
+        </div>
+        <div class="connection-modal-actions">
+            <button class="template-btn secondary" onclick="hideConnectionModal()">Cancel</button>
+            <button class="template-btn primary" onclick="connectWebSocket()">Connect</button>
+            <button class="template-btn danger" onclick="disconnectWebSocket()" id="disconnectBtn" style="display: none;">Disconnect</button>
+        </div>
+    </div>
 
     <!-- Performance Dashboard (Wave 4.2) -->
     <div class="perf-dashboard-overlay" id="perfDashboardOverlay" onclick="hidePerfDashboard()"></div>
@@ -4050,10 +4851,94 @@
             }
         }
 
+        // ============================================
+        // Wave 5.3: Theme System JavaScript
+        // ============================================
+
+        /**
+         * Get current theme from localStorage or system preference
+         * @returns {string} 'dark' or 'light'
+         */
+        function getPreferredTheme() {
+            // Check localStorage first
+            const stored = localStorage.getItem('workflow-builder-theme');
+            if (stored) {
+                return stored;
+            }
+            // Fall back to system preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            }
+            return 'light';
+        }
+
+        /**
+         * Apply theme to document
+         * @param {string} theme - 'dark' or 'light'
+         */
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+
+            // Update theme toggle button icons
+            const sunIcon = document.querySelector('.theme-toggle .sun-icon');
+            const moonIcon = document.querySelector('.theme-toggle .moon-icon');
+            if (sunIcon && moonIcon) {
+                if (theme === 'dark') {
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'inline';
+                } else {
+                    sunIcon.style.display = 'inline';
+                    moonIcon.style.display = 'none';
+                }
+            }
+        }
+
+        /**
+         * Toggle between light and dark themes
+         */
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            // Save preference
+            localStorage.setItem('workflow-builder-theme', newTheme);
+
+            // Apply theme
+            applyTheme(newTheme);
+
+            // Show notification
+            showToast(`Switched to ${newTheme} mode`, 'info', 1500);
+        }
+
+        /**
+         * Initialize theme on page load
+         */
+        function initTheme() {
+            const theme = getPreferredTheme();
+            applyTheme(theme);
+
+            // Listen for system preference changes
+            if (window.matchMedia) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                    // Only auto-switch if user hasn't explicitly set a preference
+                    if (!localStorage.getItem('workflow-builder-theme')) {
+                        applyTheme(e.matches ? 'dark' : 'light');
+                    }
+                });
+            }
+        }
+
         /**
          * Add keyboard shortcut for templates (T key)
          */
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme
+            initTheme();
+
             // Initialize template loading
             initTemplateLoading();
 

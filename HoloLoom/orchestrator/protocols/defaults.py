@@ -648,10 +648,28 @@ class DefaultSpacetimeAssembler:
         """
         from HoloLoom.fabric.spacetime import Spacetime
 
+        # Extract query text from context
+        query_text = ""
+        if hasattr(ctx, 'query'):
+            if hasattr(ctx.query, 'text'):
+                query_text = ctx.query.text
+            else:
+                query_text = str(ctx.query)
+
         # Extract response from tool result
         response = ""
         if ctx.tool_result:
             response = ctx.tool_result.get('response', '')
+
+        # Extract tool_used from context
+        tool_used = "unknown"
+        if hasattr(ctx, 'tool_used') and ctx.tool_used:
+            tool_used = ctx.tool_used
+        elif hasattr(ctx, 'collapse_result') and ctx.collapse_result:
+            if hasattr(ctx.collapse_result, 'selected_tool'):
+                tool_used = ctx.collapse_result.selected_tool
+            elif hasattr(ctx.collapse_result, 'tool_index'):
+                tool_used = f"tool_{ctx.collapse_result.tool_index}"
 
         # Calculate confidence
         confidence = self.calculate_confidence(ctx)
@@ -663,7 +681,7 @@ class DefaultSpacetimeAssembler:
         metadata = {
             'pattern_used': ctx.pattern_spec.name if ctx.pattern_spec else 'UNKNOWN',
             'threads_count': len(ctx.threads) if ctx.threads else 0,
-            'stage_count': len(ctx.stage_timings),
+            'stage_count': len(ctx.stage_timings) if hasattr(ctx, 'stage_timings') and ctx.stage_timings else 0,
         }
 
         # Add cache stats if available
@@ -671,7 +689,9 @@ class DefaultSpacetimeAssembler:
             metadata['cache_stats'] = self._get_cache_stats()
 
         return Spacetime(
+            query_text=query_text,
             response=response,
+            tool_used=tool_used,
             confidence=confidence,
             trace=trace,
             metadata=metadata
@@ -687,14 +707,21 @@ class DefaultSpacetimeAssembler:
         Returns:
             WeavingTrace object with complete provenance
         """
-        from HoloLoom.orchestrator.core import create_provenance_trace
+        from datetime import datetime
+        from HoloLoom.fabric.spacetime import WeavingTrace
 
-        return create_provenance_trace(
-            stage_timings=ctx.stage_timings,
-            pattern_name=ctx.pattern_spec.name if ctx.pattern_spec else 'UNKNOWN',
-            thread_ids=ctx.thread_ids,
-            errors=ctx.errors,
-            warnings=ctx.warnings
+        # Calculate timing from context or use defaults
+        now = datetime.now()
+        stage_timings = ctx.stage_timings if hasattr(ctx, 'stage_timings') and ctx.stage_timings else {}
+        total_duration = sum(stage_timings.values()) if stage_timings else 0.0
+
+        return WeavingTrace(
+            start_time=now,
+            end_time=now,
+            duration_ms=total_duration,
+            stage_durations=stage_timings,
+            motifs_detected=[],
+            embedding_scales_used=[384],  # Default scale
         )
 
     def calculate_confidence(self, ctx: 'WeavingContext') -> float:

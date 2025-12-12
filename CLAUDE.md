@@ -3980,6 +3980,16 @@ Complete observability stack for HoloLoom ChatOps job execution.
    - Distributed job routing across cluster
    - Automatic failover and load balancing
 
+6. **Alignment Commands** (`alignment_handlers.py`) - **December 2025**
+   - `!safety check <action>` - Pre-flight risk evaluation
+   - `!safety stats` - Show safety metrics summary
+   - `!safety history [limit]` - Show past safety decisions
+   - `!audit log [type] [limit]` - Show recent audit entries
+   - `!audit trace <id>` - Show reasoning chain trace
+   - `!audit search <query>` - Search audit logs
+   - `!alignment help` - Show alignment commands help
+   - Integration with SafetyGuardrails and AuditTrail frameworks
+
 ### Quick Start
 
 **Matrix Bot Commands:**
@@ -4033,6 +4043,37 @@ Complete observability stack for HoloLoom ChatOps job execution.
    New load distribution: 42% ±5%
 ```
 
+**Alignment Commands (December 2025):**
+```
+!safety check execute_code {"code": "os.system('rm -rf /')"}
+→ Risk Level: CRITICAL
+   Patterns: destructive_operation, system_access
+   Recommendation: Block (human approval required)
+
+!safety stats
+→ Total Checks: 1,523
+   Blocked: 47 (3.1%)
+   Escalated: 89 (5.8%)
+   Avg Risk Score: 0.23
+
+!audit log TOOL_SELECTION 5
+→ Recent audit entries:
+   1. [2025-12-11 10:30:15] TOOL_SELECTION: answer (confidence: 0.92)
+   2. [2025-12-11 10:28:42] TOOL_SELECTION: research (confidence: 0.78)
+   ...
+
+!audit trace abc123
+→ Reasoning Chain:
+   1. Query received: "What is Thompson Sampling?"
+   2. Pattern selection: FAST
+   3. Memory retrieval: 15 shards
+   4. Tool selection: answer (0.92)
+   5. Response generated
+
+!audit search outcome=BLOCKED
+→ Found 47 entries matching "outcome=BLOCKED"
+```
+
 **WebSocket Subscription:**
 ```javascript
 const ws = new WebSocket('ws://localhost:8000/ws/progress');
@@ -4065,6 +4106,7 @@ Import `HoloLoom/chatops/dashboards/hololoom_jobs.json` for:
 | `hololoom_handlers.py` | ~850 | Matrix bot async job execution |
 | `websocket_progress.py` | ~840 | WebSocket progress streaming |
 | `prometheus_metrics.py` | ~510 | Prometheus metrics collector |
+| `alignment_handlers.py` | ~830 | Safety guardrails and audit trail commands |
 | `dashboards/hololoom_jobs.json` | ~380 | Grafana dashboard template |
 
 ### Testing
@@ -9066,17 +9108,51 @@ These features were uncovered through:
 3. **Internal implementation** - Not meant for direct user access (e.g., Warp Space)
 4. **Documentation debt** - Built during rapid development, docs not yet written (now being addressed)
 
-### Documentation Status (Updated December 2025)
+### Documentation Status (Updated December 2025 - Agent Swarm Complete)
 
-**Now Documented** (see linked READMEs):
-1. ✅ **Spring Dynamics**: [SPRING_DYNAMICS.md](HoloLoom/memory/SPRING_DYNAMICS.md) - Physics-based spreading activation
-2. ✅ **Multi-Wave Engine**: [MULTI_WAVE_ENGINE.md](HoloLoom/memory/MULTI_WAVE_ENGINE.md) - Brain wave consolidation
-3. ✅ **Semantic Dimensions**: [SEMANTIC_DIMENSIONS.md](HoloLoom/semantic_calculus/SEMANTIC_DIMENSIONS.md) - 244 interpretable axes
-4. ✅ **Visual Compression**: [VISUAL_COMPRESSION.md](HoloLoom/memory/VISUAL_COMPRESSION.md) - Graph→Image token savings
+**Total Hidden Systems Documented**: 24 systems, ~150,000+ lines of code
+
+**Mega-Systems** (8 systems):
+1. ✅ **Agents System**: [README.md](HoloLoom/agents/README.md) - MCTS multi-agent orchestration, Trinity Working Memory
+2. ✅ **Causal Reasoning**: [README.md](HoloLoom/causal/README.md) - Pearl's do-calculus, counterfactual inference
+3. ✅ **Federation**: [README.md](HoloLoom/federation/README.md) - SWIM Gossip Protocol + Kademlia DHT
+4. ✅ **Handoff**: [README.md](HoloLoom/handoff/README.md) - 7-layer security, CRDT sync, context handoffs
+5. ✅ **Collaboration**: [README.md](HoloLoom/collaboration/README.md) - Multi-user workspaces, presence tracking
+6. ✅ **RedTeam CARTS**: [README.md](HoloLoom/redteam/README.md) - Thompson Sampling adversarial testing
+7. ✅ **Chaining**: [README.md](HoloLoom/chaining/README.md) - 17 chain patterns, LLMChain
+8. ✅ **Eggroll Distributed**: [README.md](HoloLoom/eggroll/README.md) - Distributed evolutionary strategies
+
+**Major Systems** (8 systems):
+9. ✅ **Physics Engine**: [README.md](HoloLoom/physics/README.md) - Helmholtz Free Energy optimization
+10. ✅ **Verification CoVe**: [README.md](HoloLoom/verification/README.md) - Chain of Verification
+11. ✅ **Reasoning Layer 3**: [README.md](HoloLoom/reasoning/README.md) - 84,671 lines, multi-modal reasoning
+12. ✅ **Planning POMDP**: [README.md](HoloLoom/planning/README.md) - Planning under uncertainty
+13. ✅ **Explainability XAI**: [README.md](HoloLoom/explainability/README.md) - 7 XAI techniques
+14. ✅ **Search System**: [README.md](HoloLoom/search/README.md) - Vector + BM25 hybrid search
+15. ✅ **Performance Monitor**: [README.md](HoloLoom/performance/README.md) - Metrics, profiling, bottleneck detection
+16. ✅ **DreamWeaving**: [README.md](HoloLoom/dreamweaving/README.md) - Creative world building
+
+**Multimodal Systems** (4 systems):
+17. ✅ **Spatial Computing**: [README.md](HoloLoom/spatial/README.md) - WebXR AR/VR integration
+18. ✅ **Voice System**: [README.md](HoloLoom/voice/README.md) - STT/TTS, voice commands
+19. ✅ **Vision System**: [README.md](HoloLoom/vision/README.md) - YOLO, MiDaS, SLAM
+20. ✅ **ThirdEye**: [README.md](HoloLoom/thirdeye/README.md) - Scene understanding visualization
+
+**Infrastructure Systems** (4 systems):
+21. ✅ **DataPig Quality**: [README.md](HoloLoom/datapig/README.md) - Data quality assurance
+22. ✅ **Shuttle v2**: [README.md](HoloLoom/shuttle/README.md) - Enhanced transport layer
+23. ✅ **Tapestry VCS**: [README.md](HoloLoom/tapestry/README.md) - Session continuity, thread management
+24. ✅ **Dark Trace SAE**: [README.md](HoloLoom/dark_trace/README.md) - Sparse Autoencoder interpretability
+
+**Memory Systems** (previously documented):
+- ✅ **Spring Dynamics**: [SPRING_DYNAMICS.md](HoloLoom/memory/SPRING_DYNAMICS.md) - Physics-based spreading activation
+- ✅ **Multi-Wave Engine**: [MULTI_WAVE_ENGINE.md](HoloLoom/memory/MULTI_WAVE_ENGINE.md) - Brain wave consolidation
+- ✅ **Semantic Dimensions**: [SEMANTIC_DIMENSIONS.md](HoloLoom/semantic_calculus/SEMANTIC_DIMENSIONS.md) - 244 interpretable axes
+- ✅ **Visual Compression**: [VISUAL_COMPRESSION.md](HoloLoom/memory/VISUAL_COMPRESSION.md) - Graph→Image token savings
 
 **Remaining Documentation Priority**:
-1. 🟡 **High**: SpinningWheel adapters (47 adapters deserve complete reference)
-2. 🟡 **Medium**: Awareness Graph metrics (useful for debugging)
+1. 🟡 **Medium**: SpinningWheel adapters (47 adapters - good coverage in existing README)
+2. 🔵 **Low**: Awareness Graph internals (useful for debugging)
 3. 🔵 **Low**: Warp Space, Convergence Engine (internal, advanced users only)
 
 ### How to Explore Further

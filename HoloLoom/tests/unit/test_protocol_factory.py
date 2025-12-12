@@ -112,21 +112,20 @@ class TestDefaultPatternSelector:
         selector = DefaultPatternSelector(loom_command=mock_loom)
         assert selector.loom_command is mock_loom
 
-    @pytest.mark.asyncio
-    async def test_select_pattern_delegates(self):
+    def test_select_pattern_delegates(self):
         """select_pattern should delegate to loom_command."""
         from HoloLoom.orchestrator.protocols import DefaultPatternSelector
-        from HoloLoom.protocols.types import Query
 
+        mock_pattern = MagicMock()
+        mock_pattern.name = 'FAST'
         mock_loom = MagicMock()
-        mock_loom.select = AsyncMock(return_value='FAST')
+        mock_loom.select_pattern = MagicMock(return_value=mock_pattern)
 
         selector = DefaultPatternSelector(loom_command=mock_loom)
-        query = Query(text="test query")
-        result = await selector.select_pattern(query)
+        result = selector.select_pattern("test query")
 
-        mock_loom.select.assert_called_once_with(query)
-        assert result == 'FAST'
+        mock_loom.select_pattern.assert_called_once()
+        assert result.name == 'FAST'
 
 
 class TestDefaultThreadSelector:
@@ -147,11 +146,14 @@ class TestDefaultThreadSelector:
         from HoloLoom.protocols.types import Query
 
         mock_graph = MagicMock()
-        mock_graph.get_relevant_nodes = MagicMock(return_value=['node1', 'node2'])
+        mock_graph.get_recent_nodes = MagicMock(return_value=['node1', 'node2'])
 
         selector = DefaultThreadSelector(yarn_graph=mock_graph)
         query = Query(text="test query")
-        result = await selector.select_threads(query, pattern='FAST')
+        mock_temporal_window = MagicMock()
+        mock_temporal_window.start = None
+        mock_temporal_window.end = None
+        result = await selector.select_threads(mock_temporal_window, query, limit=10)
 
         assert isinstance(result, list)
 
@@ -160,35 +162,27 @@ class TestDefaultConvergence:
     """Tests for DefaultConvergence."""
 
     def test_instantiation(self):
-        """DefaultConvergence should instantiate with cfg and policy."""
+        """DefaultConvergence should instantiate with engine, n_tools, epsilon."""
         from HoloLoom.orchestrator.protocols import DefaultConvergence
 
-        mock_cfg = MagicMock()
-        mock_policy = MagicMock()
-        convergence = DefaultConvergence(cfg=mock_cfg, policy=mock_policy)
-        assert convergence.cfg is mock_cfg
-        assert convergence.policy is mock_policy
+        mock_engine = MagicMock()
+        convergence = DefaultConvergence(engine=mock_engine, n_tools=4, epsilon=0.1)
+        assert convergence.engine is mock_engine
+        assert convergence.n_tools == 4
+        assert convergence.epsilon == 0.1
 
-    @pytest.mark.asyncio
-    async def test_converge_returns_decision(self):
-        """converge should return a decision dict."""
+    def test_collapse_returns_result(self):
+        """collapse should return a collapse result."""
         from HoloLoom.orchestrator.protocols import DefaultConvergence
+        import numpy as np
 
-        mock_cfg = MagicMock()
-        mock_cfg.collapse_strategy = 'argmax'
-        mock_policy = MagicMock()
-        mock_policy.forward = MagicMock(return_value={
-            'action': 0,
-            'probs': [0.7, 0.2, 0.1],
-            'confidence': 0.7
-        })
+        convergence = DefaultConvergence(engine=None, n_tools=4, epsilon=0.1)
+        probs = np.array([0.7, 0.2, 0.07, 0.03])
+        result = convergence.collapse(probs, strategy='argmax')
 
-        convergence = DefaultConvergence(cfg=mock_cfg, policy=mock_policy)
-        features = {'embedding': [0.1] * 10}
-        result = await convergence.converge(features, pattern='FAST')
-
-        assert isinstance(result, dict)
-        assert 'action' in result or 'tool' in result or 'confidence' in result
+        assert hasattr(result, 'tool_index')
+        assert hasattr(result, 'confidence')
+        assert result.tool_index == 0  # argmax selects highest probability
 
 
 class TestDefaultToolExecutor:
@@ -206,15 +200,17 @@ class TestDefaultToolExecutor:
     async def test_execute_without_guardrails(self):
         """execute should work without guardrails."""
         from HoloLoom.orchestrator.protocols import DefaultToolExecutor
+        from HoloLoom.protocols.types import Query
 
         mock_executor = MagicMock()
         mock_executor.execute = AsyncMock(return_value={'result': 'success'})
 
         executor = DefaultToolExecutor(tool_executor=mock_executor)
-        decision = {'tool': 'answer', 'action': 0}
-        ctx = MagicMock()
+        tool = 'answer'
+        query = Query(text="test query")
+        context = {'features': {}}
 
-        result = await executor.execute(decision, ctx)
+        result = await executor.execute(tool, query, context)
         assert result is not None
 
 
@@ -229,24 +225,27 @@ class TestDefaultSpacetimeAssembler:
         assembler = DefaultSpacetimeAssembler(cfg=mock_cfg)
         assert assembler.cfg is mock_cfg
 
-    @pytest.mark.asyncio
-    async def test_assemble_returns_spacetime(self):
+    def test_assemble_returns_spacetime(self):
         """assemble should return spacetime result."""
         from HoloLoom.orchestrator.protocols import DefaultSpacetimeAssembler
 
         mock_cfg = MagicMock()
         assembler = DefaultSpacetimeAssembler(cfg=mock_cfg)
 
+        # Create mock context with required attributes
         mock_ctx = MagicMock()
-        mock_ctx.query = MagicMock()
-        mock_ctx.query.text = "test"
-        mock_ctx.pattern = 'FAST'
-        mock_ctx.features = {}
-        mock_ctx.decision = {'confidence': 0.9}
+        mock_ctx.tool_result = {'response': 'test response'}
+        mock_ctx.pattern_spec = MagicMock()
+        mock_ctx.pattern_spec.name = 'FAST'
+        mock_ctx.threads = ['thread1', 'thread2']
+        mock_ctx.stage_timings = {'retrieval': 50.0}
+        mock_ctx.collapse_result = MagicMock()
+        mock_ctx.collapse_result.confidence = 0.9
+        mock_ctx.errors = []
+        mock_ctx.warnings = []
+        mock_ctx.thread_ids = ['t1', 't2']
 
-        tool_result = {'response': 'test response'}
-
-        result = await assembler.assemble(mock_ctx, tool_result)
+        result = assembler.assemble(mock_ctx)
         assert result is not None
 
 
@@ -463,8 +462,10 @@ class TestProtocolCompliance:
             FeatureExtractorProtocol,
         )
 
-        extractor = DefaultFeatureExtractor(cfg=MagicMock(), embedder=MagicMock())
-        assert hasattr(extractor, 'extract_features')
+        # Constructor takes embedder first, then cfg
+        extractor = DefaultFeatureExtractor(embedder=MagicMock(), cfg=MagicMock())
+        # Method is 'extract', not 'extract_features'
+        assert hasattr(extractor, 'extract')
 
     def test_default_convergence_protocol(self):
         """DefaultConvergence should implement ConvergenceProtocol."""
@@ -473,8 +474,10 @@ class TestProtocolCompliance:
             ConvergenceProtocol,
         )
 
-        convergence = DefaultConvergence(cfg=MagicMock(), policy=MagicMock())
-        assert hasattr(convergence, 'converge')
+        # Constructor takes engine=, n_tools=, epsilon=
+        convergence = DefaultConvergence(engine=None, n_tools=4, epsilon=0.1)
+        # Method is 'collapse', not 'converge'
+        assert hasattr(convergence, 'collapse')
 
     def test_default_tool_executor_protocol(self):
         """DefaultToolExecutor should implement ToolExecutorProtocol."""

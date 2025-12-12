@@ -463,6 +463,74 @@ class AgentManagerWSManager:
 
         return sent_count
 
+    async def broadcast_to_pattern(
+        self,
+        pattern: str,
+        message: AgentManagerMessage,
+        buffer: bool = True
+    ) -> int:
+        """
+        Broadcast a message to all subscribers of a specific pattern.
+
+        This is a simpler API for pattern-based broadcasting used by
+        the integration module.
+
+        Args:
+            pattern: Pattern to broadcast to (e.g., "thread:xyz", "project:abc", "*")
+            message: Message to broadcast
+            buffer: Whether to buffer for late subscribers
+
+        Returns:
+            Number of connections that received the message
+        """
+        subscribers = set()
+
+        # Get direct pattern subscribers
+        if pattern in self._pattern_subscribers:
+            subscribers.update(self._pattern_subscribers[pattern])
+
+        # Handle wildcard - if pattern is "*", that's already covered above
+        # If pattern is not "*", also include wildcard subscribers
+        if pattern != "*" and "*" in self._pattern_subscribers:
+            subscribers.update(self._pattern_subscribers["*"])
+
+        # Buffer message if requested
+        if buffer and pattern.startswith("thread:"):
+            if pattern not in self._message_buffer:
+                self._message_buffer[pattern] = []
+            self._message_buffer[pattern].append(message)
+            if len(self._message_buffer[pattern]) > self._buffer_size:
+                self._message_buffer[pattern] = \
+                    self._message_buffer[pattern][-self._buffer_size:]
+
+        # Send to subscribers
+        sent_count = 0
+        for conn_id in subscribers:
+            try:
+                await self._send_to_connection(conn_id, message)
+                sent_count += 1
+            except Exception as e:
+                logger.warning(f"Broadcast to pattern failed for {conn_id}: {e}")
+
+        logger.debug(
+            f"Broadcast {message.type.value} to pattern '{pattern}' "
+            f"({sent_count} subscribers)"
+        )
+
+        # Trigger event handlers
+        event_type = message.type.value
+        if event_type in self._event_handlers:
+            for handler in self._event_handlers[event_type]:
+                try:
+                    if asyncio.iscoroutinefunction(handler):
+                        await handler(message)
+                    else:
+                        handler(message)
+                except Exception as e:
+                    logger.error(f"Event handler error: {e}")
+
+        return sent_count
+
     def register_handler(
         self,
         event_type: str,

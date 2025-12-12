@@ -73,15 +73,15 @@ class OrchestratorComponents:
 
     Example:
         >>> components = OrchestratorComponents(
-        ...     pattern_selector=DefaultPatternSelector(loom_command),
-        ...     thread_selector=DefaultThreadSelector(yarn_graph),
-        ...     feature_extractor=DefaultFeatureExtractor(cfg, embedder),
-        ...     convergence=DefaultConvergence(cfg, policy),
-        ...     tool_executor=DefaultToolExecutor(tool_executor),
-        ...     spacetime_assembler=DefaultSpacetimeAssembler(cfg),
+        ...     pattern_selector=DefaultPatternSelector(loom_command=loom_cmd),
+        ...     thread_selector=DefaultThreadSelector(yarn_graph=kg),
+        ...     feature_extractor=DefaultFeatureExtractor(embedder=embedder, cfg=config),
+        ...     convergence=DefaultConvergence(engine=conv_engine, n_tools=4),
+        ...     tool_executor=DefaultToolExecutor(tool_executor=tool_exec),
+        ...     spacetime_assembler=DefaultSpacetimeAssembler(cfg=config),
         ... )
         >>> assert components.is_complete()
-        >>> orchestrator = create_orchestrator_from_protocols(components)
+        >>> orchestrator = create_orchestrator_from_protocols(components, cfg=config)
     """
 
     pattern_selector: Optional[PatternSelectorProtocol] = None
@@ -361,58 +361,72 @@ class ProtocolOrchestrator:
         Returns:
             Final WeavingContext after all stages complete
         """
-        from HoloLoom.orchestrator.context import WeavingContext
+        import numpy as np
+
+        # Extract query text for protocols that need string input
+        query_text = ctx.query.text if hasattr(ctx.query, 'text') else str(ctx.query)
 
         # Step 1: Pattern Selection
         self._emit_event(1, "pattern_selection_start")
-        pattern = await self.components.pattern_selector.select_pattern(ctx.query)
+        pattern = self.components.pattern_selector.select_pattern(query_text)
         ctx = ctx.with_pattern(pattern)
         self._emit_event(1, "pattern_selection_complete")
 
         # Step 3: Thread Selection
         self._emit_event(3, "thread_selection_start")
         threads = await self.components.thread_selector.select_threads(
-            ctx.query,
-            ctx.pattern,
-            ctx.chrono_trigger,
+            ctx.chrono_trigger,  # temporal_window first
+            ctx.query,           # query second
+            limit=10,
         )
         ctx = ctx.with_threads(threads)
         self._emit_event(3, "thread_selection_complete")
 
         # Steps 4-6: Feature Extraction
         self._emit_event(4, "feature_extraction_start")
-        features = await self.components.feature_extractor.extract_features(
+        features = await self.components.feature_extractor.extract(
             ctx.query,
             ctx.threads,
-            ctx.pattern,
         )
         ctx = ctx.with_features(features)
         self._emit_event(6, "feature_extraction_complete")
 
         # Step 7: Convergence
         self._emit_event(7, "convergence_start")
-        decision = await self.components.convergence.converge(
-            features,
-            ctx.pattern,
+        # Get probability distribution from features (or use uniform if not available)
+        embeddings = features.get('embeddings', None)
+        if embeddings is not None:
+            # Use embeddings to compute tool probabilities (simplified)
+            n_tools = getattr(self.cfg, 'n_tools', 4)
+            probs = np.ones(n_tools) / n_tools  # Uniform distribution as placeholder
+        else:
+            probs = np.ones(4) / 4
+
+        collapse_result = self.components.convergence.collapse(
+            probs,
+            strategy=getattr(self.cfg, 'collapse_strategy', 'bayesian_blend'),
         )
-        ctx = ctx.with_decision(decision)
+        ctx = ctx.with_decision(collapse_result)
         self._emit_event(7, "convergence_complete")
 
         # Step 8: Tool Execution
         self._emit_event(8, "tool_execution_start")
+        # Map tool index to tool name
+        tools = self.components.tool_executor.get_available_tools()
+        tool_index = collapse_result.tool_index if hasattr(collapse_result, 'tool_index') else 0
+        tool_name = tools[tool_index] if tool_index < len(tools) else tools[0]
+
         tool_result = await self.components.tool_executor.execute(
-            decision,
-            ctx,
+            tool_name,
+            ctx.query,
+            {'features': features, 'threads': ctx.threads},
         )
         ctx = ctx.with_tool_result(tool_result)
         self._emit_event(8, "tool_execution_complete")
 
         # Step 9: Spacetime Assembly
         self._emit_event(9, "spacetime_assembly_start")
-        spacetime = await self.components.spacetime_assembler.assemble(
-            ctx,
-            tool_result,
-        )
+        spacetime = self.components.spacetime_assembler.assemble(ctx)
         ctx = ctx.with_spacetime(spacetime)
         self._emit_event(9, "spacetime_assembly_complete")
 
@@ -488,13 +502,19 @@ def create_pipeline_with_protocols(
     loom_command = getattr(components.pattern_selector, 'loom_command', None)
     yarn_graph = getattr(components.thread_selector, 'yarn_graph', None)
     embedder = getattr(components.feature_extractor, 'embedder', None)
-    memory = getattr(components.feature_extractor, 'memory', None)
-    retriever = getattr(components.feature_extractor, 'retriever', None)
-    policy = getattr(components.convergence, 'policy', None)
+    resonance_shed = getattr(components.feature_extractor, 'resonance_shed', None)
+    engine = getattr(components.convergence, 'engine', None)
+    # Try to get policy from engine if available
+    policy = getattr(engine, 'policy', None) if engine else None
     tool_executor = getattr(components.tool_executor, 'tool_executor', None)
     semantic_cache = getattr(components.spacetime_assembler, 'semantic_cache', None)
-    dashboard_constructor = getattr(components.spacetime_assembler, 'dashboard_constructor', None)
-    awareness_context = getattr(components.spacetime_assembler, 'awareness_context', None)
+    # For backward compatibility, we don't extract memory/retriever from defaults
+    # as they are not part of the simplified default implementation
+    memory = None
+    retriever = None
+    # These are optional in SpacetimeExecutor but not in DefaultSpacetimeAssembler
+    dashboard_constructor = None
+    awareness_context = None
 
     executors = [
         # Step 0: Meta-Prompt Enhancement (disabled by default)

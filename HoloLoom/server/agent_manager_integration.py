@@ -171,31 +171,21 @@ class AgentManagerIntegration:
         thread_id = event.get("thread_id")
         project = event.get("project", "default")
 
-        # Broadcast via WebSocket
-        await self.ws_manager.broadcast_to_pattern(
-            f"project:{project}",
-            AgentManagerMessage(
-                type=AgentManagerMessageType.THREAD_CREATED,
-                thread_id=thread_id,
-                data={
-                    "name": event.get("name"),
-                    "agent_type": event.get("agent_type"),
-                    "reasoning_mode": event.get("reasoning_mode"),
-                    "priority": event.get("priority", 0),
-                    "project": project,
-                },
-            )
+        # Create message with proper fields (no data dict)
+        message = AgentManagerMessage(
+            type=AgentManagerMessageType.THREAD_CREATED,
+            thread_id=thread_id,
+            thread_name=event.get("name"),
+            thread_status="idle",
+            priority=event.get("priority", 0),
+            message=event.get("reasoning_mode", "DIRECT"),
         )
 
+        # Broadcast via WebSocket to project subscribers
+        await self.ws_manager.broadcast_to_pattern(f"project:{project}", message)
+
         # Also broadcast to thread-specific subscribers
-        await self.ws_manager.broadcast_to_pattern(
-            f"thread:{thread_id}",
-            AgentManagerMessage(
-                type=AgentManagerMessageType.THREAD_CREATED,
-                thread_id=thread_id,
-                data=event,
-            )
-        )
+        await self.ws_manager.broadcast_to_pattern(f"thread:{thread_id}", message)
 
         # Legacy monitor bridge
         if self.enable_legacy_monitor and self.monitor:
@@ -410,52 +400,49 @@ class AgentManagerIntegration:
         """Handle swarm created event."""
         swarm_id = event.get("swarm_id")
 
-        # Broadcast to swarm subscribers
-        await self.ws_manager.broadcast_to_pattern(
-            f"swarm:{swarm_id}",
-            AgentManagerMessage(
-                type=AgentManagerMessageType.SWARM_SPAWNED,
-                swarm_id=swarm_id,
-                data=event,
-            )
+        # Create message with proper fields (no data dict)
+        message = AgentManagerMessage(
+            type=AgentManagerMessageType.SWARM_SPAWNED,
+            swarm_id=swarm_id,
+            thread_id=event.get("parent_thread_id"),
+            child_thread_ids=event.get("child_thread_ids", []),
+            merge_strategy=event.get("merge_strategy"),
+            message=event.get("message", "Swarm created"),
         )
 
+        # Broadcast to swarm subscribers
+        await self.ws_manager.broadcast_to_pattern(f"swarm:{swarm_id}", message)
+
         # Also broadcast to wildcard
-        await self.ws_manager.broadcast_to_pattern(
-            "*",
-            AgentManagerMessage(
-                type=AgentManagerMessageType.SWARM_SPAWNED,
-                swarm_id=swarm_id,
-                data=event,
-            )
-        )
+        await self.ws_manager.broadcast_to_pattern("*", message)
 
     async def _on_swarm_child_completed(self, event: Dict[str, Any]):
         """Handle swarm child completed event."""
         swarm_id = event.get("swarm_id")
 
-        await self.ws_manager.broadcast_to_pattern(
-            f"swarm:{swarm_id}",
-            AgentManagerMessage(
-                type=AgentManagerMessageType.SWARM_CHILD_COMPLETED,
-                swarm_id=swarm_id,
-                thread_id=event.get("thread_id"),
-                data=event,
-            )
+        message = AgentManagerMessage(
+            type=AgentManagerMessageType.SWARM_CHILD_COMPLETED,
+            swarm_id=swarm_id,
+            thread_id=event.get("thread_id"),
+            confidence=event.get("confidence", 0.0),
+            message=event.get("result", ""),
         )
+
+        await self.ws_manager.broadcast_to_pattern(f"swarm:{swarm_id}", message)
 
     async def _on_swarm_merged(self, event: Dict[str, Any]):
         """Handle swarm merged event."""
         swarm_id = event.get("swarm_id")
 
-        await self.ws_manager.broadcast_to_pattern(
-            f"swarm:{swarm_id}",
-            AgentManagerMessage(
-                type=AgentManagerMessageType.SWARM_MERGED,
-                swarm_id=swarm_id,
-                data=event,
-            )
+        message = AgentManagerMessage(
+            type=AgentManagerMessageType.SWARM_MERGED,
+            swarm_id=swarm_id,
+            merge_strategy=event.get("merge_strategy"),
+            confidence=event.get("final_confidence", 0.0),
+            message=event.get("final_result", ""),
         )
+
+        await self.ws_manager.broadcast_to_pattern(f"swarm:{swarm_id}", message)
 
     # =========================================================================
     # Git/Temporal Event Handlers
@@ -499,13 +486,26 @@ class AgentManagerIntegration:
         self,
         thread_id: str,
         message_type: AgentManagerMessageType,
-        data: Dict[str, Any],
+        event: Dict[str, Any],
     ):
         """Broadcast event to thread subscribers and wildcard."""
+        # Extract specific fields from event for AgentManagerMessage
         message = AgentManagerMessage(
             type=message_type,
             thread_id=thread_id,
-            data=data,
+            thread_name=event.get("name") or event.get("thread_name"),
+            thread_status=event.get("status") or event.get("thread_status"),
+            current_step=event.get("current_step", 0),
+            total_steps=event.get("total_steps", 0),
+            step_name=event.get("step_name", ""),
+            step_type=event.get("step_type", ""),
+            percentage=event.get("percentage", 0.0),
+            message=event.get("message") or event.get("error") or "",
+            confidence=event.get("confidence", 0.0),
+            epistemic_confidence=event.get("epistemic_confidence", 0.0),
+            priority=event.get("priority", 0),
+            old_priority=event.get("old_priority"),
+            swarm_id=event.get("swarm_id"),
         )
 
         # Thread-specific subscribers

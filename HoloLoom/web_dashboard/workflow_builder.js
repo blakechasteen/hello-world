@@ -991,6 +991,29 @@ function renderNode(node) {
     nodeEl.appendChild(inputPort);
     nodeEl.appendChild(outputPort);
 
+    // Wave 5.5: Breakpoint indicator
+    if (node.breakpoint) {
+        const breakpointIndicator = document.createElement('div');
+        breakpointIndicator.className = 'breakpoint-indicator';
+        breakpointIndicator.title = 'Breakpoint set - click to remove';
+        breakpointIndicator.onclick = (e) => {
+            e.stopPropagation();
+            node.breakpoint = false;
+            renderWorkflow();
+            showToast('Breakpoint removed', 'info');
+        };
+        nodeEl.appendChild(breakpointIndicator);
+        nodeEl.classList.add('has-breakpoint');
+    }
+
+    // Wave 5.5: Execution state indicator
+    if (node.executionState) {
+        nodeEl.classList.add(`execution-${node.executionState}`);
+        if (node.executionState === 'error' && node.executionError) {
+            nodeEl.title = `Error: ${node.executionError}`;
+        }
+    }
+
     // Make draggable
     makeNodeDraggable(nodeEl, node);
 
@@ -1570,6 +1593,29 @@ function createNodeElement(node) {
     nodeEl.appendChild(configSection);
     nodeEl.appendChild(inputPort);
     nodeEl.appendChild(outputPort);
+
+    // Wave 5.5: Breakpoint indicator
+    if (node.breakpoint) {
+        const breakpointIndicator = document.createElement('div');
+        breakpointIndicator.className = 'breakpoint-indicator';
+        breakpointIndicator.title = 'Breakpoint set - click to remove';
+        breakpointIndicator.onclick = (e) => {
+            e.stopPropagation();
+            node.breakpoint = false;
+            renderWorkflow();
+            showToast('Breakpoint removed', 'info');
+        };
+        nodeEl.appendChild(breakpointIndicator);
+        nodeEl.classList.add('has-breakpoint');
+    }
+
+    // Wave 5.5: Execution state indicator
+    if (node.executionState) {
+        nodeEl.classList.add(`execution-${node.executionState}`);
+        if (node.executionState === 'error' && node.executionError) {
+            nodeEl.title = `Error: ${node.executionError}`;
+        }
+    }
 
     // Make draggable
     makeNodeDraggable(nodeEl, node);
@@ -3413,6 +3459,15 @@ document.addEventListener('keydown', (e) => {
     // Escape closes command palette
     if (e.key === 'Escape') {
         closeCommandPalette();
+    }
+    // L: Toggle logs panel (Wave 5.6)
+    if (e.key === 'l' || e.key === 'L') {
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+            const target = e.target;
+            if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+                toggleLogsPanel();
+            }
+        }
     }
 });
 
@@ -7185,6 +7240,1310 @@ if (document.readyState === 'loading') {
     initWave53Features();
 }
 
+// ========== WAVE 5.5: DEBUG SYSTEM ==========
+
+/**
+ * Debug mode state
+ */
+let debugModeActive = false;
+let debugState = 'idle'; // idle, running, paused, stopped
+let debugCurrentNodeIndex = -1;
+let debugExecutionQueue = [];
+let debugNodeOutputs = {}; // Stores node input/output for inspection
+let debugPausePromiseResolve = null;
+
+/**
+ * Toggle debug mode on/off
+ */
+function toggleDebugMode() {
+    debugModeActive = !debugModeActive;
+    const toolbar = document.getElementById('debugToolbar');
+
+    if (debugModeActive) {
+        toolbar.classList.add('active');
+        showToast('Debug mode enabled', 'info');
+        console.log('[Wave 5.5] Debug mode enabled');
+    } else {
+        toolbar.classList.remove('active');
+        hideVariableInspector();
+        debugStop();
+        showToast('Debug mode disabled', 'info');
+        console.log('[Wave 5.5] Debug mode disabled');
+    }
+}
+
+/**
+ * Update debug UI state
+ */
+function updateDebugUI() {
+    const statusEl = document.getElementById('debugStatus');
+    const runBtn = document.getElementById('debugRunBtn');
+    const pauseBtn = document.getElementById('debugPauseBtn');
+    const stepOverBtn = document.getElementById('debugStepOverBtn');
+    const stepIntoBtn = document.getElementById('debugStepIntoBtn');
+    const stopBtn = document.getElementById('debugStopBtn');
+
+    // Update status display
+    statusEl.textContent = debugState.charAt(0).toUpperCase() + debugState.slice(1);
+    statusEl.className = 'debug-status ' + debugState;
+
+    // Update button states
+    switch (debugState) {
+        case 'idle':
+            runBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stepOverBtn.disabled = false;
+            stepIntoBtn.disabled = false;
+            stopBtn.disabled = true;
+            break;
+        case 'running':
+            runBtn.disabled = true;
+            pauseBtn.disabled = false;
+            stepOverBtn.disabled = true;
+            stepIntoBtn.disabled = true;
+            stopBtn.disabled = false;
+            break;
+        case 'paused':
+            runBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stepOverBtn.disabled = false;
+            stepIntoBtn.disabled = false;
+            stopBtn.disabled = false;
+            break;
+        case 'stopped':
+            runBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stepOverBtn.disabled = false;
+            stepIntoBtn.disabled = false;
+            stopBtn.disabled = true;
+            break;
+    }
+}
+
+/**
+ * Set execution state on a node (for visualization)
+ */
+function setNodeExecutionState(nodeId, state, error = null) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (node) {
+        node.executionState = state;
+        node.executionError = error;
+        renderWorkflow();
+    }
+}
+
+/**
+ * Clear all execution states
+ */
+function clearExecutionStates() {
+    nodes.forEach(node => {
+        delete node.executionState;
+        delete node.executionError;
+    });
+    debugNodeOutputs = {};
+    renderWorkflow();
+}
+
+/**
+ * Get execution order for workflow
+ */
+function getDebugExecutionOrder() {
+    // Find root nodes (no incoming connections)
+    const hasIncoming = new Set(connections.map(c => c.to));
+    const rootNodes = nodes.filter(n => !hasIncoming.has(n.id));
+
+    // BFS to get execution order
+    const visited = new Set();
+    const queue = [...rootNodes];
+    const order = [];
+
+    while (queue.length > 0) {
+        const node = queue.shift();
+        if (visited.has(node.id)) continue;
+
+        visited.add(node.id);
+        order.push(node);
+
+        // Add children
+        const outgoing = connections.filter(c => c.from === node.id);
+        outgoing.forEach(conn => {
+            const child = nodes.find(n => n.id === conn.to);
+            if (child && !visited.has(child.id)) {
+                queue.push(child);
+            }
+        });
+    }
+
+    return order;
+}
+
+/**
+ * Debug Run (F5) - Run workflow with breakpoints
+ */
+async function debugRun() {
+    if (!debugModeActive) {
+        toggleDebugMode();
+    }
+
+    if (debugState === 'paused') {
+        // Resume from pause
+        debugState = 'running';
+        updateDebugUI();
+        if (debugPausePromiseResolve) {
+            debugPausePromiseResolve();
+            debugPausePromiseResolve = null;
+        }
+        return;
+    }
+
+    // Start fresh execution
+    clearExecutionStates();
+    debugExecutionQueue = getDebugExecutionOrder();
+    debugCurrentNodeIndex = 0;
+    debugState = 'running';
+    updateDebugUI();
+
+    console.log('[Wave 5.5] Debug run started, nodes:', debugExecutionQueue.length);
+    showToast('Debug execution started', 'info');
+
+    await executeDebugQueue();
+}
+
+/**
+ * Execute the debug queue
+ */
+async function executeDebugQueue() {
+    while (debugCurrentNodeIndex < debugExecutionQueue.length && debugState !== 'stopped') {
+        const node = debugExecutionQueue[debugCurrentNodeIndex];
+
+        // Check for breakpoint
+        if (node.breakpoint && debugState === 'running') {
+            debugState = 'paused';
+            setNodeExecutionState(node.id, 'breakpoint-hit');
+            updateDebugUI();
+            updateVariableInspector(node);
+            showToast(`Breakpoint hit: ${node.definition.name}`, 'warning');
+            console.log('[Wave 5.5] Breakpoint hit at:', node.definition.name);
+
+            // Wait for resume or step
+            await new Promise(resolve => {
+                debugPausePromiseResolve = resolve;
+            });
+
+            if (debugState === 'stopped') break;
+        }
+
+        // Mark as running
+        setNodeExecutionState(node.id, 'running');
+
+        // Simulate execution
+        try {
+            // Gather inputs from previous nodes
+            const inputs = {};
+            const incoming = connections.filter(c => c.to === node.id);
+            incoming.forEach(conn => {
+                const fromNode = nodes.find(n => n.id === conn.from);
+                if (fromNode && debugNodeOutputs[fromNode.id]) {
+                    inputs[fromNode.definition.name] = debugNodeOutputs[fromNode.id];
+                }
+            });
+
+            // Simulate node execution (in real implementation, this would call the backend)
+            await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+
+            // Generate mock output
+            const output = {
+                status: 'success',
+                timestamp: new Date().toISOString(),
+                result: `Output from ${node.definition.name}`,
+                config: node.config
+            };
+
+            debugNodeOutputs[node.id] = { input: inputs, output };
+            setNodeExecutionState(node.id, 'success');
+
+            // Update inspector if this node is selected
+            if (node.selected) {
+                updateVariableInspector(node);
+            }
+
+        } catch (error) {
+            setNodeExecutionState(node.id, 'error', error.message);
+            debugNodeOutputs[node.id] = { error: error.message };
+
+            // Pause on error in debug mode
+            debugState = 'paused';
+            updateDebugUI();
+            showToast(`Error at ${node.definition.name}: ${error.message}`, 'error');
+
+            await new Promise(resolve => {
+                debugPausePromiseResolve = resolve;
+            });
+
+            if (debugState === 'stopped') break;
+        }
+
+        debugCurrentNodeIndex++;
+    }
+
+    if (debugState !== 'stopped') {
+        debugState = 'idle';
+        updateDebugUI();
+        showToast('Debug execution completed', 'success');
+        console.log('[Wave 5.5] Debug execution completed');
+    }
+}
+
+/**
+ * Debug Pause (F6) - Pause execution
+ */
+function debugPause() {
+    if (debugState === 'running') {
+        debugState = 'paused';
+        updateDebugUI();
+        showToast('Execution paused', 'warning');
+        console.log('[Wave 5.5] Execution paused');
+    }
+}
+
+/**
+ * Debug Step Over (F10) - Execute current node and pause at next
+ */
+async function debugStepOver() {
+    if (!debugModeActive) {
+        toggleDebugMode();
+    }
+
+    if (debugState === 'idle') {
+        // Start fresh with step
+        clearExecutionStates();
+        debugExecutionQueue = getDebugExecutionOrder();
+        debugCurrentNodeIndex = 0;
+    }
+
+    if (debugCurrentNodeIndex >= debugExecutionQueue.length) {
+        showToast('No more nodes to execute', 'info');
+        return;
+    }
+
+    const node = debugExecutionQueue[debugCurrentNodeIndex];
+    debugState = 'running';
+    updateDebugUI();
+
+    // Execute single node
+    setNodeExecutionState(node.id, 'running');
+
+    try {
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        const inputs = {};
+        const incoming = connections.filter(c => c.to === node.id);
+        incoming.forEach(conn => {
+            const fromNode = nodes.find(n => n.id === conn.from);
+            if (fromNode && debugNodeOutputs[fromNode.id]) {
+                inputs[fromNode.definition.name] = debugNodeOutputs[fromNode.id];
+            }
+        });
+
+        debugNodeOutputs[node.id] = {
+            input: inputs,
+            output: {
+                status: 'success',
+                result: `Output from ${node.definition.name}`,
+                config: node.config
+            }
+        };
+
+        setNodeExecutionState(node.id, 'success');
+        updateVariableInspector(node);
+        showToast(`Stepped: ${node.definition.name}`, 'info');
+
+    } catch (error) {
+        setNodeExecutionState(node.id, 'error', error.message);
+        debugNodeOutputs[node.id] = { error: error.message };
+    }
+
+    debugCurrentNodeIndex++;
+    debugState = debugCurrentNodeIndex < debugExecutionQueue.length ? 'paused' : 'idle';
+    updateDebugUI();
+}
+
+/**
+ * Debug Step Into (F11) - Step into group nodes
+ */
+async function debugStepInto() {
+    // For now, same as step over (would expand groups in full implementation)
+    await debugStepOver();
+}
+
+/**
+ * Debug Stop (Shift+F5) - Stop execution
+ */
+function debugStop() {
+    debugState = 'stopped';
+
+    // Resolve any pending promises
+    if (debugPausePromiseResolve) {
+        debugPausePromiseResolve();
+        debugPausePromiseResolve = null;
+    }
+
+    // Mark remaining nodes as stopped
+    for (let i = debugCurrentNodeIndex; i < debugExecutionQueue.length; i++) {
+        const node = debugExecutionQueue[i];
+        if (node.executionState === 'running' || node.executionState === 'breakpoint-hit') {
+            delete node.executionState;
+        }
+    }
+
+    debugCurrentNodeIndex = -1;
+    debugExecutionQueue = [];
+    updateDebugUI();
+    renderWorkflow();
+
+    showToast('Debug execution stopped', 'error');
+    console.log('[Wave 5.5] Debug execution stopped');
+}
+
+/**
+ * Toggle variable inspector visibility
+ */
+function toggleVariableInspector() {
+    const inspector = document.getElementById('variableInspector');
+    if (inspector.classList.contains('visible')) {
+        hideVariableInspector();
+    } else {
+        showVariableInspector();
+    }
+}
+
+/**
+ * Show variable inspector
+ */
+function showVariableInspector() {
+    const inspector = document.getElementById('variableInspector');
+    inspector.classList.add('visible');
+
+    // Show selected node data if any
+    const selectedNode = nodes.find(n => n.selected);
+    if (selectedNode) {
+        updateVariableInspector(selectedNode);
+    }
+}
+
+/**
+ * Hide variable inspector
+ */
+function hideVariableInspector() {
+    const inspector = document.getElementById('variableInspector');
+    inspector.classList.remove('visible');
+}
+
+/**
+ * Update variable inspector with node data
+ */
+function updateVariableInspector(node) {
+    const body = document.getElementById('inspectorBody');
+    const data = debugNodeOutputs[node.id];
+
+    if (!data) {
+        body.innerHTML = `
+            <div class="inspector-node-name">${node.definition.name}</div>
+            <div class="inspector-empty">
+                <div style="font-size: 24px; margin-bottom: 8px;">⏳</div>
+                Node has not been executed yet
+            </div>
+        `;
+        return;
+    }
+
+    let html = `<div class="inspector-node-name">${node.definition.name}</div>`;
+
+    if (data.input && Object.keys(data.input).length > 0) {
+        html += `
+            <div class="inspector-section">
+                <div class="inspector-section-title">
+                    📥 Input
+                    <button class="inspector-copy-btn" onclick="copyInspectorData('input', '${node.id}')">Copy</button>
+                </div>
+                <pre class="inspector-json">${JSON.stringify(data.input, null, 2)}</pre>
+            </div>
+        `;
+    }
+
+    if (data.output) {
+        html += `
+            <div class="inspector-section">
+                <div class="inspector-section-title">
+                    📤 Output
+                    <button class="inspector-copy-btn" onclick="copyInspectorData('output', '${node.id}')">Copy</button>
+                </div>
+                <pre class="inspector-json">${JSON.stringify(data.output, null, 2)}</pre>
+            </div>
+        `;
+    }
+
+    if (data.error) {
+        html += `
+            <div class="inspector-section">
+                <div class="inspector-section-title">
+                    ❌ Error
+                </div>
+                <pre class="inspector-json" style="color: #e74c3c;">${data.error}</pre>
+            </div>
+        `;
+    }
+
+    body.innerHTML = html;
+}
+
+/**
+ * Copy inspector data to clipboard
+ */
+function copyInspectorData(type, nodeId) {
+    const data = debugNodeOutputs[nodeId];
+    if (!data) return;
+
+    const content = type === 'input' ? data.input : data.output;
+    navigator.clipboard.writeText(JSON.stringify(content, null, 2))
+        .then(() => showToast('Copied to clipboard', 'success'))
+        .catch(() => showToast('Failed to copy', 'error'));
+}
+
+/**
+ * Debug keyboard shortcuts
+ */
+document.addEventListener('keydown', (e) => {
+    // Only handle if debug mode is active or toggling it
+    if (e.key === 'd' || e.key === 'D') {
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+            // Check if not in input field
+            if (document.activeElement.tagName !== 'INPUT' &&
+                document.activeElement.tagName !== 'TEXTAREA' &&
+                document.activeElement.tagName !== 'SELECT') {
+                e.preventDefault();
+                toggleDebugMode();
+            }
+        }
+    }
+
+    if (!debugModeActive) return;
+
+    if (e.key === 'F5') {
+        e.preventDefault();
+        debugRun();
+    } else if (e.key === 'F6') {
+        e.preventDefault();
+        debugPause();
+    } else if (e.key === 'F10') {
+        e.preventDefault();
+        debugStepOver();
+    } else if (e.key === 'F11') {
+        e.preventDefault();
+        debugStepInto();
+    } else if (e.key === 'F5' && e.shiftKey) {
+        e.preventDefault();
+        debugStop();
+    } else if (e.key === 'i' || e.key === 'I') {
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+            if (document.activeElement.tagName !== 'INPUT' &&
+                document.activeElement.tagName !== 'TEXTAREA' &&
+                document.activeElement.tagName !== 'SELECT') {
+                e.preventDefault();
+                toggleVariableInspector();
+            }
+        }
+    } else if (e.key === 'b' || e.key === 'B') {
+        // Ctrl+B: Toggle breakpoint on selected node
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            const selectedNode = nodes.find(n => n.selected);
+            if (selectedNode) {
+                selectedNode.breakpoint = !selectedNode.breakpoint;
+                renderWorkflow();
+                showToast(selectedNode.breakpoint ? 'Breakpoint set' : 'Breakpoint removed', 'info');
+            }
+        }
+    }
+});
+
+// Initialize debug UI on load
+function initWave55Features() {
+    updateDebugUI();
+    console.log('[Wave 5.5] Debug system initialized');
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWave55Features);
+} else {
+    initWave55Features();
+}
+
+// ========================================
+// WAVE 5.6: Backend WebSocket Integration
+// ========================================
+
+/**
+ * WebSocket connection state
+ */
+let wsConnection = null;
+let wsConnectionState = 'disconnected'; // 'disconnected', 'connecting', 'connected'
+let wsAutoReconnect = true;
+let wsReconnectInterval = 5000;
+let wsReconnectTimer = null;
+let wsReconnectAttempts = 0;
+const wsMaxReconnectAttempts = 10;
+
+/**
+ * Execution logs state
+ */
+let executionLogs = [];
+let logsPanelVisible = false;
+let logAutoScroll = true;
+let logFilterLevel = 'all';
+let logFilterNode = 'all';
+
+/**
+ * Node execution timing
+ */
+const nodeStartTimes = new Map();
+const nodeElapsedTimers = new Map();
+
+/**
+ * WorkflowWebSocket class for managing WebSocket connection
+ */
+class WorkflowWebSocket {
+    constructor(url) {
+        this.url = url;
+        this.ws = null;
+        this.handlers = new Map();
+    }
+
+    connect() {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            console.log('[Wave 5.6] Already connected');
+            return;
+        }
+
+        updateConnectionStatus('connecting');
+        console.log('[Wave 5.6] Connecting to:', this.url);
+
+        try {
+            this.ws = new WebSocket(this.url);
+
+            this.ws.onopen = () => {
+                console.log('[Wave 5.6] WebSocket connected');
+                updateConnectionStatus('connected');
+                wsReconnectAttempts = 0;
+                addLog('success', null, 'Connected to workflow server');
+
+                // Subscribe to workflow events
+                this.send({ type: 'subscribe', workflow_id: 'current' });
+            };
+
+            this.ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    this.handleMessage(data);
+                } catch (e) {
+                    console.error('[Wave 5.6] Failed to parse message:', e);
+                }
+            };
+
+            this.ws.onclose = (event) => {
+                console.log('[Wave 5.6] WebSocket closed:', event.code, event.reason);
+                updateConnectionStatus('disconnected');
+                addLog('warn', null, `Disconnected from server (code: ${event.code})`);
+                this.ws = null;
+
+                // Auto-reconnect
+                if (wsAutoReconnect && wsReconnectAttempts < wsMaxReconnectAttempts) {
+                    scheduleReconnect();
+                }
+            };
+
+            this.ws.onerror = (error) => {
+                console.error('[Wave 5.6] WebSocket error:', error);
+                addLog('error', null, 'WebSocket connection error');
+            };
+        } catch (e) {
+            console.error('[Wave 5.6] Failed to create WebSocket:', e);
+            updateConnectionStatus('disconnected');
+            addLog('error', null, `Failed to connect: ${e.message}`);
+        }
+    }
+
+    disconnect() {
+        if (wsReconnectTimer) {
+            clearTimeout(wsReconnectTimer);
+            wsReconnectTimer = null;
+        }
+        wsAutoReconnect = false;
+
+        if (this.ws) {
+            this.ws.close(1000, 'User disconnected');
+            this.ws = null;
+        }
+        updateConnectionStatus('disconnected');
+        addLog('info', null, 'Disconnected from server');
+    }
+
+    send(data) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify(data));
+        } else {
+            console.warn('[Wave 5.6] Cannot send - not connected');
+        }
+    }
+
+    handleMessage(data) {
+        console.log('[Wave 5.6] Received:', data.type, data);
+
+        switch (data.type) {
+            case 'node_start':
+                handleNodeStart(data);
+                break;
+            case 'node_complete':
+                handleNodeComplete(data);
+                break;
+            case 'node_error':
+                handleNodeError(data);
+                break;
+            case 'node_status':
+                handleNodeStatus(data);
+                break;
+            case 'log':
+                addLog(data.level || 'info', data.node_id, data.message);
+                break;
+            case 'workflow_start':
+                handleWorkflowStart(data);
+                break;
+            case 'workflow_complete':
+                handleWorkflowComplete(data);
+                break;
+            case 'workflow_error':
+                handleWorkflowError(data);
+                break;
+            case 'progress':
+                handleProgressUpdate(data);
+                break;
+            default:
+                console.log('[Wave 5.6] Unknown message type:', data.type);
+        }
+    }
+}
+
+/**
+ * Schedule reconnect attempt
+ */
+function scheduleReconnect() {
+    if (wsReconnectTimer) return;
+
+    wsReconnectAttempts++;
+    const delay = Math.min(wsReconnectInterval * Math.pow(1.5, wsReconnectAttempts - 1), 30000);
+
+    console.log(`[Wave 5.6] Reconnecting in ${delay/1000}s (attempt ${wsReconnectAttempts}/${wsMaxReconnectAttempts})`);
+    addLog('info', null, `Reconnecting in ${Math.round(delay/1000)}s...`);
+
+    wsReconnectTimer = setTimeout(() => {
+        wsReconnectTimer = null;
+        if (wsConnection) {
+            wsConnection.connect();
+        }
+    }, delay);
+}
+
+/**
+ * Update connection status indicator
+ */
+function updateConnectionStatus(status) {
+    wsConnectionState = status;
+    const statusEl = document.getElementById('connectionStatus');
+    const textEl = statusEl?.querySelector('.connection-status-text');
+    const connectBtn = document.getElementById('disconnectBtn');
+    const connectPrimaryBtn = document.querySelector('.connection-modal-actions .primary');
+
+    if (statusEl) {
+        statusEl.className = `connection-status ${status}`;
+    }
+    if (textEl) {
+        const labels = {
+            'disconnected': 'Disconnected',
+            'connecting': 'Connecting...',
+            'connected': 'Connected'
+        };
+        textEl.textContent = labels[status] || status;
+    }
+    if (connectBtn && connectPrimaryBtn) {
+        if (status === 'connected') {
+            connectBtn.style.display = 'inline-block';
+            connectPrimaryBtn.style.display = 'none';
+        } else {
+            connectBtn.style.display = 'none';
+            connectPrimaryBtn.style.display = 'inline-block';
+        }
+    }
+}
+
+/**
+ * Handle node execution start
+ */
+function handleNodeStart(data) {
+    const nodeId = data.node_id;
+    const node = nodes.find(n => n.id === nodeId);
+
+    if (node) {
+        const nodeEl = document.querySelector(`.node[data-id="${nodeId}"]`);
+        if (nodeEl) {
+            // Clear previous state
+            nodeEl.classList.remove('ws-complete', 'ws-error');
+            nodeEl.classList.add('ws-running');
+
+            // Start timing
+            nodeStartTimes.set(nodeId, Date.now());
+            startElapsedTimer(nodeId, nodeEl);
+        }
+
+        addLog('info', nodeId, `Starting execution: ${node.definition?.name || nodeId}`);
+    }
+}
+
+/**
+ * Handle node execution complete
+ */
+function handleNodeComplete(data) {
+    const nodeId = data.node_id;
+    const node = nodes.find(n => n.id === nodeId);
+
+    if (node) {
+        const nodeEl = document.querySelector(`.node[data-id="${nodeId}"]`);
+        if (nodeEl) {
+            nodeEl.classList.remove('ws-running');
+            nodeEl.classList.add('ws-complete');
+            stopElapsedTimer(nodeId);
+        }
+
+        const elapsed = nodeStartTimes.get(nodeId) ? Date.now() - nodeStartTimes.get(nodeId) : 0;
+        addLog('success', nodeId, `Completed: ${node.definition?.name || nodeId} (${elapsed}ms)`);
+
+        // Store output for inspector
+        if (data.output) {
+            debugNodeOutputs[nodeId] = data.output;
+        }
+    }
+}
+
+/**
+ * Handle node execution error
+ */
+function handleNodeError(data) {
+    const nodeId = data.node_id;
+    const node = nodes.find(n => n.id === nodeId);
+
+    if (node) {
+        const nodeEl = document.querySelector(`.node[data-id="${nodeId}"]`);
+        if (nodeEl) {
+            nodeEl.classList.remove('ws-running');
+            nodeEl.classList.add('ws-error');
+            stopElapsedTimer(nodeId);
+        }
+
+        addLog('error', nodeId, `Error: ${data.error || 'Unknown error'}`);
+    }
+}
+
+/**
+ * Handle node status update
+ */
+function handleNodeStatus(data) {
+    const nodeId = data.node_id;
+    const status = data.status;
+
+    switch (status) {
+        case 'running':
+            handleNodeStart(data);
+            break;
+        case 'success':
+        case 'complete':
+            handleNodeComplete(data);
+            break;
+        case 'error':
+        case 'failed':
+            handleNodeError(data);
+            break;
+        default:
+            console.log('[Wave 5.6] Unknown node status:', status);
+    }
+}
+
+/**
+ * Handle workflow start
+ */
+function handleWorkflowStart(data) {
+    // Clear all node states
+    clearWsNodeStates();
+    showWorkflowProgress(true);
+    updateWorkflowProgress(0);
+    addLog('info', null, `Workflow started: ${data.workflow_id || 'current'}`);
+}
+
+/**
+ * Handle workflow complete
+ */
+function handleWorkflowComplete(data) {
+    showWorkflowProgress(false);
+    addLog('success', null, `Workflow completed (${data.duration_ms || 0}ms)`);
+    showToast('Workflow execution completed', 'success');
+}
+
+/**
+ * Handle workflow error
+ */
+function handleWorkflowError(data) {
+    showWorkflowProgress(false);
+    addLog('error', null, `Workflow failed: ${data.error || 'Unknown error'}`);
+    showToast('Workflow execution failed', 'error');
+}
+
+/**
+ * Handle progress update
+ */
+function handleProgressUpdate(data) {
+    const progress = data.progress || 0;
+    updateWorkflowProgress(progress);
+}
+
+/**
+ * Start elapsed time display for node
+ */
+function startElapsedTimer(nodeId, nodeEl) {
+    stopElapsedTimer(nodeId);
+
+    // Create elapsed element if needed
+    let elapsedEl = nodeEl.querySelector('.node-elapsed');
+    if (!elapsedEl) {
+        elapsedEl = document.createElement('div');
+        elapsedEl.className = 'node-elapsed';
+        nodeEl.appendChild(elapsedEl);
+    }
+
+    const startTime = Date.now();
+    const updateElapsed = () => {
+        const elapsed = Date.now() - startTime;
+        elapsedEl.textContent = formatElapsed(elapsed);
+    };
+
+    updateElapsed();
+    const timer = setInterval(updateElapsed, 100);
+    nodeElapsedTimers.set(nodeId, { timer, el: elapsedEl });
+}
+
+/**
+ * Stop elapsed timer for node
+ */
+function stopElapsedTimer(nodeId) {
+    const timerData = nodeElapsedTimers.get(nodeId);
+    if (timerData) {
+        clearInterval(timerData.timer);
+        // Keep the final time displayed
+        nodeElapsedTimers.delete(nodeId);
+    }
+}
+
+/**
+ * Format elapsed time
+ */
+function formatElapsed(ms) {
+    if (ms < 1000) return `${ms}ms`;
+    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+    const mins = Math.floor(ms / 60000);
+    const secs = Math.floor((ms % 60000) / 1000);
+    return `${mins}m ${secs}s`;
+}
+
+/**
+ * Clear all WebSocket-set node states
+ */
+function clearWsNodeStates() {
+    document.querySelectorAll('.node.ws-running, .node.ws-complete, .node.ws-error').forEach(el => {
+        el.classList.remove('ws-running', 'ws-complete', 'ws-error');
+    });
+
+    // Clear all timers
+    nodeElapsedTimers.forEach((data, nodeId) => {
+        clearInterval(data.timer);
+        if (data.el && data.el.parentNode) {
+            data.el.parentNode.removeChild(data.el);
+        }
+    });
+    nodeElapsedTimers.clear();
+    nodeStartTimes.clear();
+}
+
+/**
+ * Show/hide workflow progress bar
+ */
+function showWorkflowProgress(show) {
+    const progressEl = document.getElementById('workflowProgress');
+    if (progressEl) {
+        progressEl.classList.toggle('visible', show);
+        if (!show) {
+            updateWorkflowProgress(0);
+        }
+    }
+}
+
+/**
+ * Update workflow progress bar
+ */
+function updateWorkflowProgress(percent) {
+    const barEl = document.getElementById('workflowProgressBar');
+    if (barEl) {
+        barEl.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+    }
+}
+
+// ===== Logs Panel Functions =====
+
+/**
+ * Add a log entry
+ */
+function addLog(level, nodeId, message) {
+    const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const entry = {
+        timestamp,
+        level: level || 'info',
+        nodeId,
+        nodeName: nodeId ? (nodes.find(n => n.id === nodeId)?.definition?.name || nodeId) : null,
+        message
+    };
+
+    executionLogs.push(entry);
+
+    // Update node filter dropdown
+    updateLogNodeFilter();
+
+    // Render if panel is visible
+    if (logsPanelVisible) {
+        renderLogs();
+    }
+
+    // Update count
+    updateLogCount();
+}
+
+/**
+ * Render logs to panel
+ */
+function renderLogs() {
+    const container = document.getElementById('logsContent');
+    if (!container) return;
+
+    // Filter logs
+    const filtered = executionLogs.filter(log => {
+        if (logFilterLevel !== 'all' && log.level !== logFilterLevel) return false;
+        if (logFilterNode !== 'all' && log.nodeId !== logFilterNode) return false;
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: var(--text-muted, #999);">
+                No logs match the current filters.
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filtered.map(log => `
+        <div class="log-entry">
+            <span class="log-timestamp">${log.timestamp}</span>
+            <span class="log-level ${log.level}">${log.level}</span>
+            ${log.nodeName ? `<span class="log-node" title="${log.nodeId}">${log.nodeName}</span>` : '<span class="log-node">—</span>'}
+            <span class="log-message">${escapeHtml(log.message)}</span>
+        </div>
+    `).join('');
+
+    // Auto-scroll to bottom
+    if (logAutoScroll) {
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+/**
+ * Escape HTML for safe display
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * Update log count badge
+ */
+function updateLogCount() {
+    const countEl = document.getElementById('logCount');
+    if (countEl) {
+        countEl.textContent = executionLogs.length;
+    }
+}
+
+/**
+ * Update node filter dropdown
+ */
+function updateLogNodeFilter() {
+    const select = document.getElementById('logNodeFilter');
+    if (!select) return;
+
+    const nodeIds = [...new Set(executionLogs.filter(l => l.nodeId).map(l => l.nodeId))];
+    const currentValue = select.value;
+
+    select.innerHTML = '<option value="all">All Nodes</option>';
+    nodeIds.forEach(nodeId => {
+        const node = nodes.find(n => n.id === nodeId);
+        const name = node?.definition?.name || nodeId;
+        select.innerHTML += `<option value="${nodeId}">${name}</option>`;
+    });
+
+    // Restore selection if still valid
+    if (nodeIds.includes(currentValue) || currentValue === 'all') {
+        select.value = currentValue;
+    }
+}
+
+/**
+ * Toggle logs panel visibility
+ */
+function toggleLogsPanel() {
+    logsPanelVisible = !logsPanelVisible;
+    const panel = document.getElementById('logsPanel');
+    if (panel) {
+        panel.classList.toggle('visible', logsPanelVisible);
+        if (logsPanelVisible) {
+            renderLogs();
+        }
+    }
+}
+
+/**
+ * Show logs panel
+ */
+function showLogsPanel() {
+    logsPanelVisible = true;
+    const panel = document.getElementById('logsPanel');
+    if (panel) {
+        panel.classList.add('visible');
+        renderLogs();
+    }
+}
+
+/**
+ * Hide logs panel
+ */
+function hideLogsPanel() {
+    logsPanelVisible = false;
+    const panel = document.getElementById('logsPanel');
+    if (panel) {
+        panel.classList.remove('visible');
+    }
+}
+
+/**
+ * Filter logs by level
+ */
+function filterLogs() {
+    logFilterLevel = document.getElementById('logLevelFilter')?.value || 'all';
+    logFilterNode = document.getElementById('logNodeFilter')?.value || 'all';
+    renderLogs();
+}
+
+/**
+ * Toggle auto-scroll for logs
+ */
+function toggleAutoScroll() {
+    logAutoScroll = !logAutoScroll;
+    const btn = document.getElementById('logAutoScrollBtn');
+    if (btn) {
+        btn.classList.toggle('active', logAutoScroll);
+    }
+    if (logAutoScroll) {
+        const container = document.getElementById('logsContent');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+}
+
+/**
+ * Clear all logs
+ */
+function clearLogs() {
+    executionLogs = [];
+    updateLogCount();
+    renderLogs();
+    showToast('Logs cleared', 'info');
+}
+
+/**
+ * Export logs as JSON
+ */
+function exportLogs() {
+    const data = {
+        timestamp: new Date().toISOString(),
+        logs: executionLogs
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `workflow-logs-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showToast('Logs exported', 'success');
+}
+
+// ===== Connection Modal Functions =====
+
+/**
+ * Show connection settings modal
+ */
+function showConnectionModal() {
+    const overlay = document.getElementById('connectionModalOverlay');
+    const modal = document.getElementById('connectionModal');
+    if (overlay) overlay.style.display = 'block';
+    if (modal) modal.classList.add('visible');
+
+    // Update checkbox state
+    const autoReconnect = document.getElementById('wsAutoReconnect');
+    if (autoReconnect) autoReconnect.checked = wsAutoReconnect;
+
+    const interval = document.getElementById('wsReconnectInterval');
+    if (interval) interval.value = wsReconnectInterval / 1000;
+}
+
+/**
+ * Hide connection settings modal
+ */
+function hideConnectionModal() {
+    const overlay = document.getElementById('connectionModalOverlay');
+    const modal = document.getElementById('connectionModal');
+    if (overlay) overlay.style.display = 'none';
+    if (modal) modal.classList.remove('visible');
+}
+
+/**
+ * Connect to WebSocket server
+ */
+function connectWebSocket() {
+    const urlInput = document.getElementById('wsServerUrl');
+    const autoReconnectInput = document.getElementById('wsAutoReconnect');
+    const intervalInput = document.getElementById('wsReconnectInterval');
+
+    const url = urlInput?.value || 'ws://localhost:8001/ws';
+    wsAutoReconnect = autoReconnectInput?.checked ?? true;
+    wsReconnectInterval = (parseInt(intervalInput?.value) || 5) * 1000;
+    wsReconnectAttempts = 0;
+
+    if (wsConnection) {
+        wsConnection.disconnect();
+    }
+
+    wsConnection = new WorkflowWebSocket(url);
+    wsConnection.connect();
+    hideConnectionModal();
+}
+
+/**
+ * Disconnect from WebSocket server
+ */
+function disconnectWebSocket() {
+    if (wsConnection) {
+        wsConnection.disconnect();
+    }
+    hideConnectionModal();
+}
+
+/**
+ * Get WebSocket connection state
+ */
+function getWsConnectionState() {
+    return wsConnectionState;
+}
+
+/**
+ * Send message via WebSocket
+ */
+function wsSend(data) {
+    if (wsConnection) {
+        wsConnection.send(data);
+    }
+}
+
+/**
+ * Execute workflow via WebSocket
+ */
+function wsExecuteWorkflow() {
+    if (wsConnectionState !== 'connected') {
+        showToast('Not connected to server. Click connection status to connect.', 'warning');
+        return;
+    }
+
+    const workflow = exportWorkflow();
+    wsConnection.send({
+        type: 'execute_workflow',
+        workflow: workflow,
+        input_data: {}
+    });
+
+    showToast('Workflow execution started via WebSocket', 'info');
+}
+
+/**
+ * Initialize Wave 5.6 features
+ */
+function initWave56Features() {
+    console.log('[Wave 5.6] Initializing Backend WebSocket Integration');
+
+    // Add keyboard shortcut for logs panel
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'l' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            const active = document.activeElement;
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+                return;
+            }
+            e.preventDefault();
+            toggleLogsPanel();
+        }
+    });
+
+    // Initialize auto-scroll button state
+    const autoScrollBtn = document.getElementById('logAutoScrollBtn');
+    if (autoScrollBtn) {
+        autoScrollBtn.classList.toggle('active', logAutoScroll);
+    }
+
+    // Try to auto-connect if enabled
+    const savedUrl = localStorage.getItem('wsServerUrl');
+    const autoConnect = localStorage.getItem('wsAutoConnect') === 'true';
+
+    if (autoConnect && savedUrl) {
+        const urlInput = document.getElementById('wsServerUrl');
+        if (urlInput) urlInput.value = savedUrl;
+        setTimeout(() => connectWebSocket(), 1000);
+    }
+
+    console.log('[Wave 5.6] Backend WebSocket Integration initialized');
+}
+
+// Initialize on DOM ready (add to existing init if available)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWave56Features);
+} else {
+    initWave56Features();
+}
 
 // Export for console debugging
 window.workflowBuilder = {
@@ -7289,5 +8648,55 @@ window.workflowBuilder = {
     updateAutoSaveIndicator,
     loadAutoSavedDraft,
     toggleAutoSave,
-    autoSaveEnabled
+    autoSaveEnabled,
+    // Theme System (Wave 5.3)
+    toggleTheme,
+    setTheme,
+    getCurrentTheme,
+    getPreferredTheme,
+    resetThemeToSystem,
+    initTheme,
+    currentTheme,
+    // Debug System (Wave 5.5)
+    toggleDebugMode,
+    debugModeActive,
+    debugRun,
+    debugPause,
+    debugStepOver,
+    debugStepInto,
+    debugStop,
+    toggleVariableInspector,
+    showVariableInspector,
+    hideVariableInspector,
+    updateVariableInspector,
+    copyInspectorData,
+    debugState,
+    debugNodeOutputs,
+    setNodeExecutionState,
+    clearExecutionStates,
+    getDebugExecutionOrder,
+    // WebSocket Integration (Wave 5.6)
+    connectWebSocket,
+    disconnectWebSocket,
+    wsExecuteWorkflow,
+    wsSend,
+    getWsConnectionState,
+    showConnectionModal,
+    hideConnectionModal,
+    toggleLogsPanel,
+    showLogsPanel,
+    hideLogsPanel,
+    addLog,
+    clearLogs,
+    exportLogs,
+    filterLogs,
+    toggleAutoScroll,
+    updateConnectionStatus,
+    handleNodeStart,
+    handleNodeComplete,
+    handleNodeError,
+    showWorkflowProgress,
+    updateWorkflowProgress,
+    executionLogs,
+    wsConnectionState
 };
