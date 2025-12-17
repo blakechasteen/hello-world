@@ -1,0 +1,66 @@
+{
+  "name": "@hololoom/design-system",
+  "version": "1.0.0",
+  "description": "HoloLoom Design System - Cosmic-infused design tokens, themes, and primitive components",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./tokens": {
+      "import": "./dist/tokens/index.mjs",
+      "require": "./dist/tokens/index.js",
+      "types": "./dist/tokens/index.d.ts"
+    },
+    "./themes": {
+      "import": "./dist/themes/index.mjs",
+      "require": "./dist/themes/index.js",
+      "types": "./dist/themes/index.d.ts"
+    },
+    "./tailwind": {
+      "import": "./dist/tailwind.config.mjs",
+      "require": "./dist/tailwind.config.js"
+    },
+    "./css": "./dist/styles.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/tokens/index.ts src/themes/index.ts --format cjs,esm --dts && npm run build:css",
+    "build:css": "tailwindcss -i ./src/styles/globals.css -o ./dist/styles.css --minify",
+    "dev": "tsup src/index.ts src/tokens/index.ts src/themes/index.ts --format cjs,esm --dts --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "keywords": [
+    "hololoom",
+    "design-system",
+    "tokens",
+    "tailwind",
+    "cosmic",
+    "ui"
+  ],
+  "license": "MIT"
+}

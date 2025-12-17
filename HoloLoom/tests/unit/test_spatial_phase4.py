@@ -324,7 +324,7 @@ class TestCollaborativeSpatialSession:
         await session.start()
 
         # User joins
-        avatar, presence = await session.join(
+        avatar, presence, _ = await session.join(
             user_id="user_001",
             display_name="Test User"
         )
@@ -1758,7 +1758,7 @@ class TestSpatialPhase4Integration:
         overlay_manager = create_knowledge_overlay_manager()
 
         # 4. User joins
-        avatar, presence = await session.join("user_001", "Test User")
+        avatar, presence, _ = await session.join("user_001", "Test User")
 
         # 5. Create knowledge overlays
         nodes = [

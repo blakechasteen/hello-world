@@ -26,16 +26,15 @@ References:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List, Callable, Awaitable, Protocol
-from enum import Enum
+from typing import Dict, Any, Optional, List, Callable, Awaitable, Protocol, Union
 from datetime import datetime
 from uuid import uuid4
 import asyncio
+import functools
 
+from .jenny_enums import LifecycleStage, DissolutionTrigger, ActionStatus
 from .jenny_spec import (
     JennySpec,
-    LifecycleStage,
-    DissolutionTrigger,
     create_action,
 )
 from .jenny_lifecycle import (
@@ -50,15 +49,6 @@ from .spec_ledger import SpecLedger, SpecLedgerEntry
 # ============================================================================
 # Action Result Types
 # ============================================================================
-
-class ActionStatus(str, Enum):
-    """Outcome status of an action execution."""
-    SUCCESS = "success"           # Action completed successfully
-    FAILED = "failed"             # Action failed (recoverable)
-    BLOCKED = "blocked"           # Action blocked by guardrails
-    PENDING = "pending"           # Action requires confirmation
-    CANCELLED = "cancelled"       # Action was cancelled by user
-
 
 @dataclass(frozen=True)
 class ActionResult:
@@ -127,125 +117,172 @@ class ActionHandlerProtocol(Protocol):
 
 
 # ============================================================================
+# Action Handler Decorator (Phase 2.2 Elegance Refactor)
+# ============================================================================
+
+# Type alias for handler return: either ActionResult or success dict
+HandlerReturn = Union[ActionResult, Dict[str, Any]]
+
+
+def action_handler(handler_name: str, tracks_lifecycle: bool = False):
+    """
+    Decorator for action handlers that extracts common boilerplate.
+
+    Standardizes:
+    - action_id generation (UUID)
+    - Error handling (exceptions → FAILED ActionResult)
+    - ActionResult creation from success dict
+
+    The decorated function can return:
+    - ActionResult: Passed through (for custom error handling)
+    - Dict: Auto-wrapped in SUCCESS ActionResult with keys:
+        - message: Success message
+        - data: Additional data (optional)
+        - new_lifecycle: New lifecycle stage (optional)
+
+    Args:
+        handler_name: Name for the handler (used in ActionResult.handler)
+        tracks_lifecycle: If True, captures spec.lifecycle as previous_lifecycle
+
+    Usage:
+        @action_handler("expand_panel")
+        async def _handle_expand_panel(spec, params, lifecycle_manager, ledger):
+            return {"message": "Panel expanded", "data": {"new_size": "xlarge"}}
+    """
+    def decorator(handler_fn: Callable) -> Callable:
+        @functools.wraps(handler_fn)
+        async def wrapper(
+            spec: JennySpec,
+            params: Dict[str, Any],
+            lifecycle_manager: JennyLifecycleManagerBase,
+            ledger: Optional[SpecLedger],
+        ) -> ActionResult:
+            action_id = str(uuid4())
+            previous_lifecycle = spec.lifecycle if tracks_lifecycle else None
+
+            try:
+                result = await handler_fn(spec, params, lifecycle_manager, ledger)
+
+                # If handler returns ActionResult directly, pass through
+                if isinstance(result, ActionResult):
+                    return result
+
+                # Handler returned success dict - wrap in ActionResult
+                return ActionResult(
+                    action_id=action_id,
+                    handler=handler_name,
+                    status=ActionStatus.SUCCESS,
+                    spec_id=spec.spec_id,
+                    previous_lifecycle=previous_lifecycle,
+                    new_lifecycle=result.get("new_lifecycle"),
+                    message=result.get("message"),
+                    data=result.get("data", {}),
+                )
+
+            except (InvalidTransitionError, PanelNotFoundError) as e:
+                # Known lifecycle errors - provide context
+                return ActionResult(
+                    action_id=action_id,
+                    handler=handler_name,
+                    status=ActionStatus.FAILED,
+                    spec_id=spec.spec_id,
+                    previous_lifecycle=previous_lifecycle,
+                    error=str(e),
+                    message=f"Lifecycle error: {type(e).__name__}",
+                )
+
+            except Exception as e:
+                # Generic error handling
+                return ActionResult(
+                    action_id=action_id,
+                    handler=handler_name,
+                    status=ActionStatus.FAILED,
+                    spec_id=spec.spec_id,
+                    previous_lifecycle=previous_lifecycle,
+                    error=str(e),
+                )
+
+        return wrapper
+    return decorator
+
+
+# ============================================================================
 # Built-in Action Handlers
 # ============================================================================
 
+@action_handler("pin_panel", tracks_lifecycle=True)
 async def _handle_pin_panel(
     spec: JennySpec,
     params: Dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
     ledger: Optional[SpecLedger],
-) -> ActionResult:
+) -> HandlerReturn:
     """
     Pin panel: NASCENT → STABLE
 
     Makes a temporary panel persistent.
+    Decorator handles: action_id, error handling, ActionResult creation.
     """
-    action_id = str(uuid4())
-    previous_lifecycle = spec.lifecycle
+    # Core logic: pin the panel
+    await lifecycle_manager.pin(spec.spec_id)
 
-    try:
-        # Pin the panel (NASCENT → STABLE)
-        await lifecycle_manager.pin(spec.spec_id)
-
-        # Log to ledger
-        if ledger:
-            await ledger.log_lifecycle_transition(
-                spec_id=spec.spec_id,
-                new_stage=LifecycleStage.STABLE,
-            )
-
-        return ActionResult(
-            action_id=action_id,
-            handler="pin_panel",
-            status=ActionStatus.SUCCESS,
+    # Log to ledger
+    if ledger:
+        await ledger.log_lifecycle_transition(
             spec_id=spec.spec_id,
-            previous_lifecycle=previous_lifecycle,
-            new_lifecycle=LifecycleStage.STABLE,
-            message="Panel pinned successfully",
+            new_stage=LifecycleStage.STABLE,
         )
 
-    except InvalidTransitionError as e:
-        return ActionResult(
-            action_id=action_id,
-            handler="pin_panel",
-            status=ActionStatus.FAILED,
-            spec_id=spec.spec_id,
-            previous_lifecycle=previous_lifecycle,
-            error=str(e),
-            message="Cannot pin panel in current state",
-        )
-    except PanelNotFoundError:
-        return ActionResult(
-            action_id=action_id,
-            handler="pin_panel",
-            status=ActionStatus.FAILED,
-            spec_id=spec.spec_id,
-            error="Panel not found in lifecycle manager",
-        )
+    return {
+        "new_lifecycle": LifecycleStage.STABLE,
+        "message": "Panel pinned successfully",
+    }
 
 
+@action_handler("dismiss_panel", tracks_lifecycle=True)
 async def _handle_dismiss_panel(
     spec: JennySpec,
     params: Dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
     ledger: Optional[SpecLedger],
-) -> ActionResult:
+) -> HandlerReturn:
     """
     Dismiss panel: * → DISSOLVING → ARCHIVED
 
     User manually closes a panel.
+    Decorator handles: action_id, error handling, ActionResult creation.
     """
-    action_id = str(uuid4())
-    previous_lifecycle = spec.lifecycle
+    # Dissolve the panel (trigger: MANUAL)
+    await lifecycle_manager.dissolve(spec.spec_id, DissolutionTrigger.MANUAL)
 
-    try:
-        # Dissolve the panel (trigger: MANUAL)
-        await lifecycle_manager.dissolve(spec.spec_id, DissolutionTrigger.MANUAL)
-
-        # Log to ledger
-        if ledger:
-            await ledger.log_lifecycle_transition(
-                spec_id=spec.spec_id,
-                new_stage=LifecycleStage.DISSOLVING,
-                trigger=DissolutionTrigger.MANUAL,
-            )
-
-        return ActionResult(
-            action_id=action_id,
-            handler="dismiss_panel",
-            status=ActionStatus.SUCCESS,
+    # Log to ledger
+    if ledger:
+        await ledger.log_lifecycle_transition(
             spec_id=spec.spec_id,
-            previous_lifecycle=previous_lifecycle,
-            new_lifecycle=LifecycleStage.DISSOLVING,
-            message="Panel dismissed",
+            new_stage=LifecycleStage.DISSOLVING,
+            trigger=DissolutionTrigger.MANUAL,
         )
 
-    except Exception as e:
-        return ActionResult(
-            action_id=action_id,
-            handler="dismiss_panel",
-            status=ActionStatus.FAILED,
-            spec_id=spec.spec_id,
-            previous_lifecycle=previous_lifecycle,
-            error=str(e),
-        )
+    return {
+        "new_lifecycle": LifecycleStage.DISSOLVING,
+        "message": "Panel dismissed",
+    }
 
 
+@action_handler("show_why_panel")
 async def _handle_show_why_panel(
     spec: JennySpec,
     params: Dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
     ledger: Optional[SpecLedger],
-) -> ActionResult:
+) -> HandlerReturn:
     """
     Show "Why this UI?" meta-panel.
 
     Generates a WHY panel explaining the reasoning behind current panel.
     This is where Jenny explains itself (breaks the strange loop).
+    Decorator handles: action_id, error handling, ActionResult creation.
     """
-    action_id = str(uuid4())
-
     # Generate explanation data
     why_data = {
         "original_spec_id": spec.spec_id,
@@ -265,72 +302,57 @@ async def _handle_show_why_panel(
         },
     }
 
-    return ActionResult(
-        action_id=action_id,
-        handler="show_why_panel",
-        status=ActionStatus.SUCCESS,
-        spec_id=spec.spec_id,
-        message="Why panel generated",
-        data={
+    return {
+        "message": "Why panel generated",
+        "data": {
             "why_panel_data": why_data,
             "should_spawn_panel": True,
         },
-    )
+    }
 
 
+@action_handler("expand_panel")
 async def _handle_expand_panel(
     spec: JennySpec,
     params: Dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
     ledger: Optional[SpecLedger],
-) -> ActionResult:
+) -> HandlerReturn:
     """Expand panel to larger size."""
-    action_id = str(uuid4())
-
-    return ActionResult(
-        action_id=action_id,
-        handler="expand_panel",
-        status=ActionStatus.SUCCESS,
-        spec_id=spec.spec_id,
-        message="Panel expanded",
-        data={
+    return {
+        "message": "Panel expanded",
+        "data": {
             "new_size": "xlarge",
             "animation": "scale_up",
         },
-    )
+    }
 
 
+@action_handler("collapse_panel")
 async def _handle_collapse_panel(
     spec: JennySpec,
     params: Dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
     ledger: Optional[SpecLedger],
-) -> ActionResult:
+) -> HandlerReturn:
     """Collapse panel to smaller size."""
-    action_id = str(uuid4())
-
-    return ActionResult(
-        action_id=action_id,
-        handler="collapse_panel",
-        status=ActionStatus.SUCCESS,
-        spec_id=spec.spec_id,
-        message="Panel collapsed",
-        data={
+    return {
+        "message": "Panel collapsed",
+        "data": {
             "new_size": "small",
             "animation": "scale_down",
         },
-    )
+    }
 
 
+@action_handler("copy_content")
 async def _handle_copy_content(
     spec: JennySpec,
     params: Dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
     ledger: Optional[SpecLedger],
-) -> ActionResult:
+) -> HandlerReturn:
     """Copy panel content to clipboard."""
-    action_id = str(uuid4())
-
     # Extract copyable content based on panel type
     content = spec.content
     if spec.panel_type.value == "text":
@@ -340,38 +362,35 @@ async def _handle_copy_content(
     else:
         copy_text = str(content)
 
-    return ActionResult(
-        action_id=action_id,
-        handler="copy_content",
-        status=ActionStatus.SUCCESS,
-        spec_id=spec.spec_id,
-        message="Content copied to clipboard",
-        data={
+    return {
+        "message": "Content copied to clipboard",
+        "data": {
             "copied_text": copy_text,
             "content_type": spec.panel_type.value,
         },
-    )
+    }
 
 
+@action_handler("export_panel")
 async def _handle_export_panel(
     spec: JennySpec,
     params: Dict[str, Any],
     lifecycle_manager: JennyLifecycleManagerBase,
     ledger: Optional[SpecLedger],
-) -> ActionResult:
+) -> HandlerReturn:
     """
     Export panel data.
 
     This action requires confirmation (marked in jenny_spec.py).
+    Note: Returns ActionResult directly for PENDING status (decorator passes through).
     """
-    action_id = str(uuid4())
-
     # Check if confirmation was provided
     confirmed = params.get("confirmed", False)
 
     if not confirmed:
+        # Return ActionResult directly for non-success status
         return ActionResult(
-            action_id=action_id,
+            action_id=str(uuid4()),
             handler="export_panel",
             status=ActionStatus.PENDING,
             spec_id=spec.spec_id,
@@ -389,16 +408,12 @@ async def _handle_export_panel(
         "format": params.get("format", "json"),
     }
 
-    return ActionResult(
-        action_id=action_id,
-        handler="export_panel",
-        status=ActionStatus.SUCCESS,
-        spec_id=spec.spec_id,
-        message="Panel exported successfully",
-        data={
+    return {
+        "message": "Panel exported successfully",
+        "data": {
             "export_data": export_data,
         },
-    )
+    }
 
 
 # ============================================================================

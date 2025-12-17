@@ -12,9 +12,18 @@ RUTHLESS testing of the complete memory pipeline:
 
 Author: Blake Chasteen
 Date: November 8, 2025
+
+SKIPPED: December 2025 - spring_memory_scoring module was never implemented.
+Use spring_dynamics.py for physics-based memory instead.
 """
 
 import pytest
+
+# Skip entire module - spring_memory_scoring was never implemented
+pytestmark = pytest.mark.skip(
+    reason="spring_memory_scoring module not implemented. Use spring_dynamics.py instead."
+)
+
 import asyncio
 import time
 from pathlib import Path
@@ -24,10 +33,11 @@ import shutil
 from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
 from HoloLoom.memory.lifecycle_manager import MemoryScope
 from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.memory.spring_memory_scoring import (
-    SpringMemoryScorer,
-    AdaptiveSpringRetriever
-)
+# NOTE: spring_memory_scoring doesn't exist - this test file needs rewrite
+# from HoloLoom.memory.spring_memory_scoring import (
+#     SpringMemoryScorer,
+#     AdaptiveSpringRetriever
+# )
 from HoloLoom.protocols.types import MemoryShard
 
 

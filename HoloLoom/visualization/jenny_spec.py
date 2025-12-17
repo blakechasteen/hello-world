@@ -18,64 +18,20 @@ References:
 - dashboard.py (PanelSpec, PanelType base patterns)
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import List, Dict, Optional, Any, Tuple
 from enum import Enum
 from uuid import uuid4
 from datetime import datetime
 import json
 
+# Import consolidated enums (re-exported for backward compatibility)
+from .jenny_enums import LifecycleStage, BindingMode, DissolutionTrigger
+
 
 # ============================================================================
-# Lifecycle Enums
+# Panel-Specific Enums (kept here - tightly coupled to panel definitions)
 # ============================================================================
-
-class LifecycleStage(str, Enum):
-    """
-    Panel lifecycle states (immutable state machine).
-
-    State transitions:
-        compile() → NASCENT → (user pins) → STABLE
-                           ↘           ↙
-                        (timeout/superseded)
-                               ↓
-                          DISSOLVING
-                               ↓
-                           ARCHIVED
-
-    SYSTEM is a special stage for meta-panels (breaks infinite provenance loop).
-    """
-    NASCENT = "nascent"        # Just compiled, animating in (300ms spawn)
-    STABLE = "stable"          # User-pinned, persistent until dismissed
-    DISSOLVING = "dissolving"  # Fading out (300ms animation)
-    ARCHIVED = "archived"      # In SpecLedger, replayable
-    SYSTEM = "system"          # Meta-panel, not logged (breaks strange loop)
-
-
-class BindingMode(str, Enum):
-    """
-    Data binding modes for panel content.
-
-    Determines how panel updates when underlying data changes.
-    """
-    STATIC = "static"          # One-time render, no updates (cheapest)
-    REACTIVE = "reactive"      # Re-render on data changes (uses React useEffect)
-    STREAMING = "streaming"    # SSE/WebSocket live updates (most expensive)
-
-
-class DissolutionTrigger(str, Enum):
-    """
-    What causes panel dissolution.
-
-    Tracked in SpecLedger for understanding user behavior patterns.
-    """
-    MANUAL = "manual"          # User clicked dismiss button
-    TIMEOUT = "timeout"        # Idle timeout (default: 5 minutes)
-    CONTEXT_SHIFT = "context"  # Query topic changed significantly
-    SUPERSEDED = "superseded"  # New panel replaced this one
-    ORPHAN = "orphan"          # Cleanup: parent Spacetime deleted
-    MEMORY = "memory"          # Memory pressure forced dissolution
-
 
 class PanelTypeJenny(str, Enum):
     """
@@ -279,6 +235,18 @@ class JennySpec:
         """Deserialize from JSON string."""
         return cls.from_dict(json.loads(json_str))
 
+    def evolve(self, **kwargs) -> "JennySpec":
+        """
+        Create new spec with updated fields (generic immutable update pattern).
+
+        Uses dataclasses.replace() for elegant field updates on frozen dataclass.
+
+        Usage:
+            updated = spec.evolve(title="New Title", priority=2)
+            moved = spec.evolve(position=(1.0, 2.0, 0.0))
+        """
+        return replace(self, **kwargs)
+
     def with_lifecycle(self, new_lifecycle: LifecycleStage, trigger: Optional[DissolutionTrigger] = None) -> "JennySpec":
         """
         Create new spec with updated lifecycle (immutable update pattern).
@@ -290,51 +258,12 @@ class JennySpec:
                 trigger=DissolutionTrigger.MANUAL
             )
         """
-        return JennySpec(
-            spec_id=self.spec_id,
-            spacetime_id=self.spacetime_id,
-            panel_type=self.panel_type,
-            title=self.title,
-            subtitle=self.subtitle,
-            content=self.content,
-            lifecycle=new_lifecycle,
-            dissolution_trigger=trigger if new_lifecycle == LifecycleStage.DISSOLVING else self.dissolution_trigger,
-            position=self.position,
-            size=self.size,
-            priority=self.priority,
-            binding_mode=self.binding_mode,
-            data_source=self.data_source,
-            refresh_interval_ms=self.refresh_interval_ms,
-            actions=self.actions,
-            timestamp=self.timestamp,
-            compiler_version=self.compiler_version,
-            model_checkpoint=self.model_checkpoint,
-            metadata=self.metadata,
-        )
+        dissolution = trigger if new_lifecycle == LifecycleStage.DISSOLVING else self.dissolution_trigger
+        return replace(self, lifecycle=new_lifecycle, dissolution_trigger=dissolution)
 
     def with_position(self, x: float, y: float, z: float = 0.0) -> "JennySpec":
         """Create new spec with updated position (immutable update pattern)."""
-        return JennySpec(
-            spec_id=self.spec_id,
-            spacetime_id=self.spacetime_id,
-            panel_type=self.panel_type,
-            title=self.title,
-            subtitle=self.subtitle,
-            content=self.content,
-            lifecycle=self.lifecycle,
-            dissolution_trigger=self.dissolution_trigger,
-            position=(x, y, z),
-            size=self.size,
-            priority=self.priority,
-            binding_mode=self.binding_mode,
-            data_source=self.data_source,
-            refresh_interval_ms=self.refresh_interval_ms,
-            actions=self.actions,
-            timestamp=self.timestamp,
-            compiler_version=self.compiler_version,
-            model_checkpoint=self.model_checkpoint,
-            metadata=self.metadata,
-        )
+        return replace(self, position=(x, y, z))
 
 
 # ============================================================================
@@ -418,6 +347,75 @@ def get_default_actions(panel_type: PanelTypeJenny) -> Tuple[Dict[str, Any], ...
     return DEFAULT_ACTIONS.get(panel_type, (ACTION_PIN, ACTION_DISMISS, ACTION_WHY))
 
 
+def create_spec(
+    spacetime_id: str = "",
+    panel_type: PanelTypeJenny = PanelTypeJenny.TEXT,
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    content: Optional[Dict[str, Any]] = None,
+    size: PanelSizeJenny = PanelSizeJenny.MEDIUM,
+    priority: int = 0,
+    lifecycle: LifecycleStage = LifecycleStage.NASCENT,
+    binding_mode: BindingMode = BindingMode.STATIC,
+    data_source: Optional[str] = None,
+    actions: Optional[Tuple[Dict[str, Any], ...]] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> JennySpec:
+    """
+    Factory function to create JennySpec with sensible defaults.
+
+    This is a convenience wrapper around JennySpec constructor that
+    provides cleaner syntax for common use cases in tests and demos.
+
+    Args:
+        spacetime_id: Link to Spacetime that generated this
+        panel_type: Type of panel (TEXT, GRAPH, etc.)
+        title: Panel title
+        subtitle: Panel subtitle
+        content: Type-specific content dictionary
+        size: Panel size (SMALL, MEDIUM, LARGE, XLARGE)
+        priority: Priority for layout (higher = closer to user)
+        lifecycle: Initial lifecycle stage
+        binding_mode: Data binding mode (STATIC, REACTIVE, STREAMING)
+        data_source: Query for reactive/streaming bindings
+        actions: Tuple of action definitions (uses defaults if None)
+        metadata: Additional metadata dictionary
+
+    Returns:
+        JennySpec: Configured panel specification
+
+    Usage:
+        spec = create_spec(
+            spacetime_id="st-001",
+            panel_type=PanelTypeJenny.TEXT,
+            title="Response",
+            content={"text": "Hello, world!"},
+            priority=1,
+        )
+    """
+    if content is None:
+        content = {}
+    if actions is None:
+        actions = get_default_actions(panel_type)
+    if metadata is None:
+        metadata = {}
+
+    return JennySpec(
+        spacetime_id=spacetime_id,
+        panel_type=panel_type,
+        title=title,
+        subtitle=subtitle,
+        content=content,
+        size=size,
+        priority=priority,
+        lifecycle=lifecycle,
+        binding_mode=binding_mode,
+        data_source=data_source,
+        actions=actions,
+        metadata=metadata,
+    )
+
+
 # ============================================================================
 # Exports
 # ============================================================================
@@ -434,6 +432,7 @@ __all__ = [
     "JennySpec",
     # Helpers
     "create_action",
+    "create_spec",
     "get_default_actions",
     # Standard actions
     "ACTION_PIN",

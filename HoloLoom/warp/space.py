@@ -133,7 +133,7 @@ class WarpSpace:
         if not self.guardrails_enabled:
             return None
 
-        request = ActionRequest(action=action, category=category, context=context)
+        request = ActionRequest(action_id=action, category=category, description=stage, context=context)
         decision = self.guardrails.evaluate(request, text_input=text_input)
 
         if not decision.allowed:
@@ -316,7 +316,9 @@ class WarpSpace:
         try:
             _, s, _ = np.linalg.svd(self.tensor_field, full_matrices=False)
             features['singular_values'] = s[:min(6, len(s))].tolist()
-            features['spectral_entropy'] = float(-np.sum(s * np.log(s + 1e-10)))
+            # Normalize singular values to probability distribution for entropy calculation
+            s_norm = s / (np.sum(s) + 1e-10)
+            features['spectral_entropy'] = float(-np.sum(s_norm * np.log(s_norm + 1e-10)))
         except Exception as e:
             logger.warning(f"SVD computation failed: {e}")
 

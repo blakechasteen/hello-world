@@ -4,7 +4,7 @@
 
 Complete Matrix bot that brings HoloLoom's weaving orchestrator, MCTS decision-making, and hybrid memory system into your Matrix chat rooms.
 
-**Total Commands: 84** (December 2025)
+**Total Commands: 108** (December 2025)
 
 ---
 
@@ -328,6 +328,106 @@ Shows: Active nodes, average load, total tasks, uptime.
 
 ---
 
+### Learning Commands (8)
+
+| Command | Description |
+|---------|-------------|
+| `!learn stats` | Show Thompson Sampling learning statistics |
+| `!learn tool <name>` | Show statistics for a specific tool |
+| `!learn hot [limit]` | Show top K hot patterns |
+| `!learn cold [age]` | Show cold/stale patterns for pruning |
+| `!learn refine <query>` | Trigger refinement on a query |
+| `!learn patterns` | Show learned motif→tool patterns |
+| `!learn reflect` | Show reflection buffer metrics |
+| `!learn help` | Show learning commands help |
+
+#### Example: !learn stats
+```
+!learn stats
+```
+**Response:**
+- Thompson Sampling priors (α, β per tool)
+- Policy adapter weights
+- Hot pattern count and heat scores
+- Recent success rates
+
+#### Example: !learn hot
+```
+!learn hot 10
+```
+Shows top 10 hottest patterns by heat score (access × success × confidence × decay).
+
+---
+
+### Awareness Commands (8)
+
+| Command | Description |
+|---------|-------------|
+| `!aware metrics` | Show awareness graph metrics |
+| `!aware activate <query>` | Activate memories for a query |
+| `!aware spring <nodes>` | Run spring dynamics propagation |
+| `!aware wave mode` | Show current brain wave mode |
+| `!aware consolidate` | Trigger theta wave consolidation |
+| `!aware confidence` | Show meta-confidence (confidence about confidence) |
+| `!aware gaps` | Detect knowledge gaps |
+| `!aware help` | Show awareness commands help |
+
+#### Example: !aware metrics
+```
+!aware metrics
+```
+**Response:**
+- Activation level (network-wide)
+- Coherence (how well-connected active memories are)
+- Active nodes count
+- Temporal shift detection
+
+#### Example: !aware wave mode
+```
+!aware wave mode
+```
+Shows current brain wave mode: BETA (active), ALPHA (relaxed), THETA (consolidating), DELTA (pruning), or REM (dreaming).
+
+---
+
+### Context Commands (8)
+
+| Command | Description |
+|---------|-------------|
+| `!context pack <query>` | Pack context with compression |
+| `!context budget <bits>` | MI-aware packing with information budget |
+| `!context expand <query>` | Adaptive budget-aware expansion |
+| `!context stream <query>` | Streaming progressive expansion |
+| `!context spread <nodes>` | Beta wave activation spreading |
+| `!context importance` | Show 7-signal importance breakdown |
+| `!context stats` | Show context packer statistics |
+| `!context help` | Show context commands help |
+
+#### Example: !context pack
+```
+!context pack What is Thompson Sampling?
+```
+**Response:**
+- Compressed: 50 → 25 nodes
+- Token savings: 1250 tokens
+- Compression ratio: 50.0%
+- Top nodes by importance
+
+#### Example: !context importance
+```
+!context importance
+```
+Shows 7 importance signals:
+- Recency (15%) - How recently accessed
+- Relevance (20%) - Semantic similarity to query
+- Centrality (12%) - Graph importance (PageRank)
+- Access Frequency (8%) - Historical access count
+- Confidence (12%) - Historical confidence scores
+- Heat (8%) - Hot pattern feedback score
+- Information Content (25%) - Mutual information I(Node; Query)
+
+---
+
 ### Utility Commands (4)
 
 | Command | Description |
@@ -358,8 +458,11 @@ Shows: Active nodes, average load, total tasks, uptime.
 | **Cluster** | 4 | `cluster_handlers.py` |
 | **Alignment** | 7 | `alignment_handlers.py` |
 | **Workflow** | 8 | `workflow_handlers.py` |
+| **Learning** | 8 | `learning_handlers.py` |
+| **Awareness** | 8 | `awareness_handlers.py` |
+| **Context** | 8 | `context_handlers.py` |
 | **Utility** | 4 | `handler_registry.py` |
-| **Total** | **84** | |
+| **Total** | **108** | |
 
 ---
 
@@ -470,4 +573,4 @@ MIT License - See main HoloLoom LICENSE
 ---
 
 **Documentation Updated: December 2025**
-**Total Commands: 84**
+**Total Commands: 108**

@@ -319,7 +319,7 @@ class TestLLMJennyCompiler:
         assert compiler.llm_provider == "ollama"
         assert compiler.llm_model == "llama3.2:3b"
         assert compiler.enable_learning is True
-        assert compiler.VERSION == "3.0.0-llm"
+        assert compiler.VERSION == "3.1.0-llm-async"
 
     def test_initialization_with_learner(self):
         """Test compiler with pre-configured learner."""
@@ -359,6 +359,7 @@ class TestLLMJennyCompiler:
         """Test fallback to MRF when LLM unavailable."""
         compiler = LLMJennyCompiler(llm_provider="ollama")
         compiler._llm_available = False
+        compiler._use_async_client = False  # Ensure we don't try async
 
         # Mock the parent compile method
         with patch.object(
@@ -379,6 +380,7 @@ class TestLLMJennyCompiler:
         """Test successful LLM compilation."""
         compiler = LLMJennyCompiler(llm_provider="ollama")
         compiler._llm_available = True
+        compiler._use_async_client = False  # Use legacy client for testing
 
         # Mock LLM generate
         llm_response = '''
@@ -389,7 +391,11 @@ class TestLLMJennyCompiler:
             "confidence": 0.9
         }
         '''
-        compiler._llm.generate = AsyncMock(return_value=llm_response)
+        # Create legacy client if not exists and mock it
+        if not compiler._llm_legacy:
+            compiler._llm_legacy = MagicMock()
+            compiler._llm_legacy.available = True
+        compiler._llm_legacy.generate = AsyncMock(return_value=llm_response)
 
         # Mock analyze_query
         with patch(
@@ -407,9 +413,14 @@ class TestLLMJennyCompiler:
         """Test fallback when LLM response can't be parsed."""
         compiler = LLMJennyCompiler(llm_provider="ollama")
         compiler._llm_available = True
+        compiler._use_async_client = False  # Use legacy client for testing
 
+        # Create legacy client and mock it
+        if not compiler._llm_legacy:
+            compiler._llm_legacy = MagicMock()
+            compiler._llm_legacy.available = True
         # Return unparseable response
-        compiler._llm.generate = AsyncMock(return_value="I don't know")
+        compiler._llm_legacy.generate = AsyncMock(return_value="I don't know")
 
         with patch(
             'HoloLoom.visualization.jenny_llm_compiler.analyze_query',
@@ -515,7 +526,13 @@ class TestGracefulFallbackChain:
 
         # Scenario 1: LLM available and succeeds
         compiler._llm_available = True
-        compiler._llm.generate = AsyncMock(return_value='{"panel_type": "graph", "reason": "test", "confidence": 0.8}')
+        compiler._use_async_client = False  # Use legacy client for testing
+
+        # Create legacy client and mock it
+        if not compiler._llm_legacy:
+            compiler._llm_legacy = MagicMock()
+            compiler._llm_legacy.available = True
+        compiler._llm_legacy.generate = AsyncMock(return_value='{"panel_type": "graph", "reason": "test", "confidence": 0.8}')
 
         with patch(
             'HoloLoom.visualization.jenny_llm_compiler.analyze_query',
@@ -531,9 +548,13 @@ class TestGracefulFallbackChain:
         """Test that LLM timeout triggers fallback."""
         compiler = LLMJennyCompiler(llm_provider="ollama")
         compiler._llm_available = True
+        compiler._use_async_client = False  # Use legacy client for testing
 
-        # Simulate LLM returning None (timeout/error)
-        compiler._llm.generate = AsyncMock(return_value=None)
+        # Create legacy client and mock it to simulate timeout
+        if not compiler._llm_legacy:
+            compiler._llm_legacy = MagicMock()
+            compiler._llm_legacy.available = True
+        compiler._llm_legacy.generate = AsyncMock(return_value=None)
 
         with patch(
             'HoloLoom.visualization.jenny_llm_compiler.analyze_query',

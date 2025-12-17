@@ -2,6 +2,8 @@
 HoloLoom ChatOps - Advanced Handlers
 =====================================
 
+**108 Total Commands** (as of December 2025)
+
 Core components:
 - handler_registry: Decorator-based handler registration with auto-help
 
@@ -24,6 +26,9 @@ Optional advanced features:
 - cluster_handlers: Eggroll distributed cluster management (!cluster)
 - alignment_handlers: Safety guardrails and audit trail commands (!safety, !audit)
 - agent_manager_ws: WebSocket handlers for Agent Manager UI (thread lifecycle, progress, priority)
+- learning_handlers: Thompson Sampling, hot patterns, refinement, reflection (!learn)
+- awareness_handlers: Activation, spring dynamics, brain waves, meta-awareness (!aware)
+- context_handlers: Context packing, adaptive expansion, streaming (!context pack/expand/stream)
 """
 
 # Core handler registry - always available
@@ -522,6 +527,133 @@ try:
         "handle_workflow_agents",
         "handle_workflow_optimize",
         "handle_workflow_help"
+    ])
+except ImportError:
+    pass
+
+# Learning handlers (December 2025) - Thompson Sampling, hot patterns, refinement
+try:
+    from HoloLoom.chatops.handlers.learning_handlers import (
+        register_learning_handlers,
+        LearningHandlers,
+        get_learning_engine,
+        set_learning_engine,
+        get_hot_tracker,
+        set_hot_tracker,
+        get_reflection_buffer,
+        set_reflection_buffer,
+        handle_learn_stats,
+        handle_learn_tool,
+        handle_learn_hot,
+        handle_learn_cold,
+        handle_learn_refine,
+        handle_learn_patterns,
+        handle_learn_reflect,
+        handle_learn_help
+    )
+    __all__.extend([
+        "register_learning_handlers",
+        "LearningHandlers",
+        "get_learning_engine",
+        "set_learning_engine",
+        "get_hot_tracker",
+        "set_hot_tracker",
+        "get_reflection_buffer",
+        "set_reflection_buffer",
+        "handle_learn_stats",
+        "handle_learn_tool",
+        "handle_learn_hot",
+        "handle_learn_cold",
+        "handle_learn_refine",
+        "handle_learn_patterns",
+        "handle_learn_reflect",
+        "handle_learn_help"
+    ])
+except ImportError:
+    pass
+
+# Awareness handlers (December 2025) - Activation, spring dynamics, brain waves
+try:
+    from HoloLoom.chatops.handlers.awareness_handlers import (
+        register_awareness_handlers,
+        AwarenessHandlers,
+        get_awareness_graph,
+        set_awareness_graph,
+        get_spring_dynamics,
+        set_spring_dynamics,
+        get_wave_engine,
+        set_wave_engine,
+        handle_aware_metrics,
+        handle_aware_activate,
+        handle_aware_spring,
+        handle_aware_wave_mode,
+        handle_aware_consolidate,
+        handle_aware_confidence,
+        handle_aware_gaps,
+        handle_aware_help
+    )
+    __all__.extend([
+        "register_awareness_handlers",
+        "AwarenessHandlers",
+        "get_awareness_graph",
+        "set_awareness_graph",
+        "get_spring_dynamics",
+        "set_spring_dynamics",
+        "get_wave_engine",
+        "set_wave_engine",
+        "handle_aware_metrics",
+        "handle_aware_activate",
+        "handle_aware_spring",
+        "handle_aware_wave_mode",
+        "handle_aware_consolidate",
+        "handle_aware_confidence",
+        "handle_aware_gaps",
+        "handle_aware_help"
+    ])
+except ImportError:
+    pass
+
+# Context handlers (December 2025) - Context packing, adaptive expansion, streaming
+try:
+    from HoloLoom.chatops.handlers.context_handlers import (
+        register_context_handlers,
+        ContextHandlers,
+        get_context_packer,
+        set_context_packer,
+        get_activation_spreader,
+        set_activation_spreader,
+        get_importance_scorer,
+        set_importance_scorer,
+        get_knowledge_graph,
+        set_knowledge_graph,
+        handle_context_pack,
+        handle_context_budget,
+        handle_context_expand,
+        handle_context_stream,
+        handle_context_spread,
+        handle_context_importance,
+        handle_context_stats,
+        handle_context_help
+    )
+    __all__.extend([
+        "register_context_handlers",
+        "ContextHandlers",
+        "get_context_packer",
+        "set_context_packer",
+        "get_activation_spreader",
+        "set_activation_spreader",
+        "get_importance_scorer",
+        "set_importance_scorer",
+        "get_knowledge_graph",
+        "set_knowledge_graph",
+        "handle_context_pack",
+        "handle_context_budget",
+        "handle_context_expand",
+        "handle_context_stream",
+        "handle_context_spread",
+        "handle_context_importance",
+        "handle_context_stats",
+        "handle_context_help"
     ])
 except ImportError:
     pass

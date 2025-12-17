@@ -202,6 +202,76 @@ class HoloLoomMatrixHandlers:
 
         logger.info("HoloLoom handlers initialized with reflection loop (async jobs enabled)")
 
+        # Run startup diagnostics (P0 fix: warn about missing components)
+        self._startup_diagnostics = self._run_startup_diagnostics()
+
+    def _run_startup_diagnostics(self) -> Dict[str, Any]:
+        """
+        Run startup diagnostics and warn about missing optional components.
+
+        Returns:
+            Dict with component status and warnings for display via !status
+        """
+        diagnostics = {
+            "components": {},
+            "warnings": [],
+            "summary": ""
+        }
+
+        # Check Alignment Framework
+        if ALIGNMENT_AVAILABLE and self.guardrails:
+            diagnostics["components"]["alignment"] = {"status": "✓ ACTIVE", "description": "SafetyGuardrails + AuditTrail"}
+        elif ALIGNMENT_AVAILABLE:
+            diagnostics["components"]["alignment"] = {"status": "⚠ DISABLED", "description": "Available but disabled"}
+            diagnostics["warnings"].append("Alignment framework available but disabled - actions not safety-gated")
+        else:
+            diagnostics["components"]["alignment"] = {"status": "✗ MISSING", "description": "Not installed"}
+            diagnostics["warnings"].append("⚠ SAFETY: Alignment framework not available - running WITHOUT safety guardrails")
+            logger.warning("STARTUP: Alignment framework not available - actions will NOT be safety-gated")
+
+        # Check WebSocket Progress Streaming
+        if WEBSOCKET_AVAILABLE and self._progress_broadcaster:
+            diagnostics["components"]["websocket"] = {"status": "✓ ACTIVE", "description": "Real-time progress streaming"}
+        elif WEBSOCKET_AVAILABLE:
+            diagnostics["components"]["websocket"] = {"status": "⚠ PARTIAL", "description": "Available but broadcaster not initialized"}
+            diagnostics["warnings"].append("WebSocket available but not initialized - no real-time job progress")
+        else:
+            diagnostics["components"]["websocket"] = {"status": "✗ MISSING", "description": "Not installed"}
+            diagnostics["warnings"].append("WebSocket not available - job progress polling only via !status")
+            logger.info("STARTUP: WebSocket progress not available - use !status <job_id> for progress")
+
+        # Check Prometheus Metrics
+        if METRICS_AVAILABLE and self._metrics_collector:
+            diagnostics["components"]["metrics"] = {"status": "✓ ACTIVE", "description": "Prometheus metrics collection"}
+        elif METRICS_AVAILABLE:
+            diagnostics["components"]["metrics"] = {"status": "⚠ PARTIAL", "description": "Available but collector not initialized"}
+            diagnostics["warnings"].append("Metrics available but not collecting - no observability")
+        else:
+            diagnostics["components"]["metrics"] = {"status": "✗ MISSING", "description": "Not installed"}
+            diagnostics["warnings"].append("Prometheus metrics not available - limited observability")
+            logger.info("STARTUP: Prometheus metrics not available - limited system observability")
+
+        # Generate summary
+        active_count = sum(1 for c in diagnostics["components"].values() if c["status"].startswith("✓"))
+        total_count = len(diagnostics["components"])
+        warning_count = len(diagnostics["warnings"])
+
+        if warning_count == 0:
+            diagnostics["summary"] = f"✓ All {total_count} optional components active"
+            logger.info(f"STARTUP: All {total_count} optional components active")
+        else:
+            diagnostics["summary"] = f"⚠ {active_count}/{total_count} components active ({warning_count} warnings)"
+            logger.warning(f"STARTUP: {active_count}/{total_count} optional components active - {warning_count} warnings")
+            for warning in diagnostics["warnings"]:
+                if "SAFETY" in warning:
+                    logger.warning(f"  {warning}")
+
+        return diagnostics
+
+    def get_startup_diagnostics(self) -> Dict[str, Any]:
+        """Get startup diagnostics for display via !status or similar."""
+        return self._startup_diagnostics
+
     # ========================================================================
     # Safety Gating
     # ========================================================================
@@ -997,6 +1067,19 @@ Processing in background. You'll receive a notification when complete.
                 if tool_recs:
                     reflection_info += f"\n**Recommended:** {', '.join(tool_recs[:3])}"
 
+            # Get startup diagnostics for optional components
+            diagnostics = self.get_startup_diagnostics()
+            components_info = f"\n**Optional Components:** {diagnostics['summary']}\n"
+            for name, info in diagnostics["components"].items():
+                components_info += f"• {name.title()}: {info['status']} - {info['description']}\n"
+
+            # Show warnings if any
+            warnings_info = ""
+            if diagnostics["warnings"]:
+                warnings_info = "\n**⚠ Warnings:**\n"
+                for warning in diagnostics["warnings"]:
+                    warnings_info += f"• {warning}\n"
+
             response = f"""
 **📈 HoloLoom Statistics**
 
@@ -1006,7 +1089,7 @@ Processing in background. You'll receive a notification when complete.
 • Reflection: {'Enabled' if self.shuttle.enable_reflection else 'Disabled'}
 
 {reflection_info}
-
+{components_info}{warnings_info}
 **Architecture:**
 • Full 9-step weaving cycle
 • Thompson Sampling exploration
@@ -1181,53 +1264,48 @@ Generated {len(signals)} learning signals:
         """
         Show help for HoloLoom commands.
 
-        Usage: !help
+        Usage: !help [command]
+
+        If a command is specified, shows detailed help for that command.
+        Otherwise shows all available commands grouped by category.
         """
         # Safety gate check (safe command, but log for audit)
         if not await self._gate_action(room, event, "help", "QUERY", args or ""):
             return
 
-        help_text = """
-**🔮 HoloLoom Bot - Commands**
+        registry = self.get_registry()
 
-**Core (Async):**
-• `!weave <query>` - Submit query for async weaving (returns job ID)
-• `!status [job_id]` - Check job status / list pending jobs
-• `!cancel <job_id>` - Cancel a running job
-• `!analyze <text>` - Analyze with convergence engine
-• `!trace [id]` - Show Spacetime trace (full provenance)
-• `!learn [force]` - Trigger learning analysis
-• `!stats` - System statistics with reflection metrics
+        if args and args.strip():
+            # Show help for specific command
+            command = args.strip().lstrip("!")
+            command_help = registry.generate_help_for_command(command)
 
-**Memory:**
-• `!memory add <text>` - Add to knowledge base
-• `!memory search <query>` - Search memory
-• `!memory stats` - Memory statistics
+            if command_help:
+                help_text = f"**🔮 HoloLoom Command Help**\n\n{command_help}"
+            else:
+                # Command not found - show available commands
+                all_commands = registry.get_all_commands()
+                help_text = f"❌ Unknown command: `!{command}`\n\n"
+                help_text += f"**Available commands:** {', '.join(f'`!{c}`' for c in sorted(all_commands))}\n\n"
+                help_text += "Use `!help` to see all commands with descriptions."
+        else:
+            # Show all commands from registry (auto-generated from metadata)
+            help_text = f"""**🔮 HoloLoom Bot - Commands**
 
-**Utilities:**
-• `!ping` - Check bot status
-• `!help` - Show this help
-• `!audit [recent|search|stats]` - Query safety audit trail
+{registry.generate_help(prefix="!", show_aliases=True, show_usage=True)}
 
 **Examples:**
 ```
 !weave Explain Thompson Sampling  # Returns job ID immediately
 !status weave-abc123              # Check specific job
-!status                           # List all pending jobs
 !cancel weave-abc123              # Cancel a running job
-!trace                            # Show most recent trace
-!learn force                      # Force learning analysis
-!memory add MCTS balances exploration vs exploitation
-!audit recent 5                   # Show last 5 safety decisions
+!help weave                       # Detailed help for weave command
 ```
 
 **Powered by:**
 • Full 9-step weaving architecture
 • Reflection loop (continuous learning)
 • Thompson Sampling exploration
-• Multi-scale embeddings (Matryoshka)
-• Spacetime provenance tracking
-• Convergence engine decision-making
 • SafetyGuardrails + AuditTrail (alignment framework)
 """
 

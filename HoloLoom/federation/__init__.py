@@ -92,6 +92,158 @@ from .gossip import (
 )
 
 # ═══════════════════════════════════════════════════════════════════════════
+#  SAFETY & SECURITY - Phase 4 (December 2025)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Safety layer (Day 15)
+from .safety import (
+    FederationSafetyGate,
+    SignatureVerifier,
+    GuildTrustChecker,
+    SafetyCheckResult,
+    SignedRequest,
+    FederationSafetyResult,
+    FederationPermission,
+    create_federation_safety_gate,
+    parse_signed_request,
+    TRUST_PERMISSIONS,
+    METHOD_PERMISSIONS,
+)
+
+# Rate limiting (Day 15)
+from .rate_limiter import (
+    FederatedRateLimiter,
+    RateLimitTier,
+    RateLimitState,
+    RateLimitInfo,
+    get_tier_for_trust_level,
+    create_rate_limiter,
+    DEFAULT_RATE_LIMITS,
+    TRUST_TO_TIER,
+)
+
+# Wire protocol (Day 16)
+from .wire_protocol import (
+    JSONRPCBuilder,
+    RequestValidator,
+    RPCRequest,
+    RPCResponse,
+    RPCError,
+    RequestMeta,
+    ErrorCode,
+    ValidationResult,
+    HOLOLOOM_METHODS,
+    ERROR_MESSAGES,
+    create_builder,
+    create_validator,
+    parse_request,
+    parse_batch,
+)
+
+# Matrix transport (Day 17)
+from .transport.matrix_transport import (
+    # Constants
+    HOLOLOOM_RPC_MSGTYPE,
+    HOLOLOOM_CAPABILITIES_TYPE,
+    HAS_MATRIX_NIO,
+    # Classes
+    MatrixTrustResolver,
+    MatrixTransportAdapter,
+    MatrixRPCEvent,
+    # Functions
+    matrix_user_to_node_id,
+    parse_matrix_rpc_event,
+    create_matrix_transport,
+    create_matrix_trust_resolver,
+)
+
+from .transport.matrix_room import (
+    # Data classes
+    AgentCapabilities,
+    RoomCapabilitySummary,
+    # Room abstraction
+    MatrixAgentRoom,
+    # Factory
+    create_agent_room,
+    # Constants (also exported from matrix_transport, but aliased here)
+    HOLOLOOM_CAPABILITIES_STATE,
+)
+
+# Agentic RAG (Day 18)
+from .result_merger import (
+    # Data classes
+    SourceWithProvenance,
+    NodeRAGResult,
+    MergedRAGResult,
+    # Main class
+    RAGResultMerger,
+    # Factory
+    create_result_merger,
+    # Constants
+    TRUST_WEIGHTS,
+    DEFAULT_SIMILARITY_THRESHOLD,
+    MIN_MI_THRESHOLD,
+)
+
+from .agentic_rag import (
+    # Data classes
+    FederatedRAGConfig,
+    FederatedRAGResult,
+    # Main classes
+    ConfidenceAggregator,
+    FederatedRAG,
+    # Factory
+    create_federated_rag,
+    # Constants
+    DEFAULT_FEDERATION_THRESHOLD,
+    RAG_RECALL_METHOD,
+)
+
+# Distributed Inference (Day 19)
+from .load_balancer import (
+    # Enums
+    LoadBalanceStrategy,
+    NodeHealth,
+    # Data classes
+    NodeStats,
+    LoadBalancerConfig,
+    SelectionResult,
+    CircuitBreakerState,
+    # Classes
+    CircuitBreaker,
+    LoadBalancer,
+    # Factory
+    create_load_balancer,
+    # Constants
+    DEFAULT_LOAD_WEIGHT,
+    DEFAULT_TRUST_WEIGHT,
+    DEFAULT_LATENCY_WEIGHT,
+    DEFAULT_SUCCESS_WEIGHT,
+    OVERLOAD_THRESHOLD,
+    MAX_CONNECTIONS_PER_NODE,
+)
+
+from .inference_router import (
+    # Enums
+    InferenceStatus,
+    # Data classes
+    InferenceRequest,
+    InferenceToken,
+    InferenceResult,
+    NodeCapabilities,
+    # Classes
+    StreamingProxy,
+    InferenceRouter,
+    # Factory
+    create_inference_router,
+    # Constants
+    INFERENCE_GENERATE_METHOD,
+    INFERENCE_CAPABILITIES_METHOD,
+    DEFAULT_INFERENCE_TIMEOUT_SECONDS,
+    DEFAULT_STREAM_TIMEOUT_SECONDS,
+)
+
+# ═══════════════════════════════════════════════════════════════════════════
 #  VERSION
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -121,7 +273,7 @@ __all__ = [
     "TimeoutError",
     "VerificationError",
     "GuildError",
-    # Advanced
+    # Advanced - Identity & Routing
     "Identity",
     "create_node",
     "get_or_create_identity",
@@ -135,4 +287,102 @@ __all__ = [
     "RoutingTable",
     "SwimMembership",
     "MessageType",
+    # Safety & Security (Phase 4 - December 2025)
+    "FederationSafetyGate",
+    "SignatureVerifier",
+    "GuildTrustChecker",
+    "SafetyCheckResult",
+    "SignedRequest",
+    "FederationSafetyResult",
+    "FederationPermission",
+    "create_federation_safety_gate",
+    "parse_signed_request",
+    "TRUST_PERMISSIONS",
+    "METHOD_PERMISSIONS",
+    # Rate Limiting
+    "FederatedRateLimiter",
+    "RateLimitTier",
+    "RateLimitState",
+    "RateLimitInfo",
+    "get_tier_for_trust_level",
+    "create_rate_limiter",
+    "DEFAULT_RATE_LIMITS",
+    "TRUST_TO_TIER",
+    # Wire Protocol (JSON-RPC 2.0)
+    "JSONRPCBuilder",
+    "RequestValidator",
+    "RPCRequest",
+    "RPCResponse",
+    "RPCError",
+    "RequestMeta",
+    "ErrorCode",
+    "ValidationResult",
+    "HOLOLOOM_METHODS",
+    "ERROR_MESSAGES",
+    "create_builder",
+    "create_validator",
+    "parse_request",
+    "parse_batch",
+    # Matrix Transport (Day 17)
+    "HOLOLOOM_RPC_MSGTYPE",
+    "HOLOLOOM_CAPABILITIES_TYPE",
+    "HOLOLOOM_CAPABILITIES_STATE",
+    "HAS_MATRIX_NIO",
+    "MatrixTrustResolver",
+    "MatrixTransportAdapter",
+    "MatrixRPCEvent",
+    "matrix_user_to_node_id",
+    "parse_matrix_rpc_event",
+    "create_matrix_transport",
+    "create_matrix_trust_resolver",
+    "AgentCapabilities",
+    "RoomCapabilitySummary",
+    "MatrixAgentRoom",
+    "create_agent_room",
+    # Agentic RAG (Day 18)
+    "SourceWithProvenance",
+    "NodeRAGResult",
+    "MergedRAGResult",
+    "RAGResultMerger",
+    "create_result_merger",
+    "TRUST_WEIGHTS",
+    "DEFAULT_SIMILARITY_THRESHOLD",
+    "MIN_MI_THRESHOLD",
+    "FederatedRAGConfig",
+    "FederatedRAGResult",
+    "ConfidenceAggregator",
+    "FederatedRAG",
+    "create_federated_rag",
+    "DEFAULT_FEDERATION_THRESHOLD",
+    "RAG_RECALL_METHOD",
+    # Distributed Inference (Day 19)
+    # Load Balancer
+    "LoadBalanceStrategy",
+    "NodeHealth",
+    "NodeStats",
+    "LoadBalancerConfig",
+    "SelectionResult",
+    "CircuitBreakerState",
+    "CircuitBreaker",
+    "LoadBalancer",
+    "create_load_balancer",
+    "DEFAULT_LOAD_WEIGHT",
+    "DEFAULT_TRUST_WEIGHT",
+    "DEFAULT_LATENCY_WEIGHT",
+    "DEFAULT_SUCCESS_WEIGHT",
+    "OVERLOAD_THRESHOLD",
+    "MAX_CONNECTIONS_PER_NODE",
+    # Inference Router
+    "InferenceStatus",
+    "InferenceRequest",
+    "InferenceToken",
+    "InferenceResult",
+    "NodeCapabilities",
+    "StreamingProxy",
+    "InferenceRouter",
+    "create_inference_router",
+    "INFERENCE_GENERATE_METHOD",
+    "INFERENCE_CAPABILITIES_METHOD",
+    "DEFAULT_INFERENCE_TIMEOUT_SECONDS",
+    "DEFAULT_STREAM_TIMEOUT_SECONDS",
 ]

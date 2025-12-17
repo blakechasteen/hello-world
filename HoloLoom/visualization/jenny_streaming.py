@@ -516,6 +516,503 @@ class StreamingManager:
 
 
 # ============================================================================
+# Streaming Panel Indicators (Task 3.4 - December 2025)
+# ============================================================================
+# Visual indicators for streaming panels:
+# - Pulse animation for STREAMING binding mode
+# - Token count / progress indicator
+# - "Live" badge for SSE connections
+# - Reconnection status
+
+class StreamingBadge(str, Enum):
+    """
+    Badge types for streaming panels.
+
+    Each badge type has associated styling and behavior.
+    """
+    LIVE = "live"           # Green pulsing dot - active SSE/WebSocket
+    STREAMING = "streaming"  # Blue animated wave - actively receiving data
+    PAUSED = "paused"       # Yellow pause icon - subscription paused
+    RECONNECTING = "reconnecting"  # Orange spinning icon - reconnection in progress
+    ERROR = "error"         # Red exclamation - connection error
+    OFFLINE = "offline"     # Gray icon - not connected
+
+
+@dataclass(frozen=True)
+class StreamingIndicator:
+    """
+    Visual indicator configuration for streaming panels.
+
+    Immutable specification for rendering streaming status in the UI.
+
+    Fields:
+        badge: Type of badge to display
+        badge_label: Human-readable label (e.g., "LIVE", "STREAMING")
+        badge_tooltip: Detailed tooltip text
+        pulse_animation: Whether to show pulse animation
+        pulse_color: CSS color for pulse (e.g., "#22c55e" for green)
+        pulse_duration_ms: Animation duration in milliseconds
+        show_progress: Whether to show progress indicator
+        progress_label: Progress text (e.g., "127 tokens", "3.2KB received")
+        progress_value: Progress percentage (0.0-1.0) or None for indeterminate
+        show_reconnect_status: Whether to show reconnection info
+        reconnect_attempts: Number of reconnection attempts so far
+        reconnect_max: Maximum reconnection attempts
+        reconnect_message: Reconnection status message
+        render_hints: Additional CSS/styling hints for renderer
+    """
+    badge: StreamingBadge = StreamingBadge.STREAMING
+    badge_label: str = "STREAMING"
+    badge_tooltip: str = "Receiving live updates"
+
+    # Pulse animation
+    pulse_animation: bool = True
+    pulse_color: str = "#3b82f6"  # Blue
+    pulse_duration_ms: int = 2000
+
+    # Progress indicator
+    show_progress: bool = False
+    progress_label: str = ""
+    progress_value: Optional[float] = None  # None = indeterminate
+
+    # Reconnection status
+    show_reconnect_status: bool = False
+    reconnect_attempts: int = 0
+    reconnect_max: int = 3
+    reconnect_message: str = ""
+
+    # Render hints
+    render_hints: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize for JSON transmission."""
+        return {
+            "badge": self.badge.value,
+            "badge_label": self.badge_label,
+            "badge_tooltip": self.badge_tooltip,
+            "pulse_animation": self.pulse_animation,
+            "pulse_color": self.pulse_color,
+            "pulse_duration_ms": self.pulse_duration_ms,
+            "show_progress": self.show_progress,
+            "progress_label": self.progress_label,
+            "progress_value": self.progress_value,
+            "show_reconnect_status": self.show_reconnect_status,
+            "reconnect_attempts": self.reconnect_attempts,
+            "reconnect_max": self.reconnect_max,
+            "reconnect_message": self.reconnect_message,
+            "render_hints": self.render_hints,
+        }
+
+
+# Badge configurations with styling
+BADGE_STYLES: Dict[StreamingBadge, Dict[str, Any]] = {
+    StreamingBadge.LIVE: {
+        "label": "LIVE",
+        "tooltip": "Live SSE/WebSocket connection active",
+        "color": "#22c55e",  # Green
+        "bg_color": "#dcfce7",  # Light green
+        "pulse": True,
+        "icon": "●",  # Filled circle
+    },
+    StreamingBadge.STREAMING: {
+        "label": "STREAMING",
+        "tooltip": "Receiving streaming updates",
+        "color": "#3b82f6",  # Blue
+        "bg_color": "#dbeafe",  # Light blue
+        "pulse": True,
+        "icon": "◐",  # Half-filled circle (animated rotation)
+    },
+    StreamingBadge.PAUSED: {
+        "label": "PAUSED",
+        "tooltip": "Streaming temporarily paused",
+        "color": "#eab308",  # Yellow
+        "bg_color": "#fef9c3",  # Light yellow
+        "pulse": False,
+        "icon": "⏸",  # Pause icon
+    },
+    StreamingBadge.RECONNECTING: {
+        "label": "RECONNECTING",
+        "tooltip": "Attempting to reconnect...",
+        "color": "#f97316",  # Orange
+        "bg_color": "#ffedd5",  # Light orange
+        "pulse": True,
+        "icon": "↻",  # Spinning arrows
+    },
+    StreamingBadge.ERROR: {
+        "label": "ERROR",
+        "tooltip": "Connection error - click to retry",
+        "color": "#ef4444",  # Red
+        "bg_color": "#fee2e2",  # Light red
+        "pulse": False,
+        "icon": "⚠",  # Warning
+    },
+    StreamingBadge.OFFLINE: {
+        "label": "OFFLINE",
+        "tooltip": "Not connected",
+        "color": "#6b7280",  # Gray
+        "bg_color": "#f3f4f6",  # Light gray
+        "pulse": False,
+        "icon": "○",  # Empty circle
+    },
+}
+
+
+def get_streaming_indicator(
+    spec: JennySpec,
+    subscription: Optional[Subscription] = None,
+    token_count: int = 0,
+    bytes_received: int = 0,
+) -> Optional[StreamingIndicator]:
+    """
+    Generate a streaming indicator for a panel.
+
+    Creates visual indicator based on binding mode and subscription state.
+
+    Args:
+        spec: JennySpec to generate indicator for
+        subscription: Active subscription (if any)
+        token_count: Number of tokens received (for progress display)
+        bytes_received: Number of bytes received (for progress display)
+
+    Returns:
+        StreamingIndicator or None (for STATIC binding mode)
+
+    Usage:
+        indicator = get_streaming_indicator(spec, subscription)
+        if indicator:
+            # Add indicator to panel rendering
+            panel_html += render_streaming_badge(indicator)
+    """
+    # STATIC panels don't get indicators
+    if spec.binding_mode == BindingMode.STATIC:
+        return None
+
+    # Determine badge based on subscription state
+    if subscription is None:
+        # No subscription yet - show pending state
+        badge = StreamingBadge.OFFLINE
+    elif subscription.status == StreamStatus.ACTIVE:
+        if spec.binding_mode == BindingMode.STREAMING:
+            badge = StreamingBadge.LIVE
+        else:
+            badge = StreamingBadge.STREAMING
+    elif subscription.status == StreamStatus.PAUSED:
+        badge = StreamingBadge.PAUSED
+    elif subscription.status == StreamStatus.DISCONNECTED:
+        if subscription.error_count > 0 and subscription.error_count < 3:
+            badge = StreamingBadge.RECONNECTING
+        else:
+            badge = StreamingBadge.ERROR
+    else:
+        badge = StreamingBadge.OFFLINE
+
+    # Get badge styling
+    style = BADGE_STYLES[badge]
+
+    # Build progress label if we have data
+    progress_label = ""
+    show_progress = False
+    if token_count > 0 or bytes_received > 0:
+        show_progress = True
+        parts = []
+        if token_count > 0:
+            parts.append(f"{token_count:,} tokens")
+        if bytes_received > 0:
+            if bytes_received < 1024:
+                parts.append(f"{bytes_received}B")
+            elif bytes_received < 1024 * 1024:
+                parts.append(f"{bytes_received / 1024:.1f}KB")
+            else:
+                parts.append(f"{bytes_received / (1024 * 1024):.1f}MB")
+        progress_label = " • ".join(parts)
+
+    # Build reconnection message
+    reconnect_message = ""
+    show_reconnect = False
+    if subscription and subscription.error_count > 0:
+        show_reconnect = True
+        remaining = 3 - subscription.error_count
+        if remaining > 0:
+            reconnect_message = f"Retrying ({subscription.error_count}/3)..."
+        else:
+            reconnect_message = "Connection failed. Click to retry."
+
+    # Create indicator
+    return StreamingIndicator(
+        badge=badge,
+        badge_label=style["label"],
+        badge_tooltip=style["tooltip"],
+        pulse_animation=style["pulse"],
+        pulse_color=style["color"],
+        pulse_duration_ms=2000 if badge == StreamingBadge.LIVE else 1500,
+        show_progress=show_progress,
+        progress_label=progress_label,
+        progress_value=None,  # Indeterminate for streaming
+        show_reconnect_status=show_reconnect,
+        reconnect_attempts=subscription.error_count if subscription else 0,
+        reconnect_max=3,
+        reconnect_message=reconnect_message,
+        render_hints={
+            "bg_color": style["bg_color"],
+            "icon": style["icon"],
+            "binding_mode": spec.binding_mode.value,
+            "refresh_interval_ms": spec.refresh_interval_ms,
+        }
+    )
+
+
+def get_streaming_css() -> str:
+    """
+    Get CSS for streaming indicators.
+
+    Returns CSS string for embedding in HTML renderers.
+    Includes animations, badge styles, and progress indicators.
+
+    Usage:
+        html = f"<style>{get_streaming_css()}</style>" + panel_html
+    """
+    return """
+/* Jenny Streaming Indicators - Task 3.4 (December 2025) */
+
+/* Base badge style */
+.jenny-streaming-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Badge variants */
+.jenny-badge-live {
+    background-color: #dcfce7;
+    color: #22c55e;
+}
+
+.jenny-badge-streaming {
+    background-color: #dbeafe;
+    color: #3b82f6;
+}
+
+.jenny-badge-paused {
+    background-color: #fef9c3;
+    color: #eab308;
+}
+
+.jenny-badge-reconnecting {
+    background-color: #ffedd5;
+    color: #f97316;
+}
+
+.jenny-badge-error {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+
+.jenny-badge-offline {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+/* Pulse animation for LIVE badge */
+.jenny-pulse {
+    animation: jenny-pulse-animation 2s ease-in-out infinite;
+}
+
+@keyframes jenny-pulse-animation {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Pulse dot indicator */
+.jenny-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: jenny-pulse-dot 2s ease-in-out infinite;
+}
+
+.jenny-pulse-dot-live {
+    background-color: #22c55e;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+}
+
+@keyframes jenny-pulse-dot {
+    0% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+}
+
+/* Spinning icon for streaming/reconnecting */
+.jenny-spin {
+    animation: jenny-spin 1s linear infinite;
+}
+
+@keyframes jenny-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Wave animation for streaming data */
+.jenny-wave {
+    animation: jenny-wave 1.5s ease-in-out infinite;
+}
+
+@keyframes jenny-wave {
+    0%, 100% {
+        transform: scaleY(0.5);
+    }
+    50% {
+        transform: scaleY(1);
+    }
+}
+
+/* Progress indicator */
+.jenny-streaming-progress {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.jenny-progress-bar {
+    width: 60px;
+    height: 3px;
+    background-color: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.jenny-progress-fill {
+    height: 100%;
+    background-color: #3b82f6;
+    transition: width 0.3s ease;
+}
+
+/* Indeterminate progress animation */
+.jenny-progress-indeterminate {
+    background: linear-gradient(90deg, #3b82f6 0%, #3b82f6 30%, transparent 30%, transparent 70%, #3b82f6 70%, #3b82f6 100%);
+    background-size: 200% 100%;
+    animation: jenny-progress-indeterminate 1.5s linear infinite;
+}
+
+@keyframes jenny-progress-indeterminate {
+    0% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+/* Reconnection status */
+.jenny-reconnect-status {
+    font-size: 10px;
+    color: #f97316;
+    margin-top: 2px;
+}
+
+/* Token counter */
+.jenny-token-counter {
+    font-family: monospace;
+    font-size: 10px;
+    color: #6b7280;
+}
+
+/* Streaming wrapper (positions badge in panel header) */
+.jenny-panel-streaming-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.jenny-streaming-indicator-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+"""
+
+
+def render_streaming_badge_html(indicator: StreamingIndicator) -> str:
+    """
+    Render streaming indicator as HTML.
+
+    Args:
+        indicator: StreamingIndicator to render
+
+    Returns:
+        HTML string for the streaming badge
+    """
+    badge_class = f"jenny-badge-{indicator.badge.value}"
+    pulse_class = "jenny-pulse" if indicator.pulse_animation else ""
+    icon = indicator.render_hints.get("icon", "●")
+
+    # Spin icon for reconnecting
+    icon_class = ""
+    if indicator.badge == StreamingBadge.RECONNECTING:
+        icon_class = "jenny-spin"
+    elif indicator.badge == StreamingBadge.LIVE:
+        icon_class = ""  # Pulse dot handled separately
+
+    html_parts = [
+        f'<div class="jenny-streaming-indicator-wrapper" title="{indicator.badge_tooltip}">',
+        f'  <span class="jenny-streaming-badge {badge_class} {pulse_class}">',
+    ]
+
+    # Add pulse dot for LIVE badge
+    if indicator.badge == StreamingBadge.LIVE:
+        html_parts.append('    <span class="jenny-pulse-dot jenny-pulse-dot-live"></span>')
+    else:
+        html_parts.append(f'    <span class="{icon_class}">{icon}</span>')
+
+    html_parts.append(f'    {indicator.badge_label}')
+    html_parts.append('  </span>')
+
+    # Progress indicator
+    if indicator.show_progress:
+        html_parts.append('  <div class="jenny-streaming-progress">')
+        html_parts.append('    <div class="jenny-progress-bar">')
+        if indicator.progress_value is not None:
+            width = int(indicator.progress_value * 100)
+            html_parts.append(f'      <div class="jenny-progress-fill" style="width: {width}%"></div>')
+        else:
+            html_parts.append('      <div class="jenny-progress-fill jenny-progress-indeterminate"></div>')
+        html_parts.append('    </div>')
+        if indicator.progress_label:
+            html_parts.append(f'    <span class="jenny-token-counter">{indicator.progress_label}</span>')
+        html_parts.append('  </div>')
+
+    # Reconnection status
+    if indicator.show_reconnect_status and indicator.reconnect_message:
+        html_parts.append(f'  <div class="jenny-reconnect-status">{indicator.reconnect_message}</div>')
+
+    html_parts.append('</div>')
+
+    return '\n'.join(html_parts)
+
+
+# ============================================================================
 # Factory Functions
 # ============================================================================
 
@@ -559,4 +1056,12 @@ __all__ = [
 
     # Factory
     "create_streaming_manager",
+
+    # Streaming Indicators (Task 3.4 - December 2025)
+    "StreamingBadge",
+    "StreamingIndicator",
+    "BADGE_STYLES",
+    "get_streaming_indicator",
+    "get_streaming_css",
+    "render_streaming_badge_html",
 ]

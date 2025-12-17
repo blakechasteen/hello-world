@@ -272,7 +272,7 @@ async def startup_event():
     """Initialize the agent manager hub on startup."""
     global _hub
     logger.info("Starting Agent Manager API...")
-    _hub = await create_agent_manager_hub()
+    _hub = create_agent_manager_hub()
     logger.info("Agent Manager API started on port 8002")
 
 

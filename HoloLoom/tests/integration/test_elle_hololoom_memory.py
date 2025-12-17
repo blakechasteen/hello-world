@@ -11,13 +11,15 @@ Test Coverage (10 tests):
 - Neo4j/Qdrant integration - 1 test
 
 Created: 2025-11-22 (Week 3 Phase 2)
+Updated: 2025-12-15 - Removed broken elle.domain imports (module incomplete)
 """
 
 import pytest
 from datetime import datetime
 from HoloLoom import HoloLoom
 from HoloLoom.config import Config
-from elle.domain import ElleRequest, User, SceneSnapshot, ObjectInScene
+# NOTE: Elle domain types removed - elle integration incomplete
+# from elle.domain import ElleRequest, User, SceneSnapshot, ObjectInScene
 
 
 # Test 1: Basic memory storage

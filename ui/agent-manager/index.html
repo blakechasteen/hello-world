@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="HoloLoom Agent Manager - Real-time multi-agent orchestration dashboard" />
+    <meta name="theme-color" content="#0f172a" />
+
+    <title>HoloLoom Agent Manager</title>
+
+    <!-- Prevent FOUC (Flash of Unstyled Content) for dark mode -->
+    <script>
+      // Ensure dark mode is applied before rendering
+      document.documentElement.classList.add('dark')
+      document.documentElement.style.colorScheme = 'dark'
+    </script>
+  </head>
+
+  <body class="bg-surface-primary text-text-primary antialiased overflow-x-hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

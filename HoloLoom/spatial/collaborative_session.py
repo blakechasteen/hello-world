@@ -700,7 +700,7 @@ class CollaborativeSpatialSession:
         # UX Learning - Thompson Sampling for collaboration preferences
         self.ux_learner: Optional[CollaborationUXLearner] = None
         if enable_ux_learning:
-            self.ux_learner = CollaborationUXLearner(session_id=session_id)
+            self.ux_learner = CollaborationUXLearner()
 
         # Annotation refinement - MRF strategies for quality improvement
         self.annotation_refiner: Optional[AnnotationRefiner] = None
@@ -714,10 +714,7 @@ class CollaborativeSpatialSession:
 
         # Use refinement-aware attribution if refinement is enabled
         if enable_annotation_refinement and self.annotation_refiner:
-            self.attribution = create_refinement_aware_attribution_manager(
-                refiner=self.annotation_refiner,
-                ux_learner=self.ux_learner
-            )
+            self.attribution = create_refinement_aware_attribution_manager()
         else:
             self.attribution = AttributionManager()
 
@@ -972,13 +969,15 @@ class CollaborativeSpatialSession:
         context = LearningContext(
             user_id=user_id,
             session_id=self.session_id,
-            zone_type=spatial_ctx.current_zone.name if spatial_ctx and spatial_ctx.current_zone else None,
-            activity_type=spatial_ctx.activity.name if spatial_ctx else "IDLE",
-            nearby_user_count=len(spatial_ctx.nearby_users) if spatial_ctx else 0,
+            participant_count=len(spatial_ctx.nearby_users) if spatial_ctx else 0,
             session_duration_minutes=0.0,  # Just joined
             time_of_day=datetime.now().strftime("%H:%M"),
-            is_presenter=user_id == self.owner_id,
-            has_voice_enabled=self.voice_room is not None
+            activity_level=spatial_ctx.activity.name.lower() if spatial_ctx else "normal",
+            metadata={
+                "zone_type": spatial_ctx.current_zone.name if spatial_ctx and spatial_ctx.current_zone else None,
+                "is_presenter": user_id == self.owner_id,
+                "has_voice_enabled": self.voice_room is not None
+            }
         )
 
         defaults = {}
@@ -994,17 +993,17 @@ class CollaborativeSpatialSession:
         ]
 
         for feature, options in features_to_learn:
-            decision = self.ux_learner.decide(feature, options, context)
+            selected_option, decision = self.ux_learner.select(feature, context)
             defaults[feature.value] = {
                 "selected": decision.selected_option,
                 "confidence": decision.confidence,
-                "exploration": decision.is_exploration
+                "exploration": decision.exploration
             }
 
             # Log for debugging
             logger.debug(
                 f"UX Learn [{user_id}]: {feature.value} = {decision.selected_option} "
-                f"(conf={decision.confidence:.2f}, explore={decision.is_exploration})"
+                f"(conf={decision.confidence:.2f}, explore={decision.exploration})"
             )
 
         return defaults
@@ -1604,7 +1603,7 @@ class CollaborativeSpatialSession:
 
         # UX Learning stats
         if self.ux_learner:
-            stats["ux_learning"] = self.ux_learner.get_statistics()
+            stats["ux_learning"] = self.ux_learner.get_learning_stats()
 
         # Annotation refinement stats
         if self.annotation_refiner:

@@ -204,6 +204,12 @@ markers = [
     "e2e: End-to-end tests (slow)",
     "slow: Slow tests",
     "requires_gpu: Tests requiring GPU",
+    "performance: Performance benchmarks",
+    "timeout: Tests with timeout requirements",
+    "smoke: Smoke tests",
+    "trough: Trough detector tests",
+    "bosspig: BossPig AI tests",
+    "edge_case: Edge case tests",
 ]
 
 # ============================================================================
@@ -236,6 +242,7 @@ exclude_lines = [
 precision = 2
 show_missing = true
 skip_covered = false
+fail_under = 80
 
 # ============================================================================
 # Build Configuration

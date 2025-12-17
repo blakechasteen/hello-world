@@ -1337,12 +1337,16 @@ class WeavingOrchestrator:
             # =================================================================
             # POST-PARALLEL: Assemble context from retrieval results
             # =================================================================
-            context = Context(
-                shards=shards,
+            # Use SimpleNamespace for direct attribute access (policy expects context.shard_texts)
+            from types import SimpleNamespace
+            context = SimpleNamespace(
+                memories=shards,
+                shards=shards,  # Alias for backward compat
                 hits=hits,
                 shard_texts=shard_texts,
                 query=query,
-                features=None  # Will be set from dot_plasma
+                features=None,  # Will be set from dot_plasma
+                metadata={}  # For any additional metadata
             )
 
             thread_count = len(dot_plasma.get('threads', []))
@@ -1546,10 +1550,13 @@ class WeavingOrchestrator:
             # Convert to list for Features
             psi_list = psi_array.tolist() if hasattr(psi_array, 'tolist') else list(psi_array)
 
-            features = Features(
-                psi=psi_list,
+            # Use SimpleNamespace for direct attribute access (policy expects features.psi, features.metrics)
+            features = SimpleNamespace(
+                psi=psi_list,  # Policy expects .psi
+                embeddings=psi_list,  # Also keep new name
                 motifs=dot_plasma.get('motifs', []),
-                metrics={'spectral': dot_plasma.get('spectral')},
+                spectral=dot_plasma.get('spectral'),
+                metrics={'spectral': dot_plasma.get('spectral'), 'coherence': 0.5},  # Policy expects .metrics
                 metadata=dot_plasma.get('metadata', {})
             )
 
@@ -1690,9 +1697,9 @@ class WeavingOrchestrator:
                             stage_durations=stage_timings,
                             motifs_detected=[m.pattern if hasattr(m, 'pattern') else str(m) for m in features.motifs],
                             embedding_scales_used=pattern_spec.scales,
-                            spectral_features=features.metrics.get('spectral'),
+                            spectral_features=features.spectral,
                             threads_activated=thread_ids,
-                            context_shards_count=len(context.shards),
+                            context_shards_count=len(context.memories),
                             retrieval_mode=pattern_spec.retrieval_mode,
                             policy_adapter=action_plan.adapter,
                             tool_selected=collapse_result.tool,
@@ -1758,9 +1765,9 @@ class WeavingOrchestrator:
                 stage_durations=stage_timings,
                 motifs_detected=[m.pattern if hasattr(m, 'pattern') else str(m) for m in features.motifs],
                 embedding_scales_used=pattern_spec.scales,
-                spectral_features=features.metrics.get('spectral'),
+                spectral_features=features.spectral,
                 threads_activated=thread_ids,
-                context_shards_count=len(context.shards),
+                context_shards_count=len(context.memories),
                 retrieval_mode=pattern_spec.retrieval_mode,
                 policy_adapter=action_plan.adapter,
                 tool_selected=collapse_result.tool,
@@ -1822,8 +1829,8 @@ class WeavingOrchestrator:
                 artifacts=artifacts,
                 trace=trace,
                 metadata=metadata,
-                context_summary=f"{len(context.shards)} shards",
-                sources_used=[s.id for s in context.shards[:3]]
+                context_summary=f"{len(context.memories)} shards",
+                sources_used=[s.id for s in context.memories[:3]]
             )
             
             # Attach mythRL enhancements if protocol system is enabled
@@ -1889,7 +1896,7 @@ class WeavingOrchestrator:
                 metrics.set_active_threads(pattern_spec.name, len(thread_ids))
 
                 # Track context size
-                metrics.set_retrieval_context_size(len(context.shards))
+                metrics.set_retrieval_context_size(len(context.memories))
 
                 # Track motif detection
                 if features.motifs:

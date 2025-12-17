@@ -213,46 +213,50 @@ class TerminalUI:
         # Create query object
         query_obj = Query(text=query)
         
-        # Progress display
+        # Progress display - show spinner during weaving
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
             TimeElapsedColumn(),
             console=self.console
         ) as progress:
-            
-            # Create task for overall progress
-            main_task = progress.add_task(
-                "[cyan]Weaving in progress...",
-                total=len(self.stages)
-            )
-            
-            # Stage tasks
-            stage_tasks = {}
-            for stage_num, stage_name, stage_desc in self.stages:
-                task_id = progress.add_task(
-                    f"[dim]{stage_num}. {stage_name}[/]: {stage_desc}",
-                    total=1,
-                    visible=False
-                )
-                stage_tasks[stage_num] = task_id
-            
-            # Execute weaving (simplified - no stage-by-stage tracking for now)
-            # In production, this would hook into orchestrator events
+
+            # Single task showing weaving in progress
+            main_task = progress.add_task("[cyan]Weaving in progress...")
+
+            # Execute weaving
             result = await self.orchestrator.weave(
                 query_obj,
                 pattern_override=pattern
             )
-            
-            # Simulate stage completion for display
-            for stage_num, stage_name, stage_desc in self.stages:
-                task_id = stage_tasks[stage_num]
-                progress.update(task_id, visible=True)
-                await asyncio.sleep(0.05)  # Brief display
-                progress.update(task_id, completed=1)
-                progress.update(main_task, advance=1)
+
+            progress.update(main_task, description="[green]✓ Weaving complete")
+
+        # Display actual stage timings from trace (real telemetry)
+        if hasattr(result, 'trace') and hasattr(result.trace, 'stage_durations'):
+            stage_durations = result.trace.stage_durations
+            if stage_durations:
+                self.console.print("\n[dim]Stage Timings (from orchestrator telemetry):[/]")
+                # Map stage keys to readable names
+                stage_name_map = {
+                    'pattern_selection': '1. Loom Command',
+                    'temporal_setup': '2. Chrono Trigger',
+                    'shuttle_selection': '3. Shuttle',
+                    'thread_selection': '3. Yarn Graph',
+                    'feature_extraction': '4. Resonance Shed',
+                    'warp_tensioning': '5. Warp Space',
+                    'retrieval': '6. Memory Retrieval',
+                    'warp_compute': '5.5. Warp Compute',
+                    'context_packing': '6.5. Context Packing',
+                    'convergence': '7. Convergence',
+                    'tool_execution': '8. Tool Execution',
+                    'spacetime_assembly': '9. Spacetime Fabric',
+                    'parallel_execution_wall_time': 'Parallel (4-6)',
+                }
+                for key, duration in stage_durations.items():
+                    if key not in ('parallel_speedup',):  # Skip non-timing fields
+                        name = stage_name_map.get(key, key)
+                        self.console.print(f"  [dim]•[/] {name}: [cyan]{duration:.1f}ms[/]")
         
         duration_ms = (time.perf_counter() - start_time) * 1000
         
@@ -291,7 +295,7 @@ class TerminalUI:
 
 [dim]Metrics:[/]
   • Complexity: [yellow]{complexity}[/]
-  • Confidence: [{'green' if confidence > 0.7 else 'yellow' if confidence > 0.5 else 'red'}]{confidence:.2%}[/]
+  • Confidence: [{'green' if confidence > 0.7 else 'yellow' if confidence > 0.5 else 'red'}]{'✓ HIGH' if confidence > 0.7 else '⚠ MED' if confidence > 0.5 else '✗ LOW'} {confidence:.2%}[/]
   • Duration: [cyan]{duration_ms:.1f}ms[/]
 """
         
@@ -365,17 +369,18 @@ class TerminalUI:
             "Patterns",
             f"Phrase: \"{patterns.phrase}\"\n"
             f"Seen: [cyan]{patterns.seen_count}×[/]\n"
-            f"Confidence: [{'green' if patterns.confidence > 0.7 else 'yellow'}]{patterns.confidence:.2f}[/]\n"
+            f"Confidence: [{'green' if patterns.confidence > 0.7 else 'yellow'}]{'✓' if patterns.confidence > 0.7 else '⚠'} {patterns.confidence:.2f}[/]\n"
             f"Domain: [yellow]{patterns.domain}/{patterns.subdomain}[/]"
         )
 
         # Confidence signals
         conf = context.confidence
         uncertainty_color = "green" if conf.uncertainty_level < 0.3 else "yellow" if conf.uncertainty_level < 0.7 else "red"
+        uncertainty_label = "✓ LOW" if conf.uncertainty_level < 0.3 else "⚠ MED" if conf.uncertainty_level < 0.7 else "✗ HIGH"
         table.add_row(
             "Confidence",
             f"Cache: [{uncertainty_color}]{conf.query_cache_status}[/]\n"
-            f"Uncertainty: [{uncertainty_color}]{conf.uncertainty_level:.2f}[/]\n"
+            f"Uncertainty: [{uncertainty_color}]{uncertainty_label} {conf.uncertainty_level:.2f}[/]\n"
             + ("⚠️ [red]Knowledge gap detected[/]\n" if conf.knowledge_gap_detected else "")
             + (f"⚠️ Suggest: {conf.suggested_clarification}" if conf.should_ask_clarification else "✓ Ready to respond")
         )
@@ -571,6 +576,8 @@ class TerminalUI:
         # Build result display
         confidence = 1.0 - ctx.confidence.uncertainty_level
         confidence_color = "green" if confidence > 0.7 else "yellow" if confidence > 0.5 else "red"
+        confidence_label = "✓ HIGH" if confidence > 0.7 else "⚠ MED" if confidence > 0.5 else "✗ LOW"
+        uncertainty_label = "✓ LOW" if ctx.confidence.uncertainty_level < 0.3 else "⚠ MED" if ctx.confidence.uncertainty_level < 0.7 else "✗ HIGH"
 
         result_text = f"""
 [bold]Response:[/] {dual_stream.external_stream}
@@ -578,8 +585,8 @@ class TerminalUI:
 [dim]Awareness Metrics:[/]
   • Domain: [yellow]{ctx.patterns.domain}/{ctx.patterns.subdomain}[/]
   • Cache Status: [{confidence_color}]{ctx.confidence.query_cache_status}[/]
-  • Confidence: [{confidence_color}]{confidence:.2%}[/]
-  • Uncertainty: [{confidence_color}]{ctx.confidence.uncertainty_level:.2f}[/]
+  • Confidence: [{confidence_color}]{confidence_label} {confidence:.2%}[/]
+  • Uncertainty: [{confidence_color}]{uncertainty_label} {ctx.confidence.uncertainty_level:.2f}[/]
   • Epistemic Humility: [cyan]{meta_reflection.epistemic_humility:.2f}[/]
   • Duration: [cyan]{duration_ms:.1f}ms[/]
 
@@ -652,7 +659,7 @@ class TerminalUI:
 
 Total Queries: [cyan]{total_queries}[/]
 Average Duration: [cyan]{avg_duration:.1f}ms[/]
-Average Confidence: [{'green' if avg_confidence > 0.7 else 'yellow'}]{avg_confidence:.1%}[/]
+Average Confidence: [{'green' if avg_confidence > 0.7 else 'yellow'}]{'✓ HIGH' if avg_confidence > 0.7 else '⚠ MED'} {avg_confidence:.1%}[/]
 
 [bold]Complexity Distribution:[/]
 """

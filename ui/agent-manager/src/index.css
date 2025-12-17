@@ -1,0 +1,257 @@
+/* Tailwind CSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Theme CSS Variables for Extended Customization */
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    /* Primary Colors */
+    --color-primary: rgb(99, 102, 241);
+    --color-primary-light: rgb(129, 140, 248);
+    --color-primary-dark: rgb(79, 70, 229);
+
+    /* Secondary Colors */
+    --color-secondary: rgb(168, 85, 247);
+    --color-secondary-light: rgb(196, 124, 248);
+    --color-secondary-dark: rgb(147, 51, 234);
+
+    /* Accent Colors */
+    --color-accent: rgb(6, 182, 212);
+    --color-accent-light: rgb(34, 211, 238);
+    --color-accent-dark: rgb(0, 153, 170);
+
+    /* State Colors */
+    --color-success: rgb(16, 185, 129);
+    --color-warning: rgb(245, 158, 11);
+    --color-error: rgb(239, 68, 68);
+    --color-info: rgb(59, 130, 246);
+
+    /* Neutral Colors */
+    --color-neutral-900: rgb(15, 23, 42);
+    --color-neutral-800: rgb(30, 41, 59);
+    --color-neutral-700: rgb(51, 65, 85);
+    --color-neutral-600: rgb(71, 85, 105);
+    --color-neutral-500: rgb(100, 116, 139);
+    --color-neutral-400: rgb(148, 163, 184);
+    --color-neutral-300: rgb(203, 213, 225);
+    --color-neutral-200: rgb(226, 232, 240);
+    --color-neutral-100: rgb(241, 245, 249);
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+
+    /* Border Radius */
+    --radius-none: 0;
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-full: 9999px;
+
+    /* Transitions */
+    --transition-fast: 100ms cubic-bezier(0.4, 0, 0.6, 1);
+    --transition-base: 150ms cubic-bezier(0.4, 0, 0.6, 1);
+    --transition-slow: 300ms cubic-bezier(0.4, 0, 0.6, 1);
+
+    /* Z-Index Scale */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+  }
+
+  /* Dark Mode Enabled */
+  html.dark {
+    background-color: rgb(15, 23, 42);
+    color: rgb(241, 245, 249);
+  }
+
+  /* Base Element Styles */
+  body {
+    @apply bg-surface-primary text-text-primary;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgb(30, 41, 59);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(71, 85, 105);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(100, 116, 139);
+  }
+
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-color: rgb(71, 85, 105) rgb(30, 41, 59);
+    scrollbar-width: thin;
+  }
+
+  /* Selection Styling */
+  ::selection {
+    @apply bg-holo-primary/30 text-text-primary;
+  }
+
+  /* Focus Ring Styling */
+  :focus-visible {
+    @apply outline-none ring-2 ring-holo-primary ring-offset-1 ring-offset-surface-secondary;
+  }
+
+  /* Link Styling */
+  a {
+    @apply text-holo-primary hover:text-holo-primary-light transition-colors;
+  }
+
+  /* Button Reset */
+  button {
+    font-family: inherit;
+  }
+
+  /* Input Reset */
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+}
+
+/* Component Layer Styles */
+@layer components {
+  /* Utility Classes for Common Patterns */
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  .flex-between {
+    @apply flex items-center justify-between;
+  }
+
+  .flex-col-center {
+    @apply flex flex-col items-center justify-center;
+  }
+
+  /* Animated Gradients for Loading States */
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 3s ease infinite;
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Glow Effects for Agent States */
+  .glow-active {
+    @apply shadow-glow-primary;
+  }
+
+  .glow-success {
+    @apply shadow-glow-success;
+  }
+
+  .glow-warning {
+    @apply shadow-glow-error;
+  }
+
+  .glow-error {
+    @apply shadow-glow-error;
+  }
+
+  /* Smooth Transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .transition-fast {
+    @apply transition-all duration-100 ease-out;
+  }
+
+  /* Accessibility: Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Print Styles */
+  @media print {
+    body {
+      @apply bg-white text-black;
+    }
+
+    .no-print {
+      @apply hidden;
+    }
+  }
+}
+
+/* Utility Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0)
+  );
+  background-size: 1000px 100%;
+}
+
+/* Syntax Highlighting for Code Blocks */
+code {
+  @apply bg-surface-tertiary px-1.5 py-0.5 rounded font-mono text-sm text-text-secondary;
+}
+
+pre {
+  @apply bg-surface-tertiary p-4 rounded-lg overflow-x-auto;
+}
+
+pre code {
+  @apply bg-transparent p-0;
+}

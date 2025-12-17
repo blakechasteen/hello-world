@@ -90,10 +90,13 @@ def spring_engine():
     ]
 
     for mem in test_memories:
+        embedding = mem['embedding']
         node = MemoryNode(
-            node_id=mem['id'],
+            id=mem['id'],
             content=mem['content'],
-            embedding=mem['embedding'],
+            position=embedding,
+            rest_position=embedding.copy(),
+            velocity=np.zeros_like(embedding),
             spring_constant=mem['k'],
             max_spring_constant=10.0,
             mass=1.0
@@ -141,10 +144,13 @@ class TestActivationThresholds:
         )
 
         # Manually add to engine for testing
+        embedding = np.random.randn(128)
         node = MemoryNode(
-            node_id="test_high",
+            id="test_high",
             content=element.content,
-            embedding=np.random.randn(128),
+            position=embedding,
+            rest_position=embedding.copy(),
+            velocity=np.zeros_like(embedding),
             spring_constant=2.0,
             max_spring_constant=10.0,
             mass=1.0
@@ -251,6 +257,19 @@ class TestBudgetExhaustion:
             compression_threshold=0.7
         )
 
+        # Add mock nodes to engine
+        for i in range(20):
+            emb = np.random.randn(128)
+            node = MemoryNode(
+                id=f"mem_{i}",
+                content=f"Test memory content {i}",
+                position=emb,
+                rest_position=emb.copy(),
+                velocity=np.zeros_like(emb),
+                spring_constant=1.0
+            )
+            spring_engine.nodes[f"mem_{i}"] = node
+
         # Mock retrieval with many high-activation memories
         mock_memories = [(f"mem_{i}", 0.9 - i*0.05) for i in range(20)]
         spring_engine.retrieve_memories = lambda *args, **kwargs: BetaWaveRecallResult(
@@ -276,6 +295,19 @@ class TestBudgetExhaustion:
         """Should compress more aggressively when budget is tight"""
         tight_budget = TokenBudget(total=800, reserved_for_query=100, reserved_for_response=300)
         generous_budget = TokenBudget(total=4000, reserved_for_query=200, reserved_for_response=800)
+
+        # Add mock nodes to engine
+        for i in range(10):
+            emb = np.random.randn(128)
+            node = MemoryNode(
+                id=f"mem_{i}",
+                content=f"Test memory content {i}",
+                position=emb,
+                rest_position=emb.copy(),
+                velocity=np.zeros_like(emb),
+                spring_constant=1.0
+            )
+            spring_engine.nodes[f"mem_{i}"] = node
 
         # Same memories, different budgets
         mock_memories = [(f"mem_{i}", 0.8) for i in range(10)]
@@ -315,10 +347,13 @@ class TestCreativeInsights:
         )
 
         # Add creative insight node
+        insight_embedding = np.random.randn(128)
         insight_node = MemoryNode(
-            node_id="creative_insight",
+            id="creative_insight",
             content="Cross-domain creative bridge memory",
-            embedding=np.random.randn(128),
+            position=insight_embedding,
+            rest_position=insight_embedding.copy(),
+            velocity=np.zeros_like(insight_embedding),
             spring_constant=1.5,
             max_spring_constant=10.0,
             mass=1.0
@@ -487,10 +522,13 @@ class TestEdgeCases:
         )
 
         # Add Unicode node
+        unicode_embedding = np.random.randn(128)
         unicode_node = MemoryNode(
-            node_id="unicode_test",
+            id="unicode_test",
             content="Quantum entanglement 量子纠缠 🧲",
-            embedding=np.random.randn(128),
+            position=unicode_embedding,
+            rest_position=unicode_embedding.copy(),
+            velocity=np.zeros_like(unicode_embedding),
             spring_constant=2.0,
             max_spring_constant=10.0,
             mass=1.0
@@ -526,10 +564,13 @@ class TestEdgeCases:
         )
 
         # Add very long node
+        long_embedding = np.random.randn(128)
         long_node = MemoryNode(
-            node_id="long_content",
+            id="long_content",
             content="A" * 50000,  # ~12500 tokens
-            embedding=np.random.randn(128),
+            position=long_embedding,
+            rest_position=long_embedding.copy(),
+            velocity=np.zeros_like(long_embedding),
             spring_constant=2.0,
             max_spring_constant=10.0,
             mass=1.0
@@ -569,6 +610,19 @@ class TestActivationStatistics:
             spring_engine=spring_engine,
             token_budget=token_budget
         )
+
+        # Add mock nodes to engine
+        for node_id, activation in [("high1", 0.9), ("high2", 0.8), ("med1", 0.5), ("med2", 0.4), ("low1", 0.3)]:
+            emb = np.random.randn(128)
+            node = MemoryNode(
+                id=node_id,
+                content=f"Test memory content {node_id}",
+                position=emb,
+                rest_position=emb.copy(),
+                velocity=np.zeros_like(emb),
+                spring_constant=1.0
+            )
+            spring_engine.nodes[node_id] = node
 
         # Mock retrieval with mixed activations
         spring_engine.retrieve_memories = lambda *args, **kwargs: BetaWaveRecallResult(

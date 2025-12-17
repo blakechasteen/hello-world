@@ -1,0 +1,550 @@
+/**
+ * HoloLoom Design System - Global Styles
+ *
+ * This file contains:
+ * - CSS custom properties (design tokens)
+ * - Theme definitions (tufte, modern, terminal)
+ * - Base element styles
+ * - Utility classes
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================================================
+   CSS CUSTOM PROPERTIES - BASE (Typography, Spacing, Effects)
+   ============================================================================= */
+
+:root {
+  /* Typography */
+  --font-sans: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  --font-cosmic: 'Cinzel', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+
+  /* Font sizes (1.25 ratio - Major Third) */
+  --text-2xs: 0.64rem;
+  --text-xs: 0.8rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+  --text-7xl: 4.5rem;
+
+  /* Line heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* Letter spacing */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+
+  /* Spacing */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* Border radius */
+  --radius-none: 0;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* Cosmic glow */
+  --shadow-glow-nebula: 0 0 20px rgba(99, 102, 241, 0.3);
+  --shadow-glow-aurora: 0 0 20px rgba(34, 211, 238, 0.3);
+  --shadow-glow-sun: 0 0 20px rgba(251, 191, 36, 0.3);
+  --shadow-focus: 0 0 0 2px rgba(99, 102, 241, 0.5);
+
+  /* Transitions */
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-weave-in: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-weave-out: cubic-bezier(0.64, 0, 0.78, 0);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-cosmic: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Cosmic Foundation (always present) */
+  --cosmic-void: #0a0a0f;
+  --cosmic-void-light: #12121a;
+  --cosmic-nebula: #6366f1;
+  --cosmic-nebula-light: #818cf8;
+  --cosmic-nebula-dark: #4f46e5;
+  --cosmic-aurora: #22d3ee;
+  --cosmic-aurora-light: #67e8f9;
+  --cosmic-aurora-dark: #06b6d4;
+  --cosmic-sun: #fbbf24;
+  --cosmic-sun-light: #fcd34d;
+  --cosmic-sun-dark: #f59e0b;
+  --cosmic-starlight: #f8fafc;
+  --cosmic-starlight-dim: #e2e8f0;
+  --cosmic-constellation: #94a3b8;
+
+  /* Semantic Colors - Confidence */
+  --confidence-high: #22c55e;
+  --confidence-medium: #eab308;
+  --confidence-low: #ef4444;
+  --confidence-unknown: #6b7280;
+
+  /* Semantic Colors - Safety */
+  --safety-safe: #22c55e;
+  --safety-safe-bg: rgba(34, 197, 94, 0.1);
+  --safety-caution: #eab308;
+  --safety-caution-bg: rgba(234, 179, 8, 0.1);
+  --safety-warning: #f97316;
+  --safety-warning-bg: rgba(249, 115, 22, 0.1);
+  --safety-danger: #ef4444;
+  --safety-danger-bg: rgba(239, 68, 68, 0.1);
+  --safety-critical: #dc2626;
+  --safety-critical-bg: rgba(220, 38, 38, 0.1);
+
+  /* Semantic Colors - Memory */
+  --memory-active: #22d3ee;
+  --memory-active-bg: rgba(34, 211, 238, 0.1);
+  --memory-recent: #a78bfa;
+  --memory-recent-bg: rgba(167, 139, 250, 0.1);
+  --memory-dormant: #6b7280;
+  --memory-dormant-bg: rgba(107, 114, 128, 0.1);
+  --memory-hot: #f97316;
+  --memory-hot-bg: rgba(249, 115, 22, 0.1);
+
+  /* Semantic Colors - Edge Types */
+  --edge-is-a: #3b82f6;
+  --edge-uses: #22c55e;
+  --edge-mentions: #6b7280;
+  --edge-leads-to: #f97316;
+  --edge-part-of: #a855f7;
+  --edge-in-time: #06b6d4;
+  --edge-occurred-at: #14b8a6;
+
+  /* Semantic Colors - Reasoning Modes */
+  --reasoning-direct: #3b82f6;
+  --reasoning-verify: #22c55e;
+  --reasoning-research: #a855f7;
+  --reasoning-plan-execute: #f97316;
+
+  /* Z-index scale */
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-overlay: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-toast: 1700;
+  --z-tooltip: 1800;
+}
+
+/* =============================================================================
+   THEME: MODERN (Default)
+   ============================================================================= */
+
+:root,
+[data-theme="modern"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  --fg-primary: #0f172a;
+  --fg-secondary: #334155;
+  --fg-tertiary: #64748b;
+  --fg-disabled: #94a3b8;
+  --fg-inverse: #ffffff;
+
+  --border-primary: #e2e8f0;
+  --border-secondary: #f1f5f9;
+  --border-focus: var(--cosmic-nebula);
+  --border-error: var(--safety-danger);
+
+  --interactive-primary: var(--cosmic-nebula);
+  --interactive-primary-hover: var(--cosmic-nebula-dark);
+  --interactive-secondary: #e2e8f0;
+  --interactive-secondary-hover: #cbd5e1;
+
+  color-scheme: light;
+}
+
+/* =============================================================================
+   THEME: TUFTE (Data-Dense, Minimal)
+   ============================================================================= */
+
+[data-theme="tufte"] {
+  --bg-primary: #fafaf9;
+  --bg-secondary: #f5f5f4;
+  --bg-tertiary: #e7e5e4;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+
+  --fg-primary: #1c1917;
+  --fg-secondary: #44403c;
+  --fg-tertiary: #78716c;
+  --fg-disabled: #a8a29e;
+  --fg-inverse: #fafaf9;
+
+  --border-primary: #d6d3d1;
+  --border-secondary: #e7e5e4;
+  --border-focus: var(--cosmic-nebula);
+  --border-error: var(--safety-danger);
+
+  --interactive-primary: #292524;
+  --interactive-primary-hover: #1c1917;
+  --interactive-secondary: #78716c;
+  --interactive-secondary-hover: #57534e;
+
+  color-scheme: light;
+}
+
+/* =============================================================================
+   THEME: TERMINAL (Hacker/Developer)
+   ============================================================================= */
+
+[data-theme="terminal"] {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a24;
+  --bg-elevated: #1e1e28;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  --fg-primary: #22d3ee;
+  --fg-secondary: #94a3b8;
+  --fg-tertiary: #64748b;
+  --fg-disabled: #475569;
+  --fg-inverse: #0a0a0f;
+
+  --border-primary: #2d2d3a;
+  --border-secondary: #1e1e28;
+  --border-focus: var(--cosmic-aurora);
+  --border-error: var(--safety-danger);
+
+  --interactive-primary: var(--cosmic-aurora);
+  --interactive-primary-hover: var(--cosmic-aurora-light);
+  --interactive-secondary: #2d2d3a;
+  --interactive-secondary-hover: #3d3d4a;
+
+  /* Terminal syntax colors */
+  --syntax-keyword: #c792ea;
+  --syntax-string: #c3e88d;
+  --syntax-number: #f78c6c;
+  --syntax-function: #82aaff;
+  --syntax-comment: #546e7a;
+  --syntax-operator: #89ddff;
+
+  color-scheme: dark;
+}
+
+/* =============================================================================
+   BASE ELEMENT STYLES
+   ============================================================================= */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+    color: var(--fg-primary);
+    transition: background-color var(--duration-slow) var(--ease-in-out),
+                color var(--duration-slow) var(--ease-in-out);
+  }
+
+  /* Smooth scrolling */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Selection colors */
+  ::selection {
+    background-color: var(--cosmic-nebula);
+    color: white;
+  }
+
+  /* Focus styles */
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+
+  /* Links */
+  a {
+    color: var(--interactive-primary);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-in-out);
+  }
+
+  a:hover {
+    color: var(--interactive-primary-hover);
+  }
+
+  /* Headings */
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    color: var(--fg-primary);
+  }
+
+  h1 { font-size: var(--text-5xl); }
+  h2 { font-size: var(--text-4xl); }
+  h3 { font-size: var(--text-3xl); }
+  h4 { font-size: var(--text-2xl); }
+  h5 { font-size: var(--text-xl); }
+  h6 { font-size: var(--text-lg); }
+
+  /* Paragraphs */
+  p {
+    margin: 0;
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Code */
+  code, pre {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+  }
+
+  pre {
+    margin: 0;
+    padding: var(--space-4);
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    overflow-x: auto;
+  }
+
+  code {
+    padding: 0.125rem 0.25rem;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+  }
+
+  pre code {
+    padding: 0;
+    background-color: transparent;
+  }
+
+  /* Lists */
+  ul, ol {
+    margin: 0;
+    padding-left: var(--space-6);
+  }
+
+  li {
+    margin-bottom: var(--space-1);
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: var(--space-2) var(--space-3);
+    text-align: left;
+    border-bottom: 1px solid var(--border-secondary);
+  }
+
+  th {
+    font-weight: 600;
+    background-color: var(--bg-secondary);
+  }
+
+  /* Images */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Forms */
+  input, textarea, select, button {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  /* Screen reader only */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* =============================================================================
+   KEYFRAME ANIMATIONS
+   ============================================================================= */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes aurora {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* =============================================================================
+   UTILITY LAYERS
+   ============================================================================= */
+
+@layer utilities {
+  /* Text colors using CSS variables */
+  .text-fg-primary { color: var(--fg-primary); }
+  .text-fg-secondary { color: var(--fg-secondary); }
+  .text-fg-tertiary { color: var(--fg-tertiary); }
+
+  /* Background colors using CSS variables */
+  .bg-bg-primary { background-color: var(--bg-primary); }
+  .bg-bg-secondary { background-color: var(--bg-secondary); }
+  .bg-bg-elevated { background-color: var(--bg-elevated); }
+
+  /* Border colors using CSS variables */
+  .border-border-primary { border-color: var(--border-primary); }
+  .border-border-secondary { border-color: var(--border-secondary); }
+
+  /* Cosmic gradient backgrounds */
+  .bg-cosmic-gradient {
+    background: linear-gradient(
+      135deg,
+      var(--cosmic-void) 0%,
+      var(--cosmic-nebula-dark) 50%,
+      var(--cosmic-aurora-dark) 100%
+    );
+  }
+
+  .bg-aurora-gradient {
+    background: linear-gradient(
+      90deg,
+      var(--cosmic-aurora),
+      var(--cosmic-nebula),
+      var(--cosmic-aurora)
+    );
+    background-size: 200% 100%;
+  }
+
+  /* Streaming text effect */
+  .streaming-cursor::after {
+    content: '';
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-left: 2px;
+    background-color: var(--fg-primary);
+    animation: cursor 1s step-end infinite;
+  }
+}

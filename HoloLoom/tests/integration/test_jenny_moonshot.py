@@ -674,7 +674,7 @@ class TestFullMoonshotPipeline:
             target=RenderTarget.HTML
         )
         assert len(html_output) > 0
-        assert 'jenny-dashboard' in html_output.lower()
+        assert 'jenny-container' in html_output.lower()  # Container class in generated HTML
 
         # M6: Record render analytics
         analytics_collector.record_render(

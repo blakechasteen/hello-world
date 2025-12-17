@@ -14,13 +14,65 @@ Shows:
 import asyncio
 import sys
 import os
+import uuid
+
+# Fix Windows encoding
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from HoloLoom.config import Config
+from HoloLoom.config import Config, MemoryBackend
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.terminal_ui import TerminalUI
+from HoloLoom.protocols.types import MemoryShard
+
+
+def create_test_shards():
+    """Create test memory shards for demos."""
+    return [
+        MemoryShard(
+            id=str(uuid.uuid4()),
+            text="Thompson Sampling is a Bayesian algorithm for the multi-armed bandit problem. It balances exploration and exploitation by sampling from posterior distributions.",
+            entities=["Thompson Sampling", "Bayesian", "multi-armed bandit", "exploration", "exploitation"],
+            motifs=["algorithm", "probability"],
+            timestamp=0.0,
+            metadata={"source": "knowledge_base", "confidence": 0.95}
+        ),
+        MemoryShard(
+            id=str(uuid.uuid4()),
+            text="HoloLoom uses a 9-step weaving cycle: Loom Command, Chrono Trigger, Yarn Graph, Resonance Shed, Warp Space, Memory Crawl, Convergence, Tool Execution, Spacetime.",
+            entities=["HoloLoom", "Loom Command", "Chrono Trigger", "Yarn Graph", "Resonance Shed", "Warp Space"],
+            motifs=["weaving", "pipeline"],
+            timestamp=0.0,
+            metadata={"source": "documentation", "confidence": 0.9}
+        ),
+        MemoryShard(
+            id=str(uuid.uuid4()),
+            text="Neural networks are computational models inspired by biological neurons. They learn patterns through backpropagation and gradient descent optimization.",
+            entities=["neural networks", "backpropagation", "gradient descent", "machine learning"],
+            motifs=["AI", "learning"],
+            timestamp=0.0,
+            metadata={"source": "knowledge_base", "confidence": 0.9}
+        ),
+        MemoryShard(
+            id=str(uuid.uuid4()),
+            text="Machine learning is a subset of AI that enables systems to learn from data. It includes supervised, unsupervised, and reinforcement learning approaches.",
+            entities=["machine learning", "AI", "supervised learning", "unsupervised learning", "reinforcement learning"],
+            motifs=["AI", "learning"],
+            timestamp=0.0,
+            metadata={"source": "knowledge_base", "confidence": 0.9}
+        ),
+    ]
+
+
+def create_config():
+    """Create config with in-memory backend for fast startup."""
+    config = Config.fast()
+    config.memory_backend = MemoryBackend.INMEMORY
+    return config
 
 
 async def demo_basic_queries():
@@ -28,11 +80,12 @@ async def demo_basic_queries():
     print("\n" + "="*70)
     print("DEMO 1: Basic Queries with Auto-Complexity")
     print("="*70)
-    
+
     # Create orchestrator with auto-complexity detection
-    config = Config.fast()
+    config = create_config()
     orchestrator = WeavingOrchestrator(
         cfg=config,
+        shards=create_test_shards(),
         enable_complexity_auto_detect=True
     )
     
@@ -63,11 +116,11 @@ async def demo_pattern_selection():
     print("\n" + "="*70)
     print("DEMO 2: Pattern Selection")
     print("="*70)
-    
+
     from HoloLoom.loom.command import PatternCard
-    
-    config = Config.fast()
-    orchestrator = WeavingOrchestrator(cfg=config)
+
+    config = create_config()
+    orchestrator = WeavingOrchestrator(cfg=config, shards=create_test_shards())
     ui = TerminalUI(orchestrator)
     
     ui.print_banner()
@@ -97,10 +150,11 @@ async def demo_trace_display():
     print("\n" + "="*70)
     print("DEMO 3: Provenance Trace Display")
     print("="*70)
-    
-    config = Config.fast()
+
+    config = create_config()
     orchestrator = WeavingOrchestrator(
         cfg=config,
+        shards=create_test_shards(),
         enable_complexity_auto_detect=True
     )
     ui = TerminalUI(orchestrator)
@@ -119,10 +173,11 @@ async def demo_conversation_flow():
     print("\n" + "="*70)
     print("DEMO 4: Conversation Flow")
     print("="*70)
-    
-    config = Config.fast()
+
+    config = create_config()
     orchestrator = WeavingOrchestrator(
         cfg=config,
+        shards=create_test_shards(),
         enable_complexity_auto_detect=True
     )
     ui = TerminalUI(orchestrator)
@@ -172,9 +227,10 @@ async def main():
         
         if choice == "6":
             # Interactive session
-            config = Config.fast()
+            config = create_config()
             orchestrator = WeavingOrchestrator(
                 cfg=config,
+                shards=create_test_shards(),
                 enable_complexity_auto_detect=True
             )
             ui = TerminalUI(orchestrator)

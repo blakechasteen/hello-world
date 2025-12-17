@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================================================
+ * HoloLoom Web App - Global Styles
+ * ============================================================================= */
+
+/* Root theme variables are set by ThemeProvider from design-system */
+
+/* Base layer customizations */
+@layer base {
+  html {
+    @apply antialiased;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg-primary text-fg-primary;
+    @apply transition-colors duration-normal;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-cosmic-nebula ring-offset-2 ring-offset-bg-primary;
+  }
+
+  /* Selection colors */
+  ::selection {
+    @apply bg-cosmic-nebula/30 text-fg-primary;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-secondary rounded;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-primary rounded hover:bg-border-secondary;
+  }
+}
+
+/* Component layer customizations */
+@layer components {
+  /* Page container */
+  .page-container {
+    @apply min-h-screen flex flex-col;
+  }
+
+  /* Main content area */
+  .main-content {
+    @apply flex-1 px-4 py-6 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto w-full;
+  }
+
+  /* Card grid layouts */
+  .card-grid {
+    @apply grid gap-4 sm:gap-6;
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  /* Sidebar layout */
+  .layout-sidebar {
+    @apply flex flex-col lg:flex-row gap-6;
+  }
+
+  .layout-sidebar-nav {
+    @apply w-full lg:w-64 flex-shrink-0;
+  }
+
+  .layout-sidebar-content {
+    @apply flex-1 min-w-0;
+  }
+
+  /* Chat layout */
+  .chat-container {
+    @apply flex flex-col h-full;
+  }
+
+  .chat-messages {
+    @apply flex-1 overflow-y-auto;
+    @apply space-y-4 p-4;
+  }
+
+  .chat-input-area {
+    @apply border-t border-border-primary;
+    @apply p-4 bg-bg-secondary;
+  }
+
+  /* Dashboard panel */
+  .dashboard-panel {
+    @apply bg-bg-secondary rounded-lg border border-border-primary;
+    @apply p-4 sm:p-6;
+  }
+
+  /* Cosmic glow effect */
+  .cosmic-glow {
+    @apply relative;
+  }
+
+  .cosmic-glow::before {
+    content: '';
+    @apply absolute inset-0 rounded-lg;
+    @apply bg-gradient-to-r from-cosmic-nebula/20 via-cosmic-aurora/20 to-cosmic-starlight/20;
+    @apply blur-xl opacity-0 transition-opacity duration-slow;
+    z-index: -1;
+  }
+
+  .cosmic-glow:hover::before {
+    @apply opacity-100;
+  }
+}
+
+/* Utility layer customizations */
+@layer utilities {
+  /* Text gradient */
+  .text-gradient-cosmic {
+    @apply bg-gradient-to-r from-cosmic-nebula via-cosmic-aurora to-cosmic-starlight;
+    @apply bg-clip-text text-transparent;
+  }
+
+  /* Animate cosmic pulse */
+  .animate-cosmic-pulse {
+    animation: cosmic-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes cosmic-pulse {
+    0%, 100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.02);
+    }
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-bg-secondary/80 backdrop-blur-lg;
+    @apply border border-border-primary/50;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Custom keyframes for loading animations */
+@keyframes dotPulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes cursor {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}

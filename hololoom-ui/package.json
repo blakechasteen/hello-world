@@ -1,0 +1,50 @@
+{
+  "name": "hololoom-ui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HoloLoom Unified UI Platform - Multi-platform interface for the neural decision-making system",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "web": "turbo run dev --filter=@hololoom/web",
+    "desktop": "turbo run dev --filter=@hololoom/desktop",
+    "vscode": "turbo run dev --filter=@hololoom/vscode",
+    "mobile": "turbo run dev --filter=@hololoom/mobile",
+    "tokens:build": "turbo run build --filter=@hololoom/design-system"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.3.0",
+    "@types/node": "^20.10.0"
+  },
+  "packageManager": "npm@10.2.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hololoom/hololoom-ui"
+  },
+  "keywords": [
+    "hololoom",
+    "ai",
+    "neural",
+    "decision-making",
+    "rag",
+    "memory",
+    "ui",
+    "design-system"
+  ],
+  "author": "HoloLoom Team",
+  "license": "MIT"
+}

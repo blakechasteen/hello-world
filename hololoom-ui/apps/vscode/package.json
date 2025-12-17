@@ -1,0 +1,217 @@
+{
+  "name": "hololoom",
+  "displayName": "HoloLoom",
+  "description": "Intelligent knowledge weaving with multi-scale memory, recursive learning, and transparent AI reasoning",
+  "version": "0.1.0",
+  "publisher": "hololoom",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hololoom/hololoom"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "rag",
+    "memory",
+    "knowledge",
+    "assistant"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "hololoom.openChat",
+        "title": "Open Chat Panel",
+        "category": "HoloLoom",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "hololoom.query",
+        "title": "Query Selection",
+        "category": "HoloLoom",
+        "icon": "$(search)"
+      },
+      {
+        "command": "hololoom.explain",
+        "title": "Explain Selection",
+        "category": "HoloLoom",
+        "icon": "$(lightbulb)"
+      },
+      {
+        "command": "hololoom.remember",
+        "title": "Remember Selection",
+        "category": "HoloLoom",
+        "icon": "$(save)"
+      },
+      {
+        "command": "hololoom.openMemory",
+        "title": "Open Memory Browser",
+        "category": "HoloLoom",
+        "icon": "$(database)"
+      },
+      {
+        "command": "hololoom.reconnect",
+        "title": "Reconnect to Server",
+        "category": "HoloLoom",
+        "icon": "$(refresh)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "hololoom.openChat",
+        "key": "ctrl+shift+h",
+        "mac": "cmd+shift+h"
+      },
+      {
+        "command": "hololoom.query",
+        "key": "ctrl+shift+q",
+        "mac": "cmd+shift+q",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "hololoom.explain",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "hololoom.remember",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "editorTextFocus && editorHasSelection"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "hololoom.submenu",
+          "group": "hololoom"
+        }
+      ],
+      "hololoom.submenu": [
+        {
+          "command": "hololoom.query",
+          "group": "1_query"
+        },
+        {
+          "command": "hololoom.explain",
+          "group": "1_query",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "hololoom.remember",
+          "group": "2_memory",
+          "when": "editorHasSelection"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "hololoom.submenu",
+        "label": "HoloLoom"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "hololoom",
+          "title": "HoloLoom",
+          "icon": "$(hubot)"
+        }
+      ]
+    },
+    "views": {
+      "hololoom": [
+        {
+          "type": "webview",
+          "id": "hololoom.chatView",
+          "name": "Chat",
+          "icon": "$(comment-discussion)"
+        },
+        {
+          "type": "webview",
+          "id": "hololoom.memoryView",
+          "name": "Memory",
+          "icon": "$(database)"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "HoloLoom",
+      "properties": {
+        "hololoom.apiEndpoint": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "HoloLoom API server endpoint"
+        },
+        "hololoom.apiTimeout": {
+          "type": "number",
+          "default": 30000,
+          "description": "API request timeout in milliseconds"
+        },
+        "hololoom.defaultReasoningMode": {
+          "type": "string",
+          "enum": ["direct", "verify", "research", "plan_execute"],
+          "default": "verify",
+          "description": "Default reasoning mode for queries"
+        },
+        "hololoom.includeFileContext": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include current file context in queries"
+        },
+        "hololoom.maxContextLines": {
+          "type": "number",
+          "default": 100,
+          "description": "Maximum lines of context to include"
+        },
+        "hololoom.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show HoloLoom status in status bar"
+        },
+        "hololoom.autoConnect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically connect to server on startup"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "package": "vsce package",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "css-loader": "^6.8.1",
+    "eslint": "^8.56.0",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

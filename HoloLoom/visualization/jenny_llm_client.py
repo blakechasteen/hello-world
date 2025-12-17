@@ -34,7 +34,9 @@ import random
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, List, AsyncIterator
+from typing import Optional, Dict, Any, List, AsyncIterator, Type
+
+from .jenny_config_base import BaseConfig
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +46,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 @dataclass
-class LLMClientConfig:
+class LLMClientConfig(BaseConfig):
     """Configuration for LLM client."""
     provider: str = "ollama"
     model: str = "llama3.2:3b"

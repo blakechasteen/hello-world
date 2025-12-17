@@ -345,6 +345,242 @@ branch_store: Dict[str, Dict[str, Any]] = {
     'main': {'versions': [], 'head': None}
 }
 
+# Execution logs storage (Wave 5.6)
+execution_logs: List[Dict[str, Any]] = []
+MAX_EXECUTION_LOGS = 1000
+
+# WebSocket execution state (Wave 5.6)
+active_ws_executions: Dict[str, Dict[str, Any]] = {}  # execution_id -> {executor, status, progress, cancelled}
+
+
+async def broadcast_log(level: str, message: str, node_id: Optional[str] = None, execution_id: Optional[str] = None):
+    """
+    Broadcast a log message to all WebSocket clients.
+
+    Args:
+        level: Log level (INFO, WARN, ERROR, DEBUG)
+        message: Log message text
+        node_id: Optional node ID this log relates to
+        execution_id: Optional execution ID for filtering
+    """
+    global execution_logs
+
+    log_entry = {
+        'type': 'log',
+        'level': level,
+        'message': message,
+        'node_id': node_id,
+        'execution_id': execution_id,
+        'timestamp': datetime.now().isoformat()
+    }
+
+    # Store in execution logs (ring buffer)
+    execution_logs.append(log_entry)
+    if len(execution_logs) > MAX_EXECUTION_LOGS:
+        execution_logs = execution_logs[-MAX_EXECUTION_LOGS:]
+
+    # Broadcast to all connected clients
+    disconnected = []
+    for ws in ws_connections:
+        try:
+            await ws.send_json(log_entry)
+        except:
+            disconnected.append(ws)
+
+    for ws in disconnected:
+        if ws in ws_connections:
+            ws_connections.remove(ws)
+
+
+async def broadcast_workflow_status(
+    execution_id: str,
+    status: str,
+    progress: float = 0.0,
+    error: Optional[str] = None,
+    result: Optional[Dict[str, Any]] = None
+):
+    """
+    Broadcast workflow execution status to all WebSocket clients.
+
+    Args:
+        execution_id: Unique execution identifier
+        status: Status string (started, running, completed, error, cancelled)
+        progress: Progress percentage (0.0-100.0)
+        error: Optional error message
+        result: Optional result data on completion
+    """
+    message = {
+        'type': f'workflow_{status}' if status in ['start', 'complete', 'error'] else 'workflow_status',
+        'execution_id': execution_id,
+        'status': status,
+        'progress': progress,
+        'timestamp': datetime.now().isoformat()
+    }
+
+    if error:
+        message['error'] = error
+    if result:
+        message['result'] = result
+
+    disconnected = []
+    for ws in ws_connections:
+        try:
+            await ws.send_json(message)
+        except:
+            disconnected.append(ws)
+
+    for ws in disconnected:
+        if ws in ws_connections:
+            ws_connections.remove(ws)
+
+
+async def broadcast_node_event(
+    execution_id: str,
+    node_id: str,
+    event: str,  # 'start', 'complete', 'error'
+    output: Optional[Any] = None,
+    error: Optional[str] = None,
+    elapsed_ms: Optional[float] = None
+):
+    """
+    Broadcast node execution event to all WebSocket clients.
+
+    Args:
+        execution_id: Unique execution identifier
+        node_id: Node being executed
+        event: Event type (start, complete, error)
+        output: Node output on completion
+        error: Error message on error
+        elapsed_ms: Execution time in milliseconds
+    """
+    message = {
+        'type': f'node_{event}',
+        'execution_id': execution_id,
+        'node_id': node_id,
+        'timestamp': datetime.now().isoformat()
+    }
+
+    if output is not None:
+        message['output'] = output
+    if error:
+        message['error'] = error
+    if elapsed_ms is not None:
+        message['elapsed_ms'] = elapsed_ms
+
+    disconnected = []
+    for ws in ws_connections:
+        try:
+            await ws.send_json(message)
+        except:
+            disconnected.append(ws)
+
+    for ws in disconnected:
+        if ws in ws_connections:
+            ws_connections.remove(ws)
+
+
+async def execute_workflow_with_streaming(
+    executor: "WorkflowExecutor",
+    execution_id: str,
+    websocket: WebSocket
+) -> Dict[str, Any]:
+    """
+    Execute a workflow with real-time streaming updates via WebSocket.
+
+    Broadcasts node start/complete/error events and progress updates.
+    Checks for cancellation between nodes.
+
+    Args:
+        executor: WorkflowExecutor instance
+        execution_id: Unique execution identifier
+        websocket: WebSocket connection for direct responses
+
+    Returns:
+        Workflow execution result
+    """
+    import time
+
+    # Validate workflow first
+    try:
+        executor.validate_workflow()
+    except Exception as e:
+        await broadcast_log('ERROR', f'Workflow validation failed: {e}', execution_id=execution_id)
+        raise
+
+    # Get execution order
+    try:
+        execution_order = executor.topological_sort()
+    except Exception as e:
+        await broadcast_log('ERROR', f'Workflow has cycles: {e}', execution_id=execution_id)
+        raise
+
+    total_nodes = len(execution_order)
+    node_outputs = {}
+    result = {'status': 'completed', 'node_results': {}, 'execution_order': execution_order}
+
+    await broadcast_log('INFO', f'Executing {total_nodes} nodes', execution_id=execution_id)
+
+    for i, node_id in enumerate(execution_order):
+        # Check for cancellation
+        if active_ws_executions.get(execution_id, {}).get('cancelled'):
+            result['status'] = 'cancelled'
+            result['cancelled_at'] = node_id
+            return result
+
+        node = executor.node_map.get(node_id)
+        if not node:
+            continue
+
+        # Calculate progress
+        progress = ((i) / total_nodes) * 100
+        active_ws_executions[execution_id]['progress'] = progress
+        await broadcast_workflow_status(execution_id, 'running', progress=progress)
+
+        # Broadcast node start
+        await broadcast_node_event(execution_id, node_id, 'start')
+        await broadcast_log('INFO', f'Starting node: {node.config.get("label", node_id)}', node_id=node_id, execution_id=execution_id)
+
+        start_time = time.time()
+
+        try:
+            # Gather inputs from connected nodes
+            inputs = {}
+            for conn_id, conn in executor.connection_map.items():
+                if conn.to == node_id:
+                    from_output = node_outputs.get(conn.from_node)
+                    if from_output:
+                        inputs[conn.from_node] = from_output
+
+            # Execute the node
+            output = await executor.execute_agent(node.agentType, node.config, inputs)
+            node_outputs[node_id] = output
+            result['node_results'][node_id] = output
+
+            elapsed_ms = (time.time() - start_time) * 1000
+
+            # Broadcast node complete
+            await broadcast_node_event(execution_id, node_id, 'complete', output=output, elapsed_ms=elapsed_ms)
+            await broadcast_log('INFO', f'Node completed in {elapsed_ms:.0f}ms', node_id=node_id, execution_id=execution_id)
+
+        except Exception as e:
+            elapsed_ms = (time.time() - start_time) * 1000
+
+            # Broadcast node error
+            await broadcast_node_event(execution_id, node_id, 'error', error=str(e), elapsed_ms=elapsed_ms)
+            await broadcast_log('ERROR', f'Node failed: {e}', node_id=node_id, execution_id=execution_id)
+
+            result['status'] = 'failed'
+            result['failed_at'] = node_id
+            result['error'] = str(e)
+            raise
+
+    # Update final progress
+    active_ws_executions[execution_id]['progress'] = 100.0
+    await broadcast_workflow_status(execution_id, 'running', progress=100.0)
+
+    return result
+
+
 # Collaboration state
 collaboration_sessions: Dict[str, Dict[str, Any]] = {}  # session_id -> {workflow_id, participants, cursor_positions, last_activity}
 presence_subscriptions: Dict[WebSocket, str] = {}  # websocket -> session_id
@@ -1113,6 +1349,129 @@ async def websocket_endpoint(websocket: WebSocket):
                         'operation': operation,
                         'state': new_state
                     })
+
+            elif msg_type == 'execute_workflow':
+                # Execute workflow via WebSocket (Wave 5.6)
+                workflow_data = message.get('workflow')
+                input_data = message.get('input_data', {})
+
+                if not workflow_data:
+                    await websocket.send_json({
+                        'type': 'error',
+                        'error': 'No workflow provided',
+                        'timestamp': datetime.now().isoformat()
+                    })
+                    continue
+
+                # Generate execution ID
+                execution_id = f"ws-exec-{uuid.uuid4().hex[:8]}"
+
+                try:
+                    # Parse workflow
+                    workflow = Workflow(**workflow_data)
+
+                    # Create executor
+                    executor = WorkflowExecutor(workflow, input_data)
+                    executor.execution_id = execution_id
+
+                    # Register in active executions
+                    active_ws_executions[execution_id] = {
+                        'executor': executor,
+                        'status': 'running',
+                        'progress': 0.0,
+                        'cancelled': False,
+                        'websocket': websocket
+                    }
+
+                    # Acknowledge start
+                    await websocket.send_json({
+                        'type': 'execution_started',
+                        'execution_id': execution_id,
+                        'timestamp': datetime.now().isoformat()
+                    })
+
+                    # Broadcast workflow start
+                    await broadcast_workflow_status(execution_id, 'start', progress=0.0)
+                    await broadcast_log('INFO', f'Starting workflow execution: {workflow.name}', execution_id=execution_id)
+
+                    # Execute workflow with streaming updates
+                    result = await execute_workflow_with_streaming(
+                        executor, execution_id, websocket
+                    )
+
+                    # Check if cancelled
+                    if active_ws_executions.get(execution_id, {}).get('cancelled'):
+                        await broadcast_workflow_status(execution_id, 'cancelled')
+                        await broadcast_log('WARN', 'Workflow execution cancelled', execution_id=execution_id)
+                    else:
+                        # Broadcast completion
+                        await broadcast_workflow_status(execution_id, 'complete', progress=100.0, result=result)
+                        await broadcast_log('INFO', f'Workflow completed successfully', execution_id=execution_id)
+
+                except Exception as e:
+                    logger.error(f"WebSocket workflow execution failed: {e}")
+                    await broadcast_workflow_status(execution_id, 'error', error=str(e))
+                    await broadcast_log('ERROR', f'Workflow execution failed: {e}', execution_id=execution_id)
+
+                finally:
+                    # Clean up
+                    if execution_id in active_ws_executions:
+                        del active_ws_executions[execution_id]
+
+            elif msg_type == 'stop_workflow':
+                # Stop workflow execution (Wave 5.6)
+                execution_id = message.get('execution_id')
+
+                if not execution_id:
+                    await websocket.send_json({
+                        'type': 'error',
+                        'error': 'No execution_id provided',
+                        'timestamp': datetime.now().isoformat()
+                    })
+                    continue
+
+                if execution_id in active_ws_executions:
+                    # Mark as cancelled
+                    active_ws_executions[execution_id]['cancelled'] = True
+                    active_ws_executions[execution_id]['status'] = 'cancelling'
+
+                    await websocket.send_json({
+                        'type': 'stop_acknowledged',
+                        'execution_id': execution_id,
+                        'timestamp': datetime.now().isoformat()
+                    })
+
+                    await broadcast_log('WARN', 'Workflow cancellation requested', execution_id=execution_id)
+                else:
+                    await websocket.send_json({
+                        'type': 'error',
+                        'error': f'Execution {execution_id} not found or already completed',
+                        'timestamp': datetime.now().isoformat()
+                    })
+
+            elif msg_type == 'get_logs':
+                # Get execution logs with optional filtering (Wave 5.6)
+                filter_level = message.get('level')  # Optional: INFO, WARN, ERROR
+                filter_node = message.get('node_id')  # Optional: filter by node
+                filter_execution = message.get('execution_id')  # Optional: filter by execution
+                limit = message.get('limit', 100)
+
+                filtered_logs = execution_logs.copy()
+
+                if filter_level:
+                    filtered_logs = [l for l in filtered_logs if l.get('level') == filter_level]
+                if filter_node:
+                    filtered_logs = [l for l in filtered_logs if l.get('node_id') == filter_node]
+                if filter_execution:
+                    filtered_logs = [l for l in filtered_logs if l.get('execution_id') == filter_execution]
+
+                # Return latest logs (up to limit)
+                await websocket.send_json({
+                    'type': 'logs_response',
+                    'logs': filtered_logs[-limit:],
+                    'total': len(filtered_logs),
+                    'timestamp': datetime.now().isoformat()
+                })
 
     except WebSocketDisconnect:
         ws_connections.remove(websocket)

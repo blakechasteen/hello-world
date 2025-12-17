@@ -68,7 +68,9 @@ References:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List, Callable, Awaitable, Union, Set
+from typing import Dict, Any, Optional, List, Callable, Awaitable, Union, Set, Type
+
+from .jenny_config_base import BaseConfigWithDefaults
 from datetime import datetime
 from uuid import uuid4
 import asyncio
@@ -136,7 +138,7 @@ from .spec_ledger import SpecLedger, SpecLedgerEntry
 # ============================================================================
 
 @dataclass
-class JennyConfig:
+class JennyConfig(BaseConfigWithDefaults):
     """
     Configuration for Jenny Runtime.
 

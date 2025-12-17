@@ -647,6 +647,44 @@ const agentDefinitions = {
         isContainer: true,
         minWidth: 300,
         minHeight: 200
+    },
+    // ========== COMPOSITE WORKFLOW (Wave 7.2) ==========
+    composite: {
+        name: 'Composite Workflow',
+        type: 'composite',
+        color: '#9b59b6',
+        inputs: ['input'],
+        outputs: ['output'],
+        config: {
+            label: {
+                type: 'text',
+                default: 'Composite Workflow',
+                placeholder: 'Workflow name'
+            },
+            workflow_id: {
+                type: 'workflow_select',
+                default: '',
+                placeholder: 'Select a saved workflow'
+            },
+            input_mapping: {
+                type: 'json',
+                default: '{}',
+                placeholder: '{"input_name": "source_path"}'
+            },
+            output_mapping: {
+                type: 'json',
+                default: '{}',
+                placeholder: '{"output_name": "target_path"}'
+            },
+            show_preview: {
+                type: 'boolean',
+                default: true
+            }
+        },
+        description: 'A workflow within a workflow. Double-click to drill down.',
+        isComposite: true,
+        minWidth: 220,
+        minHeight: 120
     }
 };
 
@@ -852,7 +890,9 @@ function getAgentIcon(type) {
         'output': '📤',
         'control': '🔀',
         'llm': '🧠',
-        'tool': '🔧'
+        'tool': '🔧',
+        'group': '📁',
+        'composite': '📦'
     };
     return icons[type] || '📌';
 }
@@ -2957,9 +2997,13 @@ function getAgentIcon(type) {
         memory: '💾',
         decision: '🎯',
         output: '📤',
-        control: '🔀'
+        control: '🔀',
+        llm: '🧠',
+        tool: '🔧',
+        group: '📁',
+        composite: '📦'
     };
-    return icons[type] || '📦';
+    return icons[type] || '📌';
 }
 
 function setupEventListeners() {
@@ -3398,6 +3442,10 @@ const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 3.0;
 const ZOOM_STEP = 0.1;
 
+// ========== PAN CONTROLS (Wave 6) ==========
+let panOffsetX = 0;
+let panOffsetY = 0;
+
 function zoomIn() {
     if (zoomLevel < MAX_ZOOM) {
         zoomLevel = Math.min(MAX_ZOOM, zoomLevel + ZOOM_STEP);
@@ -3421,10 +3469,12 @@ function applyZoom() {
     const canvas = document.getElementById('canvas');
     const connectionsLayer = document.getElementById('connectionsLayer');
 
-    canvas.style.transform = `scale(${zoomLevel})`;
+    // Apply both pan and zoom transforms (Wave 6: pan support)
+    const transform = `translate(${panOffsetX}px, ${panOffsetY}px) scale(${zoomLevel})`;
+    canvas.style.transform = transform;
     canvas.style.transformOrigin = '0 0';
 
-    connectionsLayer.style.transform = `scale(${zoomLevel})`;
+    connectionsLayer.style.transform = transform;
     connectionsLayer.style.transformOrigin = '0 0';
 
     // Update zoom indicator
@@ -3432,6 +3482,432 @@ function applyZoom() {
 
     // Redraw connections to match new scale
     renderConnections();
+}
+
+function resetPan() {
+    panOffsetX = 0;
+    panOffsetY = 0;
+    applyZoom();
+}
+
+// ========== TOUCH GESTURE SYSTEM (Wave 6) ==========
+let touchState = {
+    touches: [],
+    initialDistance: null,
+    initialZoom: null,
+    lastPanCenter: null,
+    gestureType: null,  // 'drag', 'pan', 'pinch', 'longpress'
+    longPressTimer: null,
+    longPressTarget: null
+};
+
+const LONG_PRESS_MS = 500;
+const PINCH_THRESHOLD = 10;  // Minimum distance change to trigger pinch
+
+// Helper: Calculate distance between two touch points
+function getTouchDistance(t1, t2) {
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+// Helper: Calculate center point between two touches
+function getTouchCenter(t1, t2) {
+    return {
+        x: (t1.clientX + t2.clientX) / 2,
+        y: (t1.clientY + t2.clientY) / 2
+    };
+}
+
+// Helper: Trigger haptic feedback if available
+function triggerHapticFeedback(pattern = 50) {
+    if ('vibrate' in navigator) {
+        navigator.vibrate(pattern);
+    }
+}
+
+// Helper: Create touch ripple effect
+function createTouchRipple(x, y, parent) {
+    const ripple = document.createElement('div');
+    ripple.className = 'touch-ripple';
+    const rect = parent.getBoundingClientRect();
+    ripple.style.left = (x - rect.left) + 'px';
+    ripple.style.top = (y - rect.top) + 'px';
+    ripple.style.width = ripple.style.height = '20px';
+    parent.style.position = 'relative';
+    parent.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 400);
+}
+
+// Canvas touch event handlers for pinch-to-zoom and two-finger pan
+function initCanvasTouchGestures() {
+    const canvasContainer = document.getElementById('canvas-container');
+    if (!canvasContainer) return;
+
+    canvasContainer.addEventListener('touchstart', handleCanvasTouchStart, { passive: false });
+    canvasContainer.addEventListener('touchmove', handleCanvasTouchMove, { passive: false });
+    canvasContainer.addEventListener('touchend', handleCanvasTouchEnd, { passive: false });
+    canvasContainer.addEventListener('touchcancel', handleCanvasTouchEnd, { passive: false });
+}
+
+function handleCanvasTouchStart(e) {
+    const touches = e.touches;
+
+    // Clear any existing long press timer
+    if (touchState.longPressTimer) {
+        clearTimeout(touchState.longPressTimer);
+        touchState.longPressTimer = null;
+    }
+
+    if (touches.length === 2) {
+        // Two fingers: prepare for pinch/pan gesture
+        e.preventDefault();
+        touchState.gestureType = 'pinch';
+        touchState.initialDistance = getTouchDistance(touches[0], touches[1]);
+        touchState.initialZoom = zoomLevel;
+        touchState.lastPanCenter = getTouchCenter(touches[0], touches[1]);
+    } else if (touches.length === 1) {
+        // Check if touch is on a node (let existing node drag handle it)
+        const target = e.target;
+        if (target.closest('.workflow-node')) {
+            // Let existing node drag handling take over
+            return;
+        }
+
+        // Single finger on canvas - start long press detection
+        touchState.gestureType = 'potential_longpress';
+        touchState.longPressTarget = target;
+        touchState.longPressTimer = setTimeout(() => {
+            if (touchState.gestureType === 'potential_longpress') {
+                touchState.gestureType = 'longpress';
+                triggerHapticFeedback();
+                showMobileContextSheet(e, target);
+            }
+        }, LONG_PRESS_MS);
+    }
+}
+
+function handleCanvasTouchMove(e) {
+    const touches = e.touches;
+
+    // Cancel long press if finger moves
+    if (touchState.longPressTimer) {
+        clearTimeout(touchState.longPressTimer);
+        touchState.longPressTimer = null;
+    }
+
+    if (touches.length === 2 && (touchState.gestureType === 'pinch' || touchState.gestureType === 'pan')) {
+        e.preventDefault();
+
+        // Pinch zoom calculation
+        const currentDistance = getTouchDistance(touches[0], touches[1]);
+        if (touchState.initialDistance && Math.abs(currentDistance - touchState.initialDistance) > PINCH_THRESHOLD) {
+            const scale = currentDistance / touchState.initialDistance;
+            const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, touchState.initialZoom * scale));
+
+            if (Math.abs(newZoom - zoomLevel) > 0.01) {
+                zoomLevel = newZoom;
+                applyZoom();
+            }
+        }
+
+        // Two-finger pan calculation
+        const center = getTouchCenter(touches[0], touches[1]);
+        if (touchState.lastPanCenter) {
+            const dx = center.x - touchState.lastPanCenter.x;
+            const dy = center.y - touchState.lastPanCenter.y;
+
+            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                panOffsetX += dx;
+                panOffsetY += dy;
+                applyZoom();
+            }
+        }
+        touchState.lastPanCenter = center;
+    } else if (touches.length === 1 && touchState.gestureType === 'potential_longpress') {
+        // If moved too much, cancel long press and potentially start pan
+        const touch = touches[0];
+        touchState.gestureType = 'canvas_drag';
+    }
+}
+
+function handleCanvasTouchEnd(e) {
+    // Clear long press timer
+    if (touchState.longPressTimer) {
+        clearTimeout(touchState.longPressTimer);
+        touchState.longPressTimer = null;
+    }
+
+    // Reset touch state when all fingers lifted
+    if (e.touches.length === 0) {
+        touchState.gestureType = null;
+        touchState.initialDistance = null;
+        touchState.initialZoom = null;
+        touchState.lastPanCenter = null;
+        touchState.longPressTarget = null;
+    } else if (e.touches.length === 1 && touchState.gestureType === 'pinch') {
+        // Transitioned from 2 fingers to 1 - could start new gesture
+        touchState.gestureType = null;
+        touchState.initialDistance = null;
+        touchState.lastPanCenter = null;
+    }
+}
+
+// Initialize touch gestures when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    initCanvasTouchGestures();
+});
+
+// ========== MOBILE CONTEXT SHEET (Wave 6) ==========
+// Bottom action sheet for touch devices (replaces right-click menu on mobile)
+
+function showMobileContextSheet(e, target) {
+    // Close any existing mobile sheet
+    closeMobileContextSheet();
+
+    const nodeEl = target.closest('.workflow-node');
+    const nodeId = nodeEl ? nodeEl.id : null;
+    const node = nodeId ? nodes.find(n => n.id === nodeId) : null;
+
+    // Store target for actions
+    if (node) {
+        contextMenuTargetNode = node;
+    }
+
+    // Build action list based on context
+    let actions = [];
+
+    if (node) {
+        // Node context actions
+        actions = [
+            { icon: '⚙️', label: 'Edit Configuration', action: () => { closeMobileContextSheet(); editNodeConfig(nodeId); } },
+            { icon: '📋', label: 'Duplicate', action: () => { closeMobileContextSheet(); duplicateNode(node); } },
+            { icon: '📄', label: 'Copy', action: () => { closeMobileContextSheet(); contextMenuCopy(); } },
+            { icon: '🔴', label: node.breakpoint ? 'Remove Breakpoint' : 'Set Breakpoint', action: () => { closeMobileContextSheet(); contextMenuToggleBreakpoint(); } },
+            { icon: '✂️', label: 'Disconnect All', action: () => { closeMobileContextSheet(); contextMenuDisconnectAll(); } },
+            { icon: '🗑️', label: 'Delete', action: () => { closeMobileContextSheet(); deleteNode(nodeId); }, danger: true }
+        ];
+    } else {
+        // Canvas context actions
+        const touch = e.touches ? e.touches[0] || e.changedTouches[0] : e;
+        contextMenuPosition = { x: touch.clientX, y: touch.clientY };
+
+        actions = [
+            { icon: '➕', label: 'Add Node Here', action: () => { closeMobileContextSheet(); contextMenuAddNodeHere(); } },
+            { icon: '📄', label: 'Paste', action: () => { closeMobileContextSheet(); contextMenuPaste(); }, disabled: copiedNodes.length === 0 },
+            { icon: '✓', label: 'Select All', action: () => { closeMobileContextSheet(); selectAllNodes(); } },
+            { icon: '📐', label: 'Fit to View', action: () => { closeMobileContextSheet(); fitToView(); } },
+            { icon: '🔍', label: 'Reset Zoom', action: () => { closeMobileContextSheet(); resetZoom(); resetPan(); } }
+        ];
+    }
+
+    // Create the mobile context sheet
+    const sheet = document.createElement('div');
+    sheet.id = 'mobileContextSheet';
+    sheet.className = 'mobile-context-sheet';
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'mobile-sheet-backdrop';
+    backdrop.onclick = closeMobileContextSheet;
+
+    sheet.innerHTML = `
+        <div class="mobile-sheet-handle" onclick="closeMobileContextSheet()"></div>
+        <div class="mobile-sheet-header">
+            <h3>${node ? (node.config?.label || node.definition?.name || 'Node') : 'Canvas'}</h3>
+            <button class="mobile-sheet-close" onclick="closeMobileContextSheet()">✕</button>
+        </div>
+        <div class="mobile-sheet-actions">
+            ${actions.map(a => `
+                <button class="mobile-action-btn ${a.danger ? 'danger' : ''} ${a.disabled ? 'disabled' : ''}"
+                        ${a.disabled ? 'disabled' : ''}>
+                    <span class="action-icon">${a.icon}</span>
+                    <span class="action-label">${a.label}</span>
+                </button>
+            `).join('')}
+        </div>
+    `;
+
+    // Add click handlers to action buttons
+    document.body.appendChild(backdrop);
+    document.body.appendChild(sheet);
+
+    const buttons = sheet.querySelectorAll('.mobile-action-btn:not(.disabled)');
+    buttons.forEach((btn, index) => {
+        if (actions[index] && !actions[index].disabled) {
+            btn.onclick = actions[index].action;
+        }
+    });
+
+    // Animate in
+    requestAnimationFrame(() => {
+        backdrop.classList.add('visible');
+        sheet.classList.add('open');
+    });
+}
+
+function closeMobileContextSheet() {
+    const sheet = document.getElementById('mobileContextSheet');
+    const backdrop = document.querySelector('.mobile-sheet-backdrop');
+
+    if (sheet) {
+        sheet.classList.remove('open');
+        setTimeout(() => sheet.remove(), 300);
+    }
+    if (backdrop) {
+        backdrop.classList.remove('visible');
+        setTimeout(() => backdrop.remove(), 300);
+    }
+}
+
+// ========== MOBILE PROPERTIES PANEL (Wave 6) ==========
+// Slide-up properties panel for editing node config on mobile
+
+function showMobileProperties(nodeId) {
+    closeMobileContextSheet();
+
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    // Close any existing mobile properties
+    closeMobileProperties();
+
+    const sheet = document.createElement('div');
+    sheet.id = 'mobilePropertiesSheet';
+    sheet.className = 'mobile-properties-sheet';
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'mobile-sheet-backdrop';
+    backdrop.onclick = closeMobileProperties;
+
+    // Build properties HTML (simplified version of properties panel)
+    const definition = node.definition || {};
+    const config = node.config || {};
+
+    let fieldsHtml = '';
+    if (definition.configSchema) {
+        definition.configSchema.forEach(field => {
+            const value = config[field.name] || field.default || '';
+            fieldsHtml += `
+                <div class="mobile-property-field">
+                    <label>${field.label || field.name}</label>
+                    ${field.type === 'select' ?
+                        `<select data-field="${field.name}">
+                            ${(field.options || []).map(opt =>
+                                `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>`
+                            ).join('')}
+                        </select>` :
+                    field.type === 'textarea' ?
+                        `<textarea data-field="${field.name}" rows="3">${value}</textarea>` :
+                        `<input type="${field.type || 'text'}" data-field="${field.name}" value="${value}" />`
+                    }
+                </div>
+            `;
+        });
+    }
+
+    // Always include label field
+    fieldsHtml = `
+        <div class="mobile-property-field">
+            <label>Label</label>
+            <input type="text" data-field="label" value="${config.label || ''}" />
+        </div>
+    ` + fieldsHtml;
+
+    sheet.innerHTML = `
+        <div class="mobile-sheet-handle"></div>
+        <div class="mobile-sheet-header">
+            <h3>${definition.name || 'Properties'}</h3>
+            <button class="mobile-sheet-close" onclick="closeMobileProperties()">✕</button>
+        </div>
+        <div class="mobile-properties-content">
+            <div class="mobile-property-node-type">
+                <span class="node-icon">${definition.icon || '📦'}</span>
+                <span class="node-type">${definition.category || 'Unknown'} / ${definition.name || 'Unknown'}</span>
+            </div>
+            ${fieldsHtml}
+            <div class="mobile-properties-actions">
+                <button class="mobile-btn secondary" onclick="closeMobileProperties()">Cancel</button>
+                <button class="mobile-btn primary" onclick="saveMobileProperties('${nodeId}')">Save</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(sheet);
+
+    // Enable swipe to close
+    let startY = 0;
+    let currentY = 0;
+
+    sheet.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.mobile-sheet-handle')) {
+            startY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    sheet.addEventListener('touchmove', (e) => {
+        if (startY > 0) {
+            currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            if (diff > 0) {
+                sheet.style.transform = `translateY(${diff}px)`;
+            }
+        }
+    }, { passive: true });
+
+    sheet.addEventListener('touchend', () => {
+        const diff = currentY - startY;
+        if (diff > 100) {
+            closeMobileProperties();
+        } else {
+            sheet.style.transform = '';
+        }
+        startY = 0;
+        currentY = 0;
+    }, { passive: true });
+
+    // Animate in
+    requestAnimationFrame(() => {
+        backdrop.classList.add('visible');
+        sheet.classList.add('open');
+    });
+}
+
+function closeMobileProperties() {
+    const sheet = document.getElementById('mobilePropertiesSheet');
+    const backdrop = document.querySelector('.mobile-sheet-backdrop');
+
+    if (sheet) {
+        sheet.classList.remove('open');
+        setTimeout(() => sheet.remove(), 300);
+    }
+    if (backdrop) {
+        backdrop.classList.remove('visible');
+        setTimeout(() => backdrop.remove(), 300);
+    }
+}
+
+function saveMobileProperties(nodeId) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    const sheet = document.getElementById('mobilePropertiesSheet');
+    if (!sheet) return;
+
+    // Collect all field values
+    const fields = sheet.querySelectorAll('[data-field]');
+    fields.forEach(field => {
+        const fieldName = field.dataset.field;
+        const value = field.value;
+        node.config[fieldName] = value;
+    });
+
+    // Update node display
+    updateNodeDisplay(node);
+    renderConnections();
+
+    closeMobileProperties();
+    showToast('Properties saved', 'success');
 }
 
 // Keyboard shortcuts for zoom and search
@@ -8545,6 +9021,1888 @@ if (document.readyState === 'loading') {
     initWave56Features();
 }
 
+// ========================================
+// WAVE 7.1: Real-Time Collaboration
+// ========================================
+
+/**
+ * Collaboration state
+ */
+let collaborationSessionId = null;
+let collaborationParticipants = [];
+let remoteCursors = {};  // { odlisId: { userId, x, y, color, name, element } }
+let nodeLocks = {};      // { nodeId: { lockedBy, lockedByName, lockedAt } }
+let localUserId = null;
+let localUserName = 'Anonymous';
+let localUserColor = '#667eea';
+
+// Generate random user color
+function generateUserColor() {
+    const colors = [
+        '#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a',
+        '#fee140', '#30cfd0', '#a8edea', '#fed6e3', '#ffecd2'
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// Generate random user ID
+function generateUserId() {
+    return 'user_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Initialize local user
+localUserId = localStorage.getItem('collaborationUserId') || generateUserId();
+localUserName = localStorage.getItem('collaborationUserName') || 'Anonymous';
+localUserColor = localStorage.getItem('collaborationUserColor') || generateUserColor();
+localStorage.setItem('collaborationUserId', localUserId);
+localStorage.setItem('collaborationUserColor', localUserColor);
+
+/**
+ * Remote Cursors - Show other users' cursor positions
+ */
+let lastCursorSend = 0;
+const CURSOR_THROTTLE_MS = 50;
+
+function updateRemoteCursor(userId, x, y, name, color) {
+    if (userId === localUserId) return; // Don't show own cursor
+
+    let cursorEl = document.getElementById(`cursor-${userId}`);
+    if (!cursorEl) {
+        cursorEl = document.createElement('div');
+        cursorEl.id = `cursor-${userId}`;
+        cursorEl.className = 'remote-cursor';
+        cursorEl.innerHTML = `
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="${color}">
+                <path d="M5.5 3.21V20.8l5.5-5.5h9.5L5.5 3.21z"/>
+            </svg>
+            <span class="cursor-label" style="background:${color}">${name}</span>
+        `;
+        document.getElementById('canvas').appendChild(cursorEl);
+    }
+
+    // Transform cursor position accounting for pan/zoom
+    const canvasX = (x - panOffsetX) / zoomLevel;
+    const canvasY = (y - panOffsetY) / zoomLevel;
+    cursorEl.style.transform = `translate(${x}px, ${y}px)`;
+    cursorEl.style.opacity = '1';
+
+    // Store cursor data
+    remoteCursors[userId] = { userId, x, y, name, color, element: cursorEl };
+
+    // Fade out after inactivity
+    clearTimeout(remoteCursors[userId].fadeTimer);
+    remoteCursors[userId].fadeTimer = setTimeout(() => {
+        if (cursorEl) cursorEl.style.opacity = '0.3';
+    }, 3000);
+}
+
+function removeRemoteCursor(userId) {
+    const cursorEl = document.getElementById(`cursor-${userId}`);
+    if (cursorEl) cursorEl.remove();
+    delete remoteCursors[userId];
+}
+
+function sendCursorPosition(e) {
+    const now = Date.now();
+    if (now - lastCursorSend < CURSOR_THROTTLE_MS || !collaborationSessionId) return;
+    lastCursorSend = now;
+
+    if (wsConnection && wsConnection.ws && wsConnection.ws.readyState === WebSocket.OPEN) {
+        wsConnection.send({
+            type: 'cursor_move',
+            session_id: collaborationSessionId,
+            user_id: localUserId,
+            x: e.clientX,
+            y: e.clientY,
+            name: localUserName,
+            color: localUserColor
+        });
+    }
+}
+
+// Track cursor movement on canvas
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('canvas');
+    if (canvas) {
+        canvas.addEventListener('mousemove', sendCursorPosition);
+    }
+});
+
+/**
+ * Toggle Presence Panel visibility
+ */
+function togglePresencePanel() {
+    const panel = document.getElementById('presencePanel');
+    if (!panel) return;
+
+    if (panel.style.display === 'none' || !panel.style.display) {
+        panel.style.display = 'block';
+        renderPresencePanel();
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+/**
+ * Presence Panel - Show who's in the session
+ */
+function renderPresencePanel() {
+    let panel = document.getElementById('presencePanel');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'presencePanel';
+        panel.className = 'presence-panel';
+        document.body.appendChild(panel);
+    }
+
+    if (!collaborationSessionId) {
+        panel.innerHTML = `
+            <div class="presence-header">
+                <span class="presence-title">👥 Collaboration</span>
+                <button class="presence-join-btn" onclick="showJoinSessionModal()">Join Session</button>
+            </div>
+        `;
+        panel.classList.remove('active');
+        return;
+    }
+
+    const participantHTML = collaborationParticipants.map(p => `
+        <div class="participant" style="border-color: ${p.color}">
+            <div class="avatar" style="background: ${p.color}">${(p.name || 'A')[0].toUpperCase()}</div>
+            <span class="name">${p.name || 'Anonymous'}${p.user_id === localUserId ? ' (you)' : ''}</span>
+            <span class="status ${p.editing ? 'editing' : ''}">${p.editing || 'idle'}</span>
+        </div>
+    `).join('');
+
+    panel.innerHTML = `
+        <div class="presence-header">
+            <span class="presence-title">👥 ${collaborationParticipants.length} Online</span>
+            <button class="presence-leave-btn" onclick="leaveCollaborationSession()">Leave</button>
+        </div>
+        <div class="participants-list">
+            ${participantHTML}
+        </div>
+        <div class="session-info">
+            <span class="session-id">Session: ${collaborationSessionId.slice(0, 8)}...</span>
+            <button class="copy-session-btn" onclick="copySessionLink()">📋 Copy Link</button>
+        </div>
+    `;
+    panel.classList.add('active');
+}
+
+function updatePresence(participants) {
+    collaborationParticipants = participants;
+    renderPresencePanel();
+}
+
+/**
+ * Node Lock Indicators - Show which nodes are being edited
+ */
+function showNodeLock(nodeId, lockedBy, lockedByName, color) {
+    const nodeEl = document.getElementById(nodeId);
+    if (!nodeEl || lockedBy === localUserId) return;
+
+    nodeEl.classList.add('locked');
+    nodeEl.dataset.lockedBy = lockedBy;
+
+    // Remove existing lock badge
+    nodeEl.querySelector('.lock-badge')?.remove();
+
+    const lockBadge = document.createElement('div');
+    lockBadge.className = 'lock-badge';
+    lockBadge.style.borderColor = color || '#667eea';
+    lockBadge.innerHTML = `🔒 ${lockedByName || 'Someone'}`;
+    nodeEl.appendChild(lockBadge);
+
+    nodeLocks[nodeId] = { lockedBy, lockedByName, lockedAt: Date.now() };
+}
+
+function releaseNodeLock(nodeId) {
+    const nodeEl = document.getElementById(nodeId);
+    if (!nodeEl) return;
+
+    nodeEl.classList.remove('locked');
+    delete nodeEl.dataset.lockedBy;
+    nodeEl.querySelector('.lock-badge')?.remove();
+    delete nodeLocks[nodeId];
+}
+
+function requestNodeLock(nodeId) {
+    if (!collaborationSessionId || !wsConnection) return true; // No session, always allow
+
+    // Check if already locked by someone else
+    if (nodeLocks[nodeId] && nodeLocks[nodeId].lockedBy !== localUserId) {
+        showToast(`Node is being edited by ${nodeLocks[nodeId].lockedByName}`, 'warning');
+        return false;
+    }
+
+    // Request lock from server
+    wsConnection.send({
+        type: 'node_lock',
+        session_id: collaborationSessionId,
+        node_id: nodeId,
+        user_id: localUserId,
+        user_name: localUserName
+    });
+
+    return true;
+}
+
+function releaseNodeLockRequest(nodeId) {
+    if (!collaborationSessionId || !wsConnection) return;
+
+    wsConnection.send({
+        type: 'node_unlock',
+        session_id: collaborationSessionId,
+        node_id: nodeId,
+        user_id: localUserId
+    });
+}
+
+/**
+ * Collaboration Session Management
+ */
+function showJoinSessionModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay collaboration-modal';
+    modal.id = 'joinSessionModal';
+    modal.innerHTML = `
+        <div class="modal-content" style="width: 400px;">
+            <h3>Join Collaboration Session</h3>
+            <div class="form-group">
+                <label for="userName">Your Name</label>
+                <input type="text" id="userName" value="${localUserName}" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label for="sessionId">Session ID (leave empty to create new)</label>
+                <input type="text" id="sessionId" placeholder="Enter session ID or leave empty">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeJoinSessionModal()">Cancel</button>
+                <button class="btn-primary" onclick="joinOrCreateSession()">Join/Create</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('visible'), 10);
+}
+
+function closeJoinSessionModal() {
+    const modal = document.getElementById('joinSessionModal');
+    if (modal) {
+        modal.classList.remove('visible');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
+
+async function joinOrCreateSession() {
+    const nameInput = document.getElementById('userName');
+    const sessionInput = document.getElementById('sessionId');
+
+    localUserName = nameInput?.value || 'Anonymous';
+    localStorage.setItem('collaborationUserName', localUserName);
+
+    const sessionId = sessionInput?.value?.trim();
+
+    closeJoinSessionModal();
+
+    try {
+        if (sessionId) {
+            // Join existing session
+            await joinCollaborationSession(sessionId);
+        } else {
+            // Create new session
+            await createCollaborationSession();
+        }
+    } catch (e) {
+        showToast(`Failed to join session: ${e.message}`, 'error');
+    }
+}
+
+async function createCollaborationSession() {
+    const response = await fetch('http://localhost:8001/api/collaboration/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            workflow: exportWorkflow(),
+            user_id: localUserId,
+            user_name: localUserName
+        })
+    });
+
+    if (!response.ok) throw new Error('Failed to create session');
+
+    const data = await response.json();
+    collaborationSessionId = data.session_id;
+
+    // Connect WebSocket and subscribe to session
+    if (!wsConnection || wsConnection.ws?.readyState !== WebSocket.OPEN) {
+        await connectWebSocket();
+    }
+
+    wsConnection.send({
+        type: 'join_session',
+        session_id: collaborationSessionId,
+        user_id: localUserId,
+        user_name: localUserName,
+        color: localUserColor
+    });
+
+    showToast(`Created session: ${collaborationSessionId.slice(0, 8)}...`, 'success');
+    renderPresencePanel();
+}
+
+async function joinCollaborationSession(sessionId) {
+    const response = await fetch(`http://localhost:8001/api/collaboration/${sessionId}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            user_id: localUserId,
+            user_name: localUserName
+        })
+    });
+
+    if (!response.ok) throw new Error('Session not found');
+
+    const data = await response.json();
+    collaborationSessionId = sessionId;
+
+    // Load the workflow from session
+    if (data.workflow) {
+        importWorkflow(JSON.stringify(data.workflow));
+    }
+
+    // Connect WebSocket
+    if (!wsConnection || wsConnection.ws?.readyState !== WebSocket.OPEN) {
+        await connectWebSocket();
+    }
+
+    wsConnection.send({
+        type: 'join_session',
+        session_id: collaborationSessionId,
+        user_id: localUserId,
+        user_name: localUserName,
+        color: localUserColor
+    });
+
+    showToast(`Joined session: ${sessionId.slice(0, 8)}...`, 'success');
+    renderPresencePanel();
+}
+
+async function leaveCollaborationSession() {
+    if (!collaborationSessionId) return;
+
+    try {
+        await fetch(`http://localhost:8001/api/collaboration/${collaborationSessionId}/leave`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: localUserId })
+        });
+    } catch (e) {
+        console.warn('Failed to leave session:', e);
+    }
+
+    // Clean up
+    Object.keys(remoteCursors).forEach(removeRemoteCursor);
+    Object.keys(nodeLocks).forEach(releaseNodeLock);
+
+    collaborationSessionId = null;
+    collaborationParticipants = [];
+
+    showToast('Left collaboration session', 'info');
+    renderPresencePanel();
+}
+
+function copySessionLink() {
+    if (!collaborationSessionId) return;
+
+    const link = `${window.location.origin}${window.location.pathname}?session=${collaborationSessionId}`;
+    navigator.clipboard.writeText(link).then(() => {
+        showToast('Session link copied!', 'success');
+    });
+}
+
+/**
+ * Handle remote workflow operations (CRDT)
+ */
+function handleRemoteOperation(op) {
+    console.log('[Wave 7.1] Remote operation:', op);
+
+    switch (op.operation_type) {
+        case 'add_node':
+            // Add node without triggering local broadcast
+            addNodeFromRemote(op.data);
+            break;
+        case 'update_node':
+            updateNodeFromRemote(op.node_id, op.data);
+            break;
+        case 'delete_node':
+            deleteNodeFromRemote(op.node_id);
+            break;
+        case 'add_connection':
+            addConnectionFromRemote(op.data);
+            break;
+        case 'delete_connection':
+            deleteConnectionFromRemote(op.connection_id);
+            break;
+        case 'move_node':
+            moveNodeFromRemote(op.node_id, op.x, op.y);
+            break;
+    }
+}
+
+function addNodeFromRemote(nodeData) {
+    // Check if node already exists
+    if (nodes.find(n => n.id === nodeData.id)) return;
+
+    nodes.push(nodeData);
+    renderNode(nodeData);
+    saveUndoState();
+}
+
+function updateNodeFromRemote(nodeId, data) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    Object.assign(node, data);
+    updateNodeVisual(nodeId);
+    saveUndoState();
+}
+
+function deleteNodeFromRemote(nodeId) {
+    const idx = nodes.findIndex(n => n.id === nodeId);
+    if (idx === -1) return;
+
+    // Remove connections
+    connections = connections.filter(c => c.source !== nodeId && c.target !== nodeId);
+
+    // Remove node
+    nodes.splice(idx, 1);
+    document.getElementById(nodeId)?.remove();
+    renderConnections();
+    saveUndoState();
+}
+
+function addConnectionFromRemote(connData) {
+    // Check if connection already exists
+    if (connections.find(c => c.id === connData.id)) return;
+
+    connections.push(connData);
+    renderConnections();
+    saveUndoState();
+}
+
+function deleteConnectionFromRemote(connectionId) {
+    const idx = connections.findIndex(c => c.id === connectionId);
+    if (idx === -1) return;
+
+    connections.splice(idx, 1);
+    renderConnections();
+    saveUndoState();
+}
+
+function moveNodeFromRemote(nodeId, x, y) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    node.x = x;
+    node.y = y;
+
+    const el = document.getElementById(nodeId);
+    if (el) {
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+    }
+
+    renderConnections();
+}
+
+/**
+ * Broadcast local operations to collaboration session
+ */
+function broadcastOperation(operationType, data) {
+    if (!collaborationSessionId || !wsConnection) return;
+
+    wsConnection.send({
+        type: 'workflow_operation',
+        session_id: collaborationSessionId,
+        user_id: localUserId,
+        operation: {
+            operation_type: operationType,
+            ...data,
+            timestamp: Date.now()
+        }
+    });
+}
+
+/**
+ * Extend WebSocket message handler for collaboration
+ */
+const originalHandleMessage = WorkflowWebSocket.prototype.handleMessage;
+WorkflowWebSocket.prototype.handleMessage = function(data) {
+    // Handle collaboration messages
+    switch (data.type) {
+        case 'cursor_move':
+            updateRemoteCursor(data.user_id, data.x, data.y, data.name, data.color);
+            return;
+        case 'presence_update':
+            updatePresence(data.participants);
+            return;
+        case 'node_lock':
+            showNodeLock(data.node_id, data.user_id, data.user_name, data.color);
+            return;
+        case 'node_unlock':
+            releaseNodeLock(data.node_id);
+            return;
+        case 'remote_operation':
+            handleRemoteOperation(data.operation);
+            return;
+        case 'session_joined':
+            collaborationSessionId = data.session_id;
+            updatePresence(data.participants);
+            showToast(`${data.user_name} joined the session`, 'info');
+            return;
+        case 'session_left':
+            removeRemoteCursor(data.user_id);
+            updatePresence(data.participants);
+            showToast(`${data.user_name} left the session`, 'info');
+            return;
+    }
+
+    // Call original handler for non-collaboration messages
+    originalHandleMessage.call(this, data);
+};
+
+/**
+ * Initialize Wave 7.1 Features
+ */
+function initWave71Features() {
+    // Check for session ID in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session');
+
+    if (sessionId) {
+        // Auto-join session from URL
+        setTimeout(() => joinCollaborationSession(sessionId), 1000);
+    }
+
+    // Render presence panel
+    renderPresencePanel();
+
+    // Keyboard shortcut: C for Collaboration panel
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'c' || e.key === 'C') {
+            if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+                // Check if not in input field
+                if (document.activeElement.tagName !== 'INPUT' &&
+                    document.activeElement.tagName !== 'TEXTAREA' &&
+                    document.activeElement.tagName !== 'SELECT') {
+                    e.preventDefault();
+                    togglePresencePanel();
+                }
+            }
+        }
+    });
+
+    console.log('[Wave 7.1] Collaboration features initialized');
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWave71Features);
+} else {
+    initWave71Features();
+}
+
+// ========== WAVE 7.2: Advanced Workflows (Nested Workflows, Marketplace) ==========
+
+/**
+ * Navigation stack for composite workflow drill-down
+ * Each entry stores the parent workflow state
+ */
+let compositeNavigationStack = [];
+
+/**
+ * Saved workflows registry for composite node references
+ * { workflow_id: { name, nodes, connections, metadata } }
+ */
+let savedWorkflowsRegistry = {};
+
+/**
+ * Load saved workflows from localStorage
+ */
+function loadSavedWorkflowsRegistry() {
+    try {
+        const saved = localStorage.getItem('hololoom_saved_workflows');
+        if (saved) {
+            savedWorkflowsRegistry = JSON.parse(saved);
+        }
+    } catch (e) {
+        console.error('[Wave 7.2] Error loading saved workflows:', e);
+    }
+    return savedWorkflowsRegistry;
+}
+
+/**
+ * Save workflow to registry (for use in composite nodes)
+ */
+function saveWorkflowToRegistry(workflowId, name, workflowData) {
+    savedWorkflowsRegistry[workflowId] = {
+        id: workflowId,
+        name: name,
+        nodes: workflowData.nodes || [],
+        connections: workflowData.connections || [],
+        metadata: {
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+            nodeCount: (workflowData.nodes || []).length
+        }
+    };
+
+    try {
+        localStorage.setItem('hololoom_saved_workflows', JSON.stringify(savedWorkflowsRegistry));
+    } catch (e) {
+        console.error('[Wave 7.2] Error saving workflow registry:', e);
+    }
+
+    showToast(`Saved workflow: ${name}`, 'success');
+    return workflowId;
+}
+
+/**
+ * Get list of saved workflows for workflow_select config type
+ */
+function getSavedWorkflowsList() {
+    loadSavedWorkflowsRegistry();
+    return Object.entries(savedWorkflowsRegistry).map(([id, wf]) => ({
+        id: id,
+        name: wf.name,
+        nodeCount: wf.metadata?.nodeCount || 0,
+        updated: wf.metadata?.updated
+    }));
+}
+
+/**
+ * Drill into a composite node (double-click handler)
+ * Saves current state to navigation stack and loads nested workflow
+ */
+function drillIntoComposite(compositeNodeId) {
+    const node = nodes.find(n => n.id === compositeNodeId);
+    if (!node || !node.definition?.isComposite) {
+        console.warn('[Wave 7.2] Not a composite node:', compositeNodeId);
+        return;
+    }
+
+    const workflowId = node.config?.workflow_id;
+    if (!workflowId) {
+        showToast('No workflow selected for this composite node', 'warning');
+        return;
+    }
+
+    const nestedWorkflow = savedWorkflowsRegistry[workflowId];
+    if (!nestedWorkflow) {
+        showToast(`Workflow not found: ${workflowId}`, 'error');
+        return;
+    }
+
+    // Save current state to navigation stack
+    compositeNavigationStack.push({
+        nodes: JSON.parse(JSON.stringify(nodes)),
+        connections: JSON.parse(JSON.stringify(connections)),
+        compositeNodeId: compositeNodeId,
+        compositeNodeLabel: node.config?.label || 'Composite Workflow',
+        panOffsetX: panOffsetX,
+        panOffsetY: panOffsetY,
+        zoomLevel: zoomLevel
+    });
+
+    // Load nested workflow
+    nodes.length = 0;
+    connections.length = 0;
+
+    nestedWorkflow.nodes.forEach(n => {
+        nodes.push({
+            ...n,
+            definition: agentDefinitions[n.agentType]
+        });
+    });
+
+    nestedWorkflow.connections.forEach(c => connections.push({...c}));
+
+    // Reset view
+    panOffsetX = 0;
+    panOffsetY = 0;
+    applyPan();
+
+    // Re-render
+    renderAllNodes();
+    renderConnections();
+    updateBreadcrumbNavigation();
+
+    showToast(`Entered: ${nestedWorkflow.name}`, 'info');
+    console.log('[Wave 7.2] Drilled into composite:', workflowId);
+}
+
+/**
+ * Drill up from nested workflow back to parent
+ */
+function drillUp() {
+    if (compositeNavigationStack.length === 0) {
+        showToast('Already at root level', 'info');
+        return;
+    }
+
+    const parentState = compositeNavigationStack.pop();
+
+    // Restore parent state
+    nodes.length = 0;
+    connections.length = 0;
+
+    parentState.nodes.forEach(n => {
+        nodes.push({
+            ...n,
+            definition: agentDefinitions[n.agentType]
+        });
+    });
+
+    parentState.connections.forEach(c => connections.push({...c}));
+
+    // Restore view
+    panOffsetX = parentState.panOffsetX || 0;
+    panOffsetY = parentState.panOffsetY || 0;
+    zoomLevel = parentState.zoomLevel || 1;
+    applyPan();
+    applyZoom();
+
+    // Re-render
+    renderAllNodes();
+    renderConnections();
+    updateBreadcrumbNavigation();
+
+    showToast('Returned to parent workflow', 'info');
+    console.log('[Wave 7.2] Drilled up to parent');
+}
+
+/**
+ * Update breadcrumb navigation UI
+ */
+function updateBreadcrumbNavigation() {
+    let breadcrumbContainer = document.getElementById('compositeBreadcrumb');
+
+    if (!breadcrumbContainer) {
+        // Create breadcrumb container if it doesn't exist
+        breadcrumbContainer = document.createElement('div');
+        breadcrumbContainer.id = 'compositeBreadcrumb';
+        breadcrumbContainer.className = 'composite-breadcrumb';
+
+        const toolbar = document.querySelector('.workflow-toolbar');
+        if (toolbar) {
+            toolbar.appendChild(breadcrumbContainer);
+        }
+    }
+
+    // Build breadcrumb path
+    const path = ['Root'];
+    compositeNavigationStack.forEach(entry => {
+        path.push(entry.compositeNodeLabel);
+    });
+
+    // Render breadcrumb items
+    breadcrumbContainer.innerHTML = path.map((name, index) => {
+        const isLast = index === path.length - 1;
+        const clickHandler = isLast ? '' : `onclick="navigateToBreadcrumbLevel(${index})"`;
+        const className = isLast ? 'breadcrumb-item active' : 'breadcrumb-item clickable';
+        return `<span class="${className}" ${clickHandler}>${name}</span>`;
+    }).join('<span class="breadcrumb-separator">›</span>');
+
+    // Show/hide based on depth
+    breadcrumbContainer.style.display = compositeNavigationStack.length > 0 ? 'flex' : 'none';
+}
+
+/**
+ * Navigate to specific breadcrumb level
+ */
+function navigateToBreadcrumbLevel(targetLevel) {
+    // Pop states until we reach target level
+    while (compositeNavigationStack.length > targetLevel) {
+        drillUp();
+    }
+}
+
+/**
+ * Render a mini preview of a nested workflow inside composite node
+ */
+function renderMiniWorkflow(workflowId) {
+    const workflow = savedWorkflowsRegistry[workflowId];
+    if (!workflow) {
+        return '<div class="mini-workflow-placeholder">No workflow selected</div>';
+    }
+
+    const nodeCount = workflow.nodes?.length || 0;
+    const connectionCount = workflow.connections?.length || 0;
+
+    // Create mini node representations
+    const miniNodes = (workflow.nodes || []).slice(0, 5).map(n => {
+        const def = agentDefinitions[n.agentType];
+        const icon = getAgentIcon(def?.type || 'control');
+        return `<div class="mini-node" style="background: ${def?.color || '#6c757d'}" title="${def?.name || n.agentType}">${icon}</div>`;
+    }).join('');
+
+    const moreNodes = nodeCount > 5 ? `<div class="mini-node more">+${nodeCount - 5}</div>` : '';
+
+    return `
+        <div class="mini-workflow-preview">
+            <div class="mini-nodes">${miniNodes}${moreNodes}</div>
+            <div class="mini-stats">${nodeCount} nodes, ${connectionCount} connections</div>
+        </div>
+    `;
+}
+
+/**
+ * Special rendering for composite nodes
+ */
+function renderCompositeNodeContent(node) {
+    const workflowId = node.config?.workflow_id;
+    const showPreview = node.config?.show_preview !== false;
+
+    let previewHtml = '';
+    if (showPreview && workflowId) {
+        previewHtml = renderMiniWorkflow(workflowId);
+    } else if (!workflowId) {
+        previewHtml = '<div class="mini-workflow-placeholder">Double-click to select workflow</div>';
+    }
+
+    return `
+        <div class="composite-node-content">
+            ${previewHtml}
+            <div class="composite-hint">Double-click to enter</div>
+        </div>
+    `;
+}
+
+/**
+ * Handle double-click on nodes (for composite drill-down)
+ */
+function handleNodeDoubleClick(nodeId) {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    if (node.definition?.isComposite) {
+        drillIntoComposite(nodeId);
+    } else if (node.agentType === 'group' || node.agentType === 'subworkflow') {
+        // For group nodes, toggle collapse
+        toggleGroupCollapse(nodeId);
+    }
+}
+
+// ========== MARKETPLACE UI (Wave 7.2.2) ==========
+
+/**
+ * Marketplace state
+ */
+let marketplaceTemplates = [];
+let marketplaceFilter = { category: '', search: '', sort: 'downloads' };
+
+/**
+ * Load marketplace templates (mock data for now)
+ */
+function loadMarketplaceTemplates() {
+    // In production, this would fetch from backend API
+    marketplaceTemplates = [
+        {
+            id: 'rag-basic',
+            name: 'Basic RAG Pipeline',
+            description: 'Query → Retrieve → Generate workflow',
+            category: 'RAG',
+            tags: ['rag', 'retrieval', 'basic'],
+            author: { name: 'HoloLoom Team' },
+            stats: { downloads: 1523, rating: 4.8, reviews: 45 },
+            preview_image: null,
+            created_at: '2025-11-01',
+            updated_at: '2025-12-01'
+        },
+        {
+            id: 'agentic-research',
+            name: 'Research Agent',
+            description: 'Multi-query research with verification',
+            category: 'Agentic',
+            tags: ['agentic', 'research', 'verification'],
+            author: { name: 'HoloLoom Team' },
+            stats: { downloads: 892, rating: 4.6, reviews: 28 },
+            preview_image: null,
+            created_at: '2025-11-15',
+            updated_at: '2025-12-10'
+        },
+        {
+            id: 'memory-fusion',
+            name: 'Memory Fusion Pipeline',
+            description: 'Multi-hop knowledge graph traversal',
+            category: 'Memory',
+            tags: ['memory', 'knowledge-graph', 'fusion'],
+            author: { name: 'HoloLoom Team' },
+            stats: { downloads: 654, rating: 4.5, reviews: 19 },
+            preview_image: null,
+            created_at: '2025-10-20',
+            updated_at: '2025-12-05'
+        },
+        {
+            id: 'safety-gated',
+            name: 'Safety-Gated Workflow',
+            description: 'Workflow with risk-based safety guardrails',
+            category: 'Control',
+            tags: ['safety', 'guardrails', 'risk'],
+            author: { name: 'HoloLoom Team' },
+            stats: { downloads: 421, rating: 4.9, reviews: 12 },
+            preview_image: null,
+            created_at: '2025-11-10',
+            updated_at: '2025-12-08'
+        }
+    ];
+
+    return marketplaceTemplates;
+}
+
+/**
+ * Show marketplace modal
+ */
+function showMarketplaceModal() {
+    loadMarketplaceTemplates();
+
+    let modal = document.getElementById('marketplaceModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'marketplaceModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content marketplace-modal">
+                <div class="modal-header">
+                    <h2>📦 Workflow Marketplace</h2>
+                    <button class="close-btn" onclick="closeMarketplaceModal()">✕</button>
+                </div>
+                <div class="marketplace-header">
+                    <input type="search" id="marketplaceSearch" placeholder="Search workflows..."
+                           oninput="filterMarketplace()">
+                    <select id="marketplaceCategoryFilter" onchange="filterMarketplace()">
+                        <option value="">All Categories</option>
+                        <option value="RAG">RAG Pipelines</option>
+                        <option value="Agentic">Agentic Workflows</option>
+                        <option value="Memory">Memory Operations</option>
+                        <option value="Control">Control Flow</option>
+                    </select>
+                    <select id="marketplaceSortBy" onchange="filterMarketplace()">
+                        <option value="downloads">Most Downloaded</option>
+                        <option value="rating">Highest Rated</option>
+                        <option value="recent">Most Recent</option>
+                    </select>
+                </div>
+                <div class="marketplace-grid" id="marketplaceGrid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    renderMarketplaceGrid();
+    modal.style.display = 'flex';
+}
+
+/**
+ * Close marketplace modal
+ */
+function closeMarketplaceModal() {
+    const modal = document.getElementById('marketplaceModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+/**
+ * Filter marketplace based on search, category, sort
+ */
+function filterMarketplace() {
+    const search = document.getElementById('marketplaceSearch')?.value.toLowerCase() || '';
+    const category = document.getElementById('marketplaceCategoryFilter')?.value || '';
+    const sortBy = document.getElementById('marketplaceSortBy')?.value || 'downloads';
+
+    marketplaceFilter = { search, category, sort: sortBy };
+    renderMarketplaceGrid();
+}
+
+/**
+ * Render marketplace grid
+ */
+function renderMarketplaceGrid() {
+    const grid = document.getElementById('marketplaceGrid');
+    if (!grid) return;
+
+    let filtered = [...marketplaceTemplates];
+
+    // Apply filters
+    if (marketplaceFilter.category) {
+        filtered = filtered.filter(t => t.category === marketplaceFilter.category);
+    }
+    if (marketplaceFilter.search) {
+        filtered = filtered.filter(t =>
+            t.name.toLowerCase().includes(marketplaceFilter.search) ||
+            t.description.toLowerCase().includes(marketplaceFilter.search) ||
+            t.tags.some(tag => tag.toLowerCase().includes(marketplaceFilter.search))
+        );
+    }
+
+    // Apply sort
+    const sortFns = {
+        downloads: (a, b) => b.stats.downloads - a.stats.downloads,
+        rating: (a, b) => b.stats.rating - a.stats.rating,
+        recent: (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+    };
+    filtered.sort(sortFns[marketplaceFilter.sort] || sortFns.downloads);
+
+    // Render cards
+    grid.innerHTML = filtered.map(template => `
+        <div class="marketplace-card" data-id="${template.id}">
+            <div class="marketplace-card-header">
+                <span class="marketplace-category">${template.category}</span>
+                <span class="marketplace-rating">⭐ ${template.stats.rating}</span>
+            </div>
+            <h3 class="marketplace-card-title">${template.name}</h3>
+            <p class="marketplace-card-desc">${template.description}</p>
+            <div class="marketplace-card-tags">
+                ${template.tags.map(t => `<span class="marketplace-tag">${t}</span>`).join('')}
+            </div>
+            <div class="marketplace-card-meta">
+                <span class="downloads">⬇️ ${template.stats.downloads}</span>
+                <span class="author">by ${template.author.name}</span>
+            </div>
+            <button class="btn-primary marketplace-install-btn" onclick="installMarketplaceTemplate('${template.id}')">
+                Install
+            </button>
+        </div>
+    `).join('') || '<div class="marketplace-empty">No workflows found matching your filters.</div>';
+}
+
+/**
+ * Install a marketplace template
+ */
+function installMarketplaceTemplate(templateId) {
+    const template = marketplaceTemplates.find(t => t.id === templateId);
+    if (!template) {
+        showToast('Template not found', 'error');
+        return;
+    }
+
+    // In production, this would fetch the full template from backend
+    // For now, we'll use a mock workflow structure
+    const mockWorkflow = getMockWorkflowForTemplate(templateId);
+
+    // Save to registry for use as composite workflows
+    const workflowId = `marketplace_${templateId}_${Date.now()}`;
+    saveWorkflowToRegistry(workflowId, template.name, mockWorkflow);
+
+    // Optionally load directly into canvas
+    if (confirm(`Install "${template.name}"?\n\nThis will add it to your saved workflows and can be used in composite nodes.`)) {
+        // Could also offer to load into current canvas
+        showToast(`Installed: ${template.name}`, 'success');
+        closeMarketplaceModal();
+    }
+}
+
+/**
+ * Get mock workflow data for marketplace templates
+ */
+function getMockWorkflowForTemplate(templateId) {
+    const mockWorkflows = {
+        'rag-basic': {
+            nodes: [
+                { id: 'n1', agentType: 'hololoom', x: 100, y: 200, config: { pattern: 'fast' } },
+                { id: 'n2', agentType: 'response', x: 400, y: 200, config: { format: 'text' } }
+            ],
+            connections: [
+                { id: 'c1', source: 'n1', target: 'n2', sourcePort: 'spacetime', targetPort: 'data' }
+            ]
+        },
+        'agentic-research': {
+            nodes: [
+                { id: 'n1', agentType: 'multiquery', x: 100, y: 200, config: { mode: 'research' } },
+                { id: 'n2', agentType: 'hololoom', x: 350, y: 150, config: { pattern: 'fused' } },
+                { id: 'n3', agentType: 'refiner', x: 600, y: 200, config: { strategy: 'verify' } },
+                { id: 'n4', agentType: 'response', x: 850, y: 200, config: { format: 'markdown' } }
+            ],
+            connections: [
+                { id: 'c1', source: 'n1', target: 'n2', sourcePort: 'subqueries', targetPort: 'query' },
+                { id: 'c2', source: 'n2', target: 'n3', sourcePort: 'spacetime', targetPort: 'spacetime' },
+                { id: 'c3', source: 'n3', target: 'n4', sourcePort: 'refined', targetPort: 'data' }
+            ]
+        },
+        'memory-fusion': {
+            nodes: [
+                { id: 'n1', agentType: 'search', x: 100, y: 200, config: { max_results: 20 } },
+                { id: 'n2', agentType: 'fusion', x: 350, y: 200, config: { max_depth: 3 } },
+                { id: 'n3', agentType: 'synthesizer', x: 600, y: 200, config: {} },
+                { id: 'n4', agentType: 'response', x: 850, y: 200, config: { format: 'json' } }
+            ],
+            connections: [
+                { id: 'c1', source: 'n1', target: 'n2', sourcePort: 'memories', targetPort: 'query' },
+                { id: 'c2', source: 'n2', target: 'n3', sourcePort: 'expanded', targetPort: 'text' },
+                { id: 'c3', source: 'n3', target: 'n4', sourcePort: 'synthesis', targetPort: 'data' }
+            ]
+        },
+        'safety-gated': {
+            nodes: [
+                { id: 'n1', agentType: 'hololoom', x: 100, y: 200, config: { pattern: 'fast' } },
+                { id: 'n2', agentType: 'safety', x: 350, y: 200, config: { risk_threshold: 'MEDIUM' } },
+                { id: 'n3', agentType: 'conditional', x: 600, y: 200, config: { condition_type: 'confidence' } },
+                { id: 'n4', agentType: 'response', x: 850, y: 100, config: { format: 'text' } },
+                { id: 'n5', agentType: 'refiner', x: 850, y: 300, config: { strategy: 'verify' } }
+            ],
+            connections: [
+                { id: 'c1', source: 'n1', target: 'n2', sourcePort: 'spacetime', targetPort: 'action' },
+                { id: 'c2', source: 'n2', target: 'n3', sourcePort: 'gated', targetPort: 'condition' },
+                { id: 'c3', source: 'n3', target: 'n4', sourcePort: 'true', targetPort: 'data' },
+                { id: 'c4', source: 'n3', target: 'n5', sourcePort: 'false', targetPort: 'spacetime' }
+            ]
+        }
+    };
+
+    return mockWorkflows[templateId] || { nodes: [], connections: [] };
+}
+
+/**
+ * Initialize Wave 7.2 features
+ */
+function initWave72Features() {
+    // Load saved workflows registry
+    loadSavedWorkflowsRegistry();
+
+    // Add double-click handler for composite nodes
+    const canvas = document.getElementById('canvas');
+    if (canvas) {
+        canvas.addEventListener('dblclick', (e) => {
+            const nodeEl = e.target.closest('.workflow-node');
+            if (nodeEl) {
+                handleNodeDoubleClick(nodeEl.id);
+            }
+        });
+    }
+
+    // Keyboard shortcut: Backspace/Delete to drill up when in nested workflow
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && compositeNavigationStack.length > 0) {
+            // Only if not in input field
+            if (document.activeElement.tagName !== 'INPUT' &&
+                document.activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                drillUp();
+            }
+        }
+    });
+
+    // Keyboard shortcut: M for Marketplace
+    document.addEventListener('keydown', (e) => {
+        if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            if (document.activeElement.tagName !== 'INPUT' &&
+                document.activeElement.tagName !== 'TEXTAREA' &&
+                document.activeElement.tagName !== 'SELECT') {
+                e.preventDefault();
+                showMarketplaceModal();
+            }
+        }
+    });
+
+    console.log('[Wave 7.2] Advanced Workflows features initialized');
+}
+
+// Initialize Wave 7.2 on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWave72Features);
+} else {
+    initWave72Features();
+}
+
+// ========== WAVE 7.3: PERFORMANCE OPTIMIZATION ==========
+// Virtual scrolling, connection culling, lazy loading, FPS monitoring
+// For handling 100+ node workflows at 60fps
+
+/**
+ * VirtualCanvas - Only render nodes visible in viewport
+ * Implements virtual scrolling for massive workflows
+ */
+class VirtualCanvas {
+    constructor(canvasElement, viewportPadding = 200) {
+        this.canvas = canvasElement;
+        this.viewportPadding = viewportPadding;
+        this.renderedNodes = new Set();
+        this.nodeElementCache = new Map();
+        this.lastViewport = null;
+        this.updateScheduled = false;
+    }
+
+    /**
+     * Get current viewport bounds in canvas coordinates
+     * Accounts for pan offset and zoom level
+     */
+    getViewport() {
+        const padding = this.viewportPadding;
+        return {
+            left: (-panOffsetX / zoomLevel) - padding,
+            top: (-panOffsetY / zoomLevel) - padding,
+            right: ((-panOffsetX + window.innerWidth) / zoomLevel) + padding,
+            bottom: ((-panOffsetY + window.innerHeight) / zoomLevel) + padding
+        };
+    }
+
+    /**
+     * Check if a node is within the visible viewport
+     * Uses node position and estimated size (200x100)
+     */
+    isNodeVisible(node) {
+        const vp = this.getViewport();
+        const nodeWidth = 200;
+        const nodeHeight = 100;
+
+        return node.x + nodeWidth >= vp.left &&
+               node.x <= vp.right &&
+               node.y + nodeHeight >= vp.top &&
+               node.y <= vp.bottom;
+    }
+
+    /**
+     * Update which nodes are rendered based on viewport
+     * Called on pan, zoom, or node position changes
+     */
+    updateVisibleNodes() {
+        if (!this.canvas) return;
+
+        const viewport = this.getViewport();
+        const visibleNodeIds = new Set();
+
+        // Determine which nodes should be visible
+        nodes.forEach(node => {
+            if (this.isNodeVisible(node)) {
+                visibleNodeIds.add(node.id);
+            }
+        });
+
+        // Remove nodes that are no longer visible
+        for (const nodeId of this.renderedNodes) {
+            if (!visibleNodeIds.has(nodeId)) {
+                this.removeNodeElement(nodeId);
+            }
+        }
+
+        // Add nodes that have become visible
+        for (const nodeId of visibleNodeIds) {
+            if (!this.renderedNodes.has(nodeId)) {
+                const node = nodes.find(n => n.id === nodeId);
+                if (node) {
+                    this.renderNodeElement(node);
+                }
+            }
+        }
+
+        this.renderedNodes = visibleNodeIds;
+        this.lastViewport = viewport;
+
+        // Update performance monitor
+        if (performanceMonitor) {
+            performanceMonitor.recordNodeCount(visibleNodeIds.size, nodes.length);
+        }
+    }
+
+    /**
+     * Render a single node element to the canvas
+     */
+    renderNodeElement(node) {
+        // Check if element already exists
+        let nodeEl = document.getElementById(node.id);
+        if (nodeEl) {
+            this.renderedNodes.add(node.id);
+            return;
+        }
+
+        // Use the existing createNodeElement function
+        if (typeof createNodeElement === 'function') {
+            nodeEl = createNodeElement(node);
+            this.canvas.appendChild(nodeEl);
+            this.renderedNodes.add(node.id);
+            this.nodeElementCache.set(node.id, nodeEl);
+        }
+    }
+
+    /**
+     * Remove a node element from the canvas (keep node data)
+     */
+    removeNodeElement(nodeId) {
+        const nodeEl = document.getElementById(nodeId);
+        if (nodeEl) {
+            nodeEl.remove();
+        }
+        this.renderedNodes.delete(nodeId);
+        this.nodeElementCache.delete(nodeId);
+    }
+
+    /**
+     * Schedule viewport update (debounced)
+     */
+    scheduleUpdate() {
+        if (this.updateScheduled) return;
+
+        this.updateScheduled = true;
+        requestAnimationFrame(() => {
+            this.updateVisibleNodes();
+            this.updateScheduled = false;
+        });
+    }
+
+    /**
+     * Force immediate update (use sparingly)
+     */
+    forceUpdate() {
+        this.updateScheduled = false;
+        this.updateVisibleNodes();
+    }
+
+    /**
+     * Get statistics about current rendering state
+     */
+    getStats() {
+        return {
+            renderedNodes: this.renderedNodes.size,
+            totalNodes: nodes.length,
+            renderPercentage: nodes.length > 0
+                ? ((this.renderedNodes.size / nodes.length) * 100).toFixed(1)
+                : 0,
+            viewport: this.getViewport()
+        };
+    }
+
+    /**
+     * Clear all rendered nodes (for full re-render)
+     */
+    clear() {
+        for (const nodeId of this.renderedNodes) {
+            this.removeNodeElement(nodeId);
+        }
+        this.renderedNodes.clear();
+        this.nodeElementCache.clear();
+    }
+}
+
+/**
+ * ConnectionCuller - Only render connections where at least one endpoint is visible
+ * Reduces SVG path complexity for large workflows
+ */
+class ConnectionCuller {
+    constructor(svgLayer) {
+        this.svgLayer = svgLayer;
+        this.renderedConnections = new Set();
+        this.connectionPathCache = new Map();
+    }
+
+    /**
+     * Check if a connection should be rendered
+     * Connection is visible if either source or target node is visible
+     */
+    isConnectionVisible(conn, virtualCanvas) {
+        const sourceNode = nodes.find(n => n.id === conn.source);
+        const targetNode = nodes.find(n => n.id === conn.target);
+
+        if (!sourceNode || !targetNode) return false;
+
+        // Connection visible if either endpoint is in viewport
+        return virtualCanvas.isNodeVisible(sourceNode) ||
+               virtualCanvas.isNodeVisible(targetNode);
+    }
+
+    /**
+     * Update visible connections based on viewport
+     */
+    updateVisibleConnections(virtualCanvas) {
+        if (!this.svgLayer || !virtualCanvas) return;
+
+        const visibleConnectionIds = new Set();
+
+        // Determine which connections should be visible
+        connections.forEach(conn => {
+            const connId = `conn-${conn.source}-${conn.target}`;
+            if (this.isConnectionVisible(conn, virtualCanvas)) {
+                visibleConnectionIds.add(connId);
+            }
+        });
+
+        // Remove connections that are no longer visible
+        for (const connId of this.renderedConnections) {
+            if (!visibleConnectionIds.has(connId)) {
+                this.removeConnectionPath(connId);
+            }
+        }
+
+        // Add connections that have become visible
+        connections.forEach(conn => {
+            const connId = `conn-${conn.source}-${conn.target}`;
+            if (visibleConnectionIds.has(connId) && !this.renderedConnections.has(connId)) {
+                this.renderConnectionPath(conn);
+            }
+        });
+
+        this.renderedConnections = visibleConnectionIds;
+    }
+
+    /**
+     * Render a single connection path
+     */
+    renderConnectionPath(conn) {
+        const connId = `conn-${conn.source}-${conn.target}`;
+
+        // Check if already exists
+        let pathEl = document.getElementById(connId);
+        if (pathEl) {
+            this.renderedConnections.add(connId);
+            return;
+        }
+
+        // Create new connection path using existing render function
+        // Connection rendering is handled by renderConnections(),
+        // so we just mark it as needing render
+        this.renderedConnections.add(connId);
+    }
+
+    /**
+     * Remove a connection path from SVG layer
+     */
+    removeConnectionPath(connId) {
+        const pathEl = document.getElementById(connId);
+        if (pathEl) {
+            pathEl.remove();
+        }
+        this.renderedConnections.delete(connId);
+        this.connectionPathCache.delete(connId);
+    }
+
+    /**
+     * Get statistics about current connection rendering
+     */
+    getStats() {
+        return {
+            renderedConnections: this.renderedConnections.size,
+            totalConnections: connections.length,
+            renderPercentage: connections.length > 0
+                ? ((this.renderedConnections.size / connections.length) * 100).toFixed(1)
+                : 0
+        };
+    }
+
+    /**
+     * Clear all rendered connections
+     */
+    clear() {
+        for (const connId of this.renderedConnections) {
+            this.removeConnectionPath(connId);
+        }
+        this.renderedConnections.clear();
+        this.connectionPathCache.clear();
+    }
+}
+
+/**
+ * PerformanceMonitor - Track frame times and FPS
+ * Provides real-time performance metrics for debugging
+ */
+class PerformanceMonitor {
+    constructor() {
+        this.frameTimeSamples = [];
+        this.maxSamples = 60;
+        this.lastFrameTime = performance.now();
+        this.nodeStats = { rendered: 0, total: 0 };
+        this.connectionStats = { rendered: 0, total: 0 };
+        this.warningThreshold = 16.67; // 60fps target
+        this.enabled = true;
+        this.debugPanelVisible = false;
+    }
+
+    /**
+     * Record start of a new frame
+     */
+    startFrame() {
+        this.frameStart = performance.now();
+    }
+
+    /**
+     * Record end of frame and calculate duration
+     */
+    endFrame() {
+        if (!this.enabled) return;
+
+        const now = performance.now();
+        const frameTime = now - (this.frameStart || this.lastFrameTime);
+
+        this.frameTimeSamples.push(frameTime);
+        if (this.frameTimeSamples.length > this.maxSamples) {
+            this.frameTimeSamples.shift();
+        }
+
+        // Warn if frame time exceeds 60fps target
+        if (frameTime > this.warningThreshold && this.debugPanelVisible) {
+            console.warn(`[Perf] Slow frame: ${frameTime.toFixed(1)}ms`);
+        }
+
+        this.lastFrameTime = now;
+    }
+
+    /**
+     * Record node rendering statistics
+     */
+    recordNodeCount(rendered, total) {
+        this.nodeStats = { rendered, total };
+    }
+
+    /**
+     * Record connection rendering statistics
+     */
+    recordConnectionCount(rendered, total) {
+        this.connectionStats = { rendered, total };
+    }
+
+    /**
+     * Calculate average FPS from recent samples
+     */
+    getAverageFPS() {
+        if (this.frameTimeSamples.length === 0) return 60;
+
+        const avgFrameTime = this.frameTimeSamples.reduce((a, b) => a + b, 0) /
+                            this.frameTimeSamples.length;
+        return 1000 / avgFrameTime;
+    }
+
+    /**
+     * Calculate average frame time in milliseconds
+     */
+    getAverageFrameTime() {
+        if (this.frameTimeSamples.length === 0) return 0;
+
+        return this.frameTimeSamples.reduce((a, b) => a + b, 0) /
+               this.frameTimeSamples.length;
+    }
+
+    /**
+     * Get comprehensive performance statistics
+     */
+    getStats() {
+        const fps = this.getAverageFPS();
+        const avgFrameTime = this.getAverageFrameTime();
+
+        return {
+            fps: fps.toFixed(1),
+            avgFrameTime: avgFrameTime.toFixed(2),
+            nodes: this.nodeStats,
+            connections: this.connectionStats,
+            samplesCollected: this.frameTimeSamples.length,
+            status: fps >= 55 ? 'good' : fps >= 30 ? 'warning' : 'poor'
+        };
+    }
+
+    /**
+     * Reset all statistics
+     */
+    reset() {
+        this.frameTimeSamples = [];
+        this.nodeStats = { rendered: 0, total: 0 };
+        this.connectionStats = { rendered: 0, total: 0 };
+    }
+
+    /**
+     * Toggle debug panel visibility
+     */
+    toggleDebugPanel() {
+        this.debugPanelVisible = !this.debugPanelVisible;
+        const panel = document.getElementById('performanceDebugPanel');
+        if (panel) {
+            panel.style.display = this.debugPanelVisible ? 'block' : 'none';
+        }
+        return this.debugPanelVisible;
+    }
+
+    /**
+     * Update debug panel with current stats
+     */
+    updateDebugPanel() {
+        if (!this.debugPanelVisible) return;
+
+        const panel = document.getElementById('performanceDebugPanel');
+        if (!panel) return;
+
+        const stats = this.getStats();
+        const statusColor = stats.status === 'good' ? '#27ae60' :
+                           stats.status === 'warning' ? '#f39c12' : '#e74c3c';
+
+        panel.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <span>⚡ Performance</span>
+                <span style="color: ${statusColor}; font-size: 12px;">${stats.fps} FPS</span>
+            </div>
+            <div style="font-size: 11px; line-height: 1.6;">
+                <div>Frame: ${stats.avgFrameTime}ms</div>
+                <div>Nodes: ${stats.nodes.rendered}/${stats.nodes.total}
+                    (${stats.nodes.total > 0 ? ((stats.nodes.rendered / stats.nodes.total) * 100).toFixed(0) : 0}%)</div>
+                <div>Connections: ${stats.connections.rendered}/${stats.connections.total}
+                    (${stats.connections.total > 0 ? ((stats.connections.rendered / stats.connections.total) * 100).toFixed(0) : 0}%)</div>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Lazy Property Loading - Only load node config when selected
+ * Reduces initial load time for large workflows
+ */
+const lazyPropertyLoader = {
+    loadedConfigs: new Map(),
+    pendingLoads: new Map(),
+
+    /**
+     * Check if a node's config has been fully loaded
+     */
+    isConfigLoaded(nodeId) {
+        return this.loadedConfigs.has(nodeId);
+    },
+
+    /**
+     * Load a node's configuration (async for large configs)
+     */
+    async loadNodeConfig(node) {
+        // Already loaded
+        if (this.loadedConfigs.has(node.id)) {
+            return this.loadedConfigs.get(node.id);
+        }
+
+        // Already loading
+        if (this.pendingLoads.has(node.id)) {
+            return this.pendingLoads.get(node.id);
+        }
+
+        // Start loading
+        const loadPromise = new Promise((resolve) => {
+            // For now, configs are stored in-memory, but this could be async
+            // from backend for very large workflows
+            requestAnimationFrame(() => {
+                const config = node.config || {};
+                this.loadedConfigs.set(node.id, config);
+                this.pendingLoads.delete(node.id);
+                resolve(config);
+            });
+        });
+
+        this.pendingLoads.set(node.id, loadPromise);
+        return loadPromise;
+    },
+
+    /**
+     * Clear cached config for a node
+     */
+    clearConfig(nodeId) {
+        this.loadedConfigs.delete(nodeId);
+    },
+
+    /**
+     * Clear all cached configs
+     */
+    clearAll() {
+        this.loadedConfigs.clear();
+        this.pendingLoads.clear();
+    },
+
+    /**
+     * Get stats about config caching
+     */
+    getStats() {
+        return {
+            loadedConfigs: this.loadedConfigs.size,
+            pendingLoads: this.pendingLoads.size,
+            totalNodes: nodes.length
+        };
+    }
+};
+
+// Wave 7.3 singleton instances
+let virtualCanvas = null;
+let connectionCuller = null;
+let performanceMonitor = null;
+let wave73Enabled = false;
+
+/**
+ * Initialize Wave 7.3 performance features
+ */
+function initWave73Performance() {
+    const canvas = document.getElementById('canvas');
+    const svgLayer = document.getElementById('connectionsLayer');
+
+    if (!canvas) {
+        console.warn('[Wave 7.3] Canvas element not found');
+        return;
+    }
+
+    // Create performance instances
+    virtualCanvas = new VirtualCanvas(canvas, 200);
+    connectionCuller = new ConnectionCuller(svgLayer);
+    performanceMonitor = new PerformanceMonitor();
+
+    // Create debug panel
+    createPerformanceDebugPanel();
+
+    // Hook into pan/zoom events
+    hookPerformanceUpdates();
+
+    wave73Enabled = true;
+    console.log('[Wave 7.3] Performance optimization initialized');
+}
+
+/**
+ * Create the performance debug panel element
+ */
+function createPerformanceDebugPanel() {
+    // Check if panel already exists
+    if (document.getElementById('performanceDebugPanel')) return;
+
+    const panel = document.createElement('div');
+    panel.id = 'performanceDebugPanel';
+    panel.className = 'performance-debug-panel';
+    panel.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 180px;
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        padding: 12px;
+        border-radius: 8px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 12px;
+        z-index: 10000;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+
+    document.body.appendChild(panel);
+}
+
+/**
+ * Hook performance updates into pan/zoom events
+ */
+function hookPerformanceUpdates() {
+    // Hook into applyPan
+    const originalApplyPan = window.applyPan || applyPan;
+    if (typeof originalApplyPan === 'function') {
+        window._originalApplyPan = originalApplyPan;
+    }
+
+    // Hook into applyZoom
+    const originalApplyZoom = window.applyZoom || applyZoom;
+    if (typeof originalApplyZoom === 'function') {
+        window._originalApplyZoom = originalApplyZoom;
+    }
+
+    // Schedule viewport updates on animation frames
+    let updatePending = false;
+
+    window.schedulePerformanceUpdate = function() {
+        if (updatePending || !wave73Enabled) return;
+
+        updatePending = true;
+        requestAnimationFrame(() => {
+            if (performanceMonitor) performanceMonitor.startFrame();
+
+            if (virtualCanvas) virtualCanvas.updateVisibleNodes();
+            if (connectionCuller && virtualCanvas) {
+                connectionCuller.updateVisibleConnections(virtualCanvas);
+                performanceMonitor?.recordConnectionCount(
+                    connectionCuller.renderedConnections.size,
+                    connections.length
+                );
+            }
+
+            if (performanceMonitor) {
+                performanceMonitor.endFrame();
+                performanceMonitor.updateDebugPanel();
+            }
+
+            updatePending = false;
+        });
+    };
+}
+
+/**
+ * Toggle performance debug panel
+ */
+function togglePerformanceDebugPanel() {
+    if (performanceMonitor) {
+        return performanceMonitor.toggleDebugPanel();
+    }
+    return false;
+}
+
+/**
+ * Get performance statistics
+ */
+function getPerformanceStats() {
+    return {
+        virtualCanvas: virtualCanvas?.getStats() || null,
+        connectionCuller: connectionCuller?.getStats() || null,
+        performanceMonitor: performanceMonitor?.getStats() || null,
+        lazyLoader: lazyPropertyLoader.getStats()
+    };
+}
+
+/**
+ * Enable/disable Wave 7.3 performance features
+ */
+function setPerformanceOptimizationEnabled(enabled) {
+    wave73Enabled = enabled;
+
+    if (enabled && !virtualCanvas) {
+        initWave73Performance();
+    }
+
+    console.log(`[Wave 7.3] Performance optimization ${enabled ? 'enabled' : 'disabled'}`);
+}
+
+/**
+ * Force a full render refresh (use when adding many nodes)
+ */
+function forcePerformanceRefresh() {
+    if (virtualCanvas) {
+        virtualCanvas.clear();
+        virtualCanvas.forceUpdate();
+    }
+    if (connectionCuller) {
+        connectionCuller.clear();
+        if (virtualCanvas) {
+            connectionCuller.updateVisibleConnections(virtualCanvas);
+        }
+    }
+}
+
+// Keyboard shortcut for debug panel (P key)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'p' || e.key === 'P') {
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+            if (document.activeElement.tagName !== 'INPUT' &&
+                document.activeElement.tagName !== 'TEXTAREA' &&
+                document.activeElement.tagName !== 'SELECT') {
+                e.preventDefault();
+                togglePerformanceDebugPanel();
+            }
+        }
+    }
+});
+
+// Initialize Wave 7.3 on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWave73Performance);
+} else {
+    initWave73Performance();
+}
+
+console.log('[Wave 7.3] Performance optimization module loaded');
+
 // Export for console debugging
 window.workflowBuilder = {
     nodes,
@@ -8698,5 +11056,79 @@ window.workflowBuilder = {
     showWorkflowProgress,
     updateWorkflowProgress,
     executionLogs,
-    wsConnectionState
+    wsConnectionState,
+    // Mobile/Touch Support (Wave 6)
+    showMobileContextSheet,
+    closeMobileContextSheet,
+    showMobileProperties,
+    closeMobileProperties,
+    saveMobileProperties,
+    resetPan,
+    triggerHapticFeedback,
+    initCanvasTouchGestures,
+    createTouchRipple,
+    panOffsetX,
+    panOffsetY,
+    touchState,
+    // Real-Time Collaboration (Wave 7.1)
+    showJoinSessionModal,
+    closeJoinSessionModal,
+    joinOrCreateSession,
+    createCollaborationSession,
+    joinCollaborationSession,
+    leaveCollaborationSession,
+    copySessionLink,
+    renderPresencePanel,
+    togglePresencePanel,
+    updatePresence,
+    updateRemoteCursor,
+    removeRemoteCursor,
+    showNodeLock,
+    releaseNodeLock,
+    requestNodeLock,
+    releaseNodeLockRequest,
+    broadcastOperation,
+    handleRemoteOperation,
+    collaborationSessionId,
+    collaborationParticipants,
+    remoteCursors,
+    nodeLocks,
+    localUserId,
+    localUserName,
+    localUserColor,
+    // Advanced Workflows (Wave 7.2)
+    drillIntoComposite,
+    drillUp,
+    updateBreadcrumbNavigation,
+    navigateToBreadcrumbLevel,
+    renderMiniWorkflow,
+    renderCompositeNodeContent,
+    handleNodeDoubleClick,
+    loadSavedWorkflowsRegistry,
+    saveWorkflowToRegistry,
+    getSavedWorkflowsList,
+    showMarketplaceModal,
+    closeMarketplaceModal,
+    loadMarketplaceTemplates,
+    filterMarketplace,
+    renderMarketplaceGrid,
+    installMarketplaceTemplate,
+    initWave72Features,
+    compositeNavigationStack,
+    savedWorkflowsRegistry,
+    marketplaceTemplates,
+    // Performance Optimization (Wave 7.3)
+    VirtualCanvas,
+    ConnectionCuller,
+    PerformanceMonitor,
+    lazyPropertyLoader,
+    virtualCanvas,
+    connectionCuller,
+    performanceMonitor,
+    wave73Enabled,
+    initWave73Performance,
+    togglePerformanceDebugPanel,
+    getPerformanceStats,
+    setPerformanceOptimizationEnabled,
+    forcePerformanceRefresh
 };

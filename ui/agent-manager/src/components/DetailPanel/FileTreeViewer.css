@@ -1,0 +1,729 @@
+/**
+ * FileTreeViewer Styles
+ *
+ * Dark-themed file tree with animated interactions, color-coded agents,
+ * and responsive layout with smooth transitions.
+ */
+
+.file-tree-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ============================================================================
+   Toolbar
+   ============================================================================ */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #111827;
+  border-bottom: 1px solid #374151;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 150px;
+  padding: 8px 12px;
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  color: #f3f4f6;
+  font-size: 14px;
+  outline: none;
+  transition: all 200ms ease;
+}
+
+.search-input:focus {
+  background-color: #4b5563;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+.filter-select {
+  padding: 8px 10px;
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  color: #f3f4f6;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: all 200ms ease;
+}
+
+.filter-select:hover {
+  background-color: #4b5563;
+  border-color: #60a5fa;
+}
+
+.filter-select:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.filter-select option {
+  background-color: #1f2937;
+  color: #f3f4f6;
+}
+
+.button-group {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.icon-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  color: #d1d5db;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button:hover {
+  background-color: #4b5563;
+  border-color: #60a5fa;
+  color: #f3f4f6;
+}
+
+.icon-button:active {
+  transform: scale(0.95);
+}
+
+/* ============================================================================
+   Content Area
+   ============================================================================ */
+
+.content-area {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.tree-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
+}
+
+.tree-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tree-container::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.tree-container::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 4px;
+}
+
+.tree-container::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6b7280;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* ============================================================================
+   Tree Structure
+   ============================================================================ */
+
+.tree-root {
+  user-select: none;
+}
+
+.file-tree-item {
+  position: relative;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  height: 28px;
+  color: #d1d5db;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 100ms ease;
+  border-left: 3px solid transparent;
+  position: relative;
+}
+
+.tree-row:hover {
+  background-color: rgba(96, 165, 250, 0.1);
+  color: #f3f4f6;
+}
+
+.tree-row.selected {
+  background-color: rgba(96, 165, 250, 0.2);
+  border-left-color: #3b82f6;
+  color: #f3f4f6;
+  font-weight: 500;
+}
+
+/* Status-specific styling */
+.tree-row.status-modified {
+  --status-color: #f59e0b;
+}
+
+.tree-row.status-read {
+  --status-color: #6b7280;
+  opacity: 0.7;
+}
+
+.tree-row.status-created {
+  --status-color: #10b981;
+}
+
+.tree-row.status-deleted {
+  --status-color: #ef4444;
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.tree-connector {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: #374151;
+  opacity: 0.5;
+}
+
+/* ============================================================================
+   Tree Controls
+   ============================================================================ */
+
+.expand-button {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 10px;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 150ms ease, color 150ms ease;
+}
+
+.expand-button:hover {
+  color: #d1d5db;
+}
+
+.expand-button.expanded {
+  transform: rotate(90deg);
+}
+
+.expand-spacer {
+  flex-shrink: 0;
+  width: 20px;
+}
+
+/* ============================================================================
+   File Tree Item Content
+   ============================================================================ */
+
+.agent-indicator {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0.8;
+  transition: opacity 200ms ease;
+}
+
+.tree-row:hover .agent-indicator {
+  opacity: 1;
+  box-shadow: 0 0 4px currentColor;
+}
+
+.file-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+.status-indicator {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.7;
+  transition: opacity 200ms ease;
+}
+
+.tree-row:hover .status-indicator {
+  opacity: 1;
+}
+
+.status-indicator.status-modified {
+  color: #f59e0b;
+}
+
+.status-indicator.status-read {
+  color: #6b7280;
+}
+
+.status-indicator.status-created {
+  color: #10b981;
+}
+
+.status-indicator.status-deleted {
+  color: #ef4444;
+}
+
+.agent-label {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-row:hover .agent-label {
+  opacity: 1;
+}
+
+/* ============================================================================
+   Tree Children
+   ============================================================================ */
+
+.tree-children {
+  animation: slideDown 150ms ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   Details Panel
+   ============================================================================ */
+
+.details-panel {
+  flex-shrink: 0;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  background-color: #111827;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  overflow: hidden;
+  animation: slideInRight 200ms ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #1f2937;
+  border-bottom: 1px solid #374151;
+  flex-shrink: 0;
+}
+
+.details-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f3f4f6;
+}
+
+.close-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 16px;
+  cursor: pointer;
+  outline: none;
+  transition: color 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  color: #f3f4f6;
+}
+
+.details-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.details-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.details-content::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.details-content::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 3px;
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.detail-row label {
+  color: #9ca3af;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-row span,
+.detail-row time,
+.detail-row code {
+  color: #d1d5db;
+  word-break: break-word;
+}
+
+.file-path {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 11px;
+  background-color: #374151;
+  padding: 6px;
+  border-radius: 3px;
+  display: block;
+  overflow-x: auto;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: #374151;
+  border-radius: 3px;
+  width: fit-content;
+}
+
+.status-badge.status-modified {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.status-badge.status-read {
+  background-color: rgba(107, 114, 128, 0.1);
+  color: #9ca3af;
+}
+
+.status-badge.status-created {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.status-badge.status-deleted {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.status-dot {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.agent-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.agent-color-box {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* ============================================================================
+   Details Toggle Button
+   ============================================================================ */
+
+.details-toggle {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  outline: none;
+  transition: all 200ms ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.details-toggle:not(:disabled) {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.details-toggle:hover {
+  background-color: #2563eb;
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.details-toggle.active {
+  background-color: #1e40af;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .button-group {
+    margin-left: 0;
+    order: -1;
+    width: 100%;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+  }
+
+  .search-input {
+    flex-basis: 100%;
+    min-width: unset;
+    order: -2;
+  }
+
+  .filter-select {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .details-panel {
+    position: absolute;
+    bottom: 80px;
+    right: 16px;
+    width: 240px;
+    max-height: 50%;
+  }
+
+  .agent-label {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-select {
+    display: none;
+  }
+
+  .details-panel {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: auto;
+    width: 100%;
+    max-height: 60%;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .tree-row {
+    padding: 6px 4px;
+    height: 32px;
+  }
+
+  .file-name {
+    font-size: 12px;
+  }
+}
+
+/* ============================================================================
+   Dark Mode Scrollbar Styling
+   ============================================================================ */
+
+@supports selector(::-webkit-scrollbar) {
+  .tree-container::-webkit-scrollbar,
+  .details-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .tree-container::-webkit-scrollbar-track,
+  .details-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .tree-container::-webkit-scrollbar-thumb,
+  .details-content::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 4px;
+    transition: background-color 200ms ease;
+  }
+
+  .tree-container::-webkit-scrollbar-thumb:hover,
+  .details-content::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+  }
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-color: #4b5563 transparent;
+  scrollbar-width: thin;
+}
+
+.tree-container,
+.details-content {
+  scrollbar-color: #4b5563 transparent;
+}
+
+/* ============================================================================
+   Accessibility
+   ============================================================================ */
+
+/* Focus visible styles for keyboard navigation */
+.tree-row:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+  background-color: rgba(96, 165, 250, 0.15);
+}
+
+.icon-button:focus-visible,
+.close-button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .tree-row,
+  .expand-button,
+  .agent-indicator,
+  .status-indicator,
+  .agent-label,
+  .tree-children,
+  .details-panel,
+  .icon-button,
+  .details-toggle {
+    transition: none;
+  }
+
+  .expand-button.expanded {
+    transform: none;
+  }
+
+  .details-toggle:hover {
+    transform: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .tree-row {
+    border-left-width: 4px;
+  }
+
+  .agent-indicator {
+    border: 1px solid currentColor;
+  }
+
+  .details-panel {
+    border-width: 2px;
+  }
+}

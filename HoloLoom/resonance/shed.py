@@ -147,7 +147,7 @@ class ResonanceShed:
             return None
 
         request = ActionRequest(
-            action=action,
+            action_id=action,
             category=category,
             context=context,
         )
