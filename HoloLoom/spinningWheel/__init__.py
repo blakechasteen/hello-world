@@ -43,6 +43,11 @@ from .modalities.youtube import YouTubeSpinner
 from .git_spinner import GitSpinner
 from .matrix_spinner import MatrixSpinner
 
+# Browser and web spinners (NEW - December 2025)
+from .browser_history import BrowserHistorySpinner
+from .website import WebsiteSpinner as MultimodalWebsiteSpinner  # Multimodal version
+from .recursive_crawler import RecursiveCrawlerSpinner, CrawlConfig, crawl_website
+
 # OCR spinners (NEW - January 2025)
 from .deepseek_ocr_spinner import DeepSeekOCRSpinner
 from .handwritten_spinner import HandwrittenSpinner
@@ -96,6 +101,13 @@ __all__ = [
     'YouTubeSpinner',
     'GitSpinner',
     'MatrixSpinner',
+
+    # Browser and web spinners (NEW - December 2025)
+    'BrowserHistorySpinner',      # Read Chrome, Firefox, Edge, Safari, Brave history
+    'MultimodalWebsiteSpinner',   # Web scraping with images
+    'RecursiveCrawlerSpinner',    # Matryoshka importance-gated crawling
+    'CrawlConfig',                # Crawler configuration
+    'crawl_website',              # Convenience function
 
     # OCR spinners (NEW - January 2025)
     'DeepSeekOCRSpinner',      # General OCR (documents, PDFs)

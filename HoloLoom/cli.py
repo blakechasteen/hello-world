@@ -24,6 +24,7 @@ from typing import Optional, List, Dict, Any
 from HoloLoom.config import Config
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 from HoloLoom.protocols.types import Query
+from HoloLoom.cli_client import HypervisorClient, APIConfig, HTTPX_AVAILABLE
 
 
 # ============================================================================
@@ -84,16 +85,65 @@ def print_info(msg: str):
 # ============================================================================
 
 async def cmd_query(args):
-    """Execute a single query through the weaving orchestrator."""
-    cfg_factory = getattr(Config, args.mode)
-    cfg = cfg_factory()
+    """Execute a single query through the weaving orchestrator.
 
+    Uses HTTP server if available, falls back to local orchestrator.
+    """
     if args.verbose:
         print_info(f"Mode: {args.mode.upper()}")
         print_info(f"Query: {args.text}")
         print()
 
-    # Empty shards for basic query
+    # Try HTTP server first if httpx is available
+    use_http = False
+    if HTTPX_AVAILABLE:
+        async with HypervisorClient() as client:
+            if await client.is_server_available():
+                use_http = True
+                if args.verbose:
+                    print_info("Using HTTP server (Agentic API)")
+
+                # Map CLI modes to API modes
+                mode_map = {"bare": "direct", "fast": "direct", "fused": "verify", "research": "research"}
+                api_mode = mode_map.get(args.mode, "verify")
+
+                result = await client.query(
+                    text=args.text,
+                    mode=api_mode,
+                    max_steps=5
+                )
+
+                if "error" in result:
+                    print_error(result["error"])
+                    return
+
+                if args.json:
+                    output = {
+                        "response": result.get("response", ""),
+                        "confidence": result.get("confidence", 0),
+                        "tool_used": result.get("tool_used", "unknown"),
+                        "latency_ms": result.get("latency_ms", 0),
+                        "source": "http"
+                    }
+                    print(json.dumps(output, indent=2))
+                else:
+                    print(f"\n{Colors.BOLD}Response:{Colors.ENDC}")
+                    print(result.get("response", ""))
+
+                    if args.verbose:
+                        conf = result.get("confidence", 0)
+                        print(f"\n{Colors.DIM}Confidence: {conf:.2f}{Colors.ENDC}")
+                return
+
+    # Fall back to local orchestrator
+    if args.verbose and HTTPX_AVAILABLE:
+        print_info("Servers unavailable, using local orchestrator")
+    elif args.verbose:
+        print_info("Using local orchestrator")
+
+    cfg_factory = getattr(Config, args.mode)
+    cfg = cfg_factory()
+
     shards = []
 
     async with WeavingOrchestrator(cfg=cfg, shards=shards) as orchestrator:
@@ -105,6 +155,7 @@ async def cmd_query(args):
                 "confidence": result.confidence,
                 "tool_used": result.metadata.get('tool_used', 'unknown'),
                 "latency_ms": result.metadata.get('latency_ms', 0),
+                "source": "local"
             }
             print(json.dumps(output, indent=2))
         else:
@@ -140,7 +191,11 @@ async def cmd_agent_list(args):
 
 
 async def cmd_agent_run(args):
-    """Run an agent workflow."""
+    """Run an agent workflow.
+
+    Uses HTTP server if available (creates thread via Agent Manager API),
+    falls back to local orchestrator.
+    """
     print_banner()
 
     workflow_name = args.workflow or "default"
@@ -151,6 +206,96 @@ async def cmd_agent_run(args):
     print(f"  Agent: {agent_type}")
     print(f"  Query: {args.query}")
     print()
+
+    # Try HTTP server first if httpx is available
+    if HTTPX_AVAILABLE:
+        async with HypervisorClient() as client:
+            # Check if Agent Manager is available
+            health = await client.check_agent_manager_health()
+            if health.get("status") == "healthy":
+                print_info("Using Agent Manager API (HTTP)")
+
+                # Map workflow to reasoning mode
+                mode_map = {
+                    "default": "direct",
+                    "fast": "direct",
+                    "research": "research",
+                    "verify": "verify"
+                }
+                reasoning_mode = mode_map.get(workflow_name, "direct")
+
+                # Create thread
+                start_time = datetime.now()
+                thread_result = await client.create_thread(
+                    name=f"cli-{workflow_name}-{agent_type}",
+                    query=args.query,
+                    agent_type=agent_type,
+                    reasoning_mode=reasoning_mode,
+                    priority=0
+                )
+
+                if "error" in thread_result:
+                    print_error(f"Failed to create thread: {thread_result['error']}")
+                    return
+
+                thread_id = thread_result.get("thread_id") or thread_result.get("id")
+                if not thread_id:
+                    print_error("No thread ID returned from server")
+                    return
+
+                print_info(f"Thread created: {thread_id}")
+
+                # Start the thread
+                start_result = await client.start_thread(thread_id)
+                if "error" in start_result:
+                    print_warning(f"Start request: {start_result.get('error', 'unknown')}")
+                    # Thread might auto-start, continue anyway
+
+                # Wait for completion with progress
+                print_info("Waiting for completion...")
+                timeout = 300.0 if workflow_name == "research" else 120.0
+                final_result = await client.wait_for_completion(
+                    thread_id,
+                    poll_interval=0.5,
+                    timeout=timeout
+                )
+
+                duration = (datetime.now() - start_time).total_seconds()
+
+                if "error" in final_result:
+                    print_error(f"Thread failed: {final_result['error']}")
+                    return
+
+                status = final_result.get("status", "unknown")
+                if status == "completed":
+                    print_success(f"Workflow completed in {duration:.2f}s")
+                elif status == "failed":
+                    print_error(f"Workflow failed after {duration:.2f}s")
+                else:
+                    print_warning(f"Workflow ended with status: {status}")
+
+                # Get result
+                result_data = final_result.get("result", {})
+                response = result_data.get("response") or final_result.get("response", "")
+
+                print(f"\n{Colors.BOLD}Result:{Colors.ENDC}")
+                print(response or "(No response)")
+
+                if args.json:
+                    print(f"\n{Colors.BOLD}Metadata:{Colors.ENDC}")
+                    print(json.dumps({
+                        "thread_id": thread_id,
+                        "status": status,
+                        "confidence": result_data.get("confidence", 0),
+                        "duration_s": duration,
+                        "workflow": workflow_name,
+                        "agent_type": agent_type,
+                        "source": "http"
+                    }, indent=2))
+                return
+
+    # Fall back to local orchestrator
+    print_info("Using local orchestrator")
 
     # Configure based on workflow
     if workflow_name == "research":
@@ -181,6 +326,7 @@ async def cmd_agent_run(args):
                 "duration_s": duration,
                 "workflow": workflow_name,
                 "agent_type": agent_type,
+                "source": "local"
             }, indent=2))
 
 
@@ -188,27 +334,61 @@ async def cmd_agent_status(args):
     """Show status of agents and hypervisor."""
     print(f"\n{Colors.BOLD}Agent Hypervisor Status{Colors.ENDC}\n")
 
-    # Simulated status (would query actual hypervisor in production)
-    status = {
-        "hypervisor": "running",
-        "agents_registered": 0,
-        "agents_active": 0,
-        "total_requests": 0,
-        "uptime": "0h 0m",
-    }
+    if not HTTPX_AVAILABLE:
+        print_warning("httpx not installed. Install with: pip install httpx")
+        print(f"  {Colors.DIM}Cannot connect to hypervisor servers{Colors.ENDC}")
+        return
 
-    print(f"  Hypervisor:    {Colors.GREEN}running{Colors.ENDC}")
-    print(f"  Agents:        {status['agents_registered']} registered, {status['agents_active']} active")
-    print(f"  Requests:      {status['total_requests']} total")
-    print(f"  Uptime:        {status['uptime']}")
+    async with HypervisorClient() as client:
+        # Check server health
+        agentic_health = await client.check_agentic_health()
+        agent_mgr_health = await client.check_agent_manager_health()
 
-    print(f"\n{Colors.BOLD}Components:{Colors.ENDC}")
-    print(f"  Audit Trail:     {Colors.GREEN}[OK]{Colors.ENDC}")
-    print(f"  Safety Guards:   {Colors.GREEN}[OK]{Colors.ENDC}")
-    print(f"  Thompson Sampler:{Colors.GREEN}[OK]{Colors.ENDC}")
-    print(f"  Circuit Breaker: {Colors.GREEN}[OK]{Colors.ENDC}")
+        # Determine overall status
+        agentic_ok = agentic_health.get("status") == "ok"
+        agent_mgr_ok = agent_mgr_health.get("status") == "healthy"
 
-    print(f"\n{Colors.DIM}Note: Full status requires running hypervisor server{Colors.ENDC}")
+        if agentic_ok or agent_mgr_ok:
+            print(f"  Hypervisor:    {Colors.GREEN}running{Colors.ENDC}")
+        else:
+            print(f"  Hypervisor:    {Colors.YELLOW}offline{Colors.ENDC}")
+            print(f"\n{Colors.DIM}Start servers with:{Colors.ENDC}")
+            print(f"  uvicorn HoloLoom.server.agentic_api:app --port 8000")
+            print(f"  uvicorn HoloLoom.server.agent_manager_api:app --port 8002")
+            return
+
+        # Get detailed stats from Agent Manager
+        if agent_mgr_ok:
+            threads = await client.list_threads(limit=100)
+            active = threads.get("active", 0)
+            completed = threads.get("completed", 0)
+            total = threads.get("total", 0)
+            uptime = agent_mgr_health.get("uptime_seconds", 0)
+            uptime_str = f"{int(uptime // 3600)}h {int((uptime % 3600) // 60)}m"
+
+            print(f"  Active Threads:{active}")
+            print(f"  Completed:     {completed}")
+            print(f"  Total:         {total}")
+            print(f"  Uptime:        {uptime_str}")
+        else:
+            print(f"  Agent Manager: {Colors.YELLOW}offline{Colors.ENDC} (port 8002)")
+
+        # Get stats from Agentic API
+        if agentic_ok:
+            stats = await client.get_stats()
+            print(f"\n{Colors.BOLD}Agentic API (port 8000):{Colors.ENDC}")
+            print(f"  Total Queries: {stats.get('total_queries', 0)}")
+            print(f"  Cache Hits:    {stats.get('cache_hits', 0)}")
+            if stats.get('avg_latency_ms'):
+                print(f"  Avg Latency:   {stats.get('avg_latency_ms', 0):.1f}ms")
+        else:
+            print(f"\n  Agentic API:   {Colors.YELLOW}offline{Colors.ENDC} (port 8000)")
+
+        print(f"\n{Colors.BOLD}Components:{Colors.ENDC}")
+        print(f"  Audit Trail:     {Colors.GREEN}[OK]{Colors.ENDC}")
+        print(f"  Safety Guards:   {Colors.GREEN}[OK]{Colors.ENDC}")
+        print(f"  Thompson Sampler:{Colors.GREEN}[OK]{Colors.ENDC}")
+        print(f"  Circuit Breaker: {Colors.GREEN}[OK]{Colors.ENDC}")
 
 
 async def cmd_agent_logs(args):
@@ -216,9 +396,50 @@ async def cmd_agent_logs(args):
     print(f"\n{Colors.BOLD}Audit Trail Logs{Colors.ENDC}")
     print(f"{Colors.DIM}(Last {args.limit} entries){Colors.ENDC}\n")
 
-    # Simulated logs (would query actual audit trail in production)
-    print(f"  {Colors.DIM}No logs available - start the hypervisor server first{Colors.ENDC}")
-    print(f"\n  Run: uvicorn HoloLoom.server.agentic_api:app --port 8000")
+    if not HTTPX_AVAILABLE:
+        print_warning("httpx not installed. Install with: pip install httpx")
+        return
+
+    async with HypervisorClient() as client:
+        # Check if server is available
+        health = await client.check_agentic_health()
+        if health.get("status") != "ok":
+            print(f"  {Colors.YELLOW}Agentic API offline{Colors.ENDC}")
+            print(f"\n  Start with: uvicorn HoloLoom.server.agentic_api:app --port 8000")
+            return
+
+        # Get audit trail
+        result = await client.get_audit_trail(limit=args.limit)
+
+        if "error" in result:
+            print_error(result["error"])
+            return
+
+        entries = result.get("entries", [])
+        if not entries:
+            print(f"  {Colors.DIM}No audit trail entries yet{Colors.ENDC}")
+            return
+
+        # Display entries
+        for entry in entries:
+            timestamp = entry.get("timestamp", "")
+            event_type = entry.get("type", "unknown")
+            details = entry.get("details", {})
+
+            # Color code by event type
+            if event_type == "TOOL_SELECTION":
+                color = Colors.CYAN
+            elif event_type == "SAFETY_CHECK":
+                color = Colors.YELLOW
+            elif event_type == "ERROR":
+                color = Colors.RED
+            else:
+                color = Colors.DIM
+
+            print(f"  {Colors.DIM}{timestamp}{Colors.ENDC} {color}[{event_type}]{Colors.ENDC}")
+            if details:
+                for key, value in list(details.items())[:3]:
+                    print(f"    {key}: {value}")
 
 
 # ============================================================================
@@ -229,20 +450,78 @@ async def cmd_cluster_status(args):
     """Show cluster status (federation, distributed workers)."""
     print(f"\n{Colors.BOLD}Cluster Status{Colors.ENDC}\n")
 
-    print(f"  Mode:          Standalone (no cluster)")
-    print(f"  Federation:    {Colors.YELLOW}Not configured{Colors.ENDC}")
-    print(f"  Eggroll:       {Colors.YELLOW}Not running{Colors.ENDC}")
+    if not HTTPX_AVAILABLE:
+        print_warning("httpx not installed. Install with: pip install httpx")
+        return
 
-    print(f"\n{Colors.DIM}To enable distributed mode:{Colors.ENDC}")
-    print(f"  1. Configure federation in config.yaml")
-    print(f"  2. Start eggroll workers: hololoom cluster start-workers")
-    print(f"  3. Join federation: hololoom cluster join <peer-address>")
+    async with HypervisorClient() as client:
+        cluster = await client.get_cluster_status()
+
+        if cluster.get("status") == "unavailable":
+            print(f"  Mode:          {Colors.YELLOW}Standalone (no cluster){Colors.ENDC}")
+            print(f"  Federation:    {Colors.YELLOW}Not configured{Colors.ENDC}")
+            print(f"  Eggroll:       {Colors.YELLOW}Not running{Colors.ENDC}")
+
+            print(f"\n{Colors.DIM}Start Agent Manager server:{Colors.ENDC}")
+            print(f"  uvicorn HoloLoom.server.agent_manager_api:app --port 8002")
+
+            print(f"\n{Colors.DIM}To enable distributed mode:{Colors.ENDC}")
+            print(f"  1. Configure federation in config.yaml")
+            print(f"  2. Start eggroll workers: hololoom cluster start-workers")
+            print(f"  3. Join federation: hololoom cluster join <peer-address>")
+            return
+
+        # Cluster is running
+        print(f"  Status:        {Colors.GREEN}{cluster.get('status')}{Colors.ENDC}")
+        print(f"  Nodes:         {cluster.get('nodes', 1)}")
+        print(f"  Active Threads:{cluster.get('active_threads', 0)}")
+        print(f"  Active Swarms: {cluster.get('active_swarms', 0)}")
+
+        uptime = cluster.get("uptime_seconds", 0)
+        if uptime > 0:
+            uptime_str = f"{int(uptime // 3600)}h {int((uptime % 3600) // 60)}m"
+            print(f"  Uptime:        {uptime_str}")
 
 
 async def cmd_cluster_nodes(args):
     """List cluster nodes."""
     print(f"\n{Colors.BOLD}Cluster Nodes{Colors.ENDC}\n")
-    print(f"  {Colors.DIM}No cluster nodes - running in standalone mode{Colors.ENDC}")
+
+    if not HTTPX_AVAILABLE:
+        print_warning("httpx not installed. Install with: pip install httpx")
+        return
+
+    async with HypervisorClient() as client:
+        nodes = await client.get_cluster_nodes()
+
+        if not nodes:
+            print(f"  {Colors.DIM}No cluster nodes - running in standalone mode{Colors.ENDC}")
+            print(f"\n  Start Agent Manager: uvicorn HoloLoom.server.agent_manager_api:app --port 8002")
+            return
+
+        # Display nodes
+        for i, node in enumerate(nodes, 1):
+            node_id = node.get("id", f"node-{i}")
+            address = node.get("address", "unknown")
+            status = node.get("status", "unknown")
+            active_threads = node.get("active_threads", 0)
+            uptime = node.get("uptime_seconds", 0)
+
+            if status == "healthy":
+                status_color = Colors.GREEN
+            elif status == "degraded":
+                status_color = Colors.YELLOW
+            else:
+                status_color = Colors.RED
+
+            print(f"  {Colors.CYAN}{node_id}{Colors.ENDC}")
+            print(f"    Address: {address}")
+            print(f"    Status:  {status_color}{status}{Colors.ENDC}")
+            print(f"    Threads: {active_threads} active")
+            if uptime > 0:
+                uptime_str = f"{int(uptime // 3600)}h {int((uptime % 3600) // 60)}m"
+                print(f"    Uptime:  {uptime_str}")
+            print()
 
 
 # ============================================================================
