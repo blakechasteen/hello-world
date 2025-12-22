@@ -199,16 +199,22 @@ Real-world savings from Week 1 implementation:
 
 ---
 
-## Repository Statistics (Updated 2025-11-17)
+## Repository Statistics (Updated 2025-12-22)
 
 **Current State:**
-- **Total Python Files**: 924 in HoloLoom package
+- **Total Python Files**: 924+ in HoloLoom package
 - **Subdirectories**: 67 major components
-- **Lines of Code**: ~150,000+ across all systems
-- **Test Coverage**: ~85% (450+ test assertions)
+- **Lines of Code**: ~165,000+ across all systems
+- **Test Coverage**: ~85% (500+ test assertions)
 - **Status**: Production-ready v1.0
 
-**Recent Major Additions (November 2025):**
+**Recent Major Additions (December 2025):**
+- ✅ Dark Trace Phases 9-10 complete (~15,000 lines, 47 tests)
+- ✅ Multi-model interpretability support (ModelAdapter protocol)
+- ✅ Cross-model fingerprinting (universal/model-specific features)
+- ✅ Orchestrator integration with steering capabilities
+
+**Previous Additions (November 2025):**
 - ✅ Trough & xTerminator QA system (21,544 lines)
 - ✅ Elle AR guide architecture (2,059 lines)
 - ✅ Departments multi-department system (22 files)
@@ -225,6 +231,7 @@ Real-world savings from Week 1 implementation:
 - Unified policy engine with Thompson Sampling exploration
 - PPO reinforcement learning for agent training
 - 47 input adapters ("SpinningWheel") for processing diverse modalities: audio, video, web, code, documents, and more
+- **Dark Trace interpretability** (SAE decomposition, multi-model support, steering)
 - **Production QA system** (Trough & xTerminator) for code quality assurance
 - **AR guide system** (Elle) for context-aware assistance
 - **Multi-department architecture** for enterprise integration
@@ -8252,6 +8259,263 @@ pytest HoloLoom/alignment/tests/ -v
 pytest HoloLoom/alignment/tests/test_performance.py -v
 ```
 
+## Dark Trace: Interpretability & Responsibility Suite (December 2025)
+
+**Status**: ✅ Production Ready (Phases 1-10 Complete)
+**Location**: `HoloLoom/dark_trace/`
+**Total Code**: ~15,000+ lines across 10 phases
+**Test Coverage**: 47 tests passing (100%)
+
+Dark Trace is HoloLoom's comprehensive interpretability system providing sparse autoencoder (SAE) decomposition, semantic axes projection, causal validation, and safety monitoring capabilities.
+
+### Philosophy
+
+> **"We take responsibility for understanding what our systems learn."**
+
+Dark Trace implements the research foundations from:
+- Anthropic's "Towards Monosemanticity" (2023) and "Scaling Monosemanticity" (2024)
+- ACDC circuit discovery (NeurIPS 2023)
+- Activation patching and causal tracing
+
+### Quick Start
+
+```python
+from HoloLoom.dark_trace import DarkTraceEngine, TraceConfig, create_engine
+
+# Create engine with standard preset
+config = TraceConfig.standard(input_dim=384)
+engine = create_engine(config)
+
+# Analyze activations
+result = engine.analyze(activations)
+print(result.explanation)
+
+# Steer toward goals
+steering = engine.steer({
+    "semantic.Warmth": 0.8,
+    "semantic.Formality": -0.5
+})
+steered = activations + steering.vector
+```
+
+### Core Components
+
+**Protocol Layer** - Unified interpretability interface:
+- `TraceLens` - Abstract lens for feature extraction
+- `CausalValidator` - Ablation, injection, patching
+- `Feature`, `FeatureActivation`, `SteeringVector` - Data structures
+
+**SAE Layer** - Sparse autoencoder decomposition:
+- `SparseAutoEncoder` - TopK activation, L1 sparsity
+- `DarkSaeTrainer` - Training with checkpointing
+- Feature dictionary management
+
+**Registry Layer** - Unified feature namespace:
+- `FeatureRegistry` - SAE ↔ Semantic correlation tracking
+- `create_sae_features()`, `create_semantic_features()`
+
+**Configuration Layer** - Presets and settings:
+- `TraceConfig.minimal()` - Fast, low overhead
+- `TraceConfig.standard()` - Balanced (default)
+- `TraceConfig.research()` - Full analysis
+
+### Phase 9: Multi-Model Support (December 2025)
+
+Unified adapter protocol for interpretability across any model type.
+
+**Model Adapters**:
+```python
+from HoloLoom.dark_trace.models import (
+    ModelAdapter,
+    PolicyAdapter,
+    TransformerAdapter,
+    DummyAdapter,
+)
+
+# Wrap HoloLoom policy
+adapter = PolicyAdapter(policy_network)
+activations = adapter.get_activations(inputs, layer="block.5.mha")
+
+# Apply steering
+adapter.inject_steering(steering_vector, layer="readout", scale=0.5)
+```
+
+**Cross-Model Fingerprinting**:
+```python
+from HoloLoom.dark_trace.models import (
+    ModelFingerprinter,
+    compare_fingerprints,
+    find_universal_features,
+    find_model_specific_features,
+)
+
+# Generate fingerprints
+fingerprinter1 = ModelFingerprinter(adapter1, model_id="policy_v1")
+fingerprinter2 = ModelFingerprinter(adapter2, model_id="policy_v2")
+
+fp1 = fingerprinter1.fingerprint_layer("block.5", probe_inputs)
+fp2 = fingerprinter2.fingerprint_layer("block.5", probe_inputs)
+
+# Compare models
+comparison = compare_fingerprints(fp1, fp2)
+print(f"Similarity: {comparison.overall_similarity:.2f}")
+
+# Find universal features (appear across all models, similarity ≥ 0.8)
+universal = find_universal_features({"v1": fp1, "v2": fp2}, threshold=0.8)
+
+# Find model-specific features (unique to each model, similarity ≤ 0.3)
+specific = find_model_specific_features({"v1": fp1, "v2": fp2}, threshold=0.3)
+```
+
+**Available Adapters**:
+| Adapter | Purpose | Lines |
+|---------|---------|-------|
+| `PolicyAdapter` | HoloLoom NeuralCore | ~585 |
+| `TransformerAdapter` | HuggingFace models | ~450 |
+| `DummyAdapter` | Testing/development | ~200 |
+
+### Phase 10: Orchestrator Integration (December 2025)
+
+Seamless integration with HoloLoom's weaving orchestrator.
+
+**Integration Modes**:
+| Mode | Analysis | Steering | Safety Override |
+|------|----------|----------|-----------------|
+| **DISABLED** | ❌ | ❌ | ❌ |
+| **PASSIVE** | ✅ | ❌ | ❌ |
+| **ACTIVE** | ✅ | ✅ | ❌ |
+| **FULL** | ✅ | ✅ | ✅ |
+
+**Quick Integration**:
+```python
+from HoloLoom.integrations import (
+    DarkTraceIntegration,
+    IntegrationConfig,
+    IntegrationMode,
+    create_integration,
+    enable_dark_trace,
+    with_interpretability,
+)
+
+# Create integration with preset
+config = IntegrationConfig.passive()  # or .active() or .full()
+integration = create_integration(orchestrator, config)
+
+# Or use shorthand
+integration = enable_dark_trace(orchestrator, mode=IntegrationMode.PASSIVE)
+
+# Weave with interpretability
+spacetime = await orchestrator.weave(query)
+
+# Access interpretability results
+trace = integration.get_last_trace()
+print(trace.explanation)
+```
+
+**Steering Example**:
+```python
+# Enable steering mode
+config = IntegrationConfig.active()
+integration = create_integration(orchestrator, config)
+
+# Set steering goals
+result = integration.set_steering({
+    "semantic.Warmth": 1.5,      # Increase warmth
+    "semantic.Formality": -0.5,  # Decrease formality
+    "sae.42": 0.8,               # Activate SAE feature 42
+})
+
+print(f"Applied: {result.features_applied}")
+print(f"Blocked: {result.features_blocked}")
+```
+
+**Decorator Usage**:
+```python
+from HoloLoom.integrations import with_interpretability, IntegrationMode
+
+class MyOrchestrator:
+    @with_interpretability(mode=IntegrationMode.ACTIVE)
+    async def weave(self, query):
+        # Regular weave implementation
+        ...
+
+# Returns IntegrationResult with spacetime + trace
+result = await orchestrator.weave(query)
+print(result.spacetime)  # Original result
+print(result.trace)      # Interpretability trace
+```
+
+### Safety Monitoring
+
+Configure safety-aware behavior:
+```python
+config = IntegrationConfig(
+    mode=IntegrationMode.ACTIVE,
+    safety_monitoring=True,
+    block_on_safety_concern=True,
+)
+
+integration = create_integration(orchestrator, config)
+
+# Weave (may be blocked if safety concerns)
+result = await integration.wrap_weave(orchestrator.weave, query)
+if result.safety_blocked:
+    print("⚠️  Weave blocked due to safety concern")
+    print(result.trace.safety_summary)
+```
+
+### Key Files
+
+**Core** (~8,000 lines):
+- `protocol.py` - Unified interpretability interface
+- `result.py` - Analysis output structures
+- `registry.py` - Feature namespace management
+- `trace_config.py` - Configuration presets
+- `engine.py` - Main DarkTraceEngine
+
+**SAE** (~2,500 lines):
+- `sae/sparse_autoencoder.py` - Core SAE implementation
+- `sae/trainer.py` - Training with L1 sparsity
+- `sae/lens.py` - SAE lens for engine
+
+**Models** (~2,000 lines):
+- `models/adapter.py` - ModelAdapter protocol
+- `models/policy_adapter.py` - HoloLoom policy
+- `models/transformer_adapter.py` - HuggingFace
+- `models/fingerprint.py` - Cross-model comparison
+
+**Integration** (~1,500 lines):
+- `integration/` - Orchestrator, alignment, monitoring
+- `integrations/dark_trace_integration.py` - Phase 10 API
+
+### Running Tests
+
+```bash
+# All Dark Trace tests
+pytest HoloLoom/dark_trace/tests/ -v
+
+# Integration tests specifically
+pytest HoloLoom/dark_trace/tests/test_dark_trace_integration.py -v
+# Result: 47 passed
+```
+
+### Development Roadmap
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| Phase 1-6 | ✅ Complete | Foundation, observation, analysis, control, exploitation, datasets |
+| Phase 7 | ✅ Complete | SAE (Sparse Autoencoder) |
+| Phase 8 | ✅ Complete | Multilayer circuits |
+| Phase 9 | ✅ Complete | Multi-model support |
+| Phase 10 | ✅ Complete | Orchestrator integration |
+| Phase 11 | 🔜 Planned | Plugin ecosystem |
+
+### Documentation
+
+- **[README.md](HoloLoom/dark_trace/README.md)** - Complete system documentation (1,300+ lines)
+- **API Reference** - See `__init__.py` exports (91 public symbols)
+- **Examples** - Integration examples in README Phase 9-10 sections
+
 ## Agentic Reasoning System
 
 **Status**: ✅ Complete (November 2025)
@@ -9142,7 +9406,7 @@ These features were uncovered through:
 21. ✅ **DataPig Quality**: [README.md](HoloLoom/datapig/README.md) - Data quality assurance
 22. ✅ **Shuttle v2**: [README.md](HoloLoom/shuttle/README.md) - Enhanced transport layer
 23. ✅ **Tapestry VCS**: [README.md](HoloLoom/tapestry/README.md) - Session continuity, thread management
-24. ✅ **Dark Trace SAE**: [README.md](HoloLoom/dark_trace/README.md) - Sparse Autoencoder interpretability
+24. ✅ **Dark Trace (Phases 1-10)**: [README.md](HoloLoom/dark_trace/README.md) - Complete interpretability suite with SAE, multi-model support, orchestrator integration
 
 **Memory Systems** (previously documented):
 - ✅ **Spring Dynamics**: [SPRING_DYNAMICS.md](HoloLoom/memory/SPRING_DYNAMICS.md) - Physics-based spreading activation

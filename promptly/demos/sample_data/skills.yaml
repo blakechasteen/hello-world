@@ -1,0 +1,385 @@
+# Sample Skills for Promptly Demo
+# Skills are reusable prompt templates with defined inputs/outputs
+
+skills:
+  # Code Documentation
+  - name: code-documenter
+    description: Automatically generate documentation for code
+    template: |
+      Generate comprehensive documentation for this {{language}} code.
+
+      Code:
+      ```{{language}}
+      {{code}}
+      ```
+
+      Documentation should include:
+      1. Overview - What the code does
+      2. Parameters/Arguments - Input descriptions
+      3. Return Value - Output description
+      4. Examples - Usage examples
+      5. Notes - Any important caveats or considerations
+
+      Use {{doc_format}} format for the documentation.
+    inputs:
+      language:
+        description: Programming language
+        type: string
+        required: true
+        examples:
+          - Python
+          - JavaScript
+          - TypeScript
+      code:
+        description: Code to document
+        type: string
+        required: true
+      doc_format:
+        description: Documentation format
+        type: string
+        required: false
+        default: markdown
+        examples:
+          - markdown
+          - rst
+          - jsdoc
+    outputs:
+      documentation:
+        description: Generated documentation
+        type: string
+    tags:
+      - code
+      - documentation
+      - developer-tools
+    metadata:
+      category: development
+      complexity: medium
+
+  # Test Generator
+  - name: test-generator
+    description: Generate unit tests for code
+    template: |
+      Generate {{test_framework}} unit tests for this {{language}} code.
+
+      Code to test:
+      ```{{language}}
+      {{code}}
+      ```
+
+      Requirements:
+      - Cover main functionality
+      - Include edge cases
+      - Test error handling
+      - Use descriptive test names
+      - Include setup/teardown if needed
+
+      Test coverage level: {{coverage_level}}
+    inputs:
+      language:
+        description: Programming language
+        type: string
+        required: true
+      code:
+        description: Code to test
+        type: string
+        required: true
+      test_framework:
+        description: Testing framework to use
+        type: string
+        required: false
+        default: pytest
+        examples:
+          - pytest
+          - jest
+          - mocha
+          - junit
+      coverage_level:
+        description: Desired test coverage
+        type: string
+        required: false
+        default: comprehensive
+        examples:
+          - basic
+          - comprehensive
+          - exhaustive
+    outputs:
+      tests:
+        description: Generated test code
+        type: string
+      test_count:
+        description: Number of tests generated
+        type: integer
+    tags:
+      - testing
+      - code
+      - quality
+    metadata:
+      category: development
+      complexity: high
+
+  # API Specification Generator
+  - name: api-spec-generator
+    description: Generate OpenAPI/Swagger specifications
+    template: |
+      Generate an OpenAPI 3.0 specification for the following API:
+
+      API Description:
+      {{api_description}}
+
+      Endpoints:
+      {{endpoints}}
+
+      Include:
+      - Proper HTTP methods
+      - Request/response schemas
+      - Error responses
+      - Authentication requirements: {{auth_type}}
+      - Example requests and responses
+
+      Output format: {{output_format}}
+    inputs:
+      api_description:
+        description: Description of the API
+        type: string
+        required: true
+      endpoints:
+        description: List of API endpoints
+        type: string
+        required: true
+      auth_type:
+        description: Authentication type
+        type: string
+        required: false
+        default: Bearer token
+        examples:
+          - Bearer token
+          - API key
+          - OAuth2
+          - None
+      output_format:
+        description: Output specification format
+        type: string
+        required: false
+        default: yaml
+        examples:
+          - yaml
+          - json
+    outputs:
+      specification:
+        description: Generated OpenAPI spec
+        type: string
+    tags:
+      - api
+      - documentation
+      - openapi
+    metadata:
+      category: development
+      complexity: high
+
+  # Meeting Summarizer
+  - name: meeting-summarizer
+    description: Summarize meeting notes into actionable format
+    template: |
+      Summarize the following meeting notes:
+
+      {{meeting_notes}}
+
+      Attendees: {{attendees}}
+      Meeting Date: {{date}}
+      Meeting Type: {{meeting_type}}
+
+      Please provide:
+      1. Executive Summary (2-3 sentences)
+      2. Key Decisions Made
+      3. Action Items (with owners and deadlines if mentioned)
+      4. Open Questions/Parking Lot Items
+      5. Next Steps
+    inputs:
+      meeting_notes:
+        description: Raw meeting notes
+        type: string
+        required: true
+      attendees:
+        description: List of attendees
+        type: string
+        required: false
+        default: Not specified
+      date:
+        description: Meeting date
+        type: string
+        required: false
+        default: Today
+      meeting_type:
+        description: Type of meeting
+        type: string
+        required: false
+        default: General
+        examples:
+          - Sprint Planning
+          - Retrospective
+          - Status Update
+          - Design Review
+    outputs:
+      summary:
+        description: Structured meeting summary
+        type: string
+      action_items:
+        description: List of action items
+        type: array
+    tags:
+      - meetings
+      - productivity
+      - summarization
+    metadata:
+      category: productivity
+      complexity: medium
+
+  # Email Composer
+  - name: email-composer
+    description: Compose professional emails
+    template: |
+      Compose a {{tone}} email for the following purpose:
+
+      Purpose: {{purpose}}
+      Recipient: {{recipient}}
+      Key Points:
+      {{key_points}}
+
+      Additional context:
+      {{context}}
+
+      Requirements:
+      - Keep it {{length}}
+      - Be professional and {{tone}}
+      - Include clear call-to-action if applicable
+      - Use appropriate greeting and closing
+    inputs:
+      purpose:
+        description: Purpose of the email
+        type: string
+        required: true
+      recipient:
+        description: Who the email is for
+        type: string
+        required: true
+      key_points:
+        description: Main points to cover
+        type: string
+        required: true
+      context:
+        description: Additional context
+        type: string
+        required: false
+        default: ""
+      tone:
+        description: Email tone
+        type: string
+        required: false
+        default: professional
+        examples:
+          - professional
+          - friendly
+          - formal
+          - urgent
+      length:
+        description: Desired email length
+        type: string
+        required: false
+        default: concise
+        examples:
+          - brief
+          - concise
+          - detailed
+    outputs:
+      email:
+        description: Composed email
+        type: string
+      subject:
+        description: Email subject line
+        type: string
+    tags:
+      - email
+      - communication
+      - writing
+    metadata:
+      category: productivity
+      complexity: easy
+
+  # Data Analyzer
+  - name: data-analyzer
+    description: Analyze datasets and provide insights
+    template: |
+      Analyze the following {{data_format}} data:
+
+      {{data}}
+
+      Analysis Type: {{analysis_type}}
+      Focus Areas: {{focus_areas}}
+
+      Please provide:
+      1. Data Summary
+         - Shape/size
+         - Data types
+         - Missing values
+
+      2. Statistical Analysis
+         - Key metrics
+         - Distributions
+         - Correlations (if applicable)
+
+      3. Insights
+         - Patterns identified
+         - Anomalies or outliers
+         - Trends
+
+      4. Recommendations
+         - Data quality improvements
+         - Further analysis suggestions
+         - Business implications
+    inputs:
+      data:
+        description: The data to analyze
+        type: string
+        required: true
+      data_format:
+        description: Format of the data
+        type: string
+        required: false
+        default: tabular
+        examples:
+          - tabular
+          - JSON
+          - time series
+          - categorical
+      analysis_type:
+        description: Type of analysis to perform
+        type: string
+        required: false
+        default: exploratory
+        examples:
+          - exploratory
+          - statistical
+          - trend
+          - comparative
+      focus_areas:
+        description: Specific areas to focus on
+        type: string
+        required: false
+        default: general overview
+    outputs:
+      analysis:
+        description: Complete analysis report
+        type: string
+      insights:
+        description: Key insights found
+        type: array
+      recommendations:
+        description: Suggested next steps
+        type: array
+    tags:
+      - data
+      - analysis
+      - insights
+    metadata:
+      category: data_analysis
+      complexity: high

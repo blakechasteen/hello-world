@@ -1,0 +1,182 @@
+# Legal Domain Template
+# Semantic axes for legal and compliance applications
+
+name: legal
+description: >
+  Semantic lens for legal and regulatory compliance domain.
+  Captures liability, compliance, precedent, and risk dimensions.
+version: "1.0"
+
+settings:
+  normalize_projections: true
+  default_embedding_dim: 384
+
+metadata:
+  author: Dark Trace
+  created_at: "2025-12-22"
+  tags:
+    - legal
+    - compliance
+    - regulatory
+    - contracts
+
+axes:
+  # Legal liability
+  - name: liability
+    description: >
+      Potential legal liability exposure.
+      Higher values indicate greater liability risk.
+    category: risk
+    importance: 1.0
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "potential breach of fiduciary duty"
+        - "negligence claim likely"
+        - "contractual violation evident"
+        - "regulatory non-compliance"
+      negative:
+        - "no liability exposure"
+        - "fully compliant with regulations"
+        - "proper disclaimers in place"
+        - "indemnification coverage"
+
+  # Regulatory compliance
+  - name: compliance
+    description: >
+      Level of regulatory compliance.
+      Higher values indicate better compliance.
+    category: regulatory
+    importance: 0.9
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "fully compliant with regulations"
+        - "meets all statutory requirements"
+        - "passed regulatory audit"
+        - "follows industry best practices"
+      negative:
+        - "regulatory violation identified"
+        - "non-compliant with standards"
+        - "failed compliance audit"
+        - "pending enforcement action"
+
+  # Legal precedent
+  - name: precedent_strength
+    description: >
+      Strength of supporting legal precedent.
+      Higher values indicate stronger precedent.
+    category: jurisprudence
+    importance: 0.8
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "established Supreme Court precedent"
+        - "consistent appellate decisions"
+        - "well-settled law"
+        - "binding authority in jurisdiction"
+      negative:
+        - "no controlling precedent"
+        - "conflicting circuit decisions"
+        - "novel legal question"
+        - "distinguished from prior cases"
+
+  # Contractual clarity
+  - name: contractual_clarity
+    description: >
+      Clarity of contractual terms and obligations.
+      Higher values indicate clearer terms.
+    category: contracts
+    importance: 0.7
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "unambiguous contract language"
+        - "clearly defined obligations"
+        - "specific performance criteria"
+        - "explicit terms and conditions"
+      negative:
+        - "ambiguous contract terms"
+        - "missing key provisions"
+        - "conflicting clauses"
+        - "subject to interpretation"
+
+  # Confidentiality sensitivity
+  - name: confidentiality
+    description: >
+      Sensitivity of confidential information.
+      Higher values indicate higher confidentiality.
+    category: privacy
+    importance: 0.9
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "attorney-client privileged"
+        - "trade secret information"
+        - "classified document"
+        - "personally identifiable information"
+      negative:
+        - "public record"
+        - "already disclosed"
+        - "general knowledge"
+        - "non-confidential"
+
+  # Litigation risk
+  - name: litigation_risk
+    description: >
+      Risk of litigation or legal dispute.
+      Higher values indicate higher risk.
+    category: risk
+    importance: 0.8
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "high probability of lawsuit"
+        - "pattern of similar claims"
+        - "clear damages available"
+        - "strong opposing party position"
+      negative:
+        - "low litigation risk"
+        - "statute of limitations expired"
+        - "no standing to sue"
+        - "waiver signed"
+
+  # Jurisdictional relevance
+  - name: jurisdictional_relevance
+    description: >
+      Relevance of jurisdictional considerations.
+      Higher values indicate more jurisdictional complexity.
+    category: jurisdiction
+    importance: 0.6
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "multi-jurisdictional issue"
+        - "international law considerations"
+        - "conflict of laws question"
+        - "federal-state interplay"
+      negative:
+        - "single jurisdiction"
+        - "clear governing law"
+        - "local matter only"
+        - "no jurisdictional issues"
+
+  # Ethical considerations
+  - name: ethical_sensitivity
+    description: >
+      Presence of ethical or professional responsibility issues.
+      Higher values indicate higher ethical sensitivity.
+    category: ethics
+    importance: 0.8
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "potential conflict of interest"
+        - "professional misconduct issue"
+        - "duty of loyalty concern"
+        - "candor to tribunal required"
+      negative:
+        - "no ethical issues"
+        - "proper disclosures made"
+        - "conflicts waived appropriately"
+        - "standard professional conduct"

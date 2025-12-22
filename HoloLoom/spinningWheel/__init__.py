@@ -35,7 +35,7 @@ from .chat_history import (
 from .modalities.audio import AudioSpinner
 from .modalities.code import CodeSpinner
 from .modalities.image import ImageSpinner
-from .modalities.text import TextSpinner
+from .modalities.text import TextSpinner, TextSpinnerConfig
 from .modalities.website import WebsiteSpinner
 from .modalities.youtube import YouTubeSpinner
 
@@ -97,6 +97,7 @@ __all__ = [
     'CodeSpinner',
     'ImageSpinner',
     'TextSpinner',
+    'TextSpinnerConfig',
     'WebsiteSpinner',
     'YouTubeSpinner',
     'GitSpinner',

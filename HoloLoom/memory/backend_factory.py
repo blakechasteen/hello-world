@@ -130,7 +130,7 @@ class HybridMemoryStore:
             return None
 
         request = ActionRequest(
-            action=action,
+            action_id=action,
             category=category,
             context=context,
             user_id=user_id,
@@ -732,7 +732,7 @@ class GuardrailedMemoryStore:
             return None
 
         request = ActionRequest(
-            action=action,
+            action_id=action,
             category=category,
             context=context,
             user_id=user_id,

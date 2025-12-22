@@ -252,6 +252,16 @@ class UnifiedMemory:
                 pass
 
         return memory_id
+
+    async def store_batch(self, memories: List[Any]) -> List[str]:
+        """Store multiple memories (Async)."""
+        ids = []
+        for memory in memories:
+            text = getattr(memory, 'text', str(memory))
+            metadata = getattr(memory, 'metadata', {})
+            memo_id = await self.store(text=text, metadata=metadata)
+            ids.append(memo_id)
+        return ids
     
     async def recall(
         self,

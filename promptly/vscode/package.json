@@ -1,0 +1,325 @@
+{
+  "name": "promptly-vscode",
+  "displayName": "Promptly",
+  "description": "Personal prompt management with git-like versioning",
+  "version": "1.0.0",
+  "publisher": "promptly",
+  "icon": "resources/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Snippets",
+    "Other"
+  ],
+  "keywords": [
+    "prompts",
+    "AI",
+    "LLM",
+    "prompt management",
+    "versioning"
+  ],
+  "activationEvents": [
+    "onView:promptlyPrompts",
+    "onView:promptlySkills",
+    "onView:promptlyChains",
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "promptly.refresh",
+        "title": "Refresh All",
+        "category": "Promptly",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "promptly.addPrompt",
+        "title": "Add Prompt",
+        "category": "Promptly",
+        "icon": "$(add)"
+      },
+      {
+        "command": "promptly.getPrompt",
+        "title": "Get Prompt",
+        "category": "Promptly",
+        "icon": "$(file)"
+      },
+      {
+        "command": "promptly.editPrompt",
+        "title": "Edit Prompt",
+        "category": "Promptly",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "promptly.deletePrompt",
+        "title": "Delete Prompt",
+        "category": "Promptly",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "promptly.insertPrompt",
+        "title": "Insert Prompt at Cursor",
+        "category": "Promptly",
+        "icon": "$(insert)"
+      },
+      {
+        "command": "promptly.executePrompt",
+        "title": "Execute Prompt",
+        "category": "Promptly",
+        "icon": "$(play)"
+      },
+      {
+        "command": "promptly.createBranch",
+        "title": "Create Branch",
+        "category": "Promptly",
+        "icon": "$(git-branch)"
+      },
+      {
+        "command": "promptly.checkoutBranch",
+        "title": "Checkout Branch",
+        "category": "Promptly",
+        "icon": "$(git-checkout)"
+      },
+      {
+        "command": "promptly.showHistory",
+        "title": "Show Prompt History",
+        "category": "Promptly",
+        "icon": "$(history)"
+      },
+      {
+        "command": "promptly.createChain",
+        "title": "Create Chain",
+        "category": "Promptly",
+        "icon": "$(link)"
+      },
+      {
+        "command": "promptly.runChain",
+        "title": "Run Chain",
+        "category": "Promptly",
+        "icon": "$(play-circle)"
+      },
+      {
+        "command": "promptly.createSkill",
+        "title": "Create Skill",
+        "category": "Promptly",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "promptly.runSkill",
+        "title": "Run Skill",
+        "category": "Promptly",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "promptly.evalPrompt",
+        "title": "Evaluate Prompt",
+        "category": "Promptly",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "promptly.exportPrompt",
+        "title": "Export Prompt",
+        "category": "Promptly",
+        "icon": "$(export)"
+      },
+      {
+        "command": "promptly.importPrompt",
+        "title": "Import Prompt",
+        "category": "Promptly",
+        "icon": "$(import)"
+      },
+      {
+        "command": "promptly.showInfo",
+        "title": "Show Promptly Info",
+        "category": "Promptly",
+        "icon": "$(info)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "promptly",
+          "title": "Promptly",
+          "icon": "$(note)"
+        }
+      ]
+    },
+    "views": {
+      "promptly": [
+        {
+          "id": "promptlyPrompts",
+          "name": "Prompts"
+        },
+        {
+          "id": "promptlyChains",
+          "name": "Chains"
+        },
+        {
+          "id": "promptlySkills",
+          "name": "Skills"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "promptlyPrompts",
+        "contents": "No prompts found in this project.\n[Add Prompt](command:promptly.addPrompt)\n[Import Prompt](command:promptly.importPrompt)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "promptly.refresh",
+          "when": "view =~ /promptly.*/",
+          "group": "navigation"
+        },
+        {
+          "command": "promptly.addPrompt",
+          "when": "view == promptlyPrompts",
+          "group": "navigation"
+        },
+        {
+          "command": "promptly.createChain",
+          "when": "view == promptlyChains",
+          "group": "navigation"
+        },
+        {
+          "command": "promptly.createSkill",
+          "when": "view == promptlySkills",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "promptly.insertPrompt",
+          "when": "view == promptlyPrompts",
+          "group": "inline"
+        },
+        {
+          "command": "promptly.executePrompt",
+          "when": "view == promptlyPrompts",
+          "group": "inline"
+        },
+        {
+          "command": "promptly.editPrompt",
+          "when": "view == promptlyPrompts",
+          "group": "1_edit"
+        },
+        {
+          "command": "promptly.showHistory",
+          "when": "view == promptlyPrompts",
+          "group": "1_edit"
+        },
+        {
+          "command": "promptly.evalPrompt",
+          "when": "view == promptlyPrompts",
+          "group": "2_eval"
+        },
+        {
+          "command": "promptly.exportPrompt",
+          "when": "view == promptlyPrompts",
+          "group": "3_export"
+        },
+        {
+          "command": "promptly.deletePrompt",
+          "when": "view == promptlyPrompts",
+          "group": "9_delete"
+        },
+        {
+          "command": "promptly.runChain",
+          "when": "view == promptlyChains",
+          "group": "inline"
+        },
+        {
+          "command": "promptly.runSkill",
+          "when": "view == promptlySkills",
+          "group": "inline"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "promptly.insertPrompt",
+          "group": "promptly",
+          "when": "editorTextFocus"
+        }
+      ],
+      "commandPalette": [
+        { "command": "promptly.refresh" },
+        { "command": "promptly.addPrompt" },
+        { "command": "promptly.getPrompt" },
+        { "command": "promptly.insertPrompt" },
+        { "command": "promptly.executePrompt" },
+        { "command": "promptly.createBranch" },
+        { "command": "promptly.checkoutBranch" },
+        { "command": "promptly.showInfo" }
+      ]
+    },
+    "configuration": {
+      "title": "Promptly",
+      "properties": {
+        "promptly.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Path to Python executable"
+        },
+        "promptly.scope": {
+          "type": "string",
+          "enum": ["local", "global"],
+          "default": "local",
+          "description": "Default storage scope for new prompts"
+        },
+        "promptly.llmBackend": {
+          "type": "string",
+          "enum": ["auto", "ollama", "claude"],
+          "default": "auto",
+          "description": "LLM backend for execution (auto = Ollama first, then Claude)"
+        },
+        "promptly.ollamaModel": {
+          "type": "string",
+          "default": "llama3.2:3b",
+          "description": "Default Ollama model for execution"
+        },
+        "promptly.autoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-refresh prompts when files change"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "promptly.insertPrompt",
+        "key": "ctrl+shift+p ctrl+shift+i",
+        "mac": "cmd+shift+p cmd+shift+i",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "promptly.executePrompt",
+        "key": "ctrl+shift+p ctrl+shift+e",
+        "mac": "cmd+shift+p cmd+shift+e"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "ts-loader": "^9.5.1"
+  }
+}

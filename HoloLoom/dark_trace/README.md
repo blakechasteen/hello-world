@@ -1014,49 +1014,80 @@ See [`HoloLoom/darkTrace/plugins/DEVELOPMENT.md`](./plugins/DEVELOPMENT.md) for:
 
 ## Development Roadmap
 
-### Phase 1: Foundation (Current)
+### Phase 1: Foundation ✅ COMPLETE
 - [x] Architecture documentation
-- [ ] Core API design
-- [ ] Module structure
-- [ ] Base classes and interfaces
+- [x] Core API design
+- [x] Module structure
+- [x] Base classes and interfaces
 
-### Phase 2: Layer 1 - Observation
-- [ ] SemanticObserver implementation
-- [ ] TrajectoryRecorder implementation
-- [ ] DimensionTracker implementation
-- [ ] FlowAnalyzer integration
-- [ ] Real-time monitoring tests
+### Phase 2: Layer 1 - Observation ✅ COMPLETE
+- [x] SemanticObserver implementation
+- [x] TrajectoryRecorder implementation
+- [x] DimensionTracker implementation
+- [x] FlowAnalyzer integration
+- [x] Real-time monitoring tests
 
-### Phase 3: Layer 2 - Analysis
-- [ ] TrajectoryPredictor implementation
-- [ ] System identification integration
-- [ ] PatternRecognizer implementation
-- [ ] FingerprintGenerator implementation
-- [ ] AttractorDetector integration
-- [ ] Prediction validation tests
+### Phase 3: Layer 2 - Analysis ✅ COMPLETE
+- [x] TrajectoryPredictor implementation
+- [x] System identification integration
+- [x] PatternRecognizer implementation
+- [x] FingerprintGenerator implementation
+- [x] AttractorDetector integration
+- [x] Prediction validation tests
 
-### Phase 4: Layer 3 - Control
-- [ ] EmbeddingManipulator implementation (safety-first)
-- [ ] SemanticNudger integration
-- [ ] ControlVectorGenerator implementation
-- [ ] Safety checks implementation
-- [ ] Control validation tests
+### Phase 4: Layer 3 - Control ✅ COMPLETE
+- [x] EmbeddingManipulator implementation (safety-first)
+- [x] SemanticNudger integration
+- [x] ControlVectorGenerator implementation
+- [x] Safety checks implementation
+- [x] Control validation tests
 
-### Phase 5: Layer 4 - Exploitation
-- [ ] SafetyAnalyzer implementation (priority)
-- [ ] JailbreakDetector implementation
-- [ ] BehaviorCloner implementation (research)
-- [ ] Vulnerability testing framework
-- [ ] Ethical guidelines documentation
+### Phase 5: Layer 4 - Exploitation ✅ COMPLETE
+- [x] SafetyAnalyzer implementation (priority)
+- [x] JailbreakDetector implementation
+- [x] BehaviorCloner implementation (research)
+- [x] Vulnerability testing framework
+- [x] Ethical guidelines documentation
 
-### Phase 6: Datasets & Training
-- [ ] TrajectoryDataset implementation
-- [ ] LLM output collection tools
-- [ ] Training pipeline
-- [ ] Benchmark datasets
-- [ ] Model zoo (learned dynamics, fingerprints)
+### Phase 6: Datasets & Training ✅ COMPLETE
+- [x] TrajectoryDataset implementation
+- [x] LLM output collection tools
+- [x] Training pipeline
+- [x] Benchmark datasets
+- [x] Model zoo (learned dynamics, fingerprints)
 
-### Phase 7: Ecosystem
+### Phase 7: SAE (Sparse Autoencoder) ✅ COMPLETE
+- [x] SAE core implementation (encoder, decoder, TopK)
+- [x] Training loop with L1 sparsity
+- [x] Feature dictionary management
+- [x] Checkpoint save/load
+- [x] SAE lens for DarkTraceEngine
+
+### Phase 8: Multilayer Circuits ✅ COMPLETE
+- [x] CircuitNode and CircuitEdge types
+- [x] Circuit discovery via activation patching
+- [x] Circuit visualization
+- [x] Attribution tracking
+- [x] Causal tracing
+
+### Phase 9: Multi-Model Support ✅ COMPLETE (December 2025)
+- [x] **ModelAdapter protocol** - Unified interface for any model
+- [x] **PolicyAdapter** - HoloLoom NeuralCore integration (~585 lines)
+- [x] **TransformerAdapter** - HuggingFace transformer support
+- [x] **Cross-model fingerprinting** - Compare features across models (~807 lines)
+- [x] Universal feature detection (similarity ≥ 0.8)
+- [x] Model-specific feature detection (similarity ≤ 0.3)
+- [x] Feature correspondence mapping
+
+### Phase 10: Integration & Polish ✅ COMPLETE (December 2025)
+- [x] **HoloLoom orchestrator integration** (~827 lines)
+- [x] Automatic activation capture during weaving
+- [x] Real-time interpretability analysis
+- [x] Steering vector injection into policy decisions
+- [x] Safety-aware feature monitoring
+- [x] Complete documentation
+
+### Phase 11: Ecosystem
 - [ ] Plugin system implementation
 - [ ] Example plugins
 - [ ] Documentation site
@@ -1107,6 +1138,191 @@ Same as HoloLoom (MIT License)
 
 ---
 
-**Status**: 🟡 In Development (Phase 1: Foundation)
+## Phase 9: Multi-Model Support (December 2025)
 
-**Last Updated**: 2025-10-27
+Phase 9 adds support for interpretability across multiple model types through a unified adapter protocol.
+
+### Model Adapters
+
+**ModelAdapter Protocol** (`models/adapter.py`):
+```python
+from HoloLoom.dark_trace.models import ModelAdapter, LayerInfo, SteeringConfig
+
+class MyModelAdapter(ModelAdapter):
+    def get_activations(self, inputs, layer):
+        # Extract activations from layer
+        ...
+
+    def inject_steering(self, vector, layer, scale):
+        # Modify activations during forward pass
+        ...
+
+adapter = MyModelAdapter(model)
+acts = adapter.get_activations(inputs, "layer.5")
+```
+
+**Available Adapters**:
+- **PolicyAdapter** - HoloLoom's NeuralCore policy network
+- **TransformerAdapter** - HuggingFace transformer models
+- **DummyAdapter** - Testing and development
+
+### Cross-Model Fingerprinting
+
+Compare learned features across different model architectures:
+
+```python
+from HoloLoom.dark_trace.models import (
+    ModelFingerprinter,
+    compare_models,
+    find_universal_features,
+    find_model_specific_features,
+)
+
+# Create fingerprinters for each model
+fingerprinter1 = ModelFingerprinter(adapter1, model_id="claude")
+fingerprinter2 = ModelFingerprinter(adapter2, model_id="gpt4")
+
+# Generate fingerprints
+fp1 = fingerprinter1.fingerprint_layer("block.5.mha", probe_inputs)
+fp2 = fingerprinter2.fingerprint_layer("layers.5.attention", probe_inputs)
+
+# Compare models
+report = compare_models({"claude": fp1, "gpt4": fp2})
+print(f"Overall similarity: {report.overall_similarity:.2f}")
+print(f"Universal features: {len(report.universal_features)}")
+print(f"Model-specific: {report.model_specific_features}")
+
+# Find universal features (appear across all models)
+universal = find_universal_features(fingerprints_by_model, threshold=0.8)
+
+# Find model-specific features (unique to each model)
+specific = find_model_specific_features(fingerprints_by_model, threshold=0.3)
+```
+
+---
+
+## Phase 10: Orchestrator Integration (December 2025)
+
+Phase 10 provides seamless integration with HoloLoom's weaving orchestrator.
+
+### Quick Start
+
+```python
+from HoloLoom.integrations import (
+    DarkTraceIntegration,
+    IntegrationConfig,
+    IntegrationMode,
+    create_integration,
+    enable_dark_trace,
+)
+
+# Create integration
+config = IntegrationConfig.passive()  # or .active() or .full()
+integration = create_integration(orchestrator, config)
+
+# Or use the shorthand
+integration = enable_dark_trace(orchestrator, mode=IntegrationMode.PASSIVE)
+
+# Weave with interpretability
+spacetime = await orchestrator.weave(query)
+
+# Access interpretability results
+trace = integration.get_last_trace()
+print(trace.explain(verbosity=2))
+```
+
+### Integration Modes
+
+| Mode | Analysis | Steering | Safety Override |
+|------|----------|----------|-----------------|
+| **DISABLED** | ❌ | ❌ | ❌ |
+| **PASSIVE** | ✅ | ❌ | ❌ |
+| **ACTIVE** | ✅ | ✅ | ❌ |
+| **FULL** | ✅ | ✅ | ✅ |
+
+### Steering
+
+Apply steering vectors to influence policy decisions:
+
+```python
+# Enable steering
+integration = create_integration(
+    orchestrator,
+    config=IntegrationConfig.active()
+)
+
+# Set steering goals
+result = integration.set_steering({
+    "semantic.Warmth": 1.5,      # Increase warmth
+    "semantic.Formality": -0.5,  # Decrease formality
+    "sae.42": 0.8,               # Activate SAE feature 42
+})
+
+print(f"Applied: {result.features_applied}")
+print(f"Blocked: {result.features_blocked}")
+
+# Clear steering
+integration.clear_steering()
+```
+
+### Safety Monitoring
+
+Configure safety-aware behavior:
+
+```python
+config = IntegrationConfig(
+    mode=IntegrationMode.ACTIVE,
+    safety_monitoring=True,
+    block_on_safety_concern=True,  # Block weave if issues detected
+    safety_callback=my_safety_handler,  # Custom callback
+)
+
+integration = create_integration(orchestrator, config)
+
+# Weave (may be blocked if safety concerns)
+result = await integration.wrap_weave(orchestrator.weave, query)
+if result.safety_blocked:
+    print("⚠️  Weave blocked due to safety concern")
+    print(result.trace.safety_summary)
+```
+
+### Decorator Usage
+
+```python
+from HoloLoom.integrations import with_interpretability, IntegrationMode
+
+class MyOrchestrator:
+    @with_interpretability(mode=IntegrationMode.ACTIVE)
+    async def weave(self, query):
+        # Regular weave implementation
+        ...
+
+# Returns IntegrationResult with spacetime + trace
+result = await orchestrator.weave(query)
+print(result.spacetime)  # Original result
+print(result.trace)      # Interpretability trace
+```
+
+### Cross-Model Analysis
+
+Compare policy fingerprints across versions or models:
+
+```python
+# Generate fingerprint for current policy
+fp1 = integration.fingerprint_policy(
+    probe_inputs=probe_data,
+    model_id="policy_v1",
+    layers=["block.0.mha", "readout"]
+)
+
+# Later: compare with updated policy
+report = integration.compare_with_model(fp2, "policy_v2")
+print(f"Similarity: {report.overall_similarity:.2f}")
+print(f"Drift: {1 - report.overall_similarity:.2%}")
+```
+
+---
+
+**Status**: 🟢 Production Ready (Phase 10 Complete)
+
+**Last Updated**: 2025-12-22

@@ -1,0 +1,157 @@
+# Sample Chains for Promptly Demo
+# Chains are multi-step prompt workflows with variable flow
+
+chains:
+  # Research and Summarize Chain
+  - name: research-and-summarize
+    description: Research a topic thoroughly, then create a concise summary
+    steps:
+      - prompt: explain
+        inputs:
+          topic: "{{topic}}"
+          audience: "expert"
+        output_var: detailed_explanation
+
+      - prompt: summarize
+        inputs:
+          text: "{{detailed_explanation}}"
+          length: "3"
+        output_var: summary
+
+    final_output: summary
+    tags:
+      - research
+      - summarization
+    metadata:
+      estimated_time: "30s"
+      cost_tier: "medium"
+
+  # Code Review Pipeline
+  - name: code-review-pipeline
+    description: Comprehensive code review with explanation and improvement suggestions
+    steps:
+      - prompt: code-review
+        inputs:
+          language: "{{language}}"
+          code: "{{code}}"
+        output_var: review_results
+
+      - prompt: code-explain
+        inputs:
+          language: "{{language}}"
+          code: "{{code}}"
+          audience: "team members"
+        output_var: code_explanation
+
+      - prompt: summarize
+        inputs:
+          text: "Review:\n{{review_results}}\n\nExplanation:\n{{code_explanation}}"
+          length: "5"
+        output_var: final_summary
+
+    final_output: final_summary
+    tags:
+      - code
+      - review
+      - pipeline
+    metadata:
+      estimated_time: "60s"
+      cost_tier: "high"
+
+  # Translation with Verification
+  - name: translate-and-verify
+    description: Translate text and verify accuracy by back-translating
+    steps:
+      - prompt: translate
+        inputs:
+          source_language: "{{source_language}}"
+          target_language: "{{target_language}}"
+          text: "{{text}}"
+        output_var: translation
+
+      - prompt: translate
+        inputs:
+          source_language: "{{target_language}}"
+          target_language: "{{source_language}}"
+          text: "{{translation}}"
+        output_var: back_translation
+
+      - prompt: compare
+        inputs:
+          item_a: "{{text}}"
+          item_b: "{{back_translation}}"
+          criteria: "semantic meaning and accuracy"
+        output_var: verification
+
+    final_output: verification
+    tags:
+      - translation
+      - verification
+      - quality
+    metadata:
+      estimated_time: "45s"
+      cost_tier: "high"
+
+  # Content Creation Pipeline
+  - name: content-creation
+    description: Create structured content from topic to final draft
+    steps:
+      - prompt: outline-generator
+        inputs:
+          topic: "{{topic}}"
+          type: "{{content_type}}"
+          length: "{{target_length}}"
+        output_var: outline
+
+      - prompt: explain
+        inputs:
+          topic: "{{topic}}"
+          audience: "general readers"
+        output_var: background
+
+      - prompt: improve-writing
+        inputs:
+          text: "Based on outline:\n{{outline}}\n\nBackground:\n{{background}}"
+          goal: "clarity and engagement"
+        output_var: draft
+
+    final_output: draft
+    tags:
+      - content
+      - creation
+      - writing
+    metadata:
+      estimated_time: "90s"
+      cost_tier: "high"
+
+  # Learning Assessment
+  - name: learning-assessment
+    description: Explain a topic and create assessment questions
+    steps:
+      - prompt: explain
+        inputs:
+          topic: "{{topic}}"
+          audience: "{{skill_level}}"
+        output_var: lesson
+
+      - prompt: quiz-generator
+        inputs:
+          topic: "{{topic}}"
+          count: "{{question_count}}"
+          difficulty: "{{skill_level}}"
+        output_var: quiz
+
+      - prompt: summarize
+        inputs:
+          text: "{{lesson}}"
+          length: "2"
+        output_var: key_takeaways
+
+    final_output: quiz
+    tags:
+      - education
+      - assessment
+      - learning
+    metadata:
+      estimated_time: "60s"
+      cost_tier: "medium"

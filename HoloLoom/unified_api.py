@@ -51,6 +51,7 @@ try:
     from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
     from HoloLoom.fabric.spacetime import Spacetime
     from HoloLoom.convergence.engine import CollapseStrategy
+    from HoloLoom.protocols.types import Query
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run from repository root with PYTHONPATH set")
@@ -243,8 +244,8 @@ class HoloLoom:
 
         # Execute weaving cycle
         spacetime = await self.weaver.weave(
-            query=text,
-            user_pattern=pattern
+            query=Query(text=text),
+            pattern_override=pattern
         )
 
         # Store in memory if available
@@ -299,8 +300,8 @@ class HoloLoom:
         # TODO: Build conversation context from history
         # For now, just use weaver
         spacetime = await self.weaver.weave(
-            query=message,
-            user_pattern=pattern
+            query=Query(text=message),
+            pattern_override=pattern
         )
 
         # Record in conversation history
@@ -361,17 +362,23 @@ class HoloLoom:
             logger.error(f"Text ingestion failed: {e}")
             return 0
 
-    async def ingest_web(
+    async def recall(self, query: str, **kwargs) -> List[Any]:
+        """Alias for search() to match Workflow Builder terminology."""
+        return await self.search(query, **kwargs)
+
+    async def search(
         self,
-        url: str,
-        extract_images: bool = False,
-        max_depth: int = 0
-    ) -> int:
+        query: str,
+        limit: int = 10,
+        min_relevance: float = 0.5
+    ) -> List[Any]:
         """
-        Ingest webpage(s) into memory.
+        Search memories related to query.
 
         Args:
-            url: URL to scrape
+            query: Search query string
+            limit: Max results
+            min_relevance: Minimum relevance score
             extract_images: Extract images from page
             max_depth: Recursive crawl depth (0 = single page)
 

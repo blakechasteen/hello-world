@@ -1,0 +1,183 @@
+# Medical Domain Template
+# Semantic axes for healthcare and medical applications
+
+name: medical
+description: >
+  Semantic lens for medical and healthcare domain.
+  Captures clinical severity, urgency, diagnostic certainty,
+  and patient safety dimensions.
+version: "1.0"
+
+settings:
+  normalize_projections: true
+  default_embedding_dim: 384
+
+metadata:
+  author: Dark Trace
+  created_at: "2025-12-22"
+  tags:
+    - medical
+    - healthcare
+    - clinical
+    - safety-critical
+
+axes:
+  # Clinical severity
+  - name: severity
+    description: >
+      Medical severity level from mild to critical.
+      Higher values indicate more severe conditions.
+    category: clinical
+    importance: 1.0
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "critical condition requiring immediate intervention"
+        - "life-threatening emergency"
+        - "severe symptoms with rapid deterioration"
+        - "acute organ failure"
+      negative:
+        - "mild symptoms, self-limiting"
+        - "minor complaint, no intervention needed"
+        - "stable condition, routine follow-up"
+        - "benign finding, no treatment required"
+
+  # Treatment urgency
+  - name: urgency
+    description: >
+      Urgency of medical intervention needed.
+      Higher values indicate need for immediate action.
+    category: clinical
+    importance: 0.9
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "requires immediate emergency treatment"
+        - "code blue, resuscitation needed"
+        - "time-critical intervention required"
+        - "cannot wait, deteriorating rapidly"
+      negative:
+        - "can be scheduled electively"
+        - "routine appointment sufficient"
+        - "non-urgent, monitor and reassess"
+        - "watchful waiting appropriate"
+
+  # Patient risk level
+  - name: patient_risk
+    description: >
+      Overall risk to patient health and outcomes.
+      Higher values indicate higher risk.
+    category: safety
+    importance: 1.0
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "high risk of mortality"
+        - "significant complication risk"
+        - "immunocompromised patient"
+        - "multiple comorbidities present"
+      negative:
+        - "low risk, healthy patient"
+        - "minimal complication risk"
+        - "otherwise healthy individual"
+        - "good prognosis expected"
+
+  # Diagnostic certainty
+  - name: diagnostic_certainty
+    description: >
+      Confidence in diagnosis or clinical assessment.
+      Higher values indicate greater certainty.
+    category: diagnostic
+    importance: 0.8
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "confirmed diagnosis with pathology"
+        - "definitive findings on imaging"
+        - "classic presentation, textbook case"
+        - "laboratory confirmed"
+      negative:
+        - "differential diagnosis unclear"
+        - "atypical presentation"
+        - "awaiting further workup"
+        - "inconclusive test results"
+
+  # Evidence quality
+  - name: evidence_quality
+    description: >
+      Quality of clinical evidence supporting recommendations.
+      Higher values indicate stronger evidence.
+    category: evidence
+    importance: 0.7
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "supported by randomized controlled trials"
+        - "level 1 evidence, meta-analysis"
+        - "established clinical guidelines"
+        - "peer-reviewed systematic review"
+      negative:
+        - "expert opinion only"
+        - "case report level evidence"
+        - "off-label use, limited data"
+        - "anecdotal evidence"
+
+  # Intervention complexity
+  - name: intervention_complexity
+    description: >
+      Complexity of required medical intervention.
+      Higher values indicate more complex procedures.
+    category: treatment
+    importance: 0.6
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "complex surgical procedure"
+        - "multi-disciplinary treatment required"
+        - "specialized equipment needed"
+        - "ICU-level care required"
+      negative:
+        - "simple outpatient treatment"
+        - "over-the-counter medication"
+        - "basic first aid"
+        - "lifestyle modification only"
+
+  # Medication sensitivity
+  - name: medication_sensitivity
+    description: >
+      Sensitivity around medication recommendations.
+      Higher values indicate higher caution needed.
+    category: pharmacology
+    importance: 0.8
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "controlled substance prescription"
+        - "narrow therapeutic index drug"
+        - "known drug interactions"
+        - "pregnancy contraindication"
+      negative:
+        - "over-the-counter medication"
+        - "well-tolerated treatment"
+        - "wide safety margin"
+        - "no significant interactions"
+
+  # Information completeness
+  - name: information_completeness
+    description: >
+      Completeness of available clinical information.
+      Higher values indicate more complete picture.
+    category: documentation
+    importance: 0.5
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "comprehensive medical history available"
+        - "complete imaging and lab workup"
+        - "detailed symptom documentation"
+        - "full medication list reviewed"
+      negative:
+        - "limited history available"
+        - "incomplete records"
+        - "unable to verify medications"
+        - "poor historian, unreliable information"

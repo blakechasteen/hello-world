@@ -1,0 +1,165 @@
+# HoloLoom Quick Reference Card
+# Source file - edit this YAML, regenerate markdown
+#
+# Regenerate: python scripts/generate_quick_ref.py
+# Created: 2025-12-15
+
+metadata:
+  title: "HoloLoom Quick Reference"
+  version: "1.0"
+  tagline: "Kubernetes for AI Agents"
+  last_updated: "2025-12-15"
+
+identity:
+  positioning: "AI Agent Infrastructure"
+  three_pillars:
+    - name: "Amplifier"
+      desc: "100x cache speedup, 40-90% token savings"
+    - name: "Governance"
+      desc: "Audit trails, budgets, safety guardrails"
+    - name: "Memory"
+      desc: "Persistent state that compounds over time"
+
+cli_commands:
+  query:
+    - cmd: "hololoom query \"What is X?\""
+      desc: "Simple query (FAST mode)"
+    - cmd: "hololoom query --mode research \"Compare X and Y\""
+      desc: "Deep research mode"
+    - cmd: "hololoom query --mode verify \"Claim to verify\""
+      desc: "Verify a claim"
+
+  agent:
+    - cmd: "hololoom agent list"
+      desc: "List available agents"
+    - cmd: "hololoom agent run --workflow research \"Topic\""
+      desc: "Run research workflow"
+    - cmd: "hololoom agent status"
+      desc: "Check agent status"
+    - cmd: "hololoom agent logs --limit 10"
+      desc: "View recent logs"
+
+  cluster:
+    - cmd: "hololoom cluster status"
+      desc: "Cluster health"
+    - cmd: "hololoom cluster nodes"
+      desc: "List cluster nodes"
+
+modes:
+  - name: "BARE"
+    latency: "<50ms"
+    use_case: "Simple lookups"
+  - name: "FAST"
+    latency: "<150ms"
+    use_case: "Standard queries"
+  - name: "FUSED"
+    latency: "<300ms"
+    use_case: "Complex reasoning"
+  - name: "RESEARCH"
+    latency: "No limit"
+    use_case: "Deep exploration"
+
+weaving_vocabulary:
+  - term: "Shuttle"
+    meaning: "Orchestrator"
+  - term: "Yarn Graph"
+    meaning: "Knowledge Graph"
+  - term: "Loom Command"
+    meaning: "Pattern Selection"
+  - term: "Chrono Trigger"
+    meaning: "Temporal Windows"
+  - term: "Resonance Shed"
+    meaning: "Feature Extraction"
+  - term: "DotPlasma"
+    meaning: "Feature Tensor"
+  - term: "Warp Space"
+    meaning: "Continuous Manifold"
+  - term: "Convergence Engine"
+    meaning: "Decision Collapse"
+  - term: "Spacetime"
+    meaning: "Final Output"
+
+key_files:
+  architecture:
+    - path: "HoloLoom/weaving_orchestrator.py"
+      desc: "Main orchestrator (3,476 lines)"
+    - path: "HoloLoom/policy/unified.py"
+      desc: "Neural policy + Thompson Sampling"
+    - path: "HoloLoom/memory/unified.py"
+      desc: "Unified memory interface"
+    - path: "HoloLoom/config.py"
+      desc: "Configuration modes"
+
+  documentation:
+    - path: "CLAUDE.md"
+      desc: "Developer reference"
+    - path: "docs/HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md"
+      desc: "Complete architectural map"
+    - path: "docs/architecture/ARCHITECTURE_VISUAL_MAP.md"
+      desc: "Visual diagrams"
+
+governance_features:
+  - feature: "Safety Guardrails"
+    desc: "Risk-based action gating"
+    overhead: "0.039ms"
+  - feature: "Deception Detection"
+    desc: "Goal transparency tracking"
+    overhead: "0.034ms"
+  - feature: "Audit Trail"
+    desc: "Complete decision provenance"
+    overhead: "0.015ms"
+  - feature: "Token Budgets"
+    desc: "Per-agent resource limits"
+    overhead: "<1ms"
+
+performance_specs:
+  - metric: "Query Cache"
+    value: "100x speedup"
+  - metric: "Token Savings"
+    value: "40-90%"
+  - metric: "Alignment Overhead"
+    value: "0.103ms"
+  - metric: "First Token (Phase 4)"
+    value: "<100ms"
+
+setup_commands:
+  - cmd: "python -m venv .venv && .venv\\Scripts\\activate"
+    desc: "Create virtualenv (Windows)"
+  - cmd: "pip install -r requirements.txt"
+    desc: "Install dependencies"
+  - cmd: "python scripts/verify_setup.py --level quick"
+    desc: "Verify setup"
+  - cmd: "docker-compose up -d"
+    desc: "Start backends (optional)"
+
+server_commands:
+  - cmd: "uvicorn HoloLoom.server.agentic_api:app --port 8000"
+    desc: "Start Agentic API (queries, monitoring)"
+  - cmd: "uvicorn HoloLoom.server.agent_manager_api:app --port 8002"
+    desc: "Start Agent Manager (threads, swarms)"
+
+testing_commands:
+  - cmd: "pytest HoloLoom/tests/unit/ -v"
+    desc: "Unit tests (<5s)"
+  - cmd: "pytest HoloLoom/tests/integration/ -v"
+    desc: "Integration tests (<30s)"
+  - cmd: "pytest HoloLoom/tests/e2e/ -v"
+    desc: "End-to-end tests (<2min)"
+
+demo_commands:
+  - cmd: "PYTHONPATH=. python demos/demo_agent_hypervisor.py"
+    desc: "Agent Hypervisor demo"
+  - cmd: "PYTHONPATH=. python demos/demo_rag_qa_simple.py"
+    desc: "RAG Q&A demo"
+  - cmd: "PYTHONPATH=. python demos/demo_multipass_simple.py"
+    desc: "Multi-pass refinement"
+
+competitive_positioning:
+  vs_crewai: "Federation + MCTS vs basic crews"
+  vs_langgraph: "Full provenance vs graph-only"
+  vs_autogpt: "Multi-agent + governance vs single agent"
+
+links:
+  issues: "https://github.com/yourusername/hololoom/issues"
+  docs: "docs/"
+  demos: "demos/"

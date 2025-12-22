@@ -1,0 +1,23 @@
+# Promptly Requirements
+
+# Core
+click>=8.0.0          # CLI framework
+pyyaml>=6.0           # Configuration and export
+
+# Optional: MCP Server
+mcp>=0.1.0            # Model Context Protocol (Claude Desktop)
+
+# Optional: Rich terminal output
+rich>=13.0.0          # Terminal formatting
+
+# Optional: LLM Backends
+anthropic>=0.34.0     # Claude API
+ollama>=0.1.0         # Local LLMs
+
+# Optional: HoloLoom Integration
+# (HoloLoom is in the parent directory, install with pip install -e ../HoloLoom)
+
+# Development
+pytest>=7.0.0         # Testing
+black>=23.0.0         # Formatting
+mypy>=1.0.0           # Type checking

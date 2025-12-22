@@ -443,6 +443,25 @@ async def cmd_agent_logs(args):
 
 
 # ============================================================================
+# Nexus Commands
+# ============================================================================
+
+async def cmd_nexus_mcp(args):
+    """Launch HoloLoom MCP Server."""
+    print_banner()
+    print_info("Launching HoloLoom Nexus (MCP Bridge)...")
+    
+    try:
+        from HoloLoom.integrations.mcp_server import main as mcp_main
+        await mcp_main()
+    except ImportError as e:
+        print_error(f"Failed to import mcp_server: {e}")
+        print_info("Ensure 'mcp' is installed: pip install mcp")
+    except Exception as e:
+        print_error(f"MCP Server failed: {e}")
+
+
+# ============================================================================
 # Cluster Commands
 # ============================================================================
 
@@ -522,6 +541,44 @@ async def cmd_cluster_nodes(args):
                 uptime_str = f"{int(uptime // 3600)}h {int((uptime % 3600) // 60)}m"
                 print(f"    Uptime:  {uptime_str}")
             print()
+
+
+# ============================================================================
+# Studio Command
+# ============================================================================
+
+async def cmd_studio(args):
+    """Launch HoloLoom Studio (Dashboard)."""
+    print_banner()
+    print_info("Launching HoloLoom Studio...")
+    
+    try:
+        from HoloLoom.studio_server import start_studio
+        
+        # Check if dashboard exists
+        import os
+        from pathlib import Path
+        
+        base_dir = Path(__file__).parent.resolve()
+        dist_dir = base_dir / "dist"
+        
+        if not dist_dir.exists():
+            print_warning("Dashboard assets not found in HoloLoom/dist/")
+            print_info("To build the dashboard, run:")
+            print("  cd HoloLoom/hololoom-dashboard && npm install && npm run build")
+            print()
+            
+        start_studio(
+            host=args.host,
+            port=args.port,
+            open_browser=not args.no_browser
+        )
+    except ImportError as e:
+        print_error(f"Failed to import studio_server: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print_error(f"Studio failed: {e}")
+        sys.exit(1)
 
 
 # ============================================================================
@@ -613,6 +670,23 @@ Documentation:
     # cluster nodes
     cluster_nodes = cluster_subparsers.add_parser('nodes', help='List cluster nodes')
     cluster_nodes.set_defaults(func=cmd_cluster_nodes)
+
+    # studio
+    studio_parser = subparsers.add_parser('studio', help='Launch HoloLoom Studio (Dashboard)')
+    studio_parser.add_argument('--port', type=int, default=8000, help='Port to run Studio on')
+    studio_parser.add_argument('--host', default='127.0.0.1', help='Host to bind Studio to')
+    studio_parser.add_argument('--no-browser', action='store_true', help='Do not open browser automatically')
+    studio_parser.set_defaults(func=cmd_studio)
+
+    # -------------------------------------------------------------------------
+    # Nexus commands
+    # -------------------------------------------------------------------------
+    nexus_parser = subparsers.add_parser('nexus', help='Integrations and bridges')
+    nexus_subparsers = nexus_parser.add_subparsers(dest='nexus_command', help='Nexus commands')
+
+    # nexus mcp
+    nexus_mcp = nexus_subparsers.add_parser('mcp', help='Launch HoloLoom MCP Server')
+    nexus_mcp.set_defaults(func=cmd_nexus_mcp)
 
     return parser
 

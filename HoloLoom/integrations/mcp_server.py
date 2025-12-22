@@ -58,6 +58,7 @@ except ImportError:
     sys.exit(1)
 
 # HoloLoom imports
+from HoloLoom import HoloLoom, __version__
 from HoloLoom.config import Config
 from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator

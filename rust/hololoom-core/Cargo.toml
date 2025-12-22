@@ -1,0 +1,24 @@
+[package]
+name = "hololoom-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "High-performance vector operations and clustering algorithms for HoloLoom"
+
+[features]
+default = ["simd"]
+simd = []  # Enable SIMD optimizations
+
+[dependencies]
+ndarray = { workspace = true }
+rayon = { workspace = true }
+num-traits = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
+criterion = { workspace = true }
+
+[[bench]]
+name = "vector_ops"
+harness = false

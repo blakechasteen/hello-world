@@ -1,0 +1,12 @@
+include LICENSE
+include README.md
+recursive-include HoloLoom *.yaml
+recursive-include HoloLoom *.md
+recursive-include HoloLoom *.css
+recursive-include HoloLoom *.js
+recursive-include HoloLoom *.html
+recursive-include HoloLoom *.png
+recursive-include HoloLoom *.jpg
+recursive-include HoloLoom *.json
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]

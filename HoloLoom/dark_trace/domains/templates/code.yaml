@@ -1,0 +1,182 @@
+# Code Domain Template
+# Semantic axes for software engineering and programming applications
+
+name: code
+description: >
+  Semantic lens for code analysis and software engineering domain.
+  Captures complexity, quality, security, and maintainability dimensions.
+version: "1.0"
+
+settings:
+  normalize_projections: true
+  default_embedding_dim: 384
+
+metadata:
+  author: Dark Trace
+  created_at: "2025-12-22"
+  tags:
+    - code
+    - programming
+    - software
+    - engineering
+
+axes:
+  # Code complexity
+  - name: complexity
+    description: >
+      Algorithmic and structural complexity level.
+      Higher values indicate more complex code.
+    category: structure
+    importance: 1.0
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "nested loops with multiple conditionals"
+        - "recursive algorithm with memoization"
+        - "complex state machine implementation"
+        - "multi-threaded synchronization logic"
+      negative:
+        - "simple getter method"
+        - "basic variable assignment"
+        - "straightforward linear algorithm"
+        - "single-purpose utility function"
+
+  # Code quality
+  - name: quality
+    description: >
+      Overall code quality and adherence to best practices.
+      Higher values indicate better quality.
+    category: quality
+    importance: 0.9
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "well-documented with clear naming"
+        - "follows SOLID principles"
+        - "comprehensive error handling"
+        - "clean separation of concerns"
+      negative:
+        - "magic numbers throughout"
+        - "duplicated code blocks"
+        - "poor variable naming"
+        - "missing error handling"
+
+  # Security sensitivity
+  - name: security_risk
+    description: >
+      Presence of security-sensitive operations or vulnerabilities.
+      Higher values indicate higher security risk.
+    category: security
+    importance: 1.0
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "SQL query with string concatenation"
+        - "user input without sanitization"
+        - "hardcoded credentials"
+        - "command injection vulnerability"
+      negative:
+        - "parameterized database query"
+        - "properly sanitized input"
+        - "secure credential management"
+        - "safe API call with validation"
+
+  # Maintainability
+  - name: maintainability
+    description: >
+      Ease of understanding, modifying, and extending the code.
+      Higher values indicate better maintainability.
+    category: quality
+    importance: 0.8
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "modular design with clear interfaces"
+        - "comprehensive test coverage"
+        - "well-organized project structure"
+        - "consistent coding style"
+      negative:
+        - "monolithic function with many responsibilities"
+        - "no tests or documentation"
+        - "spaghetti code with goto statements"
+        - "inconsistent formatting"
+
+  # Performance sensitivity
+  - name: performance_critical
+    description: >
+      Performance-critical code sections.
+      Higher values indicate higher performance sensitivity.
+    category: performance
+    importance: 0.7
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "tight inner loop processing millions of items"
+        - "real-time constraint requirement"
+        - "memory-intensive operation"
+        - "latency-critical path"
+      negative:
+        - "one-time initialization code"
+        - "rarely executed configuration"
+        - "batch processing with no time constraint"
+        - "non-critical logging"
+
+  # Test coverage
+  - name: test_coverage
+    description: >
+      Presence and quality of tests for this code.
+      Higher values indicate better test coverage.
+    category: testing
+    importance: 0.7
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "comprehensive unit tests"
+        - "integration tests with mocks"
+        - "edge case coverage"
+        - "property-based testing"
+      negative:
+        - "no tests present"
+        - "only happy path tested"
+        - "tests with hardcoded values"
+        - "flaky intermittent tests"
+
+  # API stability
+  - name: api_stability
+    description: >
+      Stability of public interfaces and APIs.
+      Higher values indicate more stable APIs.
+    category: design
+    importance: 0.6
+    safety_relevant: false
+    exemplars:
+      positive:
+        - "stable public interface"
+        - "versioned API with deprecation"
+        - "backward compatible changes"
+        - "well-defined contracts"
+      negative:
+        - "breaking changes in minor version"
+        - "undocumented API behavior"
+        - "unstable internal exposure"
+        - "frequently changing signatures"
+
+  # Error handling quality
+  - name: error_handling
+    description: >
+      Quality of error handling and recovery mechanisms.
+      Higher values indicate better error handling.
+    category: reliability
+    importance: 0.8
+    safety_relevant: true
+    exemplars:
+      positive:
+        - "graceful degradation on failure"
+        - "specific exception handling"
+        - "proper resource cleanup"
+        - "informative error messages"
+      negative:
+        - "bare except clause"
+        - "swallowed exceptions"
+        - "resource leaks on error"
+        - "generic error messages"

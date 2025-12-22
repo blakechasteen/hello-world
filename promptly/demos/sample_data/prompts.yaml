@@ -1,0 +1,205 @@
+# Sample Prompts for Promptly Demo
+# These prompts demonstrate various use cases and variable substitution
+
+prompts:
+  # Text Processing
+  - name: summarize
+    content: |
+      Summarize the following text in {{length}} sentences.
+      Focus on the main points and key takeaways.
+
+      Text to summarize:
+      {{text}}
+
+      Summary:
+    tags:
+      - utility
+      - writing
+      - text-processing
+    metadata:
+      category: text_processing
+      difficulty: easy
+
+  - name: translate
+    content: |
+      Translate the following text from {{source_language}} to {{target_language}}.
+      Maintain the original tone and meaning.
+
+      Text:
+      {{text}}
+
+      Translation:
+    tags:
+      - utility
+      - language
+      - translation
+    metadata:
+      category: text_processing
+      difficulty: medium
+
+  # Code Analysis
+  - name: code-review
+    content: |
+      Review this {{language}} code for:
+      1. Bugs and potential errors
+      2. Best practices and conventions
+      3. Performance issues
+      4. Security vulnerabilities
+
+      Code:
+      ```{{language}}
+      {{code}}
+      ```
+
+      Provide specific, actionable feedback with line references where applicable.
+    tags:
+      - code
+      - review
+      - quality
+    metadata:
+      category: code_analysis
+      difficulty: medium
+
+  - name: code-explain
+    content: |
+      Explain what this {{language}} code does in simple terms.
+      Target audience: {{audience}}
+
+      Code:
+      ```{{language}}
+      {{code}}
+      ```
+
+      Explanation:
+    tags:
+      - code
+      - education
+      - documentation
+    metadata:
+      category: code_analysis
+      difficulty: easy
+
+  # Education
+  - name: explain
+    content: |
+      Explain {{topic}} to a {{audience}} in simple terms.
+
+      Guidelines:
+      - Use clear, accessible language
+      - Include relevant examples
+      - Build from foundational concepts
+      - Avoid unnecessary jargon
+
+      Explanation:
+    tags:
+      - education
+      - explanation
+      - learning
+    metadata:
+      category: education
+      difficulty: easy
+
+  - name: quiz-generator
+    content: |
+      Create {{count}} quiz questions about {{topic}}.
+      Difficulty level: {{difficulty}}
+
+      For each question, provide:
+      - The question
+      - 4 multiple choice options (A, B, C, D)
+      - The correct answer
+      - A brief explanation
+
+      Questions:
+    tags:
+      - education
+      - quiz
+      - assessment
+    metadata:
+      category: education
+      difficulty: medium
+
+  # Writing Assistance
+  - name: improve-writing
+    content: |
+      Improve the following text for {{goal}}.
+
+      Original:
+      {{text}}
+
+      Improvements should focus on:
+      - Clarity and readability
+      - Grammar and punctuation
+      - Flow and structure
+      - Word choice
+
+      Improved version:
+    tags:
+      - writing
+      - editing
+      - improvement
+    metadata:
+      category: writing
+      difficulty: easy
+
+  - name: outline-generator
+    content: |
+      Create a detailed outline for a {{type}} about {{topic}}.
+      Target length: {{length}}
+
+      The outline should include:
+      - Main sections with headers
+      - Key points for each section
+      - Supporting details
+      - Logical flow from introduction to conclusion
+
+      Outline:
+    tags:
+      - writing
+      - planning
+      - structure
+    metadata:
+      category: writing
+      difficulty: medium
+
+  # Data & Analysis
+  - name: analyze-data
+    content: |
+      Analyze the following {{data_type}} data and provide insights.
+
+      Data:
+      {{data}}
+
+      Analysis should include:
+      - Key patterns and trends
+      - Notable outliers or anomalies
+      - Statistical summary if applicable
+      - Actionable recommendations
+
+      Analysis:
+    tags:
+      - data
+      - analysis
+      - insights
+    metadata:
+      category: data_analysis
+      difficulty: hard
+
+  - name: compare
+    content: |
+      Compare and contrast {{item_a}} and {{item_b}} based on {{criteria}}.
+
+      Provide:
+      - Key similarities
+      - Key differences
+      - Pros and cons of each
+      - Recommendation for different use cases
+
+      Comparison:
+    tags:
+      - analysis
+      - comparison
+      - decision
+    metadata:
+      category: analysis
+      difficulty: medium

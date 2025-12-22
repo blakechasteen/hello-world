@@ -36,8 +36,8 @@ Advanced users can still import internal components:
 # ============================================================================
 
 import sys as _sys
+from .__version__ import __version__
 
-__version__ = '1.0.0'
 __all__ = [
     # Core API (99% of users)
     'HoloLoom',          # The system
@@ -65,7 +65,7 @@ def __getattr__(name):
 
     # Core API
     if name == 'HoloLoom':
-        from .hololoom import HoloLoom
+        from .unified_api import HoloLoom
         _lazy_imports[name] = HoloLoom
         return HoloLoom
 

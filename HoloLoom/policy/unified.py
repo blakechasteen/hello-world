@@ -555,14 +555,14 @@ class UnifiedPolicy:
                 "bandit_mode": bandit_debug.get("mode"),
                 "reward_estimate": reward,
             }
-            if context and context.metadata:
+            if context and getattr(context, 'metadata', None):
                 request_context.update({
-                    "context_relevance": context.relevance,
+                    "context_relevance": getattr(context, 'relevance', 0.0),
                     "metadata_keys": list(context.metadata.keys()),
                 })
 
             action_request = ActionRequest(
-                action="policy_select_tool",
+                action_id="policy_select_tool",
                 category=ActionCategory.EXECUTION,
                 context=request_context,
                 user_id=(context.metadata.get("user_id") if getattr(context, "metadata", None) else None),

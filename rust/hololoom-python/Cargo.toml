@@ -1,0 +1,21 @@
+[package]
+name = "hololoom-python"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Python bindings for HoloLoom's high-performance algorithms"
+
+[lib]
+name = "hololoom_rust"
+crate-type = ["cdylib"]
+
+[dependencies]
+hololoom-core = { workspace = true }
+pyo3 = { workspace = true }
+numpy = { workspace = true }
+
+[features]
+# Use abi3 for stable ABI across Python versions
+extension-module = ["pyo3/extension-module"]
+default = ["extension-module"]
