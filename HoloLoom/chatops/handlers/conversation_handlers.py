@@ -13,17 +13,25 @@ Features:
 - Query history with timestamps
 - Thread-aware context continuation
 - Session metrics (queries, duration)
+- Scratch pad artifact integration for context passing
+- Auto-storage of weaving results (optional)
 
 Usage:
     from HoloLoom.chatops.handlers.conversation_handlers import (
         register_conversation_handlers,
-        ConversationHandlers
+        ConversationHandlers,
+        record_weave_result,
+        get_artifact_context_for_user
     )
 
     # In run_chatops.py:
     register_conversation_handlers(bot, orchestrator)
 
+    # After weaving (auto-record for !scratch store):
+    record_weave_result(user_id, room_id, spacetime)
+
 Created: 2025-12-09
+Updated: 2025-12-19 - Added scratch pad integration
 """
 
 import logging
@@ -91,6 +99,36 @@ except ImportError:
     THREAD_AVAILABLE = False
     ThreadHandler = None
     ThreadContext = None
+
+
+# ============================================================================
+# Scratch Pad Integration (optional)
+# ============================================================================
+
+try:
+    from HoloLoom.chatops.scratchpad import (
+        ScratchArtifact,
+        ArtifactScope,
+        ArtifactReference,
+        SessionArtifactContext
+    )
+    from HoloLoom.chatops.scratchpad.manager import ScratchPadManager
+    from HoloLoom.chatops.handlers.scratchpad_handlers import (
+        record_last_result,
+        get_scratchpad_manager,
+        set_scratchpad_manager
+    )
+    SCRATCHPAD_AVAILABLE = True
+except ImportError:
+    SCRATCHPAD_AVAILABLE = False
+    ScratchArtifact = None
+    ArtifactScope = None
+    ArtifactReference = None
+    SessionArtifactContext = None
+    ScratchPadManager = None
+    record_last_result = None
+    get_scratchpad_manager = None
+    set_scratchpad_manager = None
 
 
 # ============================================================================
@@ -263,6 +301,198 @@ def get_session_manager() -> SessionManager:
 
 
 # ============================================================================
+# Scratch Pad Integration Helpers
+# ============================================================================
+
+async def record_weave_result(
+    user_id: str,
+    room_id: str,
+    spacetime: 'Spacetime',
+    auto_store: bool = False
+) -> None:
+    """
+    Record a weaving result for scratch pad integration.
+
+    This function should be called after every successful weave operation
+    to enable:
+    1. `!scratch store` command to store the last result
+    2. Auto-storage of artifacts from Spacetime (if enabled)
+
+    Args:
+        user_id: Matrix user ID
+        room_id: Matrix room ID
+        spacetime: The Spacetime result from weaving
+        auto_store: If True, automatically store any artifacts in Spacetime
+    """
+    if not SCRATCHPAD_AVAILABLE:
+        return
+
+    # Record for !scratch store command
+    if record_last_result:
+        record_last_result(user_id, spacetime)
+
+    # Auto-store artifacts if enabled
+    if auto_store:
+        await _auto_store_artifacts(user_id, room_id, spacetime)
+
+
+async def _auto_store_artifacts(
+    user_id: str,
+    room_id: str,
+    spacetime: 'Spacetime'
+) -> None:
+    """
+    Automatically store artifacts from a Spacetime result.
+
+    Called when auto_store=True in record_weave_result().
+
+    Args:
+        user_id: Matrix user ID
+        room_id: Matrix room ID
+        spacetime: The Spacetime result containing artifacts
+    """
+    if not SCRATCHPAD_AVAILABLE:
+        return
+
+    manager = get_scratchpad_manager() if get_scratchpad_manager else None
+    if not manager:
+        return
+
+    # Check if Spacetime has artifacts
+    artifacts = getattr(spacetime, 'artifacts', None)
+    if not artifacts:
+        return
+
+    # Store each artifact
+    for artifact in artifacts:
+        try:
+            # Extract content and metadata
+            content = getattr(artifact, 'content', None)
+            if content is None:
+                continue
+
+            name = getattr(artifact, 'name', None)
+            if not name:
+                # Generate name from artifact type if available
+                artifact_type = getattr(artifact, 'type', 'artifact')
+                name = f"auto_{artifact_type}_{spacetime.spacetime_id[:8]}"
+
+            # Get artifact type
+            from HoloLoom.chatops.scratchpad import ArtifactType
+            artifact_type_enum = ArtifactType.DATA  # Default
+
+            type_value = getattr(artifact, 'type', None)
+            if type_value:
+                type_str = type_value.value if hasattr(type_value, 'value') else str(type_value)
+                try:
+                    artifact_type_enum = ArtifactType(type_str.lower())
+                except ValueError:
+                    artifact_type_enum = ArtifactType.DATA
+
+            # Store artifact
+            result = await manager.store(
+                name=name,
+                content=content if isinstance(content, bytes) else str(content).encode('utf-8'),
+                artifact_type=artifact_type_enum,
+                owner_user_id=user_id,
+                owner_room_id=room_id,
+                source_spacetime_id=getattr(spacetime, 'spacetime_id', None),
+                metadata={
+                    'auto_stored': True,
+                    'source': 'weave_result'
+                }
+            )
+
+            if result.success:
+                logger.debug(f"Auto-stored artifact: {name}")
+            else:
+                logger.warning(f"Failed to auto-store artifact {name}: {result.error}")
+
+        except Exception as e:
+            logger.warning(f"Error auto-storing artifact: {e}")
+
+
+async def get_artifact_context_for_user(
+    user_id: str,
+    room_id: str,
+    limit: int = 5
+) -> str:
+    """
+    Get artifact context summary for a user's session.
+
+    Returns a formatted string describing available artifacts
+    that can be included in continuation prompts.
+
+    Args:
+        user_id: Matrix user ID
+        room_id: Matrix room ID
+        limit: Maximum number of artifacts to include
+
+    Returns:
+        Formatted string with artifact context, or empty string if none
+    """
+    if not SCRATCHPAD_AVAILABLE:
+        return ""
+
+    manager = get_scratchpad_manager() if get_scratchpad_manager else None
+    if not manager:
+        return ""
+
+    try:
+        # List user's artifacts
+        result = await manager.list_artifacts(
+            owner_user_id=user_id,
+            owner_room_id=room_id,
+            limit=limit
+        )
+
+        if not result.success or not result.artifacts:
+            return ""
+
+        # Build context string
+        lines = ["Available artifacts from previous queries:"]
+        for ref in result.artifacts[:limit]:
+            size_kb = ref.size_bytes / 1024
+            lines.append(f"  - {ref.name} ({ref.artifact_type.value}, {size_kb:.1f}KB)")
+
+        return "\n".join(lines)
+
+    except Exception as e:
+        logger.warning(f"Error getting artifact context: {e}")
+        return ""
+
+
+def get_artifact_references_for_session(
+    user_id: str,
+    room_id: str,
+    session_id: Optional[str] = None
+) -> List['ArtifactReference']:
+    """
+    Get artifact references for a user's session.
+
+    Synchronous version for use in session context.
+
+    Args:
+        user_id: Matrix user ID
+        room_id: Matrix room ID
+        session_id: Optional session ID filter
+
+    Returns:
+        List of ArtifactReference objects
+    """
+    if not SCRATCHPAD_AVAILABLE:
+        return []
+
+    manager = get_scratchpad_manager() if get_scratchpad_manager else None
+    if not manager:
+        return []
+
+    # Note: This is a synchronous wrapper - for async, use get_artifact_context_for_user
+    # In a real implementation, you might want to cache this
+    return []
+
+
+# ============================================================================
 # Command Handlers
 # ============================================================================
 
@@ -270,7 +500,8 @@ async def handle_continue(
     room: 'MatrixRoom',
     event: 'RoomMessageText',
     args: str,
-    orchestrator: 'WeavingOrchestrator'
+    orchestrator: 'WeavingOrchestrator',
+    include_artifacts: bool = True
 ) -> str:
     """
     Handle !continue command - Continue/expand previous query.
@@ -285,6 +516,7 @@ async def handle_continue(
         event: Message event
         args: Optional continuation text
         orchestrator: WeavingOrchestrator instance
+        include_artifacts: If True, include artifact context from scratch pad
 
     Returns:
         Continued/expanded response
@@ -316,6 +548,16 @@ async def handle_continue(
         # Re-run with request for more detail
         full_query = f"{session.last_query}\n\nPlease provide more detail and depth."
 
+    # Add artifact context if available
+    artifact_context = ""
+    if include_artifacts and SCRATCHPAD_AVAILABLE:
+        try:
+            artifact_context = await get_artifact_context_for_user(user_id, room_id, limit=5)
+            if artifact_context:
+                full_query = f"{full_query}\n\n{artifact_context}"
+        except Exception as e:
+            logger.debug(f"Could not get artifact context: {e}")
+
     try:
         # Create query with context from last result
         if Query:
@@ -335,6 +577,9 @@ async def handle_continue(
         confidence = getattr(spacetime, 'confidence', 0.0)
         session.add_query(full_query, spacetime, confidence)
 
+        # Record result for scratch pad integration
+        await record_weave_result(user_id, room_id, spacetime, auto_store=False)
+
         # Format response
         response_text = getattr(spacetime, 'response', str(spacetime))
 
@@ -343,6 +588,9 @@ async def handle_continue(
 
         if continuation_text:
             response += f"**Continuation**: {continuation_text}\n"
+
+        if artifact_context:
+            response += f"**Artifacts**: {len(artifact_context.split(chr(10))) - 1} available\n"
 
         response += f"\n### Extended Response\n\n{response_text}\n\n"
         response += f"**Confidence**: {confidence:.2f}\n"
@@ -437,6 +685,28 @@ async def handle_context(
     else:
         response += "### Context Window\n"
         response += "_No recent queries in context window_\n"
+
+    # Scratch pad artifacts
+    if SCRATCHPAD_AVAILABLE:
+        try:
+            artifact_context = await get_artifact_context_for_user(user_id, room_id, limit=10)
+            if artifact_context:
+                response += f"\n### Stored Artifacts\n"
+                # Parse the artifact context (skip the header line)
+                artifact_lines = artifact_context.split('\n')[1:]
+                response += f"_{len(artifact_lines)} artifacts available_\n\n"
+                for line in artifact_lines[:5 if not show_full else 10]:
+                    response += f"{line}\n"
+                if not show_full and len(artifact_lines) > 5:
+                    response += f"\n_Use `!context --full` to see all {len(artifact_lines)} artifacts_\n"
+                response += f"\n_Use `!scratch get <name>` to retrieve an artifact_\n"
+            else:
+                response += f"\n### Stored Artifacts\n"
+                response += "_No artifacts stored. Use `!scratch store <name>` after a query._\n"
+        except Exception as e:
+            logger.debug(f"Could not get artifact context for !context: {e}")
+            response += f"\n### Stored Artifacts\n"
+            response += "_Artifact storage not available._\n"
 
     # Manager stats
     manager_stats = session_mgr.get_statistics()

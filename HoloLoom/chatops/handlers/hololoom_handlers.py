@@ -75,6 +75,14 @@ except ImportError:
     create_guardrails = None
     create_audit_trail = None
 
+# Scratchpad auto-storage (graceful degradation if unavailable)
+try:
+    from HoloLoom.chatops.handlers.conversation_handlers import record_weave_result
+    SCRATCHPAD_RECORDING_AVAILABLE = True
+except ImportError:
+    SCRATCHPAD_RECORDING_AVAILABLE = False
+    record_weave_result = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -465,6 +473,19 @@ class HoloLoomMatrixHandlers:
             # Store spacetime for trace command
             query_id = f"{job.user_id}_{datetime.now().timestamp()}"
             self.spacetime_history[query_id] = spacetime
+
+            # Record weave result for scratch pad integration
+            # This enables !scratch store and auto-storage of artifacts
+            if SCRATCHPAD_RECORDING_AVAILABLE and record_weave_result:
+                try:
+                    await record_weave_result(
+                        user_id=job.user_id,
+                        room_id=job.room_id,
+                        spacetime=spacetime,
+                        auto_store=False  # User can explicitly store via !scratch store
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to record weave result for scratchpad: {e}")
 
             # Broadcast job_completed via WebSocket
             duration = (job.completed_at - job.submitted_at).total_seconds()

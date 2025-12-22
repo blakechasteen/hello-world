@@ -34,13 +34,13 @@ except ImportError:
 # Add repository root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from holoLoom.chatops.matrix_bot import MatrixBot, MatrixBotConfig
-from holoLoom.chatops.chatops_bridge import ChatOpsOrchestrator
-from holoLoom.chatops.conversation_memory import ConversationMemory
+from HoloLoom.chatops.matrix_bot import MatrixBot, MatrixBotConfig
+from HoloLoom.chatops.chatops_bridge import ChatOpsOrchestrator
+from HoloLoom.chatops.conversation_memory import ConversationMemory
 
 try:
-    from holoLoom.chatops import ChatOpsSkills
-    from holoLoom.config import Config
+    from HoloLoom.chatops import ChatOpsSkills
+    from HoloLoom.config import Config
     FULL_FEATURES = True
 except ImportError:
     FULL_FEATURES = False
@@ -54,6 +54,19 @@ try:
 except ImportError as e:
     CLAUDE_CODE_AVAILABLE = False
     print(f"Warning: Claude Code integration unavailable: {e}")
+
+# Scratchpad integration
+try:
+    from HoloLoom.chatops.scratchpad import ScratchPadManager, ScratchPadConfig
+    from HoloLoom.chatops.handlers.scratchpad_handlers import (
+        register_scratchpad_handlers,
+        set_scratchpad_manager,
+        get_scratchpad_manager
+    )
+    SCRATCHPAD_AVAILABLE = True
+except ImportError as e:
+    SCRATCHPAD_AVAILABLE = False
+    print(f"Warning: Scratchpad integration unavailable: {e}")
 
 
 logger = logging.getLogger(__name__)
@@ -369,6 +382,7 @@ class ChatOpsRunner:
         self.chatops: Optional[ChatOpsOrchestrator] = None
         self.skills: Optional[ChatOpsSkills] = None
         self.claude_code: Optional['ClaudeCodeDepartment'] = None
+        self.scratchpad_manager: Optional['ScratchPadManager'] = None
         self.running = False
 
     async def setup(self) -> None:
@@ -428,6 +442,40 @@ class ChatOpsRunner:
                 logger.warning(f"Failed to initialize Claude Code Department: {e}")
                 self.claude_code = None
 
+        # Initialize Scratchpad if available
+        if SCRATCHPAD_AVAILABLE:
+            try:
+                scratchpad_config = self.config.get("scratchpad", {})
+                enable_scratchpad = scratchpad_config.get("enabled", True)
+
+                if enable_scratchpad:
+                    # Create config with optional path overrides
+                    sp_config = ScratchPadConfig(
+                        metadata_db_path=scratchpad_config.get(
+                            "metadata_db_path", "./scratchpad/metadata.db"
+                        ),
+                        cas_storage_path=scratchpad_config.get(
+                            "cas_storage_path", "./scratchpad/content"
+                        ),
+                        enable_audit=scratchpad_config.get("enable_audit", True)
+                    )
+
+                    # Create and initialize manager
+                    self.scratchpad_manager = ScratchPadManager(sp_config)
+                    await self.scratchpad_manager.initialize()
+
+                    # Set global manager for handlers
+                    set_scratchpad_manager(self.scratchpad_manager)
+
+                    # Register scratchpad command handlers
+                    register_scratchpad_handlers(self.bot, self.chatops)
+                    logger.info("Scratchpad system initialized and handlers registered")
+                else:
+                    logger.info("Scratchpad integration disabled in config")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Scratchpad: {e}")
+                self.scratchpad_manager = None
+
         logger.info("Setup complete")
 
     async def start(self) -> None:
@@ -458,6 +506,14 @@ class ChatOpsRunner:
         # Stop Claude Code Department
         if self.claude_code:
             await self.claude_code.stop()
+
+        # Close Scratchpad manager
+        if self.scratchpad_manager:
+            try:
+                await self.scratchpad_manager.close()
+                logger.info("Scratchpad manager closed")
+            except Exception as e:
+                logger.warning(f"Error closing Scratchpad manager: {e}")
 
         if self.chatops:
             await self.chatops.stop()
