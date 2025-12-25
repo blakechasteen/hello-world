@@ -1,5 +1,11 @@
+# Virtual environments
 .venv/
+.venv_*/
+
+# IDE
 .vscode/
+
+# Python cache
 __pycache__/
 *.py[cod]
 *.so
@@ -91,3 +97,13 @@ extensions/vscode/out/
 .archive/
 HoloLoom/demo_expanded/
 HoloLoom/frontier_test_output/
+
+# Security - sensitive keys and user data (2025-12)
+.federation/identity.key
+.promptly/
+.xterminator/
+
+# Build artifacts (2025-12)
+build/
+reports/
+dist/
