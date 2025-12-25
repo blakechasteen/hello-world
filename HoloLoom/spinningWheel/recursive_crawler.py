@@ -338,7 +338,7 @@ class RecursiveCrawlerSpinner(BaseSpinner):
     """
 
     def __init__(self, config: Optional[CrawlConfig] = None):
-        super().__init__()
+        super().__init__(name="recursive_crawler")
         self.config = config or CrawlConfig()
         self.gate = MatryoshkaImportanceGate(self.config)
 
@@ -349,11 +349,12 @@ class RecursiveCrawlerSpinner(BaseSpinner):
 
     def get_capabilities(self) -> SpinnerCapabilities:
         return SpinnerCapabilities(
-            supported_types=['url', 'urls'],
-            max_size_bytes=100 * 1024 * 1024,  # 100MB total
-            async_capable=True,
-            batch_capable=True,
-            enrichment_available=True,
+            basic_processing=True,
+            streaming=True,  # Supports streaming crawl
+            batch_processing=True,
+            importance_scoring=True,  # Matryoshka gating
+            supported_formats=['url', 'urls'],
+            max_input_size=100 * 1024 * 1024,  # 100MB total
         )
 
     def is_available(self) -> bool:
@@ -724,34 +725,34 @@ Matryoshka Gating Thresholds:
 
         # Length signal
         text_len = len(shard.text)
-        signals.length = min(1.0, text_len / 2000)
+        signals.length_score = min(1.0, text_len / 2000)
 
         # Crawl depth (deeper = potentially less relevant)
         depth = shard.metadata.get('crawl_depth', 0)
-        signals.custom['depth_penalty'] = max(0, 1.0 - (depth * 0.15))
+        signals.custom_signals['depth_penalty'] = max(0, 1.0 - (depth * 0.15))
 
         # Crawl importance (from matryoshka gating)
         crawl_importance = shard.metadata.get('crawl_importance', 0.5)
-        signals.custom['crawl_importance'] = crawl_importance
+        signals.custom_signals['crawl_importance'] = crawl_importance
 
         # Technical content (code, data)
         if any(marker in shard.text.lower() for marker in ['```', 'def ', 'class ', 'function']):
-            signals.technical = 0.8
+            signals.technical_score = 0.8
         else:
-            signals.technical = 0.3
+            signals.technical_score = 0.3
 
         # Calculate weighted score
         base_score = (
-            signals.length * 0.2 +
-            signals.technical * 0.2 +
-            signals.custom.get('crawl_importance', 0.5) * 0.4 +
-            signals.custom.get('depth_penalty', 1.0) * 0.2
+            signals.length_score * 0.2 +
+            signals.technical_score * 0.2 +
+            signals.custom_signals.get('crawl_importance', 0.5) * 0.4 +
+            signals.custom_signals.get('depth_penalty', 1.0) * 0.2
         )
 
         return ImportanceScore(
-            overall=base_score,
+            score=base_score,
             signals=signals,
-            explanation=f"Crawl depth {depth}, importance {crawl_importance:.2f}"
+            reason=f"Crawl depth {depth}, importance {crawl_importance:.2f}"
         )
 
 

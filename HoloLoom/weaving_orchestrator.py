@@ -68,6 +68,14 @@ from HoloLoom.alignment.safety_guardrails import (
 )
 from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 
+# Semantic State Integration (Phase 8 - December 2025)
+from HoloLoom.semantic_calculus import (
+    PolicySemanticState,
+    SemanticToolSelector,
+    TOPIC_SHIFT_THRESHOLD,
+    SIGNIFICANT_SHIFT_THRESHOLD,
+)
+
 # Conscience Integration (Phase 2C - December 2025)
 try:
     from HoloLoom.agentic.conscience_adapter import AgenticConscienceAdapter
@@ -586,6 +594,21 @@ class WeavingOrchestrator:
                 self.jenny_runtime = None
                 self.jenny_mrf_compiler = None
                 self.jenny_learner = None
+
+        # Semantic State Integration (Phase 8 - December 2025)
+        # Track semantic state across queries for topic shift detection and tool selection
+        self._previous_semantic_state: Optional[PolicySemanticState] = None
+        self._query_index: int = 0
+        self._semantic_tool_selector: Optional[SemanticToolSelector] = None
+
+        # Initialize SemanticToolSelector if semantic calculus is available
+        if hasattr(self, 'semantic_spectrum') and self.semantic_spectrum is not None:
+            try:
+                self._semantic_tool_selector = SemanticToolSelector()
+                self.logger.info("SemanticToolSelector initialized for semantic-aware tool selection")
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize SemanticToolSelector: {e}")
+                self._semantic_tool_selector = None
 
         self.logger.info("WeavingOrchestrator initialization complete")
 
@@ -1402,11 +1425,61 @@ class WeavingOrchestrator:
                         if warp_compute_results.get('context_vector') is not None else None
                 }
 
+                # ================================================================
+                # STEP 5.6: Semantic State Computation (Phase 8 - December 2025)
+                # ================================================================
+                # Compute 244D semantic state from query embedding for:
+                # - Topic shift detection (enables smart multithreaded chat)
+                # - Semantic-aware tool selection
+                # - 8D feature vector for NeuralCore policy
+                try:
+                    semantic_state = PolicySemanticState.from_embedding(
+                        embedding=query_embedding,
+                        previous_state=self._previous_semantic_state,
+                        query_index=self._query_index
+                    )
+
+                    # Track for next query's topic shift detection
+                    self._previous_semantic_state = semantic_state
+                    self._query_index += 1
+
+                    # Store semantic state in context for policy and downstream use
+                    context.metadata['semantic_state'] = {
+                        'position': semantic_state.position.tolist() if semantic_state.position is not None else None,
+                        'velocity': semantic_state.velocity.tolist() if semantic_state.velocity is not None else None,
+                        'category_scores': semantic_state.category_scores,
+                        'dominant_category': semantic_state.dominant_category,
+                        'topic_shift_detected': semantic_state.topic_shift_detected,
+                        'shift_magnitude': semantic_state.shift_magnitude,
+                        'query_index': semantic_state.query_index,
+                        'policy_features': semantic_state.to_feature_vector().tolist(),
+                    }
+
+                    # Log significant topic shifts
+                    if semantic_state.topic_shift_detected:
+                        shift_level = "SIGNIFICANT" if semantic_state.shift_magnitude >= SIGNIFICANT_SHIFT_THRESHOLD else "moderate"
+                        self.logger.info(
+                            f"  [5.6] Topic shift detected ({shift_level}): "
+                            f"magnitude={semantic_state.shift_magnitude:.3f}, "
+                            f"dominant_category={semantic_state.dominant_category}"
+                        )
+
+                    # Get semantic tool suggestion if selector is available
+                    if self._semantic_tool_selector is not None:
+                        suggested_tool = self._semantic_tool_selector.suggest_tool(semantic_state)
+                        context.metadata['semantic_state']['suggested_tool'] = suggested_tool
+                        self.logger.debug(f"  [5.6] Semantic tool suggestion: {suggested_tool}")
+
+                except Exception as e:
+                    self.logger.warning(f"  [5.6] Semantic state computation failed: {e}. Continuing without semantic features.")
+                    context.metadata['semantic_state'] = None
+
                 stage_timings['warp_compute'] = (time.time() - step_start) * 1000
 
             except Exception as e:
                 self.logger.warning(f"  [5.5] Warp Space compute failed: {e}. Continuing without warp features.")
                 context.metadata['warp_compute'] = None
+                context.metadata['semantic_state'] = None  # Phase 8: Also clear semantic state
                 stage_timings['warp_compute'] = 0.0
 
             # ================================================================
@@ -1655,16 +1728,19 @@ class WeavingOrchestrator:
                     from uuid import uuid4
                     action_request = ActionRequest(
                         action_id=str(uuid4()),
-                        action=collapse_result.tool,
                         category=self._categorize_tool(collapse_result.tool),
                         description=f"Execute '{collapse_result.tool}' for query: {query.text[:100]}",
                         context={
                             "query": query.text,
+                            "tool": collapse_result.tool,
                             "confidence": collapse_result.confidence,
                             "complexity": complexity.value if complexity else "unknown"
                         }
                     )
-                    safety_decision = self.guardrails.gate_action(action_request)
+                    safety_decision = self.guardrails.evaluate(
+                        action_request,
+                        text_input=query.text,
+                    )
 
                     # Log to audit trail (December 2025)
                     if self.audit_trail:
@@ -1817,6 +1893,16 @@ class WeavingOrchestrator:
                     f"coherence={awareness_context.get('coherence', 0.0):.3f}"
                 )
 
+            # Inject semantic state into metadata (Phase 8 - December 2025)
+            # Enables downstream consumers to access topic shift detection and semantic features
+            if context.metadata.get('semantic_state'):
+                metadata['semantic_state'] = context.metadata['semantic_state']
+                self.logger.debug(
+                    f"[SEMANTIC] Semantic state added to Spacetime: "
+                    f"dominant_category={context.metadata['semantic_state'].get('dominant_category')}, "
+                    f"topic_shift={context.metadata['semantic_state'].get('topic_shift_detected')}"
+                )
+
             # Parse artifacts from tool result
             raw_artifacts = tool_result.get('artifacts', [])
             artifacts = [Artifact.from_dict(a) for a in raw_artifacts]
@@ -1836,7 +1922,7 @@ class WeavingOrchestrator:
             # Attach mythRL enhancements if protocol system is enabled
             if hasattr(self, 'enable_complexity_auto_detect') and self.enable_complexity_auto_detect:
                 spacetime.complexity = complexity
-                spacetime.provenance = self._create_provenance_trace(query, complexity)
+                spacetime.provenance = create_provenance_trace(self, query, complexity)
                 # Add all stage timings as protocol calls
                 for stage, timing_ms in stage_timings.items():
                     spacetime.provenance.add_protocol_call(

@@ -127,13 +127,20 @@ def demo_fingerprinting():
         print(f"   Is universal: {comparison.is_universal}")
         print(f"   Confidence: {comparison.confidence:.3f}")
 
-    print("\n3. Find Universal Features:")
-    # Pass dict mapping model_id -> fingerprints
-    fingerprints_by_model = {"model_a": fingerprint_a, "model_b": fingerprint_b}
-    universal = find_universal_features(fingerprints_by_model, config=config)
-    print(f"   Universal features (appear in both): {len(universal)}")
+    print("\n3. Find Universal Features (sampled for demo):")
+    # Sample a small subset for demo to avoid O(n^2) timeout with 11520 features
+    # In production, you would use the full fingerprints
+    sample_size = min(50, len(common_features))
+    sampled_features = list(common_features)[:sample_size]
+    sampled_fp_a = {k: fingerprint_a[k] for k in sampled_features if k in fingerprint_a}
+    sampled_fp_b = {k: fingerprint_b[k] for k in sampled_features if k in fingerprint_b}
 
-    print("\n4. Find Model-Specific Features:")
+    fingerprints_by_model = {"model_a": sampled_fp_a, "model_b": sampled_fp_b}
+    universal = find_universal_features(fingerprints_by_model, config=config)
+    print(f"   Sampled {sample_size} features for comparison")
+    print(f"   Universal features found: {len(universal)}")
+
+    print("\n4. Find Model-Specific Features (sampled for demo):")
     specific = find_model_specific_features(fingerprints_by_model, config=config)
     print(f"   Model-specific features: {list(specific.keys())}")
     if "model_a" in specific:
@@ -360,11 +367,13 @@ def demo_monitoring():
     print(f"   Features tracked: {health['features_tracked']}")
 
     print("\n5. Drift Detection:")
-    detector = DriftDetector(
-        mean_threshold=0.2,
-        variance_threshold=0.3,
-        sparsity_threshold=0.1
+    drift_config = MonitorConfig(
+        mean_drift_threshold=0.2,
+        variance_drift_threshold=0.3,
+        sparsity_drift_threshold=0.1,
+        enable_drift_detection=True
     )
+    detector = DriftDetector(config=drift_config)
 
     # Create feature statistics for drift test
     feature_stats = {}
@@ -384,7 +393,11 @@ def demo_monitoring():
     print(f"   Has drift: {drift_report.has_drift}")
     print(f"   Drifted features: {len(drift_report.drifted_features)}")
     if drift_report.drifted_features:
-        print(f"   Drift types: {[d.drift_type.value for d in drift_report.drifted_features[:3]]}")
+        # drifted_features is List[str], drift_details has the types
+        sample_features = drift_report.drifted_features[:3]
+        for feat_id in sample_features:
+            drift_types = drift_report.drift_details.get(feat_id, [])
+            print(f"   {feat_id}: {[dt.value for dt in drift_types]}")
 
     return True
 

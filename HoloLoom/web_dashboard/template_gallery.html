@@ -685,6 +685,179 @@
             background: #f3e5f5;
             color: #7b1fa2;
         }
+
+        .status-indicator.featured {
+            background: #fff8e1;
+            color: #f9a825;
+        }
+
+        /* Difficulty Filter */
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .difficulty-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .difficulty-tab {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .difficulty-tab:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .difficulty-tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .difficulty-tab.beginner {
+            border-color: #4caf50;
+        }
+
+        .difficulty-tab.beginner.active {
+            background: #4caf50;
+        }
+
+        .difficulty-tab.intermediate {
+            border-color: #ff9800;
+        }
+
+        .difficulty-tab.intermediate.active {
+            background: #ff9800;
+        }
+
+        .difficulty-tab.advanced {
+            border-color: #f44336;
+        }
+
+        .difficulty-tab.advanced.active {
+            background: #f44336;
+        }
+
+        /* Rating Stars */
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 1px;
+        }
+
+        .rating-star {
+            color: #e0e0e0;
+            font-size: 12px;
+        }
+
+        .rating-star.filled {
+            color: #ffc107;
+        }
+
+        .rating-star.half {
+            color: #ffc107;
+        }
+
+        .rating-count {
+            font-size: 11px;
+            color: #999;
+        }
+
+        /* Usage Badge */
+        .usage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #666;
+            background: #f5f5f5;
+            border-radius: 4px;
+            padding: 2px 6px;
+        }
+
+        /* Featured Section */
+        .featured-section {
+            margin-bottom: 30px;
+        }
+
+        .featured-section .gallery-title {
+            color: #f9a825;
+        }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .featured-card {
+            border: 2px solid rgba(249, 168, 37, 0.3);
+            background: linear-gradient(135deg, rgba(255, 248, 225, 0.9) 0%, rgba(255, 255, 255, 0.98) 100%);
+        }
+
+        .featured-card:hover {
+            border-color: #f9a825;
+            box-shadow: 0 12px 32px rgba(249, 168, 37, 0.2);
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #f9a825;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        /* Difficulty Badge in Cards */
+        .difficulty-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .difficulty-badge.beginner {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .difficulty-badge.intermediate {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .difficulty-badge.advanced {
+            background: #ffebee;
+            color: #c62828;
+        }
     </style>
 </head>
 <body>
@@ -712,9 +885,30 @@
 
             <!-- Category Filter Tabs -->
             <div class="filter-section">
-                <span class="filter-label">Filter by:</span>
+                <span class="filter-label">Category:</span>
                 <div class="filter-tabs" id="filterTabs"></div>
             </div>
+
+            <!-- Difficulty Filter Tabs -->
+            <div class="filter-section">
+                <span class="filter-label">Difficulty:</span>
+                <div class="difficulty-tabs" id="difficultyTabs">
+                    <button class="difficulty-tab active" data-difficulty="all">All</button>
+                    <button class="difficulty-tab beginner" data-difficulty="beginner">🌱 Beginner</button>
+                    <button class="difficulty-tab intermediate" data-difficulty="intermediate">⚡ Intermediate</button>
+                    <button class="difficulty-tab advanced" data-difficulty="advanced">🔥 Advanced</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Templates Section -->
+        <div class="featured-section" id="featuredSection" style="display: none;">
+            <div class="gallery-header">
+                <h2 class="gallery-title">
+                    <span>⭐ Featured Templates</span>
+                </h2>
+            </div>
+            <div class="featured-grid" id="featuredGrid"></div>
         </div>
 
         <!-- Template Gallery -->
@@ -871,16 +1065,32 @@
 
         // State
         let currentCategory = 'all';
+        let currentDifficulty = 'all';
         let searchQuery = '';
         let templates = [];
+        let featuredTemplates = [];
         let selectedTemplate = null;
 
         // Initialize
         function init() {
             renderCategoryTabs();
+            setupDifficultyTabs();
             loadTemplates();
             setupEventListeners();
             displayTemplates();
+        }
+
+        // Setup Difficulty Tabs
+        function setupDifficultyTabs() {
+            const tabs = document.querySelectorAll('.difficulty-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentDifficulty = tab.dataset.difficulty;
+                    displayTemplates();
+                });
+            });
         }
 
         // Render Category Tabs

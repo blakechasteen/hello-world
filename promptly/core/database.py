@@ -79,6 +79,95 @@ class Skill:
     files: List[Dict[str, Any]] = field(default_factory=list)
 
 
+@dataclass
+class PromptExecutionRecord:
+    """Record of a prompt execution for analytics."""
+    id: int
+    prompt_id: int
+    prompt_name: str
+    version: int
+    task_type: Optional[str]
+    input_data: Dict[str, Any]
+    output: str
+    quality_score: float
+    latency_ms: float
+    llm_provider: Optional[str]
+    llm_model: Optional[str]
+    token_count: Optional[int]
+    metadata: Dict[str, Any]
+    created_at: datetime
+
+
+@dataclass
+class ThompsonPrior:
+    """Thompson Sampling prior for a prompt-task combination."""
+    id: int
+    task_type: str
+    prompt_id: int
+    prompt_name: str
+    alpha: float
+    beta: float
+    updated_at: datetime
+
+    @property
+    def expected_quality(self) -> float:
+        """E[X] = alpha / (alpha + beta)"""
+        return self.alpha / (self.alpha + self.beta)
+
+    @property
+    def total_samples(self) -> float:
+        """Total number of samples (alpha + beta - 2 for prior)."""
+        return self.alpha + self.beta - 2.0
+
+
+@dataclass
+class MRFRefinementDBRecord:
+    """Record of an MRF refinement execution."""
+    id: int
+    prompt_name: str
+    strategy: str
+    quality_before: float
+    quality_after: float
+    improvement: float
+    latency_ms: float
+    model_provider: str
+    components_applied: List[str]
+    metadata: Dict[str, Any]
+    created_at: datetime
+
+    @property
+    def improvement_percent(self) -> float:
+        """Calculate improvement as percentage."""
+        if self.quality_before > 0:
+            return ((self.quality_after - self.quality_before) / self.quality_before) * 100
+        return 0.0
+
+    @property
+    def is_success(self) -> bool:
+        """Whether refinement improved quality (threshold: 0.7)."""
+        return self.quality_after >= 0.7
+
+
+@dataclass
+class MRFStrategyPrior:
+    """Thompson Sampling prior for an MRF strategy."""
+    id: int
+    strategy: str
+    alpha: float
+    beta: float
+    updated_at: datetime
+
+    @property
+    def expected_quality(self) -> float:
+        """E[X] = alpha / (alpha + beta)"""
+        return self.alpha / (self.alpha + self.beta)
+
+    @property
+    def total_samples(self) -> float:
+        """Total number of samples (alpha + beta - 2 for prior)."""
+        return self.alpha + self.beta - 2.0
+
+
 class PromptlyDB:
     """
     SQLite database manager for Promptly.
@@ -90,7 +179,7 @@ class PromptlyDB:
     Local prompts override global prompts with the same name.
     """
 
-    SCHEMA_VERSION = 1
+    SCHEMA_VERSION = 2
 
     def __init__(self, db_path: Path, is_global: bool = False):
         """
@@ -231,6 +320,108 @@ class PromptlyDB:
                 value TEXT NOT NULL,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
+        """)
+
+        # Prompt executions table (detailed history for analytics)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS prompt_executions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prompt_id INTEGER NOT NULL,
+                version INTEGER NOT NULL,
+                task_type TEXT,
+                input_data TEXT,
+                output TEXT,
+                quality_score REAL,
+                latency_ms REAL,
+                llm_provider TEXT,
+                llm_model TEXT,
+                token_count INTEGER,
+                metadata TEXT DEFAULT '{}',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (prompt_id) REFERENCES prompts(id)
+            )
+        """)
+
+        # Create index for execution queries
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_executions_prompt_id
+            ON prompt_executions(prompt_id)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_executions_task_type
+            ON prompt_executions(task_type)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_executions_created_at
+            ON prompt_executions(created_at)
+        """)
+
+        # Thompson sampling priors table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS thompson_priors (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_type TEXT NOT NULL,
+                prompt_id INTEGER NOT NULL,
+                alpha REAL DEFAULT 1.0,
+                beta REAL DEFAULT 1.0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (prompt_id) REFERENCES prompts(id),
+                UNIQUE(task_type, prompt_id)
+            )
+        """)
+
+        # Create index for Thompson prior queries
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_thompson_task_type
+            ON thompson_priors(task_type)
+        """)
+
+        # MRF refinements table (Metaprompt Refinement Framework analytics)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS mrf_refinements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prompt_name TEXT NOT NULL,
+                strategy TEXT NOT NULL,
+                quality_before REAL NOT NULL,
+                quality_after REAL NOT NULL,
+                improvement REAL NOT NULL,
+                latency_ms REAL,
+                model_provider TEXT,
+                components_applied TEXT DEFAULT '[]',
+                metadata TEXT DEFAULT '{}',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Create indexes for MRF refinement queries
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_mrf_refinements_prompt_name
+            ON mrf_refinements(prompt_name)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_mrf_refinements_strategy
+            ON mrf_refinements(strategy)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_mrf_refinements_created_at
+            ON mrf_refinements(created_at)
+        """)
+
+        # MRF Thompson Sampling priors table (per-strategy learning)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS mrf_thompson_priors (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                strategy TEXT UNIQUE NOT NULL,
+                alpha REAL DEFAULT 1.0,
+                beta REAL DEFAULT 1.0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        # Create index for MRF Thompson prior queries
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_mrf_thompson_strategy
+            ON mrf_thompson_priors(strategy)
         """)
 
         # Schema version
@@ -756,3 +947,813 @@ class PromptlyDB:
             VALUES (?, ?, CURRENT_TIMESTAMP)
         """, (key, json.dumps(value) if not isinstance(value, str) else value))
         self.conn.commit()
+
+    # ==================== Execution Analytics Operations ====================
+
+    def add_execution(
+        self,
+        prompt_name: str,
+        version: int,
+        output: str,
+        quality_score: float,
+        latency_ms: float,
+        task_type: Optional[str] = None,
+        input_data: Optional[Dict[str, Any]] = None,
+        llm_provider: Optional[str] = None,
+        llm_model: Optional[str] = None,
+        token_count: Optional[int] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> int:
+        """
+        Record a prompt execution for analytics.
+
+        Args:
+            prompt_name: Name of the executed prompt
+            version: Prompt version used
+            output: Generated output
+            quality_score: Quality score (0.0-1.0)
+            latency_ms: Execution time in milliseconds
+            task_type: Type of task (e.g., 'summarization', 'code_review')
+            input_data: Input variables used
+            llm_provider: LLM provider (e.g., 'anthropic', 'openai')
+            llm_model: Model name
+            token_count: Token count for the execution
+            metadata: Additional metadata
+
+        Returns:
+            Execution ID
+        """
+        cursor = self.conn.cursor()
+
+        # Get prompt_id
+        cursor.execute("SELECT id FROM prompts WHERE name = ?", (prompt_name,))
+        row = cursor.fetchone()
+        if not row:
+            raise ValueError(f"Prompt '{prompt_name}' not found")
+
+        prompt_id = row["id"]
+
+        cursor.execute("""
+            INSERT INTO prompt_executions
+            (prompt_id, version, task_type, input_data, output, quality_score,
+             latency_ms, llm_provider, llm_model, token_count, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            prompt_id,
+            version,
+            task_type,
+            json.dumps(input_data or {}),
+            output,
+            quality_score,
+            latency_ms,
+            llm_provider,
+            llm_model,
+            token_count,
+            json.dumps(metadata or {})
+        ))
+
+        self.conn.commit()
+        return cursor.lastrowid
+
+    def get_executions(
+        self,
+        prompt_name: Optional[str] = None,
+        task_type: Optional[str] = None,
+        days: int = 30,
+        limit: int = 100
+    ) -> List[PromptExecutionRecord]:
+        """
+        Query execution history.
+
+        Args:
+            prompt_name: Filter by prompt name (optional)
+            task_type: Filter by task type (optional)
+            days: Number of days to look back (default: 30)
+            limit: Maximum records to return (default: 100)
+
+        Returns:
+            List of PromptExecutionRecord objects
+        """
+        cursor = self.conn.cursor()
+
+        query = """
+            SELECT pe.*, p.name as prompt_name
+            FROM prompt_executions pe
+            JOIN prompts p ON pe.prompt_id = p.id
+            WHERE pe.created_at >= datetime('now', ?)
+        """
+        params = [f'-{days} days']
+
+        if prompt_name:
+            query += " AND p.name = ?"
+            params.append(prompt_name)
+
+        if task_type:
+            query += " AND pe.task_type = ?"
+            params.append(task_type)
+
+        query += " ORDER BY pe.created_at DESC LIMIT ?"
+        params.append(limit)
+
+        cursor.execute(query, params)
+
+        records = []
+        for row in cursor.fetchall():
+            records.append(PromptExecutionRecord(
+                id=row["id"],
+                prompt_id=row["prompt_id"],
+                prompt_name=row["prompt_name"],
+                version=row["version"],
+                task_type=row["task_type"],
+                input_data=json.loads(row["input_data"]),
+                output=row["output"],
+                quality_score=row["quality_score"],
+                latency_ms=row["latency_ms"],
+                llm_provider=row["llm_provider"],
+                llm_model=row["llm_model"],
+                token_count=row["token_count"],
+                metadata=json.loads(row["metadata"]),
+                created_at=datetime.fromisoformat(row["created_at"])
+            ))
+        return records
+
+    def get_prompt_analytics(
+        self,
+        prompt_name: str,
+        days: int = 30
+    ) -> Dict[str, Any]:
+        """
+        Get aggregate analytics for a prompt.
+
+        Args:
+            prompt_name: Prompt name
+            days: Analysis window in days
+
+        Returns:
+            Analytics dict with stats, trends, and recommendations
+        """
+        cursor = self.conn.cursor()
+
+        # Get prompt_id
+        cursor.execute("SELECT id FROM prompts WHERE name = ?", (prompt_name,))
+        row = cursor.fetchone()
+        if not row:
+            return {"error": f"Prompt '{prompt_name}' not found"}
+
+        prompt_id = row["id"]
+
+        # Get aggregate statistics
+        cursor.execute("""
+            SELECT
+                COUNT(*) as total_executions,
+                AVG(quality_score) as avg_quality,
+                AVG(latency_ms) as avg_latency_ms,
+                SUM(CASE WHEN quality_score >= 0.7 THEN 1 ELSE 0 END) as successes,
+                MIN(quality_score) as min_quality,
+                MAX(quality_score) as max_quality,
+                AVG(token_count) as avg_tokens
+            FROM prompt_executions
+            WHERE prompt_id = ? AND created_at >= datetime('now', ?)
+        """, (prompt_id, f'-{days} days'))
+
+        stats_row = cursor.fetchone()
+
+        total = stats_row["total_executions"] or 0
+        if total == 0:
+            return {
+                "prompt_name": prompt_name,
+                "total_executions": 0,
+                "message": "No executions found in the specified window"
+            }
+
+        # Get daily breakdown for trend analysis
+        cursor.execute("""
+            SELECT
+                DATE(created_at) as date,
+                COUNT(*) as executions,
+                AVG(quality_score) as avg_quality
+            FROM prompt_executions
+            WHERE prompt_id = ? AND created_at >= datetime('now', ?)
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        """, (prompt_id, f'-{days} days'))
+
+        daily_data = [dict(row) for row in cursor.fetchall()]
+
+        # Calculate trend (simple linear regression on quality)
+        quality_trend = "stable"
+        if len(daily_data) >= 3:
+            qualities = [d["avg_quality"] for d in daily_data if d["avg_quality"]]
+            if len(qualities) >= 3:
+                first_half = sum(qualities[:len(qualities)//2]) / (len(qualities)//2)
+                second_half = sum(qualities[len(qualities)//2:]) / (len(qualities) - len(qualities)//2)
+                if second_half > first_half + 0.05:
+                    quality_trend = "improving"
+                elif second_half < first_half - 0.05:
+                    quality_trend = "declining"
+
+        # Get task type distribution
+        cursor.execute("""
+            SELECT task_type, COUNT(*) as count
+            FROM prompt_executions
+            WHERE prompt_id = ? AND created_at >= datetime('now', ?) AND task_type IS NOT NULL
+            GROUP BY task_type
+        """, (prompt_id, f'-{days} days'))
+
+        task_distribution = {row["task_type"]: row["count"] for row in cursor.fetchall()}
+
+        # Get Thompson Sampling expected quality if available
+        thompson_quality = None
+        cursor.execute("""
+            SELECT AVG(alpha / (alpha + beta)) as expected_quality
+            FROM thompson_priors
+            WHERE prompt_id = ?
+        """, (prompt_id,))
+        thompson_row = cursor.fetchone()
+        if thompson_row and thompson_row["expected_quality"]:
+            thompson_quality = thompson_row["expected_quality"]
+
+        return {
+            "prompt_name": prompt_name,
+            "total_executions": total,
+            "avg_quality": round(stats_row["avg_quality"], 3) if stats_row["avg_quality"] else None,
+            "avg_latency_ms": round(stats_row["avg_latency_ms"], 1) if stats_row["avg_latency_ms"] else None,
+            "success_rate": round(stats_row["successes"] / total, 3) if total else 0,
+            "quality_range": {
+                "min": round(stats_row["min_quality"], 3) if stats_row["min_quality"] else None,
+                "max": round(stats_row["max_quality"], 3) if stats_row["max_quality"] else None
+            },
+            "avg_tokens": round(stats_row["avg_tokens"]) if stats_row["avg_tokens"] else None,
+            "quality_trend": quality_trend,
+            "task_type_distribution": task_distribution,
+            "thompson_expected_quality": round(thompson_quality, 3) if thompson_quality else None,
+            "daily_breakdown": daily_data,
+            "days_analyzed": days
+        }
+
+    # ==================== Thompson Sampling Operations ====================
+
+    def update_thompson_prior(
+        self,
+        prompt_name: str,
+        task_type: str,
+        success: bool,
+        quality: float = 0.5
+    ) -> Tuple[float, float]:
+        """
+        Update Thompson Sampling prior based on execution outcome.
+
+        Args:
+            prompt_name: Prompt name
+            task_type: Task type for this prior
+            success: Whether the execution was successful (quality >= threshold)
+            quality: Quality score to weight the update
+
+        Returns:
+            Tuple of (alpha, beta) after update
+        """
+        cursor = self.conn.cursor()
+
+        # Get prompt_id
+        cursor.execute("SELECT id FROM prompts WHERE name = ?", (prompt_name,))
+        row = cursor.fetchone()
+        if not row:
+            raise ValueError(f"Prompt '{prompt_name}' not found")
+
+        prompt_id = row["id"]
+
+        # Get or create prior
+        cursor.execute("""
+            SELECT id, alpha, beta FROM thompson_priors
+            WHERE task_type = ? AND prompt_id = ?
+        """, (task_type, prompt_id))
+
+        row = cursor.fetchone()
+
+        if row:
+            # Update existing prior
+            alpha = row["alpha"]
+            beta = row["beta"]
+
+            if success:
+                alpha += quality
+            else:
+                beta += (1.0 - quality)
+
+            cursor.execute("""
+                UPDATE thompson_priors
+                SET alpha = ?, beta = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            """, (alpha, beta, row["id"]))
+        else:
+            # Create new prior with initial update
+            alpha = 1.0 + (quality if success else 0.0)
+            beta = 1.0 + (0.0 if success else (1.0 - quality))
+
+            cursor.execute("""
+                INSERT INTO thompson_priors (task_type, prompt_id, alpha, beta)
+                VALUES (?, ?, ?, ?)
+            """, (task_type, prompt_id, alpha, beta))
+
+        self.conn.commit()
+        return (alpha, beta)
+
+    def get_thompson_recommendation(
+        self,
+        task_type: str,
+        candidates: Optional[List[str]] = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get Thompson Sampling recommendation for best prompt.
+
+        Args:
+            task_type: Task type to get recommendation for
+            candidates: Optional list of prompt names to consider
+
+        Returns:
+            Dict with recommended prompt and expected quality, or None
+        """
+        import random
+
+        cursor = self.conn.cursor()
+
+        if candidates:
+            # Get priors for specific candidates
+            placeholders = ",".join(["?" for _ in candidates])
+            cursor.execute(f"""
+                SELECT tp.*, p.name as prompt_name
+                FROM thompson_priors tp
+                JOIN prompts p ON tp.prompt_id = p.id
+                WHERE tp.task_type = ? AND p.name IN ({placeholders})
+            """, [task_type] + candidates)
+        else:
+            # Get all priors for this task type
+            cursor.execute("""
+                SELECT tp.*, p.name as prompt_name
+                FROM thompson_priors tp
+                JOIN prompts p ON tp.prompt_id = p.id
+                WHERE tp.task_type = ?
+            """, (task_type,))
+
+        rows = cursor.fetchall()
+
+        if not rows:
+            return None
+
+        # Thompson Sampling: sample from Beta distribution for each prompt
+        best_prompt = None
+        best_sample = -1.0
+        all_priors = []
+
+        for row in rows:
+            alpha = row["alpha"]
+            beta = row["beta"]
+            expected = alpha / (alpha + beta)
+
+            # Sample from Beta distribution
+            sample = random.betavariate(alpha, beta)
+
+            all_priors.append({
+                "prompt_name": row["prompt_name"],
+                "expected_quality": round(expected, 3),
+                "alpha": alpha,
+                "beta": beta,
+                "sample": round(sample, 3)
+            })
+
+            if sample > best_sample:
+                best_sample = sample
+                best_prompt = row["prompt_name"]
+
+        # Sort by expected quality for alternatives
+        all_priors.sort(key=lambda x: x["expected_quality"], reverse=True)
+
+        return {
+            "recommended_prompt": best_prompt,
+            "expected_quality": round(all_priors[0]["expected_quality"], 3) if all_priors else None,
+            "confidence": round(best_sample, 3),
+            "task_type": task_type,
+            "alternatives": all_priors[:5]  # Top 5 alternatives
+        }
+
+    def get_thompson_priors(
+        self,
+        task_type: Optional[str] = None,
+        prompt_name: Optional[str] = None
+    ) -> List[ThompsonPrior]:
+        """
+        Get Thompson Sampling priors.
+
+        Args:
+            task_type: Filter by task type (optional)
+            prompt_name: Filter by prompt name (optional)
+
+        Returns:
+            List of ThompsonPrior objects
+        """
+        cursor = self.conn.cursor()
+
+        query = """
+            SELECT tp.*, p.name as prompt_name
+            FROM thompson_priors tp
+            JOIN prompts p ON tp.prompt_id = p.id
+            WHERE 1=1
+        """
+        params = []
+
+        if task_type:
+            query += " AND tp.task_type = ?"
+            params.append(task_type)
+
+        if prompt_name:
+            query += " AND p.name = ?"
+            params.append(prompt_name)
+
+        query += " ORDER BY tp.updated_at DESC"
+
+        cursor.execute(query, params)
+
+        priors = []
+        for row in cursor.fetchall():
+            priors.append(ThompsonPrior(
+                id=row["id"],
+                task_type=row["task_type"],
+                prompt_id=row["prompt_id"],
+                prompt_name=row["prompt_name"],
+                alpha=row["alpha"],
+                beta=row["beta"],
+                updated_at=datetime.fromisoformat(row["updated_at"])
+            ))
+        return priors
+
+    # ==================== MRF (Metaprompt Refinement Framework) Operations ====================
+
+    def add_mrf_refinement(
+        self,
+        prompt_name: str,
+        strategy: str,
+        quality_before: float,
+        quality_after: float,
+        latency_ms: float = 0.0,
+        model_provider: str = "unknown",
+        components_applied: Optional[List[str]] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> int:
+        """
+        Record an MRF refinement execution.
+
+        Args:
+            prompt_name: Name of the prompt that was refined
+            strategy: MRF strategy used (REFINE, CRITIQUE, VERIFY, ELEGANCE, HOFSTADTER, AUTO)
+            quality_before: Quality score before refinement (0.0-1.0)
+            quality_after: Quality score after refinement (0.0-1.0)
+            latency_ms: Time taken for refinement in milliseconds
+            model_provider: LLM provider used (claude, gemini, gpt, ollama)
+            components_applied: List of 7-component sections applied
+            metadata: Additional metadata
+
+        Returns:
+            Refinement record ID
+        """
+        cursor = self.conn.cursor()
+
+        improvement = quality_after - quality_before
+        components = components_applied or []
+
+        cursor.execute("""
+            INSERT INTO mrf_refinements
+            (prompt_name, strategy, quality_before, quality_after, improvement,
+             latency_ms, model_provider, components_applied, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            prompt_name,
+            strategy,
+            quality_before,
+            quality_after,
+            improvement,
+            latency_ms,
+            model_provider,
+            json.dumps(components),
+            json.dumps(metadata or {})
+        ))
+
+        self.conn.commit()
+        return cursor.lastrowid
+
+    def get_mrf_refinements(
+        self,
+        prompt_name: Optional[str] = None,
+        strategy: Optional[str] = None,
+        days: int = 30,
+        limit: int = 100
+    ) -> List[MRFRefinementDBRecord]:
+        """
+        Query MRF refinement history.
+
+        Args:
+            prompt_name: Filter by prompt name (optional)
+            strategy: Filter by MRF strategy (optional)
+            days: Number of days to look back (default: 30)
+            limit: Maximum records to return (default: 100)
+
+        Returns:
+            List of MRFRefinementDBRecord objects
+        """
+        cursor = self.conn.cursor()
+
+        query = """
+            SELECT * FROM mrf_refinements
+            WHERE created_at >= datetime('now', ?)
+        """
+        params = [f'-{days} days']
+
+        if prompt_name:
+            query += " AND prompt_name = ?"
+            params.append(prompt_name)
+
+        if strategy:
+            query += " AND strategy = ?"
+            params.append(strategy)
+
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(limit)
+
+        cursor.execute(query, params)
+
+        records = []
+        for row in cursor.fetchall():
+            records.append(MRFRefinementDBRecord(
+                id=row["id"],
+                prompt_name=row["prompt_name"],
+                strategy=row["strategy"],
+                quality_before=row["quality_before"],
+                quality_after=row["quality_after"],
+                improvement=row["improvement"],
+                latency_ms=row["latency_ms"] or 0.0,
+                model_provider=row["model_provider"] or "unknown",
+                components_applied=json.loads(row["components_applied"]),
+                metadata=json.loads(row["metadata"]),
+                created_at=datetime.fromisoformat(row["created_at"])
+            ))
+        return records
+
+    def get_mrf_analytics(
+        self,
+        strategy: Optional[str] = None,
+        days: int = 30
+    ) -> Dict[str, Any]:
+        """
+        Get aggregate MRF analytics.
+
+        Args:
+            strategy: Filter by strategy (optional)
+            days: Analysis window in days
+
+        Returns:
+            Analytics dict with stats by strategy
+        """
+        cursor = self.conn.cursor()
+
+        # Base query for aggregate stats
+        base_where = "WHERE created_at >= datetime('now', ?)"
+        params = [f'-{days} days']
+
+        if strategy:
+            base_where += " AND strategy = ?"
+            params.append(strategy)
+
+        # Get overall stats
+        cursor.execute(f"""
+            SELECT
+                COUNT(*) as total_refinements,
+                AVG(quality_before) as avg_quality_before,
+                AVG(quality_after) as avg_quality_after,
+                AVG(improvement) as avg_improvement,
+                AVG(latency_ms) as avg_latency_ms,
+                SUM(CASE WHEN quality_after >= 0.7 THEN 1 ELSE 0 END) as successes,
+                SUM(CASE WHEN improvement > 0 THEN 1 ELSE 0 END) as improvements
+            FROM mrf_refinements
+            {base_where}
+        """, params)
+
+        stats_row = cursor.fetchone()
+        total = stats_row["total_refinements"] or 0
+
+        if total == 0:
+            return {
+                "total_refinements": 0,
+                "message": "No MRF refinements found in the specified window",
+                "days_analyzed": days
+            }
+
+        # Get per-strategy breakdown
+        cursor.execute(f"""
+            SELECT
+                strategy,
+                COUNT(*) as count,
+                AVG(quality_before) as avg_quality_before,
+                AVG(quality_after) as avg_quality_after,
+                AVG(improvement) as avg_improvement,
+                AVG(latency_ms) as avg_latency_ms,
+                SUM(CASE WHEN quality_after >= 0.7 THEN 1 ELSE 0 END) as successes
+            FROM mrf_refinements
+            {base_where}
+            GROUP BY strategy
+            ORDER BY avg_improvement DESC
+        """, params)
+
+        strategy_breakdown = {}
+        for row in cursor.fetchall():
+            count = row["count"]
+            strategy_breakdown[row["strategy"]] = {
+                "count": count,
+                "avg_quality_before": round(row["avg_quality_before"], 3) if row["avg_quality_before"] else None,
+                "avg_quality_after": round(row["avg_quality_after"], 3) if row["avg_quality_after"] else None,
+                "avg_improvement": round(row["avg_improvement"], 3) if row["avg_improvement"] else None,
+                "avg_latency_ms": round(row["avg_latency_ms"], 1) if row["avg_latency_ms"] else None,
+                "success_rate": round(row["successes"] / count, 3) if count else 0
+            }
+
+        return {
+            "total_refinements": total,
+            "avg_quality_before": round(stats_row["avg_quality_before"], 3) if stats_row["avg_quality_before"] else None,
+            "avg_quality_after": round(stats_row["avg_quality_after"], 3) if stats_row["avg_quality_after"] else None,
+            "avg_improvement": round(stats_row["avg_improvement"], 3) if stats_row["avg_improvement"] else None,
+            "avg_improvement_percent": round((stats_row["avg_improvement"] / stats_row["avg_quality_before"]) * 100, 1) if stats_row["avg_quality_before"] and stats_row["avg_improvement"] else None,
+            "avg_latency_ms": round(stats_row["avg_latency_ms"], 1) if stats_row["avg_latency_ms"] else None,
+            "success_rate": round(stats_row["successes"] / total, 3) if total else 0,
+            "improvement_rate": round(stats_row["improvements"] / total, 3) if total else 0,
+            "strategy_breakdown": strategy_breakdown,
+            "days_analyzed": days
+        }
+
+    def update_mrf_thompson_prior(
+        self,
+        strategy: str,
+        success: bool,
+        quality: float = 0.5
+    ) -> Tuple[float, float]:
+        """
+        Update Thompson Sampling prior for an MRF strategy.
+
+        Args:
+            strategy: MRF strategy name (REFINE, CRITIQUE, VERIFY, ELEGANCE, HOFSTADTER)
+            success: Whether the refinement was successful (quality >= 0.7 threshold)
+            quality: Quality score to weight the update (0.0-1.0)
+
+        Returns:
+            Tuple of (alpha, beta) after update
+        """
+        cursor = self.conn.cursor()
+
+        # Get or create prior for this strategy
+        cursor.execute("""
+            SELECT id, alpha, beta FROM mrf_thompson_priors
+            WHERE strategy = ?
+        """, (strategy,))
+
+        row = cursor.fetchone()
+
+        if row:
+            # Update existing prior
+            alpha = row["alpha"]
+            beta = row["beta"]
+
+            if success:
+                alpha += quality
+            else:
+                beta += (1.0 - quality)
+
+            cursor.execute("""
+                UPDATE mrf_thompson_priors
+                SET alpha = ?, beta = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            """, (alpha, beta, row["id"]))
+        else:
+            # Create new prior with initial update
+            alpha = 1.0 + (quality if success else 0.0)
+            beta = 1.0 + (0.0 if success else (1.0 - quality))
+
+            cursor.execute("""
+                INSERT INTO mrf_thompson_priors (strategy, alpha, beta)
+                VALUES (?, ?, ?)
+            """, (strategy, alpha, beta))
+
+        self.conn.commit()
+        return (alpha, beta)
+
+    def get_mrf_thompson_priors(
+        self,
+        strategy: Optional[str] = None
+    ) -> List[MRFStrategyPrior]:
+        """
+        Get Thompson Sampling priors for MRF strategies.
+
+        Args:
+            strategy: Filter by strategy name (optional)
+
+        Returns:
+            List of MRFStrategyPrior objects
+        """
+        cursor = self.conn.cursor()
+
+        if strategy:
+            cursor.execute("""
+                SELECT * FROM mrf_thompson_priors
+                WHERE strategy = ?
+                ORDER BY updated_at DESC
+            """, (strategy,))
+        else:
+            cursor.execute("""
+                SELECT * FROM mrf_thompson_priors
+                ORDER BY updated_at DESC
+            """)
+
+        priors = []
+        for row in cursor.fetchall():
+            priors.append(MRFStrategyPrior(
+                id=row["id"],
+                strategy=row["strategy"],
+                alpha=row["alpha"],
+                beta=row["beta"],
+                updated_at=datetime.fromisoformat(row["updated_at"])
+            ))
+        return priors
+
+    def get_mrf_strategy_recommendation(
+        self,
+        candidates: Optional[List[str]] = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get Thompson Sampling recommendation for best MRF strategy.
+
+        Uses Beta distribution sampling to balance exploration/exploitation
+        when selecting the most effective refinement strategy.
+
+        Args:
+            candidates: Optional list of strategy names to consider.
+                       If None, considers all strategies with priors.
+
+        Returns:
+            Dict with recommended strategy and expected quality, or None
+        """
+        import random
+
+        cursor = self.conn.cursor()
+
+        if candidates:
+            placeholders = ",".join(["?" for _ in candidates])
+            cursor.execute(f"""
+                SELECT * FROM mrf_thompson_priors
+                WHERE strategy IN ({placeholders})
+            """, candidates)
+        else:
+            cursor.execute("SELECT * FROM mrf_thompson_priors")
+
+        rows = cursor.fetchall()
+
+        if not rows:
+            # No priors - return default strategy
+            return {
+                "recommended_strategy": "AUTO",
+                "expected_quality": 0.5,
+                "confidence": 0.5,
+                "message": "No prior data available, using AUTO strategy",
+                "alternatives": []
+            }
+
+        # Thompson Sampling: sample from Beta distribution for each strategy
+        best_strategy = None
+        best_sample = -1.0
+        all_priors = []
+
+        for row in rows:
+            alpha = row["alpha"]
+            beta = row["beta"]
+            expected = alpha / (alpha + beta)
+
+            # Sample from Beta distribution
+            sample = random.betavariate(alpha, beta)
+
+            all_priors.append({
+                "strategy": row["strategy"],
+                "expected_quality": round(expected, 3),
+                "alpha": alpha,
+                "beta": beta,
+                "sample": round(sample, 3),
+                "total_samples": alpha + beta - 2.0
+            })
+
+            if sample > best_sample:
+                best_sample = sample
+                best_strategy = row["strategy"]
+
+        # Sort by expected quality for alternatives
+        all_priors.sort(key=lambda x: x["expected_quality"], reverse=True)
+
+        return {
+            "recommended_strategy": best_strategy,
+            "expected_quality": round(all_priors[0]["expected_quality"], 3) if all_priors else 0.5,
+            "confidence": round(best_sample, 3),
+            "alternatives": all_priors[:5]  # Top 5 alternatives
+        }

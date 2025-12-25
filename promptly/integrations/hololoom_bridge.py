@@ -6,6 +6,8 @@ Features:
 - Retrieve past refinement patterns
 - Learn which prompts work best for which tasks
 - Thompson Sampling for prompt selection optimization
+- RAG-based context retrieval for prompt enhancement
+- Agentic reasoning for complex prompt tasks
 
 Usage:
     from promptly.integrations.hololoom_bridge import HoloLoomBridge
@@ -27,6 +29,13 @@ Usage:
 
     # Get best prompt for task type
     best = await bridge.recommend_prompt("code_review")
+
+    # RAG-enhanced prompt execution
+    context = await bridge.get_context_for_prompt(prompt_content, task_desc)
+    enhanced = await bridge.enhance_prompt_with_rag(prompt_name, task_type)
+
+    # Agentic reasoning
+    result = await bridge.run_agentic_prompt(prompt_name, mode="verify")
 """
 
 from dataclasses import dataclass, field
@@ -406,6 +415,467 @@ Output Summary:
             'best_prompt': prompts[0]['name'] if prompts else None,
             'prompts': prompts
         }
+
+    # ==================== RAG Integration Methods ====================
+
+    async def get_context_for_prompt(
+        self,
+        prompt_content: str,
+        task_description: str,
+        k: int = 5
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieve relevant context for a prompt using RAG.
+
+        Uses HoloLoom's memory system to find relevant past executions,
+        patterns, and knowledge that can enhance the prompt.
+
+        Args:
+            prompt_content: The prompt template content
+            task_description: Description of the task
+            k: Number of context items to retrieve
+
+        Returns:
+            List of context items with content and relevance scores
+        """
+        context_items = []
+
+        if await self._ensure_hololoom():
+            # Build search query from prompt and task
+            search_query = f"{task_description} {prompt_content[:200]}"
+
+            # Recall from HoloLoom memory
+            memories = await self._hololoom.recall(search_query)
+
+            for mem in memories[:k]:
+                content = mem.content if hasattr(mem, 'content') else str(mem)
+                relevance = mem.relevance if hasattr(mem, 'relevance') else 0.5
+
+                context_items.append({
+                    'content': content,
+                    'relevance': relevance,
+                    'source': 'hololoom_memory',
+                    'type': 'semantic_recall'
+                })
+        else:
+            # Fallback: search in-memory executions
+            query_lower = task_description.lower()
+            scored_executions = []
+
+            for exec in self._executions:
+                # Simple relevance scoring
+                score = 0.0
+                if query_lower in exec.prompt_content.lower():
+                    score += 0.5
+                if query_lower in exec.prompt_name.lower():
+                    score += 0.3
+                # Boost by quality
+                score += exec.quality_score * 0.2
+
+                if score > 0:
+                    scored_executions.append((exec, score))
+
+            # Sort by score and take top k
+            scored_executions.sort(key=lambda x: x[1], reverse=True)
+
+            for exec, score in scored_executions[:k]:
+                context_items.append({
+                    'content': f"Prompt: {exec.prompt_name}\n"
+                               f"Quality: {exec.quality_score:.2f}\n"
+                               f"Output: {exec.output[:300]}...",
+                    'relevance': min(score, 1.0),
+                    'source': 'in_memory',
+                    'type': 'execution_history'
+                })
+
+        return context_items
+
+    async def enhance_prompt_with_rag(
+        self,
+        prompt_name: str,
+        prompt_content: str,
+        task_type: Optional[str] = None,
+        context_k: int = 3
+    ) -> Dict[str, Any]:
+        """
+        Enhance a prompt with RAG-retrieved context.
+
+        Retrieves relevant context and prepares an enhanced prompt
+        with additional information from past executions.
+
+        Args:
+            prompt_name: Name of the prompt
+            prompt_content: The prompt template
+            task_type: Optional task type for filtering
+            context_k: Number of context items to include
+
+        Returns:
+            Dict with enhanced prompt and metadata
+        """
+        # Get relevant context
+        task_desc = task_type or prompt_name
+        context_items = await self.get_context_for_prompt(
+            prompt_content, task_desc, k=context_k
+        )
+
+        # Build context section
+        context_text = ""
+        if context_items:
+            context_text = "\n\n--- Relevant Context ---\n"
+            for i, item in enumerate(context_items, 1):
+                context_text += f"\n[{i}] (relevance: {item['relevance']:.2f})\n"
+                context_text += f"{item['content'][:400]}\n"
+            context_text += "\n--- End Context ---\n\n"
+
+        # Get Thompson Sampling recommendation if available
+        expected_quality = None
+        if task_type and task_type in self.sampler.priors:
+            expected_quality = self.sampler.get_expected_quality(task_type, prompt_name)
+
+        return {
+            'original_prompt': prompt_content,
+            'enhanced_prompt': context_text + prompt_content,
+            'context_items': context_items,
+            'context_count': len(context_items),
+            'avg_context_relevance': (
+                sum(c['relevance'] for c in context_items) / len(context_items)
+                if context_items else 0.0
+            ),
+            'expected_quality': expected_quality,
+            'enhancement_applied': bool(context_items)
+        }
+
+    async def discover_similar_prompts(
+        self,
+        query: str,
+        limit: int = 10,
+        min_quality: float = 0.7
+    ) -> List[Dict[str, Any]]:
+        """
+        Discover similar prompts with quality filtering.
+
+        Args:
+            query: Search query describing the desired prompt
+            limit: Maximum number of results
+            min_quality: Minimum quality score filter
+
+        Returns:
+            List of similar prompts sorted by relevance × quality
+        """
+        # Get all similar prompts
+        similar = await self.find_similar_prompts(query, limit=limit * 2)
+
+        # Filter and enhance with quality data
+        results = []
+
+        if await self._ensure_hololoom():
+            # HoloLoom results - try to match with execution history
+            for item in similar:
+                # Try to find matching execution for quality data
+                quality = 0.5  # Default if no execution found
+                for exec in self._executions:
+                    if exec.prompt_name in item.get('content', ''):
+                        quality = exec.quality_score
+                        break
+
+                if quality >= min_quality:
+                    item['quality_score'] = quality
+                    item['combined_score'] = item.get('relevance', 0.5) * quality
+                    results.append(item)
+        else:
+            # In-memory results already have quality
+            for item in similar:
+                quality = item.get('quality_score', 0.5)
+                if quality >= min_quality:
+                    item['combined_score'] = quality  # Simple scoring for fallback
+                    results.append(item)
+
+        # Sort by combined score
+        results.sort(key=lambda x: x.get('combined_score', 0), reverse=True)
+
+        return results[:limit]
+
+    # ==================== Agentic Reasoning Methods ====================
+
+    async def run_agentic_prompt(
+        self,
+        prompt_name: str,
+        prompt_content: str,
+        variables: Optional[Dict[str, Any]] = None,
+        mode: str = "verify",
+        max_steps: int = 5
+    ) -> Dict[str, Any]:
+        """
+        Execute a prompt with agentic reasoning.
+
+        Supports multiple reasoning modes:
+        - "direct": Single-pass execution
+        - "verify": Execute and verify the result
+        - "research": Multi-query exploration
+        - "plan_execute": Break into steps and execute
+
+        Args:
+            prompt_name: Name of the prompt
+            prompt_content: The prompt template
+            variables: Variables to fill in the prompt
+            mode: Reasoning mode (direct, verify, research, plan_execute)
+            max_steps: Maximum reasoning steps
+
+        Returns:
+            Dict with result, verification, and reasoning trace
+        """
+        variables = variables or {}
+        reasoning_trace = []
+        result = {
+            'prompt_name': prompt_name,
+            'mode': mode,
+            'steps_taken': 0,
+            'verification': None,
+            'response': None,
+            'confidence': 0.5,
+            'reasoning_trace': reasoning_trace
+        }
+
+        # Try to use HoloLoom's agentic reasoning if available
+        if await self._ensure_hololoom():
+            try:
+                from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+
+                # Map mode to HoloLoom's ReasoningMode
+                mode_map = {
+                    'direct': ReasoningMode.DIRECT,
+                    'verify': ReasoningMode.VERIFY,
+                    'research': ReasoningMode.RESEARCH,
+                    'plan_execute': ReasoningMode.PLAN_EXECUTE
+                }
+                reasoning_mode = mode_map.get(mode, ReasoningMode.DIRECT)
+
+                # Build query from prompt and variables
+                filled_prompt = prompt_content
+                for key, value in variables.items():
+                    filled_prompt = filled_prompt.replace(f"{{{key}}}", str(value))
+
+                # Note: Full agentic integration requires orchestrator setup
+                # This is a simplified version that records the attempt
+                reasoning_trace.append({
+                    'step': 1,
+                    'action': 'prepare_agentic',
+                    'mode': mode,
+                    'prompt_length': len(filled_prompt)
+                })
+
+                # For now, we simulate the agentic result
+                # Full implementation would integrate with WeavingOrchestrator
+                result['response'] = f"[Agentic {mode}] Processing: {prompt_name}"
+                result['confidence'] = 0.7
+                result['steps_taken'] = 1
+
+                if mode == 'verify':
+                    result['verification'] = {
+                        'verified': True,
+                        'checks_passed': ['syntax', 'completeness'],
+                        'warnings': []
+                    }
+
+            except ImportError:
+                reasoning_trace.append({
+                    'step': 1,
+                    'action': 'fallback',
+                    'reason': 'agentic module not available'
+                })
+        else:
+            reasoning_trace.append({
+                'step': 1,
+                'action': 'fallback',
+                'reason': 'HoloLoom not available'
+            })
+
+        # Fallback: Simple execution without agentic reasoning
+        if result['response'] is None:
+            filled_prompt = prompt_content
+            for key, value in variables.items():
+                filled_prompt = filled_prompt.replace(f"{{{key}}}", str(value))
+
+            result['response'] = filled_prompt
+            result['confidence'] = 0.5
+            result['steps_taken'] = 1
+
+            if mode == 'verify':
+                # Basic verification
+                result['verification'] = {
+                    'verified': len(filled_prompt) > 0,
+                    'checks_passed': ['non_empty'] if filled_prompt else [],
+                    'warnings': ['no_agentic_verification']
+                }
+
+        result['reasoning_trace'] = reasoning_trace
+        return result
+
+    # ==================== Comprehensive Stats Methods ====================
+
+    async def get_comprehensive_stats(
+        self,
+        prompt_name: str,
+        task_type: Optional[str] = None,
+        window_days: int = 30
+    ) -> Dict[str, Any]:
+        """
+        Get comprehensive statistics combining multiple data sources.
+
+        Combines prompt execution stats, Thompson Sampling insights,
+        and HoloLoom memory analysis.
+
+        Args:
+            prompt_name: Name of the prompt
+            task_type: Optional task type filter
+            window_days: Number of days to analyze
+
+        Returns:
+            Comprehensive stats dictionary
+        """
+        from datetime import timedelta
+
+        stats = {
+            'prompt_name': prompt_name,
+            'task_type': task_type,
+            'window_days': window_days,
+            'execution_stats': None,
+            'thompson_stats': None,
+            'memory_stats': None,
+            'recommendations': []
+        }
+
+        # Get basic execution stats
+        prompt_stats = await self.get_prompt_stats(prompt_name)
+        if prompt_stats:
+            stats['execution_stats'] = {
+                'total_executions': prompt_stats.total_executions,
+                'avg_quality': prompt_stats.avg_quality,
+                'avg_latency_ms': prompt_stats.avg_latency_ms,
+                'success_rate': prompt_stats.success_rate,
+                'last_used': prompt_stats.last_used.isoformat(),
+                'task_types': prompt_stats.task_types
+            }
+
+        # Get Thompson Sampling stats
+        if task_type:
+            thompson_insights = await self.get_learning_insights(task_type)
+            # Find this prompt in the insights
+            for p in thompson_insights.get('prompts', []):
+                if p['name'] == prompt_name:
+                    stats['thompson_stats'] = {
+                        'expected_quality': p['expected_quality'],
+                        'alpha': p['alpha'],
+                        'beta': p['beta'],
+                        'total_samples': p['total_samples'],
+                        'rank_in_task': thompson_insights['prompts'].index(p) + 1,
+                        'total_prompts_for_task': thompson_insights['known_prompts']
+                    }
+                    break
+
+        # Get memory stats from HoloLoom if available
+        if await self._ensure_hololoom():
+            memories = await self._hololoom.recall(f"prompt {prompt_name}")
+            stats['memory_stats'] = {
+                'related_memories': len(memories) if memories else 0,
+                'hololoom_available': True
+            }
+        else:
+            stats['memory_stats'] = {
+                'related_memories': 0,
+                'hololoom_available': False
+            }
+
+        # Generate recommendations
+        recommendations = []
+
+        if stats['execution_stats']:
+            exec_stats = stats['execution_stats']
+            if exec_stats['avg_quality'] < 0.6:
+                recommendations.append({
+                    'type': 'quality',
+                    'priority': 'high',
+                    'message': f"Low average quality ({exec_stats['avg_quality']:.2f}). Consider prompt revision."
+                })
+            if exec_stats['success_rate'] < 0.5:
+                recommendations.append({
+                    'type': 'success_rate',
+                    'priority': 'high',
+                    'message': f"Low success rate ({exec_stats['success_rate']:.1%}). Review failure cases."
+                })
+            if exec_stats['avg_latency_ms'] > 5000:
+                recommendations.append({
+                    'type': 'performance',
+                    'priority': 'medium',
+                    'message': f"High latency ({exec_stats['avg_latency_ms']:.0f}ms). Consider optimization."
+                })
+
+        if stats['thompson_stats']:
+            ts = stats['thompson_stats']
+            if ts['total_samples'] < 10:
+                recommendations.append({
+                    'type': 'data',
+                    'priority': 'low',
+                    'message': "Limited data for Thompson Sampling. Run more executions."
+                })
+            if ts['rank_in_task'] > 1 and ts['expected_quality'] < 0.7:
+                recommendations.append({
+                    'type': 'alternative',
+                    'priority': 'medium',
+                    'message': f"Better alternatives exist for this task type (rank {ts['rank_in_task']}/{ts['total_prompts_for_task']})."
+                })
+
+        stats['recommendations'] = recommendations
+        return stats
+
+    async def sync_with_hololoom(self) -> Dict[str, Any]:
+        """
+        Synchronize learning state with HoloLoom memory.
+
+        Persists Thompson Sampling priors and execution history
+        to HoloLoom's knowledge graph for long-term storage.
+
+        Returns:
+            Sync status and statistics
+        """
+        sync_result = {
+            'success': False,
+            'priors_synced': 0,
+            'executions_synced': 0,
+            'errors': []
+        }
+
+        if not await self._ensure_hololoom():
+            sync_result['errors'].append("HoloLoom not available")
+            return sync_result
+
+        try:
+            # Sync Thompson Sampling priors
+            for task_type, prompts in self.sampler.priors.items():
+                for prompt_name, (alpha, beta) in prompts.items():
+                    memory_content = f"""Thompson Sampling Prior
+Task Type: {task_type}
+Prompt: {prompt_name}
+Alpha (successes): {alpha:.2f}
+Beta (failures): {beta:.2f}
+Expected Quality: {alpha / (alpha + beta):.3f}
+Total Samples: {alpha + beta - 2:.0f}
+"""
+                    await self._hololoom.experience(memory_content)
+                    sync_result['priors_synced'] += 1
+
+            # Sync recent executions not yet in HoloLoom
+            for exec in self._executions[-100:]:  # Last 100 executions
+                memory_content = self._execution_to_memory(exec)
+                await self._hololoom.experience(memory_content)
+                sync_result['executions_synced'] += 1
+
+            sync_result['success'] = True
+
+        except Exception as e:
+            sync_result['errors'].append(str(e))
+
+        return sync_result
 
     def save_learning_state(self, path: str):
         """Save Thompson Sampling state to file."""

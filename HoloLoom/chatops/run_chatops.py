@@ -68,6 +68,17 @@ except ImportError as e:
     SCRATCHPAD_AVAILABLE = False
     print(f"Warning: Scratchpad integration unavailable: {e}")
 
+# Semantic State integration (Phase 8 - December 2025)
+try:
+    from HoloLoom.chatops.handlers.semantic_handlers import (
+        create_semantic_handlers,
+        set_semantic_handlers
+    )
+    SEMANTIC_AVAILABLE = True
+except ImportError as e:
+    SEMANTIC_AVAILABLE = False
+    print(f"Warning: Semantic State integration unavailable: {e}")
+
 
 logger = logging.getLogger(__name__)
 
@@ -383,6 +394,7 @@ class ChatOpsRunner:
         self.skills: Optional[ChatOpsSkills] = None
         self.claude_code: Optional['ClaudeCodeDepartment'] = None
         self.scratchpad_manager: Optional['ScratchPadManager'] = None
+        self.semantic_handlers: Optional['SemanticMatrixHandlers'] = None
         self.running = False
 
     async def setup(self) -> None:
@@ -475,6 +487,28 @@ class ChatOpsRunner:
             except Exception as e:
                 logger.warning(f"Failed to initialize Scratchpad: {e}")
                 self.scratchpad_manager = None
+
+        # Initialize Semantic State handlers if available (Phase 8 - December 2025)
+        if SEMANTIC_AVAILABLE:
+            try:
+                semantic_config = self.config.get("semantic", {})
+                enable_semantic = semantic_config.get("enabled", True)
+
+                if enable_semantic:
+                    # Get embedder from chatops if available
+                    embedder = None
+                    if hasattr(self.chatops, 'embedder'):
+                        embedder = self.chatops.embedder
+
+                    # Create and register semantic handlers
+                    self.semantic_handlers = create_semantic_handlers(self.bot, embedder)
+                    set_semantic_handlers(self.semantic_handlers)
+                    logger.info("Semantic State handlers initialized (Phase 8: 244D -> 8D policy features)")
+                else:
+                    logger.info("Semantic State integration disabled in config")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Semantic State handlers: {e}")
+                self.semantic_handlers = None
 
         logger.info("Setup complete")
 

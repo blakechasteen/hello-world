@@ -71,6 +71,33 @@ from HoloLoom.dark_trace.integration.monitoring import (
     create_monitor,
 )
 
+from HoloLoom.dark_trace.integration.safety_gate import (
+    SafetyAction,
+    ConcernType,
+    SafetyConcern,
+    GateDecision,
+    SafetyGateConfig,
+    SafetyPatternDetector,
+    DarkTraceSafetyGate,
+    create_safety_gate,
+)
+
+from HoloLoom.dark_trace.integration.orchestrator_hooks import (
+    IntegrationMode,
+    HookPoint,
+    HookContext,
+    HookResult,
+    PreWeaveHook,
+    PostWeaveHook,
+    DecisionHook,
+    MiddlewareConfig,
+    DarkTraceMiddleware,
+    DarkTraceIntegrator,
+    IntegrationBlockedError,
+    create_integrator,
+    integrate_dark_trace,
+)
+
 __all__ = [
     # Orchestrator integration
     "DarkTraceOrchestrator",
@@ -88,4 +115,27 @@ __all__ = [
     "DriftDetector",
     "MonitorConfig",
     "create_monitor",
+    # Safety Gate
+    "SafetyAction",
+    "ConcernType",
+    "SafetyConcern",
+    "GateDecision",
+    "SafetyGateConfig",
+    "SafetyPatternDetector",
+    "DarkTraceSafetyGate",
+    "create_safety_gate",
+    # Orchestrator Hooks
+    "IntegrationMode",
+    "HookPoint",
+    "HookContext",
+    "HookResult",
+    "PreWeaveHook",
+    "PostWeaveHook",
+    "DecisionHook",
+    "MiddlewareConfig",
+    "DarkTraceMiddleware",
+    "DarkTraceIntegrator",
+    "IntegrationBlockedError",
+    "create_integrator",
+    "integrate_dark_trace",
 ]

@@ -84,6 +84,11 @@ class ToolExecutor:
             Skills integration gracefully degrades if unavailable.
         """
         self.logger = logging.getLogger(__name__)
+        disable_skills = os.getenv("HOLOLOOM_DISABLE_SKILLS", "").lower() in {"1", "true", "yes"}
+        if disable_skills:
+            enable_skills = False
+        self.require_llm = os.getenv("HOLOLOOM_REQUIRE_LLM", "").lower() in {"1", "true", "yes"}
+        model_name = os.getenv("HOLOLOOM_OLLAMA_MODEL", "llama3.2:3b")
 
         # Core tools
         self.core_tools = ["answer", "search", "notion_write", "calc"]
@@ -111,8 +116,8 @@ class ToolExecutor:
         if self.llm is None:
             try:
                 from HoloLoom.awareness.llm_integration import OllamaLLM
-                self.llm = OllamaLLM(model="llama3.2:3b")
-                self.logger.info("Initialized Ollama LLM (llama3.2:3b)")
+                self.llm = OllamaLLM(model=model_name)
+                self.logger.info(f"Initialized Ollama LLM ({model_name})")
             except Exception as e:
                 self.logger.warning(f"LLM unavailable, using fallback: {e}")
                 self.llm = None
@@ -233,6 +238,13 @@ Question: {query.text}
 Answer:"""
 
         # Call LLM if available
+        if self.require_llm:
+            if not self.llm or not hasattr(self.llm, 'is_available') or not self.llm.is_available():
+                raise RuntimeError(
+                    "LLM required but unavailable. Start Ollama and pull the model "
+                    f"'{os.getenv('HOLOLOOM_OLLAMA_MODEL', 'llama3.2:3b')}'."
+                )
+
         if self.llm and hasattr(self.llm, 'is_available') and self.llm.is_available():
             try:
                 response = await self.llm.generate(
@@ -257,6 +269,8 @@ Answer:"""
 
             except Exception as e:
                 self.logger.error(f"LLM generation failed: {e}")
+                if self.require_llm:
+                    raise RuntimeError("LLM required but generation failed.") from e
                 # Fall through to fallback
 
         # Fallback (LLM unavailable)

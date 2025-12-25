@@ -379,43 +379,26 @@ class HoloLoom:
             query: Search query string
             limit: Max results
             min_relevance: Minimum relevance score
-            extract_images: Extract images from page
-            max_depth: Recursive crawl depth (0 = single page)
 
         Returns:
-            Number of memory shards created
-
-        Example:
-            count = await loom.ingest_web("https://example.com")
+            List of relevant memory objects
         """
-        self.ingest_count += 1
-        logger.info(f"Ingesting web: {url}")
+        self.query_count += 1
+        logger.info(f"Searching memory for: {query}")
 
         if not self.memory:
             logger.warning("No memory backend available")
-            return 0
+            return []
 
         try:
-            config = WebsiteSpinnerConfig(
-                extract_images=extract_images,
-                chunk_by='paragraph',
-                chunk_size=500
+            return await self.memory.recall(
+                query=query, 
+                limit=limit, 
+                min_relevance=min_relevance
             )
-            spinner = WebsiteSpinner(config)
-
-            shards = await spinner.spin({'url': url})
-            logger.info(f"Scraped {len(shards)} shards from {url}")
-
-            # Store in memory
-            memories = shards_to_memories(shards)
-            stored_ids = await self.memory.store_batch(memories)
-
-            logger.info(f"✓ Ingested {len(stored_ids)} memories from web")
-            return len(stored_ids)
-
         except Exception as e:
-            logger.error(f"Web ingestion failed: {e}")
-            return 0
+            logger.error(f"Search failed: {e}")
+            return []
 
     async def ingest_youtube(
         self,

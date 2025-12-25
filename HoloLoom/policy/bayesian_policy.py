@@ -426,7 +426,8 @@ class BayesianUnifiedPolicy:
         tool_probs = {self.core.tools[i]: float(probs[i]) for i in range(len(probs))}
 
         action_plan = ActionPlan(
-            chosen_tool=tool,
+            tool=tool,
+            confidence=float(probs[tool_idx]),
             adapter=adapter,
             tool_probs=tool_probs,
         )

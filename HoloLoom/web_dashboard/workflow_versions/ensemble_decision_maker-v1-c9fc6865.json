@@ -1,0 +1,366 @@
+{
+  "version_id": "ensemble_decision_maker-v1-c9fc6865",
+  "workflow_id": "ensemble_decision_maker",
+  "version_number": 1,
+  "workflow_data": {
+    "version": "1.0",
+    "name": "Ensemble Decision Maker",
+    "description": "Multiple parallel analysis strategies that vote on the best answer. Implements ensemble methods with weighted voting based on historical accuracy.",
+    "tags": [
+      "ensemble",
+      "parallel",
+      "voting",
+      "multi-strategy"
+    ],
+    "author": "HoloLoom Team",
+    "created": "2025-12-23",
+    "nodes": [
+      {
+        "id": "input_processor",
+        "agentType": "hololoom",
+        "x": 100,
+        "y": 300,
+        "config": {
+          "pattern": "fast",
+          "description": "Preprocess and normalize query"
+        }
+      },
+      {
+        "id": "parallel_dispatcher",
+        "agentType": "parallel",
+        "x": 250,
+        "y": 300,
+        "config": {
+          "strategy": "fan_out",
+          "timeout_ms": 10000,
+          "description": "Fan out to multiple analysis strategies"
+        }
+      },
+      {
+        "id": "semantic_analyzer",
+        "agentType": "hololoom",
+        "x": 450,
+        "y": 100,
+        "config": {
+          "pattern": "fused",
+          "emphasis": "semantic_similarity",
+          "description": "Deep semantic analysis approach"
+        }
+      },
+      {
+        "id": "graph_analyzer",
+        "agentType": "fusion",
+        "x": 450,
+        "y": 250,
+        "config": {
+          "strategy": "graph_traversal",
+          "max_hops": 3,
+          "description": "Knowledge graph traversal approach"
+        }
+      },
+      {
+        "id": "multiquery_analyzer",
+        "agentType": "multiquery",
+        "x": 450,
+        "y": 400,
+        "config": {
+          "num_queries": 4,
+          "diversity": 0.7,
+          "description": "Multi-query decomposition approach"
+        }
+      },
+      {
+        "id": "retrieval_analyzer",
+        "agentType": "retriever",
+        "x": 450,
+        "y": 550,
+        "config": {
+          "k": 15,
+          "strategy": "hybrid",
+          "description": "Dense retrieval approach"
+        }
+      },
+      {
+        "id": "confidence_extractor_1",
+        "agentType": "synthesizer",
+        "x": 650,
+        "y": 100,
+        "config": {
+          "extract_type": "confidence_with_reasoning",
+          "description": "Extract confidence from semantic path"
+        }
+      },
+      {
+        "id": "confidence_extractor_2",
+        "agentType": "synthesizer",
+        "x": 650,
+        "y": 250,
+        "config": {
+          "extract_type": "confidence_with_reasoning",
+          "description": "Extract confidence from graph path"
+        }
+      },
+      {
+        "id": "confidence_extractor_3",
+        "agentType": "synthesizer",
+        "x": 650,
+        "y": 400,
+        "config": {
+          "extract_type": "confidence_with_reasoning",
+          "description": "Extract confidence from multiquery path"
+        }
+      },
+      {
+        "id": "confidence_extractor_4",
+        "agentType": "synthesizer",
+        "x": 650,
+        "y": 550,
+        "config": {
+          "extract_type": "confidence_with_reasoning",
+          "description": "Extract confidence from retrieval path"
+        }
+      },
+      {
+        "id": "voting_aggregator",
+        "agentType": "convergence",
+        "x": 850,
+        "y": 300,
+        "config": {
+          "strategy": "weighted_voting",
+          "weight_source": "historical_accuracy",
+          "min_agreement": 0.6,
+          "description": "Aggregate votes with accuracy-based weights"
+        }
+      },
+      {
+        "id": "disagreement_detector",
+        "agentType": "conditional",
+        "x": 1000,
+        "y": 300,
+        "config": {
+          "condition": "agreement_score < 0.6",
+          "threshold": 0.6,
+          "description": "Check if ensemble agrees"
+        }
+      },
+      {
+        "id": "arbiter_resolution",
+        "agentType": "hololoom",
+        "x": 1150,
+        "y": 450,
+        "config": {
+          "pattern": "fused",
+          "mode": "arbitration",
+          "description": "Resolve disagreements with deeper analysis"
+        }
+      },
+      {
+        "id": "consensus_path",
+        "agentType": "formatter",
+        "x": 1150,
+        "y": 150,
+        "config": {
+          "format": "structured",
+          "include_voting_breakdown": true,
+          "description": "Format consensus answer"
+        }
+      },
+      {
+        "id": "final_merger",
+        "agentType": "synthesizer",
+        "x": 1300,
+        "y": 300,
+        "config": {
+          "strategy": "best_of_both",
+          "description": "Merge consensus/arbiter results"
+        }
+      },
+      {
+        "id": "weight_updater",
+        "agentType": "store",
+        "x": 1450,
+        "y": 400,
+        "config": {
+          "update_type": "strategy_weights",
+          "decay_factor": 0.95,
+          "description": "Update strategy weights based on outcome"
+        }
+      },
+      {
+        "id": "final_output",
+        "agentType": "response",
+        "x": 1450,
+        "y": 200,
+        "config": {
+          "format": "markdown",
+          "include_ensemble_metadata": true
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "c1",
+        "from": "input_processor",
+        "to": "parallel_dispatcher"
+      },
+      {
+        "id": "c2",
+        "from": "parallel_dispatcher",
+        "to": "semantic_analyzer"
+      },
+      {
+        "id": "c3",
+        "from": "parallel_dispatcher",
+        "to": "graph_analyzer"
+      },
+      {
+        "id": "c4",
+        "from": "parallel_dispatcher",
+        "to": "multiquery_analyzer"
+      },
+      {
+        "id": "c5",
+        "from": "parallel_dispatcher",
+        "to": "retrieval_analyzer"
+      },
+      {
+        "id": "c6",
+        "from": "semantic_analyzer",
+        "to": "confidence_extractor_1"
+      },
+      {
+        "id": "c7",
+        "from": "graph_analyzer",
+        "to": "confidence_extractor_2"
+      },
+      {
+        "id": "c8",
+        "from": "multiquery_analyzer",
+        "to": "confidence_extractor_3"
+      },
+      {
+        "id": "c9",
+        "from": "retrieval_analyzer",
+        "to": "confidence_extractor_4"
+      },
+      {
+        "id": "c10",
+        "from": "confidence_extractor_1",
+        "to": "voting_aggregator"
+      },
+      {
+        "id": "c11",
+        "from": "confidence_extractor_2",
+        "to": "voting_aggregator"
+      },
+      {
+        "id": "c12",
+        "from": "confidence_extractor_3",
+        "to": "voting_aggregator"
+      },
+      {
+        "id": "c13",
+        "from": "confidence_extractor_4",
+        "to": "voting_aggregator"
+      },
+      {
+        "id": "c14",
+        "from": "voting_aggregator",
+        "to": "disagreement_detector"
+      },
+      {
+        "id": "c15",
+        "from": "disagreement_detector",
+        "to": "consensus_path",
+        "condition": "false"
+      },
+      {
+        "id": "c16",
+        "from": "disagreement_detector",
+        "to": "arbiter_resolution",
+        "condition": "true"
+      },
+      {
+        "id": "c17",
+        "from": "consensus_path",
+        "to": "final_merger"
+      },
+      {
+        "id": "c18",
+        "from": "arbiter_resolution",
+        "to": "final_merger"
+      },
+      {
+        "id": "c19",
+        "from": "final_merger",
+        "to": "final_output"
+      },
+      {
+        "id": "c20",
+        "from": "final_merger",
+        "to": "weight_updater"
+      }
+    ],
+    "input_schema": {
+      "query": {
+        "type": "string",
+        "required": true,
+        "description": "Query requiring high-reliability answer"
+      },
+      "strategy_weights": {
+        "type": "object",
+        "required": false,
+        "default": {
+          "semantic": 0.25,
+          "graph": 0.25,
+          "multiquery": 0.25,
+          "retrieval": 0.25
+        },
+        "description": "Initial weights for each strategy"
+      }
+    },
+    "output_schema": {
+      "response": {
+        "type": "string",
+        "description": "Final ensemble answer"
+      },
+      "agreement_score": {
+        "type": "number",
+        "description": "How much strategies agreed (0-1)"
+      },
+      "winning_strategy": {
+        "type": "string",
+        "description": "Which strategy contributed most"
+      },
+      "voting_breakdown": {
+        "type": "object",
+        "description": "Individual strategy responses and confidences"
+      },
+      "arbiter_used": {
+        "type": "boolean",
+        "description": "Whether arbiter was needed to resolve"
+      }
+    },
+    "evaluation": {
+      "metrics": [
+        "agreement_score",
+        "final_confidence",
+        "latency_ms",
+        "strategy_diversity"
+      ],
+      "success_criteria": {
+        "min_agreement": 0.6,
+        "min_confidence": 0.75
+      }
+    },
+    "id": "ensemble_decision_maker"
+  },
+  "message": "Initial version of Ensemble Decision Maker",
+  "description": null,
+  "created_at": "2025-12-25T07:41:40.208296",
+  "created_by": "demo",
+  "parent_version": null,
+  "branch": "main",
+  "tags": [],
+  "evaluation_results": null
+}

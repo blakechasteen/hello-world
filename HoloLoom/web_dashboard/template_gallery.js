@@ -3,7 +3,8 @@
  * Advanced template management, discovery, and loading system
  *
  * Features:
- * - Dynamic template loading from filesystem
+ * - Marketplace API integration with categories, ratings, usage tracking
+ * - Dynamic template loading from API or filesystem (fallback)
  * - Search and filtering with fuzzy matching
  * - Template metadata discovery
  * - Preview generation with workflow visualization
@@ -12,14 +13,21 @@
  */
 
 class TemplateGallery {
-    constructor() {
+    constructor(options = {}) {
         this.templates = [];
+        this.categories = [];
+        this.featuredTemplates = [];
         this.filteredTemplates = [];
         this.currentCategory = 'all';
+        this.currentDifficulty = 'all';
         this.searchQuery = '';
         this.selectedTemplate = null;
         this.templateCache = new Map();
         this.usageStats = this.loadUsageStats();
+
+        // API configuration
+        this.apiBaseUrl = options.apiBaseUrl || '/api/marketplace';
+        this.useApi = options.useApi !== false; // Default to true
     }
 
     /**
@@ -27,7 +35,19 @@ class TemplateGallery {
      */
     async init() {
         try {
-            await this.loadTemplatesFromFilesystem();
+            // Try loading from API first, fallback to filesystem
+            if (this.useApi) {
+                try {
+                    await this.loadFromApi();
+                    console.log('Loaded templates from marketplace API');
+                } catch (apiError) {
+                    console.warn('API unavailable, falling back to filesystem:', apiError);
+                    await this.loadTemplatesFromFilesystem();
+                }
+            } else {
+                await this.loadTemplatesFromFilesystem();
+            }
+
             this.renderCategoryTabs();
             this.setupEventListeners();
             this.displayTemplates();
@@ -39,7 +59,87 @@ class TemplateGallery {
     }
 
     /**
-     * Load templates from example_workflows directory
+     * Load templates from Marketplace API
+     */
+    async loadFromApi() {
+        // Load categories
+        const categoriesRes = await fetch(`${this.apiBaseUrl}/categories`);
+        if (!categoriesRes.ok) throw new Error('Failed to load categories');
+        this.categories = await categoriesRes.json();
+
+        // Load featured templates
+        const featuredRes = await fetch(`${this.apiBaseUrl}/templates/featured`);
+        if (featuredRes.ok) {
+            this.featuredTemplates = await featuredRes.json();
+        }
+
+        // Load all templates
+        const templatesRes = await fetch(`${this.apiBaseUrl}/templates?page_size=100`);
+        if (!templatesRes.ok) throw new Error('Failed to load templates');
+        const data = await templatesRes.json();
+
+        // Convert API response to internal format
+        this.templates = data.templates.map(t => ({
+            id: t.id,
+            workflowId: t.workflow_id,
+            filename: `${t.workflow_id}.json`,
+            name: t.name,
+            description: t.description,
+            category: t.category,
+            difficulty: t.difficulty,
+            author: t.author,
+            isFeatured: t.is_featured,
+            usageCount: t.usage_count,
+            avgRating: t.avg_rating,
+            ratingCount: t.rating_count,
+            tags: t.tags,
+            agents: 0, // Will be filled when loading full template
+            connections: 0,
+            complexity: this.difficultyToComplexity(t.difficulty),
+            estimatedTime: this.estimateTimeFromDifficulty(t.difficulty),
+            icon: this.getCategoryIcon(t.category),
+            status: t.is_featured ? 'featured' : null
+        }));
+
+        // Sort: featured first, then by usage
+        this.templates.sort((a, b) => {
+            if (a.isFeatured && !b.isFeatured) return -1;
+            if (!a.isFeatured && b.isFeatured) return 1;
+            return b.usageCount - a.usageCount;
+        });
+    }
+
+    /**
+     * Convert difficulty to complexity level (1-3)
+     */
+    difficultyToComplexity(difficulty) {
+        const map = { 'beginner': 1, 'intermediate': 2, 'advanced': 3 };
+        return map[difficulty] || 2;
+    }
+
+    /**
+     * Estimate time from difficulty
+     */
+    estimateTimeFromDifficulty(difficulty) {
+        const map = { 'beginner': '<1 min', 'intermediate': '1-3 min', 'advanced': '3-5 min' };
+        return map[difficulty] || '1-2 min';
+    }
+
+    /**
+     * Track template usage via API
+     */
+    async trackTemplateUsageApi(templateId) {
+        try {
+            await fetch(`${this.apiBaseUrl}/templates/${templateId}/use`, {
+                method: 'POST'
+            });
+        } catch (error) {
+            console.warn('Failed to track usage:', error);
+        }
+    }
+
+    /**
+     * Load templates from example_workflows directory (fallback)
      */
     async loadTemplatesFromFilesystem() {
         const templateFiles = [
@@ -50,7 +150,12 @@ class TemplateGallery {
             'crm/multi_factor_scoring.json',
             'crm/daily_action_list.json',
             'llm/customer_support_triage.json',
-            'llm/content_creation.json'
+            'llm/content_creation.json',
+            'advanced/self_healing_research.json',
+            'advanced/adversarial_verification.json',
+            'advanced/recursive_confidence_loop.json',
+            'advanced/ensemble_decision_maker.json',
+            'advanced/knowledge_graph_builder.json'
         ];
 
         this.templates = [];
@@ -224,14 +329,23 @@ class TemplateGallery {
     }
 
     /**
-     * Filter templates by category and search
+     * Filter templates by category, difficulty, and search
      */
     getFilteredTemplates() {
         return this.templates.filter(t => {
             const matchesCategory = this.currentCategory === 'all' || t.category === this.currentCategory;
+            const matchesDifficulty = this.currentDifficulty === 'all' || t.difficulty === this.currentDifficulty;
             const matchesSearch = this.matchesSearch(t);
-            return matchesCategory && matchesSearch;
+            return matchesCategory && matchesDifficulty && matchesSearch;
         });
+    }
+
+    /**
+     * Set difficulty filter
+     */
+    setDifficultyFilter(difficulty) {
+        this.currentDifficulty = difficulty;
+        this.displayTemplates();
     }
 
     /**
@@ -363,12 +477,18 @@ class TemplateGallery {
     }
 
     /**
-     * Track template usage
+     * Track template usage (local + API)
      */
     trackTemplateUsage(templateId) {
+        // Track locally
         const stats = this.loadUsageStats();
         stats[templateId] = (stats[templateId] || 0) + 1;
         localStorage.setItem('templateUsageStats', JSON.stringify(stats));
+
+        // Track via API if enabled
+        if (this.useApi) {
+            this.trackTemplateUsageApi(templateId);
+        }
     }
 
     /**

@@ -21,7 +21,7 @@ from ..types import (
 from ..core import Federation, FederationConfig
 from ..routing import KademliaRouter, RoutingTable
 from ..gossip import SwimMembership
-from ..consensus import ConsensusVerifier
+from ..verifier import ConsensusVerifier
 from ..guild import GuildManager
 
 

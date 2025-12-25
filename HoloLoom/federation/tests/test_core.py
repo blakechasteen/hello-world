@@ -31,7 +31,7 @@ from ..types import (
 from ..core import Federation, FederationConfig
 from ..routing import KademliaRouter, RoutingTable
 from ..gossip import SwimMembership, MessageType
-from ..consensus import ConsensusVerifier, DSStarScorer, get_quorum
+from ..verifier import ConsensusVerifier, DSStarScorer, get_quorum
 from ..guild import GuildManager, TrustCalculator
 
 

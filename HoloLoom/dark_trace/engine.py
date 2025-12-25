@@ -11,9 +11,17 @@ Core Operations:
 - ablate(feature_ids) → AblationResult
 - discover_circuits(input, output) → CircuitTrace
 
+Plugin System (Phase 11):
+- load_plugins() → Load external plugins with safety validation
+- get_plugin() → Access registered plugins
+- list_plugins() → List all registered plugins
+
 This is the FOUNDATION of HoloLoom's interpretability system.
 
 "Dark Trace = Responsibility + Interpretability"
+
+Date: 2025-12-22
+Phase: 11.8 - Engine Integration
 """
 
 import asyncio
@@ -49,6 +57,27 @@ from HoloLoom.dark_trace.result import (
 from HoloLoom.dark_trace.registry import FeatureRegistry, create_sae_features
 from HoloLoom.dark_trace.trace_config import TraceConfig, TraceMode
 
+# Plugin system imports (Phase 11)
+from HoloLoom.dark_trace.plugins.safety_gate import (
+    PluginSafetyGate,
+    TrustLevel,
+    PluginCapability,
+)
+from HoloLoom.dark_trace.plugins.alignment_bridge import (
+    PluginAlignmentBridge,
+)
+from HoloLoom.dark_trace.plugins.registry import PluginRegistry
+from HoloLoom.dark_trace.plugins.loader import (
+    PluginLoader,
+    LoaderConfig,
+    BulkLoadResult,
+)
+from HoloLoom.dark_trace.plugins.interface import (
+    DarkTracePlugin,
+    PluginMetadata,
+    MonitorPlugin,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -72,12 +101,19 @@ class DarkTraceEngine:
         steering = engine.steer({"semantic.Warmth": 1.5, "sae.42": -0.5})
     """
 
-    def __init__(self, config: Optional[TraceConfig] = None):
+    def __init__(
+        self,
+        config: Optional[TraceConfig] = None,
+        enable_plugins: bool = True,
+        auto_load_builtins: bool = True,
+    ):
         """
         Initialize DarkTraceEngine.
 
         Args:
             config: Configuration (defaults to TraceConfig.standard())
+            enable_plugins: Enable plugin system (Phase 11)
+            auto_load_builtins: Auto-load built-in plugins
         """
         self.config = config or TraceConfig.standard()
 
@@ -93,10 +129,114 @@ class DarkTraceEngine:
         # Analysis counter for correlation updates
         self._analysis_count = 0
 
+        # Plugin system (Phase 11)
+        self._plugins_enabled = enable_plugins
+        self._alignment_bridge: Optional[PluginAlignmentBridge] = None
+        self._safety_gate: Optional[PluginSafetyGate] = None
+        self._plugin_registry: Optional[PluginRegistry] = None
+        self._plugin_loader: Optional[PluginLoader] = None
+
+        if enable_plugins:
+            self._init_plugin_system(auto_load_builtins)
+
         # Logging
         self._setup_logging()
 
-        logger.info(f"DarkTraceEngine initialized (mode={self.config.mode.name})")
+        logger.info(f"DarkTraceEngine initialized (mode={self.config.mode.name}, plugins={enable_plugins})")
+
+    def _init_plugin_system(self, auto_load_builtins: bool = True) -> None:
+        """Initialize the plugin system with safety-first architecture."""
+        # 1. Create alignment bridge (auditing layer)
+        self._alignment_bridge = PluginAlignmentBridge()
+
+        # 2. Create safety gate (validation layer)
+        # Note: SafetyGate uses guardrails (optional), not alignment_bridge
+        # The alignment_bridge is used by PluginRegistry for auditing
+        self._safety_gate = PluginSafetyGate()
+
+        # 3. Create plugin registry
+        self._plugin_registry = PluginRegistry(
+            safety_gate=self._safety_gate,
+            alignment_bridge=self._alignment_bridge,
+        )
+
+        # 4. Create plugin loader
+        # Note: PluginLoader requires engine reference for plugin initialization context
+        self._plugin_loader = PluginLoader(
+            engine=self,  # Pass self as the engine reference
+            safety_gate=self._safety_gate,
+            alignment_bridge=self._alignment_bridge,
+            registry=self._plugin_registry,
+            config=LoaderConfig(
+                sandbox_init=True,
+                init_timeout_seconds=5.0,
+                verify_behavior=True,
+            ),
+        )
+
+        # 5. Auto-load built-in plugins if requested
+        if auto_load_builtins:
+            self._load_builtin_plugins()
+
+        logger.info("Plugin system initialized with safety-first architecture")
+
+    def _load_builtin_plugins(self) -> None:
+        """Load built-in CORE and TRUSTED plugins."""
+        from HoloLoom.dark_trace.plugins.builtin import (
+            SafetyMonitorPlugin,
+            AlignmentValidatorPlugin,
+            MetricsExporterPlugin,
+            get_auto_load_plugins,
+        )
+
+        if not self._plugin_registry:
+            return
+
+        # Load auto-load plugins (CORE level)
+        for name, plugin_class in get_auto_load_plugins():
+            try:
+                plugin = plugin_class()
+
+                # Built-in plugins bypass normal safety gate
+                # They're registered directly with CORE trust
+                asyncio.create_task(
+                    self._register_builtin_plugin(plugin, TrustLevel.CORE)
+                )
+
+                logger.info(f"Auto-loaded built-in plugin: {name}")
+
+            except Exception as e:
+                logger.error(f"Failed to load built-in plugin {name}: {e}")
+
+    async def _register_builtin_plugin(
+        self,
+        plugin: DarkTracePlugin,
+        trust_level: TrustLevel,
+    ) -> None:
+        """Register a built-in plugin with specified trust level."""
+        if not self._plugin_registry or not self._safety_gate:
+            return
+
+        try:
+            # Initialize plugin
+            await plugin.initialize(self, self._safety_gate)
+
+            # Register with specified trust level
+            await self._plugin_registry.register(
+                plugin,
+                trust_level=trust_level,
+                skip_safety_check=True,  # Built-ins are trusted
+            )
+
+            # Audit registration
+            if self._alignment_bridge:
+                await self._alignment_bridge.audit_plugin_registration(
+                    plugin=plugin,
+                    trust_level=trust_level,
+                )
+
+        except Exception as e:
+            logger.error(f"Failed to register built-in plugin {plugin.metadata.name}: {e}")
 
     def _setup_logging(self) -> None:
         """Configure logging based on config."""
@@ -679,13 +819,24 @@ class DarkTraceEngine:
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get engine statistics."""
-        return {
+        stats = {
             "analyses_performed": self._analysis_count,
             "lenses_registered": [lt.name for lt in self._lenses.keys()],
             "features_registered": len(self.registry),
             "config_mode": self.config.mode.name,
             "correlations_computed": self._analysis_count > 0,
+            "plugins_enabled": self._plugins_enabled,
         }
+
+        # Add plugin statistics if enabled
+        if self._plugins_enabled and self._plugin_registry:
+            stats["plugins_registered"] = len(self._plugin_registry.list_plugins())
+            stats["plugin_trust_levels"] = {
+                name: info.get("trust_level", "unknown")
+                for name, info in self._plugin_registry.get_all_plugin_info().items()
+            }
+
+        return stats
 
     def summary(self) -> str:
         """Generate engine summary."""
@@ -693,6 +844,7 @@ class DarkTraceEngine:
             "Dark Trace Engine",
             f"Mode: {self.config.mode.name}",
             f"Analyses: {self._analysis_count}",
+            f"Plugins: {'enabled' if self._plugins_enabled else 'disabled'}",
             "",
             "Registered Lenses:",
         ]
@@ -700,10 +852,202 @@ class DarkTraceEngine:
         for lens_type, lens in self._lenses.items():
             lines.append(f"  {lens_type.name}: {lens.feature_dim} features")
 
+        # Add plugin info
+        if self._plugins_enabled and self._plugin_registry:
+            lines.append("")
+            lines.append("Registered Plugins:")
+            for name in self._plugin_registry.get_plugin_names():
+                info = self._plugin_registry.get_plugin_info(name)
+                trust = info.get("trust_level", "unknown") if info else "unknown"
+                lines.append(f"  {name}: {trust}")
+
         lines.append("")
         lines.append(self.registry.summary())
 
         return "\n".join(lines)
+
+    # =========================================================================
+    # Plugin System (Phase 11)
+    # =========================================================================
+
+    async def load_plugins(
+        self,
+        plugin_dirs: Optional[List[str]] = None,
+        auto_discover: bool = True,
+        min_trust_level: TrustLevel = TrustLevel.SANDBOXED,
+    ) -> BulkLoadResult:
+        """
+        Load plugins from directories with safety validation.
+
+        All plugins go through the safety gate before loading.
+
+        Args:
+            plugin_dirs: Directories to search for plugins
+            auto_discover: Use auto-discovery (entry points, standard paths)
+            min_trust_level: Minimum trust level to accept
+
+        Returns:
+            BulkLoadResult with loaded, blocked, and failed plugins
+        """
+        if not self._plugins_enabled or not self._plugin_loader:
+            logger.warning("Plugin system not enabled")
+            return BulkLoadResult(
+                loaded=[],
+                blocked=[],
+                failed=[],
+                total_time_seconds=0.0,
+            )
+
+        return await self._plugin_loader.load_plugins(
+            plugin_dirs=plugin_dirs,
+            auto_discover=auto_discover,
+            min_trust_level=min_trust_level,
+            engine=self,
+        )
+
+    async def load_plugin(
+        self,
+        plugin_path: str,
+        trust_level: Optional[TrustLevel] = None,
+    ):
+        """
+        Load a single plugin from path.
+
+        Args:
+            plugin_path: Path to plugin module or package
+            trust_level: Trust level to assign (None for auto-detect)
+
+        Returns:
+            PluginLoadResult
+        """
+        if not self._plugins_enabled or not self._plugin_loader:
+            logger.warning("Plugin system not enabled")
+            return None
+
+        return await self._plugin_loader.load_plugin(
+            plugin_path,
+            engine=self,
+            trust_level=trust_level,
+        )
+
+    def get_plugin(self, name: str) -> Optional[DarkTracePlugin]:
+        """
+        Get a registered plugin by name.
+
+        Args:
+            name: Plugin name
+
+        Returns:
+            Plugin instance or None if not found
+        """
+        if not self._plugin_registry:
+            return None
+        return self._plugin_registry.get_plugin(name)
+
+    def list_plugins(self) -> List[str]:
+        """
+        List all registered plugin names.
+
+        Returns:
+            List of plugin names
+        """
+        if not self._plugin_registry:
+            return []
+        return self._plugin_registry.get_plugin_names()
+
+    def get_plugin_info(self, name: str) -> Optional[Dict[str, Any]]:
+        """
+        Get information about a plugin.
+
+        Args:
+            name: Plugin name
+
+        Returns:
+            Plugin info dict or None
+        """
+        if not self._plugin_registry:
+            return None
+        return self._plugin_registry.get_plugin_info(name)
+
+    async def unload_plugin(self, name: str) -> bool:
+        """
+        Unload a plugin.
+
+        Args:
+            name: Plugin name to unload
+
+        Returns:
+            True if successfully unloaded
+        """
+        if not self._plugin_registry:
+            return False
+
+        plugin = self._plugin_registry.get_plugin(name)
+        if plugin:
+            await plugin.shutdown()
+            await self._plugin_registry.unregister(name)
+
+            if self._alignment_bridge:
+                await self._alignment_bridge.audit_plugin_unregistration(name)
+
+            logger.info(f"Unloaded plugin: {name}")
+            return True
+
+        return False
+
+    async def _notify_plugins_analysis_complete(
+        self,
+        trace_result: TraceResult,
+    ) -> None:
+        """Notify all monitor plugins of analysis completion."""
+        if not self._plugin_registry:
+            return
+
+        for name in self._plugin_registry.get_plugin_names():
+            plugin = self._plugin_registry.get_plugin(name)
+            if plugin and isinstance(plugin, MonitorPlugin):
+                try:
+                    await plugin.on_analysis_complete(trace_result)
+                except Exception as e:
+                    logger.warning(f"Plugin {name} failed on analysis notification: {e}")
+
+    @property
+    def safety_gate(self) -> Optional[PluginSafetyGate]:
+        """Access the plugin safety gate."""
+        return self._safety_gate
+
+    @property
+    def alignment_bridge(self) -> Optional[PluginAlignmentBridge]:
+        """Access the alignment bridge."""
+        return self._alignment_bridge
+
+    @property
+    def plugin_registry(self) -> Optional[PluginRegistry]:
+        """Access the plugin registry."""
+        return self._plugin_registry
+
+    # =========================================================================
+    # Async Context Manager (Phase 11)
+    # =========================================================================
+
+    async def __aenter__(self):
+        """Async context manager entry."""
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - clean shutdown of plugins."""
+        if self._plugin_registry:
+            # Shutdown all plugins
+            for name in self._plugin_registry.list_plugins():
+                try:
+                    plugin = self._plugin_registry.get_plugin(name)
+                    if plugin:
+                        await plugin.shutdown()
+                except Exception as e:
+                    logger.warning(f"Error shutting down plugin {name}: {e}")
+
+        logger.info("DarkTraceEngine shutdown complete")
+        return False
 
 
 # =============================================================================

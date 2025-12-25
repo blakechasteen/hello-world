@@ -376,6 +376,17 @@ class ActionPlan:
     """Plan of actions to execute."""
     actions: List[PolicyAction] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    tool: Optional[str] = None
+    confidence: float = 0.0
+    tool_probs: Dict[str, float] = field(default_factory=dict)
+    adapter: str = "general"
+
+    def __post_init__(self):
+        if self.tool is None and self.actions:
+            self.tool = self.actions[0].tool
+            self.confidence = self.actions[0].confidence
+        elif self.tool and not self.actions:
+            self.actions = [PolicyAction(tool=self.tool, confidence=self.confidence)]
 
 
 @dataclass

@@ -1,0 +1,724 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Promptly Analytics Tool Schemas for LLM Function Calling",
+  "version": "1.0.0",
+  "tools": [
+    {
+      "name": "promptly_analytics_stats",
+      "description": "Get comprehensive analytics for a prompt including quality metrics, trends, Thompson Sampling expected quality, and recommendations.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt_name": {
+            "type": "string",
+            "description": "Name of the prompt to analyze"
+          },
+          "days": {
+            "type": "integer",
+            "description": "Number of days to analyze (default: 30)",
+            "default": 30,
+            "minimum": 1,
+            "maximum": 365
+          },
+          "format": {
+            "type": "string",
+            "description": "Output format",
+            "enum": ["json", "text", "html"],
+            "default": "json"
+          }
+        },
+        "required": ["prompt_name"]
+      }
+    },
+    {
+      "name": "promptly_analytics_compare",
+      "description": "Compare two prompts statistically with significance testing. Returns winner, statistical significance, and detailed metrics comparison.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt_a": {
+            "type": "string",
+            "description": "First prompt name to compare"
+          },
+          "prompt_b": {
+            "type": "string",
+            "description": "Second prompt name to compare"
+          },
+          "task_type": {
+            "type": "string",
+            "description": "Optional task type to filter comparison"
+          },
+          "days": {
+            "type": "integer",
+            "description": "Number of days to analyze (default: 30)",
+            "default": 30
+          }
+        },
+        "required": ["prompt_a", "prompt_b"]
+      }
+    },
+    {
+      "name": "promptly_recommend",
+      "description": "Get Thompson Sampling recommendation for the best prompt for a task type. Uses Bayesian optimization to balance exploration and exploitation.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "task_type": {
+            "type": "string",
+            "description": "Type of task (e.g., summarization, code_review, explanation)"
+          },
+          "candidates": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Optional list of candidate prompt names to consider. If not provided, considers all prompts."
+          }
+        },
+        "required": ["task_type"]
+      }
+    },
+    {
+      "name": "promptly_analytics_trend",
+      "description": "Get quality trend over time for a prompt. Returns time series data with quality scores and execution counts.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt_name": {
+            "type": "string",
+            "description": "Prompt to analyze"
+          },
+          "days": {
+            "type": "integer",
+            "description": "Number of days to analyze (default: 30)",
+            "default": 30
+          },
+          "granularity": {
+            "type": "string",
+            "description": "Time granularity for data points",
+            "enum": ["hourly", "daily", "weekly"],
+            "default": "daily"
+          }
+        },
+        "required": ["prompt_name"]
+      }
+    },
+    {
+      "name": "promptly_analytics_underperforming",
+      "description": "Find prompts performing below quality threshold. Returns list with reasons and improvement suggestions.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "threshold": {
+            "type": "number",
+            "description": "Quality threshold (0.0-1.0). Prompts below this are flagged. Default: 0.6",
+            "default": 0.6,
+            "minimum": 0,
+            "maximum": 1
+          },
+          "days": {
+            "type": "integer",
+            "description": "Analysis window in days (default: 30)",
+            "default": 30
+          }
+        }
+      }
+    },
+    {
+      "name": "promptly_hololoom_enhance",
+      "description": "Enhance a prompt with contextual information from HoloLoom memory using RAG (Retrieval-Augmented Generation).",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt_name": {
+            "type": "string",
+            "description": "Name of prompt to enhance"
+          },
+          "task_description": {
+            "type": "string",
+            "description": "Description of the task for context retrieval"
+          },
+          "context_k": {
+            "type": "integer",
+            "description": "Number of context items to retrieve (default: 5)",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 20
+          },
+          "injection_method": {
+            "type": "string",
+            "description": "How to inject context into prompt",
+            "enum": ["prefix", "suffix", "inline"],
+            "default": "prefix"
+          }
+        },
+        "required": ["prompt_name"]
+      }
+    },
+    {
+      "name": "promptly_hololoom_agentic",
+      "description": "Execute a prompt with agentic reasoning for verification, research, or multi-step planning.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt_name": {
+            "type": "string",
+            "description": "Name of prompt to execute"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Reasoning mode: direct (fast), verify (check accuracy), research (explore), plan_execute (decompose)",
+            "enum": ["direct", "verify", "research", "plan_execute"]
+          },
+          "variables": {
+            "type": "object",
+            "description": "Variables to substitute in the prompt template",
+            "additionalProperties": {"type": "string"}
+          },
+          "max_steps": {
+            "type": "integer",
+            "description": "Maximum reasoning steps (default: 5)",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "required": ["prompt_name", "mode"]
+      }
+    },
+    {
+      "name": "promptly_hololoom_similar",
+      "description": "Find similar prompts based on semantic similarity to a query.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query or concept to find similar prompts for"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 5)",
+            "default": 5,
+            "minimum": 1,
+            "maximum": 20
+          },
+          "min_quality": {
+            "type": "number",
+            "description": "Minimum quality threshold for results (default: 0.7)",
+            "default": 0.7,
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "promptly_get",
+      "description": "Retrieve a prompt by name, optionally at a specific version.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Prompt name"
+          },
+          "version": {
+            "type": "integer",
+            "description": "Optional version number. If not specified, returns latest version.",
+            "minimum": 1
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "promptly_list",
+      "description": "List available prompts with optional filtering.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Optional glob pattern to filter (e.g., 'code_*' for prompts starting with 'code_')"
+          },
+          "tag": {
+            "type": "string",
+            "description": "Optional tag to filter by"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 50)",
+            "default": 50
+          }
+        }
+      }
+    },
+    {
+      "name": "promptly_create",
+      "description": "Create a new prompt. Supports variable placeholders using {variable_name} syntax.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Prompt name (alphanumeric and underscores only)",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+          },
+          "content": {
+            "type": "string",
+            "description": "Prompt content. Use {variable_name} for placeholders."
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Optional metadata",
+            "properties": {
+              "description": {"type": "string"},
+              "tags": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "author": {"type": "string"}
+            }
+          }
+        },
+        "required": ["name", "content"]
+      }
+    },
+    {
+      "name": "promptly_record_execution",
+      "description": "Record a prompt execution for analytics tracking. This updates Thompson Sampling priors.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt_name": {
+            "type": "string",
+            "description": "Name of the executed prompt"
+          },
+          "version": {
+            "type": "integer",
+            "description": "Version that was executed"
+          },
+          "task_type": {
+            "type": "string",
+            "description": "Type of task (e.g., 'summarization', 'code_review')"
+          },
+          "input_data": {
+            "type": "string",
+            "description": "Input provided to the prompt"
+          },
+          "output": {
+            "type": "string",
+            "description": "Generated output"
+          },
+          "quality_score": {
+            "type": "number",
+            "description": "Quality score (0.0-1.0). Score >= 0.7 is considered success.",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "latency_ms": {
+            "type": "number",
+            "description": "Execution latency in milliseconds",
+            "minimum": 0
+          },
+          "llm_provider": {
+            "type": "string",
+            "description": "LLM provider used (e.g., 'anthropic', 'openai', 'ollama')"
+          },
+          "llm_model": {
+            "type": "string",
+            "description": "Model name used"
+          },
+          "token_count": {
+            "type": "integer",
+            "description": "Total tokens used",
+            "minimum": 0
+          }
+        },
+        "required": ["prompt_name", "quality_score"]
+      }
+    },
+    {
+      "name": "promptly_mrf_enhance",
+      "description": "Enhance a prompt with the 7-component MRF metaprompt framework (ROLE → OBJECTIVE → PROCESS → FORMAT → CONSTRAINTS → UNCERTAINTY → VALIDATION).",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt_name": {
+            "type": "string",
+            "description": "Name identifier for the prompt (for tracking)"
+          },
+          "prompt_content": {
+            "type": "string",
+            "description": "The prompt content to enhance"
+          },
+          "task_type": {
+            "type": "string",
+            "description": "Type of task for optimization (e.g., 'factual', 'analytical', 'creative')"
+          },
+          "model_provider": {
+            "type": "string",
+            "description": "Target LLM provider for optimization",
+            "enum": ["claude", "gemini", "gpt", "ollama"],
+            "default": "claude"
+          }
+        },
+        "required": ["prompt_name", "prompt_content"]
+      }
+    },
+    {
+      "name": "promptly_mrf_refine",
+      "description": "Refine a response using MRF refinement strategies (REFINE, CRITIQUE, VERIFY, ELEGANCE, HOFSTADTER) with iterative quality improvement.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "prompt_name": {
+            "type": "string",
+            "description": "Name of the prompt that generated the response"
+          },
+          "query": {
+            "type": "string",
+            "description": "The original query/question"
+          },
+          "response": {
+            "type": "string",
+            "description": "The response to refine"
+          },
+          "strategy": {
+            "type": "string",
+            "description": "Refinement strategy to use",
+            "enum": ["auto", "refine", "critique", "verify", "elegance", "hofstadter"],
+            "default": "auto"
+          },
+          "query_type": {
+            "type": "string",
+            "description": "Type of query for strategy optimization (e.g., 'factual', 'analytical')"
+          },
+          "max_iterations": {
+            "type": "integer",
+            "description": "Maximum refinement iterations (default: 3)",
+            "default": 3,
+            "minimum": 1,
+            "maximum": 10
+          },
+          "quality_threshold": {
+            "type": "number",
+            "description": "Stop when quality exceeds this threshold (default: 0.85)",
+            "default": 0.85,
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": ["prompt_name", "query", "response"]
+      }
+    },
+    {
+      "name": "promptly_mrf_recommend",
+      "description": "Get Thompson Sampling recommendation for the best MRF refinement strategy for a query type. Uses Bayesian optimization with Beta(α,β) priors.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query_type": {
+            "type": "string",
+            "description": "Type of query (e.g., 'factual', 'analytical', 'creative', 'procedural')"
+          }
+        },
+        "required": ["query_type"]
+      }
+    },
+    {
+      "name": "promptly_mrf_analytics",
+      "description": "Get MRF Thompson Sampling learning statistics including strategy performance, success rates, and optimization metrics.",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "promptly_mrf_history",
+      "description": "Get available MRF task templates and their configurations.",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ],
+  "openai_format": {
+    "description": "Tools formatted for OpenAI function calling",
+    "functions": [
+      {
+        "name": "promptly_analytics_stats",
+        "description": "Get comprehensive analytics for a prompt including quality metrics, trends, and recommendations.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string", "description": "Name of the prompt to analyze"},
+            "days": {"type": "integer", "description": "Analysis window in days", "default": 30}
+          },
+          "required": ["prompt_name"]
+        }
+      },
+      {
+        "name": "promptly_recommend",
+        "description": "Get Thompson Sampling recommendation for best prompt for a task type.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "task_type": {"type": "string", "description": "Type of task"},
+            "candidates": {"type": "array", "items": {"type": "string"}, "description": "Optional candidate prompts"}
+          },
+          "required": ["task_type"]
+        }
+      },
+      {
+        "name": "promptly_hololoom_agentic",
+        "description": "Execute a prompt with agentic reasoning for verification or research.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string", "description": "Prompt to execute"},
+            "mode": {"type": "string", "enum": ["direct", "verify", "research", "plan_execute"]},
+            "variables": {"type": "object", "description": "Template variables"},
+            "max_steps": {"type": "integer", "default": 5}
+          },
+          "required": ["prompt_name", "mode"]
+        }
+      },
+      {
+        "name": "promptly_mrf_enhance",
+        "description": "Enhance a prompt with the 7-component MRF metaprompt framework.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string", "description": "Name identifier for the prompt"},
+            "prompt_content": {"type": "string", "description": "The prompt content to enhance"},
+            "task_type": {"type": "string", "description": "Type of task for optimization"},
+            "model_provider": {"type": "string", "enum": ["claude", "gemini", "gpt", "ollama"], "default": "claude"}
+          },
+          "required": ["prompt_name", "prompt_content"]
+        }
+      },
+      {
+        "name": "promptly_mrf_refine",
+        "description": "Refine a response using MRF refinement strategies with iterative quality improvement.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string", "description": "Name of the prompt"},
+            "query": {"type": "string", "description": "The original query"},
+            "response": {"type": "string", "description": "The response to refine"},
+            "strategy": {"type": "string", "enum": ["auto", "refine", "critique", "verify", "elegance", "hofstadter"], "default": "auto"},
+            "max_iterations": {"type": "integer", "default": 3}
+          },
+          "required": ["prompt_name", "query", "response"]
+        }
+      },
+      {
+        "name": "promptly_mrf_recommend",
+        "description": "Get Thompson Sampling recommendation for the best MRF refinement strategy.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query_type": {"type": "string", "description": "Type of query"}
+          },
+          "required": ["query_type"]
+        }
+      }
+    ]
+  },
+  "anthropic_format": {
+    "description": "Tools formatted for Anthropic tool use",
+    "tools": [
+      {
+        "name": "promptly_analytics_stats",
+        "description": "Get comprehensive analytics for a prompt including quality metrics, trends, and recommendations.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string", "description": "Name of the prompt to analyze"},
+            "days": {"type": "integer", "description": "Analysis window in days", "default": 30}
+          },
+          "required": ["prompt_name"]
+        }
+      },
+      {
+        "name": "promptly_recommend",
+        "description": "Get Thompson Sampling recommendation for best prompt for a task type.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "task_type": {"type": "string", "description": "Type of task"},
+            "candidates": {"type": "array", "items": {"type": "string"}, "description": "Optional candidate prompts"}
+          },
+          "required": ["task_type"]
+        }
+      },
+      {
+        "name": "promptly_hololoom_agentic",
+        "description": "Execute a prompt with agentic reasoning for verification or research.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string", "description": "Prompt to execute"},
+            "mode": {"type": "string", "enum": ["direct", "verify", "research", "plan_execute"]},
+            "variables": {"type": "object", "description": "Template variables"},
+            "max_steps": {"type": "integer", "default": 5}
+          },
+          "required": ["prompt_name", "mode"]
+        }
+      },
+      {
+        "name": "promptly_mrf_enhance",
+        "description": "Enhance a prompt with the 7-component MRF metaprompt framework.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string", "description": "Name identifier for the prompt"},
+            "prompt_content": {"type": "string", "description": "The prompt content to enhance"},
+            "task_type": {"type": "string", "description": "Type of task for optimization"},
+            "model_provider": {"type": "string", "enum": ["claude", "gemini", "gpt", "ollama"], "default": "claude"}
+          },
+          "required": ["prompt_name", "prompt_content"]
+        }
+      },
+      {
+        "name": "promptly_mrf_refine",
+        "description": "Refine a response using MRF refinement strategies with iterative quality improvement.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string", "description": "Name of the prompt"},
+            "query": {"type": "string", "description": "The original query"},
+            "response": {"type": "string", "description": "The response to refine"},
+            "strategy": {"type": "string", "enum": ["auto", "refine", "critique", "verify", "elegance", "hofstadter"], "default": "auto"},
+            "max_iterations": {"type": "integer", "default": 3}
+          },
+          "required": ["prompt_name", "query", "response"]
+        }
+      },
+      {
+        "name": "promptly_mrf_recommend",
+        "description": "Get Thompson Sampling recommendation for the best MRF refinement strategy.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "query_type": {"type": "string", "description": "Type of query"}
+          },
+          "required": ["query_type"]
+        }
+      }
+    ]
+  },
+  "mcp_format": {
+    "description": "Tools formatted for MCP (Model Context Protocol)",
+    "tools": [
+      {
+        "name": "promptly_analytics_stats",
+        "description": "Get comprehensive analytics for a prompt",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string"},
+            "days": {"type": "integer", "default": 30}
+          },
+          "required": ["prompt_name"]
+        }
+      },
+      {
+        "name": "promptly_recommend",
+        "description": "Get Thompson Sampling recommendation for best prompt",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "task_type": {"type": "string"},
+            "candidates": {"type": "array", "items": {"type": "string"}}
+          },
+          "required": ["task_type"]
+        }
+      },
+      {
+        "name": "promptly_hololoom_enhance",
+        "description": "Enhance prompt with RAG context from HoloLoom",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string"},
+            "task_description": {"type": "string"},
+            "context_k": {"type": "integer", "default": 5}
+          },
+          "required": ["prompt_name"]
+        }
+      },
+      {
+        "name": "promptly_hololoom_agentic",
+        "description": "Execute with agentic reasoning",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string"},
+            "mode": {"type": "string", "enum": ["direct", "verify", "research", "plan_execute"]},
+            "variables": {"type": "object"},
+            "max_steps": {"type": "integer", "default": 5}
+          },
+          "required": ["prompt_name", "mode"]
+        }
+      },
+      {
+        "name": "promptly_mrf_enhance",
+        "description": "Enhance prompt with 7-component MRF metaprompt framework",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string"},
+            "prompt_content": {"type": "string"},
+            "task_type": {"type": "string"},
+            "model_provider": {"type": "string", "enum": ["claude", "gemini", "gpt", "ollama"], "default": "claude"}
+          },
+          "required": ["prompt_name", "prompt_content"]
+        }
+      },
+      {
+        "name": "promptly_mrf_refine",
+        "description": "Refine response using MRF refinement strategies",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt_name": {"type": "string"},
+            "query": {"type": "string"},
+            "response": {"type": "string"},
+            "strategy": {"type": "string", "enum": ["auto", "refine", "critique", "verify", "elegance", "hofstadter"], "default": "auto"},
+            "max_iterations": {"type": "integer", "default": 3}
+          },
+          "required": ["prompt_name", "query", "response"]
+        }
+      },
+      {
+        "name": "promptly_mrf_recommend",
+        "description": "Get Thompson Sampling MRF strategy recommendation",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query_type": {"type": "string"}
+          },
+          "required": ["query_type"]
+        }
+      },
+      {
+        "name": "promptly_mrf_analytics",
+        "description": "Get MRF learning statistics",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "promptly_mrf_history",
+        "description": "Get available MRF task templates",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ]
+  }
+}

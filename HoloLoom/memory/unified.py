@@ -269,7 +269,8 @@ class UnifiedMemory:
         strategy: RecallStrategy = RecallStrategy.BALANCED,
         limit: int = 5,
         time_range: Optional[tuple] = None,
-        context_filter: Optional[Dict] = None
+        context_filter: Optional[Dict] = None,
+        min_relevance: float = 0.0
     ) -> List[Memory]:
         """
         Recall relevant memories (Async).
@@ -284,24 +285,10 @@ class UnifiedMemory:
             limit: Max number of memories
             time_range: Optional (start, end) timestamps
             context_filter: Optional filters (place, people, topics)
+            min_relevance: Minimum relevance score (0.0 to 1.0)
 
         Returns:
             List of Memory objects, sorted by relevance
-
-        Example:
-            # Find similar memories
-            memories = await memory.recall(
-                "winter preparation",
-                strategy=RecallStrategy.SIMILAR,
-                limit=3
-            )
-
-            # Find recent memories at apiary
-            memories = await memory.recall(
-                "hive status",
-                strategy=RecallStrategy.RECENT,
-                context_filter={'place': 'apiary'}
-            )
         """
         # Route through Memory Conductor if available
         if self._conductor_available and self._conductor:
@@ -317,7 +304,7 @@ class UnifiedMemory:
                     text=query,
                     k=limit,
                     strategy=mem_strategy,
-                    min_relevance=0.0,
+                    min_relevance=min_relevance,
                     include_metadata=True,
                     enable_spreading=True,
                     max_hops=3
@@ -336,16 +323,23 @@ class UnifiedMemory:
                 pass
 
         # Fallback: Original strategy dispatch
+        results = []
         if strategy == RecallStrategy.RECENT:
-            return await self._recall_temporal(query, limit, time_range)
+            results = await self._recall_temporal(query, limit, time_range)
         elif strategy == RecallStrategy.SIMILAR:
-            return await self._recall_semantic(query, limit)
+            results = await self._recall_semantic(query, limit)
         elif strategy == RecallStrategy.CONNECTED:
-            return await self._recall_graph(query, limit)
+            results = await self._recall_graph(query, limit)
         elif strategy == RecallStrategy.RESONANT:
-            return await self._recall_resonant(query, limit)
+            results = await self._recall_resonant(query, limit)
         else:  # BALANCED
-            return await self._recall_fused(query, limit, context_filter)
+            results = await self._recall_fused(query, limit, context_filter)
+
+        # Apply relevance filter for fallback paths if min_relevance > 0
+        if min_relevance > 0:
+            results = [m for m in results if getattr(m, 'relevance', 0.0) >= min_relevance]
+            
+        return results
     
     def navigate(
         self,
@@ -934,17 +928,21 @@ class UnifiedMemory:
 
             # Convert protocol Memory to unified Memory
             unified_mems = []
-            for mem in result.memories:
+            for i, mem in enumerate(result.memories):
                 # Merge context and metadata for unified Memory
                 merged_context = {**mem.context, **mem.metadata}
+                # Use actual score if available
+                score = result.scores[i] if i < len(result.scores) else 0.8
+                
                 unified_mems.append(Memory(
                     id=mem.id,
                     text=mem.text,
                     timestamp=mem.timestamp.isoformat() if hasattr(mem.timestamp, 'isoformat') else str(mem.timestamp),
                     context=merged_context,
-                    relevance=0.8  # Placeholder relevance
+                    relevance=score
                 ))
 
+            logger.info(f"Retrieved {len(unified_mems)} memories from backend using {strategy} strategy")
             return unified_mems
 
         except Exception as e:

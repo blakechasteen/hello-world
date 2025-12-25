@@ -375,23 +375,29 @@ class NeuralCore(nn.Module):
         n_heads: int = 4,
         n_motifs: int = 8,
         n_adapters: int = 4,
-        n_tools: int = 4
+        n_tools: int = 4,
+        semantic_dim: int = 8  # Phase 8: 8D semantic feature vector
     ):
         super().__init__()
-        
+
         # Learnable latent query representation
         self.latent = nn.Parameter(torch.randn(1, 16, d_model) / math.sqrt(d_model))
-        
+
         # Transformer blocks
         self.blocks = nn.ModuleList([
             TinyTransformerBlock(d_model, n_heads, n_motifs, n_adapters)
             for _ in range(n_layers)
         ])
-        
+
         # Output heads
         self.readout = nn.Linear(d_model, d_model)
         self.tool_head = nn.Linear(d_model, n_tools)
-        
+
+        # Phase 8: Semantic feature integration
+        # Projects 8D semantic features → d_model for combining with pooled features
+        self.semantic_proj = nn.Linear(semantic_dim, d_model)
+        self.semantic_gate = nn.Linear(d_model * 2, d_model)  # Gate for semantic fusion
+
         # Tool names (fixed)
         self.tools = ["answer", "search", "notion_write", "calc"]
     
@@ -399,34 +405,52 @@ class NeuralCore(nn.Module):
         self,
         mem: torch.Tensor,
         ctrl: torch.Tensor,
-        adapter_idx: int
+        adapter_idx: int,
+        semantic_features: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Make a decision given context and control signals.
-        
+
         Args:
             mem: Context memory embeddings [B, M, D]
             ctrl: Motif control vector [B, n_motifs]
             adapter_idx: Which adapter to use
-            
+            semantic_features: Optional 8D semantic state features [B, 8]
+                             (Phase 8: momentum, complexity, top-5 dims, velocity_mag)
+
         Returns:
             Tuple of (tool_logits, pooled_features)
         """
         B = mem.size(0)
-        
+
         # Expand latent query for batch
         x = self.latent.expand(B, -1, -1)
-        
+
         # Process through transformer blocks
         for blk in self.blocks:
             x = blk(x, mem, ctrl, adapter_idx)
-        
+
         # Pool and readout
         pooled = x.mean(dim=1)  # Average over sequence
-        
+
+        # Phase 8: Semantic feature fusion
+        # If semantic features provided, combine with pooled features using gated fusion
+        if semantic_features is not None:
+            # Project 8D semantic → d_model
+            semantic_proj = self.semantic_proj(semantic_features)  # [B, d_model]
+
+            # Gated fusion: learn how much to weight semantic vs neural features
+            # concat → gate → sigmoid → weighted sum
+            combined = torch.cat([pooled, semantic_proj], dim=-1)  # [B, 2*d_model]
+            gate = torch.sigmoid(self.semantic_gate(combined))  # [B, d_model]
+
+            # Gated combination: pooled * (1-gate) + semantic_proj * gate
+            # This allows the network to learn when semantic features are useful
+            pooled = pooled * (1 - gate) + semantic_proj * gate
+
         # Tool selection logits
         logits = self.tool_head(self.readout(pooled))
-        
+
         return logits, pooled
 
 
@@ -536,10 +560,27 @@ class UnifiedPolicy:
         # Reward based on coherence + episode diversity
         episodes = len(set(s.episode for s, _ in context.hits)) if context.hits else 0
         reward = features.metrics.get("coherence", 0.0) + 0.1 * episodes
-        
-        # Step 4: Get neural network predictions
+
+        # Phase 8: Extract semantic features from context if available
+        semantic_tensor = None
+        if hasattr(context, 'metadata') and context.metadata:
+            semantic_state = context.metadata.get('semantic_state')
+            if semantic_state and 'policy_features' in semantic_state:
+                policy_features = semantic_state['policy_features']
+                if policy_features:
+                    semantic_tensor = torch.tensor(
+                        policy_features, dtype=torch.float32
+                    ).unsqueeze(0).to(self.device)  # [1, 8]
+                    logger.debug(
+                        f"[DEBUG] Policy using semantic features: "
+                        f"momentum={policy_features[0]:.3f}, "
+                        f"complexity={policy_features[1]:.3f}, "
+                        f"dominant_category={semantic_state.get('dominant_category', 'unknown')}"
+                    )
+
+        # Step 4: Get neural network predictions (with optional semantic features)
         adapter_idx = self.adapter_for_dim.get(self.mem_dim, 0)
-        logits, _ = await self.core.decide(mem, ctrl, adapter_idx)
+        logits, _ = await self.core.decide(mem, ctrl, adapter_idx, semantic_features=semantic_tensor)
         probs = torch.softmax(logits, dim=-1).detach().cpu().numpy()[0]
         
         # Step 5: FIXED! Use bandit strategy for tool selection
@@ -609,7 +650,8 @@ class UnifiedPolicy:
         
         # Add bandit debug info to metadata
         action_plan = ActionPlan(
-            chosen_tool=tool,
+            tool=tool,
+            confidence=float(probs[tool_idx]),
             adapter=adapter,
             tool_probs=tool_probs,
         )

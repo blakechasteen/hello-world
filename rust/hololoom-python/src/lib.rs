@@ -190,6 +190,7 @@ fn py_kmeans<'py>(
 ///     >>> labels, _, _, _ = kmeans(data, k=5)
 ///     >>> score = silhouette_score(data, labels)
 #[pyfunction]
+#[pyo3(name = "silhouette_score")]
 fn py_silhouette_score<'py>(
     data: PyReadonlyArray2<'py, f32>,
     labels: PyReadonlyArray1<'py, i64>,

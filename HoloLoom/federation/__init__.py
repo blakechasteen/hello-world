@@ -72,7 +72,7 @@ from .guild import (
 )
 
 # Consensus verification
-from .consensus import (
+from .verifier import (
     ConsensusVerifier,
     DSStarScorer,
     VerificationScore,
@@ -197,6 +197,33 @@ from .agentic_rag import (
     # Constants
     DEFAULT_FEDERATION_THRESHOLD,
     RAG_RECALL_METHOD,
+)
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  OBSERVABILITY - Phase 5 (December 2025)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Prometheus metrics
+from .metrics import (
+    # Query metrics
+    record_federation_query,
+    record_query_error,
+    QueryMetricsContext,
+    # Alignment metrics
+    record_alignment_check,
+    record_alignment_failure,
+    # Gossip metrics
+    record_gossip_message,
+    record_membership_change,
+    # Cluster metrics
+    set_cluster_nodes,
+    set_pending_queries,
+    inc_pending_queries,
+    dec_pending_queries,
+    # Collector
+    FederationCollector,
+    FederationMetricsSnapshot,
+    get_federation_collector,
 )
 
 # Distributed Inference (Day 19)
@@ -385,4 +412,24 @@ __all__ = [
     "INFERENCE_CAPABILITIES_METHOD",
     "DEFAULT_INFERENCE_TIMEOUT_SECONDS",
     "DEFAULT_STREAM_TIMEOUT_SECONDS",
+    # Observability (Phase 5 - December 2025)
+    # Query metrics
+    "record_federation_query",
+    "record_query_error",
+    "QueryMetricsContext",
+    # Alignment metrics
+    "record_alignment_check",
+    "record_alignment_failure",
+    # Gossip metrics
+    "record_gossip_message",
+    "record_membership_change",
+    # Cluster metrics
+    "set_cluster_nodes",
+    "set_pending_queries",
+    "inc_pending_queries",
+    "dec_pending_queries",
+    # Collector
+    "FederationCollector",
+    "FederationMetricsSnapshot",
+    "get_federation_collector",
 ]

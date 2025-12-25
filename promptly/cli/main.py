@@ -20,6 +20,29 @@ Commands:
     promptly import <file>              Import from YAML
     promptly info                       Show configuration
     promptly demo [name]                Run interactive demos
+
+Analytics Commands:
+    promptly analytics stats <name>     Get prompt analytics
+    promptly analytics compare <a> <b>  Compare two prompts
+    promptly analytics trend <name>     Show quality trend
+    promptly analytics underperforming  Find underperforming prompts
+    promptly analytics export           Export analytics data
+    promptly analytics history          Show execution history
+    promptly analytics anomalies <name> Detect quality anomalies
+    promptly analytics recommend <task> Thompson Sampling recommendation
+    promptly analytics dashboard        Generate HTML dashboard
+
+MRF Commands (Metaprompt Refinement Framework):
+    promptly mrf status                 Show MRF integration status
+    promptly mrf enhance <name>         Enhance prompt with 7-component framework
+    promptly mrf refine <name>          Refine response with strategy
+    promptly mrf auto-refine <name>     Auto-select refinement strategy
+    promptly mrf recommend <query_type> Get strategy recommendation
+    promptly mrf templates              List task templates
+    promptly mrf add-template           Add custom task template
+    promptly mrf stats                  Show learning statistics
+    promptly mrf save                   Save learning state
+    promptly mrf load                   Load learning state
 """
 
 import click
@@ -29,6 +52,8 @@ from pathlib import Path
 from typing import Optional
 
 from promptly.core.promptly import Promptly
+from promptly.cli.analytics import analytics
+from promptly.cli.mrf import mrf
 
 
 # ==================== Helpers ====================
@@ -905,6 +930,15 @@ async def _run_all_demos(mock: bool):
     click.echo("\n" + "=" * 50)
     click.echo("All demos completed!")
     click.echo("=" * 50)
+
+
+# ==================== Register Command Groups ====================
+
+# Register analytics command group
+cli.add_command(analytics)
+
+# Register MRF command group
+cli.add_command(mrf)
 
 
 # ==================== Entry Point ====================

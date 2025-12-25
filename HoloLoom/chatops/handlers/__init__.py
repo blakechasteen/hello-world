@@ -2,7 +2,7 @@
 HoloLoom ChatOps - Advanced Handlers
 =====================================
 
-**108 Total Commands** (as of December 2025)
+**113 Total Commands** (as of December 2025)
 
 Core components:
 - handler_registry: Decorator-based handler registration with auto-help
@@ -29,6 +29,23 @@ Optional advanced features:
 - learning_handlers: Thompson Sampling, hot patterns, refinement, reflection (!learn)
 - awareness_handlers: Activation, spring dynamics, brain waves, meta-awareness (!aware)
 - context_handlers: Context packing, adaptive expansion, streaming (!context pack/expand/stream)
+- semantic_handlers: Phase 8 semantic state -> policy integration
+    - !semantic <query> - Analyze semantic state (244D -> 8D)
+    - !semantic shift - Show topic shift detection
+    - !semantic tools [q] - Show semantic tool suggestions
+    - !semantic bandit [q] - Show Thompson Sampling adjustments
+    - !semantic compare <q1> | <q2> - Compare two queries semantically
+    - !semantic replay [limit] - Replay conversation semantic trajectory
+    - !semantic suggest - Suggest next action based on context
+    - !semantic help - Show semantic commands help
+- multi_agent_semantic: Phase 7 multi-agent semantic coordination
+    - !agents list - Show registered agents with status
+    - !agents topics - Show cross-room topic threads
+    - !agents handoff <agent_id> - Initiate context handoff
+    - !agents link <thread_id> - Link room to topic thread
+    - !agents discover [query] - Discover related topics
+    - !agents stats - Show coordination statistics
+    - !agents help - Show multi-agent help
 """
 
 # Core handler registry - always available
@@ -654,6 +671,52 @@ try:
         "handle_context_importance",
         "handle_context_stats",
         "handle_context_help"
+    ])
+except ImportError:
+    pass
+
+# Semantic handlers (December 2025) - Phase 8: Semantic State -> Policy integration
+try:
+    from HoloLoom.chatops.handlers.semantic_handlers import (
+        SemanticMatrixHandlers,
+        ConversationSemanticContext,
+        create_semantic_handlers,
+        get_semantic_handlers,
+        set_semantic_handlers
+    )
+    __all__.extend([
+        "SemanticMatrixHandlers",
+        "ConversationSemanticContext",
+        "create_semantic_handlers",
+        "get_semantic_handlers",
+        "set_semantic_handlers"
+    ])
+except ImportError:
+    pass
+
+# Multi-agent semantic coordination (December 2025) - Phase 7
+try:
+    from HoloLoom.chatops.handlers.multi_agent_semantic import (
+        SharedSemanticRegistry,
+        AgentInfo,
+        AgentStatus,
+        TopicThread,
+        HandoffContext,
+        MultiAgentHandlers,
+        get_semantic_registry,
+        register_multi_agent_handlers,
+        notify_semantic_update
+    )
+    __all__.extend([
+        "SharedSemanticRegistry",
+        "AgentInfo",
+        "AgentStatus",
+        "TopicThread",
+        "HandoffContext",
+        "MultiAgentHandlers",
+        "get_semantic_registry",
+        "register_multi_agent_handlers",
+        "notify_semantic_update"
     ])
 except ImportError:
     pass

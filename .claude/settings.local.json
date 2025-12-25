@@ -90,7 +90,9 @@
       "Bash(git merge:*)",
       "Bash(pytest:*)",
       "Bash(PYTHONPATH=. grep:*)",
-      "Bash(PYTHONPATH=. timeout 300 python -m pytest:*)"
+      "Bash(PYTHONPATH=. timeout 300 python -m pytest:*)",
+      "Bash(PYTHONPATH=. PYTHONIOENCODING=utf-8 timeout 120 python:*)",
+      "Bash(PYTHONPATH=../.. timeout 90 python:*)"
     ],
     "deny": [],
     "ask": []

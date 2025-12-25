@@ -1,0 +1,59 @@
+{
+  "workflows": {
+    "adversarial_verification": {
+      "name": "Adversarial Verification Pipeline",
+      "branches": {
+        "main": "adversarial_verification-v1-819bdb47"
+      },
+      "versions": [
+        "adversarial_verification-v1-819bdb47"
+      ],
+      "head": "adversarial_verification-v1-819bdb47"
+    },
+    "ensemble_decision_maker": {
+      "name": "Ensemble Decision Maker",
+      "branches": {
+        "main": "ensemble_decision_maker-v1-c9fc6865",
+        "experiment": "ensemble_decision_maker-v2-6af7488b"
+      },
+      "versions": [
+        "ensemble_decision_maker-v1-c9fc6865",
+        "ensemble_decision_maker-v2-6af7488b"
+      ],
+      "head": "ensemble_decision_maker-v2-6af7488b"
+    },
+    "knowledge_graph_builder": {
+      "name": "Knowledge Graph Builder",
+      "branches": {
+        "main": "knowledge_graph_builder-v1-d4564ce0"
+      },
+      "versions": [
+        "knowledge_graph_builder-v1-d4564ce0"
+      ],
+      "head": "knowledge_graph_builder-v1-d4564ce0"
+    },
+    "recursive_confidence_loop": {
+      "name": "Recursive Confidence Loop",
+      "branches": {
+        "main": "recursive_confidence_loop-v1-20426188"
+      },
+      "versions": [
+        "recursive_confidence_loop-v1-20426188"
+      ],
+      "head": "recursive_confidence_loop-v1-20426188"
+    },
+    "self_healing_research": {
+      "name": "Self-Healing Research Pipeline",
+      "branches": {
+        "main": "self_healing_research-v1-ee5c906f"
+      },
+      "versions": [
+        "self_healing_research-v1-ee5c906f"
+      ],
+      "head": "self_healing_research-v1-ee5c906f"
+    }
+  },
+  "branches": {
+    "main": null
+  }
+}

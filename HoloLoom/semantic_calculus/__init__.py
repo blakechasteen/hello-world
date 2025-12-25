@@ -124,6 +124,18 @@ from .performance import (
     HAS_NUMBA,
 )
 
+# === Policy Integration (Phase 8 - December 2025) ===
+# SemanticState for policy: 244D → 8D feature vector for NeuralCore
+# Note: This is DIFFERENT from flow_calculus.SemanticState (trajectory analysis)
+from .semantic_state import (
+    SemanticState as PolicySemanticState,  # Alias to avoid conflict
+    SemanticToolSelector,
+    SemanticAwareBandit,  # Thompson Sampling with semantic adjustments
+    SEMANTIC_CATEGORIES,
+    TOPIC_SHIFT_THRESHOLD,
+    SIGNIFICANT_SHIFT_THRESHOLD,
+)
+
 # === Integration Layer (Clean Interface) ===
 # Now organized into focused modules
 from .config import SemanticCalculusConfig
@@ -191,6 +203,13 @@ __all__ = [
     "ProjectionCache",
     "timer",
     "HAS_NUMBA",
+    # Policy Integration (Phase 8)
+    "PolicySemanticState",
+    "SemanticToolSelector",
+    "SemanticAwareBandit",
+    "SEMANTIC_CATEGORIES",
+    "TOPIC_SHIFT_THRESHOLD",
+    "SIGNIFICANT_SHIFT_THRESHOLD",
     # Integration Layer
     "SemanticCalculusConfig",
     "SemanticAnalyzer",

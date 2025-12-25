@@ -1,0 +1,167 @@
+{
+  "version": "1.0",
+  "name": "Recursive Confidence Loop",
+  "description": "Iteratively refines answer until confidence threshold is met or max iterations reached. Demonstrates loop control flow with dynamic exit conditions.",
+  "tags": ["recursive", "loop", "refinement", "quality-control"],
+  "author": "HoloLoom Team",
+  "created": "2025-12-23",
+
+  "nodes": [
+    {
+      "id": "initial_query",
+      "agentType": "hololoom",
+      "x": 100,
+      "y": 200,
+      "config": {
+        "pattern": "fast",
+        "description": "Generate initial answer"
+      }
+    },
+    {
+      "id": "loop_controller",
+      "agentType": "loop",
+      "x": 250,
+      "y": 200,
+      "config": {
+        "max_iterations": 5,
+        "break_condition": "confidence >= 0.85 OR iterations >= 5",
+        "description": "Control refinement iterations"
+      }
+    },
+    {
+      "id": "quality_assessment",
+      "agentType": "convergence",
+      "x": 400,
+      "y": 200,
+      "config": {
+        "strategy": "bayesian_blend",
+        "description": "Assess current answer quality"
+      }
+    },
+    {
+      "id": "needs_improvement",
+      "agentType": "conditional",
+      "x": 550,
+      "y": 200,
+      "config": {
+        "condition": "confidence < 0.85",
+        "threshold": 0.85
+      }
+    },
+    {
+      "id": "identify_weakness",
+      "agentType": "synthesizer",
+      "x": 700,
+      "y": 300,
+      "config": {
+        "extract_type": "weaknesses",
+        "description": "Identify specific weaknesses to address"
+      }
+    },
+    {
+      "id": "targeted_search",
+      "agentType": "search",
+      "x": 850,
+      "y": 300,
+      "config": {
+        "k": 5,
+        "strategy": "connected",
+        "description": "Search for information to address weaknesses"
+      }
+    },
+    {
+      "id": "refinement_step",
+      "agentType": "refiner",
+      "x": 1000,
+      "y": 300,
+      "config": {
+        "strategy": "verify",
+        "max_iterations": 1,
+        "description": "Single refinement iteration"
+      }
+    },
+    {
+      "id": "update_answer",
+      "agentType": "hololoom",
+      "x": 1150,
+      "y": 300,
+      "config": {
+        "pattern": "fast",
+        "description": "Integrate refinements into answer"
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 700,
+      "y": 100,
+      "config": {
+        "format": "markdown",
+        "include_metadata": true
+      }
+    },
+    {
+      "id": "log_iterations",
+      "agentType": "store",
+      "x": 850,
+      "y": 100,
+      "config": {
+        "description": "Log iteration history for analysis"
+      }
+    }
+  ],
+
+  "connections": [
+    {"id": "c1", "from": "initial_query", "to": "loop_controller"},
+    {"id": "c2", "from": "loop_controller", "to": "quality_assessment"},
+    {"id": "c3", "from": "quality_assessment", "to": "needs_improvement"},
+    {"id": "c4", "from": "needs_improvement", "to": "final_output", "condition": "false"},
+    {"id": "c5", "from": "needs_improvement", "to": "identify_weakness", "condition": "true"},
+    {"id": "c6", "from": "identify_weakness", "to": "targeted_search"},
+    {"id": "c7", "from": "targeted_search", "to": "refinement_step"},
+    {"id": "c8", "from": "refinement_step", "to": "update_answer"},
+    {"id": "c9", "from": "update_answer", "to": "loop_controller"},
+    {"id": "c10", "from": "final_output", "to": "log_iterations"}
+  ],
+
+  "input_schema": {
+    "query": {
+      "type": "string",
+      "required": true,
+      "description": "Question requiring high-confidence answer"
+    },
+    "target_confidence": {
+      "type": "number",
+      "required": false,
+      "default": 0.85,
+      "description": "Target confidence threshold"
+    }
+  },
+
+  "output_schema": {
+    "response": {
+      "type": "string",
+      "description": "Refined high-confidence answer"
+    },
+    "final_confidence": {
+      "type": "number",
+      "description": "Confidence after refinement"
+    },
+    "iterations_used": {
+      "type": "number",
+      "description": "Number of refinement iterations"
+    },
+    "weaknesses_addressed": {
+      "type": "array",
+      "description": "List of weaknesses found and addressed"
+    }
+  },
+
+  "evaluation": {
+    "metrics": ["final_confidence", "iterations_used", "latency_ms", "improvement_per_iteration"],
+    "success_criteria": {
+      "min_final_confidence": 0.85,
+      "max_iterations": 5
+    }
+  }
+}

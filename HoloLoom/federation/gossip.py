@@ -21,6 +21,26 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import Any, Callable, Dict, List, Optional, Set
 
+# OpenTelemetry tracing (optional)
+try:
+    from opentelemetry.trace import SpanKind, get_tracer
+    _tracer = get_tracer("hololoom.federation.gossip")
+except ImportError:
+    SpanKind = None
+    _tracer = None
+
+# Federation Prometheus metrics (optional)
+try:
+    from .metrics import (
+        record_gossip_message,
+        record_membership_change,
+    )
+    _GOSSIP_METRICS_AVAILABLE = True
+except ImportError:
+    _GOSSIP_METRICS_AVAILABLE = False
+    record_gossip_message = None
+    record_membership_change = None
+
 from .protocols import MembershipProtocol
 from .types import FederationNode, NodeStatus
 from .transport import (
@@ -60,6 +80,8 @@ class GossipMessage:
     incarnation: int = 0                      # Lamport-style counter
     payload: Dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
+    # W3C Trace Context for distributed tracing
+    trace_context: Optional[Dict[str, str]] = None
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -152,39 +174,79 @@ class SwimMembership:
         Returns:
             True if successfully joined
         """
-        logger.info(f"Joining via {len(bootstrap_nodes)} bootstrap nodes")
+        # Start OpenTelemetry span
+        span_ctx = None
+        if _tracer and SpanKind:
+            span_ctx = _tracer.start_as_current_span(
+                "gossip.join",
+                kind=SpanKind.CLIENT,
+                attributes={
+                    "gossip.node_id": self._local.node_id[:8],
+                    "gossip.bootstrap_count": len(bootstrap_nodes),
+                },
+            )
 
-        # Start protocol loop
-        self._running = True
-        self._protocol_task = asyncio.create_task(self._protocol_loop())
+        try:
+            logger.info(f"Joining via {len(bootstrap_nodes)} bootstrap nodes")
 
-        # TODO: Connect to bootstrap and sync membership
-        # For now, just mark as joined
+            # Start protocol loop
+            self._running = True
+            self._protocol_task = asyncio.create_task(self._protocol_loop())
 
-        return True
+            # TODO: Connect to bootstrap and sync membership
+            # For now, just mark as joined
+
+            # Record membership change metric
+            if _GOSSIP_METRICS_AVAILABLE and record_membership_change:
+                record_membership_change(event="join")
+
+            return True
+        finally:
+            if span_ctx:
+                span_ctx.end()
 
     async def leave(self) -> None:
         """Announce departure and leave gracefully."""
-        logger.info("Leaving membership")
-
-        # Broadcast leave message
-        await self._broadcast(
-            GossipMessage(
-                type=MessageType.LEAVE,
-                sender=self._local.node_id,
-                target=self._local.node_id,
-                incarnation=self._incarnation,
+        # Start OpenTelemetry span
+        span_ctx = None
+        if _tracer and SpanKind:
+            span_ctx = _tracer.start_as_current_span(
+                "gossip.leave",
+                kind=SpanKind.CLIENT,
+                attributes={
+                    "gossip.node_id": self._local.node_id[:8],
+                    "gossip.incarnation": self._incarnation,
+                },
             )
-        )
 
-        # Stop protocol loop
-        self._running = False
-        if self._protocol_task:
-            self._protocol_task.cancel()
-            try:
-                await self._protocol_task
-            except asyncio.CancelledError:
-                pass
+        try:
+            logger.info("Leaving membership")
+
+            # Broadcast leave message
+            await self._broadcast(
+                GossipMessage(
+                    type=MessageType.LEAVE,
+                    sender=self._local.node_id,
+                    target=self._local.node_id,
+                    incarnation=self._incarnation,
+                )
+            )
+
+            # Stop protocol loop
+            self._running = False
+            if self._protocol_task:
+                self._protocol_task.cancel()
+                try:
+                    await self._protocol_task
+                except asyncio.CancelledError:
+                    pass
+
+            # Record membership change metric
+            if _GOSSIP_METRICS_AVAILABLE and record_membership_change:
+                record_membership_change(event="leave")
+        finally:
+            if span_ctx:
+                span_ctx.end()
 
     # ───────────────────────────────────────────────────────────────────────
     #  PROBING
@@ -197,36 +259,52 @@ class SwimMembership:
         Returns:
             True if node responded
         """
-        if node_id not in self._members:
-            return False
-
-        member = self._members[node_id]
-
-        try:
-            # Create pending future
-            future: asyncio.Future = asyncio.get_event_loop().create_future()
-            self._pending_pings[node_id] = future
-
-            # Send ping
-            await self._send(
-                member.node,
-                GossipMessage(
-                    type=MessageType.PING,
-                    sender=self._local.node_id,
-                    target=node_id,
-                    incarnation=self._incarnation,
-                ),
+        # Start OpenTelemetry span
+        span_ctx = None
+        if _tracer and SpanKind:
+            span_ctx = _tracer.start_as_current_span(
+                "gossip.ping",
+                kind=SpanKind.CLIENT,
+                attributes={
+                    "gossip.node_id": self._local.node_id[:8],
+                    "gossip.target": node_id[:8],
+                },
             )
 
-            # Wait for ack
-            await asyncio.wait_for(future, timeout=self._ping_timeout)
-            return True
+        try:
+            if node_id not in self._members:
+                return False
 
-        except asyncio.TimeoutError:
-            return False
+            member = self._members[node_id]
 
+            try:
+                # Create pending future
+                future: asyncio.Future = asyncio.get_event_loop().create_future()
+                self._pending_pings[node_id] = future
+
+                # Send ping
+                await self._send(
+                    member.node,
+                    GossipMessage(
+                        type=MessageType.PING,
+                        sender=self._local.node_id,
+                        target=node_id,
+                        incarnation=self._incarnation,
+                    ),
+                )
+
+                # Wait for ack
+                await asyncio.wait_for(future, timeout=self._ping_timeout)
+                return True
+
+            except asyncio.TimeoutError:
+                return False
+
+            finally:
+                self._pending_pings.pop(node_id, None)
         finally:
-            self._pending_pings.pop(node_id, None)
+            if span_ctx:
+                span_ctx.end()
 
     async def ping_req(
         self,
@@ -302,55 +380,95 @@ class SwimMembership:
 
     async def suspect(self, node_id: str) -> None:
         """Mark node as suspected (grace period before removal)."""
-        if node_id not in self._members:
-            return
-
-        member = self._members[node_id]
-
-        if member.status == NodeStatus.SUSPECT:
-            return  # Already suspected
-
-        logger.warning(f"Suspecting node {node_id[:8]}...")
-
-        member.status = NodeStatus.SUSPECT
-        member.suspect_timeout = time.time() + self._suspicion_timeout
-
-        # Broadcast suspicion
-        await self._broadcast(
-            GossipMessage(
-                type=MessageType.SUSPECT,
-                sender=self._local.node_id,
-                target=node_id,
-                incarnation=member.incarnation,
+        # Start OpenTelemetry span
+        span_ctx = None
+        if _tracer and SpanKind:
+            span_ctx = _tracer.start_as_current_span(
+                "gossip.suspect",
+                kind=SpanKind.INTERNAL,
+                attributes={
+                    "gossip.node_id": self._local.node_id[:8],
+                    "gossip.target": node_id[:8],
+                },
             )
-        )
+
+        try:
+            if node_id not in self._members:
+                return
+
+            member = self._members[node_id]
+
+            if member.status == NodeStatus.SUSPECT:
+                return  # Already suspected
+
+            logger.warning(f"Suspecting node {node_id[:8]}...")
+
+            member.status = NodeStatus.SUSPECT
+            member.suspect_timeout = time.time() + self._suspicion_timeout
+
+            # Broadcast suspicion
+            await self._broadcast(
+                GossipMessage(
+                    type=MessageType.SUSPECT,
+                    sender=self._local.node_id,
+                    target=node_id,
+                    incarnation=member.incarnation,
+                )
+            )
+
+            # Record membership change metric
+            if _GOSSIP_METRICS_AVAILABLE and record_membership_change:
+                record_membership_change(event="suspect")
+        finally:
+            if span_ctx:
+                span_ctx.end()
 
     async def confirm_dead(self, node_id: str) -> None:
         """Confirm node failure after suspicion timeout."""
-        if node_id not in self._members:
-            return
-
-        member = self._members[node_id]
-        logger.info(f"Confirming node {node_id[:8]}... is dead")
-
-        member.status = NodeStatus.OFFLINE
-
-        # Broadcast death confirmation
-        await self._broadcast(
-            GossipMessage(
-                type=MessageType.DEAD,
-                sender=self._local.node_id,
-                target=node_id,
-                incarnation=member.incarnation,
+        # Start OpenTelemetry span
+        span_ctx = None
+        if _tracer and SpanKind:
+            span_ctx = _tracer.start_as_current_span(
+                "gossip.confirm_dead",
+                kind=SpanKind.INTERNAL,
+                attributes={
+                    "gossip.node_id": self._local.node_id[:8],
+                    "gossip.target": node_id[:8],
+                },
             )
-        )
 
-        # Remove from membership
-        del self._members[node_id]
+        try:
+            if node_id not in self._members:
+                return
 
-        # Callback
-        if self._on_leave:
-            self._on_leave(node_id)
+            member = self._members[node_id]
+            logger.info(f"Confirming node {node_id[:8]}... is dead")
+
+            member.status = NodeStatus.OFFLINE
+
+            # Broadcast death confirmation
+            await self._broadcast(
+                GossipMessage(
+                    type=MessageType.DEAD,
+                    sender=self._local.node_id,
+                    target=node_id,
+                    incarnation=member.incarnation,
+                )
+            )
+
+            # Remove from membership
+            del self._members[node_id]
+
+            # Callback
+            if self._on_leave:
+                self._on_leave(node_id)
+
+            # Record membership change metric
+            if _GOSSIP_METRICS_AVAILABLE and record_membership_change:
+                record_membership_change(event="dead")
+        finally:
+            if span_ctx:
+                span_ctx.end()
 
     async def refute_suspicion(self) -> None:
         """Refute suspicion about ourselves (if we're still alive)."""
@@ -463,20 +581,39 @@ class SwimMembership:
 
     async def handle_message(self, message: GossipMessage) -> None:
         """Handle incoming gossip message."""
-        handlers = {
-            MessageType.PING: self._handle_ping,
-            MessageType.PING_REQ: self._handle_ping_req,
-            MessageType.ACK: self._handle_ack,
-            MessageType.ALIVE: self._handle_alive,
-            MessageType.SUSPECT: self._handle_suspect,
-            MessageType.DEAD: self._handle_dead,
-            MessageType.JOIN: self._handle_join,
-            MessageType.LEAVE: self._handle_leave,
-        }
+        # Start OpenTelemetry span for distributed tracing
+        span_ctx = None
+        if _tracer and SpanKind:
+            span_ctx = _tracer.start_as_current_span(
+                "gossip.handle_message",
+                kind=SpanKind.SERVER,
+                attributes={
+                    "gossip.node_id": self._local.node_id[:8],
+                    "gossip.message_type": message.type.name,
+                    "gossip.sender": message.sender[:8],
+                    "gossip.target": message.target[:8] if message.target else "",
+                    "gossip.has_trace_context": message.trace_context is not None,
+                },
+            )
 
-        handler = handlers.get(message.type)
-        if handler:
-            await handler(message)
+        try:
+            handlers = {
+                MessageType.PING: self._handle_ping,
+                MessageType.PING_REQ: self._handle_ping_req,
+                MessageType.ACK: self._handle_ack,
+                MessageType.ALIVE: self._handle_alive,
+                MessageType.SUSPECT: self._handle_suspect,
+                MessageType.DEAD: self._handle_dead,
+                MessageType.JOIN: self._handle_join,
+                MessageType.LEAVE: self._handle_leave,
+            }
+
+            handler = handlers.get(message.type)
+            if handler:
+                await handler(message)
+        finally:
+            if span_ctx:
+                span_ctx.end()
 
     async def _handle_ping(self, msg: GossipMessage) -> None:
         """Handle direct ping - respond with ack."""
@@ -585,14 +722,18 @@ class SwimMembership:
 
     def _gossip_to_transport_message(self, message: GossipMessage) -> TransportMessage:
         """Convert GossipMessage to TransportMessage for wire transport."""
+        payload = {
+            "target": message.target,
+            "incarnation": message.incarnation,
+            **message.payload,
+        }
+        # Include trace context for W3C Trace Context propagation
+        if message.trace_context:
+            payload["trace_context"] = message.trace_context
         return TransportMessage(
             type=self._gossip_to_transport_type(message.type),
             sender=message.sender,
-            payload={
-                "target": message.target,
-                "incarnation": message.incarnation,
-                **message.payload,
-            },
+            payload=payload,
         )
 
     async def _send(self, node: FederationNode, message: GossipMessage) -> bool:
@@ -606,22 +747,64 @@ class SwimMembership:
         Returns:
             True if send succeeded
         """
-        if not self._transport:
-            logger.warning("No transport configured, message not sent")
-            return False
-
-        transport_msg = self._gossip_to_transport_message(message)
-
-        try:
-            response = await self._transport.send(
-                node,
-                transport_msg,
-                timeout_ms=int(self._ping_timeout * 1000),
+        # Start OpenTelemetry span for distributed tracing
+        span_ctx = None
+        if _tracer and SpanKind:
+            span_ctx = _tracer.start_as_current_span(
+                "gossip.send",
+                kind=SpanKind.CLIENT,
+                attributes={
+                    "gossip.message_type": message.type.name,
+                    "gossip.target_node": node.node_id[:8],
+                    "gossip.sender": message.sender[:8],
+                },
             )
-            return response.success
-        except Exception as e:
-            logger.debug(f"Send to {node.node_id[:8]}... failed: {e}")
-            return False
+            span_ctx.__enter__()
+
+        send_start = time.time()
+        try:
+            if not self._transport:
+                logger.warning("No transport configured, message not sent")
+                # Record failed send metric
+                if _GOSSIP_METRICS_AVAILABLE and record_gossip_message:
+                    record_gossip_message(
+                        message_type=message.type.name,
+                        status="failure",
+                        latency_seconds=time.time() - send_start,
+                    )
+                return False
+
+            transport_msg = self._gossip_to_transport_message(message)
+
+            try:
+                response = await self._transport.send(
+                    node,
+                    transport_msg,
+                    timeout_ms=int(self._ping_timeout * 1000),
+                )
+                # Record gossip message metric
+                if _GOSSIP_METRICS_AVAILABLE and record_gossip_message:
+                    status = "success" if response.success else "failure"
+                    record_gossip_message(
+                        message_type=message.type.name,
+                        status=status,
+                        latency_seconds=time.time() - send_start,
+                    )
+                return response.success
+            except Exception as e:
+                logger.debug(f"Send to {node.node_id[:8]}... failed: {e}")
+                # Record failed send metric
+                if _GOSSIP_METRICS_AVAILABLE and record_gossip_message:
+                    record_gossip_message(
+                        message_type=message.type.name,
+                        status="failure",
+                        latency_seconds=time.time() - send_start,
+                    )
+                return False
+        finally:
+            # End OpenTelemetry span
+            if span_ctx:
+                span_ctx.__exit__(None, None, None)
 
     async def _broadcast(self, message: GossipMessage) -> int:
         """
@@ -630,13 +813,29 @@ class SwimMembership:
         Returns:
             Number of successful sends
         """
-        targets = self.get_random_members(self._max_gossip)
-        if not targets:
-            return 0
+        # Start OpenTelemetry span
+        span_ctx = None
+        if _tracer and SpanKind:
+            span_ctx = _tracer.start_as_current_span(
+                "gossip.broadcast",
+                kind=SpanKind.INTERNAL,
+                attributes={
+                    "gossip.node_id": self._local.node_id[:8],
+                    "gossip.message_type": message.type.name,
+                },
+            )
 
-        # Send to all targets in parallel
-        tasks = [self._send(node, message) for node in targets]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        try:
+            targets = self.get_random_members(self._max_gossip)
+            if not targets:
+                return 0
 
-        # Count successes
-        return sum(1 for r in results if r is True)
+            # Send to all targets in parallel
+            tasks = [self._send(node, message) for node in targets]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Count successes
+            return sum(1 for r in results if r is True)
+        finally:
+            if span_ctx:
+                span_ctx.end()

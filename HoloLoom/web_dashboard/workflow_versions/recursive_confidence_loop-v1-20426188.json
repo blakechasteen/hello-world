@@ -1,0 +1,743 @@
+{
+  "version_id": "recursive_confidence_loop-v1-20426188",
+  "workflow_id": "recursive_confidence_loop",
+  "version_number": 1,
+  "workflow_data": {
+    "version": "1.0",
+    "name": "Recursive Confidence Loop",
+    "description": "Iteratively refines answer until confidence threshold is met or max iterations reached. Demonstrates loop control flow with dynamic exit conditions.",
+    "tags": [
+      "recursive",
+      "loop",
+      "refinement",
+      "quality-control"
+    ],
+    "author": "HoloLoom Team",
+    "created": "2025-12-23",
+    "nodes": [
+      {
+        "id": "initial_query",
+        "agentType": "hololoom",
+        "x": 100,
+        "y": 200,
+        "config": {
+          "pattern": "fast",
+          "description": "Generate initial answer"
+        }
+      },
+      {
+        "id": "loop_controller",
+        "agentType": "loop",
+        "x": 250,
+        "y": 200,
+        "config": {
+          "max_iterations": 5,
+          "break_condition": "confidence >= 0.85 OR iterations >= 5",
+          "description": "Control refinement iterations"
+        }
+      },
+      {
+        "id": "quality_assessment",
+        "agentType": "convergence",
+        "x": 400,
+        "y": 200,
+        "config": {
+          "strategy": "bayesian_blend",
+          "description": "Assess current answer quality"
+        }
+      },
+      {
+        "id": "needs_improvement",
+        "agentType": "conditional",
+        "x": 550,
+        "y": 200,
+        "config": {
+          "condition": "confidence < 0.85",
+          "threshold": 0.85
+        }
+      },
+      {
+        "id": "identify_weakness",
+        "agentType": "synthesizer",
+        "x": 700,
+        "y": 300,
+        "config": {
+          "extract_type": "weaknesses",
+          "description": "Identify specific weaknesses to address"
+        }
+      },
+      {
+        "id": "targeted_search",
+        "agentType": "search",
+        "x": 850,
+        "y": 300,
+        "config": {
+          "k": 5,
+          "strategy": "connected",
+          "description": "Search for information to address weaknesses"
+        }
+      },
+      {
+        "id": "refinement_step",
+        "agentType": "refiner",
+        "x": 1000,
+        "y": 300,
+        "config": {
+          "strategy": "verify",
+          "max_iterations": 1,
+          "description": "Single refinement iteration"
+        }
+      },
+      {
+        "id": "update_answer",
+        "agentType": "hololoom",
+        "x": 1150,
+        "y": 300,
+        "config": {
+          "pattern": "fast",
+          "description": "Integrate refinements into answer"
+        }
+      },
+      {
+        "id": "final_output",
+        "agentType": "response",
+        "x": 700,
+        "y": 100,
+        "config": {
+          "format": "markdown",
+          "include_metadata": true
+        }
+      },
+      {
+        "id": "log_iterations",
+        "agentType": "store",
+        "x": 850,
+        "y": 100,
+        "config": {
+          "description": "Log iteration history for analysis"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "c1",
+        "from": "initial_query",
+        "to": "loop_controller"
+      },
+      {
+        "id": "c2",
+        "from": "loop_controller",
+        "to": "quality_assessment"
+      },
+      {
+        "id": "c3",
+        "from": "quality_assessment",
+        "to": "needs_improvement"
+      },
+      {
+        "id": "c4",
+        "from": "needs_improvement",
+        "to": "final_output",
+        "condition": "false"
+      },
+      {
+        "id": "c5",
+        "from": "needs_improvement",
+        "to": "identify_weakness",
+        "condition": "true"
+      },
+      {
+        "id": "c6",
+        "from": "identify_weakness",
+        "to": "targeted_search"
+      },
+      {
+        "id": "c7",
+        "from": "targeted_search",
+        "to": "refinement_step"
+      },
+      {
+        "id": "c8",
+        "from": "refinement_step",
+        "to": "update_answer"
+      },
+      {
+        "id": "c9",
+        "from": "update_answer",
+        "to": "loop_controller"
+      },
+      {
+        "id": "c10",
+        "from": "final_output",
+        "to": "log_iterations"
+      }
+    ],
+    "input_schema": {
+      "query": {
+        "type": "string",
+        "required": true,
+        "description": "Question requiring high-confidence answer"
+      },
+      "target_confidence": {
+        "type": "number",
+        "required": false,
+        "default": 0.85,
+        "description": "Target confidence threshold"
+      }
+    },
+    "output_schema": {
+      "response": {
+        "type": "string",
+        "description": "Refined high-confidence answer"
+      },
+      "final_confidence": {
+        "type": "number",
+        "description": "Confidence after refinement"
+      },
+      "iterations_used": {
+        "type": "number",
+        "description": "Number of refinement iterations"
+      },
+      "weaknesses_addressed": {
+        "type": "array",
+        "description": "List of weaknesses found and addressed"
+      }
+    },
+    "evaluation": {
+      "metrics": [
+        "final_confidence",
+        "iterations_used",
+        "latency_ms",
+        "improvement_per_iteration"
+      ],
+      "success_criteria": {
+        "min_final_confidence": 0.85,
+        "max_iterations": 5
+      }
+    },
+    "id": "recursive_confidence_loop"
+  },
+  "message": "Initial version of Recursive Confidence Loop",
+  "description": null,
+  "created_at": "2025-12-25T07:41:40.213295",
+  "created_by": "demo",
+  "parent_version": null,
+  "branch": "main",
+  "tags": [
+    "eval-100%"
+  ],
+  "evaluation_results": {
+    "workflow_id": "e65916372ccf",
+    "workflow_name": "Recursive Confidence Loop",
+    "workflow_version": "1.0",
+    "summary": {
+      "total_tests": 20,
+      "passed_tests": 20,
+      "failed_tests": 0,
+      "success_rate": 1.0
+    },
+    "latency": {
+      "avg_ms": 52.047014236450195,
+      "p50_ms": 52.047014236450195,
+      "p95_ms": 52.047014236450195,
+      "p99_ms": 52.047014236450195
+    },
+    "confidence": {
+      "avg": 0.9159999999999999,
+      "min": 0.85,
+      "max": 0.99
+    },
+    "resources": {
+      "avg_nodes_executed": 10,
+      "total_tokens_used": 4072,
+      "cache_hit_rate": 0.2
+    },
+    "test_results": [
+      {
+        "test_case_id": "factual-0",
+        "test_case_name": "Factual: What is machine learning?...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.99,
+          "nodes_executed": 10,
+          "tokens_used": 139,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: What is machine learning?",
+          "confidence": 0.99
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "factual-1",
+        "test_case_name": "Factual: Explain neural networks....",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.87,
+          "nodes_executed": 10,
+          "tokens_used": 227,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Explain neural networks.",
+          "confidence": 0.87
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "factual-2",
+        "test_case_name": "Factual: What is the capital of France?...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.98,
+          "nodes_executed": 10,
+          "tokens_used": 268,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: What is the capital of France?",
+          "confidence": 0.98
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "factual-3",
+        "test_case_name": "Factual: How does photosynthesis work?...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.98,
+          "nodes_executed": 10,
+          "tokens_used": 213,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: How does photosynthesis work?",
+          "confidence": 0.98
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "factual-4",
+        "test_case_name": "Factual: What is Thompson Sampling?...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.87,
+          "nodes_executed": 10,
+          "tokens_used": 232,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: What is Thompson Sampling?",
+          "confidence": 0.87
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "factual-5",
+        "test_case_name": "Factual: Define reinforcement learning....",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.87,
+          "nodes_executed": 10,
+          "tokens_used": 207,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Define reinforcement learning.",
+          "confidence": 0.87
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "factual-6",
+        "test_case_name": "Factual: What is a transformer model?...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.95,
+          "nodes_executed": 10,
+          "tokens_used": 150,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: What is a transformer model?",
+          "confidence": 0.95
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "factual-7",
+        "test_case_name": "Factual: Explain gradient descent....",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.98,
+          "nodes_executed": 10,
+          "tokens_used": 298,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Explain gradient descent.",
+          "confidence": 0.98
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "factual-8",
+        "test_case_name": "Factual: What is entropy in information...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.89,
+          "nodes_executed": 10,
+          "tokens_used": 159,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: What is entropy in information theory?",
+          "confidence": 0.89
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "factual-9",
+        "test_case_name": "Factual: How do convolutional neural ne...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.88,
+          "nodes_executed": 10,
+          "tokens_used": 243,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: How do convolutional neural networks work?",
+          "confidence": 0.88
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "complex-0",
+        "test_case_name": "Complex: Compare and contrast supervise...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.9199999999999999,
+          "nodes_executed": 10,
+          "tokens_used": 237,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Compare and contrast supervised and unsupervised learning, then recommend when to use each.",
+          "confidence": 0.9199999999999999
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "complex-1",
+        "test_case_name": "Complex: Analyze the tradeoffs between ...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.9299999999999999,
+          "nodes_executed": 10,
+          "tokens_used": 278,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Analyze the tradeoffs between model complexity and generalization.",
+          "confidence": 0.9299999999999999
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "complex-2",
+        "test_case_name": "Complex: Design a system that combines ...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.95,
+          "nodes_executed": 10,
+          "tokens_used": 175,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Design a system that combines Thompson Sampling with neural networks.",
+          "confidence": 0.95
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "complex-3",
+        "test_case_name": "Complex: Evaluate the pros and cons of ...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.85,
+          "nodes_executed": 10,
+          "tokens_used": 175,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Evaluate the pros and cons of different attention mechanisms.",
+          "confidence": 0.85
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "complex-4",
+        "test_case_name": "Complex: Synthesize insights from multi...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.86,
+          "nodes_executed": 10,
+          "tokens_used": 166,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Synthesize insights from multiple sources about transfer learning best practices.",
+          "confidence": 0.86
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "adversarial-0",
+        "test_case_name": "Adversarial: What is the sound of one hand ...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.88,
+          "nodes_executed": 10,
+          "tokens_used": 243,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: What is the sound of one hand clapping?",
+          "confidence": 0.88
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "adversarial-1",
+        "test_case_name": "Adversarial: If everything is possible, is ...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.9299999999999999,
+          "nodes_executed": 10,
+          "tokens_used": 198,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: If everything is possible, is it possible for something to be impossible?",
+          "confidence": 0.9299999999999999
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "adversarial-2",
+        "test_case_name": "Adversarial: Explain something you don't un...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.87,
+          "nodes_executed": 10,
+          "tokens_used": 137,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Explain something you don't understand.",
+          "confidence": 0.87
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "adversarial-3",
+        "test_case_name": "Adversarial: What will happen tomorrow at 3...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.88,
+          "nodes_executed": 10,
+          "tokens_used": 148,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: What will happen tomorrow at 3:47:23 PM exactly?",
+          "confidence": 0.88
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      },
+      {
+        "test_case_id": "adversarial-4",
+        "test_case_name": "Adversarial: Translate 'hello' into a langu...",
+        "success": true,
+        "metrics": {
+          "latency_ms": 52.047014236450195,
+          "confidence": 0.99,
+          "nodes_executed": 10,
+          "tokens_used": 179,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "memory_mb": 0.0,
+          "node_timings": {},
+          "error": null
+        },
+        "output": {
+          "response": "Mock response for: Translate 'hello' into a language that doesn't exist.",
+          "confidence": 0.99
+        },
+        "expected_output": null,
+        "output_match": null,
+        "timestamp": "2025-12-25T07:41:40.021420",
+        "error_message": null
+      }
+    ],
+    "metadata": {
+      "evaluation_timestamp": "2025-12-25T07:41:40.021420",
+      "evaluation_duration_ms": 52.047014236450195,
+      "evaluator_version": "1.0.0"
+    }
+  }
+}

@@ -1,4 +1,11 @@
 import asyncio
+import sys
+import os
+from pathlib import Path
+
+# Fix: Ensure we can import HoloLoom from the parent directory
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from HoloLoom import HoloLoom
 import logging
 
@@ -12,7 +19,8 @@ async def run_researcher_demo():
     print("="*80)
     print("Goal: Flow data through [Store] -> [Embed] -> [Recall]\n")
 
-    loom = HoloLoom()
+    # Fix: Use the async factory method
+    loom = await HoloLoom.create(pattern="bare")
     
     # 1. THE DATA (Simulating multiple shards of knowledge)
     research_papers = [
@@ -27,8 +35,9 @@ async def run_researcher_demo():
     print("✓ Ingestion complete.\n")
 
     print("Step 2: [Embedder] system has automatically vectorized the shards.")
-    # We can verify explicitly if needed
-    sample_vec = await loom.weaver.embedding_manager.embed("Temporal Weaving")
+    # The embedder is available on the weaver as 'embedder'
+    # encode() is a sync method in MatryoshkaEmbeddings
+    sample_vec = loom.weaver.embedder.encode(["Temporal Weaving"])[0]
     print(f"✓ Verified embedding vector for 'Temporal Weaving' (Dim: {len(sample_vec)})\n")
 
     print("Step 3: [Memory Search] Performing cross-context recall...")

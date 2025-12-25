@@ -41,6 +41,8 @@ from .__version__ import __version__
 __all__ = [
     # Core API (99% of users)
     'HoloLoom',          # The system
+    'HoloLoomLite',      # Simplified lite version
+    'SimpleLoom',        # Alias for HoloLoomLite
     'Memory',            # The data
     'ActivationStrategy', # Recall strategies
     'Config',            # Configuration
@@ -83,6 +85,19 @@ def __getattr__(name):
         from .config import Config
         _lazy_imports[name] = Config
         return Config
+
+    # HoloLoom Lite - Simplified API
+    elif name == 'HoloLoomLite':
+        from .lite import HoloLoomLite
+        _lazy_imports[name] = HoloLoomLite
+        return HoloLoomLite
+
+    elif name == 'SimpleLoom':
+        # Alias for HoloLoomLite
+        from .lite import HoloLoomLite
+        _lazy_imports['SimpleLoom'] = HoloLoomLite
+        _lazy_imports['HoloLoomLite'] = HoloLoomLite
+        return HoloLoomLite
 
     # Legacy/Advanced
     elif name == 'policy':
