@@ -1,0 +1,381 @@
+{
+  "version": "1.0",
+  "name": "Automated Code Review Pipeline",
+  "description": "Comprehensive code review automation with static analysis, security scanning, style checking, test coverage analysis, and AI-powered review synthesis with actionable fix suggestions.",
+  "tags": ["code-review", "static-analysis", "security", "quality", "automation", "ci-cd"],
+  "author": "HoloLoom Team",
+  "created": "2025-12-25",
+
+  "nodes": [
+    {
+      "id": "code_input",
+      "agentType": "store",
+      "x": 100,
+      "y": 300,
+      "config": {
+        "store_type": "input",
+        "accept_types": ["code", "diff", "pull_request"],
+        "description": "Receive code or PR for review"
+      }
+    },
+    {
+      "id": "code_parser",
+      "agentType": "hololoom",
+      "x": 250,
+      "y": 300,
+      "config": {
+        "pattern": "fast",
+        "mode": "code_parsing",
+        "extract": ["language", "structure", "dependencies"],
+        "description": "Parse and analyze code structure"
+      }
+    },
+    {
+      "id": "context_retriever",
+      "agentType": "retriever",
+      "x": 400,
+      "y": 150,
+      "config": {
+        "retrieval_type": "codebase_context",
+        "include_related_files": true,
+        "description": "Retrieve related codebase context"
+      }
+    },
+    {
+      "id": "diff_analyzer",
+      "agentType": "synthesizer",
+      "x": 400,
+      "y": 300,
+      "config": {
+        "strategy": "diff_analysis",
+        "extract_changes": true,
+        "description": "Analyze code changes and diff"
+      }
+    },
+    {
+      "id": "history_analyzer",
+      "agentType": "retriever",
+      "x": 400,
+      "y": 450,
+      "config": {
+        "retrieval_type": "git_history",
+        "include_blame": true,
+        "description": "Analyze commit history and patterns"
+      }
+    },
+    {
+      "id": "parallel_analysis",
+      "agentType": "parallel",
+      "x": 600,
+      "y": 300,
+      "config": {
+        "strategy": "fan_out",
+        "timeout_ms": 30000,
+        "description": "Parallel multi-dimensional analysis"
+      }
+    },
+    {
+      "id": "static_analyzer",
+      "agentType": "hololoom",
+      "x": 800,
+      "y": 100,
+      "config": {
+        "pattern": "fused",
+        "mode": "static_analysis",
+        "checks": ["complexity", "dead_code", "type_errors", "null_safety"],
+        "description": "Static code analysis"
+      }
+    },
+    {
+      "id": "security_scanner",
+      "agentType": "hololoom",
+      "x": 800,
+      "y": 225,
+      "config": {
+        "pattern": "fused",
+        "mode": "security_scan",
+        "vuln_categories": ["injection", "xss", "auth", "secrets", "dependencies"],
+        "description": "Security vulnerability scanning"
+      }
+    },
+    {
+      "id": "style_checker",
+      "agentType": "synthesizer",
+      "x": 800,
+      "y": 350,
+      "config": {
+        "strategy": "style_analysis",
+        "check_naming": true,
+        "check_formatting": true,
+        "description": "Code style and conventions"
+      }
+    },
+    {
+      "id": "test_analyzer",
+      "agentType": "hololoom",
+      "x": 800,
+      "y": 475,
+      "config": {
+        "pattern": "fast",
+        "mode": "test_coverage_analysis",
+        "check_assertions": true,
+        "description": "Test coverage and quality"
+      }
+    },
+    {
+      "id": "doc_checker",
+      "agentType": "synthesizer",
+      "x": 800,
+      "y": 600,
+      "config": {
+        "strategy": "documentation_check",
+        "check_docstrings": true,
+        "check_readme": true,
+        "description": "Documentation completeness"
+      }
+    },
+    {
+      "id": "issue_aggregator",
+      "agentType": "fusion",
+      "x": 1000,
+      "y": 300,
+      "config": {
+        "strategy": "issue_aggregation",
+        "deduplicate": true,
+        "description": "Aggregate and deduplicate issues"
+      }
+    },
+    {
+      "id": "severity_classifier",
+      "agentType": "convergence",
+      "x": 1150,
+      "y": 200,
+      "config": {
+        "strategy": "severity_classification",
+        "levels": ["critical", "high", "medium", "low", "info"],
+        "description": "Classify issue severity"
+      }
+    },
+    {
+      "id": "fix_generator",
+      "agentType": "hololoom",
+      "x": 1150,
+      "y": 400,
+      "config": {
+        "pattern": "fused",
+        "mode": "fix_suggestion",
+        "generate_patches": true,
+        "description": "Generate fix suggestions"
+      }
+    },
+    {
+      "id": "priority_ranker",
+      "agentType": "convergence",
+      "x": 1300,
+      "y": 200,
+      "config": {
+        "strategy": "thompson_sampling",
+        "optimize_for": ["severity", "fixability", "impact"],
+        "description": "Rank issues by priority"
+      }
+    },
+    {
+      "id": "fix_validator",
+      "agentType": "loop",
+      "x": 1300,
+      "y": 400,
+      "config": {
+        "strategy": "validation_loop",
+        "max_iterations": 2,
+        "exit_condition": "fix_valid",
+        "description": "Validate suggested fixes"
+      }
+    },
+    {
+      "id": "learning_feedback",
+      "agentType": "store",
+      "x": 1450,
+      "y": 150,
+      "config": {
+        "store_type": "feedback",
+        "track_acceptance": true,
+        "description": "Learn from review acceptance"
+      }
+    },
+    {
+      "id": "review_synthesizer",
+      "agentType": "hololoom",
+      "x": 1450,
+      "y": 300,
+      "config": {
+        "pattern": "fused",
+        "mode": "review_synthesis",
+        "style": "constructive",
+        "description": "Synthesize comprehensive review"
+      }
+    },
+    {
+      "id": "summary_generator",
+      "agentType": "synthesizer",
+      "x": 1450,
+      "y": 450,
+      "config": {
+        "strategy": "executive_summary",
+        "include_metrics": true,
+        "description": "Generate review summary"
+      }
+    },
+    {
+      "id": "formatter",
+      "agentType": "formatter",
+      "x": 1600,
+      "y": 300,
+      "config": {
+        "format": "code_review",
+        "include_inline_comments": true,
+        "include_summary": true,
+        "description": "Format review output"
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 1750,
+      "y": 300,
+      "config": {
+        "format": "code_review_report",
+        "sections": ["summary", "critical_issues", "suggestions", "inline_comments", "metrics"]
+      }
+    }
+  ],
+
+  "connections": [
+    {"id": "c1", "from": "code_input", "to": "code_parser"},
+    {"id": "c2", "from": "code_parser", "to": "context_retriever"},
+    {"id": "c3", "from": "code_parser", "to": "diff_analyzer"},
+    {"id": "c4", "from": "code_parser", "to": "history_analyzer"},
+    {"id": "c5", "from": "context_retriever", "to": "parallel_analysis"},
+    {"id": "c6", "from": "diff_analyzer", "to": "parallel_analysis"},
+    {"id": "c7", "from": "history_analyzer", "to": "parallel_analysis"},
+    {"id": "c8", "from": "parallel_analysis", "to": "static_analyzer"},
+    {"id": "c9", "from": "parallel_analysis", "to": "security_scanner"},
+    {"id": "c10", "from": "parallel_analysis", "to": "style_checker"},
+    {"id": "c11", "from": "parallel_analysis", "to": "test_analyzer"},
+    {"id": "c12", "from": "parallel_analysis", "to": "doc_checker"},
+    {"id": "c13", "from": "static_analyzer", "to": "issue_aggregator"},
+    {"id": "c14", "from": "security_scanner", "to": "issue_aggregator"},
+    {"id": "c15", "from": "style_checker", "to": "issue_aggregator"},
+    {"id": "c16", "from": "test_analyzer", "to": "issue_aggregator"},
+    {"id": "c17", "from": "doc_checker", "to": "issue_aggregator"},
+    {"id": "c18", "from": "issue_aggregator", "to": "severity_classifier"},
+    {"id": "c19", "from": "issue_aggregator", "to": "fix_generator"},
+    {"id": "c20", "from": "severity_classifier", "to": "priority_ranker"},
+    {"id": "c21", "from": "fix_generator", "to": "fix_validator"},
+    {"id": "c22", "from": "fix_validator", "to": "fix_generator", "condition": "needs_refinement"},
+    {"id": "c23", "from": "priority_ranker", "to": "learning_feedback"},
+    {"id": "c24", "from": "priority_ranker", "to": "review_synthesizer"},
+    {"id": "c25", "from": "fix_validator", "to": "review_synthesizer", "condition": "valid"},
+    {"id": "c26", "from": "review_synthesizer", "to": "summary_generator"},
+    {"id": "c27", "from": "summary_generator", "to": "formatter"},
+    {"id": "c28", "from": "learning_feedback", "to": "formatter"},
+    {"id": "c29", "from": "formatter", "to": "final_output"}
+  ],
+
+  "input_schema": {
+    "code": {
+      "type": "string",
+      "required": true,
+      "description": "Code content or file path to review"
+    },
+    "diff": {
+      "type": "string",
+      "required": false,
+      "description": "Git diff if reviewing changes"
+    },
+    "language": {
+      "type": "string",
+      "required": false,
+      "description": "Programming language (auto-detected if not provided)"
+    },
+    "review_focus": {
+      "type": "array",
+      "required": false,
+      "items": {"type": "string", "enum": ["security", "performance", "style", "tests", "docs", "all"]},
+      "default": ["all"],
+      "description": "Areas to focus review on"
+    },
+    "severity_threshold": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low", "all"],
+      "default": "low",
+      "description": "Minimum severity to report"
+    },
+    "generate_fixes": {
+      "type": "boolean",
+      "default": true,
+      "description": "Generate fix suggestions"
+    }
+  },
+
+  "output_schema": {
+    "summary": {
+      "type": "object",
+      "description": "Executive summary of review",
+      "properties": {
+        "overall_quality": {"type": "string"},
+        "total_issues": {"type": "number"},
+        "critical_count": {"type": "number"},
+        "recommendation": {"type": "string"}
+      }
+    },
+    "issues": {
+      "type": "array",
+      "description": "List of identified issues",
+      "items": {
+        "type": "object",
+        "properties": {
+          "severity": {"type": "string"},
+          "category": {"type": "string"},
+          "location": {"type": "object"},
+          "message": {"type": "string"},
+          "suggestion": {"type": "string"},
+          "fix": {"type": "string"}
+        }
+      }
+    },
+    "inline_comments": {
+      "type": "array",
+      "description": "Line-by-line review comments"
+    },
+    "security_report": {
+      "type": "object",
+      "description": "Security scan results"
+    },
+    "test_coverage": {
+      "type": "object",
+      "description": "Test coverage analysis"
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Code quality metrics",
+      "properties": {
+        "complexity": {"type": "number"},
+        "maintainability": {"type": "number"},
+        "test_coverage_percent": {"type": "number"}
+      }
+    },
+    "suggested_fixes": {
+      "type": "array",
+      "description": "Auto-generated fix patches"
+    }
+  },
+
+  "evaluation": {
+    "metrics": ["issue_precision", "fix_acceptance_rate", "security_catch_rate", "review_usefulness"],
+    "success_criteria": {
+      "min_issue_precision": 0.85,
+      "min_fix_acceptance": 0.6,
+      "security_false_negative_rate": 0.05
+    }
+  }
+}

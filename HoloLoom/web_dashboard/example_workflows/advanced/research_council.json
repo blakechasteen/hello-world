@@ -1,0 +1,249 @@
+{
+  "version": "1.0",
+  "name": "Multi-Agent Research Council",
+  "description": "Specialized agents (Researcher, Critic, Synthesizer, Fact-Checker) collaborate in a structured debate to produce thoroughly vetted research answers with minority opinions preserved.",
+  "tags": ["multi-agent", "debate", "research", "consensus", "collaborative"],
+  "author": "HoloLoom Team",
+  "created": "2025-12-25",
+
+  "nodes": [
+    {
+      "id": "query_analyzer",
+      "agentType": "hololoom",
+      "x": 100,
+      "y": 300,
+      "config": {
+        "pattern": "fast",
+        "description": "Analyze query complexity and domain"
+      }
+    },
+    {
+      "id": "domain_router",
+      "agentType": "conditional",
+      "x": 250,
+      "y": 300,
+      "config": {
+        "condition": "domain_complexity",
+        "thresholds": {"simple": 0.3, "moderate": 0.6, "complex": 0.8},
+        "description": "Route by domain complexity"
+      }
+    },
+    {
+      "id": "researcher_agent",
+      "agentType": "hololoom",
+      "x": 450,
+      "y": 150,
+      "config": {
+        "pattern": "fused",
+        "role": "researcher",
+        "prompt_prefix": "As a thorough researcher, investigate this topic deeply...",
+        "description": "Primary research investigation"
+      }
+    },
+    {
+      "id": "critic_agent",
+      "agentType": "hololoom",
+      "x": 450,
+      "y": 300,
+      "config": {
+        "pattern": "fused",
+        "role": "critic",
+        "prompt_prefix": "As a critical analyst, find weaknesses and gaps...",
+        "description": "Critical analysis and gap identification"
+      }
+    },
+    {
+      "id": "fact_checker_agent",
+      "agentType": "hololoom",
+      "x": 450,
+      "y": 450,
+      "config": {
+        "pattern": "fused",
+        "role": "fact_checker",
+        "prompt_prefix": "Verify claims with evidence, cite sources...",
+        "description": "Fact verification with sources"
+      }
+    },
+    {
+      "id": "debate_orchestrator",
+      "agentType": "loop",
+      "x": 650,
+      "y": 300,
+      "config": {
+        "max_rounds": 3,
+        "exit_condition": "consensus_reached OR max_rounds",
+        "consensus_threshold": 0.85,
+        "description": "Orchestrate multi-round debate"
+      }
+    },
+    {
+      "id": "response_aggregator",
+      "agentType": "synthesizer",
+      "x": 800,
+      "y": 200,
+      "config": {
+        "strategy": "weighted_merge",
+        "preserve_disagreements": true,
+        "description": "Aggregate agent responses"
+      }
+    },
+    {
+      "id": "counterargument_generator",
+      "agentType": "hololoom",
+      "x": 800,
+      "y": 400,
+      "config": {
+        "pattern": "fast",
+        "role": "devils_advocate",
+        "description": "Generate counterarguments for next round"
+      }
+    },
+    {
+      "id": "consensus_detector",
+      "agentType": "convergence",
+      "x": 950,
+      "y": 300,
+      "config": {
+        "strategy": "agreement_score",
+        "min_threshold": 0.85,
+        "description": "Detect if consensus reached"
+      }
+    },
+    {
+      "id": "synthesizer_agent",
+      "agentType": "hololoom",
+      "x": 1100,
+      "y": 300,
+      "config": {
+        "pattern": "fused",
+        "role": "synthesizer",
+        "prompt_prefix": "Synthesize all perspectives into coherent answer...",
+        "description": "Final synthesis of all viewpoints"
+      }
+    },
+    {
+      "id": "minority_opinion_extractor",
+      "agentType": "synthesizer",
+      "x": 1100,
+      "y": 450,
+      "config": {
+        "strategy": "extract_dissent",
+        "min_dissent_weight": 0.15,
+        "description": "Preserve significant minority opinions"
+      }
+    },
+    {
+      "id": "confidence_calibrator",
+      "agentType": "convergence",
+      "x": 1250,
+      "y": 300,
+      "config": {
+        "strategy": "bayesian_calibration",
+        "prior_weight": 0.3,
+        "description": "Calibrate final confidence score"
+      }
+    },
+    {
+      "id": "citation_formatter",
+      "agentType": "formatter",
+      "x": 1400,
+      "y": 200,
+      "config": {
+        "format": "academic",
+        "include_sources": true,
+        "description": "Format citations and sources"
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 1400,
+      "y": 400,
+      "config": {
+        "format": "structured_research",
+        "sections": ["main_finding", "evidence", "minority_views", "limitations", "sources"]
+      }
+    }
+  ],
+
+  "connections": [
+    {"id": "c1", "from": "query_analyzer", "to": "domain_router"},
+    {"id": "c2", "from": "domain_router", "to": "researcher_agent"},
+    {"id": "c3", "from": "domain_router", "to": "critic_agent"},
+    {"id": "c4", "from": "domain_router", "to": "fact_checker_agent"},
+    {"id": "c5", "from": "researcher_agent", "to": "debate_orchestrator"},
+    {"id": "c6", "from": "critic_agent", "to": "debate_orchestrator"},
+    {"id": "c7", "from": "fact_checker_agent", "to": "debate_orchestrator"},
+    {"id": "c8", "from": "debate_orchestrator", "to": "response_aggregator"},
+    {"id": "c9", "from": "debate_orchestrator", "to": "counterargument_generator"},
+    {"id": "c10", "from": "response_aggregator", "to": "consensus_detector"},
+    {"id": "c11", "from": "counterargument_generator", "to": "researcher_agent", "condition": "continue_debate"},
+    {"id": "c12", "from": "counterargument_generator", "to": "critic_agent", "condition": "continue_debate"},
+    {"id": "c13", "from": "consensus_detector", "to": "synthesizer_agent", "condition": "consensus_reached"},
+    {"id": "c14", "from": "consensus_detector", "to": "debate_orchestrator", "condition": "continue_debate"},
+    {"id": "c15", "from": "synthesizer_agent", "to": "minority_opinion_extractor"},
+    {"id": "c16", "from": "synthesizer_agent", "to": "confidence_calibrator"},
+    {"id": "c17", "from": "minority_opinion_extractor", "to": "final_output"},
+    {"id": "c18", "from": "confidence_calibrator", "to": "citation_formatter"},
+    {"id": "c19", "from": "citation_formatter", "to": "final_output"}
+  ],
+
+  "input_schema": {
+    "query": {
+      "type": "string",
+      "required": true,
+      "description": "Research question requiring multi-perspective analysis"
+    },
+    "domain": {
+      "type": "string",
+      "required": false,
+      "description": "Optional domain hint (science, history, policy, etc.)"
+    },
+    "depth": {
+      "type": "string",
+      "enum": ["quick", "standard", "deep"],
+      "default": "standard",
+      "description": "Research depth level"
+    }
+  },
+
+  "output_schema": {
+    "main_finding": {
+      "type": "string",
+      "description": "Primary research conclusion"
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Supporting evidence items"
+    },
+    "minority_views": {
+      "type": "array",
+      "description": "Significant dissenting perspectives"
+    },
+    "limitations": {
+      "type": "string",
+      "description": "Known limitations of the analysis"
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Calibrated confidence score (0-1)"
+    },
+    "debate_rounds": {
+      "type": "number",
+      "description": "Number of debate rounds conducted"
+    },
+    "sources": {
+      "type": "array",
+      "description": "Cited sources and references"
+    }
+  },
+
+  "evaluation": {
+    "metrics": ["consensus_score", "evidence_count", "debate_rounds", "minority_preservation"],
+    "success_criteria": {
+      "min_consensus": 0.75,
+      "min_evidence_items": 3,
+      "max_debate_rounds": 3
+    }
+  }
+}

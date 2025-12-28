@@ -283,6 +283,93 @@ TEMPLATE_MARKETPLACE_DATA = {
         ],
         "prerequisites": ["Document ingestion pipeline"],
         "estimated_tokens": 1200
+    },
+
+    # New comprehensive advanced workflows (December 2025)
+    "advanced/research_council.json": {
+        "category": "advanced",
+        "difficulty": "advanced",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": True,
+        "tags": ["multi-agent", "debate", "research", "consensus", "collaborative"],
+        "description": "Multi-agent research council with debate, consensus building, and minority opinion preservation",
+        "use_cases": [
+            "Complex research requiring multiple perspectives",
+            "Fact-checking with adversarial verification",
+            "Policy analysis with diverse viewpoints",
+            "Academic research synthesis"
+        ],
+        "prerequisites": ["Full HoloLoom stack", "LLM backend"],
+        "estimated_tokens": 1500
+    },
+    "advanced/document_intelligence.json": {
+        "category": "advanced",
+        "difficulty": "advanced",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": True,
+        "tags": ["document", "extraction", "summarization", "knowledge-graph", "nlp"],
+        "description": "End-to-end document processing with entity extraction, summarization, Q&A generation, and knowledge graph construction",
+        "use_cases": [
+            "Document understanding and analysis",
+            "Legal document processing",
+            "Research paper analysis",
+            "Knowledge base construction from documents"
+        ],
+        "prerequisites": ["Document ingestion pipeline", "Knowledge graph storage"],
+        "estimated_tokens": 1800
+    },
+    "advanced/rag_enhanced_qa.json": {
+        "category": "advanced",
+        "difficulty": "advanced",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": True,
+        "tags": ["rag", "retrieval", "qa", "hybrid-search", "reranking", "citations"],
+        "description": "Sophisticated RAG with multi-query expansion, hybrid search, cross-encoder reranking, and confidence-aware answering",
+        "use_cases": [
+            "Enterprise knowledge base Q&A",
+            "Customer support automation",
+            "Research assistant with citations",
+            "Documentation search and synthesis"
+        ],
+        "prerequisites": ["Vector store", "Knowledge graph", "LLM backend"],
+        "estimated_tokens": 1400
+    },
+    "advanced/strategic_goal_planner.json": {
+        "category": "advanced",
+        "difficulty": "advanced",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": False,
+        "tags": ["planning", "goals", "strategy", "resource-allocation", "risk-assessment", "optimization"],
+        "description": "Hierarchical goal decomposition with constraint satisfaction, resource allocation, and Thompson Sampling optimization",
+        "use_cases": [
+            "Project planning and scheduling",
+            "Strategic initiative planning",
+            "Resource-constrained optimization",
+            "Risk-aware decision making"
+        ],
+        "prerequisites": ["Full HoloLoom stack"],
+        "estimated_tokens": 1600
+    },
+    "advanced/automated_code_review.json": {
+        "category": "advanced",
+        "difficulty": "advanced",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": True,
+        "tags": ["code-review", "static-analysis", "security", "quality", "automation", "ci-cd"],
+        "description": "Comprehensive code review with static analysis, security scanning, style checking, and AI-powered fix suggestions",
+        "use_cases": [
+            "Pull request automation",
+            "CI/CD code quality gates",
+            "Security vulnerability detection",
+            "Code style enforcement"
+        ],
+        "prerequisites": ["Code parsing tools", "Security scanning rules"],
+        "estimated_tokens": 1700
     }
 }
 

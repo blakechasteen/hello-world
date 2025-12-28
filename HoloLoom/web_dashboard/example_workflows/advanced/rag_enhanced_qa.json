@@ -1,0 +1,310 @@
+{
+  "version": "1.0",
+  "name": "RAG-Enhanced Q&A System",
+  "description": "Sophisticated retrieval-augmented generation with multi-query expansion, hybrid search, reranking, confidence-aware answering, and source attribution.",
+  "tags": ["rag", "retrieval", "qa", "hybrid-search", "reranking", "citations"],
+  "author": "HoloLoom Team",
+  "created": "2025-12-25",
+
+  "nodes": [
+    {
+      "id": "query_input",
+      "agentType": "store",
+      "x": 100,
+      "y": 300,
+      "config": {
+        "store_type": "input",
+        "description": "Receive user question"
+      }
+    },
+    {
+      "id": "query_analyzer",
+      "agentType": "hololoom",
+      "x": 250,
+      "y": 300,
+      "config": {
+        "pattern": "fast",
+        "mode": "query_analysis",
+        "extract": ["intent", "entities", "complexity"],
+        "description": "Analyze query intent and complexity"
+      }
+    },
+    {
+      "id": "query_expander",
+      "agentType": "multiquery",
+      "x": 400,
+      "y": 200,
+      "config": {
+        "mode": "expansion",
+        "strategies": ["synonym", "rephrase", "decompose"],
+        "max_variants": 5,
+        "description": "Generate query variants for broader recall"
+      }
+    },
+    {
+      "id": "hypothetical_doc_generator",
+      "agentType": "hololoom",
+      "x": 400,
+      "y": 400,
+      "config": {
+        "pattern": "fused",
+        "mode": "hyde",
+        "description": "Generate hypothetical document (HyDE)"
+      }
+    },
+    {
+      "id": "parallel_retrieval",
+      "agentType": "parallel",
+      "x": 550,
+      "y": 300,
+      "config": {
+        "strategy": "fan_out",
+        "timeout_ms": 5000,
+        "description": "Parallel multi-source retrieval"
+      }
+    },
+    {
+      "id": "vector_retriever",
+      "agentType": "retriever",
+      "x": 700,
+      "y": 150,
+      "config": {
+        "retrieval_type": "vector",
+        "embedding_model": "matryoshka",
+        "top_k": 20,
+        "description": "Semantic vector search"
+      }
+    },
+    {
+      "id": "bm25_retriever",
+      "agentType": "retriever",
+      "x": 700,
+      "y": 300,
+      "config": {
+        "retrieval_type": "bm25",
+        "top_k": 20,
+        "description": "Keyword-based BM25 search"
+      }
+    },
+    {
+      "id": "graph_retriever",
+      "agentType": "retriever",
+      "x": 700,
+      "y": 450,
+      "config": {
+        "retrieval_type": "graph",
+        "traversal_depth": 2,
+        "top_k": 15,
+        "description": "Knowledge graph traversal"
+      }
+    },
+    {
+      "id": "result_merger",
+      "agentType": "fusion",
+      "x": 850,
+      "y": 300,
+      "config": {
+        "strategy": "reciprocal_rank_fusion",
+        "k": 60,
+        "description": "RRF merge of retrieval results"
+      }
+    },
+    {
+      "id": "cross_encoder_reranker",
+      "agentType": "hololoom",
+      "x": 1000,
+      "y": 300,
+      "config": {
+        "pattern": "fused",
+        "mode": "cross_encoder_rerank",
+        "top_k": 10,
+        "description": "Cross-encoder reranking for precision"
+      }
+    },
+    {
+      "id": "context_compressor",
+      "agentType": "synthesizer",
+      "x": 1150,
+      "y": 200,
+      "config": {
+        "strategy": "extractive_compression",
+        "target_ratio": 0.3,
+        "preserve_key_sentences": true,
+        "description": "Compress context while preserving info"
+      }
+    },
+    {
+      "id": "relevance_filter",
+      "agentType": "conditional",
+      "x": 1150,
+      "y": 400,
+      "config": {
+        "condition": "min_relevance_score",
+        "threshold": 0.5,
+        "description": "Filter low-relevance passages"
+      }
+    },
+    {
+      "id": "answer_generator",
+      "agentType": "hololoom",
+      "x": 1300,
+      "y": 300,
+      "config": {
+        "pattern": "fused",
+        "mode": "grounded_generation",
+        "cite_sources": true,
+        "description": "Generate answer with citations"
+      }
+    },
+    {
+      "id": "confidence_estimator",
+      "agentType": "convergence",
+      "x": 1450,
+      "y": 200,
+      "config": {
+        "strategy": "bayesian_calibration",
+        "description": "Estimate answer confidence"
+      }
+    },
+    {
+      "id": "hallucination_checker",
+      "agentType": "hololoom",
+      "x": 1450,
+      "y": 400,
+      "config": {
+        "pattern": "fast",
+        "mode": "hallucination_detection",
+        "description": "Check for unsupported claims"
+      }
+    },
+    {
+      "id": "confidence_router",
+      "agentType": "conditional",
+      "x": 1600,
+      "y": 300,
+      "config": {
+        "condition": "confidence_level",
+        "thresholds": {"high": 0.8, "medium": 0.5},
+        "description": "Route by confidence level"
+      }
+    },
+    {
+      "id": "low_confidence_handler",
+      "agentType": "hololoom",
+      "x": 1750,
+      "y": 450,
+      "config": {
+        "pattern": "fused",
+        "mode": "uncertainty_aware",
+        "add_caveats": true,
+        "description": "Handle low-confidence with caveats"
+      }
+    },
+    {
+      "id": "source_formatter",
+      "agentType": "formatter",
+      "x": 1750,
+      "y": 200,
+      "config": {
+        "format": "citation_list",
+        "style": "numbered",
+        "include_snippets": true,
+        "description": "Format source citations"
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 1900,
+      "y": 300,
+      "config": {
+        "format": "rag_response",
+        "sections": ["answer", "confidence", "sources", "caveats"]
+      }
+    }
+  ],
+
+  "connections": [
+    {"id": "c1", "from": "query_input", "to": "query_analyzer"},
+    {"id": "c2", "from": "query_analyzer", "to": "query_expander"},
+    {"id": "c3", "from": "query_analyzer", "to": "hypothetical_doc_generator"},
+    {"id": "c4", "from": "query_expander", "to": "parallel_retrieval"},
+    {"id": "c5", "from": "hypothetical_doc_generator", "to": "parallel_retrieval"},
+    {"id": "c6", "from": "parallel_retrieval", "to": "vector_retriever"},
+    {"id": "c7", "from": "parallel_retrieval", "to": "bm25_retriever"},
+    {"id": "c8", "from": "parallel_retrieval", "to": "graph_retriever"},
+    {"id": "c9", "from": "vector_retriever", "to": "result_merger"},
+    {"id": "c10", "from": "bm25_retriever", "to": "result_merger"},
+    {"id": "c11", "from": "graph_retriever", "to": "result_merger"},
+    {"id": "c12", "from": "result_merger", "to": "cross_encoder_reranker"},
+    {"id": "c13", "from": "cross_encoder_reranker", "to": "context_compressor"},
+    {"id": "c14", "from": "cross_encoder_reranker", "to": "relevance_filter"},
+    {"id": "c15", "from": "context_compressor", "to": "answer_generator"},
+    {"id": "c16", "from": "relevance_filter", "to": "answer_generator"},
+    {"id": "c17", "from": "answer_generator", "to": "confidence_estimator"},
+    {"id": "c18", "from": "answer_generator", "to": "hallucination_checker"},
+    {"id": "c19", "from": "confidence_estimator", "to": "confidence_router"},
+    {"id": "c20", "from": "hallucination_checker", "to": "confidence_router"},
+    {"id": "c21", "from": "confidence_router", "to": "source_formatter", "condition": "high_confidence"},
+    {"id": "c22", "from": "confidence_router", "to": "low_confidence_handler", "condition": "low_confidence"},
+    {"id": "c23", "from": "low_confidence_handler", "to": "source_formatter"},
+    {"id": "c24", "from": "source_formatter", "to": "final_output"},
+    {"id": "c25", "from": "confidence_estimator", "to": "final_output"}
+  ],
+
+  "input_schema": {
+    "question": {
+      "type": "string",
+      "required": true,
+      "description": "User's question to answer"
+    },
+    "context_filter": {
+      "type": "object",
+      "required": false,
+      "description": "Optional filters (date range, source type, etc.)"
+    },
+    "retrieval_depth": {
+      "type": "string",
+      "enum": ["shallow", "standard", "deep"],
+      "default": "standard",
+      "description": "How extensively to search"
+    },
+    "require_citations": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to include source citations"
+    }
+  },
+
+  "output_schema": {
+    "answer": {
+      "type": "string",
+      "description": "Generated answer to the question"
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Confidence score (0-1)"
+    },
+    "sources": {
+      "type": "array",
+      "description": "Cited sources with snippets"
+    },
+    "caveats": {
+      "type": "array",
+      "description": "Any caveats or limitations"
+    },
+    "retrieval_stats": {
+      "type": "object",
+      "description": "Statistics about retrieval process"
+    }
+  },
+
+  "evaluation": {
+    "metrics": ["answer_relevance", "faithfulness", "source_precision", "hallucination_rate"],
+    "success_criteria": {
+      "min_confidence": 0.6,
+      "min_sources": 2,
+      "max_hallucination_rate": 0.05
+    }
+  }
+}

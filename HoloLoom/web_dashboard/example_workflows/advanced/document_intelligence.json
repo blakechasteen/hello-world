@@ -1,0 +1,329 @@
+{
+  "version": "1.0",
+  "name": "Document Intelligence Pipeline",
+  "description": "End-to-end document processing: ingestion, entity extraction, summarization, Q&A generation, and knowledge graph construction with cross-reference linking.",
+  "tags": ["document", "extraction", "summarization", "knowledge-graph", "nlp"],
+  "author": "HoloLoom Team",
+  "created": "2025-12-25",
+
+  "nodes": [
+    {
+      "id": "document_ingester",
+      "agentType": "store",
+      "x": 100,
+      "y": 300,
+      "config": {
+        "accept_types": ["pdf", "docx", "txt", "md", "html"],
+        "max_size_mb": 50,
+        "description": "Ingest and validate document"
+      }
+    },
+    {
+      "id": "format_detector",
+      "agentType": "synthesizer",
+      "x": 250,
+      "y": 300,
+      "config": {
+        "extract_type": "format_metadata",
+        "detect_structure": true,
+        "description": "Detect document format and structure"
+      }
+    },
+    {
+      "id": "text_extractor",
+      "agentType": "hololoom",
+      "x": 400,
+      "y": 200,
+      "config": {
+        "pattern": "fast",
+        "mode": "text_extraction",
+        "preserve_structure": true,
+        "description": "Extract clean text with structure"
+      }
+    },
+    {
+      "id": "table_extractor",
+      "agentType": "synthesizer",
+      "x": 400,
+      "y": 400,
+      "config": {
+        "extract_type": "tables",
+        "output_format": "structured_json",
+        "description": "Extract and structure tables"
+      }
+    },
+    {
+      "id": "chunker",
+      "agentType": "hololoom",
+      "x": 550,
+      "y": 300,
+      "config": {
+        "pattern": "fast",
+        "chunk_strategy": "semantic",
+        "chunk_size": 512,
+        "overlap": 64,
+        "description": "Semantic chunking with overlap"
+      }
+    },
+    {
+      "id": "parallel_analysis",
+      "agentType": "parallel",
+      "x": 700,
+      "y": 300,
+      "config": {
+        "strategy": "fan_out",
+        "timeout_ms": 30000,
+        "description": "Parallel document analysis"
+      }
+    },
+    {
+      "id": "entity_extractor",
+      "agentType": "synthesizer",
+      "x": 900,
+      "y": 100,
+      "config": {
+        "extract_type": "named_entities",
+        "entity_types": ["person", "org", "location", "date", "concept"],
+        "link_coreference": true,
+        "description": "Extract and link named entities"
+      }
+    },
+    {
+      "id": "key_phrase_extractor",
+      "agentType": "synthesizer",
+      "x": 900,
+      "y": 250,
+      "config": {
+        "extract_type": "key_phrases",
+        "max_phrases": 20,
+        "with_importance_scores": true,
+        "description": "Extract ranked key phrases"
+      }
+    },
+    {
+      "id": "relationship_extractor",
+      "agentType": "fusion",
+      "x": 900,
+      "y": 400,
+      "config": {
+        "strategy": "relation_extraction",
+        "relation_types": ["mentions", "causes", "part_of", "located_in"],
+        "description": "Extract entity relationships"
+      }
+    },
+    {
+      "id": "sentiment_analyzer",
+      "agentType": "hololoom",
+      "x": 900,
+      "y": 550,
+      "config": {
+        "pattern": "fast",
+        "mode": "sentiment_analysis",
+        "granularity": "paragraph",
+        "description": "Paragraph-level sentiment"
+      }
+    },
+    {
+      "id": "knowledge_graph_builder",
+      "agentType": "store",
+      "x": 1100,
+      "y": 250,
+      "config": {
+        "store_type": "knowledge_graph",
+        "merge_existing": true,
+        "description": "Build/update knowledge graph"
+      }
+    },
+    {
+      "id": "summarizer_chain",
+      "agentType": "loop",
+      "x": 1100,
+      "y": 450,
+      "config": {
+        "strategy": "hierarchical",
+        "levels": ["paragraph", "section", "document"],
+        "description": "Multi-level summarization"
+      }
+    },
+    {
+      "id": "section_summarizer",
+      "agentType": "hololoom",
+      "x": 1250,
+      "y": 350,
+      "config": {
+        "pattern": "fused",
+        "mode": "summarization",
+        "max_length": 200,
+        "description": "Summarize each section"
+      }
+    },
+    {
+      "id": "executive_summarizer",
+      "agentType": "hololoom",
+      "x": 1250,
+      "y": 500,
+      "config": {
+        "pattern": "fused",
+        "mode": "executive_summary",
+        "max_length": 500,
+        "description": "Create executive summary"
+      }
+    },
+    {
+      "id": "qa_generator",
+      "agentType": "multiquery",
+      "x": 1400,
+      "y": 200,
+      "config": {
+        "mode": "generate_qa_pairs",
+        "num_questions": 10,
+        "difficulty_range": ["easy", "medium", "hard"],
+        "description": "Generate Q&A pairs for testing"
+      }
+    },
+    {
+      "id": "cross_reference_linker",
+      "agentType": "fusion",
+      "x": 1400,
+      "y": 400,
+      "config": {
+        "strategy": "cross_document_linking",
+        "similarity_threshold": 0.8,
+        "description": "Link to related documents"
+      }
+    },
+    {
+      "id": "metadata_enricher",
+      "agentType": "synthesizer",
+      "x": 1550,
+      "y": 300,
+      "config": {
+        "enrich_type": "document_metadata",
+        "fields": ["topic", "reading_level", "key_dates", "primary_entities"],
+        "description": "Enrich document metadata"
+      }
+    },
+    {
+      "id": "vector_store",
+      "agentType": "store",
+      "x": 1700,
+      "y": 200,
+      "config": {
+        "store_type": "vector",
+        "embedding_model": "matryoshka",
+        "description": "Store embeddings for retrieval"
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 1700,
+      "y": 400,
+      "config": {
+        "format": "document_intelligence_report",
+        "include_visualizations": true
+      }
+    }
+  ],
+
+  "connections": [
+    {"id": "c1", "from": "document_ingester", "to": "format_detector"},
+    {"id": "c2", "from": "format_detector", "to": "text_extractor"},
+    {"id": "c3", "from": "format_detector", "to": "table_extractor"},
+    {"id": "c4", "from": "text_extractor", "to": "chunker"},
+    {"id": "c5", "from": "table_extractor", "to": "chunker"},
+    {"id": "c6", "from": "chunker", "to": "parallel_analysis"},
+    {"id": "c7", "from": "parallel_analysis", "to": "entity_extractor"},
+    {"id": "c8", "from": "parallel_analysis", "to": "key_phrase_extractor"},
+    {"id": "c9", "from": "parallel_analysis", "to": "relationship_extractor"},
+    {"id": "c10", "from": "parallel_analysis", "to": "sentiment_analyzer"},
+    {"id": "c11", "from": "entity_extractor", "to": "knowledge_graph_builder"},
+    {"id": "c12", "from": "key_phrase_extractor", "to": "knowledge_graph_builder"},
+    {"id": "c13", "from": "relationship_extractor", "to": "knowledge_graph_builder"},
+    {"id": "c14", "from": "parallel_analysis", "to": "summarizer_chain"},
+    {"id": "c15", "from": "summarizer_chain", "to": "section_summarizer"},
+    {"id": "c16", "from": "section_summarizer", "to": "executive_summarizer"},
+    {"id": "c17", "from": "knowledge_graph_builder", "to": "qa_generator"},
+    {"id": "c18", "from": "executive_summarizer", "to": "qa_generator"},
+    {"id": "c19", "from": "knowledge_graph_builder", "to": "cross_reference_linker"},
+    {"id": "c20", "from": "qa_generator", "to": "metadata_enricher"},
+    {"id": "c21", "from": "cross_reference_linker", "to": "metadata_enricher"},
+    {"id": "c22", "from": "sentiment_analyzer", "to": "metadata_enricher"},
+    {"id": "c23", "from": "metadata_enricher", "to": "vector_store"},
+    {"id": "c24", "from": "metadata_enricher", "to": "final_output"},
+    {"id": "c25", "from": "vector_store", "to": "final_output"}
+  ],
+
+  "input_schema": {
+    "document": {
+      "type": "file",
+      "required": true,
+      "accept": [".pdf", ".docx", ".txt", ".md", ".html"],
+      "description": "Document to analyze"
+    },
+    "analysis_depth": {
+      "type": "string",
+      "enum": ["quick", "standard", "comprehensive"],
+      "default": "standard",
+      "description": "Analysis depth level"
+    },
+    "generate_qa": {
+      "type": "boolean",
+      "default": true,
+      "description": "Generate Q&A pairs"
+    },
+    "link_existing": {
+      "type": "boolean",
+      "default": true,
+      "description": "Link to existing knowledge graph"
+    }
+  },
+
+  "output_schema": {
+    "executive_summary": {
+      "type": "string",
+      "description": "High-level document summary"
+    },
+    "section_summaries": {
+      "type": "array",
+      "description": "Per-section summaries"
+    },
+    "entities": {
+      "type": "array",
+      "description": "Extracted named entities with types"
+    },
+    "key_phrases": {
+      "type": "array",
+      "description": "Ranked key phrases"
+    },
+    "relationships": {
+      "type": "array",
+      "description": "Entity relationships"
+    },
+    "qa_pairs": {
+      "type": "array",
+      "description": "Generated Q&A pairs"
+    },
+    "sentiment_profile": {
+      "type": "object",
+      "description": "Sentiment by section"
+    },
+    "cross_references": {
+      "type": "array",
+      "description": "Links to related documents"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Enriched document metadata"
+    }
+  },
+
+  "evaluation": {
+    "metrics": ["entity_count", "relation_count", "summary_quality", "qa_pair_count"],
+    "success_criteria": {
+      "min_entities": 5,
+      "min_key_phrases": 10,
+      "summary_length_ratio": 0.1
+    }
+  }
+}
