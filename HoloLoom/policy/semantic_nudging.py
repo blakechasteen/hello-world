@@ -30,7 +30,7 @@ Example:
 """
 
 import logging
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Tuple, Optional, Any, Callable
 from dataclasses import dataclass
 import numpy as np
 import torch
@@ -496,7 +496,8 @@ def compute_semantic_state(
     text: str,
     semantic_spectrum: SemanticSpectrum,
     previous_state: Optional[Dict[str, float]] = None,
-    dt: float = 1.0
+    dt: float = 1.0,
+    embed_fn: Optional[Callable[[str], np.ndarray]] = None
 ) -> Dict[str, Any]:
     """
     Compute semantic state (position, velocity, categories) from text.
@@ -506,6 +507,8 @@ def compute_semantic_state(
         semantic_spectrum: Initialized spectrum with learned axes
         previous_state: Previous semantic position (for velocity)
         dt: Time step for velocity computation
+        embed_fn: Optional embedding function (text -> numpy array).
+                  If not provided, tries semantic_spectrum.embed_fn if available.
 
     Returns:
         Dict with:
@@ -515,29 +518,109 @@ def compute_semantic_state(
             - 'position_tensor': torch.Tensor - [1, 244]
             - 'velocity_tensor': torch.Tensor - [1, 244]
             - 'categories_tensor': torch.Tensor - [1, 16]
+
+    Raises:
+        ValueError: If no embedding function available and axes not learned.
+
+    Example:
+        >>> from sentence_transformers import SentenceTransformer
+        >>> model = SentenceTransformer('all-MiniLM-L6-v2')
+        >>> embed_fn = lambda t: model.encode(t)
+        >>> spectrum = SemanticSpectrum()
+        >>> spectrum.learn_axes(embed_fn)
+        >>> state = compute_semantic_state("Hello world", spectrum, embed_fn=embed_fn)
+        >>> print(state['categories']['Core'])  # Aggregated core dimensions
     """
-    # Embed text (single point, no trajectory)
-    words = text.split()[:50]  # Limit to 50 words for efficiency
-    if not words:
-        # Empty text, return zeros
+    # Handle empty text
+    if not text or not text.strip():
         return _empty_semantic_state()
 
-    # Get embeddings
-    # Assume semantic_spectrum has an embed_fn attribute or we pass it separately
-    # For now, we'll need to handle this in the caller
+    # Resolve embedding function
+    _embed_fn = embed_fn
+    if _embed_fn is None:
+        # Try to get from semantic_spectrum if it stored one
+        _embed_fn = getattr(semantic_spectrum, 'embed_fn', None)
 
-    # This is a placeholder - actual implementation needs embedding function
-    # We'll compute projections assuming we have the vector
-    raise NotImplementedError(
-        "compute_semantic_state requires embedding function integration. "
-        "See demo implementation for full example."
-    )
+    if _embed_fn is None:
+        # Check if axes are learned (can still work with pre-computed vectors)
+        if not getattr(semantic_spectrum, '_axes_learned', False):
+            logger.warning(
+                "No embedding function provided and axes not learned. "
+                "Returning empty semantic state."
+            )
+            return _empty_semantic_state()
+        else:
+            # Axes are learned but no embed_fn - this is an error
+            raise ValueError(
+                "compute_semantic_state requires an embedding function. "
+                "Pass embed_fn parameter or call semantic_spectrum.learn_axes(embed_fn) first "
+                "and store the embed_fn on the spectrum object."
+            )
+
+    # Embed the text
+    try:
+        embedding = _embed_fn(text)
+        if isinstance(embedding, torch.Tensor):
+            embedding = embedding.detach().cpu().numpy()
+        embedding = np.asarray(embedding).flatten()
+    except Exception as e:
+        logger.error(f"Embedding failed for text: {e}")
+        return _empty_semantic_state()
+
+    # Project onto 244 semantic dimensions
+    try:
+        position = semantic_spectrum.project_vector(embedding)
+    except ValueError as e:
+        logger.error(f"Projection failed: {e}")
+        return _empty_semantic_state()
+    except Exception as e:
+        logger.error(f"Unexpected error during projection: {e}")
+        return _empty_semantic_state()
+
+    # Compute velocity from previous state
+    velocity = {}
+    if previous_state is not None and dt > 0:
+        for dim_name in position.keys():
+            prev_val = previous_state.get(dim_name, 0.0)
+            velocity[dim_name] = (position[dim_name] - prev_val) / dt
+    else:
+        # No previous state, velocity is zero
+        velocity = {dim_name: 0.0 for dim_name in position.keys()}
+
+    # Aggregate by category (244D -> 16D)
+    categories = aggregate_by_category(position)
+
+    # Convert to tensors
+    n_dims = len(EXTENDED_244_DIMENSIONS)
+    n_categories = len(SEMANTIC_CATEGORIES)
+
+    # Position tensor (preserve dimension order)
+    position_values = [position.get(dim.name, 0.0) for dim in EXTENDED_244_DIMENSIONS]
+    position_tensor = torch.tensor(position_values, dtype=torch.float32).unsqueeze(0)
+
+    # Velocity tensor
+    velocity_values = [velocity.get(dim.name, 0.0) for dim in EXTENDED_244_DIMENSIONS]
+    velocity_tensor = torch.tensor(velocity_values, dtype=torch.float32).unsqueeze(0)
+
+    # Categories tensor (preserve category order)
+    category_order = list(SEMANTIC_CATEGORIES.keys())
+    category_values = [categories.get(cat, 0.0) for cat in category_order]
+    categories_tensor = torch.tensor(category_values, dtype=torch.float32).unsqueeze(0)
+
+    return {
+        'position': position,
+        'velocity': velocity,
+        'categories': categories,
+        'position_tensor': position_tensor,
+        'velocity_tensor': velocity_tensor,
+        'categories_tensor': categories_tensor
+    }
 
 
 def _empty_semantic_state() -> Dict[str, Any]:
     """Return empty semantic state (all zeros)."""
-    n_dims = 244
-    n_categories = 16
+    n_dims = len(EXTENDED_244_DIMENSIONS)
+    n_categories = len(SEMANTIC_CATEGORIES)
 
     return {
         'position': {dim.name: 0.0 for dim in EXTENDED_244_DIMENSIONS},

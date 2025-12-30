@@ -199,6 +199,292 @@ class MockLLM(LLMProtocol):
 
 
 # ============================================================================
+# Production LLM Implementations (W1 Remediation - 2025-12-30)
+# ============================================================================
+
+class OllamaStreamLLM(LLMProtocol):
+    """
+    Production Ollama LLM for streaming generation.
+
+    Wraps the existing OllamaLLM from awareness/llm_integration for use
+    with the interleaved generation system.
+
+    Requires:
+        pip install ollama
+        Ollama server running locally
+    """
+
+    def __init__(self, model: str = "llama3.2:3b", base_url: Optional[str] = None):
+        """
+        Initialize Ollama streaming LLM.
+
+        Args:
+            model: Ollama model name (default: llama3.2:3b)
+            base_url: Optional custom Ollama server URL
+        """
+        self.model = model
+        self.base_url = base_url
+        self._ollama_llm = None
+        self._available = False
+
+        try:
+            from HoloLoom.memory.awareness.llm_integration import OllamaLLM
+            self._ollama_llm = OllamaLLM(model=model, base_url=base_url)
+            self._available = self._ollama_llm.is_available()
+        except ImportError:
+            logger.warning("OllamaLLM not available - falling back to mock")
+            self._available = False
+
+    def is_available(self) -> bool:
+        """Check if Ollama is available."""
+        return self._available
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        context: str,
+        max_tokens: int = 500
+    ) -> AsyncIterator[str]:
+        """
+        Stream generation from Ollama.
+
+        Args:
+            prompt: User query
+            context: Retrieved context to condition on
+            max_tokens: Maximum tokens to generate
+
+        Yields:
+            Individual tokens as strings
+        """
+        if not self._available or self._ollama_llm is None:
+            raise RuntimeError("Ollama not available")
+
+        # Build full prompt with context
+        full_prompt = f"""Context:
+{context}
+
+Question: {prompt}
+
+Answer based on the context above:"""
+
+        system_prompt = "You are a helpful assistant. Answer based on the provided context."
+
+        async for token in self._ollama_llm.stream_generate(
+            prompt=full_prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        ):
+            yield token
+
+
+class AnthropicStreamLLM(LLMProtocol):
+    """
+    Production Anthropic Claude LLM for streaming generation.
+
+    Requires:
+        pip install anthropic
+        export ANTHROPIC_API_KEY="your-key"
+    """
+
+    def __init__(self, model: str = "claude-3-5-sonnet-20241022", api_key: Optional[str] = None):
+        """
+        Initialize Anthropic streaming LLM.
+
+        Args:
+            model: Anthropic model name
+            api_key: Optional API key (defaults to ANTHROPIC_API_KEY env var)
+        """
+        self.model = model
+        self._anthropic_llm = None
+        self._available = False
+
+        try:
+            from HoloLoom.memory.awareness.llm_integration import AnthropicLLM
+            self._anthropic_llm = AnthropicLLM(model=model, api_key=api_key)
+            self._available = self._anthropic_llm.is_available()
+        except ImportError:
+            logger.warning("AnthropicLLM not available - falling back to mock")
+            self._available = False
+
+    def is_available(self) -> bool:
+        """Check if Anthropic is available."""
+        return self._available
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        context: str,
+        max_tokens: int = 500
+    ) -> AsyncIterator[str]:
+        """
+        Stream generation from Anthropic Claude.
+
+        Args:
+            prompt: User query
+            context: Retrieved context to condition on
+            max_tokens: Maximum tokens to generate
+
+        Yields:
+            Individual tokens as strings
+        """
+        if not self._available or self._anthropic_llm is None:
+            raise RuntimeError("Anthropic not available")
+
+        # Build full prompt with context
+        full_prompt = f"""Context:
+{context}
+
+Question: {prompt}
+
+Answer based on the context above:"""
+
+        system_prompt = "You are a helpful assistant. Answer based on the provided context."
+
+        async for token in self._anthropic_llm.stream_generate(
+            prompt=full_prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        ):
+            yield token
+
+
+class OpenAIStreamLLM(LLMProtocol):
+    """
+    Production OpenAI GPT LLM for streaming generation.
+
+    Requires:
+        pip install openai
+        export OPENAI_API_KEY="your-key"
+    """
+
+    def __init__(self, model: str = "gpt-4", api_key: Optional[str] = None):
+        """
+        Initialize OpenAI streaming LLM.
+
+        Args:
+            model: OpenAI model name
+            api_key: Optional API key (defaults to OPENAI_API_KEY env var)
+        """
+        self.model = model
+        self._openai_llm = None
+        self._available = False
+
+        try:
+            from HoloLoom.memory.awareness.llm_integration import OpenAILLM
+            self._openai_llm = OpenAILLM(model=model, api_key=api_key)
+            self._available = self._openai_llm.is_available()
+        except ImportError:
+            logger.warning("OpenAILLM not available - falling back to mock")
+            self._available = False
+
+    def is_available(self) -> bool:
+        """Check if OpenAI is available."""
+        return self._available
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        context: str,
+        max_tokens: int = 500
+    ) -> AsyncIterator[str]:
+        """
+        Stream generation from OpenAI GPT.
+
+        Args:
+            prompt: User query
+            context: Retrieved context to condition on
+            max_tokens: Maximum tokens to generate
+
+        Yields:
+            Individual tokens as strings
+        """
+        if not self._available or self._openai_llm is None:
+            raise RuntimeError("OpenAI not available")
+
+        # Build full prompt with context
+        full_prompt = f"""Context:
+{context}
+
+Question: {prompt}
+
+Answer based on the context above:"""
+
+        system_prompt = "You are a helpful assistant. Answer based on the provided context."
+
+        async for token in self._openai_llm.stream_generate(
+            prompt=full_prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        ):
+            yield token
+
+
+def create_stream_llm(
+    provider: str = "ollama",
+    model: Optional[str] = None,
+    **kwargs
+) -> LLMProtocol:
+    """
+    Factory function to create streaming LLM instances for interleaved generation.
+
+    Args:
+        provider: "ollama", "anthropic", "openai", or "mock"
+        model: Optional model override
+        **kwargs: Provider-specific arguments
+
+    Returns:
+        LLMProtocol instance for streaming generation
+
+    Examples:
+        # Ollama (local, fast)
+        llm = create_stream_llm("ollama", model="llama3.2:3b")
+
+        # Anthropic Claude
+        llm = create_stream_llm("anthropic", model="claude-3-5-sonnet-20241022")
+
+        # OpenAI GPT
+        llm = create_stream_llm("openai", model="gpt-4")
+
+        # Mock (for testing)
+        llm = create_stream_llm("mock")
+    """
+    provider_lower = provider.lower()
+
+    if provider_lower == "ollama":
+        model = model or "llama3.2:3b"
+        llm = OllamaStreamLLM(model=model, **kwargs)
+        if llm.is_available():
+            return llm
+        logger.warning("Ollama not available, falling back to mock")
+        return MockLLM()
+
+    elif provider_lower == "anthropic":
+        model = model or "claude-3-5-sonnet-20241022"
+        llm = AnthropicStreamLLM(model=model, **kwargs)
+        if llm.is_available():
+            return llm
+        logger.warning("Anthropic not available, falling back to mock")
+        return MockLLM()
+
+    elif provider_lower == "openai":
+        model = model or "gpt-4"
+        llm = OpenAIStreamLLM(model=model, **kwargs)
+        if llm.is_available():
+            return llm
+        logger.warning("OpenAI not available, falling back to mock")
+        return MockLLM()
+
+    elif provider_lower == "mock":
+        return MockLLM(**kwargs)
+
+    else:
+        raise ValueError(f"Unknown provider: {provider}. Use 'ollama', 'anthropic', 'openai', or 'mock'")
+
+
+# ============================================================================
 # Interleaved Stream Manager
 # ============================================================================
 

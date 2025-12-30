@@ -711,3 +711,424 @@ class MockAdaptiveLLM(AdaptiveLLMProtocol):
 
             if token_count >= max_tokens:
                 return
+
+
+# ============================================================================
+# Production Adaptive LLMs (W1 Remediation - December 2025)
+# ============================================================================
+
+class OllamaAdaptiveLLM(AdaptiveLLMProtocol):
+    """
+    Production Ollama LLM with adaptive context feeding support.
+
+    Wraps OllamaLLM.stream_generate() with context update awareness.
+    Note: True mid-generation context injection requires LLM API support.
+    Current implementation acknowledges updates but uses initial context.
+    """
+
+    def __init__(self, model: str = "llama3.2:3b", base_url: Optional[str] = None):
+        self.model = model
+        self.base_url = base_url
+        self._ollama_llm = None
+        self._available = False
+
+        try:
+            from HoloLoom.memory.awareness.llm_integration import OllamaLLM
+            self._ollama_llm = OllamaLLM(model=model, base_url=base_url)
+            self._available = self._ollama_llm.is_available()
+            if self._available:
+                logger.info(f"OllamaAdaptiveLLM initialized (model={model})")
+        except ImportError:
+            logger.warning("OllamaLLM not available - adaptive features disabled")
+            self._available = False
+
+    def is_available(self) -> bool:
+        """Check if Ollama is available."""
+        return self._available
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        context: str,
+        max_tokens: int = 500
+    ) -> AsyncIterator[str]:
+        """Standard streaming generation."""
+        if not self._available or self._ollama_llm is None:
+            raise RuntimeError("Ollama not available")
+
+        full_prompt = f"""Context:
+{context}
+
+Question: {prompt}
+
+Answer based on the context above:"""
+
+        system_prompt = "You are a helpful assistant. Answer based on the provided context."
+
+        async for token in self._ollama_llm.stream_generate(
+            prompt=full_prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        ):
+            yield token
+
+    async def generate_stream_adaptive(
+        self,
+        prompt: str,
+        initial_context: str,
+        context_updates: asyncio.Queue,
+        max_tokens: int = 500
+    ) -> AsyncIterator[str]:
+        """
+        Adaptive streaming generation with context update awareness.
+
+        Monitors context_updates queue and logs new chunks, but uses
+        initial context for generation (true mid-generation injection
+        would require LLM API support for context modification).
+        """
+        if not self._available or self._ollama_llm is None:
+            raise RuntimeError("Ollama not available")
+
+        full_prompt = f"""Context:
+{initial_context}
+
+Question: {prompt}
+
+Answer based on the context above. If new information becomes available,
+you may request specific nodes using <request_node>node_id</request_node>."""
+
+        system_prompt = "You are a helpful assistant with access to a knowledge graph. Answer based on the provided context."
+
+        token_count = 0
+        context_update_count = 0
+
+        async for token in self._ollama_llm.stream_generate(
+            prompt=full_prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        ):
+            # Check for context updates (non-blocking)
+            try:
+                update = context_updates.get_nowait()
+                if update is not None:
+                    context_update_count += 1
+                    logger.debug(f"Context update received (#{context_update_count}): {len(update.chunk.nodes)} nodes")
+                elif update is None:
+                    # End of context stream
+                    pass
+            except asyncio.QueueEmpty:
+                pass
+
+            yield token
+            token_count += 1
+
+            if token_count >= max_tokens:
+                break
+
+        if context_update_count > 0:
+            logger.info(f"Generation complete with {context_update_count} context updates received")
+
+
+class AnthropicAdaptiveLLM(AdaptiveLLMProtocol):
+    """
+    Production Anthropic Claude LLM with adaptive context feeding support.
+
+    Wraps AnthropicLLM.stream_generate() with context update awareness.
+    """
+
+    def __init__(self, api_key: Optional[str] = None, model: str = "claude-3-5-sonnet-20241022"):
+        import os
+        self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
+        self.model = model
+        self._anthropic_llm = None
+        self._available = False
+
+        if not self.api_key:
+            logger.warning("ANTHROPIC_API_KEY not set - Anthropic adaptive LLM unavailable")
+            return
+
+        try:
+            from HoloLoom.memory.awareness.llm_integration import AnthropicLLM
+            self._anthropic_llm = AnthropicLLM(api_key=self.api_key, model=model)
+            self._available = True
+            logger.info(f"AnthropicAdaptiveLLM initialized (model={model})")
+        except ImportError:
+            logger.warning("AnthropicLLM not available - adaptive features disabled")
+            self._available = False
+
+    def is_available(self) -> bool:
+        """Check if Anthropic API is available."""
+        return self._available
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        context: str,
+        max_tokens: int = 500
+    ) -> AsyncIterator[str]:
+        """Standard streaming generation."""
+        if not self._available or self._anthropic_llm is None:
+            raise RuntimeError("Anthropic not available")
+
+        full_prompt = f"""Context:
+{context}
+
+Question: {prompt}
+
+Answer based on the context above:"""
+
+        system_prompt = "You are a helpful assistant. Answer based on the provided context."
+
+        async for token in self._anthropic_llm.stream_generate(
+            prompt=full_prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        ):
+            yield token
+
+    async def generate_stream_adaptive(
+        self,
+        prompt: str,
+        initial_context: str,
+        context_updates: asyncio.Queue,
+        max_tokens: int = 500
+    ) -> AsyncIterator[str]:
+        """Adaptive streaming generation with context update awareness."""
+        if not self._available or self._anthropic_llm is None:
+            raise RuntimeError("Anthropic not available")
+
+        full_prompt = f"""Context:
+{initial_context}
+
+Question: {prompt}
+
+Answer based on the context above. If you need additional information,
+you can request nodes using <request_node>node_id</request_node>."""
+
+        system_prompt = "You are a helpful assistant with access to a knowledge graph."
+
+        token_count = 0
+        context_update_count = 0
+
+        async for token in self._anthropic_llm.stream_generate(
+            prompt=full_prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        ):
+            try:
+                update = context_updates.get_nowait()
+                if update is not None:
+                    context_update_count += 1
+                    logger.debug(f"Context update received: {len(update.chunk.nodes)} nodes")
+            except asyncio.QueueEmpty:
+                pass
+
+            yield token
+            token_count += 1
+
+            if token_count >= max_tokens:
+                break
+
+
+class OpenAIAdaptiveLLM(AdaptiveLLMProtocol):
+    """
+    Production OpenAI GPT LLM with adaptive context feeding support.
+
+    Wraps OpenAILLM.stream_generate() with context update awareness.
+    """
+
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4"):
+        import os
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.model = model
+        self._openai_llm = None
+        self._available = False
+
+        if not self.api_key:
+            logger.warning("OPENAI_API_KEY not set - OpenAI adaptive LLM unavailable")
+            return
+
+        try:
+            from HoloLoom.memory.awareness.llm_integration import OpenAILLM
+            self._openai_llm = OpenAILLM(api_key=self.api_key, model=model)
+            self._available = True
+            logger.info(f"OpenAIAdaptiveLLM initialized (model={model})")
+        except ImportError:
+            logger.warning("OpenAILLM not available - adaptive features disabled")
+            self._available = False
+
+    def is_available(self) -> bool:
+        """Check if OpenAI API is available."""
+        return self._available
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        context: str,
+        max_tokens: int = 500
+    ) -> AsyncIterator[str]:
+        """Standard streaming generation."""
+        if not self._available or self._openai_llm is None:
+            raise RuntimeError("OpenAI not available")
+
+        full_prompt = f"""Context:
+{context}
+
+Question: {prompt}
+
+Answer based on the context above:"""
+
+        system_prompt = "You are a helpful assistant. Answer based on the provided context."
+
+        async for token in self._openai_llm.stream_generate(
+            prompt=full_prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        ):
+            yield token
+
+    async def generate_stream_adaptive(
+        self,
+        prompt: str,
+        initial_context: str,
+        context_updates: asyncio.Queue,
+        max_tokens: int = 500
+    ) -> AsyncIterator[str]:
+        """Adaptive streaming generation with context update awareness."""
+        if not self._available or self._openai_llm is None:
+            raise RuntimeError("OpenAI not available")
+
+        full_prompt = f"""Context:
+{initial_context}
+
+Question: {prompt}
+
+Answer based on the context above. If you need additional information,
+you can request nodes using <request_node>node_id</request_node>."""
+
+        system_prompt = "You are a helpful assistant with access to a knowledge graph."
+
+        token_count = 0
+        context_update_count = 0
+
+        async for token in self._openai_llm.stream_generate(
+            prompt=full_prompt,
+            system_prompt=system_prompt,
+            max_tokens=max_tokens,
+            temperature=0.7
+        ):
+            try:
+                update = context_updates.get_nowait()
+                if update is not None:
+                    context_update_count += 1
+                    logger.debug(f"Context update received: {len(update.chunk.nodes)} nodes")
+            except asyncio.QueueEmpty:
+                pass
+
+            yield token
+            token_count += 1
+
+            if token_count >= max_tokens:
+                break
+
+
+def create_adaptive_llm(
+    provider: str = "ollama",
+    model: Optional[str] = None,
+    **kwargs
+) -> AdaptiveLLMProtocol:
+    """
+    Factory function to create an adaptive LLM with automatic fallback.
+
+    Tries to create the requested provider, falls back to MockAdaptiveLLM
+    if not available.
+
+    Args:
+        provider: LLM provider ("ollama", "anthropic", "openai", "mock")
+        model: Model name (uses provider default if None)
+        **kwargs: Additional provider-specific arguments
+
+    Returns:
+        AdaptiveLLMProtocol implementation
+
+    Example:
+        >>> llm = create_adaptive_llm("ollama")
+        >>> async for token in llm.generate_stream_adaptive(prompt, context, queue):
+        ...     print(token, end="", flush=True)
+    """
+    provider = provider.lower()
+
+    if provider == "mock":
+        return MockAdaptiveLLM(**kwargs)
+
+    if provider == "ollama":
+        llm = OllamaAdaptiveLLM(
+            model=model or "llama3.2:3b",
+            base_url=kwargs.get("base_url")
+        )
+        if llm.is_available():
+            return llm
+        logger.warning("Ollama not available, falling back to MockAdaptiveLLM")
+        return MockAdaptiveLLM(**kwargs)
+
+    if provider == "anthropic":
+        llm = AnthropicAdaptiveLLM(
+            api_key=kwargs.get("api_key"),
+            model=model or "claude-3-5-sonnet-20241022"
+        )
+        if llm.is_available():
+            return llm
+        logger.warning("Anthropic not available, falling back to MockAdaptiveLLM")
+        return MockAdaptiveLLM(**kwargs)
+
+    if provider == "openai":
+        llm = OpenAIAdaptiveLLM(
+            api_key=kwargs.get("api_key"),
+            model=model or "gpt-4"
+        )
+        if llm.is_available():
+            return llm
+        logger.warning("OpenAI not available, falling back to MockAdaptiveLLM")
+        return MockAdaptiveLLM(**kwargs)
+
+    logger.warning(f"Unknown provider '{provider}', falling back to MockAdaptiveLLM")
+    return MockAdaptiveLLM(**kwargs)
+
+
+# ============================================================================
+# Exports
+# ============================================================================
+
+__all__ = [
+    # Feature 1: Adaptive Context Feeding
+    "AdaptiveLLMProtocol",
+    "ContextUpdate",
+
+    # Feature 2: Agentic Graph Navigation
+    "NodeRequestType",
+    "NodeRequest",
+    "AgenticGraphNavigator",
+
+    # Feature 3: Context Summarization
+    "SummarizationStrategy",
+    "SummarizationConfig",
+    "ContextSummarizer",
+
+    # Main Manager
+    "AdvancedInterleavedManager",
+
+    # Convenience
+    "stream_advanced_generation",
+
+    # LLM Implementations
+    "MockAdaptiveLLM",
+    "OllamaAdaptiveLLM",
+    "AnthropicAdaptiveLLM",
+    "OpenAIAdaptiveLLM",
+    "create_adaptive_llm",
+]
