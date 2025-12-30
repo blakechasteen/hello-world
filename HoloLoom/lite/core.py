@@ -320,6 +320,80 @@ class HoloLoomLite:
         # For Lite mode, we just acknowledge the feedback
         pass
 
+    async def related(
+        self,
+        memory_id: str,
+        hops: int = 1,
+        direction: str = "both"
+    ) -> List['Memory']:
+        """
+        Get memories related to a given memory via graph traversal.
+
+        Edges are created automatically during experience():
+        - Semantic edges: memories with >0.7 similarity
+        - Temporal edges: sequential memories
+
+        Args:
+            memory_id: Starting memory ID
+            hops: Number of hops (1 = direct neighbors, 2 = neighbors of neighbors)
+            direction: "out" (forward), "in" (backward), or "both"
+
+        Returns:
+            List of related Memory objects
+
+        Example:
+            >>> mem = await loom.experience("Thompson Sampling")
+            >>> await loom.experience("Bayesian methods")  # Auto-linked if similar
+            >>> related = await loom.related(mem.id, hops=1)
+            >>> for r in related:
+            ...     print(f"Related: {r.text}")
+        """
+        await self._initialize()
+
+        from HoloLoom.memory.protocol import Memory
+
+        graph = self._memory.graph
+
+        # Check if memory exists
+        if memory_id not in graph:
+            return []
+
+        # BFS traversal for multi-hop neighbors
+        visited = {memory_id}
+        current_level = {memory_id}
+        neighbors = set()
+
+        for _ in range(hops):
+            next_level = set()
+            for node in current_level:
+                if direction in ("out", "both"):
+                    next_level.update(n for n in graph.successors(node) if n not in visited)
+                if direction in ("in", "both"):
+                    next_level.update(n for n in graph.predecessors(node) if n not in visited)
+
+            neighbors.update(next_level)
+            visited.update(next_level)
+            current_level = next_level
+
+            if not current_level:
+                break
+
+        # Convert IDs to Memory objects
+        memories = []
+        for node_id in neighbors:
+            if node_id in graph.nodes:
+                node_data = graph.nodes[node_id]
+                if 'text' in node_data:  # Skip non-memory nodes
+                    memories.append(Memory(
+                        id=node_id,
+                        text=node_data['text'],
+                        timestamp=node_data.get('timestamp', 0.0),
+                        context=node_data.get('context', {}),
+                        metadata=node_data.get('metadata', {})
+                    ))
+
+        return memories
+
     async def reason(
         self,
         query: str,
@@ -533,6 +607,8 @@ class HoloLoomLite:
             from HoloLoom.rag.simple_rag import SimpleRAG
 
             self._rag = SimpleRAG(config=self.config)
+            # Initialize the RAG instance (required before use)
+            await self._rag._initialize()
             return self._rag
 
         except ImportError as e:

@@ -14,12 +14,42 @@ CLI:
     python -m HoloLoom.lite web        # Web chat (localhost:8080)
     python -m HoloLoom.lite desktop    # Gradio desktop app
 
+Agent Tools:
+    python -m HoloLoom.lite.mcp_server     # MCP Server for Claude Desktop
+    python -m HoloLoom.lite.openai_tools   # OpenAI function schemas
+
 Date: December 2025
 """
 
 from HoloLoom.lite.core import HoloLoomLite, LiteResult, SimpleLoom
 
-__all__ = ['HoloLoomLite', 'LiteResult', 'SimpleLoom']
+# Agent tool exports (lazy loaded to avoid import errors if dependencies missing)
+try:
+    from HoloLoom.lite.openai_tools import (
+        HOLOLOOM_LITE_TOOLS,
+        execute_tool,
+        get_tools_for_openai,
+        get_tools_for_anthropic,
+        get_tool_names,
+        get_tool_descriptions
+    )
+    _OPENAI_TOOLS_AVAILABLE = True
+except ImportError:
+    _OPENAI_TOOLS_AVAILABLE = False
+
+__all__ = [
+    # Core
+    'HoloLoomLite',
+    'LiteResult',
+    'SimpleLoom',
+    # Agent tools (when available)
+    'HOLOLOOM_LITE_TOOLS',
+    'execute_tool',
+    'get_tools_for_openai',
+    'get_tools_for_anthropic',
+    'get_tool_names',
+    'get_tool_descriptions',
+]
 
 
 # =============================================================================

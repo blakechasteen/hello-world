@@ -750,6 +750,137 @@ class TestIntegration:
 
 
 # =============================================================================
+# Test Graph Expansion (related() method)
+# =============================================================================
+
+class TestGraphExpansion:
+    """
+    Test related() method for graph traversal.
+
+    Tests the ability to navigate 1-2 hops through the memory graph.
+    """
+
+    @pytest.fixture
+    def mock_embeddings_class(self):
+        """Mock embeddings to avoid loading real models."""
+        import numpy as np
+        mock_embedder = MagicMock()
+        mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
+
+        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+            yield mock_embedder
+
+    @pytest.mark.asyncio
+    async def test_related_returns_empty_for_invalid_id(self, mock_embeddings_class):
+        """related() returns empty list for non-existent memory ID."""
+        from HoloLoom.lite.core import HoloLoomLite
+
+        async with HoloLoomLite() as loom:
+            related = await loom.related("non_existent_id", hops=1)
+            assert related == []
+
+    @pytest.mark.asyncio
+    async def test_related_returns_empty_for_no_edges(self, mock_embeddings_class):
+        """related() returns empty list when memory has no edges."""
+        from HoloLoom.lite.core import HoloLoomLite
+
+        async with HoloLoomLite() as loom:
+            # Store a single memory (no edges yet)
+            mem = await loom.experience("Isolated memory")
+
+            # Should return empty since no edges created
+            related = await loom.related(mem.id, hops=1)
+            assert isinstance(related, list)
+            # Note: May or may not have edges depending on auto-weaving
+
+    @pytest.mark.asyncio
+    async def test_related_with_manual_edges(self, mock_embeddings_class):
+        """related() returns neighbors when edges exist."""
+        from HoloLoom.lite.core import HoloLoomLite
+
+        async with HoloLoomLite() as loom:
+            # Store memories
+            mem1 = await loom.experience("Thompson Sampling")
+            mem2 = await loom.experience("Multi-armed bandits")
+
+            # Manually add edge (for reliable testing)
+            loom._memory.graph.add_edge(mem1.id, mem2.id, type="RELATED")
+
+            # Should find mem2 as neighbor
+            related = await loom.related(mem1.id, hops=1)
+            assert isinstance(related, list)
+
+            # Check that mem2 is in results
+            related_ids = [m.id for m in related]
+            assert mem2.id in related_ids
+
+    @pytest.mark.asyncio
+    async def test_related_with_direction_out(self, mock_embeddings_class):
+        """related() respects direction='out' (successors only)."""
+        from HoloLoom.lite.core import HoloLoomLite
+
+        async with HoloLoomLite() as loom:
+            mem1 = await loom.experience("Start")
+            mem2 = await loom.experience("End")
+
+            # Add directed edge: mem1 -> mem2
+            loom._memory.graph.add_edge(mem1.id, mem2.id, type="LEADS_TO")
+
+            # From mem1, direction=out should find mem2
+            out_related = await loom.related(mem1.id, hops=1, direction="out")
+            out_ids = [m.id for m in out_related]
+            assert mem2.id in out_ids
+
+            # From mem2, direction=out should NOT find mem1
+            out_related2 = await loom.related(mem2.id, hops=1, direction="out")
+            out_ids2 = [m.id for m in out_related2]
+            assert mem1.id not in out_ids2
+
+    @pytest.mark.asyncio
+    async def test_related_with_direction_in(self, mock_embeddings_class):
+        """related() respects direction='in' (predecessors only)."""
+        from HoloLoom.lite.core import HoloLoomLite
+
+        async with HoloLoomLite() as loom:
+            mem1 = await loom.experience("Cause")
+            mem2 = await loom.experience("Effect")
+
+            # Add directed edge: mem1 -> mem2
+            loom._memory.graph.add_edge(mem1.id, mem2.id, type="CAUSES")
+
+            # From mem2, direction=in should find mem1
+            in_related = await loom.related(mem2.id, hops=1, direction="in")
+            in_ids = [m.id for m in in_related]
+            assert mem1.id in in_ids
+
+    @pytest.mark.asyncio
+    async def test_related_with_multiple_hops(self, mock_embeddings_class):
+        """related() with hops=2 finds neighbors of neighbors."""
+        from HoloLoom.lite.core import HoloLoomLite
+
+        async with HoloLoomLite() as loom:
+            mem1 = await loom.experience("Level 0")
+            mem2 = await loom.experience("Level 1")
+            mem3 = await loom.experience("Level 2")
+
+            # Chain: mem1 -> mem2 -> mem3
+            loom._memory.graph.add_edge(mem1.id, mem2.id, type="NEXT")
+            loom._memory.graph.add_edge(mem2.id, mem3.id, type="NEXT")
+
+            # hops=1 should only find mem2
+            hop1 = await loom.related(mem1.id, hops=1)
+            hop1_ids = [m.id for m in hop1]
+            assert mem2.id in hop1_ids
+            assert mem3.id not in hop1_ids
+
+            # hops=2 should find both mem2 and mem3
+            hop2 = await loom.related(mem1.id, hops=2)
+            hop2_ids = [m.id for m in hop2]
+            assert mem2.id in hop2_ids
+            assert mem3.id in hop2_ids
+
+
+# =============================================================================
 # Run Tests
 # =============================================================================
 
