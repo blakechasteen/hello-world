@@ -18,9 +18,98 @@ Installation:
 """
 
 import logging
+import re
 from typing import Dict, Optional, Any
 from HoloLoom.protocols.types import Query, Context
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator as BaseOrchestrator, ToolExecutor as BaseToolExecutor
+
+
+# =============================================================================
+# SECURITY: Prompt Injection Protection
+# =============================================================================
+
+def sanitize_prompt(user_input: str) -> str:
+    """
+    Remove potential prompt injection patterns from user input.
+
+    SECURITY: Prevents adversarial manipulation of LLM behavior through
+    instruction override attempts embedded in user queries.
+
+    Args:
+        user_input: Raw user input text
+
+    Returns:
+        Sanitized text with injection patterns filtered
+    """
+    if not user_input:
+        return ""
+
+    # Patterns that indicate prompt injection attempts
+    # Each pattern is replaced with [FILTERED] to neutralize the attack
+    injection_patterns = [
+        r"ignore\s+(previous|all|above|prior)\s+instructions?",
+        r"disregard\s+(previous|all|above|prior)\s+instructions?",
+        r"forget\s+(previous|all|above|prior)\s+instructions?",
+        r"you\s+are\s+now\s+a?\s*",
+        r"new\s+instructions?:",
+        r"system\s*:",
+        r"<\s*system\s*>",
+        r"<\s*/?\s*instructions?\s*>",
+        r"override\s+mode",
+        r"admin\s+mode",
+        r"developer\s+mode",
+        r"jailbreak",
+        r"do\s+anything\s+now",
+        r"pretend\s+you\s+are",
+        r"act\s+as\s+if",
+        r"roleplay\s+as",
+    ]
+
+    sanitized = user_input
+    for pattern in injection_patterns:
+        sanitized = re.sub(pattern, "[FILTERED]", sanitized, flags=re.IGNORECASE)
+
+    return sanitized
+
+
+def mask_sensitive(text: str) -> str:
+    """
+    Mask API keys and secrets in error messages.
+
+    SECURITY: Prevents accidental exposure of credentials in logs or error messages.
+
+    Args:
+        text: Text that may contain sensitive information
+
+    Returns:
+        Text with sensitive patterns masked
+    """
+    if not text:
+        return ""
+
+    text_str = str(text)
+
+    # Patterns for various API key formats
+    sensitive_patterns = [
+        # Anthropic API keys
+        (r'sk-ant-[a-zA-Z0-9\-_]{32,}', 'sk-ant-***'),
+        # OpenAI API keys
+        (r'sk-[a-zA-Z0-9]{32,}', 'sk-***'),
+        # Generic API keys in key=value format
+        (r'(api[_-]?key\s*[=:]\s*)[a-zA-Z0-9\-_]{16,}', r'\1***'),
+        # Authorization headers
+        (r'(Bearer\s+)[a-zA-Z0-9\-_.]{20,}', r'\1***'),
+        # Password patterns
+        (r'(password\s*[=:]\s*)\S+', r'\1***'),
+        # Token patterns
+        (r'(token\s*[=:]\s*)[a-zA-Z0-9\-_.]{16,}', r'\1***'),
+    ]
+
+    masked = text_str
+    for pattern, replacement in sensitive_patterns:
+        masked = re.sub(pattern, replacement, masked, flags=re.IGNORECASE)
+
+    return masked
 
 # LLM imports
 try:
@@ -83,7 +172,8 @@ class LLMToolExecutor(BaseToolExecutor):
                 self.llm = None
 
         except Exception as e:
-            logger.error(f"Failed to initialize LLM: {e}")
+            # SECURITY: Mask any API keys that might be in the error message
+            logger.error(f"Failed to initialize LLM: {mask_sensitive(str(e))}")
             self.llm = None
 
     async def _handle_answer(self, query: Query, context: Context) -> Dict:
@@ -107,10 +197,15 @@ class LLMToolExecutor(BaseToolExecutor):
 Answer questions based on the provided context. Be concise and accurate.
 If the context doesn't contain relevant information, say so."""
 
-        user_prompt = f"""Context:
-{context_str}
+        # SECURITY: Sanitize user input to prevent prompt injection attacks
+        # Context is from internal retrieval, but sanitize for defense-in-depth
+        sanitized_context = sanitize_prompt(context_str)
+        sanitized_query = sanitize_prompt(query.text)
 
-Question: {query.text}
+        user_prompt = f"""Context:
+{sanitized_context}
+
+Question: {sanitized_query}
 
 Answer (be concise):"""
 
@@ -136,7 +231,8 @@ Answer (be concise):"""
                 }
 
             except Exception as e:
-                logger.error(f"LLM generation failed: {e}")
+                # SECURITY: Mask any API keys that might be in the error message
+                logger.error(f"LLM generation failed: {mask_sensitive(str(e))}")
                 # Fall through to fallback
 
         # Fallback: Return base implementation (stubs)

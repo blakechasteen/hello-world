@@ -16,12 +16,109 @@ Following best practices from:
 - DeepMind (Safe Exploration)
 """
 
+import os
 import re
+import hmac
+import hashlib
 import logging
 from enum import Enum
-from typing import List, Dict, Any, Optional, Set, Callable, Tuple
+from threading import Lock
+from types import MappingProxyType
+from typing import List, Dict, Any, Optional, Set, Callable, Tuple, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
+
+
+# =============================================================================
+# SECURITY: Environment validation for testing mode
+# =============================================================================
+
+# =============================================================================
+# SECURITY: Policy override token validation
+# =============================================================================
+
+def _validate_override_token(token: str, action: str = "override") -> bool:
+    """
+    Validate policy override token using HMAC.
+
+    SECURITY: Prevents unauthorized policy overrides by requiring
+    cryptographic proof of authorization.
+
+    Args:
+        token: The override token to validate
+        action: The action being authorized (included in HMAC computation)
+
+    Returns:
+        True if token is valid, False otherwise
+
+    Note:
+        Requires OVERRIDE_SECRET environment variable to be set.
+        If OVERRIDE_SECRET is not set, all overrides are rejected.
+    """
+    if not token:
+        return False
+
+    secret = os.environ.get("OVERRIDE_SECRET")
+    if not secret:
+        logging.getLogger("HoloLoom.alignment.safety_guardrails").warning(
+            "SECURITY: Override attempted but OVERRIDE_SECRET not configured. "
+            "Set OVERRIDE_SECRET environment variable to enable authenticated overrides."
+        )
+        return False
+
+    # Compute expected HMAC
+    message = f"override:{action}".encode('utf-8')
+    expected = hmac.new(secret.encode('utf-8'), message, hashlib.sha256).hexdigest()
+
+    # Constant-time comparison to prevent timing attacks
+    is_valid = hmac.compare_digest(token, expected)
+
+    if not is_valid:
+        logging.getLogger("HoloLoom.alignment.safety_guardrails").error(
+            f"SECURITY: Invalid override token for action '{action}'"
+        )
+
+    return is_valid
+
+
+def _validate_testing_mode(testing_mode: bool) -> bool:
+    """
+    Validate that testing mode is only enabled in development environment.
+
+    SECURITY: Prevents testing mode (which bypasses safety approvals)
+    from being accidentally or maliciously enabled in production.
+
+    Args:
+        testing_mode: Requested testing mode value
+
+    Returns:
+        Validated testing mode (False if not in development environment)
+
+    Raises:
+        ValueError: If testing_mode=True requested in non-development environment
+    """
+    if not testing_mode:
+        return False
+
+    # Check environment variable
+    environment = os.environ.get("ENVIRONMENT", "production").lower()
+
+    # Allow testing mode only in explicit development environment
+    allowed_environments = {"development", "dev", "test", "testing", "local"}
+
+    if environment not in allowed_environments:
+        error_msg = (
+            f"SECURITY VIOLATION: testing_mode=True requested in '{environment}' environment. "
+            f"Testing mode is only allowed in development environments: {allowed_environments}. "
+            f"Set ENVIRONMENT=development to enable testing mode."
+        )
+        logging.getLogger("HoloLoom.alignment.safety_guardrails").error(error_msg)
+        raise ValueError(error_msg)
+
+    logging.getLogger("HoloLoom.alignment.safety_guardrails").warning(
+        f"Testing mode enabled in {environment} environment - approval requirements bypassed"
+    )
+    return True
 
 logger = logging.getLogger("HoloLoom.alignment.safety_guardrails")
 
@@ -240,9 +337,14 @@ class SafetyPolicy:
 
         Args:
             testing_mode: If True, bypass approval requirements (for development)
+                          SECURITY: Only allowed in development environments
             auto_approve_categories: Set of category names to auto-approve (overrides testing_mode)
+
+        Raises:
+            ValueError: If testing_mode=True requested in non-development environment
         """
-        self.testing_mode = testing_mode
+        # SECURITY: Validate testing mode is only used in development
+        self.testing_mode = _validate_testing_mode(testing_mode)
         self.auto_approve_categories = auto_approve_categories or set()
 
         # Default risk levels by action category
@@ -316,7 +418,13 @@ class SafetyPolicy:
         if self.testing_mode:
             return False
 
+        # SECURITY: CRITICAL risk level ALWAYS requires approval (cannot be bypassed)
+        # This check is first to ensure CRITICAL actions cannot be auto-approved
+        if risk_level == RiskLevel.CRITICAL:
+            return True
+
         # Check auto-approve categories (environment-specific)
+        # Note: CRITICAL risk check above ensures this cannot bypass critical actions
         if request.category.value in self.auto_approve_categories:
             return False
 
@@ -324,8 +432,8 @@ class SafetyPolicy:
         if request.category in self.approval_required:
             return True
 
-        # Require approval for high/critical risk
-        if risk_level in (RiskLevel.HIGH, RiskLevel.CRITICAL):
+        # Require approval for high risk
+        if risk_level == RiskLevel.HIGH:
             return True
 
         return False
@@ -391,21 +499,34 @@ class SafetyGuardrails:
             policy: Safety policy (uses default if None)
             enable_adversarial_detection: Whether to detect adversarial inputs
             testing_mode: If True, bypass approval requirements (for development)
+                          SECURITY: Only allowed in development environments
             auto_approve_categories: Set of category names to auto-approve
             enable_mrf_enhancement: Enable LLM-enhanced assessment via MRF (requires LLM)
             llm_provider: LLM provider for MRF ("claude", "gpt", "gemini", "ollama")
+
+        Raises:
+            ValueError: If testing_mode=True requested in non-development environment
         """
-        self.testing_mode = testing_mode
+        # SECURITY: Validate testing mode is only used in development
+        self.testing_mode = _validate_testing_mode(testing_mode)
         self.policy = policy or SafetyPolicy(
             testing_mode=testing_mode,
             auto_approve_categories=auto_approve_categories
         )
         self.adversarial_detector = AdversarialDetector() if enable_adversarial_detection else None
+
+        # SECURITY: Lock for thread-safe access to shared state
+        # Prevents race conditions in concurrent approval flows
+        self._state_lock = Lock()
+
         self.action_history: List[ActionRequest] = []
         self.decisions: List[SafetyDecision] = []
         self._decision_records: List[Tuple[ActionRequest, SafetyDecision]] = []
         # Policy overrides: category -> OutcomeType (ALLOW, BLOCK, REQUIRE_APPROVAL)
-        self.policy_overrides: Dict[ActionCategory, OutcomeType] = {}
+        # SECURITY: Policy overrides are IMMUTABLE after initialization.
+        # Use set_policy_override() method with HMAC authentication token.
+        # Direct assignment is blocked - use the authenticated setter.
+        self._policy_overrides: Dict[ActionCategory, OutcomeType] = {}
 
         # MRF integration (Phase 1 - November 2025)
         self.enable_mrf_enhancement = enable_mrf_enhancement
@@ -440,6 +561,91 @@ class SafetyGuardrails:
             handler.setFormatter(formatter)
             logger.addHandler(handler)
             logger.setLevel(logging.INFO)
+
+    @property
+    def policy_overrides(self) -> Mapping[ActionCategory, OutcomeType]:
+        """
+        Read-only view of policy overrides.
+
+        SECURITY: Returns an immutable MappingProxyType to prevent unauthorized
+        modifications. Use set_policy_override() with HMAC token to modify.
+
+        Returns:
+            Read-only mapping of category to override outcome
+        """
+        return MappingProxyType(self._policy_overrides)
+
+    def set_policy_override(
+        self,
+        category: ActionCategory,
+        outcome: OutcomeType,
+        override_token: str,
+        reason: str = ""
+    ) -> bool:
+        """
+        Set a policy override with cryptographic authentication.
+
+        SECURITY: Requires valid HMAC token to set policy overrides.
+        This prevents unauthorized bypass of safety policies.
+
+        Args:
+            category: Action category to override
+            outcome: Override outcome (ALLOW, BLOCK, REQUIRE_APPROVAL)
+            override_token: HMAC authentication token
+            reason: Optional reason for the override (for audit logging)
+
+        Returns:
+            True if override was set successfully, False if authentication failed
+
+        Note:
+            To generate a valid token:
+            1. Set OVERRIDE_SECRET environment variable
+            2. Compute: HMAC-SHA256(secret, f"override:{category.value}")
+        """
+        # Validate the override token
+        if not _validate_override_token(override_token, category.value):
+            logger.error(
+                f"SECURITY: Unauthorized policy override attempt for category "
+                f"'{category.value}'. Token validation failed."
+            )
+            return False
+
+        # Set the override (using private attribute for write access)
+        self._policy_overrides[category] = outcome
+
+        logger.warning(
+            f"SECURITY AUDIT: Policy override set for category '{category.value}' "
+            f"to outcome '{outcome.value}'. Reason: {reason or 'Not provided'}"
+        )
+        return True
+
+    def clear_policy_override(
+        self,
+        category: ActionCategory,
+        override_token: str
+    ) -> bool:
+        """
+        Clear a policy override with cryptographic authentication.
+
+        Args:
+            category: Action category to clear override for
+            override_token: HMAC authentication token
+
+        Returns:
+            True if override was cleared, False if authentication failed
+        """
+        if not _validate_override_token(override_token, category.value):
+            logger.error(
+                f"SECURITY: Unauthorized policy override clear attempt for "
+                f"category '{category.value}'. Token validation failed."
+            )
+            return False
+
+        if category in self._policy_overrides:
+            del self._policy_overrides[category]
+            logger.info(f"Policy override cleared for category '{category.value}'")
+            return True
+        return True  # Already clear
 
     def get_mrf_risk_assessment_prompt(
         self,
@@ -565,8 +771,8 @@ class SafetyGuardrails:
                 )
 
         # Check for policy overrides (allows bypassing default policy)
-        if request.category in self.policy_overrides:
-            override = self.policy_overrides[request.category]
+        if request.category in self._policy_overrides:
+            override = self._policy_overrides[request.category]
             if override == OutcomeType.ALLOW:
                 logger.info(f"Policy override: ALLOW for category {request.category.value}")
                 self.action_history.append(request)
@@ -678,9 +884,6 @@ class SafetyGuardrails:
         # Log the decision
         self._log_decision(request, risk_level, allowed, requires_approval)
 
-        # Store in history
-        self.action_history.append(request)
-
         # Build decision metadata with epistemic context
         decision_metadata = {
             "action": request.action,
@@ -702,8 +905,14 @@ class SafetyGuardrails:
             context=request.context,
             alternative_action=alternative_action,
         )
-        self.decisions.append(decision)
-        self._decision_records.append((request, decision))
+
+        # SECURITY: Thread-safe update of shared state
+        # Prevents race conditions in concurrent approval flows
+        with self._state_lock:
+            self.action_history.append(request)
+            self.decisions.append(decision)
+            self._decision_records.append((request, decision))
+
         return decision
 
     def _log_decision(
@@ -792,8 +1001,10 @@ class SafetyGuardrails:
             },
             context=request.context,
         )
-        self.decisions.append(decision)
-        self._decision_records.append((request, decision))
+        # SECURITY: Thread-safe update of shared state
+        with self._state_lock:
+            self.decisions.append(decision)
+            self._decision_records.append((request, decision))
         return decision
 
     def get_action_history(
@@ -811,7 +1022,9 @@ class SafetyGuardrails:
         Returns:
             List of action requests
         """
-        history = self.action_history
+        # SECURITY: Thread-safe read of shared state
+        with self._state_lock:
+            history = list(self.action_history)  # Copy to avoid holding lock during filter
 
         if category:
             history = [r for r in history if r.category == category]
@@ -820,13 +1033,17 @@ class SafetyGuardrails:
 
     def get_recent_decisions(self, limit: int = 100) -> List[SafetyDecision]:
         """Return the most recent safety decisions."""
-        return self.decisions[-limit:]
+        # SECURITY: Thread-safe read of shared state
+        with self._state_lock:
+            return list(self.decisions[-limit:])
 
     def clear_history(self) -> None:
         """Reset stored requests and decisions (test compatibility)."""
-        self.action_history.clear()
-        self.decisions.clear()
-        self._decision_records.clear()
+        # SECURITY: Thread-safe modification of shared state
+        with self._state_lock:
+            self.action_history.clear()
+            self.decisions.clear()
+            self._decision_records.clear()
 
     def get_statistics(self) -> Dict[str, Any]:
         """
@@ -835,19 +1052,25 @@ class SafetyGuardrails:
         Returns:
             Dictionary of statistics
         """
-        total_decisions = len(self.decisions)
-        allowed = sum(1 for decision in self.decisions if decision.allowed)
+        # SECURITY: Thread-safe read of shared state
+        # Copy data under lock to avoid holding lock during computation
+        with self._state_lock:
+            decisions_copy = list(self.decisions)
+            records_copy = list(self._decision_records)
+
+        total_decisions = len(decisions_copy)
+        allowed = sum(1 for decision in decisions_copy if decision.allowed)
         blocked = total_decisions - allowed
 
         by_risk_level = {
-            level.value: sum(1 for decision in self.decisions if decision.risk_level == level)
+            level.value: sum(1 for decision in decisions_copy if decision.risk_level == level)
             for level in RiskLevel
         }
 
         by_category: Dict[str, int] = {}
         for category in ActionCategory:
             by_category[category.value] = sum(
-                1 for request, _ in self._decision_records if request.category == category
+                1 for request, _ in records_copy if request.category == category
             )
 
         return {
@@ -873,11 +1096,16 @@ def create_guardrails(
         enable_adversarial_detection: Whether to detect adversarial inputs
         custom_policy: Optional custom safety policy
         testing_mode: If True, bypass approval requirements (for development)
+                      SECURITY: Only allowed in development environments
         auto_approve_categories: Set of category names to auto-approve
 
     Returns:
         Configured SafetyGuardrails instance
+
+    Raises:
+        ValueError: If testing_mode=True requested in non-development environment
     """
+    # Note: testing_mode validation happens in SafetyGuardrails.__init__
     return SafetyGuardrails(
         policy=custom_policy,
         enable_adversarial_detection=enable_adversarial_detection,

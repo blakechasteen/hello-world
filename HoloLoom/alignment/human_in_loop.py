@@ -25,6 +25,7 @@ Feedback Types:
 """
 
 import logging
+from threading import Lock
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -112,6 +113,7 @@ class FeedbackCollector:
         """Initialize feedback collector."""
         self.feedback_history: List[Feedback] = []
         self.query_feedback: Dict[str, List[Feedback]] = {}
+        self._lock = Lock()  # Thread-safe access to shared state
 
         self._setup_logging()
 
@@ -149,12 +151,13 @@ class FeedbackCollector:
             user_id=user_id,
         )
 
-        self.feedback_history.append(feedback)
+        with self._lock:
+            self.feedback_history.append(feedback)
 
-        # Index by query
-        if query_id not in self.query_feedback:
-            self.query_feedback[query_id] = []
-        self.query_feedback[query_id].append(feedback)
+            # Index by query
+            if query_id not in self.query_feedback:
+                self.query_feedback[query_id] = []
+            self.query_feedback[query_id].append(feedback)
 
         logger.info(f"Feedback collected: {query_id} - {feedback_type.value}")
 
@@ -218,6 +221,7 @@ class OverrideSystem:
         """Initialize override system."""
         self.interventions: List[Intervention] = []
         self.pending_approvals: Dict[str, Dict[str, Any]] = {}
+        self._lock = Lock()  # Thread-safe access to shared state
 
         self._setup_logging()
 
@@ -249,14 +253,15 @@ class OverrideSystem:
         Returns:
             approval_id: Unique approval request ID
         """
-        approval_id = f"approval_{query_id}_{len(self.pending_approvals)}"
+        with self._lock:
+            approval_id = f"approval_{query_id}_{len(self.pending_approvals)}"
 
-        self.pending_approvals[approval_id] = {
-            "query_id": query_id,
-            "decision": decision,
-            "reason": reason,
-            "requested_at": datetime.now().isoformat(),
-        }
+            self.pending_approvals[approval_id] = {
+                "query_id": query_id,
+                "decision": decision,
+                "reason": reason,
+                "requested_at": datetime.now().isoformat(),
+            }
 
         logger.warning(f"Approval requested: {approval_id} - {reason}")
 
@@ -276,22 +281,23 @@ class OverrideSystem:
             operator_id: ID of approving operator
             modified_decision: Modified decision (if changed)
         """
-        if approval_id not in self.pending_approvals:
-            raise ValueError(f"Approval ID not found: {approval_id}")
+        with self._lock:
+            if approval_id not in self.pending_approvals:
+                raise ValueError(f"Approval ID not found: {approval_id}")
 
-        request = self.pending_approvals.pop(approval_id)
+            request = self.pending_approvals.pop(approval_id)
 
-        # Record intervention
-        intervention = Intervention(
-            query_id=request["query_id"],
-            intervention_type=InterventionType.APPROVE_ACTION,
-            original_decision=request["decision"],
-            override_decision=modified_decision or request["decision"],
-            reason=f"Approved: {request['reason']}",
-            operator_id=operator_id,
-        )
+            # Record intervention
+            intervention = Intervention(
+                query_id=request["query_id"],
+                intervention_type=InterventionType.APPROVE_ACTION,
+                original_decision=request["decision"],
+                override_decision=modified_decision or request["decision"],
+                reason=f"Approved: {request['reason']}",
+                operator_id=operator_id,
+            )
 
-        self.interventions.append(intervention)
+            self.interventions.append(intervention)
 
         logger.info(f"Approval granted: {approval_id}")
 
@@ -322,7 +328,8 @@ class OverrideSystem:
             operator_id=operator_id,
         )
 
-        self.interventions.append(intervention)
+        with self._lock:
+            self.interventions.append(intervention)
 
         logger.warning(f"Decision overridden: {query_id} - {reason}")
 

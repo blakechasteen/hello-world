@@ -59,6 +59,30 @@ DEFAULT_CATEGORIES = [
         "description": "Complex multi-agent and self-improving workflows",
         "icon": "cpu",
         "display_order": 5
+    },
+    {
+        "id": "data",
+        "name": "Data & Integration",
+        "parent_id": None,
+        "description": "ETL pipelines, data processing, and integration workflows",
+        "icon": "database",
+        "display_order": 6
+    },
+    {
+        "id": "testing",
+        "name": "Testing & Validation",
+        "parent_id": None,
+        "description": "Benchmarking, evaluation, and quality assurance workflows",
+        "icon": "check-circle",
+        "display_order": 7
+    },
+    {
+        "id": "monitoring",
+        "name": "Real-time & Monitoring",
+        "parent_id": None,
+        "description": "Event processing, alerting, and observability workflows",
+        "icon": "activity",
+        "display_order": 8
     }
 ]
 
@@ -370,6 +394,93 @@ TEMPLATE_MARKETPLACE_DATA = {
         ],
         "prerequisites": ["Code parsing tools", "Security scanning rules"],
         "estimated_tokens": 1700
+    },
+
+    # New workflow templates (December 2025 - Marketplace Expansion)
+    "testing/batch_evaluation.json": {
+        "category": "testing",
+        "difficulty": "advanced",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": True,
+        "tags": ["testing", "evaluation", "benchmarking", "quality", "metrics", "golden-dataset", "statistical-analysis"],
+        "description": "Comprehensive batch testing against golden datasets with parallel semantic/factual/completeness scoring and statistical analysis",
+        "use_cases": [
+            "AI response quality benchmarking",
+            "Regression testing for AI systems",
+            "Golden dataset evaluation",
+            "Multi-dimensional quality scoring"
+        ],
+        "prerequisites": ["Golden dataset with expected answers", "LLM backend configured"],
+        "estimated_tokens": 1400
+    },
+    "llm/conversational_agent.json": {
+        "category": "llm",
+        "difficulty": "advanced",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": True,
+        "tags": ["chatbot", "conversation", "multi-turn", "memory", "intent", "session", "dialogue"],
+        "description": "Stateful multi-turn chatbot with session persistence, intent routing, context compression, and confidence-based fallback",
+        "use_cases": [
+            "Customer support chatbots",
+            "Virtual assistants",
+            "Interactive Q&A systems",
+            "Conversational interfaces"
+        ],
+        "prerequisites": ["Session storage", "LLM backend"],
+        "estimated_tokens": 1600
+    },
+    "data/etl_pipeline.json": {
+        "category": "data",
+        "difficulty": "advanced",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": True,
+        "tags": ["etl", "data-pipeline", "ingestion", "transformation", "quality", "lineage", "batch-processing"],
+        "description": "Intelligent ETL with schema detection, quality gates, parallel transforms, error quarantine, and complete data lineage",
+        "use_cases": [
+            "Data warehouse ingestion",
+            "Data quality enforcement",
+            "ETL pipeline automation",
+            "Data migration workflows"
+        ],
+        "prerequisites": ["Source and destination database connections"],
+        "estimated_tokens": 1700
+    },
+    "advanced/adaptive_learning.json": {
+        "category": "advanced",
+        "difficulty": "advanced",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": True,
+        "tags": ["learning", "thompson-sampling", "feedback", "adaptive", "bayesian", "self-improving", "optimization"],
+        "description": "Self-improving workflow with Thompson Sampling strategy selection, user feedback integration, and Bayesian prior updates",
+        "use_cases": [
+            "Adaptive AI systems",
+            "Continuous learning pipelines",
+            "A/B testing optimization",
+            "Personalization engines"
+        ],
+        "prerequisites": ["Full HoloLoom stack", "Feedback collection mechanism"],
+        "estimated_tokens": 1500
+    },
+    "monitoring/event_stream.json": {
+        "category": "monitoring",
+        "difficulty": "expert",
+        "author": "HoloLoom Team",
+        "license": "MIT",
+        "is_featured": True,
+        "tags": ["streaming", "events", "alerting", "monitoring", "anomaly-detection", "real-time", "observability"],
+        "description": "Real-time event processing with sliding windows, parallel anomaly detection, alert deduplication, and multi-channel notifications",
+        "use_cases": [
+            "Infrastructure monitoring",
+            "Application observability",
+            "Anomaly detection pipelines",
+            "Alert management systems"
+        ],
+        "prerequisites": ["Event stream source (Kafka/Kinesis/etc)", "Notification channels configured"],
+        "estimated_tokens": 1800
     }
 }
 

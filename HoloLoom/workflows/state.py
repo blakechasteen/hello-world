@@ -20,6 +20,8 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
+from HoloLoom.utils.security import sanitize_uri
+
 logger = logging.getLogger(__name__)
 
 
@@ -127,7 +129,7 @@ class RedisState(StateBackend):
             import redis.asyncio as redis
             self.redis_url = redis_url
             self.redis = redis.from_url(redis_url)
-            logger.info(f"RedisState initialized: {redis_url}")
+            logger.info(f"RedisState initialized: {sanitize_uri(redis_url)}")
         except ImportError:
             logger.error("Redis not installed. Install with: pip install redis")
             raise

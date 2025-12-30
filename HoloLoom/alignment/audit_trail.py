@@ -17,15 +17,78 @@ References:
 """
 
 import logging
+import hashlib
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 from pathlib import Path
 from enum import Enum
 import json
 
 
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# SECURITY: Cryptographic chain sealing for tamper detection
+# =============================================================================
+
+# Genesis hash for the first entry in the chain
+GENESIS_HASH = "0" * 64  # SHA-256 produces 64 hex characters
+
+
+def _seal_entry(entry: Dict[str, Any], previous_hash: str) -> str:
+    """
+    Create cryptographic chain hash for an audit entry.
+
+    SECURITY: Creates a blockchain-like chain where each entry's hash
+    depends on its content AND the previous entry's hash. Any tampering
+    breaks the chain and is detectable.
+
+    Args:
+        entry: Dictionary representation of the audit entry
+        previous_hash: Hash of the previous entry in the chain
+
+    Returns:
+        SHA-256 hash of (entry content + previous hash)
+    """
+    # Serialize entry with sorted keys for deterministic hashing
+    content = json.dumps(entry, sort_keys=True, default=str) + previous_hash
+    return hashlib.sha256(content.encode('utf-8')).hexdigest()
+
+
+def _verify_chain_integrity(entries: List[Dict[str, Any]]) -> Tuple[bool, Optional[int], str]:
+    """
+    Verify the integrity of an audit chain.
+
+    Args:
+        entries: List of audit entries (as dictionaries with 'chain_hash' field)
+
+    Returns:
+        Tuple of (is_valid, first_broken_index, error_message)
+        - is_valid: True if chain is intact
+        - first_broken_index: Index where chain broke (None if valid)
+        - error_message: Description of the issue
+    """
+    if not entries:
+        return True, None, "Empty chain is valid"
+
+    previous_hash = GENESIS_HASH
+
+    for i, entry in enumerate(entries):
+        stored_hash = entry.get('chain_hash', '')
+
+        # Create entry copy without chain_hash for verification
+        entry_for_hashing = {k: v for k, v in entry.items() if k != 'chain_hash'}
+
+        expected_hash = _seal_entry(entry_for_hashing, previous_hash)
+
+        if stored_hash != expected_hash:
+            return False, i, f"Chain broken at entry {i}: expected {expected_hash[:16]}..., got {stored_hash[:16]}..."
+
+        previous_hash = stored_hash
+
+    return True, None, "Chain integrity verified"
 
 
 class DecisionType(Enum):
@@ -84,6 +147,9 @@ class DecisionLog:
     reasoning_chain: List[str] = field(default_factory=list)
     data_sources: List[str] = field(default_factory=list)
 
+    # SECURITY: Chain hash for tamper detection
+    chain_hash: str = ""
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
@@ -99,6 +165,7 @@ class DecisionLog:
             "metadata": self.metadata,
             "reasoning_chain": self.reasoning_chain,
             "data_sources": self.data_sources,
+            "chain_hash": self.chain_hash,
         }
 
     @classmethod
@@ -117,6 +184,7 @@ class DecisionLog:
             metadata=data.get("metadata", {}),
             reasoning_chain=data.get("reasoning_chain", []),
             data_sources=data.get("data_sources", []),
+            chain_hash=data.get("chain_hash", ""),
         )
 
 
@@ -343,6 +411,9 @@ class AuditTrail:
         self._logs_since_flush = 0
         self._flushed_decision_ids: set = set()  # Track already-flushed logs
 
+        # SECURITY: Track chain hash for tamper-evident logging
+        self._last_chain_hash = GENESIS_HASH
+
         if self.persist_path:
             self.persist_path.mkdir(parents=True, exist_ok=True)
             self._load_from_disk()
@@ -366,6 +437,9 @@ class AuditTrail:
         Log a decision to the audit trail.
 
         Returns the created DecisionLog with generated decision_id.
+
+        SECURITY: Each log entry is cryptographically sealed with a chain hash
+        that depends on the previous entry, enabling tamper detection.
         """
         decision_id = f"{decision_type.value}_{datetime.now().timestamp()}"
 
@@ -380,6 +454,13 @@ class AuditTrail:
             confidence=confidence,
             metadata=metadata or {},
         )
+
+        # SECURITY: Compute chain hash for tamper-evident logging
+        # The hash covers all fields except chain_hash itself
+        entry_dict = log.to_dict()
+        del entry_dict['chain_hash']  # Don't include empty chain_hash in computation
+        log.chain_hash = _seal_entry(entry_dict, self._last_chain_hash)
+        self._last_chain_hash = log.chain_hash
 
         self.logs.append(log)
         self.tracers[decision_id] = ProvenanceTracer()
@@ -472,6 +553,44 @@ class AuditTrail:
 
         return results[:limit] if limit else results
 
+    # ==========================================================================
+    # SECURITY: Chain integrity verification
+    # ==========================================================================
+
+    def verify_integrity(self) -> Tuple[bool, Optional[int], str]:
+        """
+        Verify the integrity of the entire audit chain.
+
+        SECURITY: Detects any tampering with audit log entries by verifying
+        the cryptographic chain. Each entry's hash depends on its content
+        and the previous entry's hash - any modification breaks the chain.
+
+        Returns:
+            Tuple of (is_valid, first_broken_index, message)
+            - is_valid: True if the entire chain is intact
+            - first_broken_index: Index of first tampered entry (None if valid)
+            - message: Human-readable description of the result
+
+        Usage:
+            is_valid, broken_at, msg = audit.verify_integrity()
+            if not is_valid:
+                logger.error(f"SECURITY ALERT: Audit trail tampered at entry {broken_at}")
+        """
+        if not self.logs:
+            return True, None, "Empty audit trail is valid"
+
+        # Convert logs to dictionaries for verification
+        entries = [log.to_dict() for log in self.logs]
+
+        is_valid, broken_at, message = _verify_chain_integrity(entries)
+
+        if is_valid:
+            logger.info(f"SECURITY: Audit trail integrity verified ({len(self.logs)} entries)")
+        else:
+            logger.error(f"SECURITY ALERT: {message}")
+
+        return is_valid, broken_at, message
+
     # Persistence methods
     def flush(self):
         """Flush all unflushed logs to disk."""
@@ -529,6 +648,12 @@ class AuditTrail:
                 self.logs.append(log)
                 # Mark as already flushed (loaded from disk)
                 self._flushed_decision_ids.add(log.decision_id)
+
+        # SECURITY: Restore chain hash state from last loaded entry
+        if self.logs:
+            self._last_chain_hash = self.logs[-1].chain_hash or GENESIS_HASH
+        else:
+            self._last_chain_hash = GENESIS_HASH
 
         # Load provenance graphs
         for log in self.logs:
