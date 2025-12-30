@@ -1,0 +1,291 @@
+{
+  "version": "1.0",
+  "name": "Multi-Turn Conversational Agent",
+  "description": "A stateful chatbot workflow with session persistence, intent classification, context compression for long conversations, and memory extraction. Routes queries through specialized handlers (questions, commands, clarifications, greetings) with confidence-based fallback handling.",
+  "tags": ["chatbot", "conversation", "multi-turn", "memory", "intent", "session", "dialogue"],
+  "author": "HoloLoom Team",
+  "created": "2025-12-28",
+  "nodes": [
+    {
+      "id": "session_manager",
+      "agentType": "store",
+      "x": 100,
+      "y": 250,
+      "config": {
+        "store_type": "session",
+        "session_ttl_hours": 24,
+        "max_history": 50,
+        "create_if_missing": true
+      }
+    },
+    {
+      "id": "input_receiver",
+      "agentType": "store",
+      "x": 250,
+      "y": 250,
+      "config": {
+        "store_type": "input",
+        "sanitize": true,
+        "max_length": 4000,
+        "timestamp": true
+      }
+    },
+    {
+      "id": "context_retriever",
+      "agentType": "retriever",
+      "x": 400,
+      "y": 250,
+      "config": {
+        "retrieval_type": "conversation",
+        "top_k": 10,
+        "recency_bias": 0.7,
+        "include_entities": true
+      }
+    },
+    {
+      "id": "context_compressor",
+      "agentType": "synthesizer",
+      "x": 550,
+      "y": 250,
+      "config": {
+        "strategy": "extractive_compression",
+        "max_tokens": 2000,
+        "preserve_recent": 5,
+        "preserve_entities": true
+      }
+    },
+    {
+      "id": "intent_classifier",
+      "agentType": "hololoom",
+      "x": 700,
+      "y": 250,
+      "config": {
+        "pattern": "fast",
+        "mode": "intent_classification",
+        "intents": ["question", "command", "clarification", "feedback", "greeting", "farewell"],
+        "return_confidence": true
+      }
+    },
+    {
+      "id": "intent_router",
+      "agentType": "conditional",
+      "x": 850,
+      "y": 250,
+      "config": {
+        "condition_type": "intent",
+        "branches": ["question", "command", "clarification", "greeting"],
+        "default": "question"
+      }
+    },
+    {
+      "id": "knowledge_retriever",
+      "agentType": "retriever",
+      "x": 1000,
+      "y": 100,
+      "config": {
+        "retrieval_type": "hybrid",
+        "top_k": 15,
+        "include_graph": true,
+        "boost_recent": true
+      }
+    },
+    {
+      "id": "command_executor",
+      "agentType": "hololoom",
+      "x": 1000,
+      "y": 200,
+      "config": {
+        "pattern": "fused",
+        "mode": "command_execution",
+        "allowed_commands": ["search", "remember", "forget", "summarize", "explain"],
+        "safety_check": true
+      }
+    },
+    {
+      "id": "clarification_handler",
+      "agentType": "multiquery",
+      "x": 1000,
+      "y": 300,
+      "config": {
+        "mode": "clarification",
+        "context_aware": true,
+        "max_clarifications": 3
+      }
+    },
+    {
+      "id": "greeting_responder",
+      "agentType": "hololoom",
+      "x": 1000,
+      "y": 400,
+      "config": {
+        "pattern": "bare",
+        "mode": "greeting",
+        "personalized": true,
+        "use_session_name": true
+      }
+    },
+    {
+      "id": "response_generator",
+      "agentType": "hololoom",
+      "x": 1150,
+      "y": 250,
+      "config": {
+        "pattern": "fused",
+        "mode": "conversational",
+        "maintain_persona": true,
+        "use_context": true,
+        "tone": "helpful"
+      }
+    },
+    {
+      "id": "response_validator",
+      "agentType": "safety",
+      "x": 1300,
+      "y": 250,
+      "config": {
+        "risk_threshold": "LOW",
+        "check_coherence": true,
+        "check_relevance": true,
+        "max_response_length": 2000
+      }
+    },
+    {
+      "id": "confidence_check",
+      "agentType": "conditional",
+      "x": 1450,
+      "y": 250,
+      "config": {
+        "condition": "confidence >= 0.7",
+        "threshold": 0.7
+      }
+    },
+    {
+      "id": "fallback_handler",
+      "agentType": "hololoom",
+      "x": 1450,
+      "y": 400,
+      "config": {
+        "pattern": "fused",
+        "mode": "uncertain_response",
+        "ask_clarification": true,
+        "suggest_alternatives": true
+      }
+    },
+    {
+      "id": "memory_updater",
+      "agentType": "store",
+      "x": 1600,
+      "y": 250,
+      "config": {
+        "store_type": "conversation_memory",
+        "extract_facts": true,
+        "update_entities": true,
+        "track_topics": true
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 1750,
+      "y": 250,
+      "config": {
+        "format": "conversational",
+        "include_suggestions": true,
+        "include_confidence": false
+      }
+    }
+  ],
+  "connections": [
+    {"id": "c1", "from": "session_manager", "to": "input_receiver"},
+    {"id": "c2", "from": "input_receiver", "to": "context_retriever"},
+    {"id": "c3", "from": "context_retriever", "to": "context_compressor"},
+    {"id": "c4", "from": "context_compressor", "to": "intent_classifier"},
+    {"id": "c5", "from": "intent_classifier", "to": "intent_router"},
+    {"id": "c6", "from": "intent_router", "to": "knowledge_retriever", "condition": "intent == 'question'"},
+    {"id": "c7", "from": "intent_router", "to": "command_executor", "condition": "intent == 'command'"},
+    {"id": "c8", "from": "intent_router", "to": "clarification_handler", "condition": "intent == 'clarification'"},
+    {"id": "c9", "from": "intent_router", "to": "greeting_responder", "condition": "intent == 'greeting' OR intent == 'farewell'"},
+    {"id": "c10", "from": "knowledge_retriever", "to": "response_generator"},
+    {"id": "c11", "from": "command_executor", "to": "response_generator"},
+    {"id": "c12", "from": "clarification_handler", "to": "response_generator"},
+    {"id": "c13", "from": "greeting_responder", "to": "response_generator"},
+    {"id": "c14", "from": "response_generator", "to": "response_validator"},
+    {"id": "c15", "from": "response_validator", "to": "confidence_check"},
+    {"id": "c16", "from": "confidence_check", "to": "memory_updater", "condition": "true"},
+    {"id": "c17", "from": "confidence_check", "to": "fallback_handler", "condition": "false"},
+    {"id": "c18", "from": "fallback_handler", "to": "memory_updater"},
+    {"id": "c19", "from": "memory_updater", "to": "final_output"}
+  ],
+  "input_schema": {
+    "message": {
+      "type": "string",
+      "required": true,
+      "maxLength": 4000,
+      "description": "User message"
+    },
+    "session_id": {
+      "type": "string",
+      "required": false,
+      "description": "Session ID for conversation continuity. Auto-generated if not provided."
+    },
+    "user_id": {
+      "type": "string",
+      "required": false,
+      "description": "User ID for personalization across sessions"
+    },
+    "context_override": {
+      "type": "object",
+      "required": false,
+      "description": "Optional context to inject (e.g., current page, user preferences)"
+    },
+    "persona": {
+      "type": "string",
+      "required": false,
+      "default": "helpful_assistant",
+      "description": "Agent persona to use for responses"
+    }
+  },
+  "output_schema": {
+    "response": {
+      "type": "string",
+      "description": "Agent response to user message"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Session ID for next turn (pass back to maintain conversation)"
+    },
+    "intent_detected": {
+      "type": "string",
+      "description": "Classified intent (question, command, clarification, greeting, etc.)"
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Response confidence (0-1)"
+    },
+    "entities_extracted": {
+      "type": "array",
+      "description": "Entities extracted from user message"
+    },
+    "suggested_actions": {
+      "type": "array",
+      "description": "Suggested follow-up actions or questions"
+    },
+    "conversation_summary": {
+      "type": "string",
+      "description": "Brief summary of conversation so far"
+    },
+    "turn_count": {
+      "type": "number",
+      "description": "Number of turns in this session"
+    }
+  },
+  "evaluation": {
+    "metrics": ["response_relevance", "context_utilization", "coherence_score", "avg_latency_ms", "session_length"],
+    "success_criteria": {
+      "min_relevance": 0.7,
+      "min_coherence": 0.8,
+      "max_latency_ms": 3000,
+      "min_avg_session_turns": 3
+    }
+  }
+}

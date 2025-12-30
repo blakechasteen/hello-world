@@ -1,0 +1,317 @@
+{
+  "version": "1.0",
+  "name": "Intelligent Data Pipeline (ETL)",
+  "description": "A comprehensive ETL workflow for data ingestion, schema detection, quality validation, parallel transformations (cleaning, enrichment, normalization), error quarantine, and destination loading. Includes quality gates, data lineage tracking, and detailed processing metrics.",
+  "tags": ["etl", "data-pipeline", "ingestion", "transformation", "quality", "lineage", "batch-processing"],
+  "author": "HoloLoom Team",
+  "created": "2025-12-28",
+  "nodes": [
+    {
+      "id": "source_connector",
+      "agentType": "store",
+      "x": 100,
+      "y": 250,
+      "config": {
+        "store_type": "data_source",
+        "sources": ["database", "api", "file", "stream"],
+        "connection_pool_size": 5,
+        "retry_count": 3
+      }
+    },
+    {
+      "id": "schema_detector",
+      "agentType": "synthesizer",
+      "x": 250,
+      "y": 250,
+      "config": {
+        "extract_type": "schema",
+        "infer_types": true,
+        "validate": true,
+        "detect_nullability": true,
+        "sample_size": 1000
+      }
+    },
+    {
+      "id": "data_sampler",
+      "agentType": "hololoom",
+      "x": 400,
+      "y": 250,
+      "config": {
+        "pattern": "fast",
+        "mode": "data_sampling",
+        "sample_size": 1000,
+        "stratified": true
+      }
+    },
+    {
+      "id": "quality_analyzer",
+      "agentType": "synthesizer",
+      "x": 550,
+      "y": 250,
+      "config": {
+        "extract_type": "quality_metrics",
+        "checks": ["null_rate", "duplicate_rate", "outliers", "pattern_violations", "type_mismatches"],
+        "compute_stats": true
+      }
+    },
+    {
+      "id": "quality_gate",
+      "agentType": "conditional",
+      "x": 700,
+      "y": 250,
+      "config": {
+        "condition": "quality_score >= threshold",
+        "threshold": 0.8,
+        "block_on_critical": true
+      }
+    },
+    {
+      "id": "alert_generator",
+      "agentType": "hololoom",
+      "x": 700,
+      "y": 400,
+      "config": {
+        "pattern": "fast",
+        "mode": "alert_generation",
+        "severity_levels": ["critical", "warning", "info"],
+        "include_recommendations": true
+      }
+    },
+    {
+      "id": "batch_processor",
+      "agentType": "loop",
+      "x": 850,
+      "y": 250,
+      "config": {
+        "iterate_over": "batches",
+        "batch_size": 10000,
+        "parallel_batches": 4,
+        "checkpoint_interval": 5
+      }
+    },
+    {
+      "id": "parallel_transforms",
+      "agentType": "parallel",
+      "x": 1000,
+      "y": 250,
+      "config": {
+        "strategy": "fan_out",
+        "timeout_ms": 60000,
+        "collect_all": true
+      }
+    },
+    {
+      "id": "cleaner",
+      "agentType": "hololoom",
+      "x": 1150,
+      "y": 150,
+      "config": {
+        "pattern": "fast",
+        "mode": "data_cleaning",
+        "operations": ["trim", "normalize_unicode", "fill_nulls", "remove_duplicates"],
+        "null_strategy": "mean"
+      }
+    },
+    {
+      "id": "enricher",
+      "agentType": "fusion",
+      "x": 1150,
+      "y": 250,
+      "config": {
+        "strategy": "lookup_enrichment",
+        "sources": ["reference_data", "knowledge_graph", "external_api"],
+        "cache_lookups": true
+      }
+    },
+    {
+      "id": "transformer",
+      "agentType": "hololoom",
+      "x": 1150,
+      "y": 350,
+      "config": {
+        "pattern": "fused",
+        "mode": "transformation",
+        "custom_rules": true,
+        "validate_output": true
+      }
+    },
+    {
+      "id": "validator",
+      "agentType": "safety",
+      "x": 1300,
+      "y": 250,
+      "config": {
+        "validation_type": "data_integrity",
+        "rules": ["type_check", "range_check", "referential_integrity", "business_rules"],
+        "fail_fast": false
+      }
+    },
+    {
+      "id": "error_handler",
+      "agentType": "conditional",
+      "x": 1450,
+      "y": 250,
+      "config": {
+        "condition": "validation_passed",
+        "error_strategy": "quarantine",
+        "track_error_types": true
+      }
+    },
+    {
+      "id": "quarantine_store",
+      "agentType": "store",
+      "x": 1450,
+      "y": 400,
+      "config": {
+        "store_type": "quarantine",
+        "include_error_details": true,
+        "retention_days": 30,
+        "enable_retry": true
+      }
+    },
+    {
+      "id": "destination_loader",
+      "agentType": "store",
+      "x": 1600,
+      "y": 250,
+      "config": {
+        "store_type": "destination",
+        "mode": "upsert",
+        "batch_commit": true,
+        "transaction_safe": true
+      }
+    },
+    {
+      "id": "metrics_collector",
+      "agentType": "synthesizer",
+      "x": 1750,
+      "y": 250,
+      "config": {
+        "extract_type": "pipeline_metrics",
+        "metrics": ["throughput", "error_rate", "latency", "records_processed", "bytes_transferred"],
+        "emit_to_prometheus": true
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 1900,
+      "y": 250,
+      "config": {
+        "format": "etl_report",
+        "include_lineage": true,
+        "include_statistics": true
+      }
+    }
+  ],
+  "connections": [
+    {"id": "c1", "from": "source_connector", "to": "schema_detector"},
+    {"id": "c2", "from": "schema_detector", "to": "data_sampler"},
+    {"id": "c3", "from": "data_sampler", "to": "quality_analyzer"},
+    {"id": "c4", "from": "quality_analyzer", "to": "quality_gate"},
+    {"id": "c5", "from": "quality_gate", "to": "alert_generator", "condition": "false"},
+    {"id": "c6", "from": "quality_gate", "to": "batch_processor", "condition": "true"},
+    {"id": "c7", "from": "alert_generator", "to": "final_output"},
+    {"id": "c8", "from": "batch_processor", "to": "parallel_transforms"},
+    {"id": "c9", "from": "parallel_transforms", "to": "cleaner"},
+    {"id": "c10", "from": "parallel_transforms", "to": "enricher"},
+    {"id": "c11", "from": "parallel_transforms", "to": "transformer"},
+    {"id": "c12", "from": "cleaner", "to": "validator"},
+    {"id": "c13", "from": "enricher", "to": "validator"},
+    {"id": "c14", "from": "transformer", "to": "validator"},
+    {"id": "c15", "from": "validator", "to": "error_handler"},
+    {"id": "c16", "from": "error_handler", "to": "destination_loader", "condition": "true"},
+    {"id": "c17", "from": "error_handler", "to": "quarantine_store", "condition": "false"},
+    {"id": "c18", "from": "destination_loader", "to": "metrics_collector"},
+    {"id": "c19", "from": "quarantine_store", "to": "metrics_collector"},
+    {"id": "c20", "from": "metrics_collector", "to": "batch_processor"},
+    {"id": "c21", "from": "batch_processor", "to": "final_output", "condition": "loop_complete"}
+  ],
+  "input_schema": {
+    "source_config": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "type": {"type": "string", "enum": ["database", "api", "file", "stream"]},
+        "connection_string": {"type": "string"},
+        "query_or_path": {"type": "string"},
+        "credentials": {"type": "object"}
+      },
+      "description": "Source connection configuration"
+    },
+    "destination_config": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "type": {"type": "string"},
+        "connection_string": {"type": "string"},
+        "table_or_path": {"type": "string"},
+        "mode": {"type": "string", "enum": ["append", "upsert", "replace"]}
+      },
+      "description": "Destination connection configuration"
+    },
+    "transformation_rules": {
+      "type": "array",
+      "required": false,
+      "description": "Custom transformation rules (field mappings, calculations, filters)"
+    },
+    "quality_threshold": {
+      "type": "number",
+      "default": 0.8,
+      "min": 0,
+      "max": 1,
+      "description": "Minimum quality score to proceed with processing"
+    },
+    "batch_size": {
+      "type": "number",
+      "default": 10000,
+      "description": "Number of records per processing batch"
+    }
+  },
+  "output_schema": {
+    "status": {
+      "type": "string",
+      "enum": ["success", "partial_success", "failed", "blocked_by_quality"]
+    },
+    "records_processed": {
+      "type": "number"
+    },
+    "records_loaded": {
+      "type": "number"
+    },
+    "records_quarantined": {
+      "type": "number"
+    },
+    "quality_score": {
+      "type": "number",
+      "description": "Overall data quality score (0-1)"
+    },
+    "throughput_per_second": {
+      "type": "number"
+    },
+    "duration_seconds": {
+      "type": "number"
+    },
+    "errors": {
+      "type": "array",
+      "description": "Error details grouped by type"
+    },
+    "data_lineage": {
+      "type": "object",
+      "description": "Complete data lineage from source to destination"
+    },
+    "schema_changes": {
+      "type": "array",
+      "description": "Detected schema changes from previous run"
+    }
+  },
+  "evaluation": {
+    "metrics": ["throughput", "error_rate", "quality_score", "latency_per_record"],
+    "success_criteria": {
+      "min_success_rate": 0.95,
+      "max_error_rate": 0.05,
+      "min_throughput_per_second": 1000,
+      "min_quality_score": 0.8
+    }
+  }
+}
