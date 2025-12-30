@@ -9,7 +9,8 @@ from dataclasses import dataclass
 from typing import Optional, Dict, Any
 import time
 
-from HoloLoom.awareness.compositional_awareness import (
+# Use relative imports (moved to HoloLoom/memory/awareness/ in Dec 2025)
+from .compositional_awareness import (
     CompositionalAwarenessLayer,
     UnifiedAwarenessContext,
     format_awareness_for_prompt
@@ -17,7 +18,7 @@ from HoloLoom.awareness.compositional_awareness import (
 
 # LLM integration (optional)
 try:
-    from HoloLoom.awareness.llm_integration import LLMProtocol, LLMResponse
+    from .llm_integration import LLMProtocol, LLMResponse
     LLM_AVAILABLE = True
 except ImportError:
     LLMProtocol = None

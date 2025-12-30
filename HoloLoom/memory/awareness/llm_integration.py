@@ -32,6 +32,8 @@ class LLMProvider(Enum):
     OLLAMA = "ollama"
     ANTHROPIC = "anthropic"
     OPENAI = "openai"
+    GEMINI = "gemini"
+    GROK = "grok"
 
 
 @dataclass
@@ -572,6 +574,294 @@ class OpenAILLM:
             raise RuntimeError(f"OpenAI streaming failed: {e}")
 
 
+class GeminiLLM:
+    """
+    Google Gemini integration.
+
+    Requires:
+        pip install google-genai
+        export GEMINI_API_KEY="your-key"
+
+    Models:
+        - gemini-2.0-flash (fast, recommended)
+        - gemini-2.0-flash-lite (fastest)
+        - gemini-1.5-pro (highest quality)
+    """
+
+    def __init__(self, model: str = "gemini-2.0-flash", api_key: Optional[str] = None):
+        """
+        Initialize Gemini LLM.
+
+        Args:
+            model: Gemini model name
+            api_key: Optional API key (defaults to GEMINI_API_KEY or GOOGLE_API_KEY env var)
+        """
+        self.model = model
+        self.api_key = api_key
+        self.provider = LLMProvider.GEMINI
+        self.client = None
+        self._available = False
+
+        try:
+            from google import genai
+            import os
+            key = api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+            if key:
+                self.client = genai.Client(api_key=key)
+                self._available = True
+        except ImportError:
+            self.client = None
+            self._available = False
+
+    def is_available(self) -> bool:
+        """Check if Gemini is available"""
+        return self._available and self.client is not None
+
+    async def generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+        **kwargs
+    ) -> LLMResponse:
+        """
+        Generate completion from Google Gemini.
+
+        Args:
+            prompt: User prompt
+            system_prompt: Optional system prompt
+            max_tokens: Max tokens to generate
+            temperature: Sampling temperature (0.0-2.0)
+
+        Returns:
+            LLMResponse with generated content
+        """
+        if not self.is_available():
+            raise RuntimeError(
+                "Gemini not available. Install with: pip install google-genai\n"
+                "Set API key: export GEMINI_API_KEY='your-key'"
+            )
+
+        try:
+            # Build content with system instruction if provided
+            contents = prompt
+            config = {
+                "max_output_tokens": max_tokens,
+                "temperature": temperature,
+            }
+            if system_prompt:
+                config["system_instruction"] = system_prompt
+
+            # Call Gemini API
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=contents,
+                config=config
+            )
+
+            content = response.text if hasattr(response, 'text') else ""
+
+            # Extract usage stats if available
+            usage = None
+            if hasattr(response, 'usage_metadata'):
+                usage = {
+                    'prompt_tokens': getattr(response.usage_metadata, 'prompt_token_count', 0),
+                    'completion_tokens': getattr(response.usage_metadata, 'candidates_token_count', 0),
+                    'total_tokens': getattr(response.usage_metadata, 'total_token_count', 0)
+                }
+
+            return LLMResponse(
+                content=content,
+                provider=self.provider,
+                model=self.model,
+                usage=usage,
+                metadata={'response': str(response)}
+            )
+
+        except Exception as e:
+            raise RuntimeError(f"Gemini generation failed: {e}")
+
+    async def stream_generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+        **kwargs
+    ) -> AsyncIterator[str]:
+        """
+        Stream generation from Gemini token by token.
+
+        Args:
+            prompt: User prompt
+            system_prompt: Optional system prompt
+            max_tokens: Max tokens to generate
+            temperature: Sampling temperature
+
+        Yields:
+            Generated tokens as they arrive
+        """
+        if not self.is_available():
+            raise RuntimeError("Gemini not available")
+
+        try:
+            contents = prompt
+            config = {
+                "max_output_tokens": max_tokens,
+                "temperature": temperature,
+            }
+            if system_prompt:
+                config["system_instruction"] = system_prompt
+
+            # Stream from Gemini
+            for chunk in self.client.models.generate_content_stream(
+                model=self.model,
+                contents=contents,
+                config=config
+            ):
+                if hasattr(chunk, 'text') and chunk.text:
+                    yield chunk.text
+
+        except Exception as e:
+            raise RuntimeError(f"Gemini streaming failed: {e}")
+
+
+class GrokLLM:
+    """
+    xAI Grok integration.
+
+    Requires:
+        pip install xai-sdk
+        export XAI_API_KEY="your-key"
+
+    Models:
+        - grok-4-1-fast (fastest, recommended)
+        - grok-4-1 (balanced)
+        - grok-4 (highest quality)
+    """
+
+    def __init__(self, model: str = "grok-4-1-fast", api_key: Optional[str] = None):
+        """
+        Initialize Grok LLM.
+
+        Args:
+            model: Grok model name
+            api_key: Optional API key (defaults to XAI_API_KEY env var)
+        """
+        self.model = model
+        self.api_key = api_key
+        self.provider = LLMProvider.GROK
+        self.client = None
+        self._available = False
+
+        try:
+            from xai_sdk import Client
+            import os
+            key = api_key or os.environ.get("XAI_API_KEY")
+            if key:
+                self.client = Client(api_key=key)
+                self._available = True
+        except ImportError:
+            self.client = None
+            self._available = False
+
+    def is_available(self) -> bool:
+        """Check if Grok is available"""
+        return self._available and self.client is not None
+
+    async def generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+        **kwargs
+    ) -> LLMResponse:
+        """
+        Generate completion from xAI Grok.
+
+        Args:
+            prompt: User prompt
+            system_prompt: Optional system prompt
+            max_tokens: Max tokens to generate
+            temperature: Sampling temperature (0.0-2.0)
+
+        Returns:
+            LLMResponse with generated content
+        """
+        if not self.is_available():
+            raise RuntimeError(
+                "Grok not available. Install with: pip install xai-sdk\n"
+                "Set API key: export XAI_API_KEY='your-key'"
+            )
+
+        try:
+            # Create chat session
+            chat = await self.client.chat.create(
+                model=self.model,
+                system_prompt=system_prompt if system_prompt else None,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+
+            # Sample response
+            response, _ = await chat.sample(prompt)
+
+            content = response if isinstance(response, str) else str(response)
+
+            return LLMResponse(
+                content=content,
+                provider=self.provider,
+                model=self.model,
+                usage=None,  # Grok SDK may not expose token counts
+                metadata={}
+            )
+
+        except Exception as e:
+            raise RuntimeError(f"Grok generation failed: {e}")
+
+    async def stream_generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+        **kwargs
+    ) -> AsyncIterator[str]:
+        """
+        Stream generation from Grok token by token.
+
+        Args:
+            prompt: User prompt
+            system_prompt: Optional system prompt
+            max_tokens: Max tokens to generate
+            temperature: Sampling temperature
+
+        Yields:
+            Generated tokens as they arrive
+        """
+        if not self.is_available():
+            raise RuntimeError("Grok not available")
+
+        try:
+            # Create chat session
+            chat = await self.client.chat.create(
+                model=self.model,
+                system_prompt=system_prompt if system_prompt else None,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+
+            # Stream from Grok - returns tuple (response, token)
+            async for _, token in chat.stream(prompt):
+                if token:
+                    yield token
+
+        except Exception as e:
+            raise RuntimeError(f"Grok streaming failed: {e}")
+
+
 def create_llm(
     provider: str = "ollama",
     model: Optional[str] = None,
@@ -581,7 +871,7 @@ def create_llm(
     Factory function to create LLM instances.
 
     Args:
-        provider: "ollama", "anthropic", or "openai"
+        provider: "ollama", "anthropic", "openai", "gemini", or "grok"
         model: Optional model override
         **kwargs: Provider-specific arguments
 
@@ -597,6 +887,12 @@ def create_llm(
 
         # OpenAI (when available)
         llm = create_llm("openai", model="gpt-4", api_key="...")
+
+        # Gemini (when available)
+        llm = create_llm("gemini", model="gemini-2.0-flash", api_key="...")
+
+        # Grok (when available)
+        llm = create_llm("grok", model="grok-4-1-fast", api_key="...")
     """
     provider_lower = provider.lower()
 
@@ -609,5 +905,11 @@ def create_llm(
     elif provider_lower == "openai":
         model = model or "gpt-4"
         return OpenAILLM(model=model, **kwargs)
+    elif provider_lower == "gemini":
+        model = model or "gemini-2.0-flash"
+        return GeminiLLM(model=model, **kwargs)
+    elif provider_lower == "grok":
+        model = model or "grok-4-1-fast"
+        return GrokLLM(model=model, **kwargs)
     else:
-        raise ValueError(f"Unknown provider: {provider}. Use 'ollama', 'anthropic', or 'openai'")
+        raise ValueError(f"Unknown provider: {provider}. Use 'ollama', 'anthropic', 'openai', 'gemini', or 'grok'")

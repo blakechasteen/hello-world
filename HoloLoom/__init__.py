@@ -137,4 +137,32 @@ def __getattr__(name):
         except ImportError:
             raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
+    # ==========================================================================
+    # Backward Compatibility Shims (December 2025 Consolidation)
+    # ==========================================================================
+    # These directories were consolidated into memory/:
+    #   - HoloLoom.awareness → HoloLoom.memory.awareness
+    #   - HoloLoom.memory_symphony → HoloLoom.memory.symphony
+    #   - HoloLoom.yarn → HoloLoom.memory.yarn
+    # Old import paths redirect to new locations.
+    # ==========================================================================
+
+    elif name == 'awareness':
+        from .memory import awareness
+        _lazy_imports[name] = awareness
+        _sys.modules.setdefault(__name__ + '.awareness', awareness)
+        return awareness
+
+    elif name == 'memory_symphony':
+        from .memory import symphony
+        _lazy_imports[name] = symphony
+        _sys.modules.setdefault(__name__ + '.memory_symphony', symphony)
+        return symphony
+
+    elif name == 'yarn':
+        from .memory import yarn
+        _lazy_imports[name] = yarn
+        _sys.modules.setdefault(__name__ + '.yarn', yarn)
+        return yarn
+
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

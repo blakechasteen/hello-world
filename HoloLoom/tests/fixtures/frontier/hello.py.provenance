@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "artifact_name": "hello.py",
+  "timestamp": "2025-12-07T03:25:29.484084",
+  "tool_used": "unknown",
+  "content_hash": "58f2adabc7548a53c2e48dea2627190d847adf29d31d59d348b87f4ee0962fb3",
+  "risk_assessment": {
+    "level": "SAFE",
+    "score": 10,
+    "signals": [
+      "Executable Script (.py)"
+    ]
+  },
+  "target_path": "C:\\Users\\blake\\OneDrive\\Documents\\mythRL\\HoloLoom\\frontier_test_output\\hello.py"
+}

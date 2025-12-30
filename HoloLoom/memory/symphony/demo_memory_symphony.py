@@ -23,7 +23,8 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
-from HoloLoom.memory_symphony import (
+# Import from new location (moved to HoloLoom/memory/symphony/ in Dec 2025)
+from HoloLoom.memory.symphony import (
     MemoryConductor,
     MemoryQuery,
     MemoryStrategy,

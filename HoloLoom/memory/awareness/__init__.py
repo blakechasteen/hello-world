@@ -33,7 +33,8 @@ Usage:
     )
 """
 
-from HoloLoom.awareness.compositional_awareness import (
+# Use relative imports (moved to HoloLoom/memory/awareness/ in Dec 2025)
+from .compositional_awareness import (
     CompositionalAwarenessLayer,
     UnifiedAwarenessContext,
     StructuralAwareness,
@@ -44,14 +45,14 @@ from HoloLoom.awareness.compositional_awareness import (
     format_awareness_for_prompt
 )
 
-from HoloLoom.awareness.dual_stream import (
+from .dual_stream import (
     DualStreamGenerator,
     DualStreamResponse,
     build_internal_prompt,
     build_external_prompt
 )
 
-from HoloLoom.awareness.meta_awareness import (
+from .meta_awareness import (
     MetaAwarenessLayer,
     SelfReflectionResult,
     UncertaintyDecomposition,
@@ -61,9 +62,20 @@ from HoloLoom.awareness.meta_awareness import (
     UncertaintyType
 )
 
+# Additional awareness modules
+from .beta_wave_packer import BetaWaveContextPacker
+from .context_packer import SmartContextPacker
+
+# Alias for backward compatibility
+ContextPacker = SmartContextPacker
+from .memory_fusion import MemoryFusion
+
+# Alias for backward compatibility
+BetaWavePacker = BetaWaveContextPacker
+
 # LLM Integration
 try:
-    from HoloLoom.awareness.llm_integration import (
+    from .llm_integration import (
         LLMProtocol,
         LLMResponse,
         LLMProvider,
@@ -101,6 +113,13 @@ __all__ = [
     "KnowledgeGapHypothesis",
     "AdversarialProbe",
     "UncertaintyType",
+
+    # Additional Awareness Modules
+    "BetaWaveContextPacker",
+    "BetaWavePacker",  # Backward compat alias
+    "SmartContextPacker",
+    "ContextPacker",  # Backward compat alias
+    "MemoryFusion",
 
     # LLM Integration (if available)
     "LLM_AVAILABLE",

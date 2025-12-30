@@ -129,11 +129,13 @@ class QdrantMemoryStore:
         self.enable_metrics = enable_metrics
 
         # Build URL if not provided
+        # Note: QdrantClient always uses http:// URLs even with prefer_grpc=True
+        # The prefer_grpc flag tells the client to use gRPC protocol, not the URL scheme
         if url:
             self.url = url
         else:
-            protocol = "http" if not self.prefer_grpc else "grpc"
-            self.url = f"{protocol}://{self.host}:{self.port}"
+            # Always use http:// scheme - gRPC preference is handled by the client
+            self.url = f"http://{self.host}:{self.port}"
 
         self.collection_prefix = collection_prefix
         self.scales = scales
