@@ -14,7 +14,7 @@ Created: 2025-01-20
 """
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Optional, Any
 import logging
 import asyncio
@@ -23,6 +23,74 @@ from HoloLoom.llm import UnifiedLLMClient, LLMConfig, LLMResponse
 from HoloLoom.config import Config
 
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# SECURITY: Allowed Models Whitelist
+# =============================================================================
+
+ALLOWED_MODELS = frozenset([
+    # Ollama (local)
+    "ollama/llama3.2:3b",
+    "ollama/llama3.1:8b",
+    "ollama/llama3.1:70b",
+    "ollama/mistral:7b",
+    "ollama/phi3:3.8b",
+    "ollama/codellama:7b",
+    "ollama/codellama:13b",
+    # Anthropic
+    "anthropic/claude-3-5-sonnet-20241022",
+    "anthropic/claude-3-5-haiku-20241022",
+    "anthropic/claude-3-opus-20240229",
+    # OpenAI
+    "openai/gpt-4",
+    "openai/gpt-4-turbo",
+    "openai/gpt-4o",
+    "openai/gpt-3.5-turbo",
+    # Google
+    "google/gemini-pro",
+    "google/gemini-1.5-pro",
+])
+
+
+def validate_model_override(model: Optional[str]) -> Optional[str]:
+    """
+    SECURITY: Validate model override against whitelist.
+
+    Prevents arbitrary model specification which could:
+    - Cause unexpected costs
+    - Access unintended models
+    - Enable prompt injection via model names
+
+    Args:
+        model: Model override string (e.g., "anthropic/claude-3-5-sonnet")
+
+    Returns:
+        Validated model string or None
+
+    Raises:
+        ValueError: If model not in whitelist
+    """
+    if model is None:
+        return None
+
+    # Normalize
+    model_normalized = model.strip().lower()
+
+    # Check whitelist (case-insensitive comparison)
+    allowed_lower = {m.lower() for m in ALLOWED_MODELS}
+    if model_normalized not in allowed_lower:
+        raise ValueError(
+            f"Model '{model}' not in allowed list. "
+            f"Use /llm/models endpoint to see available models."
+        )
+
+    # Return original casing for matching model
+    for allowed in ALLOWED_MODELS:
+        if allowed.lower() == model_normalized:
+            return allowed
+
+    return model
 
 router = APIRouter(prefix="/llm", tags=["llm"])
 
@@ -79,11 +147,18 @@ def get_llm_client(config: Optional[Config] = None) -> UnifiedLLMClient:
 
 class QueryRequest(BaseModel):
     """Request for LLM query"""
-    query: str
-    max_tokens: int = 500
-    temperature: float = 0.7
-    model_override: Optional[str] = None  # e.g., "anthropic/claude-3-5-sonnet"
-    system_prompt: Optional[str] = None
+    # SECURITY: Limit query length to prevent resource exhaustion
+    query: str = Field(..., min_length=1, max_length=100000, description="Query text (max 100KB)")
+    max_tokens: int = Field(default=500, ge=1, le=4096, description="Max tokens (1-4096)")
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Temperature (0.0-2.0)")
+    model_override: Optional[str] = Field(default=None, description="Model override (must be whitelisted)")
+    system_prompt: Optional[str] = Field(default=None, max_length=10000, description="System prompt (max 10KB)")
+
+    @field_validator('model_override')
+    @classmethod
+    def validate_model(cls, v: Optional[str]) -> Optional[str]:
+        """SECURITY: Validate model against whitelist"""
+        return validate_model_override(v)
 
 
 class QueryResponse(BaseModel):
@@ -99,10 +174,22 @@ class QueryResponse(BaseModel):
 
 class CompareRequest(BaseModel):
     """Request for model comparison"""
-    query: str
-    models: List[str]  # e.g., ["ollama/llama3.2:3b", "anthropic/claude-3-5-sonnet"]
-    max_tokens: int = 500
-    temperature: float = 0.7
+    # SECURITY: Same limits as QueryRequest
+    query: str = Field(..., min_length=1, max_length=100000, description="Query text (max 100KB)")
+    models: List[str] = Field(..., min_length=1, max_length=5, description="Models to compare (max 5)")
+    max_tokens: int = Field(default=500, ge=1, le=4096, description="Max tokens (1-4096)")
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Temperature (0.0-2.0)")
+
+    @field_validator('models')
+    @classmethod
+    def validate_models(cls, v: List[str]) -> List[str]:
+        """SECURITY: Validate all models against whitelist"""
+        validated = []
+        for model in v:
+            validated_model = validate_model_override(model)
+            if validated_model:
+                validated.append(validated_model)
+        return validated
 
 
 class CompareResponse(BaseModel):
@@ -179,8 +266,9 @@ async def query_llm(request: QueryRequest):
         )
 
     except Exception as e:
+        # SECURITY: Log full error internally, return generic message to client
         logger.error(f"Query failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Query failed. Please try again or contact support.")
 
 
 @router.post("/compare", response_model=CompareResponse)
@@ -238,8 +326,9 @@ async def compare_models(request: CompareRequest):
         )
 
     except Exception as e:
+        # SECURITY: Log full error internally, return generic message to client
         logger.error(f"Comparison failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Model comparison failed. Please try again or contact support.")
 
 
 @router.get("/models", response_model=List[ModelInfo])
@@ -298,8 +387,9 @@ async def list_models():
         return models
 
     except Exception as e:
+        # SECURITY: Log full error internally, return generic message to client
         logger.error(f"Failed to list models: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to list models: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to list models. Please try again or contact support.")
 
 
 @router.get("/cost-stats", response_model=CostStatsResponse)
@@ -323,8 +413,9 @@ async def get_cost_stats():
         return CostStatsResponse(**stats)
 
     except Exception as e:
+        # SECURITY: Log full error internally, return generic message to client
         logger.error(f"Failed to get cost stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to get cost stats: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get cost statistics. Please try again or contact support.")
 
 
 @router.post("/cost-stats/reset")
@@ -341,8 +432,9 @@ async def reset_cost_stats():
         return {"status": "success", "message": "Cost statistics reset"}
 
     except Exception as e:
+        # SECURITY: Log full error internally, return generic message to client
         logger.error(f"Failed to reset cost stats: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to reset cost stats: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to reset cost statistics. Please try again or contact support.")
 
 
 @router.get("/health")
@@ -364,8 +456,9 @@ async def health_check():
         }
 
     except Exception as e:
-        logger.error(f"Health check failed: {e}")
+        # SECURITY: Log full error internally, return generic message to client
+        logger.error(f"Health check failed: {e}", exc_info=True)
         return {
             "status": "unhealthy",
-            "error": str(e)
+            "error": "Health check failed. Check server logs for details."
         }

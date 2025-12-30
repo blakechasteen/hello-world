@@ -29,6 +29,14 @@ from HoloLoom.dark_trace.bridge.mapper import (
     SemanticMeaning,
 )
 
+# Optional: FeatureRegistry for autolabel integration
+try:
+    from HoloLoom.dark_trace.registry import FeatureRegistry
+    HAS_REGISTRY = True
+except ImportError:
+    HAS_REGISTRY = False
+    FeatureRegistry = None
+
 
 class ExplanationVerbosity(Enum):
     """Verbosity levels for explanations."""
@@ -285,6 +293,7 @@ class BridgedExplainer:
         semantic_lens: TraceLens,
         mapper: FeatureSemanticMapper,
         default_verbosity: ExplanationVerbosity = ExplanationVerbosity.MODERATE,
+        registry: Optional["FeatureRegistry"] = None,
     ):
         """
         Initialize BridgedExplainer.
@@ -294,11 +303,13 @@ class BridgedExplainer:
             semantic_lens: SemanticLens for semantic projection
             mapper: FeatureSemanticMapper for bridging
             default_verbosity: Default explanation verbosity
+            registry: Optional FeatureRegistry for autolabel integration
         """
         self.sae_lens = sae_lens
         self.semantic_lens = semantic_lens
         self.mapper = mapper
         self.default_verbosity = default_verbosity
+        self._registry = registry
 
     def explain(
         self,
@@ -363,6 +374,15 @@ class BridgedExplainer:
                 human_label = None
                 is_mapped = False
                 interp_conf = 0.0
+
+            # Fallback to registry autolabel if no human_label from mapper
+            if human_label is None and self._registry is not None:
+                autolabel_info = self._get_autolabel_from_registry(fa.feature.id)
+                if autolabel_info:
+                    human_label = autolabel_info.get("description")
+                    # Boost interpretation confidence if autolabel available
+                    if interp_conf < 0.5 and autolabel_info.get("confidence", 0) > 0.5:
+                        interp_conf = max(interp_conf, autolabel_info.get("confidence", 0) * 0.8)
 
             if is_mapped:
                 n_well_mapped += 1
@@ -440,6 +460,43 @@ class BridgedExplainer:
             return f"Response characterized by: {', '.join(parts)}"
         else:
             return f"{len(features)} features active with moderate semantic profile"
+
+    def _get_autolabel_from_registry(
+        self,
+        feature_id: str,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get autolabel information from registry for a feature.
+
+        Args:
+            feature_id: Feature ID (e.g., "sae.42")
+
+        Returns:
+            Dict with autolabel info or None if not available
+        """
+        if self._registry is None:
+            return None
+
+        try:
+            feature = self._registry.get(feature_id)
+            if feature is None:
+                return None
+
+            # Check for autolabel metadata
+            autolabel = feature.metadata.get("autolabel", {})
+            if not autolabel:
+                return None
+
+            return {
+                "description": feature.description or feature.label,
+                "confidence": autolabel.get("confidence", 0.5),
+                "primary_semantic_axis": autolabel.get("primary_semantic_axis"),
+                "semantic_alignments": autolabel.get("semantic_alignments", {}),
+                "labeled_at": autolabel.get("labeled_at"),
+                "labeler_model": autolabel.get("labeler_model"),
+            }
+        except Exception:
+            return None
 
     def compare(
         self,
@@ -560,7 +617,7 @@ class BridgedExplainer:
         verbose: bool = False,
     ) -> str:
         """
-        Explain a single SAE feature using semantic mapping.
+        Explain a single SAE feature using semantic mapping and/or autolabels.
 
         Args:
             feature_id: Feature ID (e.g., "sae.42")
@@ -569,11 +626,35 @@ class BridgedExplainer:
         Returns:
             Human-readable explanation
         """
-        mapping = self.mapper.get_feature_mapping(feature_id)
-        if mapping is None:
-            return f"Feature {feature_id}: No semantic mapping available."
+        lines = []
 
-        return mapping.describe(verbose=verbose)
+        # Try semantic mapping first
+        mapping = self.mapper.get_feature_mapping(feature_id)
+        if mapping is not None:
+            lines.append(mapping.describe(verbose=verbose))
+
+        # Check registry for autolabel
+        autolabel_info = self._get_autolabel_from_registry(feature_id)
+        if autolabel_info and autolabel_info.get("description"):
+            if mapping is None:
+                # No mapping, use autolabel as primary
+                lines.append(f"Feature {feature_id}: {autolabel_info['description']}")
+                if verbose:
+                    conf = autolabel_info.get("confidence", 0)
+                    lines.append(f"  Autolabel confidence: {conf:.1%}")
+                    if autolabel_info.get("primary_semantic_axis"):
+                        lines.append(f"  Primary axis: {autolabel_info['primary_semantic_axis']}")
+                    if autolabel_info.get("labeler_model"):
+                        lines.append(f"  Labeled by: {autolabel_info['labeler_model']}")
+            elif verbose:
+                # Add autolabel as supplementary info
+                lines.append(f"\n  Autolabel: {autolabel_info['description']}")
+                lines.append(f"  Autolabel confidence: {autolabel_info.get('confidence', 0):.1%}")
+
+        if not lines:
+            return f"Feature {feature_id}: No semantic mapping or autolabel available."
+
+        return "\n".join(lines)
 
     def get_unmapped_features_report(self) -> str:
         """
@@ -611,6 +692,7 @@ def create_bridged_explainer(
     semantic_lens: TraceLens,
     correlator: Any,  # SAESemanticCorrelator
     default_verbosity: ExplanationVerbosity = ExplanationVerbosity.MODERATE,
+    registry: Optional["FeatureRegistry"] = None,
 ) -> BridgedExplainer:
     """
     Factory function to create BridgedExplainer from components.
@@ -620,6 +702,7 @@ def create_bridged_explainer(
         semantic_lens: SemanticLens for semantic projection
         correlator: SAESemanticCorrelator with learned correlations
         default_verbosity: Default explanation verbosity
+        registry: Optional FeatureRegistry for autolabel integration
 
     Returns:
         Configured BridgedExplainer
@@ -632,4 +715,5 @@ def create_bridged_explainer(
         semantic_lens=semantic_lens,
         mapper=mapper,
         default_verbosity=default_verbosity,
+        registry=registry,
     )

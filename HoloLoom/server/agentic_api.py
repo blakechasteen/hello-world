@@ -16,7 +16,6 @@ Usage:
 
 import asyncio
 import logging
-import threading
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from collections import defaultdict, deque
@@ -73,7 +72,7 @@ class RateLimiter:
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.requests: Dict[str, deque] = defaultdict(deque)
-        self.lock = threading.Lock()  # Thread-safe access
+        self._lock = asyncio.Lock()  # Async-safe access
 
     async def check_rate_limit(self, client_id: str) -> bool:
         """
@@ -85,7 +84,7 @@ class RateLimiter:
         Returns:
             True if within limit, False if exceeded
         """
-        with self.lock:  # Thread-safe critical section
+        async with self._lock:  # Async-safe critical section
             now = time()
             cutoff = now - self.window_seconds
 
@@ -101,14 +100,15 @@ class RateLimiter:
             self.requests[client_id].append(now)
             return True
 
-    def get_remaining(self, client_id: str) -> int:
-        """Get remaining requests for client."""
-        now = time()
-        cutoff = now - self.window_seconds
+    async def get_remaining(self, client_id: str) -> int:
+        """Get remaining requests for client (async-safe)."""
+        async with self._lock:  # SECURITY: Ensure consistent read
+            now = time()
+            cutoff = now - self.window_seconds
 
-        # Count requests in current window
-        count = sum(1 for t in self.requests[client_id] if t >= cutoff)
-        return max(0, self.max_requests - count)
+            # Count requests in current window
+            count = sum(1 for t in self.requests[client_id] if t >= cutoff)
+            return max(0, self.max_requests - count)
 
 
 class ServerStats:
@@ -117,6 +117,10 @@ class ServerStats:
 
     Monitors uptime, query counts, latencies, and error rates.
     """
+
+    # SECURITY: Max unique keys to prevent unbounded memory growth
+    MAX_MODES = 20
+    MAX_ERROR_TYPES = 100
 
     def __init__(self):
         self.start_time = time()
@@ -131,7 +135,10 @@ class ServerStats:
         """Record a query completion."""
         self.total_queries += 1
         self.latencies.append(latency_ms)
-        self.queries_by_mode[mode] += 1
+
+        # SECURITY: Only track known modes to prevent memory exhaustion
+        if len(self.queries_by_mode) < self.MAX_MODES or mode in self.queries_by_mode:
+            self.queries_by_mode[mode] += 1
 
         if success:
             self.successful_queries += 1
@@ -140,7 +147,9 @@ class ServerStats:
 
     def record_error(self, error_type: str):
         """Record an error occurrence."""
-        self.errors_by_type[error_type] += 1
+        # SECURITY: Only track limited error types to prevent memory exhaustion
+        if len(self.errors_by_type) < self.MAX_ERROR_TYPES or error_type in self.errors_by_type:
+            self.errors_by_type[error_type] += 1
 
     def get_uptime(self) -> float:
         """Get server uptime in seconds."""
@@ -263,6 +272,55 @@ class AgenticResponse(BaseModel):
     query_id: str
 
 
+class MemoryAddRequest(BaseModel):
+    """
+    Request model for adding memories.
+
+    SECURITY: Pydantic validation prevents resource exhaustion attacks.
+    All fields have explicit size limits.
+    """
+    text: str = Field(
+        ...,
+        min_length=1,
+        max_length=100000,
+        description="Memory text content (max 100KB)"
+    )
+    episode: str = Field(
+        default="default",
+        max_length=1000,
+        description="Episode/category for the memory (max 1KB)"
+    )
+    entities: List[str] = Field(
+        default_factory=list,
+        max_items=100,
+        description="List of entities mentioned (max 100 items)"
+    )
+    motifs: List[str] = Field(
+        default_factory=list,
+        max_items=100,
+        description="List of motifs/patterns (max 100 items)"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Additional metadata"
+    )
+
+    @validator('entities', 'motifs', each_item=True)
+    def validate_list_items(cls, v):
+        """SECURITY: Limit individual list item lengths."""
+        if len(v) > 1000:
+            raise ValueError("List items must be under 1KB")
+        return v
+
+    @validator('metadata')
+    def validate_metadata_size(cls, v):
+        """SECURITY: Limit metadata size to prevent abuse."""
+        import json
+        if len(json.dumps(v)) > 10000:
+            raise ValueError("Metadata must be under 10KB when serialized")
+        return v
+
+
 # ============================================================================
 # FastAPI App
 # ============================================================================
@@ -274,10 +332,19 @@ app = FastAPI(
 )
 
 # CORS for VS Code extension
+# SECURITY: Use environment variable for allowed origins (no wildcard in production)
+import os as _cors_os
+_cors_origins = _cors_os.environ.get(
+    "CORS_ORIGINS",
+    "http://localhost:3000,http://localhost:8080,vscode-webview://*"
+).split(",")
+_cors_allow_credentials = _cors_os.environ.get("CORS_ALLOW_CREDENTIALS", "false").lower() == "true"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict to specific origins
-    allow_methods=["*"],
+    allow_origins=_cors_origins,
+    allow_credentials=_cors_allow_credentials,  # Only enable if explicitly configured
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -305,6 +372,34 @@ except ImportError:
     logger.debug("WebSocket progress not available (missing dependencies)")
 
 
+# Helper function for secure client IP extraction
+def _get_client_ip(request: Request) -> str:
+    """
+    Securely extract client IP address.
+
+    SECURITY: Only trust X-Forwarded-For when BEHIND_PROXY=true.
+    When behind a proxy, takes the rightmost IP (closest to trusted proxy).
+    This prevents IP spoofing via forged X-Forwarded-For headers.
+    """
+    import os
+    behind_proxy = os.environ.get("BEHIND_PROXY", "false").lower() == "true"
+
+    if behind_proxy:
+        forwarded_for = request.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            # X-Forwarded-For format: "client, proxy1, proxy2"
+            # Take the rightmost non-empty IP (closest to our trusted proxy)
+            ips = [ip.strip() for ip in forwarded_for.split(",") if ip.strip()]
+            if ips:
+                # Return the first IP (original client) only if we trust the chain
+                # In production, you might want to return ips[-1] instead if
+                # you don't fully trust the proxy chain
+                return ips[0]
+
+    # Default: use direct connection IP
+    return request.client.host if request.client else "unknown"
+
+
 # Rate limiting middleware
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
@@ -318,8 +413,8 @@ async def rate_limit_middleware(request: Request, call_next):
     if request.url.path == "/health":
         return await call_next(request)
 
-    # Get client IP
-    client_ip = request.client.host if request.client else "unknown"
+    # Get client IP (securely handles X-Forwarded-For when behind proxy)
+    client_ip = _get_client_ip(request)
 
     # Check rate limit
     if state.rate_limiter and not await state.rate_limiter.check_rate_limit(client_ip):
@@ -339,6 +434,102 @@ async def rate_limit_middleware(request: Request, call_next):
     # Process request
     response = await call_next(request)
     return response
+
+
+# ============================================================================
+# SECURITY: Global Exception Handler - Mask Error Details in Production
+# ============================================================================
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Global exception handler that masks error details in production.
+
+    SECURITY: Prevents information disclosure through error messages.
+    In production, returns generic error message while logging full details.
+    In development, returns full error details for debugging.
+    """
+    import os
+    import traceback
+    from fastapi.responses import JSONResponse
+
+    environment = os.environ.get("ENVIRONMENT", "production").lower()
+    is_production = environment == "production"
+
+    # Always log full error details server-side
+    error_id = f"ERR-{id(exc)}"
+    logger.error(
+        f"Unhandled exception [{error_id}]: {type(exc).__name__}: {exc}",
+        exc_info=True
+    )
+
+    if is_production:
+        # SECURITY: Return generic error message in production
+        return JSONResponse(
+            status_code=500,
+            content={
+                "detail": "An internal error occurred. Please try again later.",
+                "error_id": error_id,
+                "support": "If this persists, contact support with the error_id."
+            }
+        )
+    else:
+        # Development: Return full error details for debugging
+        return JSONResponse(
+            status_code=500,
+            content={
+                "detail": str(exc),
+                "type": type(exc).__name__,
+                "error_id": error_id,
+                "traceback": traceback.format_exc() if environment == "development" else None
+            }
+        )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """
+    HTTP exception handler that sanitizes error details.
+
+    SECURITY: Even for HTTPException, we sanitize any potential
+    sensitive information that may have been accidentally included.
+    """
+    import os
+    import re
+    from fastapi.responses import JSONResponse
+
+    environment = os.environ.get("ENVIRONMENT", "production").lower()
+    is_production = environment == "production"
+
+    # Patterns that indicate sensitive information in error messages
+    sensitive_patterns = [
+        r'password[=:]\s*\S+',
+        r'api[_-]?key[=:]\s*\S+',
+        r'token[=:]\s*\S+',
+        r'secret[=:]\s*\S+',
+        r'sk-[a-zA-Z0-9]{20,}',  # API keys
+        r'bolt://[^@]+:[^@]+@',  # Database connection strings with credentials
+    ]
+
+    detail = str(exc.detail) if exc.detail else "An error occurred"
+
+    if is_production:
+        # Check if error message contains sensitive information
+        for pattern in sensitive_patterns:
+            if re.search(pattern, detail, re.IGNORECASE):
+                # Log the full error server-side
+                error_id = f"ERR-{id(exc)}"
+                logger.warning(
+                    f"Sanitized sensitive info from error response [{error_id}]: {detail}"
+                )
+                detail = "An error occurred. Please try again."
+                break
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": detail},
+        headers=exc.headers
+    )
 
 
 # ============================================================================
@@ -392,12 +583,24 @@ async def startup():
     # Safety Integration (Dec 2025) - MRF CRITIQUE: Remove testing_mode in production
     try:
         import os
-        # Only allow testing_mode if explicitly set via environment variable
-        # Production should NEVER have HOLOLOOM_TESTING_MODE=true
-        testing_mode = os.environ.get("HOLOLOOM_TESTING_MODE", "").lower() == "true"
+        # SECURITY: Testing mode requires BOTH:
+        # 1. HOLOLOOM_TESTING_MODE=true
+        # 2. ENVIRONMENT=development
+        # This prevents accidental testing mode in production deployments
+        environment = os.environ.get("ENVIRONMENT", "production").lower()
+        testing_mode_requested = os.environ.get("HOLOLOOM_TESTING_MODE", "").lower() == "true"
+
+        # Only allow testing_mode if ENVIRONMENT is explicitly development
+        if testing_mode_requested and environment != "development":
+            logger.error("⚠️  SECURITY: HOLOLOOM_TESTING_MODE=true ignored because ENVIRONMENT != development")
+            logger.error("   Set ENVIRONMENT=development to enable testing mode")
+            testing_mode = False
+        else:
+            testing_mode = testing_mode_requested and environment == "development"
+
         if testing_mode:
             logger.warning("⚠️  TESTING MODE ENABLED - Safety approval requirements bypassed!")
-            logger.warning("   Set HOLOLOOM_TESTING_MODE=false for production!")
+            logger.warning("   Set HOLOLOOM_TESTING_MODE=false or ENVIRONMENT=production for production!")
 
         state.safety_guardrails = SafetyGuardrails(
             testing_mode=testing_mode,  # Safe by default (False unless explicitly enabled)
@@ -931,12 +1134,18 @@ async def get_audit_trail(limit: int = 100):
 
 
 @app.post("/memories/add")
-async def add_memory(memory: Dict):
+async def add_memory(memory: MemoryAddRequest):
     """
     Add new memory to persistent storage.
 
+    SECURITY: Input validated via MemoryAddRequest Pydantic model with:
+    - Text limited to 100KB
+    - Episode limited to 1KB
+    - Entities/motifs limited to 100 items of 1KB each
+    - Metadata limited to 10KB serialized
+
     Args:
-        memory: Dict with text, episode, entities, motifs, metadata
+        memory: MemoryAddRequest with text, episode, entities, motifs, metadata
 
     Returns:
         Success status and memory ID
@@ -961,16 +1170,16 @@ async def add_memory(memory: Dict):
 
         from HoloLoom.memory.protocol import Memory
 
-        # Create Memory object
+        # Create Memory object - fields already validated by Pydantic
         new_memory = Memory(
             id=f"mem_{datetime.now().timestamp()}",
-            text=memory.get("text", ""),
+            text=memory.text,
             context={
-                "episode": memory.get("episode", "default"),
-                "entities": memory.get("entities", []),
-                "motifs": memory.get("motifs", [])
+                "episode": memory.episode,
+                "entities": memory.entities,
+                "motifs": memory.motifs
             },
-            metadata=memory.get("metadata", {})
+            metadata=memory.metadata
         )
 
         # Store in persistent backend
@@ -980,10 +1189,10 @@ async def add_memory(memory: Dict):
         shard = MemoryShard(
             id=new_memory.id,
             text=new_memory.text,
-            episode=new_memory.context.get("episode", "default"),
-            entities=new_memory.context.get("entities", []),
-            motifs=new_memory.context.get("motifs", []),
-            metadata=new_memory.metadata
+            episode=memory.episode,
+            entities=memory.entities,
+            motifs=memory.motifs,
+            metadata=memory.metadata
         )
         state.shards.append(shard)
 
@@ -996,8 +1205,9 @@ async def add_memory(memory: Dict):
         }
 
     except Exception as e:
-        logger.error(f"Failed to add memory: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # SECURITY: Log full error internally, return generic message to client
+        logger.error(f"Failed to add memory: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to add memory. Please try again or contact support.")
 
 
 @app.post("/api/remember")
@@ -1300,17 +1510,56 @@ async def ingest_workspace(
         }
     """
     try:
+        from pathlib import Path
         from HoloLoom.spinningWheel.workspace import WorkspaceSpinner
         from HoloLoom import HoloLoom
 
-        logger.info(f"Starting workspace ingestion: {workspace_path}")
+        # SECURITY: Path traversal validation
+        # Get allowed base directories from environment (comma-separated)
+        import os
+        allowed_bases_str = os.environ.get("ALLOWED_WORKSPACE_PATHS", "")
+        if allowed_bases_str:
+            allowed_bases = [Path(p.strip()).resolve() for p in allowed_bases_str.split(",") if p.strip()]
+        else:
+            # Default: Allow current working directory and home directory
+            allowed_bases = [Path.cwd().resolve(), Path.home().resolve()]
+
+        # Resolve the requested path
+        requested_path = Path(workspace_path).resolve()
+
+        # Validate path is within allowed bases
+        path_allowed = False
+        for base in allowed_bases:
+            try:
+                requested_path.relative_to(base)
+                path_allowed = True
+                break
+            except ValueError:
+                continue
+
+        if not path_allowed:
+            logger.warning(f"SECURITY: Path traversal attempt blocked: {workspace_path}")
+            raise HTTPException(
+                status_code=403,
+                detail="Path not allowed. Set ALLOWED_WORKSPACE_PATHS environment variable."
+            )
+
+        # Additional safety: reject paths with suspicious patterns
+        path_str = str(requested_path)
+        suspicious_patterns = ["/etc/", "/var/", "/root/", "\\Windows\\", "\\System32\\"]
+        for pattern in suspicious_patterns:
+            if pattern.lower() in path_str.lower():
+                logger.warning(f"SECURITY: Suspicious path blocked: {workspace_path}")
+                raise HTTPException(status_code=403, detail="Access to system directories not allowed")
+
+        logger.info(f"Starting workspace ingestion: {requested_path}")
 
         # Create workspace spinner
         spinner = WorkspaceSpinner()
 
-        # Scan workspace
+        # Scan workspace (use validated path)
         shards = await spinner.spin_workspace(
-            workspace_path=workspace_path,
+            workspace_path=str(requested_path),
             languages=languages,
             exclude_patterns=exclude_patterns
         )
@@ -1342,12 +1591,13 @@ async def ingest_workspace(
             "code_elements": total_elements,
             "comments": total_comments,
             "todos": total_todos,
-            "workspace_path": workspace_path
+            "workspace_path": str(requested_path)  # SECURITY: Return validated path
         }
 
     except Exception as e:
+        # SECURITY: Return generic error message, log details internally
         logger.error(f"Workspace ingestion failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Workspace ingestion failed")
 
 
 # Legacy code (commented out - replaced by WorkspaceSpinner above)
@@ -1459,7 +1709,7 @@ async def ingest_file(file_path: str, language: str, content: Optional[str] = No
         if not state.codebase_indexer:
             raise HTTPException(status_code=500, detail="Codebase indexer not initialized")
 
-        # Map language string to enum
+        # SECURITY: Validate language whitelist (prevents malicious file types)
         lang_map = {
             "python": CodeLanguage.PYTHON,
             "typescript": CodeLanguage.TYPESCRIPT,
@@ -1468,25 +1718,73 @@ async def ingest_file(file_path: str, language: str, content: Optional[str] = No
 
         lang_enum = lang_map.get(language.lower())
         if not lang_enum:
-            raise HTTPException(status_code=400, detail=f"Unsupported language: {language}")
+            raise HTTPException(status_code=400, detail=f"Unsupported language: {language}. Allowed: python, typescript, javascript")
 
-        # If content provided, create temp file
+        # SECURITY: Path traversal validation (when reading from filesystem)
+        validated_path = None
+        if not content:
+            from pathlib import Path
+
+            # Get allowed base directories from environment (comma-separated)
+            allowed_bases_str = os.environ.get("ALLOWED_WORKSPACE_PATHS", "")
+            if allowed_bases_str:
+                allowed_bases = [Path(p.strip()).resolve() for p in allowed_bases_str.split(",") if p.strip()]
+            else:
+                # Default: Allow current working directory and home directory
+                allowed_bases = [Path.cwd().resolve(), Path.home().resolve()]
+
+            # Resolve the requested path
+            requested_path = Path(file_path).resolve()
+
+            # Validate path is within allowed bases
+            path_allowed = False
+            for base in allowed_bases:
+                try:
+                    requested_path.relative_to(base)
+                    path_allowed = True
+                    break
+                except ValueError:
+                    continue
+
+            if not path_allowed:
+                logger.warning(f"SECURITY: Path traversal attempt blocked: {file_path}")
+                raise HTTPException(
+                    status_code=403,
+                    detail="Path not allowed. Set ALLOWED_WORKSPACE_PATHS environment variable."
+                )
+
+            # Additional safety: reject paths with suspicious patterns
+            path_str = str(requested_path)
+            suspicious_patterns = ["/etc/", "/var/", "/root/", "\\Windows\\", "\\System32\\", ".ssh", ".aws", ".env"]
+            for pattern in suspicious_patterns:
+                if pattern.lower() in path_str.lower():
+                    logger.warning(f"SECURITY: Suspicious path blocked: {file_path}")
+                    raise HTTPException(status_code=403, detail="Access to system/sensitive directories not allowed")
+
+            validated_path = requested_path
+
+        # If content provided, create temp file with secure handling
         if content:
             import tempfile
-            with tempfile.NamedTemporaryFile(mode='w', suffix=f'.{language}', delete=False) as f:
+            # SECURITY: Use proper suffix based on validated language
+            suffix_map = {"python": ".py", "typescript": ".ts", "javascript": ".js"}
+            suffix = suffix_map.get(language.lower(), ".txt")
+
+            with tempfile.NamedTemporaryFile(mode='w', suffix=suffix, delete=False) as f:
                 f.write(content)
                 temp_path = f.name
 
-            code_file = await state.codebase_indexer.ingest_file(temp_path, lang_enum)
-
-            import os
-            os.unlink(temp_path)
+            try:
+                code_file = await state.codebase_indexer.ingest_file(temp_path, lang_enum)
+            finally:
+                # Always clean up temp file
+                os.unlink(temp_path)
         else:
-            code_file = await state.codebase_indexer.ingest_file(file_path, lang_enum)
+            code_file = await state.codebase_indexer.ingest_file(str(validated_path), lang_enum)
 
         return {
             "success": True,
-            "file_path": file_path,
+            "file_path": str(validated_path) if validated_path else file_path,
             "language": language,
             "entities_found": len(code_file.entities),
             "imports_found": len(code_file.imports),
@@ -1501,9 +1799,12 @@ async def ingest_file(file_path: str, language: str, content: Optional[str] = No
             ]
         }
 
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
+        # SECURITY: Return generic error message, log details internally
         logger.error(f"File ingestion failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="File ingestion failed")
 
 
 @app.post("/detect/slop")

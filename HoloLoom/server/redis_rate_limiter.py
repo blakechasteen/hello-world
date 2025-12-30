@@ -26,6 +26,8 @@ import redis.asyncio as redis
 from fastapi import HTTPException, Request
 from prometheus_client import Counter, Histogram, Gauge
 
+from HoloLoom.utils.security import sanitize_uri
+
 logger = logging.getLogger(__name__)
 
 # ============================================================================
@@ -232,7 +234,7 @@ class RedisRateLimiter:
 
                 self._connected = True
                 redis_connection_status.set(1)
-                logger.info(f"Connected to Redis at {self.redis_url}")
+                logger.info(f"Connected to Redis at {sanitize_uri(self.redis_url)}")
 
                 # Start cleanup task if not running
                 if not self._cleanup_task or self._cleanup_task.done():

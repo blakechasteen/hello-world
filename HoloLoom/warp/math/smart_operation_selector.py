@@ -23,6 +23,7 @@ Date: 2025-10-26
 
 import logging
 import json
+import ast
 from typing import Dict, List, Any, Optional, Callable, Tuple
 from dataclasses import dataclass, field, asdict
 from enum import Enum
@@ -1076,10 +1077,17 @@ class SmartMathOperationSelector(MathOperationSelector):
             with open(self.state_file, 'r') as f:
                 state = json.load(f)
 
-            # Restore learner stats
+            # Restore learner stats (using safe literal_eval instead of eval)
             for key_str, stats_dict in state.get("learner_stats", {}).items():
-                key = eval(key_str)  # Reconstruct tuple
-                self.learner.stats[key] = OperationStatistics(**stats_dict)
+                try:
+                    # Use ast.literal_eval for safe parsing (prevents code injection)
+                    key = ast.literal_eval(key_str)
+                    if not isinstance(key, tuple):
+                        raise ValueError("Key must be tuple")
+                    self.learner.stats[key] = OperationStatistics(**stats_dict)
+                except (ValueError, SyntaxError) as e:
+                    logger.warning(f"Skipping invalid key '{key_str}': {e}")
+                    continue
 
             # Restore test history
             self.tester.test_history = state.get("test_history", [])

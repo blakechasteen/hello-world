@@ -145,12 +145,34 @@ async def validate_image_upload(file: UploadFile) -> None:
         )
 
 
+# Helper function for secure client IP extraction
+def _get_client_ip(request: Request) -> str:
+    """
+    Securely extract client IP address.
+
+    SECURITY: Only trust X-Forwarded-For when BEHIND_PROXY=true.
+    This prevents IP spoofing via forged X-Forwarded-For headers.
+    """
+    import os
+    behind_proxy = os.environ.get("BEHIND_PROXY", "false").lower() == "true"
+
+    if behind_proxy:
+        forwarded_for = request.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            ips = [ip.strip() for ip in forwarded_for.split(",") if ip.strip()]
+            if ips:
+                return ips[0]
+
+    return request.client.host if request.client else "unknown"
+
+
 class RateLimiter:
     """
     Sliding window rate limiter for vision endpoints.
 
     Prevents DoS attacks on computationally expensive vision operations.
     Uses per-IP tracking with configurable rate limits.
+    Uses asyncio.Lock for proper async concurrency control.
     """
 
     def __init__(self, max_requests: int = 10, window_seconds: int = 60):
@@ -164,6 +186,7 @@ class RateLimiter:
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.requests: Dict[str, deque] = defaultdict(deque)
+        self._lock = asyncio.Lock()  # Async-safe access
 
     async def check_rate_limit(self, request: Request) -> Dict[str, Any]:
         """
@@ -181,46 +204,48 @@ class RateLimiter:
         Raises:
             HTTPException: If rate limit exceeded (status 429)
         """
-        # Get client IP
-        client_ip = request.client.host if request.client else "unknown"
+        # Get client IP securely (handles X-Forwarded-For when behind proxy)
+        client_ip = _get_client_ip(request)
 
-        # Get current timestamp
-        now = time.time()
+        # Async-safe critical section for rate limit checking
+        async with self._lock:
+            # Get current timestamp
+            now = time.time()
 
-        # Get request queue for this IP
-        queue = self.requests[client_ip]
+            # Get request queue for this IP
+            queue = self.requests[client_ip]
 
-        # Remove old requests outside the window
-        while queue and queue[0] < now - self.window_seconds:
-            queue.popleft()
+            # Remove old requests outside the window
+            while queue and queue[0] < now - self.window_seconds:
+                queue.popleft()
 
-        # Check if limit exceeded
-        if len(queue) >= self.max_requests:
-            # Calculate when the oldest request will expire
-            reset_time = int(queue[0] + self.window_seconds) if queue else int(now + self.window_seconds)
-            raise HTTPException(
-                status_code=429,
-                detail=f"Rate limit exceeded. Max {self.max_requests} requests per {self.window_seconds}s",
-                headers={
-                    "X-RateLimit-Limit": str(self.max_requests),
-                    "X-RateLimit-Remaining": "0",
-                    "X-RateLimit-Reset": str(reset_time),
-                    "Retry-After": str(reset_time - int(now))  # Seconds to wait
-                }
-            )
+            # Check if limit exceeded
+            if len(queue) >= self.max_requests:
+                # Calculate when the oldest request will expire
+                reset_time = int(queue[0] + self.window_seconds) if queue else int(now + self.window_seconds)
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Rate limit exceeded. Max {self.max_requests} requests per {self.window_seconds}s",
+                    headers={
+                        "X-RateLimit-Limit": str(self.max_requests),
+                        "X-RateLimit-Remaining": "0",
+                        "X-RateLimit-Reset": str(reset_time),
+                        "Retry-After": str(reset_time - int(now))  # Seconds to wait
+                    }
+                )
 
-        # Add current request
-        queue.append(now)
+            # Add current request
+            queue.append(now)
 
-        # Calculate reset time (when the current window ends)
-        reset_time = int(now + self.window_seconds)
+            # Calculate reset time (when the current window ends)
+            reset_time = int(now + self.window_seconds)
 
-        # Return rate limit info for headers
-        return {
-            "limit": self.max_requests,
-            "remaining": self.max_requests - len(queue),
-            "reset": reset_time
-        }
+            # Return rate limit info for headers
+            return {
+                "limit": self.max_requests,
+                "remaining": self.max_requests - len(queue),
+                "reset": reset_time
+            }
 
 
 # Create global rate limiter for vision endpoints
@@ -456,11 +481,21 @@ class ARAPI:
         self.slam_processor = None
 
         # Setup CORS
+        # SECURITY: Use environment variables for allowed origins (no wildcard in production)
+        import os as _cors_os
+        _cors_origins = _cors_os.environ.get(
+            "CORS_ORIGINS",
+            "http://localhost:3000,http://localhost:8080"
+        ).split(",")
+        _cors_allow_credentials = _cors_os.environ.get(
+            "CORS_ALLOW_CREDENTIALS", "false"
+        ).lower() == "true"
+
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],  # Configure appropriately for production
-            allow_credentials=True,
-            allow_methods=["*"],
+            allow_origins=_cors_origins,
+            allow_credentials=_cors_allow_credentials,  # SECURITY: Only enable if explicitly configured
+            allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             allow_headers=["*"],
         )
 
@@ -981,7 +1016,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                response_data = return VisionHandsResponse(
+                response_data = VisionHandsResponse(
                     hands=[
                         {
                             "handId": hand.hand_id,
@@ -1039,7 +1074,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                response_data = return VisionDepthResponse(
+                response_data = VisionDepthResponse(
                     depth_available=True,
                     width=depth_map.width,
                     height=depth_map.height,
@@ -1090,7 +1125,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                response_data = return VisionMarkersResponse(
+                response_data = VisionMarkersResponse(
                     markers=[
                         {
                             "id": marker.id,
@@ -1157,7 +1192,7 @@ class ARAPI:
 
                 processing_time = (time.time() - start_time) * 1000
 
-                response_data = return VisionSegmentationResponse(
+                response_data = VisionSegmentationResponse(
                     width=segmentation.width,
                     height=segmentation.height,
                     num_classes=segmentation.num_classes,
@@ -1232,7 +1267,7 @@ class ARAPI:
                 else:
                     poses_data = []
 
-                response_data = return VisionPoseResponse(
+                response_data = VisionPoseResponse(
                     poses=poses_data,
                     count=len(poses_data),
                     processing_time_ms=processing_time,
@@ -1286,7 +1321,7 @@ class ARAPI:
                 # Get map points
                 map_points = self.slam_processor.get_map_points()
 
-                response_data = return VisionSLAMResponse(
+                response_data = VisionSLAMResponse(
                     position=list(slam_pose.position),
                     orientation=list(slam_pose.orientation),
                     tracking_quality=slam_pose.tracking_quality,

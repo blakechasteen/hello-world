@@ -103,6 +103,11 @@ HoloLoom/frontier_test_output/
 .promptly/
 .xterminator/
 
+# Kubernetes secrets (NEVER commit real credentials)
+infra/kubernetes/secrets.yaml
+**/secrets.yaml
+!**/secrets-template.yaml
+
 # Build artifacts (2025-12)
 build/
 reports/

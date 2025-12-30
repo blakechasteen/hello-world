@@ -25,6 +25,7 @@ View API docs: http://localhost:8000/docs
 Created: 2025-11-20
 """
 
+import asyncio
 import logging
 from typing import Optional, List, Dict, Any
 from datetime import datetime
@@ -63,28 +64,35 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 class RateLimiter:
-    """Simple sliding window rate limiter."""
+    """
+    Simple sliding window rate limiter.
+
+    SECURITY: Uses asyncio.Lock for proper async concurrency control.
+    This prevents race conditions when multiple requests arrive simultaneously.
+    """
 
     def __init__(self, max_requests: int = 100, window_seconds: int = 60):
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.requests: Dict[str, deque] = defaultdict(deque)
+        self._lock = asyncio.Lock()  # SECURITY: Async-safe access
 
     async def check_rate_limit(self, client_id: str) -> bool:
         """Check if client is within rate limit."""
-        now = time()
-        cutoff = now - self.window_seconds
+        async with self._lock:  # SECURITY: Async-safe critical section
+            now = time()
+            cutoff = now - self.window_seconds
 
-        # Remove old requests
-        while self.requests[client_id] and self.requests[client_id][0] < cutoff:
-            self.requests[client_id].popleft()
+            # Remove old requests
+            while self.requests[client_id] and self.requests[client_id][0] < cutoff:
+                self.requests[client_id].popleft()
 
-        # Check limit
-        if len(self.requests[client_id]) >= self.max_requests:
-            return False
+            # Check limit
+            if len(self.requests[client_id]) >= self.max_requests:
+                return False
 
-        self.requests[client_id].append(now)
-        return True
+            self.requests[client_id].append(now)
+            return True
 
     def get_remaining(self, client_id: str) -> int:
         """Get remaining requests for client."""
@@ -203,9 +211,11 @@ app = FastAPI(
 )
 
 # CORS middleware
+# TODO: In production, use environment variable for allowed origins:
+#   ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
+    allow_origins=["http://localhost:3000", "http://localhost:8080"],  # Development origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

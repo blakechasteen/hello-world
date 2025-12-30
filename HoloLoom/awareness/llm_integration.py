@@ -260,36 +260,148 @@ class AnthropicLLM:
     """
     Anthropic Claude integration.
 
-    TODO: Implement when API key is available.
-
     Requires:
         pip install anthropic
         export ANTHROPIC_API_KEY="your-key"
+
+    Models:
+        - claude-3-5-sonnet-20241022 (balanced speed/quality)
+        - claude-3-opus-20240229 (highest quality)
+        - claude-3-haiku-20240307 (fastest)
     """
 
     def __init__(self, model: str = "claude-3-5-sonnet-20241022", api_key: Optional[str] = None):
+        """
+        Initialize Anthropic LLM.
+
+        Args:
+            model: Anthropic model name
+            api_key: Optional API key (defaults to ANTHROPIC_API_KEY env var)
+        """
         self.model = model
         self.api_key = api_key
         self.provider = LLMProvider.ANTHROPIC
+        self.client = None
         self._available = False
 
-        # TODO: Initialize Anthropic client when implemented
-        # try:
-        #     import anthropic
-        #     self.client = anthropic.Anthropic(api_key=api_key)
-        #     self._available = True
-        # except ImportError:
-        #     self.client = None
-        #     self._available = False
+        try:
+            import anthropic
+            import os
+            key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+            if key:
+                self.client = anthropic.Anthropic(api_key=key)
+                self._available = True
+        except ImportError:
+            self.client = None
+            self._available = False
 
     def is_available(self) -> bool:
-        return self._available
+        """Check if Anthropic is available"""
+        return self._available and self.client is not None
 
-    async def generate(self, prompt: str, **kwargs) -> LLMResponse:
-        raise NotImplementedError("Anthropic integration coming soon!")
+    async def generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+        **kwargs
+    ) -> LLMResponse:
+        """
+        Generate completion from Anthropic Claude.
 
-    async def stream_generate(self, prompt: str, **kwargs) -> AsyncIterator[str]:
-        raise NotImplementedError("Anthropic streaming coming soon!")
+        Args:
+            prompt: User prompt
+            system_prompt: Optional system prompt
+            max_tokens: Max tokens to generate
+            temperature: Sampling temperature (0.0-1.0)
+
+        Returns:
+            LLMResponse with generated content
+        """
+        if not self.is_available():
+            raise RuntimeError(
+                "Anthropic not available. Install with: pip install anthropic\n"
+                "Set API key: export ANTHROPIC_API_KEY='your-key'"
+            )
+
+        try:
+            # Build message
+            messages = [{"role": "user", "content": prompt}]
+
+            # Call Anthropic API
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                system=system_prompt if system_prompt else "",
+                messages=messages
+            )
+
+            content = response.content[0].text if response.content else ""
+
+            # Extract usage stats
+            usage = None
+            if hasattr(response, 'usage'):
+                usage = {
+                    'prompt_tokens': response.usage.input_tokens,
+                    'completion_tokens': response.usage.output_tokens,
+                    'total_tokens': response.usage.input_tokens + response.usage.output_tokens
+                }
+
+            return LLMResponse(
+                content=content,
+                provider=self.provider,
+                model=self.model,
+                usage=usage,
+                metadata={
+                    'stop_reason': response.stop_reason,
+                    'model': response.model
+                }
+            )
+
+        except Exception as e:
+            raise RuntimeError(f"Anthropic generation failed: {e}")
+
+    async def stream_generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+        **kwargs
+    ) -> AsyncIterator[str]:
+        """
+        Stream generation from Anthropic Claude token by token.
+
+        Args:
+            prompt: User prompt
+            system_prompt: Optional system prompt
+            max_tokens: Max tokens to generate
+            temperature: Sampling temperature
+
+        Yields:
+            Generated tokens as they arrive
+        """
+        if not self.is_available():
+            raise RuntimeError("Anthropic not available")
+
+        try:
+            messages = [{"role": "user", "content": prompt}]
+
+            # Stream from Anthropic
+            with self.client.messages.stream(
+                model=self.model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                system=system_prompt if system_prompt else "",
+                messages=messages
+            ) as stream:
+                for text in stream.text_stream:
+                    yield text
+
+        except Exception as e:
+            raise RuntimeError(f"Anthropic streaming failed: {e}")
 
 
 class OpenAILLM:
