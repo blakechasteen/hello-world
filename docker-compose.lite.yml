@@ -1,0 +1,121 @@
+# HoloLoom Lite - Single docker-compose that just works
+#
+# Usage:
+#   docker-compose -f docker-compose.lite.yml up -d
+#
+# Services:
+#   - Neo4j (Graph Database): http://localhost:7474 (neo4j/hololoom)
+#   - Qdrant (Vector Database): http://localhost:6333
+#   - HoloLoom API: http://localhost:8000
+#
+# Stop:
+#   docker-compose -f docker-compose.lite.yml down
+#
+# Clean up volumes:
+#   docker-compose -f docker-compose.lite.yml down -v
+
+version: '3.8'
+
+services:
+  # Neo4j Graph Database
+  neo4j:
+    image: neo4j:5.14.0-community
+    container_name: hololoom-lite-neo4j
+    ports:
+      - "7474:7474"  # Browser UI
+      - "7687:7687"  # Bolt protocol
+    environment:
+      - NEO4J_AUTH=neo4j/hololoom
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      - NEO4J_dbms_memory_heap_initial__size=256m
+      - NEO4J_dbms_memory_heap_max__size=1G
+      - NEO4J_dbms_memory_pagecache_size=512m
+    volumes:
+      - hololoom_lite_neo4j:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - hololoom-lite
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:v1.7.4
+    container_name: hololoom-lite-qdrant
+    ports:
+      - "6333:6333"  # REST API
+      - "6334:6334"  # gRPC
+    volumes:
+      - hololoom_lite_qdrant:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:6333/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - hololoom-lite
+
+  # HoloLoom API Server
+  hololoom-api:
+    image: python:3.11-slim
+    container_name: hololoom-lite-api
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      # Memory backend config
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=hololoom
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      # LLM config (optional - uses Ollama if available)
+      - OLLAMA_HOST=${OLLAMA_HOST:-host.docker.internal}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./HoloLoom:/app/HoloLoom:ro
+      - ./demos:/app/demos:ro
+      - ./requirements.txt:/app/requirements.txt:ro
+      - hololoom_lite_cache:/app/.cache
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    networks:
+      - hololoom-lite
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    command: >
+      bash -c "
+        pip install --no-cache-dir torch numpy gymnasium fastapi uvicorn httpx aiohttp &&
+        pip install --no-cache-dir networkx qdrant-client neo4j sentence-transformers &&
+        pip install --no-cache-dir anthropic openai ollama 2>/dev/null || true &&
+        uvicorn HoloLoom.server.agentic_api:app --host 0.0.0.0 --port 8000
+      "
+
+volumes:
+  hololoom_lite_neo4j:
+    driver: local
+  hololoom_lite_qdrant:
+    driver: local
+  hololoom_lite_cache:
+    driver: local
+
+networks:
+  hololoom-lite:
+    driver: bridge
