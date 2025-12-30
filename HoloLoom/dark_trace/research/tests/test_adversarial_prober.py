@@ -114,7 +114,7 @@ class TestGradientProber:
     def test_fgsm_probe(self):
         """Test FGSM probing."""
         from HoloLoom.dark_trace.research.adversarial_prober import (
-            GradientProber, ProbeConfig, ProbeTargetType
+            GradientProber, ProbeConfig
         )
 
         config = ProbeConfig(gradient_steps=5)
@@ -134,7 +134,7 @@ class TestGradientProber:
             feature_idx=42,
             activation_fn=activation_fn,
             gradient_fn=gradient_fn,
-            target_type=ProbeTargetType.SUPPRESS
+            target_type="minimize"  # Suppress = minimize activation
         )
 
         assert result.feature_idx == 42
@@ -145,7 +145,7 @@ class TestGradientProber:
     def test_pgd_probe(self):
         """Test PGD probing."""
         from HoloLoom.dark_trace.research.adversarial_prober import (
-            GradientProber, ProbeConfig, ProbeTargetType
+            GradientProber, ProbeConfig
         )
 
         config = ProbeConfig(gradient_steps=10)
@@ -164,7 +164,7 @@ class TestGradientProber:
             feature_idx=100,
             activation_fn=activation_fn,
             gradient_fn=gradient_fn,
-            target_type=ProbeTargetType.AMPLIFY
+            target_type="maximize"  # Amplify = maximize activation
         )
 
         assert result.feature_idx == 100
