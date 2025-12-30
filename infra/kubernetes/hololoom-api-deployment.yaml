@@ -20,9 +20,12 @@ kind: Secret
 metadata:
   name: hololoom-secrets
   namespace: hololoom
+  annotations:
+    # SECURITY: Replace placeholder before applying
+    # Use: kubectl create secret generic hololoom-secrets --from-literal=NEO4J_PASSWORD="YOUR_PASSWORD" -n hololoom
 type: Opaque
 stringData:
-  NEO4J_PASSWORD: "hololoom123"
+  NEO4J_PASSWORD: "REPLACE_WITH_ACTUAL_PASSWORD"
 
 ---
 apiVersion: v1

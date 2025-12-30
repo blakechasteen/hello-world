@@ -8,7 +8,11 @@ from HoloLoom.protocols instead of defining them locally.
 Import from here for backward compatibility, or import directly from HoloLoom.protocols.
 """
 
+import os
+import logging
 from typing import List, Dict, Optional, Any
+
+from HoloLoom.utils.security import sanitize_uri
 
 # Import canonical types and protocols
 from HoloLoom.protocols import (
@@ -145,7 +149,7 @@ async def create_unified_memory(
             # Try to connect (optional health check)
             try:
                 # TODO: Add actual Neo4j connection test
-                logger.info(f"Neo4j configured at {neo4j_uri}")
+                logger.info(f"Neo4j configured at {sanitize_uri(neo4j_uri)}")
             except Exception as e:
                 enable_neo4j = False
                 logger.warning(f"Neo4j unavailable: {e}")
@@ -159,7 +163,7 @@ async def create_unified_memory(
             # Try to connect (optional health check)
             try:
                 # TODO: Add actual Qdrant connection test
-                logger.info(f"Qdrant configured at {qdrant_url}")
+                logger.info(f"Qdrant configured at {sanitize_uri(qdrant_url)}")
             except Exception as e:
                 enable_qdrant = False
                 logger.warning(f"Qdrant unavailable: {e}")

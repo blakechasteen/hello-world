@@ -37,7 +37,8 @@ services:
       - PORTAL_LOOM_ID=loom-docker
       - PORTAL_HOST=0.0.0.0
       - PORTAL_PORT=8080
-      - PORTAL_SHARED_SECRET=portal-demo-secret-2025
+      # SECURITY: Shared secret from environment - no defaults
+      - PORTAL_SHARED_SECRET=${PORTAL_SHARED_SECRET:?PORTAL_SHARED_SECRET environment variable is required}
       - PORTAL_NODE_TIMEOUT=120
       - PORTAL_LOG_LEVEL=INFO
       - PORTAL_LOG_JSON=false
@@ -67,7 +68,8 @@ services:
       - NODE_HOST=0.0.0.0
       - NODE_PORT=9090
       - NODE_PORTAL_URL=http://portal-server:8080
-      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      # SECURITY: Shared secret from environment - must match PORTAL_SHARED_SECRET
+      - NODE_SHARED_SECRET=${PORTAL_SHARED_SECRET:?PORTAL_SHARED_SECRET environment variable is required}
       - NODE_HEARTBEAT_INTERVAL=30
       - NODE_MAX_JOBS=4
       - NODE_JOB_TIMEOUT=60
@@ -104,7 +106,8 @@ services:
       - NODE_HOST=0.0.0.0
       - NODE_PORT=9090
       - NODE_PORTAL_URL=http://portal-server:8080
-      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      # SECURITY: Shared secret from environment - must match PORTAL_SHARED_SECRET
+      - NODE_SHARED_SECRET=${PORTAL_SHARED_SECRET:?PORTAL_SHARED_SECRET environment variable is required}
       - NODE_HEARTBEAT_INTERVAL=30
       - NODE_MAX_JOBS=4
       - NODE_JOB_TIMEOUT=60
@@ -141,7 +144,8 @@ services:
       - NODE_HOST=0.0.0.0
       - NODE_PORT=9090
       - NODE_PORTAL_URL=http://portal-server:8080
-      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      # SECURITY: Shared secret from environment - must match PORTAL_SHARED_SECRET
+      - NODE_SHARED_SECRET=${PORTAL_SHARED_SECRET:?PORTAL_SHARED_SECRET environment variable is required}
       - NODE_HEARTBEAT_INTERVAL=30
       - NODE_MAX_JOBS=4
       - NODE_JOB_TIMEOUT=60
@@ -178,7 +182,8 @@ services:
       - NODE_HOST=0.0.0.0
       - NODE_PORT=9090
       - NODE_PORTAL_URL=http://portal-server:8080
-      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      # SECURITY: Shared secret from environment - must match PORTAL_SHARED_SECRET
+      - NODE_SHARED_SECRET=${PORTAL_SHARED_SECRET:?PORTAL_SHARED_SECRET environment variable is required}
       - NODE_HEARTBEAT_INTERVAL=30
       - NODE_MAX_JOBS=4
       - NODE_JOB_TIMEOUT=60
@@ -215,7 +220,8 @@ services:
       - NODE_HOST=0.0.0.0
       - NODE_PORT=9090
       - NODE_PORTAL_URL=http://portal-server:8080
-      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      # SECURITY: Shared secret from environment - must match PORTAL_SHARED_SECRET
+      - NODE_SHARED_SECRET=${PORTAL_SHARED_SECRET:?PORTAL_SHARED_SECRET environment variable is required}
       - NODE_HEARTBEAT_INTERVAL=30
       - NODE_MAX_JOBS=4
       - NODE_JOB_TIMEOUT=60
@@ -252,7 +258,8 @@ services:
       - NODE_HOST=0.0.0.0
       - NODE_PORT=9090
       - NODE_PORTAL_URL=http://portal-server:8080
-      - NODE_SHARED_SECRET=portal-demo-secret-2025
+      # SECURITY: Shared secret from environment - must match PORTAL_SHARED_SECRET
+      - NODE_SHARED_SECRET=${PORTAL_SHARED_SECRET:?PORTAL_SHARED_SECRET environment variable is required}
       - NODE_HEARTBEAT_INTERVAL=30
       - NODE_MAX_JOBS=4
       - NODE_JOB_TIMEOUT=60

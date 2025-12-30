@@ -58,7 +58,7 @@ class Neo4jMemoryStore:
         store = Neo4jMemoryStore(
             uri="bolt://localhost:7688",
             username="neo4j",
-            password="beekeeper123"
+            password=os.environ["NEO4J_PASSWORD"]  # Required env var
         )
 
         memory_id = await store.store(memory)
@@ -69,7 +69,7 @@ class Neo4jMemoryStore:
         self,
         uri: str = "bolt://localhost:7688",
         username: str = "neo4j",
-        password: str = "beekeeper123",
+        password: str = "",  # SECURITY: No default - must be set via env or parameter
         database: str = "neo4j"
     ):
         """
@@ -78,9 +78,19 @@ class Neo4jMemoryStore:
         Args:
             uri: Neo4j connection URI
             username: Neo4j username
-            password: Neo4j password
+            password: Neo4j password (REQUIRED - use NEO4J_PASSWORD env var)
             database: Database name
+
+        Raises:
+            ValueError: If password is not provided
         """
+        if not password:
+            password = os.environ.get("NEO4J_PASSWORD", "")
+            if not password:
+                raise ValueError(
+                    "Neo4j password is required. Set NEO4J_PASSWORD environment variable "
+                    "or pass password parameter explicitly."
+                )
         if not NEO4J_AVAILABLE:
             raise ImportError("neo4j package required. Install: pip install neo4j")
 
@@ -466,11 +476,19 @@ if __name__ == "__main__":
     async def demo():
         print("=== Neo4j Memory Store Demo ===\n")
 
-        # Connect to beekeeping Neo4j
+        # Connect to Neo4j (password from environment variable)
+        # SECURITY: Set NEO4J_PASSWORD env var before running
+        import os
+        password = os.environ.get("NEO4J_PASSWORD")
+        if not password:
+            print("ERROR: Set NEO4J_PASSWORD environment variable")
+            print("  export NEO4J_PASSWORD='your-password'")
+            return
+
         store = Neo4jMemoryStore(
             uri="bolt://localhost:7688",
             username="neo4j",
-            password="beekeeper123"
+            password=password
         )
 
         print("✓ Connected to Neo4j\n")

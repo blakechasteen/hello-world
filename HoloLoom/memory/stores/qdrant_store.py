@@ -21,6 +21,7 @@ from typing import Dict, List, Optional, TYPE_CHECKING, Any
 from datetime import datetime
 import hashlib
 
+from HoloLoom.utils.security import sanitize_uri
 from ..protocol import Memory, MemoryQuery, RetrievalResult, Strategy
 
 # Optional qdrant import
@@ -146,7 +147,7 @@ class QdrantMemoryStore:
         # Create collections for each scale
         self._setup_collections()
 
-        logger.info(f"Qdrant store initialized: {self.url} with scales {scales}")
+        logger.info(f"Qdrant store initialized: {sanitize_uri(self.url)} with scales {scales}")
 
     def _initialize_client(self) -> None:
         """Initialize client singleton with connection pooling."""

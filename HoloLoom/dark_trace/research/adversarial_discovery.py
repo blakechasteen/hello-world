@@ -875,3 +875,148 @@ def create_discoverer(
 def create_sensitivity_analyzer() -> FeatureSensitivityAnalyzer:
     """Create a feature sensitivity analyzer."""
     return FeatureSensitivityAnalyzer()
+
+
+# =============================================================================
+# Phase 2 Integration: Adversarial Prober Suite
+# =============================================================================
+
+
+def create_prober_from_discoverer(
+    discoverer: "AdversarialDiscoverer",
+    preset: str = "balanced"
+) -> "AdversarialProber":
+    """
+    Create an AdversarialProber using settings from an existing discoverer.
+
+    This bridges the Phase 1 AdversarialDiscoverer with Phase 2 probing.
+
+    Args:
+        discoverer: Existing AdversarialDiscoverer instance
+        preset: Prober preset ("quick", "balanced", "thorough")
+
+    Returns:
+        AdversarialProber configured with discoverer's settings
+
+    Usage:
+        discoverer = create_discoverer(epsilon=0.1)
+        prober = create_prober_from_discoverer(discoverer, preset="balanced")
+        report = prober.probe_feature(42, test_inputs, activation_fn, gradient_fn)
+    """
+    from HoloLoom.dark_trace.research.adversarial_prober import (
+        AdversarialProber, ProbeConfig
+    )
+
+    # Create config from preset
+    if preset == "quick":
+        config = ProbeConfig.quick()
+    elif preset == "thorough":
+        config = ProbeConfig.thorough()
+    else:
+        config = ProbeConfig.balanced()
+
+    # Inherit epsilon from discoverer
+    config.epsilon = discoverer.config.epsilon
+
+    # Create mock adapter that uses discoverer's methods
+    class DiscovererAdapter:
+        """Adapter to use AdversarialDiscoverer as model adapter."""
+
+        def __init__(self, disc: AdversarialDiscoverer):
+            self._discoverer = disc
+
+        def get_activations(self, inputs: np.ndarray, layer: str = "") -> np.ndarray:
+            """Get activations - returns input unchanged for compatibility."""
+            return inputs
+
+    adapter = DiscovererAdapter(discoverer)
+    return AdversarialProber(config, adapter)
+
+
+def probe_feature_with_catalog(
+    feature_idx: int,
+    test_inputs: np.ndarray,
+    activation_fn: Callable,
+    gradient_fn: Callable,
+    model_version: str = "unknown",
+    catalog_path: Optional[str] = None,
+    preset: str = "balanced"
+) -> Dict[str, Any]:
+    """
+    Probe a feature and automatically catalog the results.
+
+    Convenience function combining probing and persistence.
+
+    Args:
+        feature_idx: SAE feature index to probe
+        test_inputs: Test inputs for probing
+        activation_fn: Function(input) -> activation
+        gradient_fn: Function(input) -> gradient
+        model_version: Model version string for catalog
+        catalog_path: Path for vulnerability catalog (None for in-memory)
+        preset: Prober preset
+
+    Returns:
+        Dictionary with probe results and catalog entry
+
+    Usage:
+        result = probe_feature_with_catalog(
+            feature_idx=42,
+            test_inputs=np.random.randn(10, 384),
+            activation_fn=lambda x: sae.get_feature_activation(x, 42),
+            gradient_fn=lambda x: sae.get_feature_gradient(x, 42),
+            model_version="v1.2.0",
+            catalog_path="./vulnerability_catalog"
+        )
+        print(f"Vulnerability: {result['vulnerability_level']}")
+    """
+    from HoloLoom.dark_trace.research.adversarial_prober import (
+        AdversarialProber, ProbeConfig, create_prober
+    )
+    from HoloLoom.dark_trace.research.adversarial_catalog import (
+        AdversarialCatalog, create_catalog
+    )
+
+    # Create prober with mock adapter
+    class SimpleAdapter:
+        def get_activations(self, inputs, layer=""):
+            return inputs
+
+    if preset == "quick":
+        config = ProbeConfig.quick()
+    elif preset == "thorough":
+        config = ProbeConfig.thorough()
+    else:
+        config = ProbeConfig.balanced()
+
+    prober = AdversarialProber(config, SimpleAdapter())
+
+    # Probe feature
+    report = prober.probe_feature(
+        feature_idx=feature_idx,
+        test_inputs=test_inputs,
+        activation_fn=activation_fn,
+        gradient_fn=gradient_fn
+    )
+
+    # Catalog result
+    catalog = create_catalog(catalog_path)
+
+    catalog_entry = catalog.add_vulnerability(
+        feature_idx=report.feature_idx,
+        model_version=model_version,
+        vulnerability_score=report.vulnerability_score,
+        vulnerability_level=report.vulnerability_level.value,
+        attack_method=report.methods_tried[0] if report.methods_tried else "HYBRID",
+        epsilon=config.epsilon,
+        activation_before=report.activation_before,
+        activation_after=report.activation_after
+    )
+
+    return {
+        "report": report,
+        "catalog_entry": catalog_entry,
+        "vulnerability_level": report.vulnerability_level.value,
+        "vulnerability_score": report.vulnerability_score,
+        "cataloged_id": catalog_entry.id
+    }

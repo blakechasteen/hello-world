@@ -4,12 +4,15 @@ services:
     image: neo4j:5.15.0
     container_name: hololoom-neo4j
     ports:
-      - "7474:7474"  # HTTP
-      - "7687:7687"  # Bolt
+      # SECURITY: Bind to localhost only - access via internal network
+      - "127.0.0.1:7474:7474"  # HTTP (admin only)
+      - "127.0.0.1:7687:7687"  # Bolt (admin only)
     environment:
-      - NEO4J_AUTH=neo4j/hololoom123
+      # SECURITY: Password from environment - no defaults
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:?NEO4J_PASSWORD environment variable is required}
       - NEO4J_PLUGINS=["apoc"]
-      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+      # SECURITY: Whitelist only necessary APOC procedures (not apoc.*)
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.path.*,apoc.cypher.*,apoc.coll.*,apoc.text.*
       - NEO4J_dbms_memory_heap_initial__size=512M
       - NEO4J_dbms_memory_heap_max__size=2G
       - NEO4J_dbms_memory_pagecache_size=1G
@@ -19,7 +22,7 @@ services:
     networks:
       - hololoom
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "hololoom123", "RETURN 1"]
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD}", "RETURN 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,8 +32,9 @@ services:
     image: qdrant/qdrant:v1.7.4
     container_name: hololoom-qdrant
     ports:
-      - "6333:6333"  # HTTP API
-      - "6334:6334"  # gRPC API
+      # SECURITY: Bind to localhost only - access via internal network
+      - "127.0.0.1:6333:6333"  # HTTP API (admin only)
+      - "127.0.0.1:6334:6334"  # gRPC API (admin only)
     environment:
       - QDRANT__SERVICE__HTTP_PORT=6333
       - QDRANT__SERVICE__GRPC_PORT=6334
@@ -57,7 +61,7 @@ services:
     environment:
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER=neo4j
-      - NEO4J_PASSWORD=hololoom123
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - REDIS_HOST=redis
@@ -132,8 +136,10 @@ services:
     image: redis:7.2-alpine
     container_name: hololoom-redis
     ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+      # SECURITY: Bind to localhost only - access via internal network
+      - "127.0.0.1:6379:6379"
+    # SECURITY: Require password authentication
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD environment variable is required}
     volumes:
       - redis_data:/data
     networks:
@@ -180,7 +186,8 @@ services:
       - "3001:3000"  # Grafana UI
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-hololoom_grafana_admin}
+      # SECURITY: No default password - must be set in environment
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?GRAFANA_PASSWORD environment variable is required}
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
       - GF_AUTH_ANONYMOUS_ENABLED=false
     volumes:

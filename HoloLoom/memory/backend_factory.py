@@ -39,6 +39,89 @@ from HoloLoom.alignment.safety_guardrails import (
 
 logger = logging.getLogger(__name__)
 
+
+# =============================================================================
+# SECURITY: URI Sanitization
+# =============================================================================
+
+def sanitize_uri(uri: str) -> str:
+    """
+    SECURITY: Sanitize URI to remove credentials before logging.
+
+    Masks passwords in URIs to prevent credential exposure in logs.
+    Supports common database URI formats (bolt://, neo4j://, redis://, http://).
+
+    Examples:
+        bolt://user:password@localhost:7687 → bolt://user:****@localhost:7687
+        redis://:password@localhost:6379 → redis://:****@localhost:6379
+
+    Args:
+        uri: Connection URI that may contain credentials
+
+    Returns:
+        Sanitized URI with password masked as ****
+    """
+    if not uri:
+        return uri
+
+    try:
+        from urllib.parse import urlparse, urlunparse
+
+        parsed = urlparse(uri)
+
+        # If password present, mask it
+        if parsed.password:
+            # Rebuild netloc with masked password
+            if parsed.username:
+                masked_netloc = f"{parsed.username}:****@{parsed.hostname}"
+            else:
+                # URI like redis://:password@host (no username)
+                masked_netloc = f":****@{parsed.hostname}"
+
+            if parsed.port:
+                masked_netloc += f":{parsed.port}"
+
+            # Rebuild URI with masked password
+            sanitized = urlunparse((
+                parsed.scheme,
+                masked_netloc,
+                parsed.path,
+                parsed.params,
+                parsed.query,
+                parsed.fragment
+            ))
+            return sanitized
+
+        return uri
+    except Exception:
+        # If parsing fails, return generic placeholder
+        return "<uri parsing failed>"
+
+
+def sanitize_error_message(error: str) -> str:
+    """
+    SECURITY: Sanitize error messages to remove potential credentials.
+
+    Removes common patterns that might contain credentials in error strings.
+
+    Args:
+        error: Error message that may contain credentials
+
+    Returns:
+        Sanitized error message
+    """
+    import re
+
+    # Mask patterns like password=xxx, pwd=xxx, pass=xxx
+    error = re.sub(r'(password|passwd|pwd|pass)\s*[=:]\s*[^\s,;]+', r'\1=****', error, flags=re.IGNORECASE)
+
+    # Mask credentials in URIs within error message
+    # Match patterns like bolt://user:password@host
+    error = re.sub(r'(://[^:]+:)[^@]+(@)', r'\1****\2', error)
+
+    return error
+
+
 # Backend availability flags
 try:
     from HoloLoom.memory.graph import KG as NetworkXKG
@@ -535,14 +618,16 @@ def _try_init_neo4j(config: Config) -> tuple[Any, Optional[str]]:
         # Verify connection with health check
         health = neo4j.health_check()
         if health['status'] == 'healthy':
-            print(f"[OK] [Neo4j] Connected: {config.neo4j_uri}")
+            # SECURITY: Sanitize URI before logging to mask any credentials
+            print(f"[OK] [Neo4j] Connected: {sanitize_uri(config.neo4j_uri)}")
             logger.info(f"Neo4j connection pool established with {neo4j_config.max_connection_pool_size} connections")
         else:
             logger.warning(f"Neo4j unhealthy: {health}")
 
         return neo4j, None
     except Exception as e:
-        error_msg = str(e)
+        # SECURITY: Sanitize error message to remove potential credentials
+        error_msg = sanitize_error_message(str(e))
         warnings.warn(f"[WARN] Neo4j connection failed: {error_msg}")
         return None, error_msg
 
@@ -589,7 +674,8 @@ def _try_init_qdrant(config: Config) -> tuple[Any, Optional[str]]:
 
         return qdrant, None
     except Exception as e:
-        error_msg = str(e)
+        # SECURITY: Sanitize error message to remove potential credentials
+        error_msg = sanitize_error_message(str(e))
         warnings.warn(f"[WARN] Qdrant connection failed: {error_msg}")
         return None, error_msg
 

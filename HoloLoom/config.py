@@ -466,9 +466,10 @@ class Config:
     dream_pattern_bleed_rate: float = 0.2
 
     # Neo4j Configuration (auto-read from env)
+    # SECURITY: NEO4J_PASSWORD has no default - must be set via environment variable
     neo4j_uri: str = field(default_factory=lambda: os.getenv("NEO4J_URI", "bolt://localhost:7687"))
     neo4j_username: str = field(default_factory=lambda: os.getenv("NEO4J_USERNAME", "neo4j"))
-    neo4j_password: str = field(default_factory=lambda: os.getenv("NEO4J_PASSWORD", "hololoom123"))
+    neo4j_password: str = field(default_factory=lambda: os.getenv("NEO4J_PASSWORD", ""))
     neo4j_database: str = "neo4j"
 
     # Qdrant Configuration (auto-read from env)

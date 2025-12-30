@@ -65,6 +65,111 @@ except ImportError:
 
 
 # ============================================================================
+# Environment Variable Bounds Validation
+# ============================================================================
+
+def _get_bounded_int_env(
+    name: str,
+    default: int,
+    min_val: int,
+    max_val: int
+) -> int:
+    """
+    SECURITY: Parse integer environment variable with bounds validation.
+
+    Prevents resource exhaustion or denial of service via malicious environment
+    variable configuration (e.g., pool_size=999999999 causing OOM).
+
+    Args:
+        name: Environment variable name
+        default: Default value if not set
+        min_val: Minimum allowed value (inclusive)
+        max_val: Maximum allowed value (inclusive)
+
+    Returns:
+        Bounded integer value
+
+    Raises:
+        ValueError: If value cannot be parsed as integer
+    """
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+
+    try:
+        value = int(raw)
+    except ValueError:
+        logger.warning(
+            f"SECURITY: Invalid integer for {name}='{raw}', using default {default}"
+        )
+        return default
+
+    if value < min_val:
+        logger.warning(
+            f"SECURITY: {name}={value} below minimum {min_val}, clamping to {min_val}"
+        )
+        return min_val
+    if value > max_val:
+        logger.warning(
+            f"SECURITY: {name}={value} above maximum {max_val}, clamping to {max_val}"
+        )
+        return max_val
+
+    return value
+
+
+def _get_bounded_float_env(
+    name: str,
+    default: float,
+    min_val: float,
+    max_val: float
+) -> float:
+    """
+    SECURITY: Parse float environment variable with bounds validation.
+
+    Prevents resource exhaustion or denial of service via malicious environment
+    variable configuration (e.g., timeout=0 causing immediate failures or
+    timeout=999999 causing hung connections).
+
+    Args:
+        name: Environment variable name
+        default: Default value if not set
+        min_val: Minimum allowed value (inclusive)
+        max_val: Maximum allowed value (inclusive)
+
+    Returns:
+        Bounded float value
+
+    Raises:
+        ValueError: If value cannot be parsed as float
+    """
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+
+    try:
+        value = float(raw)
+    except ValueError:
+        logger.warning(
+            f"SECURITY: Invalid float for {name}='{raw}', using default {default}"
+        )
+        return default
+
+    if value < min_val:
+        logger.warning(
+            f"SECURITY: {name}={value} below minimum {min_val}, clamping to {min_val}"
+        )
+        return min_val
+    if value > max_val:
+        logger.warning(
+            f"SECURITY: {name}={value} above maximum {max_val}, clamping to {max_val}"
+        )
+        return max_val
+
+    return value
+
+
+# ============================================================================
 # Configuration
 # ============================================================================
 
@@ -80,18 +185,22 @@ class Neo4jConfig:
         connection_timeout: Network timeout for connections (default: 30s)
         max_connection_lifetime: Max lifetime of pooled connection (default: 1h)
 
-    Environment Variables:
+    Environment Variables (REQUIRED):
         NEO4J_URI: Database URI (default: bolt://localhost:7687)
         NEO4J_USERNAME: Username (default: neo4j)
-        NEO4J_PASSWORD: Password (default: hololoom123)
+        NEO4J_PASSWORD: Password (REQUIRED - no default)
         NEO4J_DATABASE: Database name (default: neo4j)
         NEO4J_POOL_SIZE: Max pool size (default: 50)
         NEO4J_TIMEOUT: Connection timeout in seconds (default: 30)
         NEO4J_RETRY_TIME: Max transaction retry time (default: 15)
+
+    Security Note:
+        Password must be provided via environment variable or explicit parameter.
+        No hardcoded default is provided for security reasons.
     """
     uri: str = "bolt://localhost:7687"
     username: str = "neo4j"
-    password: str = "hololoom123"
+    password: str = ""  # SECURITY: No default - must be set via env or parameter
     database: str = "neo4j"
     max_connection_lifetime: int = 3600  # 1 hour
     max_connection_pool_size: int = 50
@@ -104,17 +213,50 @@ class Neo4jConfig:
 
     @classmethod
     def from_env(cls) -> 'Neo4jConfig':
-        """Load config from environment variables with pooling settings."""
+        """Load config from environment variables with pooling settings.
+
+        SECURITY: All numeric values are bounds-validated to prevent:
+        - Resource exhaustion (e.g., pool_size=999999999)
+        - Denial of service (e.g., timeout=0 or timeout=infinity)
+        - Invalid configurations that could crash the system
+
+        Bounds:
+            NEO4J_POOL_SIZE: 1-1000 (default: 50)
+            NEO4J_TIMEOUT: 1-300 seconds (default: 30)
+            NEO4J_ACQUISITION_TIMEOUT: 1-300 seconds (default: 30)
+            NEO4J_RETRY_TIME: 1-120 seconds (default: 15)
+            NEO4J_LIFETIME: 60-86400 seconds (default: 3600)
+
+        Raises:
+            ValueError: If NEO4J_PASSWORD environment variable is not set.
+        """
+        password = os.getenv("NEO4J_PASSWORD")
+        if not password:
+            raise ValueError(
+                "NEO4J_PASSWORD environment variable is required. "
+                "Set it before connecting to Neo4j: export NEO4J_PASSWORD='your-password'"
+            )
         return cls(
             uri=os.getenv("NEO4J_URI", "bolt://localhost:7687"),
             username=os.getenv("NEO4J_USERNAME", "neo4j"),
-            password=os.getenv("NEO4J_PASSWORD", "hololoom123"),
+            password=password,
             database=os.getenv("NEO4J_DATABASE", "neo4j"),
-            max_connection_pool_size=int(os.getenv("NEO4J_POOL_SIZE", "50")),
-            connection_timeout=float(os.getenv("NEO4J_TIMEOUT", "30")),
-            connection_acquisition_timeout=float(os.getenv("NEO4J_ACQUISITION_TIMEOUT", "30")),
-            max_transaction_retry_time=float(os.getenv("NEO4J_RETRY_TIME", "15")),
-            max_connection_lifetime=int(os.getenv("NEO4J_LIFETIME", "3600")),
+            # SECURITY: Bounded env var parsing prevents resource exhaustion
+            max_connection_pool_size=_get_bounded_int_env(
+                "NEO4J_POOL_SIZE", default=50, min_val=1, max_val=1000
+            ),
+            connection_timeout=_get_bounded_float_env(
+                "NEO4J_TIMEOUT", default=30.0, min_val=1.0, max_val=300.0
+            ),
+            connection_acquisition_timeout=_get_bounded_float_env(
+                "NEO4J_ACQUISITION_TIMEOUT", default=30.0, min_val=1.0, max_val=300.0
+            ),
+            max_transaction_retry_time=_get_bounded_float_env(
+                "NEO4J_RETRY_TIME", default=15.0, min_val=1.0, max_val=120.0
+            ),
+            max_connection_lifetime=_get_bounded_int_env(
+                "NEO4J_LIFETIME", default=3600, min_val=60, max_val=86400
+            ),
             enable_metrics=os.getenv("NEO4J_ENABLE_METRICS", "true").lower() == "true",
         )
 
@@ -597,13 +739,22 @@ class Neo4jKG:
         Returns:
             Set of neighbor entity names
         """
-        # Build direction pattern
+        # SECURITY: Validate max_hops to prevent Cypher injection
+        # Neo4j doesn't support parameterized hop counts, so we must validate input
+        if not isinstance(max_hops, int) or max_hops < 1 or max_hops > 10:
+            raise ValueError(f"max_hops must be integer between 1-10, got: {max_hops}")
+
+        # SECURITY: Validate direction is one of allowed values
+        if direction not in ("out", "in", "both"):
+            raise ValueError(f"direction must be 'out', 'in', or 'both', got: {direction}")
+
+        # Build direction pattern (safe after validation)
         if direction == "out":
-            pattern = "-[*1..{}]->".format(max_hops)
+            pattern = f"-[*1..{max_hops}]->"
         elif direction == "in":
-            pattern = "<-[*1..{}]-".format(max_hops)
+            pattern = f"<-[*1..{max_hops}]-"
         else:  # both
-            pattern = "-[*1..{}]-".format(max_hops)
+            pattern = f"-[*1..{max_hops}]-"
 
         query = f"""
         MATCH (e:Entity {{name: $entity}}){pattern}(neighbor)
@@ -637,26 +788,10 @@ class Neo4jKG:
         if not entities:
             return nx.MultiDiGraph()
 
-        # Build query based on expansion
-        if expand:
-            pattern = f"-[r*0..{max_hops}]-"
-        else:
-            pattern = ""
-
-        query = f"""
-        MATCH (e:Entity)
-        WHERE e.name IN $entities
-        {"OPTIONAL MATCH (e)" + pattern + "(neighbor)" if expand else ""}
-        {"WITH e, neighbor, relationships(p) AS rels" if expand else ""}
-        {"UNWIND rels AS r" if expand else ""}
-        RETURN DISTINCT
-            {"startNode(r).name AS src," if expand else "e.name AS src,"}
-            {"endNode(r).name AS dst," if expand else "null AS dst,"}
-            {"r.type AS type," if expand else "null AS type,"}
-            {"r.weight AS weight," if expand else "null AS weight,"}
-            {"r.span_id AS span_id," if expand else "null AS span_id,"}
-            {"properties(r) AS metadata" if expand else "{} AS metadata"}
-        """
+        # SECURITY: Validate max_hops to prevent Cypher injection
+        # Neo4j doesn't support parameterized hop counts, so we must validate input
+        if not isinstance(max_hops, int) or max_hops < 0 or max_hops > 10:
+            raise ValueError(f"max_hops must be integer between 0-10, got: {max_hops}")
 
         # Simpler query for non-expanded case
         if not expand:
@@ -667,8 +802,9 @@ class Neo4jKG:
                    null AS weight, null AS span_id, {} AS metadata
             """
         else:
-            query = """
-            MATCH path = (e:Entity)-[r*0..{}]-(neighbor)
+            # SECURITY: max_hops is validated above (integer 0-10), safe to interpolate
+            query = f"""
+            MATCH path = (e:Entity)-[r*0..{max_hops}]-(neighbor)
             WHERE e.name IN $entities
             UNWIND relationships(path) AS rel
             RETURN DISTINCT
@@ -678,7 +814,7 @@ class Neo4jKG:
                 rel.weight AS weight,
                 rel.span_id AS span_id,
                 properties(rel) AS metadata
-            """.format(max_hops)
+            """
 
         G = nx.MultiDiGraph()
 
@@ -742,16 +878,22 @@ class Neo4jKG:
         Args:
             src: Source entity
             dst: Destination entity
-            max_length: Maximum path length
+            max_length: Maximum path length (1-10, validated)
 
         Returns:
             List of paths (each path is a list of entity names)
         """
-        query = """
-        MATCH path = (src:Entity {name: $src})-[*1..{}]->(dst:Entity {name: $dst})
+        # SECURITY: Validate max_length to prevent Cypher injection
+        # Neo4j doesn't support parameterized path lengths, so we must validate input
+        if not isinstance(max_length, int) or max_length < 1 or max_length > 10:
+            raise ValueError(f"max_length must be integer between 1-10, got: {max_length}")
+
+        # SECURITY: max_length is validated above (integer 1-10), safe to interpolate
+        query = f"""
+        MATCH path = (src:Entity {{name: $src}})-[*1..{max_length}]->(dst:Entity {{name: $dst}})
         RETURN [node IN nodes(path) | node.name] AS path
         LIMIT 100
-        """.format(max_length)
+        """
 
         with self.driver.session(database=self.config.database) as session:
             result = session.run(query, src=src, dst=dst)

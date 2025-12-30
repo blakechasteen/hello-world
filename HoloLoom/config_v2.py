@@ -112,11 +112,14 @@ def _detect_llm() -> tuple[Optional[str], Optional[str]]:
 
 
 def _detect_neo4j() -> tuple[str, str, str]:
-    """Auto-detect Neo4j settings from environment."""
+    """Auto-detect Neo4j settings from environment.
+
+    SECURITY: NEO4J_PASSWORD has no default - must be set via environment variable.
+    """
     return (
         os.getenv("NEO4J_URI", "bolt://localhost:7687"),
         os.getenv("NEO4J_USERNAME", "neo4j"),
-        os.getenv("NEO4J_PASSWORD", "hololoom123")
+        os.getenv("NEO4J_PASSWORD", "")  # SECURITY: No default - require env var
     )
 
 

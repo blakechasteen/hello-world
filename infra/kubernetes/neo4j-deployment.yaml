@@ -118,6 +118,9 @@ kind: Secret
 metadata:
   name: neo4j-secrets
   namespace: hololoom
+  annotations:
+    # SECURITY: Replace placeholder before applying
+    # Use: kubectl create secret generic neo4j-secrets --from-literal=auth="neo4j/YOUR_PASSWORD" -n hololoom
 type: Opaque
 stringData:
-  auth: "neo4j/hololoom123"
+  auth: "neo4j/REPLACE_WITH_ACTUAL_PASSWORD"

@@ -93,7 +93,7 @@ class HybridNeo4jQdrant:
         self,
         neo4j_uri: str = "bolt://localhost:7687",
         neo4j_user: str = "neo4j",
-        neo4j_password: str = "hololoom123",
+        neo4j_password: str = "",  # SECURITY: No default - must be set via env or parameter
         qdrant_url: str = "http://localhost:6333",
         embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
         vector_dim: int = 384,
@@ -105,12 +105,25 @@ class HybridNeo4jQdrant:
         Args:
             neo4j_uri: Neo4j bolt URI
             neo4j_user: Neo4j username
-            neo4j_password: Neo4j password
+            neo4j_password: Neo4j password (REQUIRED - use NEO4J_PASSWORD env var)
             qdrant_url: Qdrant HTTP URL
             embedding_model: SentenceTransformer model
             vector_dim: Embedding dimension
             collection_name: Qdrant collection name
+
+        Raises:
+            ValueError: If neo4j_password is not provided
         """
+        # SECURITY: Require password (no hardcoded defaults)
+        import os
+        if not neo4j_password:
+            neo4j_password = os.environ.get("NEO4J_PASSWORD", "")
+            if not neo4j_password:
+                raise ValueError(
+                    "Neo4j password is required. Set NEO4J_PASSWORD environment variable "
+                    "or pass neo4j_password parameter explicitly."
+                )
+
         # Neo4j setup
         self.neo4j_driver = GraphDatabase.driver(
             neo4j_uri,
