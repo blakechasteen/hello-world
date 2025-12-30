@@ -15,7 +15,7 @@ Research Basis:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Any, Tuple, Set
+from typing import Dict, List, Optional, Any, Tuple, Set, TYPE_CHECKING
 import numpy as np
 
 try:
@@ -26,6 +26,14 @@ except ImportError:
     TORCH_AVAILABLE = False
     torch = None
     nn = None
+
+if TYPE_CHECKING:
+    from HoloLoom.dark_trace.multilayer.causal_metrics import (
+        CausalStrengthEstimator,
+        TransferEntropyEstimator,
+        CausalStrengthResult,
+        TransferEntropyResult,
+    )
 
 
 class FlowDirection(Enum):
@@ -830,6 +838,349 @@ class InformationFlowAnalyzer:
             lines.append(f"Primary bottleneck: Layer {result.bottleneck_layer}")
 
         return "\n".join(lines)
+
+    # =============================================================================
+    # Integration with CausalMetrics (Pearl's do-calculus, Transfer Entropy)
+    # =============================================================================
+
+    def analyze_causal_strength(
+        self,
+        source_layer: int,
+        target_layer: int,
+        test_inputs: Any,
+        intervention_features: Optional[List[int]] = None,
+        n_interventions: int = 10,
+    ) -> Dict[str, Any]:
+        """
+        Analyze causal strength between layers using Pearl's do-calculus.
+
+        Uses interventional analysis to measure true causal effects rather
+        than mere correlations. This distinguishes causal mechanisms from
+        spurious correlations.
+
+        Args:
+            source_layer: Source layer index
+            target_layer: Target layer index
+            test_inputs: Input data for intervention analysis
+            intervention_features: Specific features to intervene on (default: auto-select)
+            n_interventions: Number of interventions to perform
+
+        Returns:
+            Dict containing causal strength results with:
+            - causal_effect: Average causal effect magnitude
+            - confidence_interval: (lower, upper) confidence bounds
+            - intervention_results: Per-feature intervention outcomes
+            - significant_features: Features with significant causal effects
+        """
+        from HoloLoom.dark_trace.multilayer.causal_metrics import (
+            CausalStrengthEstimator,
+            CausalStrengthResult,
+        )
+
+        # Get multi-layer features
+        multi_features = self.manager.encode_all_layers(
+            test_inputs, [source_layer, target_layer]
+        )
+
+        source_features = multi_features.layer_features.get(source_layer)
+        target_features = multi_features.layer_features.get(target_layer)
+
+        if source_features is None or target_features is None:
+            return {
+                "causal_effect": 0.0,
+                "confidence_interval": (0.0, 0.0),
+                "intervention_results": [],
+                "significant_features": [],
+                "error": "Could not extract features for specified layers",
+            }
+
+        # Convert to numpy for estimator
+        if TORCH_AVAILABLE and isinstance(source_features, torch.Tensor):
+            source_np = source_features.detach().cpu().numpy()
+            target_np = target_features.detach().cpu().numpy()
+        else:
+            source_np = np.array(source_features)
+            target_np = np.array(target_features)
+
+        # Auto-select intervention features if not specified
+        if intervention_features is None:
+            # Select top active features by variance
+            variances = np.var(source_np, axis=0)
+            active_mask = source_np.max(axis=0) > 0
+            variances[~active_mask] = -1
+            intervention_features = list(
+                np.argsort(variances)[-min(n_interventions, 20):]
+            )
+
+        # Create causal estimator
+        estimator = CausalStrengthEstimator()
+
+        # Estimate causal effects
+        result: CausalStrengthResult = estimator.estimate(
+            source_activations=source_np,
+            target_activations=target_np,
+            intervention_indices=intervention_features,
+        )
+
+        return {
+            "causal_effect": result.causal_effect,
+            "confidence_interval": result.confidence_interval,
+            "intervention_results": result.intervention_results,
+            "significant_features": [
+                f"L{source_layer}.{idx}"
+                for idx, effect in result.intervention_results
+                if abs(effect) > 0.1
+            ],
+            "source_layer": source_layer,
+            "target_layer": target_layer,
+            "n_interventions": len(intervention_features),
+        }
+
+    def compute_transfer_entropy_detailed(
+        self,
+        source_layer: int,
+        target_layer: int,
+        test_inputs: Any,
+        history_length: int = 3,
+        n_bins: int = 10,
+    ) -> Dict[str, Any]:
+        """
+        Compute detailed transfer entropy between layers.
+
+        Transfer entropy measures directional information flow:
+        T(X→Y) = H(Y_future | Y_past) - H(Y_future | Y_past, X_past)
+
+        This quantifies how much knowing the source reduces uncertainty
+        about the target's future state.
+
+        Args:
+            source_layer: Source layer index
+            target_layer: Target layer index
+            test_inputs: Input data (should have temporal structure)
+            history_length: Number of past timesteps to consider
+            n_bins: Number of bins for entropy estimation
+
+        Returns:
+            Dict containing transfer entropy results with:
+            - transfer_entropy: Bits transferred from source to target
+            - normalized_te: TE normalized by target entropy
+            - significance: Statistical significance p-value
+            - direction_ratio: T(source→target) / T(target→source)
+            - is_significant: Whether TE is statistically significant
+        """
+        from HoloLoom.dark_trace.multilayer.causal_metrics import (
+            TransferEntropyEstimator,
+            TransferEntropyResult,
+        )
+
+        # Get multi-layer features
+        multi_features = self.manager.encode_all_layers(
+            test_inputs, [source_layer, target_layer]
+        )
+
+        source_features = multi_features.layer_features.get(source_layer)
+        target_features = multi_features.layer_features.get(target_layer)
+
+        if source_features is None or target_features is None:
+            return {
+                "transfer_entropy": 0.0,
+                "normalized_te": 0.0,
+                "significance": 1.0,
+                "direction_ratio": 1.0,
+                "is_significant": False,
+                "error": "Could not extract features for specified layers",
+            }
+
+        # Convert to numpy
+        if TORCH_AVAILABLE and isinstance(source_features, torch.Tensor):
+            source_np = source_features.detach().cpu().numpy()
+            target_np = target_features.detach().cpu().numpy()
+        else:
+            source_np = np.array(source_features)
+            target_np = np.array(target_features)
+
+        # Use mean activation as summary signal
+        source_signal = source_np.mean(axis=1) if source_np.ndim > 1 else source_np
+        target_signal = target_np.mean(axis=1) if target_np.ndim > 1 else target_np
+
+        # Create transfer entropy estimator
+        estimator = TransferEntropyEstimator(
+            history_length=history_length,
+            n_bins=n_bins,
+        )
+
+        # Compute transfer entropy both directions
+        result_forward: TransferEntropyResult = estimator.estimate(
+            source_signal=source_signal,
+            target_signal=target_signal,
+        )
+
+        result_backward: TransferEntropyResult = estimator.estimate(
+            source_signal=target_signal,
+            target_signal=source_signal,
+        )
+
+        # Compute direction ratio (asymmetry of information flow)
+        forward_te = max(result_forward.transfer_entropy, 1e-10)
+        backward_te = max(result_backward.transfer_entropy, 1e-10)
+        direction_ratio = forward_te / backward_te
+
+        return {
+            "transfer_entropy": result_forward.transfer_entropy,
+            "normalized_te": result_forward.normalized_te,
+            "significance": result_forward.significance,
+            "is_significant": result_forward.is_significant,
+            "direction_ratio": direction_ratio,
+            "reverse_te": result_backward.transfer_entropy,
+            "source_layer": source_layer,
+            "target_layer": target_layer,
+            "dominant_direction": (
+                f"L{source_layer}→L{target_layer}"
+                if direction_ratio > 1.5
+                else f"L{target_layer}→L{source_layer}"
+                if direction_ratio < 0.67
+                else "bidirectional"
+            ),
+        }
+
+    def get_causal_flow_analysis(
+        self,
+        test_inputs: Any,
+        layers: Optional[List[int]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Perform comprehensive causal flow analysis across all layer pairs.
+
+        Combines:
+        - Pearl's do-calculus for causal strength estimation
+        - Transfer entropy for directional information flow
+        - Standard information flow metrics
+
+        Args:
+            test_inputs: Input data for analysis
+            layers: Specific layers to analyze (default: all)
+
+        Returns:
+            Dict containing comprehensive causal flow analysis:
+            - layer_pairs: Per-pair causal analysis results
+            - causal_graph: Adjacency dict of significant causal connections
+            - dominant_pathways: Strongest causal pathways through network
+            - information_hubs: Layers that are causal hubs
+        """
+        if layers is None:
+            layers = list(range(self.manager.n_layers))
+
+        causal_results = {}
+        te_results = {}
+
+        # Analyze each adjacent layer pair
+        for i in range(len(layers) - 1):
+            source_layer = layers[i]
+            target_layer = layers[i + 1]
+            pair_key = (source_layer, target_layer)
+
+            # Causal strength analysis
+            causal_results[pair_key] = self.analyze_causal_strength(
+                source_layer=source_layer,
+                target_layer=target_layer,
+                test_inputs=test_inputs,
+            )
+
+            # Transfer entropy analysis
+            te_results[pair_key] = self.compute_transfer_entropy_detailed(
+                source_layer=source_layer,
+                target_layer=target_layer,
+                test_inputs=test_inputs,
+            )
+
+        # Build causal graph (significant connections only)
+        causal_graph: Dict[int, List[Tuple[int, float]]] = {l: [] for l in layers}
+        for (src, tgt), result in causal_results.items():
+            if result.get("causal_effect", 0) > 0.1:
+                causal_graph[src].append((tgt, result["causal_effect"]))
+
+        # Identify dominant pathways
+        dominant_pathways = []
+        for start_layer in layers[:len(layers) // 2]:  # Start from early layers
+            pathway = [start_layer]
+            current = start_layer
+
+            while current in causal_graph and causal_graph[current]:
+                # Follow strongest outgoing edge
+                next_edges = causal_graph[current]
+                if not next_edges:
+                    break
+                next_layer = max(next_edges, key=lambda x: x[1])[0]
+                if next_layer in pathway:  # Avoid cycles
+                    break
+                pathway.append(next_layer)
+                current = next_layer
+
+            if len(pathway) > 2:
+                pathway_strength = sum(
+                    causal_results.get((pathway[i], pathway[i + 1]), {}).get(
+                        "causal_effect", 0
+                    )
+                    for i in range(len(pathway) - 1)
+                ) / (len(pathway) - 1)
+                dominant_pathways.append({
+                    "pathway": pathway,
+                    "strength": pathway_strength,
+                    "length": len(pathway),
+                })
+
+        dominant_pathways.sort(key=lambda p: p["strength"], reverse=True)
+
+        # Identify information hubs (high in/out degree in causal graph)
+        hub_scores = {}
+        for layer in layers:
+            # Outgoing causal strength
+            out_strength = sum(e[1] for e in causal_graph.get(layer, []))
+
+            # Incoming causal strength
+            in_strength = sum(
+                e[1]
+                for src_layer, edges in causal_graph.items()
+                for tgt, e_strength in [(e[0], e[1]) for e in edges]
+                if tgt == layer
+                for e in [(tgt, e_strength)]
+            )
+
+            hub_scores[layer] = {
+                "out_strength": out_strength,
+                "in_strength": in_strength,
+                "total": out_strength + in_strength,
+            }
+
+        information_hubs = sorted(
+            hub_scores.items(),
+            key=lambda x: x[1]["total"],
+            reverse=True,
+        )[:5]
+
+        return {
+            "layer_pairs": {
+                f"L{src}→L{tgt}": {
+                    "causal": causal_results.get((src, tgt), {}),
+                    "transfer_entropy": te_results.get((src, tgt), {}),
+                }
+                for src, tgt in causal_results.keys()
+            },
+            "causal_graph": {
+                str(k): [(str(t), s) for t, s in v]
+                for k, v in causal_graph.items()
+            },
+            "dominant_pathways": dominant_pathways[:5],
+            "information_hubs": [
+                {"layer": layer, **scores}
+                for layer, scores in information_hubs
+            ],
+            "n_layers_analyzed": len(layers),
+            "n_significant_connections": sum(
+                1 for r in causal_results.values()
+                if r.get("causal_effect", 0) > 0.1
+            ),
+        }
 
 
 # Convenience function

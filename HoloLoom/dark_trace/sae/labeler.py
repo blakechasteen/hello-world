@@ -22,9 +22,21 @@ import json
 import hashlib
 import asyncio
 from datetime import datetime
+import logging
 
 import torch
 import numpy as np
+
+# Optional: UnifiedLLMClient for multi-provider support
+try:
+    from HoloLoom.llm.unified_client import UnifiedLLMClient, LLMConfig
+    HAS_UNIFIED_CLIENT = True
+except ImportError:
+    HAS_UNIFIED_CLIENT = False
+    UnifiedLLMClient = None
+    LLMConfig = None
+
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -502,25 +514,53 @@ Description:"""
         llm_provider: str = "ollama",
         llm_model: str = "llama3.2:3b",
         llm_call_fn: Optional[Callable[[str], str]] = None,
+        unified_client: Optional["UnifiedLLMClient"] = None,
         semantic_axes: Optional[Dict[str, np.ndarray]] = None,
         cache_dir: Optional[Path] = None,
         top_k_examples: int = 10,
         prompt_template: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
     ):
         """
         Args:
-            llm_provider: LLM provider ("ollama", "anthropic", "openai")
+            llm_provider: LLM provider ("ollama", "anthropic", "openai", "google")
             llm_model: Model name for the provider
             llm_call_fn: Optional custom function for LLM calls
+            unified_client: Optional UnifiedLLMClient instance (recommended)
             semantic_axes: Dict of semantic axis name -> direction vector
             cache_dir: Directory for label cache
             top_k_examples: Number of top examples per feature
             prompt_template: Custom prompt template
+            max_tokens: Maximum tokens for LLM generation
+            temperature: LLM sampling temperature
         """
         self.llm_provider = llm_provider
         self.llm_model = llm_model
         self.llm_call_fn = llm_call_fn
         self.prompt_template = prompt_template or self.DEFAULT_PROMPT_TEMPLATE
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+
+        # UnifiedLLMClient for multi-provider support with fallback
+        self._unified_client = unified_client
+        if self._unified_client is None and HAS_UNIFIED_CLIENT:
+            # Auto-create unified client with configured provider
+            try:
+                primary_config = LLMConfig(provider=llm_provider, model=llm_model)
+                # Fallback to Ollama if primary fails
+                fallbacks = []
+                if llm_provider != "ollama":
+                    fallbacks.append(LLMConfig(provider="ollama", model="llama3.2:3b"))
+                self._unified_client = UnifiedLLMClient(
+                    primary=primary_config,
+                    fallbacks=fallbacks,
+                    enable_cost_tracking=True
+                )
+                logger.info(f"Created UnifiedLLMClient with {llm_provider}/{llm_model}")
+            except Exception as e:
+                logger.warning(f"Failed to create UnifiedLLMClient: {e}. Using legacy method.")
+                self._unified_client = None
 
         # Components
         self.analyzer = ActivationPatternAnalyzer(top_k=top_k_examples)
@@ -682,7 +722,30 @@ Description:"""
         return description.strip()
 
     async def _default_llm_call(self, prompt: str) -> str:
-        """Default LLM call implementation using ollama."""
+        """
+        Default LLM call implementation using UnifiedLLMClient.
+
+        Uses multi-provider client with automatic fallback if available,
+        otherwise falls back to direct ollama calls.
+        """
+        # Try UnifiedLLMClient first (supports multiple providers with fallback)
+        if self._unified_client is not None:
+            try:
+                response = await self._unified_client.complete(
+                    prompt=prompt,
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                )
+                logger.debug(
+                    f"LLM call: {response.model}, "
+                    f"{response.output_tokens} tokens, "
+                    f"${response.cost_estimate.total_cost_usd:.4f}" if response.cost_estimate else ""
+                )
+                return response.content
+            except Exception as e:
+                logger.warning(f"UnifiedLLMClient failed: {e}. Trying legacy method.")
+
+        # Fallback to direct ollama call (legacy behavior)
         try:
             import ollama
             response = ollama.chat(
@@ -691,7 +754,7 @@ Description:"""
             )
             return response["message"]["content"]
         except ImportError:
-            return "[LLM not available - install ollama package]"
+            return "[LLM not available - install ollama package or use UnifiedLLMClient]"
         except Exception as e:
             return f"[LLM error: {e}]"
 

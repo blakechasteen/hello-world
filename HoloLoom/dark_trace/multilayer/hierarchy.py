@@ -11,11 +11,21 @@ Research Basis:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Tuple, Set
+from typing import Dict, List, Optional, Any, Tuple, Set, TYPE_CHECKING
 from enum import Enum
 import numpy as np
 import torch
 from collections import defaultdict
+
+if TYPE_CHECKING:
+    from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+        CorrelationTracker,
+        CorrelationPair,
+    )
+    from HoloLoom.dark_trace.multilayer.propagation_analyzer import (
+        PropagationAnalyzer,
+        PropagationPath,
+    )
 
 
 class AbstractionLevel(Enum):
@@ -651,4 +661,258 @@ class FeatureHierarchyAnalyzer:
                 rel.value: len([e for e in self._hierarchy_edges if e.relation_type == rel])
                 for rel in FeatureRelationType
             },
+        }
+
+    # =============================================================================
+    # Integration with CorrelationTracker and PropagationAnalyzer
+    # =============================================================================
+
+    def integrate_correlation_tracker(
+        self,
+        correlation_tracker: "CorrelationTracker",
+    ) -> Dict[Tuple[int, int], List["CorrelationPair"]]:
+        """
+        Integrate with CorrelationTracker for streaming correlation updates.
+
+        Uses Welford's online algorithm for memory-efficient correlation
+        computation across layer pairs.
+
+        Args:
+            correlation_tracker: Initialized CorrelationTracker instance
+
+        Returns:
+            Dictionary mapping layer pairs to their top correlation pairs
+        """
+        from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+            CorrelationTracker,
+            CorrelationPair,
+        )
+
+        results: Dict[Tuple[int, int], List[CorrelationPair]] = {}
+
+        # Get tracked layer pairs from correlation tracker
+        for layer_pair in correlation_tracker.get_tracked_layer_pairs():
+            # Get top correlations for this layer pair
+            top_correlations = correlation_tracker.get_top_correlations(
+                layer_pair[0],
+                layer_pair[1],
+                k=50,
+            )
+            results[layer_pair] = top_correlations
+
+            # Update hierarchy edges with streaming correlation data
+            for corr_pair in top_correlations:
+                source_id = f"layer{layer_pair[0]}.sae.{corr_pair.feature_a}"
+                target_id = f"layer{layer_pair[1]}.sae.{corr_pair.feature_b}"
+
+                # Check if edge already exists
+                existing_edge = None
+                for edge in self._hierarchy_edges:
+                    if edge.source == source_id and edge.target == target_id:
+                        existing_edge = edge
+                        break
+
+                if existing_edge:
+                    # Update with streaming correlation
+                    existing_edge.correlation = corr_pair.correlation
+                    existing_edge.weight = abs(corr_pair.correlation)
+                elif abs(corr_pair.correlation) >= self.correlation_threshold:
+                    # Create new edge
+                    new_edge = HierarchyEdge(
+                        source=source_id,
+                        target=target_id,
+                        source_layer=layer_pair[0],
+                        target_layer=layer_pair[1],
+                        correlation=corr_pair.correlation,
+                        weight=abs(corr_pair.correlation),
+                    )
+                    self._hierarchy_edges.append(new_edge)
+
+        return results
+
+    def trace_with_propagation_analyzer(
+        self,
+        propagation_analyzer: "PropagationAnalyzer",
+        feature_id: str,
+        direction: str = "forward",
+        max_hops: int = 5,
+    ) -> List["PropagationPath"]:
+        """
+        Trace feature propagation using PropagationAnalyzer.
+
+        Finds how a feature's influence propagates through layers
+        using the more sophisticated propagation analysis.
+
+        Args:
+            propagation_analyzer: Initialized PropagationAnalyzer instance
+            feature_id: Feature to trace (e.g., "layer0.sae.42")
+            direction: "forward" (early→late) or "backward" (late→early)
+            max_hops: Maximum number of layer hops to trace
+
+        Returns:
+            List of PropagationPath objects showing feature paths
+        """
+        from HoloLoom.dark_trace.multilayer.propagation_analyzer import (
+            PropagationPath,
+        )
+
+        # Parse feature ID
+        parts = feature_id.split(".")
+        if len(parts) >= 3 and parts[0].startswith("layer"):
+            layer = int(parts[0].replace("layer", ""))
+            feature_idx = int(parts[-1])
+        else:
+            layer = 0
+            feature_idx = int(parts[-1]) if parts[-1].isdigit() else 0
+
+        # Use propagation analyzer to find paths
+        if direction == "forward":
+            paths = propagation_analyzer.trace_forward(
+                layer=layer,
+                feature_idx=feature_idx,
+                max_hops=max_hops,
+            )
+        else:
+            paths = propagation_analyzer.trace_backward(
+                layer=layer,
+                feature_idx=feature_idx,
+                max_hops=max_hops,
+            )
+
+        # Update feature evolution with propagation data
+        if feature_id in self._feature_evolutions:
+            evolution = self._feature_evolutions[feature_id]
+            for path in paths:
+                if direction == "forward":
+                    for i, (layer_idx, feat_idx) in enumerate(path.path[1:], 1):
+                        successor_id = f"layer{layer_idx}.sae.{feat_idx}"
+                        if successor_id not in [s[0] for s in evolution.successors]:
+                            evolution.successors.append(
+                                (successor_id, path.strength / (i + 1))
+                            )
+                else:
+                    for i, (layer_idx, feat_idx) in enumerate(path.path[:-1]):
+                        predecessor_id = f"layer{layer_idx}.sae.{feat_idx}"
+                        if predecessor_id not in [p[0] for p in evolution.predecessors]:
+                            evolution.predecessors.append(
+                                (predecessor_id, path.strength / (i + 1))
+                            )
+
+        return paths
+
+    def discover_circuits_with_propagation(
+        self,
+        propagation_analyzer: "PropagationAnalyzer",
+        min_features: int = 3,
+        min_strength: float = 0.3,
+    ) -> List[Any]:
+        """
+        Discover circuits (connected feature subgraphs) using propagation analyzer.
+
+        Finds groups of features that work together across layers,
+        similar to ACDC circuit discovery.
+
+        Args:
+            propagation_analyzer: Initialized PropagationAnalyzer instance
+            min_features: Minimum features in a circuit
+            min_strength: Minimum connection strength
+
+        Returns:
+            List of CircuitCandidate objects
+        """
+        # Use propagation analyzer's circuit discovery
+        circuits = propagation_analyzer.discover_circuits(
+            min_features=min_features,
+            min_strength=min_strength,
+        )
+
+        # Enrich circuits with hierarchy data
+        for circuit in circuits:
+            # Add abstraction level information
+            circuit.metadata = circuit.metadata or {}
+            circuit.metadata["abstraction_levels"] = []
+
+            for layer, feat_idx in circuit.features:
+                feature_id = f"layer{layer}.sae.{feat_idx}"
+                if feature_id in self._hierarchy_nodes:
+                    node = self._hierarchy_nodes[feature_id]
+                    circuit.metadata["abstraction_levels"].append(
+                        (feature_id, node.abstraction.value)
+                    )
+
+            # Determine if circuit spans abstraction levels
+            if circuit.metadata["abstraction_levels"]:
+                levels = [lvl for _, lvl in circuit.metadata["abstraction_levels"]]
+                unique_levels = set(levels)
+                circuit.metadata["spans_abstraction"] = len(unique_levels) > 1
+                circuit.metadata["abstraction_span"] = (min(levels), max(levels))
+
+        return circuits
+
+    def get_streaming_correlation_update(
+        self,
+        activations_a: torch.Tensor,
+        activations_b: torch.Tensor,
+        layer_a: int,
+        layer_b: int,
+    ) -> Dict[str, Any]:
+        """
+        Get a single streaming correlation update for incremental learning.
+
+        Useful for online learning scenarios where we process one
+        batch at a time without storing all data.
+
+        Args:
+            activations_a: Features from layer A [batch, n_features_a]
+            activations_b: Features from layer B [batch, n_features_b]
+            layer_a: Source layer index
+            layer_b: Target layer index
+
+        Returns:
+            Dictionary with correlation update statistics
+        """
+        from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+            WelfordCorrelator,
+        )
+
+        # Create or get Welford correlator for this layer pair
+        key = (layer_a, layer_b)
+        if not hasattr(self, "_welford_correlators"):
+            self._welford_correlators: Dict[Tuple[int, int], WelfordCorrelator] = {}
+
+        if key not in self._welford_correlators:
+            n_features_a = activations_a.shape[-1]
+            n_features_b = activations_b.shape[-1]
+            self._welford_correlators[key] = WelfordCorrelator(
+                n_features_a, n_features_b
+            )
+
+        correlator = self._welford_correlators[key]
+
+        # Update with new batch
+        correlator.update(activations_a, activations_b)
+
+        # Get current correlation matrix
+        corr_matrix = correlator.get_correlation()
+
+        # Find top correlations above threshold
+        high_corr_mask = corr_matrix.abs() > self.correlation_threshold
+        high_corr_indices = torch.nonzero(high_corr_mask, as_tuple=False)
+
+        top_pairs = []
+        for idx in high_corr_indices[:100]:  # Limit to top 100
+            feat_a, feat_b = idx[0].item(), idx[1].item()
+            corr = corr_matrix[feat_a, feat_b].item()
+            top_pairs.append({
+                "feature_a": feat_a,
+                "feature_b": feat_b,
+                "correlation": corr,
+            })
+
+        return {
+            "layer_pair": (layer_a, layer_b),
+            "n_updates": correlator.n,
+            "n_high_correlations": len(top_pairs),
+            "top_pairs": sorted(top_pairs, key=lambda x: abs(x["correlation"]), reverse=True)[:20],
+            "mean_abs_correlation": corr_matrix.abs().mean().item(),
         }

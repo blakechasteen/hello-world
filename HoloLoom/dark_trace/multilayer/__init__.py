@@ -8,6 +8,9 @@ Key Capabilities:
 - Per-layer SAE training and management
 - Feature hierarchy analysis (abstraction ladder)
 - Cross-layer information flow tracking
+- Cross-layer correlation tracking (Welford's algorithm)
+- Feature propagation analysis and circuit discovery
+- Causal metrics (Pearl's do-calculus, Transfer Entropy)
 - Hierarchy visualization
 
 Research Basis:
@@ -15,20 +18,40 @@ Research Basis:
 - Logit Lens (nostalgebraist): Layer-wise prediction analysis
 - Tuned Lens: Learned layer projections
 - Residual Stream Analysis: Information accumulation patterns
+- ACDC (NeurIPS 2023): Circuit discovery via activation patching
+- Pearl's do-calculus: Causal inference framework
 
 Usage:
     from HoloLoom.dark_trace.multilayer import (
+        # Layer SAE Management
         LayerSAEManager,
         LayerSAEConfig,
         LayerSAE,
+        # Hierarchy Analysis
         FeatureHierarchyAnalyzer,
         AbstractionLevel,
         FeatureEvolution,
         HierarchyNode,
+        # Information Flow
         InformationFlowAnalyzer,
         FlowConfig,
         LayerFlow,
         CrossLayerFlow,
+        # Cross-Layer Correlation (Phase 2)
+        CorrelationTracker,
+        CorrelationConfig,
+        LayerCorrelation,
+        WelfordCorrelator,
+        # Propagation Analysis (Phase 2)
+        PropagationAnalyzer,
+        PropagationPath,
+        CircuitCandidate,
+        # Causal Metrics (Phase 2)
+        CausalStrengthEstimator,
+        TransferEntropyEstimator,
+        CausalStrengthResult,
+        TransferEntropyResult,
+        # Visualization
         HierarchyVisualizer,
         VisualizationConfig,
         HierarchyDiagram,
@@ -48,10 +71,26 @@ Usage:
     flow = flow_analyzer.analyze(test_inputs)
     print(f"Bottleneck at layer {flow.bottleneck_layer}")
 
+    # Track cross-layer correlations (Phase 2)
+    tracker = CorrelationTracker(CorrelationConfig())
+    tracker.update(layer_5_activations, layer_6_activations, 5, 6)
+    correlations = tracker.get_correlations(5, 6, min_correlation=0.5)
+
+    # Analyze feature propagation (Phase 2)
+    propagation = PropagationAnalyzer(manager, tracker)
+    paths = propagation.trace_feature_forward(42, start_layer=5)
+    circuits = propagation.find_circuits(min_features=3)
+
+    # Causal flow analysis (Phase 2)
+    causal = flow_analyzer.get_causal_flow_analysis(test_inputs)
+    print(f"Dominant causal pathways: {causal['dominant_pathways']}")
+
     # Visualize hierarchy
     viz = HierarchyVisualizer(hierarchy, flow_analyzer)
     diagram = viz.create_hierarchy_diagram()
     diagram.save("feature_hierarchy.html")
+
+Created: 2025-12-28
 """
 
 # Layer SAE management
@@ -92,6 +131,30 @@ from HoloLoom.dark_trace.multilayer.visualizer import (
     EvolutionPlot,
 )
 
+# Cross-layer correlation tracking (Phase 2)
+from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+    CorrelationTracker,
+    CorrelationConfig,
+    LayerCorrelation,
+    CorrelationPair,
+    WelfordCorrelator,
+)
+
+# Feature propagation analysis (Phase 2)
+from HoloLoom.dark_trace.multilayer.propagation_analyzer import (
+    PropagationAnalyzer,
+    PropagationPath,
+    CircuitCandidate,
+)
+
+# Causal metrics (Phase 2)
+from HoloLoom.dark_trace.multilayer.causal_metrics import (
+    CausalStrengthEstimator,
+    TransferEntropyEstimator,
+    CausalStrengthResult,
+    TransferEntropyResult,
+)
+
 __all__ = [
     # Layer SAE
     "LayerSAEManager",
@@ -119,4 +182,19 @@ __all__ = [
     "HierarchyDiagram",
     "FlowDiagram",
     "EvolutionPlot",
+    # Cross-layer Correlation (Phase 2)
+    "CorrelationTracker",
+    "CorrelationConfig",
+    "LayerCorrelation",
+    "CorrelationPair",
+    "WelfordCorrelator",
+    # Propagation Analysis (Phase 2)
+    "PropagationAnalyzer",
+    "PropagationPath",
+    "CircuitCandidate",
+    # Causal Metrics (Phase 2)
+    "CausalStrengthEstimator",
+    "TransferEntropyEstimator",
+    "CausalStrengthResult",
+    "TransferEntropyResult",
 ]

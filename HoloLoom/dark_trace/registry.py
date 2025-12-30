@@ -531,6 +531,292 @@ class FeatureRegistry:
 
         return "\n".join(lines)
 
+    def update_feature_labels(
+        self,
+        labels: Dict[int, Any],
+        source: Optional["FeatureSource"] = None,
+        prefix: str = "sae",
+    ) -> int:
+        """
+        Bulk update feature labels from autolabeling system.
+
+        Integrates with FeatureLabeler to update descriptions and metadata
+        for multiple features at once.
+
+        Args:
+            labels: Dict mapping feature index to FeatureLabel object or dict
+                   (from labeler.py's FeatureLabel dataclass or similar)
+            source: Feature source to update (default: SAE)
+            prefix: Feature ID prefix (default: "sae")
+
+        Returns:
+            Number of features updated
+
+        Example:
+            # After running autolabeling
+            from HoloLoom.dark_trace.sae.labeler import FeatureLabeler
+
+            labeler = FeatureLabeler(llm_provider="anthropic")
+            labels = await labeler.label_features(sae, [0, 1, 2, 3, 4])
+
+            # Update registry with labels
+            updated = registry.update_feature_labels(labels)
+            print(f"Updated {updated} feature labels")
+        """
+        if source is None:
+            source = FeatureSource.SAE
+
+        updated = 0
+        for idx, label in labels.items():
+            feature_id = f"{prefix}.{idx}"
+
+            # Get existing feature
+            feature = self.get(feature_id)
+            if not feature:
+                continue
+
+            # Extract label info (handle both dataclass and dict)
+            if hasattr(label, "description"):
+                # FeatureLabel dataclass
+                description = label.description
+                confidence = getattr(label, "confidence", 0.5)
+                primary_axis = getattr(label, "primary_semantic_axis", None)
+                alignments = getattr(label, "semantic_alignments", {})
+                labeled_at = getattr(label, "labeled_at", None)
+                labeler_model = getattr(label, "labeler_model", "unknown")
+            elif isinstance(label, dict):
+                # Dictionary format
+                description = label.get("description", "")
+                confidence = label.get("confidence", 0.5)
+                primary_axis = label.get("primary_semantic_axis")
+                alignments = label.get("semantic_alignments", {})
+                labeled_at = label.get("labeled_at")
+                labeler_model = label.get("labeler_model", "unknown")
+            else:
+                continue
+
+            # Update feature
+            feature.description = description
+            feature.label = description[:50] + "..." if len(description) > 50 else description
+
+            # Store autolabel metadata
+            feature.metadata["autolabel"] = {
+                "confidence": confidence,
+                "primary_semantic_axis": primary_axis,
+                "semantic_alignments": alignments,
+                "labeled_at": labeled_at,
+                "labeler_model": labeler_model,
+            }
+
+            updated += 1
+
+        return updated
+
+    # =============================================================================
+    # Multi-Layer Correlation Integration
+    # =============================================================================
+
+    def register_layer_correlation(
+        self,
+        source_layer: int,
+        target_layer: int,
+        correlations: List[Tuple[int, int, float]],
+        source_prefix: str = "sae",
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> int:
+        """
+        Register cross-layer feature correlations from CorrelationTracker.
+
+        Integrates multi-layer correlation data into the registry's correlation
+        matrix, enabling cross-layer feature mapping and circuit discovery.
+
+        Args:
+            source_layer: Source layer index
+            target_layer: Target layer index
+            correlations: List of (source_feature_idx, target_feature_idx, correlation)
+                         tuples from CorrelationTracker
+            source_prefix: Feature ID prefix (default: "sae")
+            metadata: Optional metadata about correlation computation
+                     (e.g., n_samples, algorithm, timestamp)
+
+        Returns:
+            Number of correlations registered
+
+        Example:
+            from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+                CorrelationTracker,
+            )
+
+            tracker = CorrelationTracker(n_layers=12)
+            # ... process activations ...
+            corr_data = tracker.get_layer_pair_correlations(0, 1, top_k=100)
+
+            # Register in unified namespace
+            registered = registry.register_layer_correlation(
+                source_layer=0,
+                target_layer=1,
+                correlations=corr_data.top_correlations,
+            )
+        """
+        registered = 0
+        now = datetime.now()
+
+        with self._lock:
+            for src_idx, tgt_idx, correlation in correlations:
+                src_id = f"{source_prefix}.L{source_layer}.{src_idx}"
+                tgt_id = f"{source_prefix}.L{target_layer}.{tgt_idx}"
+
+                # Create FeatureCorrelation entry
+                corr_entry = FeatureCorrelation(
+                    source_id=src_id,
+                    target_id=tgt_id,
+                    correlation=correlation,
+                    sample_count=metadata.get("n_samples", 0) if metadata else 0,
+                    confidence=0.95 if abs(correlation) > 0.3 else 0.8,
+                )
+
+                # Store in correlation matrix
+                if src_id not in self.correlations._correlations:
+                    self.correlations._correlations[src_id] = {}
+                self.correlations._correlations[src_id][tgt_id] = corr_entry
+
+                registered += 1
+
+            # Store layer pair metadata
+            pair_key = f"layer_pair.{source_layer}.{target_layer}"
+            if not hasattr(self, "_layer_pair_metadata"):
+                self._layer_pair_metadata: Dict[str, Dict[str, Any]] = {}
+
+            self._layer_pair_metadata[pair_key] = {
+                "source_layer": source_layer,
+                "target_layer": target_layer,
+                "n_correlations": registered,
+                "registered_at": now.isoformat(),
+                **(metadata or {}),
+            }
+
+        return registered
+
+    def get_layer_correlations(
+        self,
+        source_layer: int,
+        target_layer: int,
+        min_correlation: float = 0.3,
+        source_prefix: str = "sae",
+    ) -> List[FeatureCorrelation]:
+        """
+        Get all correlations between two layers.
+
+        Args:
+            source_layer: Source layer index
+            target_layer: Target layer index
+            min_correlation: Minimum absolute correlation to include
+            source_prefix: Feature ID prefix
+
+        Returns:
+            List of FeatureCorrelation objects
+        """
+        results = []
+        src_pattern = f"{source_prefix}.L{source_layer}."
+        tgt_pattern = f"{source_prefix}.L{target_layer}."
+
+        for src_id, targets in self.correlations._correlations.items():
+            if not src_id.startswith(src_pattern):
+                continue
+
+            for tgt_id, corr in targets.items():
+                if tgt_id.startswith(tgt_pattern):
+                    if abs(corr.correlation) >= min_correlation:
+                        results.append(corr)
+
+        # Sort by absolute correlation descending
+        results.sort(key=lambda c: abs(c.correlation), reverse=True)
+        return results
+
+    def get_layer_pair_metadata(
+        self,
+        source_layer: int,
+        target_layer: int,
+    ) -> Optional[Dict[str, Any]]:
+        """Get metadata for a layer pair correlation registration."""
+        if not hasattr(self, "_layer_pair_metadata"):
+            return None
+        pair_key = f"layer_pair.{source_layer}.{target_layer}"
+        return self._layer_pair_metadata.get(pair_key)
+
+    def get_feature_propagation_path(
+        self,
+        feature_idx: int,
+        start_layer: int,
+        end_layer: int,
+        min_correlation: float = 0.3,
+        source_prefix: str = "sae",
+    ) -> List[Dict[str, Any]]:
+        """
+        Trace a feature's propagation path through layers.
+
+        Uses registered correlations to find the most likely path
+        a feature takes through the model's layers.
+
+        Args:
+            feature_idx: Starting feature index
+            start_layer: Starting layer
+            end_layer: Ending layer
+            min_correlation: Minimum correlation threshold
+            source_prefix: Feature ID prefix
+
+        Returns:
+            List of dicts with path information:
+            [{"layer": int, "feature": int, "correlation": float}, ...]
+        """
+        path = [{"layer": start_layer, "feature": feature_idx, "correlation": 1.0}]
+        current_feature = feature_idx
+        current_layer = start_layer
+
+        direction = 1 if end_layer > start_layer else -1
+        layers_to_traverse = range(start_layer, end_layer, direction)
+
+        for layer in layers_to_traverse:
+            next_layer = layer + direction
+
+            # Find best correlated feature in next layer
+            correlations = self.get_layer_correlations(
+                source_layer=layer,
+                target_layer=next_layer,
+                min_correlation=min_correlation,
+                source_prefix=source_prefix,
+            )
+
+            # Find correlation from current feature
+            src_id = f"{source_prefix}.L{layer}.{current_feature}"
+            best_corr = None
+            best_target_idx = None
+
+            for corr in correlations:
+                if corr.source_id == src_id:
+                    if best_corr is None or abs(corr.correlation) > abs(best_corr):
+                        best_corr = corr.correlation
+                        # Extract target feature index
+                        parts = corr.target_id.split(".")
+                        if len(parts) >= 3:
+                            try:
+                                best_target_idx = int(parts[-1])
+                            except ValueError:
+                                pass
+
+            if best_target_idx is not None:
+                path.append({
+                    "layer": next_layer,
+                    "feature": best_target_idx,
+                    "correlation": best_corr,
+                })
+                current_feature = best_target_idx
+            else:
+                # Path ends here
+                break
+
+        return path
+
     def to_dict(self) -> Dict[str, Any]:
         """Serialize registry to dictionary."""
         return {
