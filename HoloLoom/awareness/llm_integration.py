@@ -408,29 +408,168 @@ class OpenAILLM:
     """
     OpenAI integration (GPT-4, GPT-3.5).
 
-    TODO: Implement when needed.
-
     Requires:
         pip install openai
         export OPENAI_API_KEY="your-key"
+
+    Models:
+        - gpt-4 (highest quality, slower)
+        - gpt-4-turbo (faster, good quality)
+        - gpt-3.5-turbo (fastest, lower cost)
     """
 
     def __init__(self, model: str = "gpt-4", api_key: Optional[str] = None):
+        """
+        Initialize OpenAI LLM.
+
+        Args:
+            model: OpenAI model name
+            api_key: Optional API key (defaults to OPENAI_API_KEY env var)
+        """
         self.model = model
         self.api_key = api_key
         self.provider = LLMProvider.OPENAI
+        self.client = None
         self._available = False
 
-        # TODO: Initialize OpenAI client when implemented
+        try:
+            from openai import OpenAI
+            import os
+            key = api_key or os.environ.get("OPENAI_API_KEY")
+            if key:
+                self.client = OpenAI(api_key=key)
+                self._available = True
+        except ImportError:
+            self.client = None
+            self._available = False
 
     def is_available(self) -> bool:
-        return self._available
+        """Check if OpenAI is available"""
+        return self._available and self.client is not None
 
-    async def generate(self, prompt: str, **kwargs) -> LLMResponse:
-        raise NotImplementedError("OpenAI integration coming soon!")
+    async def generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+        **kwargs
+    ) -> LLMResponse:
+        """
+        Generate completion from OpenAI.
 
-    async def stream_generate(self, prompt: str, **kwargs) -> AsyncIterator[str]:
-        raise NotImplementedError("OpenAI streaming coming soon!")
+        Args:
+            prompt: User prompt
+            system_prompt: Optional system prompt
+            max_tokens: Max tokens to generate
+            temperature: Sampling temperature (0.0-2.0)
+
+        Returns:
+            LLMResponse with generated content
+        """
+        if not self.is_available():
+            raise RuntimeError(
+                "OpenAI not available. Install with: pip install openai\n"
+                "Set API key: export OPENAI_API_KEY='your-key'"
+            )
+
+        try:
+            # Build messages
+            messages = []
+            if system_prompt:
+                messages.append({
+                    "role": "system",
+                    "content": system_prompt
+                })
+            messages.append({
+                "role": "user",
+                "content": prompt
+            })
+
+            # Call OpenAI API
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature
+            )
+
+            content = response.choices[0].message.content if response.choices else ""
+
+            # Extract usage stats
+            usage = None
+            if response.usage:
+                usage = {
+                    'prompt_tokens': response.usage.prompt_tokens,
+                    'completion_tokens': response.usage.completion_tokens,
+                    'total_tokens': response.usage.total_tokens
+                }
+
+            return LLMResponse(
+                content=content,
+                provider=self.provider,
+                model=self.model,
+                usage=usage,
+                metadata={
+                    'finish_reason': response.choices[0].finish_reason if response.choices else None,
+                    'model': response.model
+                }
+            )
+
+        except Exception as e:
+            raise RuntimeError(f"OpenAI generation failed: {e}")
+
+    async def stream_generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        max_tokens: int = 500,
+        temperature: float = 0.7,
+        **kwargs
+    ) -> AsyncIterator[str]:
+        """
+        Stream generation from OpenAI token by token.
+
+        Args:
+            prompt: User prompt
+            system_prompt: Optional system prompt
+            max_tokens: Max tokens to generate
+            temperature: Sampling temperature
+
+        Yields:
+            Generated tokens as they arrive
+        """
+        if not self.is_available():
+            raise RuntimeError("OpenAI not available")
+
+        try:
+            # Build messages
+            messages = []
+            if system_prompt:
+                messages.append({
+                    "role": "system",
+                    "content": system_prompt
+                })
+            messages.append({
+                "role": "user",
+                "content": prompt
+            })
+
+            # Stream from OpenAI
+            stream = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                stream=True
+            )
+
+            for chunk in stream:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+
+        except Exception as e:
+            raise RuntimeError(f"OpenAI streaming failed: {e}")
 
 
 def create_llm(
