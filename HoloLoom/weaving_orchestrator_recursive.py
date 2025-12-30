@@ -59,7 +59,7 @@ from HoloLoom.protocols.recursive_reasoning import (
     ReasoningStrategy,
     ReasoningJournal
 )
-from HoloLoom.analytics.recursive_analytics import RecursiveAnalytics
+from HoloLoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
 
 logger = logging.getLogger(__name__)
 

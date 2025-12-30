@@ -20,7 +20,7 @@ Architecture:
 - HybridRetriever: Combines all three with RRF
 """
 
-from typing import List, Dict, Optional, Any, Tuple
+from typing import List, Dict, Optional, Any, Tuple, Union
 from dataclasses import dataclass, field
 from datetime import datetime
 import logging
@@ -30,6 +30,12 @@ from collections import Counter
 
 from HoloLoom.protocols.types import MemoryShard
 from HoloLoom.memory.graph import KG
+from HoloLoom.memory.retrieval_result import (
+    RetrievalResultEnhanced,
+    RetrievalStatus,
+    TraversalResult,
+    ensure_retrieval_result
+)
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +166,7 @@ class SemanticRetriever:
         query: str,
         memories: List[MemoryShard],
         limit: int = 10
-    ) -> List[Tuple[MemoryShard, float]]:
+    ) -> Union[List[Tuple[MemoryShard, float]], RetrievalResultEnhanced]:
         """
         Retrieve memories using semantic similarity.
 
@@ -170,18 +176,53 @@ class SemanticRetriever:
             limit: Maximum memories to return
 
         Returns:
-            List of (memory, score) tuples sorted by score
+            List of (memory, score) tuples sorted by score, OR
+            RetrievalResultEnhanced on failure (enables graceful degradation)
         """
+        start_time = datetime.now()
+
         if not self.available:
             if self.enable_fallback:
                 logger.info("Semantic search unavailable, using keyword fallback")
-                return await self._retrieve_fallback(query, memories, limit)
-            return []
+                fallback_results = await self._retrieve_fallback(query, memories, limit)
+                # Return as fallback result with metadata
+                retrieval_time_ms = (datetime.now() - start_time).total_seconds() * 1000
+                return RetrievalResultEnhanced.fallback(
+                    shards=[m for m, _ in fallback_results],
+                    reason="sentence-transformers not available",
+                    fallback_method="keyword_jaccard",
+                    retrieval_time_ms=retrieval_time_ms,
+                    metadata={
+                        "query": query[:100],
+                        "model_name": self.model_name,
+                        "scores": [(m.id, s) for m, s in fallback_results]
+                    }
+                )
+            # W9 FIX: Never return bare [] - explain WHY retrieval returned nothing
+            return RetrievalResultEnhanced.unavailable(
+                reason="sentence-transformers not installed and fallback disabled",
+                backend="SemanticRetriever",
+                metadata={
+                    "query": query[:100],
+                    "model_name": self.model_name,
+                    "enable_fallback": self.enable_fallback,
+                    "candidate_count": len(memories)
+                }
+            )
 
         # Embed query
         query_embedding = self.embed(query)
         if query_embedding is None:
-            return []
+            retrieval_time_ms = (datetime.now() - start_time).total_seconds() * 1000
+            # W9 FIX: Never return bare [] - explain WHY embedding failed
+            return RetrievalResultEnhanced.error(
+                exception=RuntimeError("Query embedding returned None despite model being available"),
+                context={
+                    "query": query[:100],
+                    "model_name": self.model_name,
+                    "retrieval_time_ms": retrieval_time_ms
+                }
+            )
 
         # Score all memories
         scored_memories = []
@@ -450,7 +491,7 @@ class GraphRetriever:
 
         return entities
 
-    def traverse(self, start_entity: str, max_hops: int) -> Dict[str, float]:
+    def traverse(self, start_entity: str, max_hops: int) -> Union[Dict[str, float], TraversalResult]:
         """
         Multi-hop traversal from start entity.
 
@@ -459,17 +500,28 @@ class GraphRetriever:
             max_hops: Maximum hops
 
         Returns:
-            Dict of {entity: score} for reachable entities
+            Dict of {entity: score} for reachable entities, OR
+            TraversalResult on failure (enables graceful degradation)
         """
+        # W9 FIX: Never return bare {} - explain WHY traversal failed
         if start_entity not in self.kg.G.nodes:
-            return {}
+            return TraversalResult.empty_graph(
+                start_entity=start_entity,
+                metadata={
+                    "max_hops": max_hops,
+                    "graph_node_count": self.kg.G.number_of_nodes(),
+                    "graph_edge_count": self.kg.G.number_of_edges()
+                }
+            )
 
         # BFS traversal
         visited = {start_entity: 1.0}  # Entity → score
         frontier = [(start_entity, 0)]  # (entity, hop_count)
+        hops_executed = 0
 
         while frontier:
             current_entity, hops = frontier.pop(0)
+            hops_executed = max(hops_executed, hops)
 
             if hops >= max_hops:
                 continue
@@ -491,7 +543,7 @@ class GraphRetriever:
         query: str,
         memories: List[MemoryShard],
         limit: int = 10
-    ) -> List[Tuple[MemoryShard, float]]:
+    ) -> Union[List[Tuple[MemoryShard, float]], RetrievalResultEnhanced]:
         """
         Retrieve memories using graph traversal.
 
@@ -501,21 +553,61 @@ class GraphRetriever:
             limit: Maximum memories to return
 
         Returns:
-            List of (memory, score) tuples sorted by score
+            List of (memory, score) tuples sorted by score, OR
+            RetrievalResultEnhanced on failure (enables graceful degradation)
         """
+        start_time = datetime.now()
+
         # Extract entities from query
         query_entities = self.extract_entities(query)
         if not query_entities:
-            logger.info("No entities found in query for graph retrieval")
-            return []
+            retrieval_time_ms = (datetime.now() - start_time).total_seconds() * 1000
+            # W9 FIX: Never return bare [] - explain WHY retrieval returned nothing
+            return RetrievalResultEnhanced.empty(
+                query=query,
+                retrieval_time_ms=retrieval_time_ms,
+                metadata={
+                    "reason": "no_entities_found",
+                    "backend": "GraphRetriever",
+                    "candidate_count": len(memories),
+                    "graph_node_count": self.kg.G.number_of_nodes(),
+                    "suggestion": "Query may not contain any recognized entities from the knowledge graph"
+                }
+            )
 
         # Traverse graph from each query entity
         all_reachable = {}
+        traversal_failures = []
+
         for entity in query_entities:
             reachable = self.traverse(entity, self.max_hops)
+
+            # Handle TraversalResult (failure case) vs dict (success case)
+            if isinstance(reachable, TraversalResult):
+                traversal_failures.append({
+                    "entity": entity,
+                    "status": reachable.status.value,
+                    "message": reachable.message
+                })
+                continue
+
             # Merge scores (take max)
             for node, score in reachable.items():
                 all_reachable[node] = max(all_reachable.get(node, 0.0), score)
+
+        # If all traversals failed, return informative result
+        if not all_reachable and traversal_failures:
+            retrieval_time_ms = (datetime.now() - start_time).total_seconds() * 1000
+            return RetrievalResultEnhanced.partial(
+                shards=[],
+                reason=f"All {len(traversal_failures)} entity traversals failed",
+                retrieval_time_ms=retrieval_time_ms,
+                metadata={
+                    "query_entities": query_entities,
+                    "traversal_failures": traversal_failures,
+                    "backend": "GraphRetriever"
+                }
+            )
 
         # Score memories based on entity overlap
         scored_memories = []
@@ -639,39 +731,85 @@ class HybridRetriever:
 
         rankings = []
         methods_used = []
+        retrieval_status = {}  # Track status per method for debugging
+
+        def _extract_results(result: Union[List, RetrievalResultEnhanced], method_name: str) -> Optional[List]:
+            """Helper to extract tuple list from result, handling both success and failure cases."""
+            if isinstance(result, RetrievalResultEnhanced):
+                # Result is an enhanced type (failure or fallback)
+                retrieval_status[method_name] = {
+                    "status": result.status.value,
+                    "message": result.message,
+                    "has_results": result.has_results
+                }
+
+                # If it's a fallback with results, extract them
+                if result.has_results:
+                    # Convert shards back to (shard, score) tuples
+                    # Use scores from metadata if available, otherwise uniform score
+                    if "scores" in result.metadata:
+                        return [(shard, score) for shard, score in zip(result.shards, [s[1] for s in result.metadata["scores"]])]
+                    else:
+                        return [(shard, 1.0 / (i + 1)) for i, shard in enumerate(result.shards)]
+
+                return None  # No results to contribute to fusion
+
+            elif isinstance(result, list):
+                # Result is a regular tuple list (success case)
+                if result:
+                    retrieval_status[method_name] = {"status": "success", "count": len(result)}
+                    return result
+                return None
+
+            return None
 
         # Semantic search
         if self.semantic_retriever:
             semantic_results = await self.semantic_retriever.retrieve(query, memories, limit=limit*2)
-            if semantic_results:
-                rankings.append(semantic_results)
+            extracted = _extract_results(semantic_results, "semantic")
+            if extracted:
+                rankings.append(extracted)
                 methods_used.append("semantic")
-                logger.info(f"Semantic retrieval: {len(semantic_results)} results")
+                logger.info(f"Semantic retrieval: {len(extracted)} results")
 
         # BM25 search
         if self.bm25_retriever:
             bm25_results = await self.bm25_retriever.retrieve(query, memories, limit=limit*2)
-            if bm25_results:
-                rankings.append(bm25_results)
+            extracted = _extract_results(bm25_results, "bm25")
+            if extracted:
+                rankings.append(extracted)
                 methods_used.append("bm25")
-                logger.info(f"BM25 retrieval: {len(bm25_results)} results")
+                logger.info(f"BM25 retrieval: {len(extracted)} results")
 
         # Graph traversal
         if self.graph_retriever:
             graph_results = await self.graph_retriever.retrieve(query, memories, limit=limit*2)
-            if graph_results:
-                rankings.append(graph_results)
+            extracted = _extract_results(graph_results, "graph")
+            if extracted:
+                rankings.append(extracted)
                 methods_used.append("graph")
-                logger.info(f"Graph retrieval: {len(graph_results)} results")
+                logger.info(f"Graph retrieval: {len(extracted)} results")
+
+        retrieval_time_ms = (datetime.now() - start_time).total_seconds() * 1000
 
         # Fuse rankings with RRF
         if not rankings:
-            logger.warning("No retrieval methods produced results")
+            # W9 FIX: Provide detailed status about WHY no results were produced
+            status_summary = ", ".join([
+                f"{method}: {info.get('status', 'unknown')}"
+                for method, info in retrieval_status.items()
+            ])
+            logger.warning(f"No retrieval methods produced results. Status: {status_summary}")
             return RetrievalResult(
                 memories=[],
                 scores=[],
                 total_candidates=len(memories),
-                retrieval_time_ms=0.0
+                retrieval_time_ms=retrieval_time_ms,
+                metadata={
+                    "query": query[:100],
+                    "retrieval_status": retrieval_status,
+                    "warning": "All retrieval methods failed or produced no results"
+                }
             )
 
         fused_results = reciprocal_rank_fusion(rankings)[:limit]
@@ -691,6 +829,7 @@ class HybridRetriever:
             )
             final_scores.append(score)
 
+        # Update retrieval time to include fusion
         retrieval_time_ms = (datetime.now() - start_time).total_seconds() * 1000
 
         logger.info(
@@ -703,7 +842,10 @@ class HybridRetriever:
             scores=final_scores,
             total_candidates=len(memories),
             retrieval_time_ms=retrieval_time_ms,
-            metadata={"methods": methods_used}
+            metadata={
+                "methods": methods_used,
+                "retrieval_status": retrieval_status  # W9: Include status per method
+            }
         )
 
 

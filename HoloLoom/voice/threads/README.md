@@ -61,7 +61,7 @@ cd /path/to/mythRL
 
 ```python
 import asyncio
-from HoloLoom.voice_first import UnifiedVoiceAgent
+from HoloLoom.voice.threads import UnifiedVoiceAgent
 from HoloLoom.config import Config
 
 async def main():
@@ -90,7 +90,7 @@ asyncio.run(main())
 
 ```bash
 # Run comprehensive demo
-python -m HoloLoom.voice_first.demo
+python -m HoloLoom.voice.threads.demo
 
 # Or
 PYTHONPATH=. python HoloLoom/voice_first/demo.py

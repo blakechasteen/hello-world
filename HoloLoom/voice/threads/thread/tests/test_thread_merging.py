@@ -178,7 +178,7 @@ class TestThreadMergerBasics:
     @pytest.mark.asyncio
     async def test_initialization(self, mock_thread_manager):
         """Test 1: ThreadMerger initialization"""
-        from HoloLoom.voice_first.thread import ThreadMerger, MergeStrategy
+        from HoloLoom.voice.threads.thread import ThreadMerger, MergeStrategy
 
         merger = ThreadMerger(
             thread_manager=mock_thread_manager,
@@ -191,7 +191,7 @@ class TestThreadMergerBasics:
     @pytest.mark.asyncio
     async def test_basic_merge(self, mock_thread_manager):
         """Test 2: Basic thread merging"""
-        from HoloLoom.voice_first.thread import ThreadMerger, MergeStrategy
+        from HoloLoom.voice.threads.thread import ThreadMerger, MergeStrategy
 
         merger = ThreadMerger(
             thread_manager=mock_thread_manager,
@@ -211,7 +211,7 @@ class TestThreadMergerBasics:
     @pytest.mark.asyncio
     async def test_target_not_found(self, mock_thread_manager):
         """Test 3: Error when target thread not found"""
-        from HoloLoom.voice_first.thread import ThreadMerger
+        from HoloLoom.voice.threads.thread import ThreadMerger
 
         merger = ThreadMerger(thread_manager=mock_thread_manager)
 
@@ -224,7 +224,7 @@ class TestThreadMergerBasics:
     @pytest.mark.asyncio
     async def test_source_not_found(self, mock_thread_manager):
         """Test 4: Error when source thread not found"""
-        from HoloLoom.voice_first.thread import ThreadMerger
+        from HoloLoom.voice.threads.thread import ThreadMerger
 
         merger = ThreadMerger(thread_manager=mock_thread_manager)
 
@@ -241,7 +241,7 @@ class TestMergeStrategies:
     @pytest.mark.asyncio
     async def test_append_strategy(self, mock_thread_manager):
         """Test 5: APPEND strategy - chronological concatenation"""
-        from HoloLoom.voice_first.thread import ThreadMerger, MergeStrategy
+        from HoloLoom.voice.threads.thread import ThreadMerger, MergeStrategy
 
         merger = ThreadMerger(thread_manager=mock_thread_manager)
 
@@ -267,7 +267,7 @@ class TestMergeStrategies:
         mock_llm_client
     ):
         """Test 6: SYNTHESIZE strategy - LLM synthesis"""
-        from HoloLoom.voice_first.thread import ThreadMerger, MergeStrategy
+        from HoloLoom.voice.threads.thread import ThreadMerger, MergeStrategy
 
         merger = ThreadMerger(
             thread_manager=mock_thread_manager,
@@ -288,7 +288,7 @@ class TestMergeStrategies:
     @pytest.mark.asyncio
     async def test_synthesize_without_llm(self, mock_thread_manager):
         """Test 7: SYNTHESIZE fallback without LLM"""
-        from HoloLoom.voice_first.thread import ThreadMerger, MergeStrategy
+        from HoloLoom.voice.threads.thread import ThreadMerger, MergeStrategy
 
         merger = ThreadMerger(
             thread_manager=mock_thread_manager,
@@ -308,7 +308,7 @@ class TestMergeStrategies:
     @pytest.mark.asyncio
     async def test_preserve_all_strategy(self, mock_thread_manager):
         """Test 8: PRESERVE_ALL strategy - thread markers"""
-        from HoloLoom.voice_first.thread import ThreadMerger, MergeStrategy
+        from HoloLoom.voice.threads.thread import ThreadMerger, MergeStrategy
 
         merger = ThreadMerger(thread_manager=mock_thread_manager)
 
@@ -336,7 +336,7 @@ class TestMultipleThreads:
     @pytest.mark.asyncio
     async def test_merge_multiple_sources(self, mock_thread_manager):
         """Test 9: Merge multiple source threads"""
-        from HoloLoom.voice_first.thread import ThreadMerger
+        from HoloLoom.voice.threads.thread import ThreadMerger
 
         merger = ThreadMerger(thread_manager=mock_thread_manager)
 
@@ -351,7 +351,7 @@ class TestMultipleThreads:
     @pytest.mark.asyncio
     async def test_target_in_sources_error(self, mock_thread_manager):
         """Test 10: Error when target is in sources"""
-        from HoloLoom.voice_first.thread import ThreadMerger
+        from HoloLoom.voice.threads.thread import ThreadMerger
 
         merger = ThreadMerger(thread_manager=mock_thread_manager)
 
@@ -372,7 +372,7 @@ class TestYarnGraphIntegration:
         mock_yarn_graph
     ):
         """Test 11: MERGED_INTO edges created in YarnGraph"""
-        from HoloLoom.voice_first.thread import ThreadMerger
+        from HoloLoom.voice.threads.thread import ThreadMerger
 
         merger = ThreadMerger(
             thread_manager=mock_thread_manager,
@@ -396,7 +396,7 @@ class TestYarnGraphIntegration:
     @pytest.mark.asyncio
     async def test_no_yarngraph_graceful(self, mock_thread_manager):
         """Test 12: Graceful degradation without YarnGraph"""
-        from HoloLoom.voice_first.thread import ThreadMerger
+        from HoloLoom.voice.threads.thread import ThreadMerger
 
         merger = ThreadMerger(
             thread_manager=mock_thread_manager,

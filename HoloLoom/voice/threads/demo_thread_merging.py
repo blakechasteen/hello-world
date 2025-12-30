@@ -137,7 +137,7 @@ async def run_demo():
     3. Merge using 3 different strategies
     4. Show results and YarnGraph relationships
     """
-    from HoloLoom.voice_first.thread import ThreadMerger, MergeStrategy
+    from HoloLoom.voice.threads.thread import ThreadMerger, MergeStrategy
 
     # Set UTF-8 encoding for Windows console
     import sys

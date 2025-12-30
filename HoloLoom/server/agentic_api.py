@@ -37,6 +37,17 @@ from HoloLoom.alignment.audit_trail import AuditTrail
 from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest, RiskLevel
 from HoloLoom.alignment.deception_detection import DeceptionDetector
 
+# SaaS API Components (Dec 2025)
+try:
+    from HoloLoom.saas import create_saas_backend, SaaSBackend
+    from HoloLoom.saas.routes import customers_router, api_keys_router
+    from HoloLoom.saas.auth import add_rate_limit_headers
+    SAAS_AVAILABLE = True
+except ImportError as e:
+    SAAS_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning(f"SaaS components unavailable: {e}")
+
 # Agent Monitoring (Nov 2025)
 try:
     from HoloLoom.agentic.monitoring import get_monitor, start_monitoring, stop_monitoring
@@ -371,6 +382,17 @@ try:
 except ImportError:
     logger.debug("WebSocket progress not available (missing dependencies)")
 
+# SaaS API Routers (Dec 2025)
+if SAAS_AVAILABLE:
+    try:
+        app.include_router(customers_router)
+        app.include_router(api_keys_router)
+        # Add rate limit headers middleware
+        app.middleware("http")(add_rate_limit_headers)
+        logger.info("SaaS API routers mounted at /api/v1/customers and /api/v1/api-keys")
+    except Exception as e:
+        logger.warning(f"Failed to mount SaaS routers: {e}")
+
 
 # Helper function for secure client IP extraction
 def _get_client_ip(request: Request) -> str:
@@ -553,6 +575,7 @@ class ServerState:
     rate_limiter: Optional[RateLimiter] = None  # Rate limiting
     stats: Optional[ServerStats] = None  # Server statistics
     monitor: Optional[Any] = None  # Agent monitoring (Nov 2025)
+    saas_backend: Optional[Any] = None  # SaaS backend (Dec 2025)
 
 
 state = ServerState()
@@ -651,6 +674,18 @@ async def startup():
     else:
         logger.info("Agent monitoring disabled (monitoring.py not available)")
 
+    # Initialize SaaS backend (Dec 2025)
+    if SAAS_AVAILABLE:
+        try:
+            state.saas_backend = await create_saas_backend()
+            app.state.saas_backend = state.saas_backend  # Make available to routes
+            logger.info("✅ SaaS backend initialized (SQLite)")
+        except Exception as e:
+            logger.warning(f"⚠️  SaaS backend initialization failed: {e}")
+            state.saas_backend = None
+    else:
+        logger.info("SaaS backend disabled (saas module not available)")
+
     # Create orchestrator (lazy init - see get_orchestrator)
     logger.info("HoloLoom server ready!")
 
@@ -667,6 +702,14 @@ async def shutdown():
             logger.info("Agent monitoring stopped")
         except Exception as e:
             logger.warning(f"Error stopping monitoring: {e}")
+
+    # Close SaaS backend (Dec 2025)
+    if SAAS_AVAILABLE and state.saas_backend:
+        try:
+            await state.saas_backend.close()
+            logger.info("SaaS backend closed")
+        except Exception as e:
+            logger.warning(f"Error closing SaaS backend: {e}")
 
     # Close orchestrator
     if state.orchestrator:

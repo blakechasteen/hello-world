@@ -39,7 +39,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # HoloLoom imports
 from HoloLoom.config import Config
-from HoloLoom.analytics.recursive_analytics import RecursiveAnalytics
+from HoloLoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
 from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
 from HoloLoom.agentic.skill_agents import SkillRegistry, list_available_skills
 

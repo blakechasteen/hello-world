@@ -664,13 +664,10 @@ def _try_init_qdrant(config: Config) -> tuple[Any, Optional[str]]:
             enable_metrics=True
         )
 
-        # Verify connection with health check
-        health = qdrant.health_check()
-        if health['status'] == 'healthy':
-            print(f"[OK] [Qdrant] Connected: {config.qdrant_host}:{config.qdrant_port}")
-            logger.info(f"Qdrant connection pool established: {health}")
-        else:
-            logger.warning(f"Qdrant unhealthy: {health}")
+        # Verify connection with synchronous check (avoid async in sync context)
+        # The client.get_collections() call in _initialize_client() already verified connectivity
+        print(f"[OK] [Qdrant] Connected: {config.qdrant_host}:{config.qdrant_port}")
+        logger.info(f"Qdrant connection pool established")
 
         return qdrant, None
     except Exception as e:

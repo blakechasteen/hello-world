@@ -14,8 +14,8 @@ Run:
 import pytest
 import asyncio
 
-from HoloLoom.voice_first.grammar import VoiceGrammar, CommandType, CommandIntent
-from HoloLoom.voice_first.core import (
+from HoloLoom.voice.threads.grammar import VoiceGrammar, CommandType, CommandIntent
+from HoloLoom.voice.threads.core import (
     VoiceMode,
     VoiceModeStateMachine,
     VoiceRouter

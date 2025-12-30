@@ -20,7 +20,7 @@ Metrics Tracked:
 - Convergence rates
 
 Usage:
-    from HoloLoom.analytics.recursive_analytics import RecursiveAnalytics
+    from HoloLoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
 
     analytics = RecursiveAnalytics()
 

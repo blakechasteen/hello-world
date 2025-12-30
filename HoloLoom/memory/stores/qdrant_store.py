@@ -140,6 +140,9 @@ class QdrantMemoryStore:
         self.collection_prefix = collection_prefix
         self.scales = scales
 
+        # Instance logger (references module-level logger)
+        self.logger = logger
+
         # Initialize or reuse client singleton
         self._initialize_client()
 

@@ -22,7 +22,7 @@ from HoloLoom.semantic_calculus.mcp_server import (
     spectrum,
     call_tool as mcp_call_tool
 )
-from HoloLoom.monitoring.dashboard import MonitoringDashboard, MetricsCollector
+from HoloLoom.telemetry.monitoring.dashboard import MonitoringDashboard, MetricsCollector
 import time
 
 

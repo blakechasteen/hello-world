@@ -16,7 +16,7 @@ Run:
     PYTHONPATH=. python HoloLoom/voice_first/demo.py
 
 Or:
-    python -m HoloLoom.voice_first.demo
+    python -m HoloLoom.voice.threads.demo
 """
 
 import asyncio
@@ -27,7 +27,7 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
-from HoloLoom.voice_first import UnifiedVoiceAgent, VoiceMode
+from HoloLoom.voice.threads import UnifiedVoiceAgent, VoiceMode
 
 
 async def demo_basic_thread_management():
@@ -134,7 +134,7 @@ async def demo_intent_classification():
     print("=" * 80)
     print()
 
-    from HoloLoom.voice_first.grammar import VoiceGrammar
+    from HoloLoom.voice.threads.grammar import VoiceGrammar
 
     grammar = VoiceGrammar()
 

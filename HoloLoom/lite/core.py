@@ -99,6 +99,7 @@ class HoloLoomLite:
         self,
         config: Optional['Config'] = None,
         enable_safety: bool = True,
+        persist: bool = False,
     ):
         """
         Initialize HoloLoom Lite.
@@ -106,24 +107,36 @@ class HoloLoomLite:
         Args:
             config: Optional config (defaults to Config.lite())
             enable_safety: Enable SafetyGuardrails (default: True)
+            persist: Enable persistent memory using Neo4j + Qdrant (default: False)
+                     Requires docker-compose.lite.yml to be running.
+                     Falls back to in-memory if Docker services unavailable.
 
         Example:
-            >>> loom = HoloLoomLite()  # Simple, uses defaults
+            >>> loom = HoloLoomLite()  # Simple, uses defaults (in-memory)
+            >>>
+            >>> # With persistent memory (requires Docker)
+            >>> loom = HoloLoomLite(persist=True)
             >>>
             >>> # Or with custom config
             >>> from HoloLoom.config import Config
             >>> loom = HoloLoomLite(config=Config.lite())
         """
         # Lazy import to avoid circular dependencies
-        from HoloLoom.config import Config
+        from HoloLoom.config import Config, MemoryBackend
 
         # Use lite config by default
         self.config = config or Config.lite()
         self._enable_safety = enable_safety
+        self._persist = persist
+
+        # If persistence requested, switch to HYBRID backend
+        if persist:
+            self.config.memory_backend = MemoryBackend.HYBRID
 
         # Core components (initialized eagerly)
         self._memory = None
         self._embedder = None
+        self._backend = None  # For persistent memory backend
 
         # Optional components (lazy loaded)
         self._agentic = None
@@ -153,12 +166,44 @@ class HoloLoomLite:
             snapshot_interval=0.5
         )
 
+        # Create memory backend
+        if self._persist:
+            # Use persistent backend (Neo4j + Qdrant) with auto-fallback
+            try:
+                from HoloLoom.memory.backend_factory import create_memory_backend
+                self._backend = await create_memory_backend(self.config)
+
+                # Check if we got a persistent backend or fell back to in-memory
+                backend_type = type(self._backend).__name__
+                if 'InMemory' in backend_type or 'NetworkX' in backend_type:
+                    warnings.warn(
+                        "Persistent storage unavailable. Fell back to in-memory. "
+                        "Start Docker with: docker-compose -f docker-compose.lite.yml up -d"
+                    )
+
+                # Use the backend's graph for awareness tracking
+                if hasattr(self._backend, 'graph'):
+                    graph_backend = self._backend.graph
+                else:
+                    graph_backend = nx.MultiDiGraph()
+
+                # Get vector store if available
+                vector_store = getattr(self._backend, 'vector_store', None)
+
+            except Exception as e:
+                warnings.warn(f"Failed to create persistent backend: {e}. Using in-memory.")
+                graph_backend = nx.MultiDiGraph()
+                vector_store = None
+        else:
+            # Use simple in-memory graph (default, no Docker required)
+            graph_backend = nx.MultiDiGraph()
+            vector_store = None
+
         # Create awareness graph (the core memory)
-        graph_backend = nx.MultiDiGraph()
         self._memory = AwarenessGraph(
             graph_backend=graph_backend,
             semantic_calculus=semantic,
-            vector_store=None
+            vector_store=vector_store
         )
 
         # Initialize safety guardrails if enabled
@@ -549,11 +594,15 @@ class HoloLoomLite:
             Summary string
         """
         metrics = self.get_metrics()
+        memory_mode = "Persistent (Neo4j + Qdrant)" if self._persist else "In-Memory"
+        backend_name = type(self._backend).__name__ if self._backend else "None"
         return f"""HoloLoom Lite
 =============
 Memories: {metrics['n_memories']}
 Connections: {metrics['n_connections']}
 Initialized: {metrics['initialized']}
+Memory Mode: {memory_mode}
+Backend: {backend_name}
 """
 
     # =========================================================================
@@ -581,6 +630,11 @@ Initialized: {metrics['initialized']}
         if self._memory is not None:
             if hasattr(self._memory, 'close'):
                 await self._memory.close()
+
+        # Cleanup persistent backend
+        if self._backend is not None:
+            if hasattr(self._backend, 'close'):
+                await self._backend.close()
 
 
 # Alias for convenience

@@ -25,8 +25,8 @@ import logging
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.memory_symphony.conductor import MemoryConductor
-    from HoloLoom.memory_symphony.protocol import MemoryStrategy
+    from HoloLoom.memory.symphony.conductor import MemoryConductor
+    from HoloLoom.memory.symphony.protocol import MemoryStrategy
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -36,8 +36,8 @@ except ImportError:
 
 # Memory Symphony imports
 try:
-    from HoloLoom.memory_symphony.conductor import MemoryConductor
-    from HoloLoom.memory_symphony.protocol import (
+    from HoloLoom.memory.symphony.conductor import MemoryConductor
+    from HoloLoom.memory.symphony.protocol import (
         MemoryStrategy,
         MemorySystem,
         MemoryQuery,

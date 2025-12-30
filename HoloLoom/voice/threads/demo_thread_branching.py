@@ -136,7 +136,7 @@ async def run_demo():
     5. Return to orchard thread
     6. Show YarnGraph relationships
     """
-    from HoloLoom.voice_first.thread import ThreadBrancher
+    from HoloLoom.voice.threads.thread import ThreadBrancher
 
     # Set UTF-8 encoding for Windows console
     import sys

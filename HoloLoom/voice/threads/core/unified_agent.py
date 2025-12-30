@@ -19,7 +19,7 @@ Features:
 - Graceful degradation if components unavailable
 
 Example:
-    >>> from HoloLoom.voice_first import UnifiedVoiceAgent
+    >>> from HoloLoom.voice.threads import UnifiedVoiceAgent
     >>> from HoloLoom.config import Config
     >>>
     >>> agent = UnifiedVoiceAgent(config=Config.fast())

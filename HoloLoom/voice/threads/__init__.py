@@ -11,7 +11,7 @@ Features:
 - Natural language and structured command support
 
 Quick Start:
-    >>> from HoloLoom.voice_first import UnifiedVoiceAgent
+    >>> from HoloLoom.voice.threads import UnifiedVoiceAgent
     >>> from HoloLoom.config import Config
     >>>
     >>> agent = UnifiedVoiceAgent(config=Config.fast())
