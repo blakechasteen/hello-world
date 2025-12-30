@@ -28,7 +28,7 @@ import asyncio
 import aiosqlite
 import json
 
-from HoloLoom.scratchpad.recursive_scratchpad import (
+from HoloLoom.recursive.scratchpad.recursive_scratchpad import (
     Thought,
     ThoughtType,
     DialogueTree,

@@ -241,19 +241,19 @@ class RecursiveScratchpad:
     async def initialize(self) -> None:
         """Initialize scratchpad components."""
         # Lazy load persistence
-        from HoloLoom.scratchpad.persistence import ThoughtPersistence
+        from HoloLoom.recursive.scratchpad.persistence import ThoughtPersistence
         self._persistence = ThoughtPersistence(self.storage_path)
         await self._persistence.initialize()
 
         # Lazy load dialogue engine
-        from HoloLoom.scratchpad.internal_dialogue import InternalDialogue
+        from HoloLoom.recursive.scratchpad.internal_dialogue import InternalDialogue
         self._dialogue_engine = InternalDialogue(
             max_depth=self.max_dialogue_depth,
             enable_verification=self.enable_verification
         )
 
         # Lazy load loop detector
-        from HoloLoom.scratchpad.strange_loops import LoopDetector
+        from HoloLoom.recursive.scratchpad.strange_loops import LoopDetector
         self._loop_detector = LoopDetector()
 
         # Start new session

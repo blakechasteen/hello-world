@@ -25,7 +25,7 @@ from enum import Enum
 from typing import List, Dict, Optional, Set, Tuple
 import re
 
-from HoloLoom.scratchpad.recursive_scratchpad import (
+from HoloLoom.recursive.scratchpad.recursive_scratchpad import (
     Thought,
     ThoughtType,
     DialogueTree,

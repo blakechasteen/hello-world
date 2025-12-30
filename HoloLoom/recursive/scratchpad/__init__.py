@@ -42,26 +42,26 @@ Usage:
         await scratchpad.save_session("my_exploration")
 """
 
-from HoloLoom.scratchpad.recursive_scratchpad import (
+from HoloLoom.recursive.scratchpad.recursive_scratchpad import (
     RecursiveScratchpad,
     Thought,
     ThoughtType,
     DialogueTree,
 )
 
-from HoloLoom.scratchpad.internal_dialogue import (
+from HoloLoom.recursive.scratchpad.internal_dialogue import (
     InternalDialogue,
     DialogueStep,
     DialogueMode,
 )
 
-from HoloLoom.scratchpad.strange_loops import (
+from HoloLoom.recursive.scratchpad.strange_loops import (
     StrangeLoop,
     LoopDetector,
     LevelCrossing,
 )
 
-from HoloLoom.scratchpad.persistence import (
+from HoloLoom.recursive.scratchpad.persistence import (
     ThoughtPersistence,
     SessionManager,
 )
