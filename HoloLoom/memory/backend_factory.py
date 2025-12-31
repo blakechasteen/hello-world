@@ -142,6 +142,68 @@ try:
 except ImportError:
     QDRANT_AVAILABLE = False
 
+# Spring Dynamics availability (for context packing)
+try:
+    from HoloLoom.memory.spring_dynamics import SpringDynamics, SpringConfig
+    SPRING_DYNAMICS_AVAILABLE = True
+except ImportError:
+    SPRING_DYNAMICS_AVAILABLE = False
+    warnings.warn("Spring dynamics unavailable - context packing will be limited")
+
+
+def _attach_spring_engine(backend: Any, graph: Any = None) -> None:
+    """
+    Attach SpringDynamics engine to a memory backend for context packing.
+
+    This enables beta wave context packing in the WeavingOrchestrator by
+    providing the spring_engine attribute that the orchestrator checks for.
+
+    Args:
+        backend: Memory backend instance
+        graph: Knowledge graph with .G attribute (NetworkX graph)
+               If None, tries to extract from backend
+    """
+    if not SPRING_DYNAMICS_AVAILABLE:
+        logger.debug("Spring dynamics not available, skipping spring_engine attachment")
+        return
+
+    # Try to find a graph
+    if graph is None:
+        # Check common graph attribute names
+        for attr in ['graph', 'G', '_graph', 'kg', '_kg']:
+            if hasattr(backend, attr):
+                graph = getattr(backend, attr)
+                break
+
+    if graph is None:
+        logger.debug("No graph found on backend, skipping spring_engine attachment")
+        return
+
+    # Graph needs .G attribute (NetworkX graph)
+    if not hasattr(graph, 'G'):
+        # Maybe the graph IS the NetworkX graph
+        import networkx as nx
+        if isinstance(graph, nx.Graph):
+            # Wrap it
+            class GraphWrapper:
+                def __init__(self, g):
+                    self.G = g
+            graph = GraphWrapper(graph)
+        else:
+            logger.debug("Graph missing .G attribute, skipping spring_engine attachment")
+            return
+
+    try:
+        config = SpringConfig(
+            use_advanced_integrator=True,
+            integrator_type="verlet"
+        )
+        spring_engine = SpringDynamics(graph, config)
+        backend.spring_engine = spring_engine
+        logger.info("Spring engine attached to backend for context packing")
+    except Exception as e:
+        logger.warning(f"Failed to attach spring engine: {e}")
+
 
 # ============================================================================
 # Hybrid Store - Simple Balanced Fusion
@@ -555,7 +617,13 @@ async def create_memory_backend(
             raise ValueError("[X] NetworkX unavailable - cannot initialize INMEMORY backend")
         print("[OK] [INMEMORY] Using NetworkX backend (dev mode)")
         backend_instance = NetworkXKG()
-        return GuardrailedMemoryStore(backend=backend_instance, guardrails=guardrails)
+        # Attach spring engine for context packing support
+        _attach_spring_engine(backend_instance, backend_instance)
+        wrapped = GuardrailedMemoryStore(backend=backend_instance, guardrails=guardrails)
+        # Also attach to wrapper so orchestrator can find it
+        if hasattr(backend_instance, 'spring_engine'):
+            wrapped.spring_engine = backend_instance.spring_engine
+        return wrapped
 
     # ============================================================
     # HYBRID: Neo4j + Qdrant (production default)
@@ -571,7 +639,12 @@ async def create_memory_backend(
             from HoloLoom.memory.hyperspace_backend import create_hyperspace_backend
             print("[OK] [HYPERSPACE] Initializing research backend")
             backend_instance = create_hyperspace_backend(config)
-            return GuardrailedMemoryStore(backend=backend_instance, guardrails=guardrails)
+            # Attach spring engine for context packing support
+            _attach_spring_engine(backend_instance)
+            wrapped = GuardrailedMemoryStore(backend=backend_instance, guardrails=guardrails)
+            if hasattr(backend_instance, 'spring_engine'):
+                wrapped.spring_engine = backend_instance.spring_engine
+            return wrapped
         except ImportError as e:
             warnings.warn(f"[WARN] HYPERSPACE unavailable ({e}), falling back to HYBRID")
             return await _create_hybrid(config, guardrails=guardrails)
@@ -773,12 +846,20 @@ async def _create_hybrid(
 
         fallback = _create_fallback_backend()
 
-    return HybridMemoryStore(
+    hybrid_store = HybridMemoryStore(
         neo4j=neo4j,
         qdrant=qdrant,
         fallback=fallback,
         guardrails=guardrails,
     )
+
+    # Attach spring engine for context packing support
+    # Use neo4j graph if available, otherwise fallback
+    graph_for_spring = neo4j if neo4j else fallback
+    if graph_for_spring:
+        _attach_spring_engine(hybrid_store, graph_for_spring)
+
+    return hybrid_store
 
 
 class GuardrailedMemoryStore:

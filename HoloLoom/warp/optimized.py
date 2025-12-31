@@ -14,6 +14,7 @@ Performance Features:
 This module is a drop-in replacement for standard WarpSpace with
 significant performance improvements for large-scale deployments.
 """
+from __future__ import annotations  # PEP 563: Postponed annotation evaluation
 
 import logging
 import numpy as np

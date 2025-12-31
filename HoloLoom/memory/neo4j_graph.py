@@ -2,6 +2,10 @@
 HoloLoom Neo4j Knowledge Graph Store
 =====================================
 Production-grade graph database implementation with Neo4j connection pooling.
+"""
+from __future__ import annotations  # Enable string annotations for type hints
+
+"""
 
 This is a "warp thread" module - independent graph storage with Neo4j backend.
 
