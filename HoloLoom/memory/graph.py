@@ -163,7 +163,7 @@ class KGEdge:
 
         return True
 
-    def invalidate(self, timestamp: Optional['datetime'] = None):
+    def invalidate(self, timestamp: Optional['datetime'] = None) -> None:
         """
         Mark edge as invalid (for temporal edge invalidation).
 
@@ -838,7 +838,7 @@ class KG:
             warnings.warn(f"Spectral clustering requires scipy and sklearn: {e}")
             return {}
 
-    def clear_spectral_cache(self):
+    def clear_spectral_cache(self) -> None:
         """Clear cached diffusion maps and spectral computations."""
         if hasattr(self, '_diffusion_cache'):
             self._diffusion_cache.clear()
