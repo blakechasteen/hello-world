@@ -1117,6 +1117,100 @@ Solution:
 
 ---
 
+## Open Source Strategy: Decentralized Safety
+
+> **Mission**: Make AI safe through community-owned verification.
+
+Federation is a core component of HoloLoom's open source strategy, transforming AI safety from a vendor feature into a **network property**.
+
+### How Federation Serves the Mission
+
+| Feature | How it Makes AI Safe |
+|---------|---------------------|
+| **No central authority** | Safety isn't controlled by any single entity |
+| **Byzantine consensus** | Trustless verification of responses |
+| **Guild trust system** | Community-driven safety research |
+| **P2P replication** | Safety knowledge spreads automatically |
+| **DS-STAR scoring** | Reputation rewards safe, accurate nodes |
+| **Ed25519 identity** | Cryptographic accountability |
+
+### Comparison: Vendor Safety vs Federation Safety
+
+| Aspect | Vendor-Controlled | Federation |
+|--------|------------------|------------|
+| **Who defines safe?** | Vendor | Community consensus |
+| **Single point of failure** | Yes | No |
+| **Transparency** | Variable | Full (code + network) |
+| **Continuity** | Vendor risk | Decentralized forever |
+| **Verification** | Trust vendor | Byzantine proof |
+| **Scalability** | Vendor capacity | Million-node P2P |
+
+### Integration with HoloLoom Stack
+
+Federation works with other HoloLoom components:
+
+```
+┌────────────────────────────────────────────────┐
+│                   Federation                    │
+│  ┌──────────┐  ┌─────────┐  ┌──────────────┐   │
+│  │  SWIM    │  │Kademlia │  │  Byzantine   │   │
+│  │ Gossip   │  │  DHT    │  │  Consensus   │   │
+│  └──────────┘  └─────────┘  └──────────────┘   │
+│              Decentralized Layer               │
+└───────────────────────┬────────────────────────┘
+                        │
+┌───────────────────────┼────────────────────────┐
+│                       v                        │
+│  ┌─────────────┐  ┌─────────────┐              │
+│  │ HoloLoom    │  │   SaaS      │              │
+│  │ Full/Lite   │  │   Toolkit   │              │
+│  └─────────────┘  └─────────────┘              │
+│              Application Layer                 │
+└────────────────────────────────────────────────┘
+```
+
+**Integration patterns**:
+
+1. **Lite + Federation** (future): Lightweight nodes for personal devices
+2. **Full + Federation**: Production nodes with full weaving cycle
+3. **SaaS + Federation**: API key management for guild services
+
+See [Integration Strategy](../../docs/INTEGRATION_STRATEGY.md) for detailed patterns.
+
+### Why Decentralization Matters for Safety
+
+Traditional AI safety relies on vendor good faith:
+- Vendor defines what's "safe"
+- Vendor controls the guardrails
+- Vendor can change policies unilaterally
+- Users must trust the vendor
+
+**Federation inverts this**:
+- Community defines safety through consensus
+- Code is the guardrail (open source)
+- Changes require Byzantine agreement
+- Users verify through the network
+
+**Result**: Safety becomes a verifiable network property, not a vendor promise.
+
+### Getting Started with Federation
+
+```python
+from HoloLoom.federation import Federation, FederationConfig
+
+# Join the community network
+async with Federation(FederationConfig.production()) as node:
+    # Join safety research guild
+    await node.join_guild("safety_researchers")
+
+    # Contribute verified responses
+    await node.query("What are alignment best practices?", verify=True)
+
+    # Your node now contributes to community safety
+```
+
+---
+
 ## Future Roadmap
 
 **Phase 1** (✅ Complete): Core protocols (SWIM, DHT, Byzantine consensus)

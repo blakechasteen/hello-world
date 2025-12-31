@@ -18,7 +18,9 @@ We welcome contributions from everyone. Whether you're fixing bugs, adding featu
 8. [Pre-Commit Hooks](#pre-commit-hooks)
 9. [Commit Messages](#commit-messages)
 10. [Pull Request Process](#pull-request-process)
-11. [Community](#community)
+11. [SaaS Toolkit for Ecosystem Developers](#saas-toolkit-for-ecosystem-developers)
+12. [Safety Research](#safety-research)
+13. [Community](#community)
 
 ---
 
@@ -39,6 +41,8 @@ This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participatin
 - 🎨 **Visualizations** - Enhance dashboards, add charts
 - 🧪 **Testing** - Increase coverage, add integration tests
 - 🚀 **Performance** - Optimize speed, reduce memory
+- 🏗️ **Ecosystem Apps** - Build apps using the SaaS toolkit
+- 🔒 **Safety Research** - Improve alignment framework
 
 ### Where to Start
 
@@ -654,6 +658,185 @@ Relates to #456
    - Maintainer merges (squash or rebase)
    - Branch deleted
    - Closes related issues
+
+---
+
+## SaaS Toolkit for Ecosystem Developers
+
+HoloLoom's SaaS Toolkit (`HoloLoom/saas/`) is designed for ecosystem developers who want to build their own applications on top of HoloLoom. The toolkit is modular - use only what you need.
+
+### What's Included
+
+The SaaS Toolkit provides production-ready components:
+
+| Component | Purpose | Optional? |
+|-----------|---------|-----------|
+| **Authentication** | API keys, customer management | Core |
+| **Usage Tracking** | Query counts, token usage | Optional |
+| **Billing** | Stripe integration, subscriptions | Optional |
+| **Audit Logging** | Event tracking, compliance | Optional |
+
+### Quick Start
+
+**1. Auth Only** (simplest):
+```python
+from HoloLoom.saas import SaaSConfig, create_saas_backend
+
+config = SaaSConfig(
+    sqlite_path="./data/myapp.db",
+    fallback_to_sqlite=True,
+    enable_usage_tracking=False,
+    enable_billing=False,
+)
+backend = create_saas_backend(config)
+```
+
+**2. Auth + Usage Tracking**:
+```python
+config = SaaSConfig(
+    sqlite_path="./data/myapp.db",
+    enable_usage_tracking=True,  # Track queries/tokens
+    enable_billing=False,
+)
+```
+
+**3. Full Billing**:
+```python
+config = SaaSConfig(
+    host="localhost",
+    port=5432,
+    database="myapp",
+    enable_usage_tracking=True,
+    enable_billing=True,
+    stripe_api_key=os.getenv("STRIPE_API_KEY"),
+)
+```
+
+### Example Applications
+
+See `HoloLoom/saas/examples/` for complete working examples:
+
+1. **auth_only_app.py** - Minimal authentication (SQLite, no dependencies)
+2. **usage_tracking_app.py** - Auth + usage analytics (no billing)
+3. **full_billing_app.py** - Complete Stripe billing integration
+
+Run any example:
+```bash
+PYTHONPATH=. uvicorn HoloLoom.saas.examples.auth_only_app:app --reload
+```
+
+### Building Your Own App
+
+**Step 1**: Create your FastAPI app with SaaS routes:
+```python
+from fastapi import FastAPI, Depends
+from HoloLoom.saas import SaaSConfig, create_saas_backend
+from HoloLoom.saas.auth import validate_api_key, AuthContext
+from HoloLoom.saas.routes import customers_router, api_keys_router
+
+app = FastAPI(title="My HoloLoom App")
+
+# Mount SaaS routes
+app.include_router(customers_router, tags=["customers"])
+app.include_router(api_keys_router, tags=["api-keys"])
+
+# Your protected endpoints
+@app.post("/api/v1/query")
+async def query(auth: AuthContext = Depends(validate_api_key)):
+    # auth.customer_id, auth.plan available
+    return {"customer": auth.customer_id}
+```
+
+**Step 2**: Add usage tracking (optional):
+```python
+@app.post("/api/v1/query")
+async def query(data: dict, auth: AuthContext = Depends(validate_api_key)):
+    # Track usage
+    await backend.record_usage(
+        customer_id=auth.customer_id,
+        queries_delta=1,
+        tokens_delta=len(str(data)) * 4
+    )
+    # Your logic here
+    return {"status": "success"}
+```
+
+### Contributing to the Toolkit
+
+We welcome contributions to the SaaS toolkit:
+
+1. **New integrations** - Payment providers, usage exporters
+2. **Bug fixes** - Security issues, edge cases
+3. **Documentation** - Examples, tutorials
+4. **Testing** - Integration tests, edge cases
+
+**Before contributing**:
+- Read the existing code in `HoloLoom/saas/`
+- Check `HoloLoom/saas/README.md` for architecture
+- Open an issue to discuss significant changes
+
+---
+
+## Safety Research
+
+HoloLoom's Alignment Framework is open source because **safety mechanisms must be open for inspection**.
+
+### What's Included
+
+The alignment framework (`HoloLoom/alignment/`) provides:
+
+| Component | Purpose | Overhead |
+|-----------|---------|----------|
+| **Safety Guardrails** | Risk-based action gating | 0.039 ms |
+| **Deception Detection** | Goal transparency tracking | 0.034 ms |
+| **Instrumental Convergence** | Power-seeking prevention | 0.015 ms |
+| **Audit Trail** | Complete decision provenance | 0.015 ms |
+
+**Total overhead: 0.103 ms** - Safety should not compromise performance.
+
+### How to Contribute
+
+**1. Use the Framework**:
+```python
+from HoloLoom.alignment import SafetyGuardrails, AuditTrail
+
+guardrails = SafetyGuardrails(enable_human_in_loop=True)
+audit_trail = AuditTrail()
+
+# Gate actions through safety checks
+result = await guardrails.gate_action(action, context)
+await audit_trail.log_decision(query, action, outcome)
+```
+
+**2. Report Gaps**:
+- Found a pattern the guardrails miss? Open an issue
+- Discovered an edge case? Submit a test case
+- Have a better heuristic? Propose it with benchmarks
+
+**3. Improve Detection**:
+- Add new adversarial patterns to `safety_guardrails.py`
+- Improve deception detection heuristics
+- Extend the audit trail format
+
+**4. Research and Publish**:
+- Use HoloLoom as a platform for safety research
+- Publish findings on what works
+- Share datasets of adversarial patterns
+
+### Key Files
+
+- `HoloLoom/alignment/safety_guardrails.py` - Risk classification and gating
+- `HoloLoom/alignment/deception_detection.py` - Goal transparency
+- `HoloLoom/alignment/audit_trail.py` - Decision provenance
+- `HoloLoom/alignment/README.md` - Complete API reference
+
+### Our Commitment
+
+1. The alignment framework will always be open source (MIT licensed)
+2. Safety features will never be paywalled
+3. We will publish our research findings
+
+See [SAFETY.md](SAFETY.md) for our complete AI safety philosophy.
 
 ---
 
