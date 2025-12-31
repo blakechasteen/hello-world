@@ -720,3 +720,33 @@ try:
     ])
 except ImportError:
     pass
+
+# Voice handlers (December 2025) - Voice-to-code via Matrix voice messages
+try:
+    from HoloLoom.chatops.handlers.voice_handler import (
+        VoiceHandler,
+        TranscriptionResult,
+        VoiceCommandResult
+    )
+    __all__.extend([
+        "VoiceHandler",
+        "TranscriptionResult",
+        "VoiceCommandResult"
+    ])
+except ImportError:
+    pass
+
+# Code voice grammar (December 2025) - Patterns for voice-to-code commands
+try:
+    from HoloLoom.chatops.handlers.code_voice_grammar import (
+        CodeVoiceGrammar,
+        CodeIntent,
+        CodeCommandIntent
+    )
+    __all__.extend([
+        "CodeVoiceGrammar",
+        "CodeIntent",
+        "CodeCommandIntent"
+    ])
+except ImportError:
+    pass

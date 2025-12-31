@@ -33,6 +33,7 @@ try:
         RoomMessageText,
         RoomMessageImage,
         RoomMessageFile,
+        RoomMessageAudio,  # Voice messages
         LoginResponse,
         SyncResponse,
         RoomSendResponse,
@@ -145,6 +146,9 @@ class MatrixBot:
 
         # Default message handler (catches non-command messages)
         self.default_handler: Optional[Callable] = None
+
+        # Voice handler for audio messages
+        self.voice_handler: Optional[Any] = None
 
         logger.info(f"MatrixBot initialized for {config.user_id}")
 
@@ -298,6 +302,86 @@ class MatrixBot:
         """Handle direct message."""
         if self.default_handler:
             await self.default_handler(room, event, message)
+
+    # ========================================================================
+    # Audio/Voice Message Handling
+    # ========================================================================
+
+    async def audio_callback(self, room: MatrixRoom, event: RoomMessageAudio) -> None:
+        """
+        Handle incoming audio/voice messages.
+
+        Args:
+            room: Room where audio was sent
+            event: Audio message event
+        """
+        # Ignore own messages
+        if event.sender == self.config.user_id:
+            return
+
+        # Check rate limiting
+        if not self._check_rate_limit(event.sender):
+            logger.warning(f"Rate limit exceeded for {event.sender}")
+            await self.send_message(
+                room.room_id,
+                f"{event.sender}: Rate limit exceeded. Please slow down."
+            )
+            return
+
+        # Check permissions
+        if not self._check_permissions(event.sender):
+            logger.warning(f"Unauthorized user: {event.sender}")
+            return
+
+        logger.info(f"Audio message from {event.sender} in {room.room_id}")
+
+        # Delegate to voice handler if registered
+        if self.voice_handler:
+            try:
+                # Send typing indicator
+                await self.send_typing(room.room_id, True)
+
+                # Process voice message
+                result = await self.voice_handler.handle_voice_message(room, event)
+
+                # Stop typing indicator
+                await self.send_typing(room.room_id, False)
+
+                # Send response
+                if result.success:
+                    response = result.response
+                    if result.code_block:
+                        response += f"\n\n```{result.metadata.get('language', '')}\n{result.code_block}\n```"
+                    await self.send_message(room.room_id, response, markdown=True)
+                else:
+                    await self.send_message(
+                        room.room_id,
+                        f"Voice processing failed: {result.error}"
+                    )
+
+            except Exception as e:
+                logger.error(f"Error processing voice message: {e}", exc_info=True)
+                await self.send_typing(room.room_id, False)
+                await self.send_message(
+                    room.room_id,
+                    f"Error processing voice message: {str(e)}"
+                )
+        else:
+            logger.warning("No voice handler registered")
+            await self.send_message(
+                room.room_id,
+                "Voice messages are not currently enabled."
+            )
+
+    def set_voice_handler(self, handler) -> None:
+        """
+        Set the voice handler for processing audio messages.
+
+        Args:
+            handler: VoiceHandler instance
+        """
+        self.voice_handler = handler
+        logger.info("Voice handler registered")
 
     # ========================================================================
     # Command Registration
@@ -494,6 +578,7 @@ class MatrixBot:
 
         # Register callbacks
         self.client.add_event_callback(self.message_callback, RoomMessageText)
+        self.client.add_event_callback(self.audio_callback, RoomMessageAudio)
 
         # Initial sync
         logger.info("Performing initial sync...")
