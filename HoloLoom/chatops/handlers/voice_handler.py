@@ -7,9 +7,22 @@ Handles voice messages from Matrix clients:
 3. Classifies intent using CodeVoiceGrammar
 4. Routes to appropriate code generation/explanation/editing handlers
 
+Architecture:
+- Protocol-based handlers for extensibility
+- Event hooks for monitoring and integration
+- Middleware support for cross-cutting concerns
+- Async-first design throughout
+
 Usage:
     handler = VoiceHandler(matrix_client)
     response = await handler.handle_voice_message(room, event)
+
+    # Custom handlers via protocol
+    handler.register_handler(CodeIntent.GENERATE, my_generator)
+
+    # Event hooks for monitoring
+    handler.on_transcription(lambda t: log_transcription(t))
+    handler.on_intent_classified(lambda i: track_intent(i))
 
 Author: Claude Code
 Date: December 2025
@@ -18,9 +31,10 @@ Date: December 2025
 import asyncio
 import tempfile
 import logging
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional, Dict, Any, Callable
-from dataclasses import dataclass
+from typing import Optional, Dict, Any, Callable, List, Protocol, runtime_checkable
+from dataclasses import dataclass, field
 import aiofiles
 
 try:
@@ -81,6 +95,146 @@ class VoiceCommandResult:
     def __post_init__(self):
         if self.metadata is None:
             self.metadata = {}
+
+
+# =============================================================================
+# Protocol-Based Handler Interface
+# =============================================================================
+
+@runtime_checkable
+class IntentHandler(Protocol):
+    """
+    Protocol for intent handlers.
+
+    Implement this protocol to create custom handlers for code intents.
+    Handlers receive params and context, return VoiceCommandResult.
+
+    Example:
+        class MyCodeGenerator:
+            async def handle(self, params, context) -> VoiceCommandResult:
+                # Generate code using your custom logic
+                return VoiceCommandResult(...)
+
+        handler.register_handler(CodeIntent.GENERATE, MyCodeGenerator())
+    """
+
+    async def handle(
+        self,
+        params: Dict[str, str],
+        context: Dict[str, Any]
+    ) -> VoiceCommandResult:
+        """Handle an intent with given params and context."""
+        ...
+
+
+class BaseIntentHandler(ABC):
+    """
+    Abstract base class for intent handlers.
+
+    Provides common utilities and enforces the handler interface.
+    """
+
+    @abstractmethod
+    async def handle(
+        self,
+        params: Dict[str, str],
+        context: Dict[str, Any]
+    ) -> VoiceCommandResult:
+        """Handle the intent. Must be implemented by subclasses."""
+        pass
+
+    def _make_result(
+        self,
+        original_text: str,
+        intent: CodeIntent,
+        params: Dict[str, str],
+        response: str,
+        confidence: float = 0.8,
+        success: bool = True,
+        code_block: Optional[str] = None,
+        error: Optional[str] = None,
+        **metadata
+    ) -> VoiceCommandResult:
+        """Convenience method to create VoiceCommandResult."""
+        return VoiceCommandResult(
+            original_text=original_text,
+            intent=intent,
+            params=params,
+            response=response,
+            confidence=confidence,
+            success=success,
+            code_block=code_block,
+            error=error,
+            metadata=metadata
+        )
+
+
+# =============================================================================
+# Event Hooks
+# =============================================================================
+
+@dataclass
+class VoiceEvent:
+    """Base class for voice processing events."""
+    timestamp: float = field(default_factory=lambda: __import__('time').time())
+
+
+@dataclass
+class TranscriptionEvent(VoiceEvent):
+    """Emitted after audio transcription."""
+    result: TranscriptionResult = None
+    duration_ms: float = 0.0
+
+
+@dataclass
+class IntentClassifiedEvent(VoiceEvent):
+    """Emitted after intent classification."""
+    intent: CodeCommandIntent = None
+    text: str = ""
+
+
+@dataclass
+class CommandProcessedEvent(VoiceEvent):
+    """Emitted after command processing."""
+    result: VoiceCommandResult = None
+    processing_time_ms: float = 0.0
+
+
+class EventEmitter:
+    """
+    Simple event emitter for voice processing hooks.
+
+    Allows registering callbacks for various processing stages.
+    """
+
+    def __init__(self):
+        self._listeners: Dict[str, List[Callable]] = {}
+
+    def on(self, event_type: str, callback: Callable) -> 'EventEmitter':
+        """Register a callback for an event type."""
+        if event_type not in self._listeners:
+            self._listeners[event_type] = []
+        self._listeners[event_type].append(callback)
+        return self
+
+    def off(self, event_type: str, callback: Callable) -> 'EventEmitter':
+        """Remove a callback for an event type."""
+        if event_type in self._listeners:
+            self._listeners[event_type] = [
+                cb for cb in self._listeners[event_type] if cb != callback
+            ]
+        return self
+
+    async def emit(self, event_type: str, event: VoiceEvent):
+        """Emit an event to all registered listeners."""
+        if event_type in self._listeners:
+            for callback in self._listeners[event_type]:
+                try:
+                    result = callback(event)
+                    if asyncio.iscoroutine(result):
+                        await result
+                except Exception as e:
+                    logger.warning(f"Event listener error ({event_type}): {e}")
 
 
 # =============================================================================

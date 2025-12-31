@@ -328,6 +328,7 @@ class CheckPhaseHandler:
                 "automated_available": {
                     "skill_tester": self.skill_tester is not None,
                     "security_analyzer": self.security_analyzer is not None,
+                    "hololoom_alignment": self.hololoom is not None,
                 },
                 "automated_results": automated_results,
             },

@@ -174,6 +174,13 @@ from .constitutional_critique import (
     create_constitution,
     create_constitutional_ai,
     quick_critique,
+    # Phase 3 Refinements (December 2025)
+    CritiqueEngineProtocol,      # Extensibility: custom critique engines
+    RevisionEngineProtocol,       # Extensibility: custom revision engines
+    PrincipleProviderProtocol,    # Extensibility: custom principle sources
+    PreferenceModelProtocol,      # Extensibility: custom preference models
+    PrincipleWeightPrior,         # Thompson Sampling: Beta distribution prior
+    AdaptivePrincipleWeighter,    # Thompson Sampling: adaptive principle weighting
 )
 from .modern_attack_defenses import (
     UnifiedAttackDefense,
@@ -320,6 +327,13 @@ __all__ = [
     "create_constitution",
     "create_constitutional_ai",
     "quick_critique",
+    # Constitutional Critique - Extensibility (December 2025 Refinement)
+    "CritiqueEngineProtocol",
+    "RevisionEngineProtocol",
+    "PrincipleProviderProtocol",
+    "PreferenceModelProtocol",
+    "PrincipleWeightPrior",
+    "AdaptivePrincipleWeighter",
     # Modern Attack Defenses
     "UnifiedAttackDefense",
     "CrescendoDefense",
