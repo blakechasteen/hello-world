@@ -50,7 +50,7 @@ class PromptlyBridge:
         self.promptly = Promptly(promptly_dir=promptly_dir)
         try:
             self.loop_engine = LoopEngine(self.promptly)
-        except:
+        except Exception:
             self.loop_engine = None
             logger.warning("LoopEngine not available (Promptly version may not support it)")
 

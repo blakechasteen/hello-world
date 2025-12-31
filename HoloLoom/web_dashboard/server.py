@@ -98,7 +98,7 @@ async def startup_event():
             else:
                 print("⚠ Ollama not running - using templates")
                 dual_stream_gen = DualStreamGenerator(awareness, llm_generator=None)
-        except:
+        except Exception:
             print("⚠ Ollama error - using templates")
             dual_stream_gen = DualStreamGenerator(awareness, llm_generator=None)
 

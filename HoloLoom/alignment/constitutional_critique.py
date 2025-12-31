@@ -1000,6 +1000,116 @@ class SelfCritique:
 
         return current, history
 
+    # =========================================================================
+    # Phase 3 Refinement: Batch Processing (December 2025)
+    # =========================================================================
+
+    async def batch_critique(
+        self,
+        items: List[Tuple[str, str]],
+        parallel: bool = True,
+        max_concurrent: int = 10,
+    ) -> List[List[CritiqueResult]]:
+        """
+        Batch critique multiple prompt-response pairs.
+
+        December 2025: Added for efficient parallel processing.
+
+        Args:
+            items: List of (prompt, response) tuples
+            parallel: Whether to process in parallel
+            max_concurrent: Maximum concurrent operations
+
+        Returns:
+            List of critique results for each item
+        """
+        if not items:
+            return []
+
+        if not parallel:
+            # Sequential processing
+            return [
+                self.critique_response(prompt, response)
+                for prompt, response in items
+            ]
+
+        # Parallel processing with semaphore
+        semaphore = asyncio.Semaphore(max_concurrent)
+
+        async def critique_one(prompt: str, response: str) -> List[CritiqueResult]:
+            async with semaphore:
+                # critique_response is sync, wrap in executor for true parallelism
+                loop = asyncio.get_event_loop()
+                return await loop.run_in_executor(
+                    None, self.critique_response, prompt, response, None, CritiqueType.ETHICAL
+                )
+
+        tasks = [critique_one(prompt, response) for prompt, response in items]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Handle exceptions - return empty critiques for failures
+        processed = []
+        for i, result in enumerate(results):
+            if isinstance(result, Exception):
+                logger.warning(f"Batch critique {i} failed: {result}")
+                processed.append([])
+            else:
+                processed.append(result)
+
+        return processed
+
+    async def batch_critique_and_revise(
+        self,
+        items: List[Tuple[str, str]],
+        parallel: bool = True,
+        max_concurrent: int = 5,
+    ) -> List[Tuple[str, List[RevisionResult]]]:
+        """
+        Batch critique and revise multiple prompt-response pairs.
+
+        December 2025: Added for efficient parallel processing.
+
+        Args:
+            items: List of (prompt, response) tuples
+            parallel: Whether to process in parallel
+            max_concurrent: Maximum concurrent operations
+
+        Returns:
+            List of (final_response, revision_history) tuples
+        """
+        if not items:
+            return []
+
+        if not parallel:
+            # Sequential processing
+            results = []
+            for prompt, response in items:
+                final, history = await self.critique_and_revise(prompt, response)
+                results.append((final, history))
+            return results
+
+        # Parallel processing with semaphore
+        semaphore = asyncio.Semaphore(max_concurrent)
+
+        async def process_one(prompt: str, response: str) -> Tuple[str, List[RevisionResult]]:
+            async with semaphore:
+                return await self.critique_and_revise(prompt, response)
+
+        tasks = [process_one(prompt, response) for prompt, response in items]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Handle exceptions
+        processed = []
+        for i, result in enumerate(results):
+            if isinstance(result, Exception):
+                logger.warning(f"Batch critique-revise {i} failed: {result}")
+                # Return original response unchanged on failure
+                processed.append((items[i][1], []))
+            else:
+                processed.append(result)
+
+        return processed
+
 
 class RLAIFTrainer:
     """
@@ -1431,6 +1541,104 @@ class ConstitutionalAI:
 
         return stats
 
+    # =========================================================================
+    # Phase 3 Refinement: Batch Processing (December 2025)
+    # =========================================================================
+
+    async def batch_process(
+        self,
+        items: List[Tuple[str, str]],
+        auto_revise: bool = True,
+        record_for_training: bool = True,
+        parallel: bool = True,
+        max_concurrent: int = 5,
+    ) -> List[Dict[str, Any]]:
+        """
+        Process multiple prompt-response pairs through the CAI pipeline.
+
+        December 2025: Added for efficient batch processing.
+
+        Args:
+            items: List of (prompt, response) tuples
+            auto_revise: Automatically revise if issues found
+            record_for_training: Record for RLAIF training
+            parallel: Whether to process in parallel
+            max_concurrent: Maximum concurrent operations
+
+        Returns:
+            List of processing results for each item
+        """
+        if not items:
+            return []
+
+        if not parallel:
+            # Sequential processing
+            results = []
+            for prompt, response in items:
+                result = await self.process_response(
+                    prompt, response, auto_revise, record_for_training
+                )
+                results.append(result)
+            return results
+
+        # Parallel processing with semaphore
+        semaphore = asyncio.Semaphore(max_concurrent)
+
+        async def process_one(prompt: str, response: str) -> Dict[str, Any]:
+            async with semaphore:
+                return await self.process_response(
+                    prompt, response, auto_revise, record_for_training
+                )
+
+        tasks = [process_one(prompt, response) for prompt, response in items]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Handle exceptions
+        processed = []
+        for i, result in enumerate(results):
+            if isinstance(result, Exception):
+                logger.warning(f"Batch process {i} failed: {result}")
+                processed.append({
+                    "original_response": items[i][1],
+                    "final_response": items[i][1],
+                    "was_revised": False,
+                    "critiques": [],
+                    "violations_found": 0,
+                    "error": str(result),
+                })
+            else:
+                processed.append(result)
+
+        return processed
+
+    async def batch_verify(
+        self,
+        items: List[Tuple[str, str]],
+        metadata: Optional[List[Dict[str, Any]]] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Batch verify alignment for multiple prompt-response pairs.
+
+        December 2025: Added for efficient batch verification.
+
+        Args:
+            items: List of (prompt, response) tuples
+            metadata: Optional list of metadata dicts for each item
+
+        Returns:
+            List of verification results for each item
+        """
+        if not self.verifier:
+            return [{"error": "Verification not enabled"} for _ in items]
+
+        results = []
+        for i, (prompt, response) in enumerate(items):
+            item_metadata = metadata[i] if metadata and i < len(metadata) else None
+            result = self.verifier.record_interaction(prompt, response, item_metadata)
+            results.append(result)
+
+        return results
+
 
 # Factory functions
 def create_constitution(
@@ -1463,6 +1671,9 @@ def create_constitutional_ai(
     max_revision_rounds: int = 3,
     enable_rlaif: bool = True,
     enable_verification: bool = True,
+    enable_adaptive_weighting: bool = False,
+    critique_engine: Optional[CritiqueEngineProtocol] = None,
+    revision_engine: Optional[RevisionEngineProtocol] = None,
 ) -> ConstitutionalAI:
     """
     Create a complete Constitutional AI system.
@@ -1472,16 +1683,41 @@ def create_constitutional_ai(
         max_revision_rounds: Maximum revision iterations
         enable_rlaif: Enable preference learning
         enable_verification: Enable continuous verification
+        enable_adaptive_weighting: Enable Thompson Sampling principle weighting
+            December 2025: Added for Phase 3 extensibility
+        critique_engine: Custom critique engine implementing CritiqueEngineProtocol
+            December 2025: Added for Phase 3 extensibility
+        revision_engine: Custom revision engine implementing RevisionEngineProtocol
+            December 2025: Added for Phase 3 extensibility
 
     Returns:
         Configured ConstitutionalAI instance
+
+    Note:
+        Custom critique_engine and revision_engine are stored on the returned
+        instance but integration requires additional wiring in production.
+        They provide extensibility points for future enhancements.
     """
-    return ConstitutionalAI(
+    cai = ConstitutionalAI(
         constitution=constitution,
         max_revision_rounds=max_revision_rounds,
         enable_rlaif=enable_rlaif,
         enable_verification=enable_verification,
     )
+
+    # Store extensibility references (December 2025)
+    if enable_adaptive_weighting and cai.constitution:
+        cai._adaptive_weighter = AdaptivePrincipleWeighter(
+            cai.constitution.get_weighted_principles()
+        )
+    else:
+        cai._adaptive_weighter = None
+
+    # Store custom engines for extensibility
+    cai._custom_critique_engine = critique_engine
+    cai._custom_revision_engine = revision_engine
+
+    return cai
 
 
 # Quick check function

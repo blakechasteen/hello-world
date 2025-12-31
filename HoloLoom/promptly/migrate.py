@@ -240,7 +240,7 @@ class MigrationTracker:
             """)
             result = cursor.fetchone()
             return result[0] if result[0] is not None else 0
-        except:
+        except Exception:
             return 0
 
     def get_migration_history(self) -> List[Dict]:
@@ -264,7 +264,7 @@ class MigrationTracker:
                 }
                 for row in cursor.fetchall()
             ]
-        except:
+        except Exception:
             return []
 
     def close(self):
@@ -340,7 +340,7 @@ class SchemaMigrator:
                 WHERE type='table' AND name='workflows'
             """)
             return cursor.fetchone() is not None
-        except:
+        except Exception:
             return False
 
     def apply_schema(self, dry_run: bool = False) -> bool:
@@ -497,7 +497,7 @@ class SchemaMigrator:
                         cursor = self.conn.execute(f"SELECT COUNT(*) FROM {table}")
                         count = cursor.fetchone()[0]
                         info["row_counts"][table] = count
-                    except:
+                    except Exception:
                         info["row_counts"][table] = 0
 
             return info

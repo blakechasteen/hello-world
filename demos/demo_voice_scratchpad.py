@@ -258,7 +258,7 @@ async def demo_conversation_flow():
     try:
         shard = await scratchpad.finalize()
         print(f"\n[OK] SAVED: {shard.id}")
-    except:
+    except Exception:
         print("\n[FAIL] CANCELLED")
 
     print("\n" + "=" * 70)

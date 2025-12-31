@@ -32,7 +32,7 @@ def load_session():
                 data = pickle.load(f)
             print(f"📂 Loaded {len(data.get('history', []))} messages")
             return data.get('history', []), data.get('settings', {})
-        except:
+        except Exception:
             pass
     return [], {}
 
@@ -62,7 +62,7 @@ try:
     llm_spec.loader.exec_module(llm_module)
     OllamaLLM = llm_module.OllamaLLM
     print("✓ LLM loaded")
-except:
+except Exception:
     OllamaLLM = None
     print("✗ LLM not available")
 

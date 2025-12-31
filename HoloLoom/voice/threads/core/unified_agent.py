@@ -320,7 +320,7 @@ class UnifiedVoiceAgent:
         if self.orchestrator is not None:
             try:
                 await self.orchestrator.close()
-            except:
+            except Exception:
                 pass
 
         logger.info("UnifiedVoiceAgent closed")

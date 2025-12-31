@@ -39,7 +39,7 @@ from sous.services.community_network import (
 try:
     from sous.services.hololoom_integration import create_hololoom_engine
     HOLOLOOM_AVAILABLE = True
-except:
+except ImportError:
     HOLOLOOM_AVAILABLE = False
     print("Note: HoloLoom integration not available, running without AI features\n")
 

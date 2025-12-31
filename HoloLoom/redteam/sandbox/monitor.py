@@ -237,14 +237,14 @@ class ResourceMonitor:
         # CPU: convert per-core percent to single number
         try:
             cpu_percent = process.cpu_percent(interval=0.01)
-        except:
+        except Exception:
             cpu_percent = 0.0
 
         # Memory
         try:
             memory_info = process.memory_info()
             memory_mb = memory_info.rss / (1024 * 1024)
-        except:
+        except Exception:
             memory_mb = 0.0
 
         # I/O
@@ -252,7 +252,7 @@ class ResourceMonitor:
             io_counters = process.io_counters()
             io_read_bytes = io_counters.read_bytes
             io_write_bytes = io_counters.write_bytes
-        except:
+        except Exception:
             io_read_bytes = 0
             io_write_bytes = 0
 
@@ -262,7 +262,7 @@ class ResourceMonitor:
         try:
             net_connections = process.net_connections()
             # This is approximate: we'd need system-wide stats for accuracy
-        except:
+        except Exception:
             pass
 
         return ResourceSample(
@@ -296,7 +296,7 @@ class ResourceMonitor:
                     utime = int(fields[13])
                     stime = int(fields[14])
                     cpu_percent = (utime + stime) / 100.0  # Rough estimate
-        except:
+        except Exception:
             pass
 
         # Try /proc/self/status (for memory)
@@ -308,7 +308,7 @@ class ResourceMonitor:
                         kb = int(line.split()[1])
                         memory_mb = kb / 1024.0
                         break
-        except:
+        except Exception:
             pass
 
         return ResourceSample(

@@ -138,7 +138,7 @@ def main():
         import webbrowser
         webbrowser.open(str(output.absolute()))
         print('\n[+] Opened in default browser')
-    except:
+    except Exception:
         print('\n[!] Could not auto-open browser - please open manually')
 
 if __name__ == '__main__':

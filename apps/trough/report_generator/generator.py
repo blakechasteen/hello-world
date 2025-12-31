@@ -77,7 +77,7 @@ def _get_syntax_highlighted_code(
         if language:
             try:
                 lexer = get_lexer_by_name(language)
-            except:
+            except Exception:
                 lexer = guess_lexer_for_filename(file_path, code)
         else:
             lexer = guess_lexer_for_filename(file_path, code)

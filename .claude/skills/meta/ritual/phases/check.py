@@ -340,8 +340,9 @@ class CheckPhaseHandler:
     async def _run_automated_checks(
         self,
         session: SessionState,
+        code_content: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Run automated checks if skill_tester or security_analyzer available."""
+        """Run automated checks if skill_tester, security_analyzer, or HoloLoom available."""
         results = {}
 
         if self.skill_tester:
@@ -368,6 +369,35 @@ class CheckPhaseHandler:
                 }
             except Exception as e:
                 results["security_analyzer"] = {
+                    "status": "error",
+                    "error": str(e),
+                }
+
+        # HoloLoom alignment framework integration
+        if self.hololoom:
+            try:
+                context = {
+                    "session_id": session.session_id,
+                    "task": session.task,
+                    "complexity": session.complexity.value if session.complexity else "fast",
+                }
+                hololoom_result = await self.hololoom.run_safety_checks(
+                    code_content=code_content,
+                    context=context,
+                )
+                results["hololoom_alignment"] = {
+                    "status": "completed",
+                    "passed": hololoom_result.get("blocked", 0) == 0,
+                    "total_checks": hololoom_result.get("total_checks", 0),
+                    "passed_count": hololoom_result.get("passed", 0),
+                    "failed_count": hololoom_result.get("failed", 0),
+                    "blocked_count": hololoom_result.get("blocked", 0),
+                    "highest_risk": hololoom_result.get("highest_risk", "unknown"),
+                    "requires_review": hololoom_result.get("requires_review", False),
+                    "details": hololoom_result.get("results", []),
+                }
+            except Exception as e:
+                results["hololoom_alignment"] = {
                     "status": "error",
                     "error": str(e),
                 }

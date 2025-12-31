@@ -148,7 +148,7 @@ class Mem0MemoryStore:
                 if 'created_at' in result:
                     try:
                         timestamp = datetime.fromisoformat(result['created_at'].replace('Z', '+00:00'))
-                    except:
+                    except ValueError:
                         pass
                 
                 return Memory(

@@ -20,8 +20,9 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 try:
-    from HoloLoom.config_v2 import ExpansionBundle
+    from HoloLoom.config import ExpansionBundle
 except ImportError:
+    # Fallback for testing
     class ExpansionBundle:
         def get_settings(self) -> Dict[str, Any]:
             raise NotImplementedError

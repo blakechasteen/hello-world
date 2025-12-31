@@ -53,7 +53,7 @@ def create_test_image(width=400, height=300, color=(255, 0, 0), text="Test"):
 
     try:
         font = ImageFont.truetype("arial.ttf", 32)
-    except:
+    except OSError:
         font = ImageFont.load_default()
 
     bbox = draw.textbbox((0, 0), text, font=font)

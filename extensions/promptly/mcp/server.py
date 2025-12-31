@@ -714,7 +714,7 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent]:
                 try:
                     prompt_data = p.get(prompt_name)
                     task = prompt_data["content"]
-                except:
+                except Exception:
                     task = prompt_name
 
             if not task:

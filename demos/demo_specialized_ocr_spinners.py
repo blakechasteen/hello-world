@@ -47,7 +47,7 @@ async def demo_handwritten_notes():
 
     try:
         font = ImageFont.truetype("arial.ttf", 28)
-    except:
+    except OSError:
         font = ImageFont.load_default()
 
     # Simulate handwritten style (all content as if handwritten)
@@ -138,7 +138,7 @@ async def demo_receipt_parsing():
     try:
         title_font = ImageFont.truetype("arial.ttf", 32)
         body_font = ImageFont.truetype("arial.ttf", 20)
-    except:
+    except OSError:
         title_font = ImageFont.load_default()
         body_font = title_font
 
@@ -243,7 +243,7 @@ async def demo_batch_processing():
 
         try:
             font = ImageFont.truetype("arial.ttf", 24)
-        except:
+        except OSError:
             font = ImageFont.load_default()
 
         draw.text((50, 50), f"Note {i+1}\n\nTODO: Task {i+1}\n\nImportant reminder", fill='black', font=font)
@@ -325,7 +325,7 @@ async def demo_memory_integration():
 
     try:
         font = ImageFont.truetype("arial.ttf", 24)
-    except:
+    except OSError:
         font = ImageFont.load_default()
 
     note_text = """Project Planning - Q1 2025

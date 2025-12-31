@@ -160,7 +160,7 @@ async def demo_comparison():
         if not llm.is_available():
             console.print("[yellow]Ollama not available - skipping comparison[/]")
             return
-    except:
+    except Exception:
         console.print("[yellow]Ollama error - skipping comparison[/]")
         return
 

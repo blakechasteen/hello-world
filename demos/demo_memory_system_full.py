@@ -250,21 +250,26 @@ async def test_memory_conductor():
                 self.graph.add_edge("thompson_sampling", "exploration")
                 self.graph.add_edge("ucb", "exploration")
 
-            async def recall(self, query_text: str, limit: int = 5):
-                """Mock recall."""
+            async def recall(self, query_text: str = None, limit: int = 5, k: int = None, **kwargs):
+                """Mock recall - accepts both limit and k for compatibility."""
+                # Handle both parameter names
+                actual_limit = k if k is not None else limit
+
                 # Return mock memories
                 class MockMemory:
                     def __init__(self, id, text, score):
                         self.id = id
                         self.text = text
+                        self.content = text  # Alias for compatibility
                         self.relevance = score
+                        self.score = score  # Alias for compatibility
                         self.context = {}
                         self.metadata = {}
 
                 return [
                     MockMemory("mem_1", "Thompson Sampling balances exploration", 0.9),
                     MockMemory("mem_2", "UCB provides optimism", 0.85),
-                ]
+                ][:actual_limit]
 
         # Create conductor
         backend = MockMemoryBackend()

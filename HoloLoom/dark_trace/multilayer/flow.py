@@ -699,7 +699,7 @@ class InformationFlowAnalyzer:
             n = corr.shape[0]
             mask = ~np.eye(n, dtype=bool)
             redundancy = float(np.mean(np.abs(corr[mask])))
-        except:
+        except Exception:
             redundancy = 0.0
 
         return redundancy
@@ -740,7 +740,7 @@ class InformationFlowAnalyzer:
                         mi += joint_prob[i, j] * np.log2(
                             joint_prob[i, j] / (source_prob[i] * target_prob[j] + 1e-10) + 1e-10
                         )
-        except:
+        except Exception:
             mi = 0.0
 
         return float(max(0, mi))
@@ -785,7 +785,7 @@ class InformationFlowAnalyzer:
                             f"L{target_layer}.{t_idx}",
                             abs(corr)
                         ))
-                except:
+                except Exception:
                     pass
 
         # Sort and return top-k

@@ -123,6 +123,39 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:
 
 ---
 
+## Self-Hosting (Docker)
+
+Deploy HoloLoom on your own infrastructure in 5 minutes:
+
+```bash
+# Clone and start
+git clone https://github.com/yourusername/mythRL.git
+cd mythRL
+docker-compose -f docker-compose.quickstart.yml up -d
+
+# Verify deployment
+curl http://localhost:8000/health
+
+# Try a query
+curl -X POST http://localhost:8000/query \
+  -H "Content-Type: application/json" \
+  -d '{"text": "What is Thompson Sampling?"}'
+```
+
+**Access Points**:
+- HoloLoom API: http://localhost:8000
+- Neo4j Browser: http://localhost:7474 (neo4j/hololoom)
+- Qdrant Dashboard: http://localhost:6333/dashboard
+
+**See**: [docs/SELF_HOSTING.md](docs/SELF_HOSTING.md) for complete self-hosting guide including:
+- Deployment options (Lite, Full, Monitored, Kubernetes)
+- Production configuration
+- Reverse proxy & TLS setup
+- Backup & recovery
+- Security checklist
+
+---
+
 ## What Makes HoloLoom Different?
 
 ### 1. It Actually Learns 🧠
@@ -360,6 +393,7 @@ async with WeavingOrchestrator(cfg=config, memory=memory) as shuttle:
 
 ### Quick Start
 - **[README.md](README.md)** (this file) - Get started in 5 minutes
+- **[docs/SELF_HOSTING.md](docs/SELF_HOSTING.md)** - Deploy on your own infrastructure (Docker/K8s)
 - **[V1_SIMPLIFICATION_COMPLETE.md](V1_SIMPLIFICATION_COMPLETE.md)** - v1.0 changes explained
 
 ### In-Depth Guides

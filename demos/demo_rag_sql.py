@@ -472,7 +472,7 @@ async def run_demo():
     try:
         os.unlink(db_path)
         print("✓ Demo database removed")
-    except:
+    except OSError:
         print("⚠ Could not remove demo database (may still be locked)")
 
     print_header("✅ Demo Complete!")

@@ -545,7 +545,7 @@ class MultiModalMemory:
                         "mentions",
                         {'entity': entity_name}
                     )
-                except:
+                except Exception:
                     pass  # Entity might not exist yet
     
     async def _store_in_vectors(self, memory: Memory, modality_meta: ModalityMetadata):

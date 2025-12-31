@@ -73,7 +73,7 @@ def create_test_image(
     try:
         # Try to use a nicer font if available
         font = ImageFont.truetype("arial.ttf", 32)
-    except:
+    except OSError:
         font = ImageFont.load_default()
 
     # Calculate text position (centered)

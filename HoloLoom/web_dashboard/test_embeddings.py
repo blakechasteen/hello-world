@@ -143,7 +143,7 @@ async def test_chat_archiving():
             dual_stream_gen = DualStreamGenerator(awareness, llm_generator=llm)
         else:
             dual_stream_gen = DualStreamGenerator(awareness, llm_generator=None)
-    except:
+    except Exception:
         dual_stream_gen = DualStreamGenerator(awareness, llm_generator=None)
 
     thread_manager = ThreadManager(

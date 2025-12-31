@@ -195,7 +195,7 @@ class DataFormatSkill(BaseSkill):
                 try:
                     import tomllib
                     parsed = tomllib.loads(data)
-                except:
+                except ImportError:
                     import toml
                     parsed = toml.loads(data)
             else:
@@ -236,7 +236,7 @@ class DataFormatSkill(BaseSkill):
                 try:
                     import tomllib
                     parsed = tomllib.loads(data)
-                except:
+                except ImportError:
                     import toml
                     parsed = toml.loads(data)
             else:

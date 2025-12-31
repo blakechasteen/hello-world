@@ -353,7 +353,7 @@ def main():
 
         try:
             plt.show()
-        except:
+        except Exception:
             pass
 
     except Exception as e:

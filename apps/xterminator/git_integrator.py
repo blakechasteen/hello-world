@@ -167,7 +167,7 @@ class GitIntegrator:
             # Clean up temp file on failure
             try:
                 os.unlink(temp_file.name)
-            except:
+            except OSError:
                 pass
             raise IOError(f"Failed to write {file_path}: {e}")
 
@@ -216,7 +216,7 @@ class GitIntegrator:
                 if old_backup.backup_path and Path(old_backup.backup_path).exists():
                     try:
                         os.unlink(old_backup.backup_path)
-                    except:
+                    except OSError:
                         pass
 
     # ================================================================

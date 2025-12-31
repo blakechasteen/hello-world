@@ -429,7 +429,7 @@ class ReceiptSpinner(BaseSpinner):
             # Remove currency symbols and commas
             cleaned = amount_str.replace('$', '').replace(',', '').strip()
             return Decimal(cleaned)
-        except:
+        except (ValueError, Exception):
             return None
 
     def _categorize_receipt(self, receipt: ReceiptData) -> str:

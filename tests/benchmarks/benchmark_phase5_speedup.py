@@ -141,7 +141,7 @@ async def benchmark_cache_hit_rates(config: Config, shards: List[MemoryShard]) -
                     "merge_hit_rate": stats.merge_hit_rate,
                     "overall_hit_rate": stats.overall_hit_rate,
                 }
-    except:
+    except Exception:
         pass
 
     return {

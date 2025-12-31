@@ -57,7 +57,7 @@ try:
     import ollama
     OLLAMA_AVAILABLE = True
     print("✓ Ollama client available")
-except:
+except ImportError:
     OLLAMA_AVAILABLE = False
     print("✗ Ollama client not available")
 

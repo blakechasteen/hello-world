@@ -74,7 +74,7 @@ from HoloLoom.policy.thompson_sampling import TSBandit
 # Utility Functions
 # ============================================================================
 
-def maybe_device():
+def maybe_device() -> torch.device:
     """Get the best available device (CUDA if available, else CPU)."""
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -916,7 +916,7 @@ class IntrinsicCuriosityModule(nn.Module):
         self.inverse_model = nn.Sequential(nn.Linear(feature_dim * 2, action_dim))
         self.mse = nn.MSELoss()
 
-    def forward(self, state: torch.Tensor, action: torch.Tensor, next_state: torch.Tensor):
+    def forward(self, state: torch.Tensor, action: torch.Tensor, next_state: torch.Tensor) -> Dict[str, torch.Tensor]:
         z = self.encoder(state)
         z_next = self.encoder(next_state)
 
@@ -950,7 +950,7 @@ class RandomNetworkDistillation(nn.Module):
         self.running_mean = torch.zeros(1)
         self.mse = nn.MSELoss()
 
-    def forward(self, state: torch.Tensor, update_stats: bool = False):
+    def forward(self, state: torch.Tensor, update_stats: bool = False) -> Dict[str, torch.Tensor]:
         tgt = self.target(state).detach()
         pred = self.predictor(state)
         loss = self.mse(pred, tgt)
@@ -977,7 +977,7 @@ class HierarchicalPolicy(nn.Module):
         self.action_head = nn.Linear(state_dim, action_dim)
         self.value_head = nn.Linear(state_dim, 1)
 
-    def select_skill(self, state: torch.Tensor, deterministic: bool = False):
+    def select_skill(self, state: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, torch.Tensor]:
         logits = self.skill_head(state)
         probs = torch.softmax(logits, dim=-1)
         if deterministic:
@@ -990,7 +990,7 @@ class HierarchicalPolicy(nn.Module):
         one_hot.scatter_(1, idx.unsqueeze(-1), 1.0)
         return one_hot, idx
 
-    def forward(self, state: torch.Tensor):
+    def forward(self, state: torch.Tensor) -> Dict[str, torch.Tensor]:
         mean = self.action_head(state)
         std = torch.zeros_like(mean)
         value = self.value_head(state).squeeze(-1)
@@ -998,7 +998,7 @@ class HierarchicalPolicy(nn.Module):
         skill, _ = self.select_skill(state, deterministic=True)
         return {'mean': mean, 'std': std, 'value': value, 'skill': skill}
 
-    def compute_skill_diversity_loss(self, state: torch.Tensor, skills: torch.Tensor):
+    def compute_skill_diversity_loss(self, state: torch.Tensor, skills: torch.Tensor) -> torch.Tensor:
         # encourage diversity by penalizing low variance across skill vectors
         return torch.var(skills, dim=0).mean()
 
@@ -1022,7 +1022,7 @@ class PPOAgent:
         self.config = config or PPOConfig()
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=self.config.lr)
 
-    def compute_gae(self, rewards: torch.Tensor, values: torch.Tensor, dones: torch.Tensor, next_value: torch.Tensor, gamma: float = 0.99, lam: float = 0.95):
+    def compute_gae(self, rewards: torch.Tensor, values: torch.Tensor, dones: torch.Tensor, next_value: torch.Tensor, gamma: float = 0.99, lam: float = 0.95) -> Tuple[torch.Tensor, torch.Tensor]:
         T = rewards.size(0)
         advantages = torch.zeros_like(rewards)
         gae = 0.0
@@ -1035,14 +1035,14 @@ class PPOAgent:
         returns = advantages + values
         return advantages, returns
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any) -> Dict[str, float]:
         # Minimal stub: return plausible metric names expected by tests
         return {'policy_loss': 0.0, 'value_loss': 0.0, 'entropy': 0.0, 'kl_divergence': 0.0, 'curiosity_loss': 0.0}
 
-    def save(self, path: str):
+    def save(self, path: str) -> None:
         torch.save(self.policy.state_dict(), path)
 
-    def load(self, path: str):
+    def load(self, path: str) -> None:
         self.policy.load_state_dict(torch.load(path))
 
 
@@ -1119,7 +1119,7 @@ class SimpleUnifiedPolicy(nn.Module):
         else:
             return self.mlp(x)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
         h = self._encode(x)
 
         if self.policy_type == 'deterministic':
@@ -1182,7 +1182,7 @@ class SimpleUnifiedPolicy(nn.Module):
         else:
             raise NotImplementedError
 
-    def sample_action(self, x: torch.Tensor, deterministic: bool = False):
+    def sample_action(self, x: torch.Tensor, deterministic: bool = False) -> Tuple[torch.Tensor, Dict[str, Any]]:
         """Sample an action from the policy. If deterministic=True, return the mode/mean."""
         out = self.forward(x)
         if self.policy_type == 'deterministic':
@@ -1213,7 +1213,7 @@ class SimpleUnifiedPolicy(nn.Module):
                 info['skill'] = out['skill']
             return sample, info
 
-    def compute_intrinsic_reward(self, state: torch.Tensor, action: torch.Tensor, next_state: torch.Tensor):
+    def compute_intrinsic_reward(self, state: torch.Tensor, action: torch.Tensor, next_state: torch.Tensor) -> torch.Tensor:
         if self.icm is not None:
             out = self.icm(state, action, next_state)
             return out['intrinsic_reward']

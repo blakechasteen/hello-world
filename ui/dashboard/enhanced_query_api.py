@@ -1022,7 +1022,7 @@ async def collaboration_websocket(websocket: WebSocket, session_id: str):
                 for ws in active_sessions[session_id]:
                     try:
                         await ws.send_json(message)
-                    except:
+                    except Exception:
                         dead_ws.append(ws)
 
                 # Clean up dead connections
@@ -1039,7 +1039,7 @@ async def collaboration_websocket(websocket: WebSocket, session_id: str):
                     if ws != websocket:
                         try:
                             await ws.send_json(message)
-                        except:
+                        except Exception:
                             pass
 
     except WebSocketDisconnect:
@@ -1169,7 +1169,7 @@ def is_recent(query_item: Dict, hours: int = 1) -> bool:
         ts = datetime.fromisoformat(query_item.get('timestamp', ''))
         age = datetime.now() - ts
         return age.total_seconds() < (hours * 3600)
-    except:
+    except ValueError:
         return False
 
 

@@ -243,7 +243,7 @@ def main() -> int:
         import webbrowser
         webbrowser.open(str(output.absolute()))
         logger.info('\n[+] Opened in default browser')
-    except:
+    except Exception:
         logger.info('\n[!] Could not auto-open browser - please open manually')
 
     return 0

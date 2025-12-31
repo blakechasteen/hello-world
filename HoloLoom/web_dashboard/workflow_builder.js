@@ -6645,7 +6645,14 @@ function handleCommandKeydown(e) {
             if (item.type === 'agent') {
                 addAgentFromPalette(item.agentType);
             } else if (item.type === 'action') {
-                eval(item.action);
+                // SECURITY FIX: Replace eval() with safe function dispatch
+                // Extracts function name and calls only if it's a valid global function
+                const funcName = item.action.replace(/\(\)$/, '');
+                if (typeof window[funcName] === 'function') {
+                    window[funcName]();
+                } else {
+                    console.warn(`Unknown action: ${item.action}`);
+                }
                 closeCommandPalette();
             }
         }

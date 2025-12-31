@@ -124,7 +124,7 @@ class Vulnerability:
                 return None
             try:
                 return datetime.fromisoformat(s)
-            except:
+            except ValueError:
                 return None
 
         return cls(

@@ -69,7 +69,7 @@ async def demo_extract_image():
     try:
         font = ImageFont.truetype("arial.ttf", 40)
         small_font = ImageFont.truetype("arial.ttf", 24)
-    except:
+    except OSError:
         font = ImageFont.load_default()
         small_font = font
 
@@ -138,7 +138,7 @@ async def demo_batch_processing():
 
         try:
             font = ImageFont.truetype("arial.ttf", 32)
-        except:
+        except OSError:
             font = ImageFont.load_default()
 
         draw.text((50, 80), f"Document {i+1}", fill='black', font=font)
@@ -192,7 +192,7 @@ async def demo_spinner_integration():
     try:
         title_font = ImageFont.truetype("arial.ttf", 48)
         body_font = ImageFont.truetype("arial.ttf", 24)
-    except:
+    except OSError:
         title_font = ImageFont.load_default()
         body_font = title_font
 
@@ -273,7 +273,7 @@ async def demo_memory_integration():
         try:
             title_font = ImageFont.truetype("arial.ttf", 36)
             body_font = ImageFont.truetype("arial.ttf", 20)
-        except:
+        except OSError:
             title_font = ImageFont.load_default()
             body_font = title_font
 

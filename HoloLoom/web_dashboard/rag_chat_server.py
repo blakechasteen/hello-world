@@ -270,7 +270,7 @@ async def websocket_notifications(websocket: WebSocket):
     try:
         while True:
             await asyncio.sleep(10)
-    except:
+    except Exception:
         pass
 
 if __name__ == "__main__":

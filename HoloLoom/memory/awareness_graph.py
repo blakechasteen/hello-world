@@ -313,6 +313,7 @@ class AwarenessGraph:
 
         # 1. Fast semantic search (vector store if available)
         # Use raw embeddings for TOPICAL similarity (not style-based positions)
+        # Get scores directly to avoid style-based activate_region() overwriting
         if self.vectors is not None:
             try:
                 nearby_ids = await self.vectors.search(
@@ -320,27 +321,46 @@ class AwarenessGraph:
                     radius=budget.semantic_radius,
                     k=budget.max_memories * 2
                 )
+                # Vector store doesn't return scores, use activate_region as fallback
+                self.activation_field.activate_region(
+                    center=perception.position,
+                    radius=budget.semantic_radius,
+                    node_ids=nearby_ids
+                )
             except Exception:
-                nearby_ids = self._brute_force_search(
+                # Use brute force with scores for CONTENT-BASED ranking
+                similarity_scores = self._brute_force_search(
                     perception.position,
                     budget.semantic_radius,
                     budget.max_memories * 2,
-                    query_raw_embedding=perception.raw_embedding
+                    query_raw_embedding=perception.raw_embedding,
+                    return_scores=True
                 )
+                # Set activation levels directly from similarity scores
+                # This preserves the correct TOPICAL ranking (not style-based)
+                for node_id, score in similarity_scores.items():
+                    self.activation_field.levels[node_id] = score
+                    # Also update spatial index if not already there
+                    if node_id not in self.activation_field.spatial_index:
+                        if node_id in self.semantic_positions:
+                            self.activation_field.spatial_index[node_id] = self.semantic_positions[node_id]
         else:
-            nearby_ids = self._brute_force_search(
+            # Use brute force with scores for CONTENT-BASED ranking
+            similarity_scores = self._brute_force_search(
                 perception.position,
                 budget.semantic_radius,
                 budget.max_memories * 2,
-                query_raw_embedding=perception.raw_embedding
+                query_raw_embedding=perception.raw_embedding,
+                return_scores=True
             )
-
-        # 2. Activate region
-        self.activation_field.activate_region(
-            center=perception.position,
-            radius=budget.semantic_radius,
-            node_ids=nearby_ids
-        )
+            # Set activation levels directly from similarity scores
+            # This preserves the correct TOPICAL ranking (not style-based)
+            for node_id, score in similarity_scores.items():
+                self.activation_field.levels[node_id] = score
+                # Also update spatial index if not already there
+                if node_id not in self.activation_field.spatial_index:
+                    if node_id in self.semantic_positions:
+                        self.activation_field.spatial_index[node_id] = self.semantic_positions[node_id]
 
         # 3. Spread activation through graph
         if budget.spread_iterations > 0:
@@ -478,8 +498,9 @@ class AwarenessGraph:
         query_pos: np.ndarray,
         radius: float,
         k: int,
-        query_raw_embedding: Optional[np.ndarray] = None
-    ) -> List[str]:
+        query_raw_embedding: Optional[np.ndarray] = None,
+        return_scores: bool = False
+    ) -> Union[List[str], Dict[str, float]]:
         """
         Brute force semantic search.
 
@@ -488,6 +509,17 @@ class AwarenessGraph:
 
         The key insight: semantic_positions measure STYLE (warmth, valence, formality)
         but retrieval needs TOPICAL similarity which is in the raw embeddings.
+
+        Args:
+            query_pos: Query position in 228D semantic space (style)
+            radius: Search radius for style-based fallback
+            k: Maximum number of results
+            query_raw_embedding: Query raw embedding for content-based search
+            return_scores: If True, return dict of {node_id: score} instead of list
+
+        Returns:
+            If return_scores=False: List of node IDs sorted by relevance
+            If return_scores=True: Dict of {node_id: similarity_score}
         """
         # PRIMARY: Use raw embeddings with cosine similarity for content-based retrieval
         if query_raw_embedding is not None and self.raw_embeddings:
@@ -499,14 +531,25 @@ class AwarenessGraph:
 
             # Sort by similarity (higher is better)
             similarities.sort(key=lambda x: x[1], reverse=True)
-            return [node_id for node_id, _ in similarities[:k]]
+            top_k = similarities[:k]
+
+            if return_scores:
+                return {node_id: score for node_id, score in top_k}
+            return [node_id for node_id, _ in top_k]
 
         # FALLBACK: Style-based positions with Euclidean distance
         distances = []
         for node_id, node_pos in self.semantic_positions.items():
             distance = float(np.linalg.norm(query_pos - node_pos))
             if distance < radius:
-                distances.append((node_id, distance))
+                # Convert distance to similarity (closer = higher score)
+                max_dist = radius
+                similarity = max(0.0, 1.0 - (distance / max_dist))
+                distances.append((node_id, distance, similarity))
 
-        distances.sort(key=lambda x: x[1])
-        return [node_id for node_id, _ in distances[:k]]
+        distances.sort(key=lambda x: x[1])  # Sort by distance (ascending)
+        top_k = distances[:k]
+
+        if return_scores:
+            return {node_id: score for node_id, _, score in top_k}
+        return [node_id for node_id, _, _ in top_k]

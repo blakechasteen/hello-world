@@ -274,7 +274,7 @@ async def example_2_hybrid():
         try:
             sources = mem.context.get('fusion_sources', ['unknown'])
             # Metadata might be merged into context
-        except:
+        except Exception:
             sources = ['weighted']
             
         print(f"\n   [{i}] Score: {mem.relevance:.3f} | Sources: {sources}")

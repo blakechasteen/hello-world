@@ -496,7 +496,7 @@ class LoopClosureTracker:
             try:
                 metrics = self.calculate_circularity_metrics(org_id, start_date, end_date)
                 org_scores.append(metrics.circularity_score)
-            except:
+            except Exception:
                 pass
 
         if not org_scores:
@@ -557,7 +557,7 @@ class LoopClosureTracker:
                 report["nutrients"]["nitrogen_recovered_lbs"] += metrics.nitrogen_recovered_lbs
                 report["nutrients"]["phosphorus_recovered_lbs"] += metrics.phosphorus_recovered_lbs
                 report["nutrients"]["potassium_recovered_lbs"] += metrics.potassium_recovered_lbs
-            except:
+            except Exception:
                 pass
 
         # Calculate net carbon impact

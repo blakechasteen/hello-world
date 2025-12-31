@@ -31,7 +31,7 @@ import logging
 import time
 import warnings
 import numpy as np
-from typing import Dict, List, Any, Optional, TYPE_CHECKING
+from typing import Dict, List, Any, Optional, Callable, Type, TYPE_CHECKING
 from datetime import datetime, timedelta
 
 # Shared types
@@ -271,6 +271,7 @@ def _get_jenny_renderer_map():
 
 if TYPE_CHECKING:
     from HoloLoom.awareness.llm_integration import OllamaLLM
+    from HoloLoom.config import BanditStrategy
 
 
 # ============================================================================
@@ -328,7 +329,7 @@ class WeavingOrchestrator:
         self,
         cfg: Config,
         shards: Optional[List[MemoryShard]] = None,
-        memory=None,  # Unified memory backend
+        memory: Optional[Any] = None,  # Unified memory backend
         yarn_graph: Optional['KG'] = None,  # Yarn Graph (KG) for thread storage
         pattern_preference: Optional[PatternCard] = None,
         enable_reflection: bool = True,
@@ -340,7 +341,7 @@ class WeavingOrchestrator:
         consolidation_interval: float = 3600.0,  # 1 hour default
         consolidation_temperature: float = 1.0,
         consolidation_cooling_rate: float = 0.95,
-        stage_callback: Optional[callable] = None,  # Phase 3.1: Stage tracking
+        stage_callback: Optional[Callable[[int, str, float], None]] = None,  # Phase 3.1: Stage tracking
         # Production Hardening (Part 5)
         enable_production_hardening: bool = False,
         production_config: Optional['ProductionConfig'] = None,
@@ -670,20 +671,20 @@ class WeavingOrchestrator:
     # mythRL Protocol-Based Architecture Methods
     # ========================================================================
 
-    def register_protocol(self, protocol_name: str, implementation: Any):
+    def register_protocol(self, protocol_name: str, implementation: Any) -> None:
         """
         Register a protocol implementation for mythRL architecture.
-        
+
         Allows swappable implementations of:
         - PatternSelectionProtocol
         - FeatureExtractionProtocol
         - WarpSpaceProtocol
         - DecisionEngineProtocol
-        
+
         Args:
             protocol_name: Name of protocol ('pattern_selection', 'feature_extraction', etc.)
             implementation: Protocol implementation instance
-        
+
         Example:
             shuttle.register_protocol('pattern_selection', CustomPatternSelector())
         """
@@ -694,7 +695,7 @@ class WeavingOrchestrator:
     # Stage Tracking (Phase 3.1)
     # ========================================================================
 
-    def _emit_stage_event(self, stage_id: int, stage_name: str, duration_ms: float = 0.0):
+    def _emit_stage_event(self, stage_id: int, stage_name: str, duration_ms: float = 0.0) -> None:
         """
         Emit stage event for monitoring (Phase 3.1).
 
@@ -2200,7 +2201,7 @@ class WeavingOrchestrator:
                 metadata={'status': 'error', 'error_type': type(e).__name__}
             )
 
-    def _map_bandit_to_collapse(self, bandit_strategy) -> CollapseStrategy:
+    def _map_bandit_to_collapse(self, bandit_strategy: 'BanditStrategy') -> CollapseStrategy:
         """Map Config BanditStrategy to Convergence CollapseStrategy."""
         from HoloLoom.config import BanditStrategy
 
@@ -2438,7 +2439,7 @@ class WeavingOrchestrator:
     # Lifecycle Management
     # ========================================================================
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> 'WeavingOrchestrator':
         """
         Async context manager entry.
 
@@ -2457,7 +2458,12 @@ class WeavingOrchestrator:
 
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[Any]
+    ) -> bool:
         """
         Async context manager exit with cleanup.
 
@@ -2471,6 +2477,9 @@ class WeavingOrchestrator:
             exc_type: Exception type (if any)
             exc_val: Exception value (if any)
             exc_tb: Exception traceback (if any)
+
+        Returns:
+            False to not suppress exceptions
         """
         self.logger.debug("WeavingOrchestrator context manager exiting")
 
@@ -2484,7 +2493,7 @@ class WeavingOrchestrator:
     # Cache and Statistics
     # ========================================================================
 
-    def cache_stats(self) -> Dict:
+    def cache_stats(self) -> Dict[str, Any]:
         """
         Get cache statistics.
 
@@ -2689,7 +2698,7 @@ class WeavingOrchestrator:
     # EGGROLL Integration (Evolutionary Training)
     # ========================================================================
 
-    async def dream(self, num_epochs: int = 1, num_workers: int = 5):
+    async def dream(self, num_epochs: int = 1, num_workers: int = 5) -> None:
         """
         Trigger a 'Dream' cycle: Run EGGROLL evolutionary training on recent experiences.
 

@@ -258,10 +258,8 @@ class SwarmCoordinator:
             f"{self._num_attackers} attackers, {self._num_exploiters} exploiters"
         )
 
-        # Import here to avoid circular dependencies
-        from .scout_agent import ScoutAgent
-        from .attack_agent import AttackAgent
-        from .exploit_agent import ExploitAgent
+        # Import from consolidated agents module (W2 cleanup - Dec 2025)
+        from .agents import ScoutAgent, AttackerAgent as AttackAgent, ExploiterAgent as ExploitAgent
 
         try:
             # Create scout agents

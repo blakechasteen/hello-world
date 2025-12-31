@@ -56,7 +56,7 @@ async def demo_wool_to_yarn():
 
     try:
         font = ImageFont.truetype("arial.ttf", 20)
-    except:
+    except OSError:
         font = ImageFont.load_default()
 
     receipt_text = """WHOLE FOODS MARKET

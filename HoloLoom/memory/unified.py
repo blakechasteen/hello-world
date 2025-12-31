@@ -16,6 +16,10 @@ They should think about their INTENT, not the MECHANISM.
 from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
+import networkx as nx
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -157,6 +161,41 @@ class UnifiedMemory:
             except (ImportError, Exception):
                 # Graceful fallback - conductor optional
                 pass
+
+        # Initialize AwarenessGraph for semantic retrieval
+        # This is the working memory system (same pattern as HoloLoom)
+        self._awareness = None
+        self._awareness_available = False
+        self._graph = None
+        try:
+            from ..embedding.spectral import MatryoshkaEmbeddings
+            from ..semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+            from .awareness_graph import AwarenessGraph
+
+            # Create embedder and semantic calculus
+            embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
+            self._semantic = MatryoshkaSemanticCalculus(
+                matryoshka_embedder=embedder,
+                snapshot_interval=0.5
+            )
+
+            # Create graph backend (use existing if available, else new)
+            if self._backend_available and hasattr(self._backend, 'graph'):
+                self._graph = self._backend.graph.G if hasattr(self._backend.graph, 'G') else nx.MultiDiGraph()
+            else:
+                self._graph = nx.MultiDiGraph()
+
+            # Create awareness graph
+            self._awareness = AwarenessGraph(
+                graph_backend=self._graph,
+                semantic_calculus=self._semantic,
+                vector_store=None
+            )
+            self._awareness_available = True
+            logger.info("UnifiedMemory: AwarenessGraph initialized successfully")
+        except (ImportError, Exception) as e:
+            # Graceful fallback - awareness optional
+            logger.warning(f"UnifiedMemory: AwarenessGraph initialization failed: {e}")
     
     def _init_subsystems(self, *flags):
         """Initialize backend systems (internal)."""
@@ -224,7 +263,33 @@ class UnifiedMemory:
         # Generate a simple memory ID
         memory_id = f"mem_{hashlib.sha256(text_content.encode()).hexdigest()[:8]}"
 
-        # Actually store in backend if available
+        # Store via AwarenessGraph (primary path - working semantic memory)
+        if self._awareness_available and self._awareness:
+            try:
+                # Perceive the content to get semantic position
+                perception = await self._awareness.perceive(text_content)
+
+                # Remember via awareness graph
+                merged_context = {
+                    'user_id': self.user_id,
+                    'importance': importance,
+                    **(context or {}),
+                    **(metadata or {})
+                }
+                stored_id = await self._awareness.remember(
+                    content=text_content,
+                    perception=perception,
+                    context=merged_context
+                )
+                # Use awareness-generated ID if available
+                if stored_id:
+                    memory_id = stored_id
+                logger.debug(f"UnifiedMemory: Stored via awareness: {memory_id}")
+            except Exception as e:
+                logger.warning(f"UnifiedMemory: Awareness store failed: {e}")
+                # Fall through to backend storage
+
+        # Also store in backend if available (fallback/secondary path)
         if self._backend_available and self._backend:
             # Split user metadata from context
             user_context = context or {}
@@ -290,7 +355,63 @@ class UnifiedMemory:
         Returns:
             List of Memory objects, sorted by relevance
         """
-        # Route through Memory Conductor if available
+        # Primary path: Use AwarenessGraph for semantic retrieval (working system)
+        if self._awareness_available and self._awareness:
+            try:
+                from datetime import datetime
+
+                # Perceive the query to get semantic position
+                perception = await self._awareness.perceive(query)
+
+                # Activate relevant memories based on perception
+                activated = await self._awareness.activate(
+                    perception,
+                    strategy=strategy.value if hasattr(strategy, 'value') else str(strategy)
+                )
+
+                # Convert activated memories to Memory objects
+                memories = []
+                for i, mem in enumerate(activated[:limit]):
+                    # Handle different memory formats
+                    if hasattr(mem, 'id'):
+                        memory_id = mem.id
+                        text = getattr(mem, 'text', getattr(mem, 'content', str(mem)))
+                        ts = getattr(mem, 'timestamp', datetime.now())
+                        ctx = getattr(mem, 'context', {})
+                        rel = getattr(mem, 'relevance', getattr(mem, 'score', 0.8))
+                    elif isinstance(mem, dict):
+                        memory_id = mem.get('id', f'mem_{i}')
+                        text = mem.get('text', mem.get('content', str(mem)))
+                        ts = mem.get('timestamp', datetime.now())
+                        ctx = mem.get('context', {})
+                        rel = mem.get('relevance', mem.get('score', 0.8))
+                    else:
+                        memory_id = f'mem_{i}'
+                        text = str(mem)
+                        ts = datetime.now()
+                        ctx = {}
+                        rel = 0.8
+
+                    memories.append(Memory(
+                        id=memory_id,
+                        text=text,
+                        timestamp=ts.isoformat() if hasattr(ts, 'isoformat') else str(ts),
+                        context=ctx,
+                        relevance=float(rel) if rel is not None else 0.8
+                    ))
+
+                # Apply relevance filter
+                if min_relevance > 0:
+                    memories = [m for m in memories if m.relevance >= min_relevance]
+
+                logger.debug(f"UnifiedMemory: Recalled {len(memories)} memories via awareness")
+                return memories
+
+            except Exception as e:
+                logger.warning(f"UnifiedMemory: Awareness recall failed: {e}")
+                # Fall through to conductor/fallback paths
+
+        # Secondary path: Route through Memory Conductor if available
         if self._conductor_available and self._conductor:
             import asyncio
             try:

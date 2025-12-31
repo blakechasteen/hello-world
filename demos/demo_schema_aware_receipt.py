@@ -53,7 +53,7 @@ async def demo_schema_aware_receipt():
 
     try:
         font = ImageFont.truetype("arial.ttf", 20)
-    except:
+    except OSError:
         font = ImageFont.load_default()
 
     receipt_text = """WHOLE FOODS MARKET

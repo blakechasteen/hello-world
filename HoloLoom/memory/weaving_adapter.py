@@ -407,7 +407,7 @@ class WeavingMemoryAdapter:
                 if isinstance(ts_val, str):
                     try:
                         timestamp = datetime.fromisoformat(ts_val)
-                    except:
+                    except ValueError:
                         timestamp = None
                 elif isinstance(ts_val, datetime):
                     timestamp = ts_val
@@ -458,7 +458,7 @@ class WeavingMemoryAdapter:
                 if isinstance(ts_val, str):
                     try:
                         timestamp = datetime.fromisoformat(ts_val)
-                    except:
+                    except ValueError:
                         timestamp = None
                 elif isinstance(ts_val, datetime):
                     timestamp = ts_val

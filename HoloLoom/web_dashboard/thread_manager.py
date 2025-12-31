@@ -454,7 +454,7 @@ class ThreadManager:
                 return 0.0
 
             return float(dot_product / (norm_a * norm_b))
-        except:
+        except Exception:
             return 0.0
 
     def get_all_threads(self) -> List[ConversationThread]:

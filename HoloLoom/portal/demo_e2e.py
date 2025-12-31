@@ -311,7 +311,7 @@ class PortalDemo:
                     result = response.json()
                     if result.get("status") == "completed":
                         completed += 1
-            except:
+            except Exception:
                 pass
 
         success = completed == len(jobs)

@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
 try:
-    from HoloLoom.config_v2 import ExpansionBundle
+    from HoloLoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:

@@ -38,7 +38,7 @@ def check_server_health():
     try:
         response = requests.get(f"{SERVER_URL}/health", timeout=2)
         return response.status_code == 200
-    except:
+    except Exception:
         return False
 
 
@@ -85,7 +85,7 @@ def get_stats():
     try:
         response = requests.get(f"{SERVER_URL}/stats")
         return response.json()
-    except:
+    except Exception:
         return {}
 
 

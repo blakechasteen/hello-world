@@ -15,7 +15,7 @@ try:
     import subprocess
     result = subprocess.run(['rg', '--version'], capture_output=True, timeout=1)
     RIPGREP_AVAILABLE = result.returncode == 0
-except:
+except Exception:
     pass
 
 
