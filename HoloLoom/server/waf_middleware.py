@@ -83,7 +83,7 @@ class SQLInjectionRule(WAFRule):
                 for pattern in self.compiled_patterns:
                     if pattern.search(body_str):
                         return f"SQL injection pattern detected in body: {pattern.pattern}"
-            except:
+            except Exception:
                 pass
 
         return None
@@ -140,7 +140,7 @@ class XSSRule(WAFRule):
                 for pattern in self.compiled_patterns:
                     if pattern.search(body_str):
                         return f"XSS pattern detected in body: {pattern.pattern}"
-            except:
+            except Exception:
                 pass
 
         return None
@@ -184,7 +184,7 @@ class PathTraversalRule(WAFRule):
                 for pattern in self.compiled_patterns:
                     if pattern.search(body_str):
                         return f"Path traversal pattern detected in body: {pattern.pattern}"
-            except:
+            except Exception:
                 pass
 
         return None
@@ -238,7 +238,7 @@ class CommandInjectionRule(WAFRule):
                 for pattern in self.compiled_patterns:
                     if pattern.search(body_str):
                         return f"Command injection pattern detected in body: {pattern.pattern}"
-            except:
+            except Exception:
                 pass
 
         return None
@@ -353,7 +353,7 @@ class XMLExternalEntityRule(WAFRule):
                 for pattern in self.compiled_patterns:
                     if pattern.search(body_str):
                         return f"XXE pattern detected: {pattern.pattern}"
-            except:
+            except Exception:
                 pass
 
         return None
@@ -393,7 +393,7 @@ class LDAPInjectionRule(WAFRule):
                 for pattern in self.compiled_patterns:
                     if pattern.search(body_str):
                         return f"LDAP injection pattern detected in body: {pattern.pattern}"
-            except:
+            except Exception:
                 pass
 
         return None

@@ -311,7 +311,7 @@ class TableRenderer(VisualRenderer):
         try:
             font = ImageFont.truetype("arial.ttf", 14)
             header_font = ImageFont.truetype("arial.ttf", 16)
-        except:
+        except OSError:
             font = ImageFont.load_default()
             header_font = font
 
@@ -415,10 +415,10 @@ class CodeRenderer(VisualRenderer):
         # Try to load monospace font
         try:
             font = ImageFont.truetype("consola.ttf", 12)
-        except:
+        except OSError:
             try:
                 font = ImageFont.truetype("DejaVuSansMono.ttf", 12)
-            except:
+            except OSError:
                 font = ImageFont.load_default()
 
         # Split code into lines
@@ -442,7 +442,7 @@ class CodeRenderer(VisualRenderer):
         title = f"{language.upper()} Code ({len(lines)} lines)"
         try:
             title_font = ImageFont.truetype("arial.ttf", 14)
-        except:
+        except OSError:
             title_font = font
 
         draw.text((10, self.height - 30), title, fill='#858585', font=title_font)

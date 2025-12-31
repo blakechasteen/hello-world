@@ -231,7 +231,7 @@ class Representation:
                     if not np.allclose(lhs, rhs, atol=1e-10):
                         logger.warning(f"Homomorphism fails for {g} * {h}")
                         return False
-                except:
+                except Exception:
                     continue
 
         return True

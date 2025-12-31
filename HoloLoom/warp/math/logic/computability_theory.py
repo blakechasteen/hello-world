@@ -97,7 +97,7 @@ class TuringMachine:
             # Apply transition
             try:
                 new_state, write_symbol, direction = self.transition(state, symbol)
-            except:
+            except Exception:
                 # No transition defined: reject
                 return False, trace
 

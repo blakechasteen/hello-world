@@ -250,7 +250,7 @@ class PackageManager:
                     try:
                         self.skill_loader.get(name)
                         exists = True
-                    except:
+                    except Exception:
                         pass
 
                 if exists and not overwrite:

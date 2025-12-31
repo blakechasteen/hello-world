@@ -196,7 +196,7 @@ class Category:
                 # Simplified check (would need equality test in general)
                 if gf.source == id_source.source and fg.source == id_target.source:
                     return True
-            except:
+            except Exception:
                 continue
 
         return False

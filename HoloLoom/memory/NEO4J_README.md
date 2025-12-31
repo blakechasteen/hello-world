@@ -72,10 +72,10 @@ kg.close()
 ### 4. Configure HoloLoom to Use Neo4j
 
 ```python
-from HoloLoom.config import Config, KGBackend
+from HoloLoom.config import Config, MemoryBackend
 
 cfg = Config(
-    kg_backend=KGBackend.NEO4J,
+    memory_backend=MemoryBackend.HYBRID,  # Neo4j + Qdrant with auto-fallback
     neo4j_uri="bolt://localhost:7687",
     neo4j_username="neo4j",
     neo4j_password="hololoom123"
@@ -84,6 +84,10 @@ cfg = Config(
 # Use config with orchestrator
 # orchestrator = Orchestrator(config=cfg)
 ```
+
+> **Note**: `KGBackend` is deprecated as of December 2025. Use `MemoryBackend.HYBRID`
+> instead, which provides Neo4j + Qdrant with automatic fallback to in-memory if
+> services are unavailable.
 
 ## Migration Guide
 

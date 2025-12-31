@@ -968,7 +968,7 @@ class InterleavedStreamManager:
                                         expansion_done = True
                                     if not generation_queue.empty():
                                         generation_done = True
-                                except:
+                                except Exception:
                                     pass
                         elif isinstance(item, ContextChunk):
                             expansion_done = item.is_final

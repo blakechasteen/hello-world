@@ -73,7 +73,7 @@ class SmoothManifold:
                 if not np.all(np.isfinite(transition)):
                     return False
             return True
-        except:
+        except Exception:
             return False
 
     @staticmethod

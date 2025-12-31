@@ -315,7 +315,7 @@ async def handle_temporal_between(
                 try:
                     ts_dt = datetime.fromisoformat(ts)
                     ts = format_relative_time(ts_dt)
-                except:
+                except ValueError:
                     pass
 
             response += f"**{i}.** {text}\n"

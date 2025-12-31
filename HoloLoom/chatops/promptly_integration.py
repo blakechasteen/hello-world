@@ -349,7 +349,7 @@ END
                 memory_context = self.hololoom_bridge.get_relevant_context(query, limit=3)
                 if memory_context:
                     sections.append(f"\n## Relevant Context from Memory:\n{memory_context}\n")
-            except:
+            except Exception:
                 pass
 
         # Additional context

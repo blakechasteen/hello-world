@@ -621,11 +621,10 @@ class DreamWeaver:
         # Seed with world building knowledge
         return [
             MemoryShard(
-                shard_id="worldbuilding_primer",
+                id="worldbuilding_primer",
                 text="World building involves creating consistent, engaging fictional worlds with rich history, geography, culture, and characters.",
-                source="system",
                 timestamp=0.0,
-                metadata={"type": "primer"}
+                metadata={"type": "primer", "source": "system"}
             )
         ]
 

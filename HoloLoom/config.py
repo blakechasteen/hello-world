@@ -49,13 +49,27 @@ from HoloLoom.protocols.types import BanditStrategy
 
 class KGBackend(Enum):
     """
-    Knowledge Graph backend selection (DEPRECATED - use MemoryBackend).
+    Knowledge Graph backend selection.
+
+    .. deprecated:: December 2025
+        Use :class:`MemoryBackend` instead:
+        - KGBackend.NETWORKX -> MemoryBackend.INMEMORY
+        - KGBackend.NEO4J -> MemoryBackend.HYBRID
 
     - NETWORKX: In-memory NetworkX graph (default, no persistence)
     - NEO4J: Neo4j graph database (persistent, scalable, production-grade)
     """
     NETWORKX = "networkx"
     NEO4J = "neo4j"
+
+    def __init__(self, value):
+        super().__init__()
+        warnings.warn(
+            f"KGBackend is deprecated. Use MemoryBackend instead: "
+            f"KGBackend.{self.name} -> MemoryBackend.{'INMEMORY' if self.name == 'NETWORKX' else 'HYBRID'}",
+            DeprecationWarning,
+            stacklevel=3
+        )
 
 
 class MemoryBackend(Enum):
@@ -382,6 +396,13 @@ class Config:
     semantic_trajectory: bool = True
     semantic_ethics: bool = True
 
+    # Semantic Bandit (Phase 1 - December 2025)
+    # Thompson Sampling bandit that adjusts priors based on semantic state
+    enable_semantic_bandit: bool = True
+    semantic_bandit_weight: float = 0.3  # Blend weight (0.7 neural + 0.3 bandit)
+    semantic_topic_shift_threshold: float = 2.0  # Topic shift detection threshold
+    semantic_bandit_success_threshold: float = 0.75  # Confidence threshold for success
+
     # Phase 5: Linguistic Gate
     enable_linguistic_gate: bool = False
     linguistic_mode: str = "disabled"
@@ -483,11 +504,9 @@ class Config:
     hyperspace_thresholds: List[float] = field(default_factory=lambda: [0.6, 0.75, 0.85])
     hyperspace_breadth: int = 10
 
-    # Legacy deprecated fields (kept for compatibility)
+    # Legacy: kg_backend is deprecated - use memory_backend instead
+    # Kept for backward compatibility but emits DeprecationWarning when used
     kg_backend: Optional[KGBackend] = None
-    mem0_api_key: Optional[str] = None
-    mem0_org_id: Optional[str] = None
-    mem0_project_id: Optional[str] = None
 
     # =========================================================================
     # EXPANSION BUNDLE FIELDS (backward compatibility)

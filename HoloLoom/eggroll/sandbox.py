@@ -45,7 +45,7 @@ class SecureExecutor:
         if p.is_alive():
             try:
                 p.terminate()
-            except:
+            except Exception:
                 pass
             raise SecurityViolation(f"Execution timed out ({self.timeout_sec}s)")
             

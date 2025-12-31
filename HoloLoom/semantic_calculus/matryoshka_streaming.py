@@ -37,6 +37,7 @@ if repo_root not in sys.path:
     sys.path.insert(0, repo_root)
 
 import asyncio
+import copy
 import numpy as np
 from typing import Dict, List, Optional, AsyncIterator, Callable, Tuple
 from dataclasses import dataclass, field
@@ -160,15 +161,18 @@ class MatryoshkaSemanticCalculus:
         sentence_dim_count = self.semantic_dims['sentence']
         paragraph_dim_count = self.semantic_dims['paragraph']
 
-        self.spectrum_word = SemanticSpectrum(dimensions=STANDARD_DIMENSIONS[:word_dim_count])
-        self.spectrum_phrase = SemanticSpectrum(dimensions=phrase_dims[:phrase_dim_count])
-        self.spectrum_sentence = SemanticSpectrum(dimensions=sentence_dims[:sentence_dim_count])
+        # CRITICAL: Deep copy dimensions to prevent shared state mutation!
+        # Without deepcopy, learn_axes() on one spectrum overwrites all others
+        # because they share the same SemanticDimension objects.
+        self.spectrum_word = SemanticSpectrum(dimensions=copy.deepcopy(STANDARD_DIMENSIONS[:word_dim_count]))
+        self.spectrum_phrase = SemanticSpectrum(dimensions=copy.deepcopy(phrase_dims[:phrase_dim_count]))
+        self.spectrum_sentence = SemanticSpectrum(dimensions=copy.deepcopy(sentence_dims[:sentence_dim_count]))
 
         # Paragraph-level: Use full 244D or custom
         if enable_full_244d and paragraph_dim_count >= 200:
-            self.spectrum_paragraph = SemanticSpectrum(dimensions=EXTENDED_244_DIMENSIONS[:paragraph_dim_count])
+            self.spectrum_paragraph = SemanticSpectrum(dimensions=copy.deepcopy(EXTENDED_244_DIMENSIONS[:paragraph_dim_count]))
         else:
-            self.spectrum_paragraph = SemanticSpectrum(dimensions=sentence_dims[:paragraph_dim_count])
+            self.spectrum_paragraph = SemanticSpectrum(dimensions=copy.deepcopy(sentence_dims[:paragraph_dim_count]))
 
         # Learn axes for each spectrum
         print("Learning Matryoshka semantic axes...")

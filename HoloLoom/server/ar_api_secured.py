@@ -249,7 +249,7 @@ class ARSpecificWAFRule(WAFRule):
                             lat_val = float(lat)
                             if abs(lat_val) > 90:
                                 return f"Invalid latitude value: {lat_val}"
-                        except:
+                        except ValueError:
                             pass
 
                     for lng in lng_matches:
@@ -257,7 +257,7 @@ class ARSpecificWAFRule(WAFRule):
                             lng_val = float(lng)
                             if abs(lng_val) > 180:
                                 return f"Invalid longitude value: {lng_val}"
-                        except:
+                        except ValueError:
                             pass
 
                 # Check for object injection attacks (trying to inject malicious 3D objects)

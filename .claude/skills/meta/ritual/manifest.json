@@ -1,0 +1,169 @@
+{
+  "name": "ritual",
+  "version": "1.0.0",
+  "description": "Structured coding ritual system for disciplined development sessions",
+  "author": "HoloLoom Team",
+  "category": "meta",
+  "tags": ["workflow", "session", "productivity", "coding-ritual", "structured-development"],
+
+  "entry_point": "skill.markdown",
+
+  "commands": {
+    "open": {
+      "description": "Initialize a new coding session",
+      "handler": "phases/open.py",
+      "args": {
+        "task": {
+          "type": "string",
+          "required": true,
+          "description": "Description of what you're building"
+        },
+        "complexity": {
+          "type": "string",
+          "required": false,
+          "default": "fast",
+          "enum": ["lite", "fast", "full", "research"],
+          "description": "Session complexity level"
+        },
+        "criteria": {
+          "type": "array",
+          "required": false,
+          "items": "string",
+          "description": "Success criteria for the session"
+        }
+      }
+    },
+    "design": {
+      "description": "Protocol-first interface design phase",
+      "handler": "phases/design.py",
+      "args": {
+        "component": {
+          "type": "string",
+          "required": false,
+          "description": "Name of component to design"
+        }
+      }
+    },
+    "build": {
+      "description": "Wave validation build process",
+      "handler": "phases/build.py",
+      "args": {
+        "wave": {
+          "type": "integer",
+          "required": false,
+          "enum": [1, 2, 3],
+          "description": "Wave number (1=Core, 2=Edge, 3=Integration)"
+        }
+      }
+    },
+    "check": {
+      "description": "Safety-first checklist review",
+      "handler": "phases/check.py",
+      "args": {}
+    },
+    "close": {
+      "description": "End session and archive",
+      "handler": "phases/close.py",
+      "args": {
+        "lessons": {
+          "type": "array",
+          "required": false,
+          "items": "string",
+          "description": "Lessons learned from this session"
+        },
+        "notes": {
+          "type": "string",
+          "required": false,
+          "description": "Additional notes to include"
+        }
+      }
+    },
+    "status": {
+      "description": "Show current session status",
+      "handler": "phases/status.py",
+      "args": {}
+    },
+    "help": {
+      "description": "Display command reference",
+      "handler": null,
+      "builtin": true
+    }
+  },
+
+  "capabilities": {
+    "file_read": true,
+    "file_write": true,
+    "code_execution_bash": false,
+    "code_execution_python": false,
+    "network_access": false,
+    "mcp_server": false,
+    "external_api": false,
+    "user_interaction": true
+  },
+
+  "dependencies": {
+    "required_skills": [],
+    "optional_skills": [
+      "skill_tester",
+      "skill_security_analyzer",
+      "continuous_learning_capture"
+    ],
+    "external": []
+  },
+
+  "hololoom_integration": {
+    "memory_system": false,
+    "rag": false,
+    "alignment_framework": false,
+    "learning_systems": false
+  },
+
+  "events": {
+    "emits": [
+      "ritual.session.opened",
+      "ritual.design.started",
+      "ritual.design.completed",
+      "ritual.build.wave_1",
+      "ritual.build.wave_2",
+      "ritual.build.wave_3",
+      "ritual.check.completed",
+      "ritual.session.closed"
+    ],
+    "subscribes": []
+  },
+
+  "state": {
+    "persistence": "file",
+    "location": ".ritual/current_session.json",
+    "archive_location": ".ritual/sessions/"
+  },
+
+  "config": {
+    "default_complexity": "fast",
+    "max_waves": 3,
+    "auto_archive": true,
+    "capture_git_metrics": true
+  },
+
+  "lifecycle": {
+    "phases": ["opening", "open", "designing", "building", "checking", "closing", "closed"],
+    "mapping": {
+      "open": ["PREFLIGHT", "COUNTDOWN"],
+      "design": ["LIFT_OFF"],
+      "build": ["ORBIT"],
+      "check": ["EVA"],
+      "close": ["REENTRY", "LANDED"]
+    }
+  },
+
+  "security": {
+    "sandbox_scope": ".ritual/",
+    "no_external_requests": true,
+    "no_sensitive_data_logging": true
+  },
+
+  "performance": {
+    "expected_latency_ms": 100,
+    "token_usage": "500-1000"
+  }
+}

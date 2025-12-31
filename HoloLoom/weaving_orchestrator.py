@@ -29,6 +29,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+import warnings
 import numpy as np
 from typing import Dict, List, Any, Optional, TYPE_CHECKING
 from datetime import datetime, timedelta
@@ -424,6 +425,15 @@ class WeavingOrchestrator:
         """
         self.cfg = cfg
         self.logger = logging.getLogger(__name__)
+
+        # Deprecation warning for shards parameter (December 2025)
+        if shards is not None:
+            warnings.warn(
+                "The 'shards' parameter is deprecated and will be removed in a future version. "
+                "Use 'yarn_graph' (KG instance) or 'memory' (unified backend) instead.",
+                DeprecationWarning,
+                stacklevel=2
+            )
         self.enable_semantic_cache = enable_semantic_cache
         self.enable_dashboards = enable_dashboards
 
@@ -609,6 +619,17 @@ class WeavingOrchestrator:
             except Exception as e:
                 self.logger.warning(f"Failed to initialize SemanticToolSelector: {e}")
                 self._semantic_tool_selector = None
+
+        # Initialize SemanticAwareBandit for Thompson Sampling (Phase 1 - December 2025)
+        self._semantic_bandit: Optional['SemanticAwareBandit'] = None
+        if self.cfg.enable_semantic_bandit:
+            try:
+                from HoloLoom.semantic_calculus.semantic_state import SemanticAwareBandit
+                self._semantic_bandit = SemanticAwareBandit(tools=self.tool_executor.tools)
+                self.logger.info("SemanticAwareBandit initialized for semantic-aware Thompson Sampling")
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize SemanticAwareBandit: {e}")
+                self._semantic_bandit = None
 
         self.logger.info("WeavingOrchestrator initialization complete")
 
@@ -1707,6 +1728,33 @@ class WeavingOrchestrator:
                 neural_probs = neural_probs / neural_probs.sum()
                 self.logger.debug(f"  [7b] Blended neural + gradient flow probabilities")
 
+            # Semantic Bandit: Adjust priors based on semantic state (Phase 1 - December 2025)
+            if self._semantic_bandit and context.metadata.get('semantic_state'):
+                try:
+                    semantic_state = context.metadata['semantic_state']
+                    adjusted_priors = self._semantic_bandit.adjust_priors(semantic_state)
+
+                    # Blend bandit priors with neural predictions
+                    bandit_weight = self.cfg.semantic_bandit_weight
+                    neural_weight = 1.0 - bandit_weight
+
+                    for i, tool in enumerate(self.tool_executor.tools):
+                        alpha, beta = adjusted_priors.get(tool, (1.0, 1.0))
+                        # Expected reward from Thompson Sampling: E[X] = α / (α + β)
+                        semantic_reward = alpha / (alpha + beta)
+                        neural_probs[i] = neural_weight * neural_probs[i] + bandit_weight * semantic_reward
+
+                    # Renormalize
+                    neural_probs = neural_probs / neural_probs.sum()
+
+                    self.logger.debug(
+                        f"  [7c] Blended neural + semantic bandit priors "
+                        f"(category={semantic_state.get('dominant_category', 'unknown')}, "
+                        f"weight={bandit_weight:.2f})"
+                    )
+                except Exception as e:
+                    self.logger.warning(f"Semantic bandit blending failed: {e}")
+
             collapse_result = convergence.collapse(neural_probs)
 
             duration = (time.time() - step_start) * 1000
@@ -1947,6 +1995,23 @@ class WeavingOrchestrator:
             self._emit_stage_event(0, "Complete")
 
             self.logger.info(f"[SUCCESS] Weaving cycle complete! Total duration: {duration_ms:.1f}ms")
+
+            # Semantic Bandit Learning Update (Phase 1 - December 2025)
+            # Update Thompson Sampling priors based on outcome
+            if self._semantic_bandit:
+                try:
+                    success = collapse_result.confidence >= self.cfg.semantic_bandit_success_threshold
+                    self._semantic_bandit.update(
+                        tool=collapse_result.tool,
+                        success=success,
+                        confidence=collapse_result.confidence
+                    )
+                    self.logger.debug(
+                        f"  [BANDIT] Updated priors for '{collapse_result.tool}': "
+                        f"success={success}, confidence={collapse_result.confidence:.2f}"
+                    )
+                except Exception as e:
+                    self.logger.warning(f"Semantic bandit update failed: {e}")
 
             # Track metrics
             if METRICS_ENABLED:

@@ -53,7 +53,7 @@ class LinearProgramming:
                     # Check if feasible
                     if np.all(A @ x <= b + 1e-9) and np.all(x >= -1e-9):
                         vertices.append(x)
-                except:
+                except Exception:
                     pass
 
         # Also check axis intersections

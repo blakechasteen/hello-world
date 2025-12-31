@@ -290,7 +290,7 @@ class PrometheusMetrics:
             misses = cache_misses_total.labels(cache_type=cache_type)._value.get()
             total = hits + misses
             return hits / total if total > 0 else 0.0
-        except:
+        except Exception:
             return None
 
     # ========================================================================

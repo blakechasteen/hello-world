@@ -369,14 +369,22 @@ class BayesianUnifiedPolicy:
             ActionPlan with chosen tool, adapter, and uncertainty metrics
         """
         # Step 1: Encode context as memory
-        if not context.shard_texts:
+        # Support both old (shard_texts) and new (memories) attribute names
+        shard_texts = getattr(context, 'shard_texts', None) or getattr(context, 'memories', [])
+        if not shard_texts:
             mem = torch.zeros(1, 1, self.mem_dim).to(self.device)
         else:
-            mem_np = self.emb.encode_scales(context.shard_texts, size=self.mem_dim)
+            mem_np = self.emb.encode_scales(shard_texts, size=self.mem_dim)
             mem = torch.tensor(mem_np, dtype=torch.float32).unsqueeze(0).to(self.device)
 
         # Step 2: Build control signal
-        psi_tensor = torch.tensor(features.psi, dtype=torch.float32).unsqueeze(0).to(self.device)
+        # Support both old (psi) and new (spectral) attribute names
+        psi = getattr(features, 'psi', None)
+        if psi is None:
+            psi = getattr(features, 'spectral', np.zeros(6))
+            if psi is None:
+                psi = np.zeros(6)
+        psi_tensor = torch.tensor(psi, dtype=torch.float32).unsqueeze(0).to(self.device)
         motif_ctrl = self._ctrl_from(features.motifs).to(self.device)
         ctrl = torch.clamp(motif_ctrl + 0.25 * torch.sigmoid(self.psi_proj(psi_tensor)), 0, 1)
 
@@ -411,8 +419,12 @@ class BayesianUnifiedPolicy:
         tool = self.core.tools[tool_idx]
 
         # Step 7: Compute reward
-        episodes = len(set(s.episode for s, _ in context.hits)) if context.hits else 0
-        coherence = features.metrics.get("coherence", 0.0)
+        # Support both old (hits) and new (metadata.hits) attribute names
+        hits = getattr(context, 'hits', None) or context.metadata.get('hits', [])
+        episodes = len(set(s.episode for s, _ in hits)) if hits else 0
+        # Support both old (metrics) and new (metadata) attribute names
+        metrics = getattr(features, 'metrics', None) or features.metadata
+        coherence = metrics.get("coherence", 0.0) if metrics else 0.0
 
         # Bonus for reducing epistemic uncertainty
         uncertainty_reduction_bonus = -epistemic_unc * 0.1  # Small penalty for high uncertainty

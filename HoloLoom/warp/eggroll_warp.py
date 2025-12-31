@@ -45,14 +45,14 @@ class SpectralScorer:
             try:
                 s = np.linalg.svd(weights, compute_uv=False)
                 return float(s[0]) if len(s) > 0 else 0.0
-            except:
+            except Exception:
                 return 0.0
-        
+
         try:
             # Eigenvalues for square matrices
             eigvals = np.linalg.eigvals(weights)
             return float(np.max(np.abs(eigvals)))
-        except:
+        except Exception:
             return 0.0
 
     @staticmethod
@@ -225,16 +225,16 @@ class Warp:
                 else:
                     risk_scores = {"safe": 1.0, "low": 0.9, "medium": 0.7, "high": 0.4, "critical": 0.0}
                     scores["safety"] = risk_scores.get(decision.risk_level.value, 0.5)
-            except:
+            except Exception:
                 scores["safety"] = 0.5
         else:
             scores["safety"] = 0.5
-        
+
         # 3. Resonance
         if self.has_resonance:
             try:
                 scores["coherence"] = self.resonance.measure_coherence(output_text)
-            except:
+            except Exception:
                 scores["coherence"] = 0.5
         else:
             scores["coherence"] = 0.5

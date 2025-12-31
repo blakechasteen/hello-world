@@ -1,10 +1,11 @@
 # policy/__init__.py
 from .unified import (
-    PolicyEngine,
     NeuralCore,
     UnifiedPolicy,
     create_policy
 )
+# PolicyEngine protocol is defined in HoloLoom.protocols
+from HoloLoom.protocols import PolicyEngine
 
 # Import Thompson Sampling from dedicated module (backward compatibility)
 from .thompson_sampling import BanditStrategy, TSBandit

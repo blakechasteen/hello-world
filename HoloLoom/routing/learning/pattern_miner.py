@@ -302,7 +302,7 @@ class PatternMiner:
         # Compile regex
         try:
             regex = re.compile(pattern, re.IGNORECASE)
-        except:
+        except re.error:
             # Invalid regex
             return PatternScore(
                 precision=0.0,
@@ -361,7 +361,7 @@ class PatternMiner:
         """Get example queries matching pattern."""
         try:
             regex = re.compile(pattern, re.IGNORECASE)
-        except:
+        except re.error:
             return []
 
         examples = []

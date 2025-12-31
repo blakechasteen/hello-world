@@ -184,24 +184,22 @@ async def test_bayesian_unified_policy_decide():
     )
 
     # Mock features and context
+    # Note: spectral must match mem_dim (128)
     features = Features(
-        psi=np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
         motifs=["question→answer"],
-        metrics={"coherence": 0.8},
-        confidence=0.8
+        spectral=np.random.randn(128).astype(np.float32),
+        metadata={"coherence": 0.8, "confidence": 0.8}
     )
 
     context = Context(
-        hits=[],
-        kg_sub=None,
-        shard_texts=["Test context"],
-        relevance=0.7
+        memories=["Test context"],
+        metadata={"kg_sub": None, "relevance": 0.7}
     )
 
     # Make decision with uncertainty
     action = await policy.decide(features, context, return_uncertainty=True)
 
-    assert action.chosen_tool in ["answer", "search", "notion_write", "calc"]
+    assert action.tool in ["answer", "search", "notion_write", "calc"]
     assert hasattr(action, 'metadata')
     assert 'uncertainty' in action.metadata
 
@@ -233,18 +231,16 @@ async def test_uncertainty_increases_with_complexity():
     )
 
     context = Context(
-        hits=[],
-        kg_sub=None,
-        shard_texts=["Test context"],
-        relevance=0.7
+        memories=["Test context"],
+        metadata={"kg_sub": None, "relevance": 0.7}
     )
 
     # Simple query (high coherence)
+    # Note: spectral must match mem_dim (128)
     features_simple = Features(
-        psi=np.array([0.9, 0.2, 0.1, 0.2, 0.3, 0.2]),
         motifs=["question→answer"],
-        metrics={"coherence": 0.95},
-        confidence=0.95
+        spectral=np.random.randn(128).astype(np.float32) * 0.5,
+        metadata={"coherence": 0.95, "confidence": 0.95}
     )
 
     action_simple = await policy.decide(features_simple, context, return_uncertainty=True)
@@ -252,10 +248,9 @@ async def test_uncertainty_increases_with_complexity():
 
     # Complex query (low coherence)
     features_complex = Features(
-        psi=np.array([0.4, 0.7, 0.8, 0.5, 0.6, 0.7]),
         motifs=["contrast", "subordinate→main"],
-        metrics={"coherence": 0.45},
-        confidence=0.45
+        spectral=np.random.randn(128).astype(np.float32) * 0.5,
+        metadata={"coherence": 0.45, "confidence": 0.45}
     )
 
     action_complex = await policy.decide(features_complex, context, return_uncertainty=True)
@@ -341,16 +336,16 @@ async def test_graceful_fallback():
     assert policy is not None
 
     # Make a decision (should work either way)
+    # Note: spectral must match mem_dim (128) for proper linear layer operation
     features = Features(
-        psi=np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
         motifs=[],
-        metrics={"coherence": 0.8},
-        confidence=0.8
+        spectral=np.random.randn(128).astype(np.float32),
+        metadata={"coherence": 0.8, "confidence": 0.8}
     )
-    context = Context(hits=[], kg_sub=None, shard_texts=["Test"], relevance=0.7)
+    context = Context(memories=["Test"], metadata={"kg_sub": None, "relevance": 0.7})
 
     action = await policy.decide(features, context)
-    assert action.chosen_tool in ["answer", "search", "notion_write", "calc"]
+    assert action.tool in ["answer", "search", "notion_write", "calc"]
 
 
 # ============================================================================

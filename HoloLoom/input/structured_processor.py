@@ -92,7 +92,7 @@ class StructuredDataProcessor:
                 data = json.loads(input_data)
                 format_type = 'json'
                 source = None
-            except:
+            except json.JSONDecodeError:
                 raise ValueError("Cannot parse input data")
         
         # Create features

@@ -71,7 +71,7 @@ class LoomNode:
                 try:
                     gen_ids = self.agent.custom_model.generate(input_ids[:, :2], max_new_tokens=10)
                     output_sample = str(gen_ids[0].tolist())
-                except:
+                except Exception:
                     output_sample = "[Generation Failed]"
             else:
                 fitness = 0.5

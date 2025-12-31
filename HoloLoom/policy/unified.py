@@ -69,9 +69,6 @@ from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
 # Import Thompson Sampling from dedicated module (Elegance Track - Day 3)
 from HoloLoom.policy.thompson_sampling import TSBandit
 
-# Import canonical protocol from Phase 2 consolidation
-from HoloLoom.protocols import PolicyEngine as CanonicalPolicyEngine
-
 
 # ============================================================================
 # Utility Functions
@@ -83,47 +80,10 @@ def maybe_device():
 
 
 # ============================================================================
-# Protocol
-# ============================================================================
-
-# DEPRECATED: Import from HoloLoom.protocols instead
-class _DeprecatedPolicyEngine(Protocol):
-    """
-    DEPRECATED: This local protocol definition is deprecated.
-    Use 'from HoloLoom.protocols import PolicyEngine' instead.
-    
-    This alias will be removed in a future version.
-    """
-    
-    async def decide(self, features: Features, context: Context) -> ActionPlan:
-        """
-        Make a decision based on features and context.
-        
-        Args:
-            features: Extracted query features (Ψ + motifs)
-            context: Retrieved context (shards, KG subgraph)
-            
-        Returns:
-            ActionPlan with chosen tool and adapter
-        """
-        ...
-
-# Backward compatibility alias - use canonical protocol instead
-PolicyEngine = CanonicalPolicyEngine
-
-# Emit deprecation warning when this module's protocol is referenced
-warnings.warn(
-    "Importing PolicyEngine from HoloLoom.policy.unified is deprecated. "
-    "Use 'from HoloLoom.protocols import PolicyEngine' instead. "
-    "This local definition will be removed in a future version.",
-    DeprecationWarning,
-    stacklevel=2
-)
-
-
-# ============================================================================
 # Neural Network Components
 # ============================================================================
+# Note: PolicyEngine protocol is defined in HoloLoom.protocols
+# Use: from HoloLoom.protocols import PolicyEngine
 
 class CustomMHA(nn.Module):
     """

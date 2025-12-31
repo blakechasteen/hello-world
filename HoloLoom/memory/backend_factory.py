@@ -485,7 +485,7 @@ class HybridMemoryStore:
         if self.fallback:
             try:
                 health['backends']['networkx'] = await self.fallback.health_check()
-            except:
+            except Exception:
                 health['backends']['networkx'] = {'status': 'healthy'}  # NetworkX always healthy
 
         # Overall status

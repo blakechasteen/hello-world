@@ -585,7 +585,7 @@ class UnifiedMemory:
         # Parse target timestamp
         try:
             target_time = datetime.fromisoformat(timestamp)
-        except:
+        except ValueError:
             return {
                 "error": "Invalid timestamp format. Use ISO format: YYYY-MM-DDTHH:MM:SS",
                 "timestamp": timestamp
@@ -627,8 +627,8 @@ class UnifiedMemory:
                                 context=node_data.get('context', {})
                             )
                             past_memories.append(mem)
-                    except:
-                        pass
+                    except (ValueError, TypeError, KeyError):
+                        pass  # Skip malformed memory entries
 
             snapshot["total_memories"] = len(past_memories)
             snapshot["memories"] = past_memories[:100]  # Limit to 100 for performance
@@ -645,8 +645,8 @@ class UnifiedMemory:
                         if (datetime.fromisoformat(src_time) <= target_time and
                             datetime.fromisoformat(dst_time) <= target_time):
                             edge_count += 1
-                    except:
-                        pass
+                    except ValueError:
+                        pass  # Skip edges with invalid timestamps
 
             snapshot["graph_stats"] = {
                 "nodes": len(past_memories),
@@ -688,8 +688,8 @@ class UnifiedMemory:
         try:
             start_dt = datetime.fromisoformat(start_time)
             end_dt = datetime.fromisoformat(end_time)
-        except:
-            return []
+        except ValueError:
+            return []  # Invalid timestamp format
 
         if not self._backend_available or not self._backend:
             return []
@@ -716,8 +716,8 @@ class UnifiedMemory:
                                 context=node_data.get('context', {})
                             )
                             memories_in_range.append(mem)
-                    except:
-                        pass
+                    except (ValueError, TypeError, KeyError):
+                        pass  # Skip malformed memory entries
 
         # Sort by timestamp (most recent first)
         memories_in_range.sort(
@@ -787,8 +787,8 @@ class UnifiedMemory:
                             context=node_data.get('context', {})
                         )
                         timestamped_memories.append((mem_time, mem))
-                    except:
-                        pass
+                    except (ValueError, TypeError, KeyError):
+                        pass  # Skip malformed memory entries
 
         if len(timestamped_memories) < min_occurrences:
             return patterns

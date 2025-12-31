@@ -349,7 +349,7 @@ class Neo4jKG:
                     logger.warning(f"Existing driver unhealthy, recreating: {e}")
                     try:
                         Neo4jKG._driver_instance.close()
-                    except:
+                    except Exception:
                         pass
                     Neo4jKG._driver_instance = None
 

@@ -70,6 +70,11 @@ class AwarenessGraph:
         # Semantic index (lightweight: node_id → position)
         self.semantic_positions: Dict[str, np.ndarray] = {}
 
+        # Raw embeddings for CONTENT-BASED retrieval (not style-based)
+        # The semantic_positions are projected onto style dimensions (warmth, valence, etc.)
+        # but retrieval needs TOPICAL similarity, which is in the raw embeddings
+        self.raw_embeddings: Dict[str, np.ndarray] = {}
+
         # Activation field (dynamic process)
         self.activation_field = ActivationField()
 
@@ -186,6 +191,15 @@ class AwarenessGraph:
             # Convert to SemanticPerception
             perception = SemanticPerception.from_snapshot(final_snapshot, prev_position)
 
+            # Get raw embedding for CONTENT-BASED retrieval (not style-based)
+            # The semantic position measures style (warmth, valence, formality)
+            # but retrieval needs TOPICAL similarity from the raw embedding
+            try:
+                raw_embedding = self.semantic.embedder.encode_base([content])[0]
+                perception.raw_embedding = raw_embedding
+            except Exception:
+                pass  # Graceful degradation - raw embedding optional
+
             # Track trajectory
             self.trajectory.append(perception.position)
 
@@ -253,11 +267,15 @@ class AwarenessGraph:
         if self.vectors is not None:
             try:
                 await self.vectors.add(memory_id, perception.position)
-            except:
+            except Exception:
                 pass  # Graceful degradation
 
-        # 3. Update semantic index
+        # 3. Update semantic index (style-based position)
         self.semantic_positions[memory_id] = perception.position
+
+        # 3b. Store raw embedding for CONTENT-BASED retrieval
+        if perception.raw_embedding is not None:
+            self.raw_embeddings[memory_id] = perception.raw_embedding
 
         # 4. Update activation field spatial index
         self.activation_field.update_spatial_index(memory_id, perception.position)
@@ -294,6 +312,7 @@ class AwarenessGraph:
         self.activation_field.clear()
 
         # 1. Fast semantic search (vector store if available)
+        # Use raw embeddings for TOPICAL similarity (not style-based positions)
         if self.vectors is not None:
             try:
                 nearby_ids = await self.vectors.search(
@@ -301,17 +320,19 @@ class AwarenessGraph:
                     radius=budget.semantic_radius,
                     k=budget.max_memories * 2
                 )
-            except:
+            except Exception:
                 nearby_ids = self._brute_force_search(
                     perception.position,
                     budget.semantic_radius,
-                    budget.max_memories * 2
+                    budget.max_memories * 2,
+                    query_raw_embedding=perception.raw_embedding
                 )
         else:
             nearby_ids = self._brute_force_search(
                 perception.position,
                 budget.semantic_radius,
-                budget.max_memories * 2
+                budget.max_memories * 2,
+                query_raw_embedding=perception.raw_embedding
             )
 
         # 2. Activate region
@@ -456,11 +477,32 @@ class AwarenessGraph:
         self,
         query_pos: np.ndarray,
         radius: float,
-        k: int
+        k: int,
+        query_raw_embedding: Optional[np.ndarray] = None
     ) -> List[str]:
-        """Brute force semantic search (fallback)."""
-        distances = []
+        """
+        Brute force semantic search.
 
+        Uses RAW EMBEDDINGS with cosine similarity for TOPICAL retrieval.
+        Falls back to style-based positions (Euclidean) if no raw embeddings.
+
+        The key insight: semantic_positions measure STYLE (warmth, valence, formality)
+        but retrieval needs TOPICAL similarity which is in the raw embeddings.
+        """
+        # PRIMARY: Use raw embeddings with cosine similarity for content-based retrieval
+        if query_raw_embedding is not None and self.raw_embeddings:
+            similarities = []
+            for node_id, node_embedding in self.raw_embeddings.items():
+                # Cosine similarity: higher = more similar
+                similarity = self._compute_resonance(query_raw_embedding, node_embedding)
+                similarities.append((node_id, similarity))
+
+            # Sort by similarity (higher is better)
+            similarities.sort(key=lambda x: x[1], reverse=True)
+            return [node_id for node_id, _ in similarities[:k]]
+
+        # FALLBACK: Style-based positions with Euclidean distance
+        distances = []
         for node_id, node_pos in self.semantic_positions.items():
             distance = float(np.linalg.norm(query_pos - node_pos))
             if distance < radius:

@@ -126,7 +126,7 @@ class OllamaLLM:
             # List models to verify connection
             self.client.list()
             return True
-        except:
+        except Exception:
             return False
 
     async def generate(

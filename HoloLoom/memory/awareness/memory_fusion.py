@@ -319,7 +319,7 @@ class MemoryFusion:
             elif isinstance(ts, str):
                 try:
                     timestamp = datetime.fromisoformat(ts)
-                except:
+                except ValueError:
                     pass
         
         # Extract related IDs

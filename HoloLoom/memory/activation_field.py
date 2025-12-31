@@ -99,7 +99,7 @@ class ActivationField:
                 # Get neighbors
                 try:
                     neighbors = list(graph.successors(node_id))
-                except:
+                except Exception:
                     continue
 
                 # Spread to each neighbor

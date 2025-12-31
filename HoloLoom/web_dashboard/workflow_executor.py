@@ -451,7 +451,7 @@ async def broadcast_log(level: str, message: str, node_id: Optional[str] = None,
     for ws in ws_connections:
         try:
             await ws.send_json(log_entry)
-        except:
+        except Exception:
             disconnected.append(ws)
 
     for ws in disconnected:
@@ -493,7 +493,7 @@ async def broadcast_workflow_status(
     for ws in ws_connections:
         try:
             await ws.send_json(message)
-        except:
+        except Exception:
             disconnected.append(ws)
 
     for ws in disconnected:
@@ -538,7 +538,7 @@ async def broadcast_node_event(
     for ws in ws_connections:
         try:
             await ws.send_json(message)
-        except:
+        except Exception:
             disconnected.append(ws)
 
     for ws in disconnected:
@@ -1261,7 +1261,7 @@ class WorkflowExecutor:
         for ws in ws_connections:
             try:
                 await ws.send_json(message)
-            except:
+            except Exception:
                 disconnected.append(ws)
 
         # Remove disconnected clients
@@ -1279,7 +1279,7 @@ class WorkflowExecutor:
         for ws in ws_connections:
             try:
                 await ws.send_json(message)
-            except:
+            except Exception:
                 pass
 
 

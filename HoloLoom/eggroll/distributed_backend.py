@@ -68,7 +68,7 @@ class WorkerNode(multiprocessing.Process):
         while True:
             try:
                 task = self.task_queue.get(timeout=1.0) # Check regulary for shutdown/ping
-            except:
+            except Exception:
                 continue # queue empty
                 
             if task is None: # Sentinel

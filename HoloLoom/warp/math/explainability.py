@@ -133,7 +133,7 @@ class FeatureImportanceAnalyzer:
                     importances[feature_idx] = 1.0
                 else:
                     importances[feature_idx] = abs(base_context[feature_idx])
-            except:
+            except Exception:
                 pass
 
         # Sort by importance

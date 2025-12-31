@@ -26,8 +26,13 @@ class SemanticPerception:
 
     This is what awareness "sees" when it processes text.
     """
-    # Where in 244D semantic space
+    # Where in 244D semantic space (style-based: warmth, valence, etc.)
     position: np.ndarray  # 244D
+
+    # Raw embedding for CONTENT-BASED similarity (topical retrieval)
+    # The position is projected onto style dimensions, but retrieval
+    # needs topical similarity which is in the raw embedding
+    raw_embedding: Optional[np.ndarray] = None  # 384D or base embedding dim
 
     # How meaning is changing
     velocity: Optional[np.ndarray] = None  # 244D, if trajectory exists

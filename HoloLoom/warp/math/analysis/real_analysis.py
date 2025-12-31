@@ -326,7 +326,7 @@ class ContinuityChecker:
         """
         try:
             f_point = self.function(point)
-        except:
+        except Exception:
             return False
 
         # Sample points in delta-neighborhood
@@ -350,7 +350,7 @@ class ContinuityChecker:
 
                 if distance > epsilon:
                     return False
-            except:
+            except Exception:
                 return False
 
         return True
@@ -389,7 +389,7 @@ class ContinuityChecker:
                         if d_fxy > epsilon:
                             works = False
                             break
-                    except:
+                    except Exception:
                         works = False
                         break
 
@@ -428,7 +428,7 @@ class ContinuityChecker:
 
                 ratio = d_fxy / d_xy
                 max_ratio = max(max_ratio, ratio)
-            except:
+            except Exception:
                 return None
 
         return max_ratio if max_ratio > 0 else None

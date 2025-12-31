@@ -172,7 +172,7 @@ class HybridNeo4jQdrant:
         """Create Qdrant collection."""
         try:
             self.qdrant_client.get_collection(self.collection_name)
-        except:
+        except Exception:
             # Create collection
             self.qdrant_client.create_collection(
                 collection_name=self.collection_name,
