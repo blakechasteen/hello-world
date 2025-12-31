@@ -9,11 +9,16 @@ Initializes a new coding ritual session with:
 
 Maps to: PREFLIGHT → COUNTDOWN lifecycle states
 Emits: ritual.session.opened event
+
+HoloLoom Integration:
+- Gets complexity recommendations from Thompson Sampling
+- Retrieves similar past sessions from memory
+- Collects relevant lessons from RAG
 """
 
 import sys
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, TYPE_CHECKING
 from datetime import datetime
 import uuid
 
@@ -26,6 +31,17 @@ from state.session_manager import (
     ComplexityLevel,
     RitualPhase,
 )
+from events import (
+    EVENT_BUS_AVAILABLE,
+    RitualContext,
+    RitualEventType,
+    create_ritual_event,
+    ritual_started,
+)
+
+# Optional HoloLoom integration
+if TYPE_CHECKING:
+    from hololoom import HoloLoomIntegration
 
 
 class OpenPhaseHandler:
@@ -42,6 +58,7 @@ class OpenPhaseHandler:
         self,
         session_manager: Optional[SessionManager] = None,
         event_bus: Optional[Any] = None,
+        hololoom_integration: Optional["HoloLoomIntegration"] = None,
     ):
         """
         Initialize open phase handler.
@@ -49,9 +66,11 @@ class OpenPhaseHandler:
         Args:
             session_manager: SessionManager instance (created if not provided)
             event_bus: Optional EventBus for emitting events
+            hololoom_integration: Optional HoloLoomIntegration for recommendations
         """
         self.session_manager = session_manager or SessionManager()
         self.event_bus = event_bus
+        self.hololoom = hololoom_integration
 
     async def execute(
         self,
@@ -71,6 +90,18 @@ class OpenPhaseHandler:
             Structured result with session info and next steps
         """
         start_time = datetime.now()
+
+        # Get HoloLoom recommendations if available
+        hololoom_recommendations = None
+        if self.hololoom:
+            try:
+                hololoom_recommendations = await self.hololoom.get_open_recommendations(task)
+                # Use recommended complexity if user didn't specify
+                if complexity == "fast" and hololoom_recommendations.get("recommended_complexity"):
+                    complexity = hololoom_recommendations["recommended_complexity"]
+            except Exception:
+                # Graceful degradation - continue without recommendations
+                pass
 
         # Check for existing active session
         if self.session_manager.has_active_session():
@@ -118,6 +149,7 @@ class OpenPhaseHandler:
             needs_criteria=not success_criteria,
             execution_time_ms=execution_time_ms,
             events_emitted=events_emitted,
+            hololoom_recommendations=hololoom_recommendations,
         )
 
         return response
@@ -128,6 +160,7 @@ class OpenPhaseHandler:
         needs_criteria: bool,
         execution_time_ms: float,
         events_emitted: List[str],
+        hololoom_recommendations: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Build success response for session opening."""
 
@@ -150,7 +183,7 @@ class OpenPhaseHandler:
             ]
             message = "Ritual session opened. Ready to begin."
 
-        return {
+        response = {
             "phase": "open",
             "session_id": session.session_id,
             "status": "success",
@@ -169,6 +202,20 @@ class OpenPhaseHandler:
             },
         }
 
+        # Add HoloLoom recommendations if available
+        if hololoom_recommendations:
+            response["data"]["hololoom"] = {
+                "recommended_complexity": hololoom_recommendations.get("recommended_complexity"),
+                "similar_sessions": hololoom_recommendations.get("similar_sessions", []),
+                "relevant_lessons": hololoom_recommendations.get("relevant_lessons", []),
+                "warnings": hololoom_recommendations.get("warnings", []),
+            }
+            # Add warnings from past sessions
+            if hololoom_recommendations.get("warnings"):
+                response["warnings"] = hololoom_recommendations["warnings"]
+
+        return response
+
     def _error_response(self, message: str) -> Dict[str, Any]:
         """Build error response."""
         return {
@@ -183,36 +230,37 @@ class OpenPhaseHandler:
 
     async def _emit_session_opened(self, session: SessionState) -> Optional[str]:
         """Emit ritual.session.opened event."""
-        if not self.event_bus:
+        if not self.event_bus or not EVENT_BUS_AVAILABLE:
             return None
 
         try:
-            # Import event types if available
-            from HoloLoom.skills.protocol import SkillEvent, EventType
-
-            event = SkillEvent(
-                event_type=EventType.SKILL_STARTED,
-                skill_name="ritual",
-                timestamp=datetime.now().isoformat(),
-                payload={
-                    "session_id": session.session_id,
-                    "task": session.task,
-                    "complexity": session.complexity.value,
-                    "success_criteria": session.success_criteria,
-                    "started_at": session.started_at,
-                },
-                event_id=f"ritual.session.opened-{uuid.uuid4().hex[:8]}",
-                topic="ritual.session.opened",
-                correlation_id=session.correlation_id,
-                sequence=1,
+            # Create RitualContext from session state
+            context = RitualContext(
+                ritual_id=session.correlation_id or session.session_id,
+                feature_name=session.task,
+                started_at=session.started_at,
             )
 
-            await self.event_bus.emit(event)
-            return event.event_id
+            # Create event using ritual_started factory
+            event = ritual_started(context)
 
-        except ImportError:
-            # EventBus protocol not available
-            return None
+            # Add session-specific payload
+            event["payload"].update({
+                "session_id": session.session_id,
+                "complexity": session.complexity.value,
+                "success_criteria": session.success_criteria,
+            })
+
+            # Update topic to be more specific
+            event["topic"] = "ritual.session.opened"
+
+            # Record event in session
+            session.record_event(event.get("event_id", ""))
+
+            # Emit via EventBus
+            await self.event_bus.emit(event)
+            return event.get("event_id")
+
         except Exception:
             # Event emission failed, but don't break the flow
             return None

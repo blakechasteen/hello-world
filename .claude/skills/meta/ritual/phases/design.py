@@ -26,6 +26,14 @@ from state.session_manager import (
     SessionState,
     RitualPhase,
 )
+from events import (
+    EVENT_BUS_AVAILABLE,
+    RitualContext,
+    RitualEventType,
+    create_ritual_event,
+    phase_started,
+    phase_completed,
+)
 
 
 class DesignPhaseHandler:
@@ -526,35 +534,39 @@ class DesignPhaseHandler:
         component: Optional[str],
     ) -> Optional[str]:
         """Emit ritual.design.started event."""
-        if not self.event_bus:
+        if not self.event_bus or not EVENT_BUS_AVAILABLE:
             return None
 
         try:
-            from HoloLoom.skills.protocol import SkillEvent, EventType
-
-            event = SkillEvent(
-                event_type=EventType.SKILL_STARTED,
-                skill_name="ritual",
-                timestamp=datetime.now().isoformat(),
-                payload={
-                    "session_id": session.session_id,
-                    "task": session.task,
-                    "component": component,
-                    "phase": "design",
-                },
-                event_id=f"ritual.design.started-{uuid.uuid4().hex[:8]}",
-                topic="ritual.design.started",
-                correlation_id=session.correlation_id,
-                causation_id=f"ritual.session.opened-{session.correlation_id}",
-                sequence=session.event_sequence + 1,
+            # Create RitualContext from session state
+            context = RitualContext(
+                ritual_id=session.correlation_id or session.session_id,
+                feature_name=session.task,
+                started_at=session.started_at,
+                current_phase="design",
             )
 
-            await self.event_bus.emit(event)
-            return event.event_id
+            # Create event using phase_started factory
+            event = phase_started(context, phase_name="design")
 
-        except ImportError:
-            return None
+            # Add design-specific payload
+            event["payload"].update({
+                "session_id": session.session_id,
+                "component": component,
+            })
+
+            # Update topic to be more specific
+            event["topic"] = "ritual.design.started"
+
+            # Record event in session
+            session.record_event(event.get("event_id", ""))
+
+            # Emit via EventBus
+            await self.event_bus.emit(event)
+            return event.get("event_id")
+
         except Exception:
+            # Event emission failed, but don't break the flow
             return None
 
     async def _emit_design_completed(
@@ -563,34 +575,41 @@ class DesignPhaseHandler:
         design_record: Dict[str, Any],
     ) -> Optional[str]:
         """Emit ritual.design.completed event."""
-        if not self.event_bus:
+        if not self.event_bus or not EVENT_BUS_AVAILABLE:
             return None
 
         try:
-            from HoloLoom.skills.protocol import SkillEvent, EventType
-
-            event = SkillEvent(
-                event_type=EventType.SKILL_COMPLETED,
-                skill_name="ritual",
-                timestamp=datetime.now().isoformat(),
-                payload={
-                    "session_id": session.session_id,
-                    "component": design_record["component"],
-                    "dependencies_count": len(design_record.get("dependencies", [])),
-                    "fallbacks_count": len(design_record.get("fallbacks", [])),
-                },
-                event_id=f"ritual.design.completed-{uuid.uuid4().hex[:8]}",
-                topic="ritual.design.completed",
-                correlation_id=session.correlation_id,
-                sequence=session.event_sequence + 2,
+            # Create RitualContext from session state
+            context = RitualContext(
+                ritual_id=session.correlation_id or session.session_id,
+                feature_name=session.task,
+                started_at=session.started_at,
+                current_phase="design",
             )
 
-            await self.event_bus.emit(event)
-            return event.event_id
+            # Create event using phase_completed factory
+            event = phase_completed(context, phase_name="design")
 
-        except ImportError:
-            return None
+            # Add design-specific payload
+            event["payload"].update({
+                "session_id": session.session_id,
+                "component": design_record.get("component"),
+                "dependencies_count": len(design_record.get("dependencies", [])),
+                "fallbacks_count": len(design_record.get("fallbacks", [])),
+            })
+
+            # Update topic to be more specific
+            event["topic"] = "ritual.design.completed"
+
+            # Record event in session
+            session.record_event(event.get("event_id", ""))
+
+            # Emit via EventBus
+            await self.event_bus.emit(event)
+            return event.get("event_id")
+
         except Exception:
+            # Event emission failed, but don't break the flow
             return None
 
 

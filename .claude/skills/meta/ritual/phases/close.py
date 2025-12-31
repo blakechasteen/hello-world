@@ -27,6 +27,13 @@ from state.session_manager import (
     SessionState,
     RitualPhase,
 )
+from events import (
+    EVENT_BUS_AVAILABLE,
+    RitualContext,
+    RitualEventType,
+    create_ritual_event,
+    ritual_completed,
+)
 
 
 class ClosePhaseHandler:
@@ -406,36 +413,41 @@ class ClosePhaseHandler:
         summary: Dict[str, Any],
     ) -> Optional[str]:
         """Emit ritual.session.closed event."""
-        if not self.event_bus:
+        if not self.event_bus or not EVENT_BUS_AVAILABLE:
             return None
 
         try:
-            from HoloLoom.skills.protocol import SkillEvent, EventType
-
-            event = SkillEvent(
-                event_type=EventType.SKILL_COMPLETED,
-                skill_name="ritual",
-                timestamp=datetime.now().isoformat(),
-                payload={
-                    "session_id": session.session_id,
-                    "task": session.task,
-                    "duration": summary.get("duration"),
-                    "lessons_learned": session.lessons_learned,
-                    "completed_at": session.completed_at,
-                },
-                event_id=f"ritual.session.closed-{uuid.uuid4().hex[:8]}",
-                topic="ritual.session.closed",
-                correlation_id=session.correlation_id,
-                causation_id=f"ritual.session.opened-{session.correlation_id}",
-                sequence=session.event_sequence + 1,
+            # Create RitualContext from session state
+            context = RitualContext(
+                ritual_id=session.correlation_id or session.session_id,
+                feature_name=session.task,
+                started_at=session.started_at,
+                current_phase="close",
             )
 
-            await self.event_bus.emit(event)
-            return event.event_id
+            # Create event using ritual_completed factory
+            event = ritual_completed(context)
 
-        except ImportError:
-            return None
+            # Add close-specific payload
+            event["payload"].update({
+                "session_id": session.session_id,
+                "duration": summary.get("duration"),
+                "lessons_learned": session.lessons_learned,
+                "completed_at": session.completed_at,
+            })
+
+            # Update topic to be specific
+            event["topic"] = "ritual.session.closed"
+
+            # Record event in session
+            session.record_event(event.get("event_id", ""))
+
+            # Emit via EventBus
+            await self.event_bus.emit(event)
+            return event.get("event_id")
+
         except Exception:
+            # Event emission failed, but don't break the flow
             return None
 
 

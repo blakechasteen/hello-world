@@ -64,6 +64,85 @@ class RitualEventType(Enum):
 
 
 # ============================================================================
+# Decision Types
+# ============================================================================
+
+class DecisionType(Enum):
+    """Types of decisions at phase transitions."""
+    PROCEED = "proceed"       # Move to next phase
+    REFINE = "refine"         # Iterate on current phase
+    SKIP = "skip"             # Skip to later phase
+    EXPLORE = "explore"       # Get more context
+    APPROVE = "approve"       # Approve current output
+    CONFIRM = "confirm"       # Confirm and close
+
+
+@dataclass
+class RitualDecision:
+    """
+    A decision made at a phase transition.
+
+    Captures the decision type, text, and context for the ritual workflow.
+    """
+    decision_type: DecisionType
+    decision_text: str
+    phase: RitualPhase
+    timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
+    confidence: float = 0.5
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize decision to dictionary."""
+        return {
+            "decision_type": self.decision_type.value,
+            "decision_text": self.decision_text,
+            "phase": self.phase.value,
+            "timestamp": self.timestamp,
+            "confidence": self.confidence,
+            "metadata": self.metadata,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'RitualDecision':
+        """Deserialize decision from dictionary."""
+        return cls(
+            decision_type=DecisionType(data.get("decision_type", "proceed")),
+            decision_text=data.get("decision_text", ""),
+            phase=RitualPhase(data.get("phase", "awaken")),
+            timestamp=data.get("timestamp", datetime.now().isoformat()),
+            confidence=data.get("confidence", 0.5),
+            metadata=data.get("metadata", {}),
+        )
+
+
+# Phase-specific decision options
+PHASE_DECISION_OPTIONS: Dict[RitualPhase, List[str]] = {
+    RitualPhase.AWAKEN: [
+        "Proceed to PLAN",
+        "Explore more context",
+        "Skip to IMPLEMENT",
+    ],
+    RitualPhase.PLAN: [
+        "Approve plan",
+        "Refine plan",
+        "Research more",
+        "Skip to IMPLEMENT",
+    ],
+    RitualPhase.IMPLEMENT: [],  # Manual coding - no forced decision
+    RitualPhase.REVIEW: [
+        "Approve",
+        "Address issues first",
+        "Skip review",
+    ],
+    RitualPhase.REFLECT: [
+        "Confirm summary",
+        "Add more notes",
+        "Quick close",
+    ],
+}
+
+
+# ============================================================================
 # Ritual Context
 # ============================================================================
 
@@ -467,9 +546,14 @@ __all__ = [
     # Enums
     'RitualPhase',
     'RitualEventType',
+    'DecisionType',
 
     # Data structures
     'RitualContext',
+    'RitualDecision',
+
+    # Decision constants
+    'PHASE_DECISION_OPTIONS',
 
     # Event creation
     'create_ritual_event',

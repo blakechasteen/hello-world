@@ -25,6 +25,13 @@ from state.session_manager import (
     SessionState,
     RitualPhase,
 )
+from events import (
+    EVENT_BUS_AVAILABLE,
+    RitualContext,
+    RitualEventType,
+    create_ritual_event,
+    phase_completed,
+)
 
 
 class WaveDefinition:
@@ -476,35 +483,40 @@ class BuildPhaseHandler:
         status: str,
     ) -> Optional[str]:
         """Emit ritual.build.wave_N event."""
-        if not self.event_bus:
+        if not self.event_bus or not EVENT_BUS_AVAILABLE:
             return None
 
         try:
-            from HoloLoom.skills.protocol import SkillEvent, EventType
-
-            event = SkillEvent(
-                event_type=EventType.SKILL_PROGRESS,
-                skill_name="ritual",
-                timestamp=datetime.now().isoformat(),
-                payload={
-                    "session_id": session.session_id,
-                    "task": session.task,
-                    "wave": wave,
-                    "status": status,
-                },
-                event_id=f"ritual.build.wave_{wave}-{uuid.uuid4().hex[:8]}",
-                topic=f"ritual.build.wave_{wave}",
-                correlation_id=session.correlation_id,
-                causation_id=f"ritual.design.completed-{session.correlation_id}",
-                sequence=session.event_sequence + wave + 2,
+            # Create RitualContext from session state
+            context = RitualContext(
+                ritual_id=session.correlation_id or session.session_id,
+                feature_name=session.task,
+                started_at=session.started_at,
+                current_phase="build",
             )
 
-            await self.event_bus.emit(event)
-            return event.event_id
+            # Create event using phase_completed factory (wave completion)
+            event = phase_completed(context, phase_name=f"build.wave_{wave}")
 
-        except ImportError:
-            return None
+            # Add wave-specific payload
+            event["payload"].update({
+                "session_id": session.session_id,
+                "wave": wave,
+                "status": status,
+            })
+
+            # Update topic to be wave-specific
+            event["topic"] = f"ritual.build.wave_{wave}"
+
+            # Record event in session
+            session.record_event(event.get("event_id", ""))
+
+            # Emit via EventBus
+            await self.event_bus.emit(event)
+            return event.get("event_id")
+
         except Exception:
+            # Event emission failed, but don't break the flow
             return None
 
 

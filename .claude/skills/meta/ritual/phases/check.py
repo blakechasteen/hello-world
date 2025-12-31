@@ -21,9 +21,13 @@ Can optionally integrate with:
 
 import sys
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, TYPE_CHECKING
 from datetime import datetime
 import uuid
+
+# Optional HoloLoom integration
+if TYPE_CHECKING:
+    from hololoom import HoloLoomIntegration
 
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -32,6 +36,13 @@ from state.session_manager import (
     SessionManager,
     SessionState,
     RitualPhase,
+)
+from events import (
+    EVENT_BUS_AVAILABLE,
+    RitualContext,
+    RitualEventType,
+    create_ritual_event,
+    phase_completed,
 )
 
 
@@ -155,6 +166,7 @@ class CheckPhaseHandler:
         event_bus: Optional[Any] = None,
         skill_tester: Optional[Any] = None,
         security_analyzer: Optional[Any] = None,
+        hololoom_integration: Optional["HoloLoomIntegration"] = None,
     ):
         """
         Initialize check phase handler.
@@ -164,11 +176,13 @@ class CheckPhaseHandler:
             event_bus: Optional EventBus for emitting events
             skill_tester: Optional skill_tester for automated testing
             security_analyzer: Optional skill_security_analyzer for scanning
+            hololoom_integration: Optional HoloLoomIntegration for safety checks
         """
         self.session_manager = session_manager or SessionManager()
         self.event_bus = event_bus
         self.skill_tester = skill_tester
         self.security_analyzer = security_analyzer
+        self.hololoom = hololoom_integration
 
     async def execute(
         self,
@@ -496,36 +510,41 @@ class CheckPhaseHandler:
         critical_passed: bool,
     ) -> Optional[str]:
         """Emit ritual.check.completed event."""
-        if not self.event_bus:
+        if not self.event_bus or not EVENT_BUS_AVAILABLE:
             return None
 
         try:
-            from HoloLoom.skills.protocol import SkillEvent, EventType
-
-            event = SkillEvent(
-                event_type=EventType.SKILL_PROGRESS,
-                skill_name="ritual",
-                timestamp=datetime.now().isoformat(),
-                payload={
-                    "session_id": session.session_id,
-                    "task": session.task,
-                    "checks_passed": passed,
-                    "checks_failed": failed,
-                    "critical_passed": critical_passed,
-                },
-                event_id=f"ritual.check.completed-{uuid.uuid4().hex[:8]}",
-                topic="ritual.check.completed",
-                correlation_id=session.correlation_id,
-                causation_id=f"ritual.build.wave_3-{session.correlation_id}",
-                sequence=session.event_sequence + 6,
+            # Create RitualContext from session state
+            context = RitualContext(
+                ritual_id=session.correlation_id or session.session_id,
+                feature_name=session.task,
+                started_at=session.started_at,
+                current_phase="check",
             )
 
-            await self.event_bus.emit(event)
-            return event.event_id
+            # Create event using phase_completed factory
+            event = phase_completed(context, phase_name="check")
 
-        except ImportError:
-            return None
+            # Add check-specific payload
+            event["payload"].update({
+                "session_id": session.session_id,
+                "checks_passed": passed,
+                "checks_failed": failed,
+                "critical_passed": critical_passed,
+            })
+
+            # Update topic to be specific
+            event["topic"] = "ritual.check.completed"
+
+            # Record event in session
+            session.record_event(event.get("event_id", ""))
+
+            # Emit via EventBus
+            await self.event_bus.emit(event)
+            return event.get("event_id")
+
         except Exception:
+            # Event emission failed, but don't break the flow
             return None
 
 

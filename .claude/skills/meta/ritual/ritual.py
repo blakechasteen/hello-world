@@ -15,6 +15,15 @@ Usage:
 
     # Build wave 1
     await ritual("build", wave=1)
+
+EventBus Integration:
+    from ritual import ritual, set_event_bus
+
+    # Set event bus for all commands
+    set_event_bus(my_event_bus)
+
+    # Or pass per-command
+    await ritual("open", task="Build feature X", event_bus=my_event_bus)
 """
 
 import sys
@@ -30,6 +39,9 @@ from state.session_manager import SessionManager
 # Shared session manager (singleton pattern)
 _session_manager: Optional[SessionManager] = None
 
+# Shared event bus (singleton pattern)
+_event_bus: Optional[Any] = None
+
 
 def get_session_manager() -> SessionManager:
     """Get or create the shared session manager."""
@@ -37,6 +49,17 @@ def get_session_manager() -> SessionManager:
     if _session_manager is None:
         _session_manager = SessionManager()
     return _session_manager
+
+
+def set_event_bus(event_bus: Any) -> None:
+    """Set the shared event bus for all ritual commands."""
+    global _event_bus
+    _event_bus = event_bus
+
+
+def get_event_bus() -> Optional[Any]:
+    """Get the shared event bus."""
+    return _event_bus
 
 
 async def ritual(command: str, **kwargs) -> Dict[str, Any]:
@@ -52,6 +75,11 @@ async def ritual(command: str, **kwargs) -> Dict[str, Any]:
         status  - Show current progress
         help    - Show command reference
 
+    Args:
+        command: The ritual command to execute
+        **kwargs: Command-specific arguments
+            event_bus: Optional EventBus for emitting events (uses shared if not provided)
+
     Examples:
         await ritual("open", task="Build REST API", complexity="fast")
         await ritual("design", component="UserService")
@@ -66,9 +94,12 @@ async def ritual(command: str, **kwargs) -> Dict[str, Any]:
     command = command.lower().strip()
     sm = get_session_manager()
 
+    # Get event bus from kwargs or fall back to shared singleton
+    event_bus = kwargs.pop("event_bus", None) or get_event_bus()
+
     if command == "open":
         from phases.open import OpenPhaseHandler
-        handler = OpenPhaseHandler(session_manager=sm)
+        handler = OpenPhaseHandler(session_manager=sm, event_bus=event_bus)
         return await handler.execute(
             task=kwargs.get("task", "Unnamed task"),
             complexity=kwargs.get("complexity", "fast"),
@@ -77,7 +108,7 @@ async def ritual(command: str, **kwargs) -> Dict[str, Any]:
 
     elif command == "design":
         from phases.design import DesignPhaseHandler
-        handler = DesignPhaseHandler(session_manager=sm)
+        handler = DesignPhaseHandler(session_manager=sm, event_bus=event_bus)
         return await handler.execute(
             component=kwargs.get("component"),
             design_type=kwargs.get("design_type"),
@@ -87,7 +118,7 @@ async def ritual(command: str, **kwargs) -> Dict[str, Any]:
 
     elif command == "build":
         from phases.build import BuildPhaseHandler
-        handler = BuildPhaseHandler(session_manager=sm)
+        handler = BuildPhaseHandler(session_manager=sm, event_bus=event_bus)
         return await handler.execute(
             wave=kwargs.get("wave"),
             wave_status=kwargs.get("wave_status"),
@@ -97,7 +128,7 @@ async def ritual(command: str, **kwargs) -> Dict[str, Any]:
 
     elif command == "check":
         from phases.check import CheckPhaseHandler
-        handler = CheckPhaseHandler(session_manager=sm)
+        handler = CheckPhaseHandler(session_manager=sm, event_bus=event_bus)
         return await handler.execute(
             check_results=kwargs.get("check_results"),
             notes=kwargs.get("notes"),
@@ -106,7 +137,7 @@ async def ritual(command: str, **kwargs) -> Dict[str, Any]:
 
     elif command == "close":
         from phases.close import ClosePhaseHandler
-        handler = ClosePhaseHandler(session_manager=sm)
+        handler = ClosePhaseHandler(session_manager=sm, event_bus=event_bus)
         return await handler.execute(
             lessons=kwargs.get("lessons", []),
             notes=kwargs.get("notes"),
@@ -207,29 +238,57 @@ def _help_response() -> Dict[str, Any]:
 
 
 # Convenience shortcuts
-async def open_session(task: str, complexity: str = "fast", criteria: List[str] = None) -> Dict[str, Any]:
+async def open_session(
+    task: str,
+    complexity: str = "fast",
+    criteria: List[str] = None,
+    event_bus: Any = None,
+) -> Dict[str, Any]:
     """Shortcut: Start a new ritual session."""
-    return await ritual("open", task=task, complexity=complexity, criteria=criteria or [])
+    return await ritual(
+        "open",
+        task=task,
+        complexity=complexity,
+        criteria=criteria or [],
+        event_bus=event_bus,
+    )
 
 
-async def design(component: str = None, **kwargs) -> Dict[str, Any]:
+async def design(
+    component: str = None,
+    event_bus: Any = None,
+    **kwargs,
+) -> Dict[str, Any]:
     """Shortcut: Start design phase."""
-    return await ritual("design", component=component, **kwargs)
+    return await ritual("design", component=component, event_bus=event_bus, **kwargs)
 
 
-async def build(wave: int = None, status: str = None, **kwargs) -> Dict[str, Any]:
+async def build(
+    wave: int = None,
+    status: str = None,
+    event_bus: Any = None,
+    **kwargs,
+) -> Dict[str, Any]:
     """Shortcut: Run a build wave."""
-    return await ritual("build", wave=wave, wave_status=status, **kwargs)
+    return await ritual("build", wave=wave, wave_status=status, event_bus=event_bus, **kwargs)
 
 
-async def check(results: Dict[str, bool] = None, **kwargs) -> Dict[str, Any]:
+async def check(
+    results: Dict[str, bool] = None,
+    event_bus: Any = None,
+    **kwargs,
+) -> Dict[str, Any]:
     """Shortcut: Run safety check."""
-    return await ritual("check", check_results=results, **kwargs)
+    return await ritual("check", check_results=results, event_bus=event_bus, **kwargs)
 
 
-async def close_session(lessons: List[str] = None, **kwargs) -> Dict[str, Any]:
+async def close_session(
+    lessons: List[str] = None,
+    event_bus: Any = None,
+    **kwargs,
+) -> Dict[str, Any]:
     """Shortcut: Close the session."""
-    return await ritual("close", lessons=lessons or [], **kwargs)
+    return await ritual("close", lessons=lessons or [], event_bus=event_bus, **kwargs)
 
 
 async def status() -> Dict[str, Any]:
