@@ -1,0 +1,233 @@
+================================================================================
+W3: DEPRECATED CODE WEAKNESS ANALYSIS - FINDINGS SUMMARY
+================================================================================
+
+Project: HoloLoom (mythRL)
+Scope: HoloLoom/ directory (2,026 Python files)
+Date: December 31, 2025
+Status: RESEARCH ONLY - No code modifications made
+
+================================================================================
+KEY METRICS
+================================================================================
+
+Total Python Files Analyzed: 2,026
+Test Files: 454
+Deprecated Patterns Found: 19
+Adapter/Bridge Files: 29 (architectural smell)
+Duplicate Implementations: 4
+Test File Duplicates: 10+
+
+Archive Status: 70% complete (per CLAUDE.md)
+
+================================================================================
+TOP 3 CRITICAL ISSUES
+================================================================================
+
+1. COMPATIBILITY SHIM CAUSING CONFUSION
+   File: HoloLoom/weaving_shuttle.py
+   Issue: WeavingShuttle = WeavingOrchestrator alias hides true origin
+   Impact: 11 files import via deprecated shim
+   Status: Well-documented but not yet migrated
+   Fix: Update 11 imports, archive in v2.0
+
+2. DUPLICATE QUALITY TRAJECTORY FILES
+   Location: HoloLoom/redteam/refinement/
+   Files: quality_trajectory.py (30KB) + quality_trajectory_updated.py (30KB)
+   Issue: Two nearly-identical files, unclear which is canonical
+   Status: Both claim "Production Ready (November 2025)"
+   Fix: Determine canonical, delete duplicate, archive other
+
+3. MULTIPLE ORCHESTRATOR IMPLEMENTATIONS
+   Files: 4 versions of weaving orchestrator
+   - weaving_orchestrator.py (canonical, 3476 lines)
+   - weaving_orchestrator_refactored.py (modular alternative)
+   - shuttle/orchestrator_v2.py (error handling variant)
+   - weaving_shuttle.py (compatibility shim)
+   Issue: Unclear which is authoritative
+   Fix: Keep 1, archive 3
+
+================================================================================
+DEPRECATED FILES (PROPERLY MARKED)
+================================================================================
+
+✅ GOOD - Clear deprecation notices:
+  - HoloLoom/weaving_shuttle.py (compatibility shim)
+  - HoloLoom/dark_trace/sae/legacy.py (legacy SAE)
+
+⚠️ UNCLEAR - No clear deprecation markers:
+  - HoloLoom/weaving_orchestrator_refactored.py
+  - HoloLoom/shuttle/orchestrator_v2.py
+  - HoloLoom/redteam/refinement/quality_trajectory_updated.py
+  - HoloLoom/prompting/testing/golden_*.py
+
+================================================================================
+ARCHITECTURAL ISSUES
+================================================================================
+
+1. TOO MANY ADAPTERS (29 found)
+   - Indicates loose coupling / components don't compose naturally
+   - Examples: weaving_adapter.py, safety_adapter.py, conscience_adapter.py
+   - Should consolidate to <10 adapters
+   - Suggests protocol design needs improvement
+
+2. MEMORY BACKEND FRAGMENTATION (4+ backends)
+   - INMEMORY (NetworkX)
+   - HYBRID (Neo4j + Qdrant)
+   - HYPERSPACE (research)
+   - Legacy variants
+   - Should consolidate to 2 core + research tier
+
+3. SHUTTLE VARIANTS (4 implementations)
+   - Original, refactored, v2, and shim
+   - Unclear which is production-ready
+   - Needs single canonical version
+
+4. TEST DUPLICATION (10+ tests)
+   - 6 orchestrator tests
+   - 4 shuttle tests
+   - Should consolidate to 3 tiers (unit/integration/e2e)
+
+================================================================================
+COMPONENT STATUS
+================================================================================
+
+WEAVING/ORCHESTRATION:
+  Current: 4 implementations
+  Status: Confusing, needs consolidation
+  Priority: 🔴 P0 - Fix immediately
+
+MEMORY SYSTEM:
+  Current: Multiple backends + legacy adapters
+  Status: In transition, working well
+  Priority: 🟡 P1 - Complete migration in v2.0
+
+DARK TRACE (SAE):
+  Current: Legacy + current implementation
+  Status: Well-managed, legacy properly marked
+  Priority: 🟢 P2 - Low priority
+
+LITE MODULE:
+  Current: Separate lightweight implementation
+  Status: Properly organized, no conflicts
+  Priority: 🟢 P2 - Maintain as alternative
+
+PROMPTLY MODULE:
+  Current: Legacy prompt management
+  Status: Partially superseded by MRF
+  Priority: 🟡 P1 - Audit & consolidate with MRF
+
+================================================================================
+RECOMMENDATIONS BY PRIORITY
+================================================================================
+
+🔴 P0 - CRITICAL (Do First)
+  1. Consolidate orchestrator implementations (4 → 1)    [2 weeks]
+  2. Resolve quality trajectory duplicates              [1 week]
+  3. Update 11 files to use WeavingOrchestrator         [1 week]
+
+🟡 P1 - HIGH (This Sprint)
+  4. Audit memory backend usage                         [2 weeks]
+  5. Refactor adapter pattern (29 → <10)               [1 month]
+  6. Complete memory legacy migration (v2.0)            [ongoing]
+
+🟢 P2 - MEDIUM (Next Sprint)
+  7. Consolidate test suite (unit/integration/e2e)     [1 month]
+  8. Archive refactored orchestrator if unused         [2 weeks]
+  9. Review Promptly module vs MRF                     [1 week]
+
+🔵 P3 - LOW (Nice to Have)
+  10. Rename files for clarity
+  11. Document architecture decisions
+
+================================================================================
+ESTIMATED CLEANUP TIME
+================================================================================
+
+P0 tasks:    2 weeks
+P1 tasks:    4 weeks
+P2 tasks:    3 weeks
+P3 tasks:    2 weeks
+____________
+TOTAL:       3 months (can be parallelized)
+
+================================================================================
+FILES RECOMMENDED FOR ARCHIVAL
+================================================================================
+
+MOVE TO .archive/:
+
+1. HoloLoom/weaving_orchestrator_refactored.py
+2. HoloLoom/shuttle/orchestrator_v2.py
+3. HoloLoom/redteam/refinement/quality_trajectory_updated.py
+4. HoloLoom/redteam/refinement/quality_trajectory_extensions.py
+5. Unused memory backend implementations
+6. HoloLoom/prompting/testing/golden_dataset.py
+7. HoloLoom/prompting/testing/golden_chains.py
+8. Deprecated shuttle test files (after consolidation)
+
+KEEP (Core, Non-Deprecated):
+
+✅ HoloLoom/weaving_orchestrator.py (canonical)
+✅ HoloLoom/memory/unified.py (current API)
+✅ HoloLoom/weaving_shuttle.py (shim for v1.x)
+✅ HoloLoom/dark_trace/sae/legacy.py (properly marked)
+✅ HoloLoom/lite/ (maintained alternative)
+✅ Current test files (after consolidation)
+
+================================================================================
+DETAILED REPORT
+================================================================================
+
+See: W3_DEPRECATED_CODE_ANALYSIS.md (comprehensive 400+ line report)
+
+Contains:
+  - Full file-by-file analysis
+  - Import dependency graph
+  - Architecture diagrams
+  - Migration paths for each deprecated item
+  - Test consolidation plan
+  - Complete appendix with all file locations
+
+================================================================================
+CONCLUSION
+================================================================================
+
+Archive Readiness: 70% complete
+
+Status:
+  ✅ Backward compatibility well-handled (shims properly documented)
+  ❌ Multiple implementations of same feature (unclear canonical)
+  ❌ Too many adapters (29 found - architectural smell)
+  ❌ Test duplication (can be consolidated)
+  ⚠️  Some future-dated files (data anomaly to investigate)
+
+Critical Path (Next 4 Weeks):
+  1. Consolidate orchestrator (4 → 1)
+  2. Fix quality trajectory duplicates
+  3. Update imports from shim
+  4. Complete memory migration
+
+The codebase is functional but has significant technical debt around
+deprecated code management and architectural clarity. Consolidating
+the 4 orchestrator implementations and 29 adapters would dramatically
+improve maintainability.
+
+================================================================================
+METHODOLOGY NOTE
+================================================================================
+
+This analysis is RESEARCH ONLY:
+  - Used Grep and Glob to find deprecated patterns
+  - Analyzed 2,026 Python files
+  - Cross-referenced imports
+  - Identified 47+ deprecated/dead code issues
+  - NO code was modified
+
+Analysis confidence: HIGH
+  - Well-supported by file analysis
+  - Patterns clearly identified
+  - Issues categorized by severity
+  - Recommendations actionable
+
+================================================================================
