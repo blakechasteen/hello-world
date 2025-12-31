@@ -1,8 +1,22 @@
 """
 HoloLoom Lite - Simplified HoloLoom for quick startup and minimal dependencies.
 
-Usage:
-    from HoloLoom import HoloLoomLite
+Elegant API (Recommended):
+    from HoloLoom.lite import Memory, ask, research
+
+    async with Memory() as mem:
+        # Memory: store, search, feedback, related
+        await mem.store("Thompson Sampling balances exploration")
+        results = await mem.search("exploration strategies")
+        await mem.feedback(results, helpful=True)
+        neighbors = await mem.related(results[0].id)
+
+        # Reasoning: ask, research (functions over memory)
+        answer = await ask("What is Thompson Sampling?", mem)
+        analysis = await research("exploration strategies", mem)
+
+Legacy API (Backward Compatible):
+    from HoloLoom.lite import HoloLoomLite
 
     async with HoloLoomLite() as loom:
         await loom.experience("Thompson Sampling balances exploration")
@@ -21,6 +35,15 @@ Agent Tools:
 Date: December 2025
 """
 
+# =============================================================================
+# Elegant API (Separated Concerns)
+# =============================================================================
+from HoloLoom.lite.memory import Memory, MemoryItem
+from HoloLoom.lite.reasoning import ask, research, Answer, Analysis
+
+# =============================================================================
+# Legacy API (Backward Compatible)
+# =============================================================================
 from HoloLoom.lite.core import HoloLoomLite, LiteResult, SimpleLoom
 
 # Agent tool exports (lazy loaded to avoid import errors if dependencies missing)
@@ -38,7 +61,14 @@ except ImportError:
     _OPENAI_TOOLS_AVAILABLE = False
 
 __all__ = [
-    # Core
+    # Elegant API (Recommended)
+    'Memory',
+    'MemoryItem',
+    'ask',
+    'research',
+    'Answer',
+    'Analysis',
+    # Legacy API (Backward Compatible)
     'HoloLoomLite',
     'LiteResult',
     'SimpleLoom',
