@@ -1,0 +1,55 @@
+{
+  "buildCommand": "npm install",
+  "devCommand": "next dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "nodeVersion": "18.x",
+  "env": {
+    "HOLOLOOM_MEMORY_BACKEND": {
+      "description": "Memory backend: INMEMORY (default) or HYBRID",
+      "default": "INMEMORY",
+      "required": false
+    },
+    "HOLOLOOM_MAX_MEMORIES": {
+      "description": "Maximum memories to store in-memory",
+      "default": "1000",
+      "required": false
+    },
+    "HOLOLOOM_CACHE_TTL": {
+      "description": "Cache TTL in seconds",
+      "default": "3600",
+      "required": false
+    },
+    "RATE_LIMIT_MAX_REQUESTS": {
+      "description": "Max requests per rate limit window",
+      "default": "100",
+      "required": false
+    },
+    "RATE_LIMIT_WINDOW_MS": {
+      "description": "Rate limit window in milliseconds",
+      "default": "60000",
+      "required": false
+    },
+    "KV_REST_API_URL": {
+      "description": "Vercel KV REST API URL (optional, for persistent rate limiting)",
+      "required": false
+    },
+    "KV_REST_API_TOKEN": {
+      "description": "Vercel KV REST API token (optional)",
+      "required": false
+    }
+  },
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 30,
+      "memory": 512
+    }
+  },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/api/health",
+      "permanent": false
+    }
+  ]
+}

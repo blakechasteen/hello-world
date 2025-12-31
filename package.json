@@ -1,0 +1,32 @@
+{
+  "name": "hololoom-lite-vercel",
+  "version": "1.0.0",
+  "description": "HoloLoom Lite - Serverless memory and query API for Vercel",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy --prod",
+    "build": "echo 'No build step required - TypeScript compiled by Vercel'",
+    "test": "echo 'Tests can be run locally with: npm run test:local'",
+    "test:local": "node -e \"console.log('Test endpoint: curl http://localhost:3000/api/health')\""
+  },
+  "keywords": [
+    "hololoom",
+    "memory",
+    "vercel",
+    "serverless",
+    "api"
+  ],
+  "author": "HoloLoom Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}

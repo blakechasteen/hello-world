@@ -116,6 +116,36 @@ class ExecutionMode(Enum):
 
 
 # =============================================================================
+# EXPANSION BUNDLE PROTOCOL
+# =============================================================================
+
+class ExpansionBundle:
+    """
+    Protocol for expansion bundles (physics, bayesian, geometry, etc.).
+
+    Expansion bundles contain optional research features that can be
+    loaded into a Config after construction.
+
+    Example:
+        from HoloLoom.config import Config, ExpansionBundle
+
+        class MyExpansion(ExpansionBundle):
+            def __init__(self, my_setting: bool = False):
+                self.my_setting = my_setting
+
+            def get_settings(self) -> Dict[str, Any]:
+                return {"my_setting": self.my_setting}
+
+        config = Config.research()
+        config.load_expansion(MyExpansion(my_setting=True))
+    """
+
+    def get_settings(self) -> Dict[str, Any]:
+        """Return dictionary of settings to merge into config."""
+        raise NotImplementedError
+
+
+# =============================================================================
 # LEGACY FIELD MAPPING (for auto-migration)
 # =============================================================================
 
@@ -782,6 +812,7 @@ __all__ = [
     "MemoryBackend",
     "KGBackend",
     "BanditStrategy",
+    "ExpansionBundle",
 ]
 
 
