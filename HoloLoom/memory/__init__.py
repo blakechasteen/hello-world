@@ -15,7 +15,71 @@ from .graph import (
     KG,
     LegacyShardsAdapter,
     extract_entities_simple,
-    build_kg_from_text
+    build_kg_from_text,
+    # Phase 1: Bounded Growth (December 2025)
+    EvictionStrategy,
+    LifecycleScope,
+    NodeAccessStats,
+    EvictionResult,
+)
+
+# Phase 2: Unified Forgetting (December 2025)
+from .forget_manager import (
+    ForgetManager,
+    ForgetConfig,
+    ForgetPolicy,
+    ForgetTrigger,
+    ForgetEvent,
+    create_forget_manager,
+)
+
+# Phase 3: Outcome→Retrieval Loop (December 2025)
+from .shard_contribution import (
+    ShardContributionTracker,
+    ShardContributionConfig,
+    ShardStats,
+    ContributionRecord,
+    OutcomeQuality,
+    RetrievalBooster,
+    create_contribution_tracker,
+    create_retrieval_booster,
+)
+from .contribution_integration import (
+    ContributionIntegration,
+    EnhancedMemoryManager,
+    create_contribution_integration,
+    enhance_memory_manager,
+    get_forgetting_candidates_from_contributions,
+)
+
+# Phase 4: Reconstruction (December 2025)
+from .delta_storage import (
+    DeltaStore,
+    DeltaReconstructor,
+    DeltaStoreConfig,
+    MemoryDelta,
+    DeltaCheckpoint,
+    DeltaOperation,
+    DeltaTarget,
+    create_delta_store,
+    create_reconstructor,
+)
+
+# Phase 5: Anticipatory Retrieval (December 2025)
+from .anticipatory_retrieval import (
+    AnticipatoryRetrieval,
+    AnticipatoryConfig,
+    AnticipatoryFetcher,
+    FollowUpPredictor,
+    QueryPatternTracker,
+    QueryTypeClassifier,
+    QueryType,
+    QueryPattern,
+    SessionContext,
+    PredictedQuery,
+    PrefetchResult,
+    create_anticipatory_retrieval,
+    create_session_context,
 )
 
 # Weaving Metaphor Aliases
@@ -76,6 +140,56 @@ __all__ = [
     'LegacyShardsAdapter',  # Backward compatibility for deprecated shards
     'extract_entities_simple',
     'build_kg_from_text',
+    # Phase 1: Bounded Growth (December 2025)
+    'EvictionStrategy',
+    'LifecycleScope',
+    'NodeAccessStats',
+    'EvictionResult',
+    # Phase 2: Unified Forgetting (December 2025)
+    'ForgetManager',
+    'ForgetConfig',
+    'ForgetPolicy',
+    'ForgetTrigger',
+    'ForgetEvent',
+    'create_forget_manager',
+    # Phase 3: Outcome→Retrieval Loop (December 2025)
+    'ShardContributionTracker',
+    'ShardContributionConfig',
+    'ShardStats',
+    'ContributionRecord',
+    'OutcomeQuality',
+    'RetrievalBooster',
+    'create_contribution_tracker',
+    'create_retrieval_booster',
+    'ContributionIntegration',
+    'EnhancedMemoryManager',
+    'create_contribution_integration',
+    'enhance_memory_manager',
+    'get_forgetting_candidates_from_contributions',
+    # Phase 4: Reconstruction (December 2025)
+    'DeltaStore',
+    'DeltaReconstructor',
+    'DeltaStoreConfig',
+    'MemoryDelta',
+    'DeltaCheckpoint',
+    'DeltaOperation',
+    'DeltaTarget',
+    'create_delta_store',
+    'create_reconstructor',
+    # Phase 5: Anticipatory Retrieval (December 2025)
+    'AnticipatoryRetrieval',
+    'AnticipatoryConfig',
+    'AnticipatoryFetcher',
+    'FollowUpPredictor',
+    'QueryPatternTracker',
+    'QueryTypeClassifier',
+    'QueryType',
+    'QueryPattern',
+    'SessionContext',
+    'PredictedQuery',
+    'PrefetchResult',
+    'create_anticipatory_retrieval',
+    'create_session_context',
     # Awareness (consolidated Dec 2025)
     'BetaWaveContextPacker',
     'BetaWavePacker',  # Backward compat alias

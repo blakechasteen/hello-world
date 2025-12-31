@@ -534,6 +534,161 @@ class Config:
     hyperspace_thresholds: List[float] = field(default_factory=lambda: [0.6, 0.75, 0.85])
     hyperspace_breadth: int = 10
 
+    # =========================================================================
+    # KNOWLEDGE GRAPH HARD LIMITS (Phase 1: Bounded Growth - December 2025)
+    # =========================================================================
+    # These limits prevent unbounded KG growth which can cause memory exhaustion
+    # and performance degradation. When limits are reached, eviction strategies
+    # are applied to make room for new knowledge.
+
+    # Hard Limits
+    kg_max_nodes: int = 100_000  # Maximum nodes in KG (0 = unlimited)
+    kg_max_edges: int = 500_000  # Maximum edges in KG (0 = unlimited)
+    kg_hard_limit_enforce: bool = True  # Whether to enforce hard limits
+    kg_hard_limit_fail_mode: str = "evict"  # "evict" | "reject" | "warn"
+
+    # Growth Monitoring
+    kg_growth_alert_threshold: float = 0.8  # Alert when KG reaches 80% of limit
+    kg_enable_growth_monitoring: bool = True
+
+    # Eviction Configuration
+    kg_eviction_strategy: str = "importance_weighted"  # "lru" | "lfu" | "importance_weighted" | "scope_aware"
+    kg_eviction_batch_size: int = 1000  # Nodes to evict per batch
+    kg_eviction_target_ratio: float = 0.75  # Evict to 75% of max
+    kg_eviction_min_age_hours: int = 24  # Don't evict nodes younger than 24h
+    kg_eviction_preserve_permanent: bool = True  # Never evict PERMANENT lifecycle nodes
+
+    # Importance Scoring Weights (for importance_weighted eviction)
+    kg_importance_recency_weight: float = 0.25  # Recent access time
+    kg_importance_access_weight: float = 0.20  # Access frequency
+    kg_importance_centrality_weight: float = 0.25  # Graph centrality
+    kg_importance_connection_weight: float = 0.15  # Number of connections
+    kg_importance_lifecycle_weight: float = 0.15  # Lifecycle scope
+
+    # Auto-Consolidation (evict after consolidating to semantic memory)
+    kg_auto_consolidate_before_evict: bool = True
+
+    # =========================================================================
+    # UNIFIED FORGETTING (Phase 2 - December 2025)
+    # ForgetManager coordinates 5 forgetting subsystems:
+    #   1. KG Eviction (above)
+    #   2. Hot Pattern Decay
+    #   3. Lifecycle TTL
+    #   4. Activation Decay
+    #   5. Consolidation Cleanup
+    # =========================================================================
+
+    # Global Forgetting Settings
+    enable_unified_forgetting: bool = True  # Enable ForgetManager
+    forget_scheduled_interval_minutes: int = 60  # Run forgetting every hour
+
+    # Hot Pattern Decay
+    forget_hot_decay_enabled: bool = True
+    forget_hot_decay_rate: float = 0.95  # 5% decay per hour
+    forget_hot_prune_threshold: float = 0.1  # Remove if heat < threshold
+
+    # Lifecycle TTL
+    forget_lifecycle_ttl_enabled: bool = True
+    forget_ttl_ephemeral_hours: int = 1  # EPHEMERAL memories TTL
+    forget_ttl_temporary_days: int = 30  # TEMPORARY memories TTL
+
+    # Activation Decay
+    forget_activation_decay_enabled: bool = True
+    forget_activation_decay_rate: float = 0.5  # Decay rate per interval
+    forget_activation_decay_interval_seconds: float = 60.0
+
+    # Consolidation Cleanup
+    forget_consolidation_enabled: bool = True
+    forget_prune_after_consolidation: bool = True
+
+    # Safety
+    forget_preserve_permanent: bool = True  # Never forget PERMANENT memories
+    forget_min_retention_count: int = 100  # Always keep at least this many
+    forget_max_per_cycle: int = 10000  # Limit per cycle
+
+    # =========================================================================
+    # OUTCOME→RETRIEVAL LOOP (Phase 3 - December 2025)
+    # ShardContributionTracker creates feedback loop between outcomes and retrieval:
+    #   1. Track which shards are retrieved for each query
+    #   2. Record query outcome (confidence, user feedback)
+    #   3. Boost helpful shards in future retrieval
+    # =========================================================================
+
+    # Global settings
+    enable_contribution_tracking: bool = True
+    contribution_max_records: int = 10000  # Max contribution records to keep
+    contribution_max_age_days: int = 30    # Max age before pruning
+
+    # Decay settings
+    contribution_decay_enabled: bool = True
+    contribution_decay_rate: float = 0.95  # Per-hour decay rate
+    contribution_decay_interval_hours: float = 1.0  # Decay interval
+
+    # Boost calculation
+    contribution_min_retrievals: int = 3   # Min retrievals before applying boost
+    contribution_boost_floor: float = 0.5  # Min boost (0.5 = 50% penalty)
+    contribution_boost_ceiling: float = 2.0  # Max boost (2.0 = 2x boost)
+    contribution_boost_blend: float = 0.3  # How much boost to apply (0=none, 1=full)
+
+    # Quality thresholds
+    contribution_success_threshold: float = 0.75  # Confidence >= this is "success"
+    contribution_excellent_threshold: float = 0.9  # Confidence >= this is "excellent"
+
+    # =========================================================================
+    # RECONSTRUCTION (Phase 4 - December 2025)
+    # Delta storage for space-efficient memory history and reconstruction:
+    #   1. Store changes (deltas) instead of full state
+    #   2. Periodic checkpoints for reconstruction base
+    #   3. Time-travel to any point in memory history
+    # =========================================================================
+
+    # Global settings
+    enable_delta_storage: bool = True
+    delta_storage_enabled: bool = True  # Alias for enable_delta_storage
+
+    # Checkpoint policy
+    delta_checkpoint_interval_deltas: int = 1000  # Checkpoint every N deltas
+    delta_checkpoint_interval_seconds: int = 3600  # Or every N seconds (1 hour)
+    delta_max_deltas_before_checkpoint: int = 5000  # Force checkpoint at this limit
+
+    # Retention policy
+    delta_max_deltas: int = 100000  # Maximum deltas to retain
+    delta_max_checkpoints: int = 10  # Maximum checkpoints to retain
+    delta_prune_before_oldest_checkpoint: bool = True  # Remove old deltas
+
+    # Compression (future)
+    delta_compress_old: bool = True  # Compress deltas older than threshold
+    delta_compression_age_hours: int = 24  # Age threshold for compression
+
+    # =========================================================================
+    # ANTICIPATORY RETRIEVAL (Phase 5 - December 2025)
+    # Predicts follow-up queries and pre-fetches relevant memories:
+    #   1. Classify queries into types (definition, explanation, example, etc.)
+    #   2. Learn transition patterns between query types
+    #   3. Predict likely follow-up queries
+    #   4. Pre-fetch memories for faster response
+    # =========================================================================
+
+    # Global settings
+    enable_anticipatory_retrieval: bool = True
+    anticipatory_retrieval_enabled: bool = True  # Alias
+
+    # Prediction settings
+    anticipatory_min_confidence: float = 0.3  # Minimum confidence to predict
+    anticipatory_max_predictions: int = 3  # Maximum follow-up queries to predict
+    anticipatory_topic_continuity_weight: float = 0.7  # Weight for same-topic
+
+    # Prefetching settings
+    anticipatory_prefetch_enabled: bool = True  # Enable pre-fetching
+    anticipatory_prefetch_k: int = 10  # Memories per prediction
+    anticipatory_max_prefetch_total: int = 25  # Maximum total prefetched
+    anticipatory_prefetch_ttl_seconds: float = 300.0  # TTL for prefetched memories
+
+    # Pattern learning
+    anticipatory_pattern_learning_enabled: bool = True  # Learn from usage
+    anticipatory_min_pattern_occurrences: int = 3  # Min occurrences to trust
+    anticipatory_pattern_decay_rate: float = 0.95  # Daily decay rate
+
     # Legacy: kg_backend is deprecated - use memory_backend instead
     # Kept for backward compatibility but emits DeprecationWarning when used
     kg_backend: Optional[KGBackend] = None

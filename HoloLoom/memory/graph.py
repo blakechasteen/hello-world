@@ -19,15 +19,87 @@ explicit relationships, hierarchies, and dependencies.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Protocol, Set
+from typing import List, Dict, Optional, Protocol, Set, Tuple, Any
+from enum import Enum
 import json
 import logging
+import time
+from datetime import datetime, timedelta
 from pathlib import Path
+from collections import defaultdict
 
 import numpy as np
 import networkx as nx
 
 from HoloLoom.utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
+
+
+# ============================================================================
+# Eviction Strategy Enum (Phase 1: Bounded Growth - December 2025)
+# ============================================================================
+
+class EvictionStrategy(Enum):
+    """
+    Strategy for evicting nodes when KG reaches hard limits.
+
+    - LRU: Least Recently Used (evict nodes accessed longest ago)
+    - LFU: Least Frequently Used (evict nodes with fewest accesses)
+    - IMPORTANCE_WEIGHTED: Multi-signal scoring (recency + access + centrality + connections)
+    - SCOPE_AWARE: Considers lifecycle scope (EPHEMERAL → TEMPORARY → SEMANTIC)
+    """
+    LRU = "lru"
+    LFU = "lfu"
+    IMPORTANCE_WEIGHTED = "importance_weighted"
+    SCOPE_AWARE = "scope_aware"
+
+
+class LifecycleScope(Enum):
+    """
+    Lifecycle scope for memory nodes.
+
+    - PERMANENT: Never evict (user-pinned, critical knowledge)
+    - SEMANTIC: Long-lived semantic knowledge (high bar for eviction)
+    - WORKING: Session-level working memory (medium TTL)
+    - TEMPORARY: Short-term memories (can be evicted easily)
+    - EPHEMERAL: Very short-lived (evict first)
+    """
+    PERMANENT = "permanent"
+    SEMANTIC = "semantic"
+    WORKING = "working"
+    TEMPORARY = "temporary"
+    EPHEMERAL = "ephemeral"
+
+
+@dataclass
+class NodeAccessStats:
+    """
+    Tracks access statistics for a node (for eviction scoring).
+    """
+    created_at: datetime = field(default_factory=datetime.now)
+    last_accessed: datetime = field(default_factory=datetime.now)
+    access_count: int = 0
+    lifecycle_scope: LifecycleScope = LifecycleScope.TEMPORARY
+
+    def record_access(self):
+        """Record a node access."""
+        self.last_accessed = datetime.now()
+        self.access_count += 1
+
+
+@dataclass
+class EvictionResult:
+    """
+    Result of an eviction operation.
+    """
+    nodes_evicted: int
+    edges_removed: int
+    nodes_before: int
+    nodes_after: int
+    edges_before: int
+    edges_after: int
+    strategy_used: EvictionStrategy
+    eviction_time_ms: float
+    evicted_node_ids: List[str] = field(default_factory=list)
 
 # ============================================================================
 # Data Structures
@@ -208,42 +280,190 @@ class KGStore(Protocol):
 class KG:
     """
     Knowledge graph using NetworkX MultiDiGraph.
-    
+
     Features:
     - Typed, weighted edges
     - Multi-edges (multiple relationships between same entities)
     - Efficient neighborhood queries
     - Subgraph extraction
     - Persistence to/from disk
-    
+    - **Hard limits with eviction** (Phase 1: Bounded Growth - December 2025)
+
     Use Cases:
     - Entity relationship tracking
     - Context expansion (find related entities)
     - Reasoning over structured knowledge
     - Spectral analysis of knowledge structure
+
+    Bounded Growth (December 2025):
+    - Hard limits on max_nodes and max_edges
+    - 4 eviction strategies: LRU, LFU, importance-weighted, scope-aware
+    - Automatic eviction when limits reached
+    - Node access tracking for intelligent eviction
     """
-    
-    def __init__(self):
+
+    def __init__(self, config=None):
+        """
+        Initialize knowledge graph.
+
+        Args:
+            config: Optional Config object with KG limit settings.
+                    If None, uses unlimited defaults (backward compatible).
+        """
         self.G = nx.MultiDiGraph()
         self._entity_index: Dict[str, Set[str]] = {}  # Fast neighbor lookup
+
+        # =====================================================================
+        # Bounded Growth Configuration (Phase 1 - December 2025)
+        # =====================================================================
+        self._config = config
+
+        # Hard limits (0 = unlimited for backward compatibility)
+        self._max_nodes = getattr(config, 'kg_max_nodes', 0) if config else 0
+        self._max_edges = getattr(config, 'kg_max_edges', 0) if config else 0
+        self._hard_limit_enforce = getattr(config, 'kg_hard_limit_enforce', True) if config else False
+        self._hard_limit_fail_mode = getattr(config, 'kg_hard_limit_fail_mode', 'evict') if config else 'evict'
+
+        # Growth monitoring
+        self._growth_alert_threshold = getattr(config, 'kg_growth_alert_threshold', 0.8) if config else 0.8
+        self._enable_growth_monitoring = getattr(config, 'kg_enable_growth_monitoring', True) if config else False
+
+        # Eviction configuration
+        self._eviction_strategy = EvictionStrategy(
+            getattr(config, 'kg_eviction_strategy', 'importance_weighted') if config else 'importance_weighted'
+        )
+        self._eviction_batch_size = getattr(config, 'kg_eviction_batch_size', 1000) if config else 1000
+        self._eviction_target_ratio = getattr(config, 'kg_eviction_target_ratio', 0.75) if config else 0.75
+        self._eviction_min_age_hours = getattr(config, 'kg_eviction_min_age_hours', 24) if config else 24
+        self._eviction_preserve_permanent = getattr(config, 'kg_eviction_preserve_permanent', True) if config else True
+
+        # Importance scoring weights
+        self._importance_weights = {
+            'recency': getattr(config, 'kg_importance_recency_weight', 0.25) if config else 0.25,
+            'access': getattr(config, 'kg_importance_access_weight', 0.20) if config else 0.20,
+            'centrality': getattr(config, 'kg_importance_centrality_weight', 0.25) if config else 0.25,
+            'connection': getattr(config, 'kg_importance_connection_weight', 0.15) if config else 0.15,
+            'lifecycle': getattr(config, 'kg_importance_lifecycle_weight', 0.15) if config else 0.15,
+        }
+
+        # Node access tracking (for eviction scoring)
+        self._node_stats: Dict[str, NodeAccessStats] = {}
+
+        # Eviction history (for monitoring)
+        self._eviction_history: List[EvictionResult] = []
+        self._total_evictions = 0
+
+        # Logger
+        self._logger = logging.getLogger(__name__)
     
-    def add_edge(self, edge: KGEdge) -> None:
+    def add_edge(self, edge: KGEdge) -> bool:
         """
         Add an edge to the knowledge graph.
-        
+
         Automatically creates nodes if they don't exist.
         Supports multiple edges between the same entities.
-        
+
+        **Bounded Growth (December 2025):**
+        - Checks hard limits before adding
+        - Triggers eviction if limits reached (configurable)
+        - Tracks node access statistics
+
         Args:
             edge: KGEdge to add
+
+        Returns:
+            True if edge was added, False if rejected due to limits
         """
-        # Ensure nodes exist
+        # =====================================================================
+        # Check hard limits (Phase 1: Bounded Growth)
+        # =====================================================================
+        if self._hard_limit_enforce and self._max_nodes > 0:
+            # Check if we're at node limit (only matters for new nodes)
+            new_nodes_needed = 0
+            if edge.src not in self.G:
+                new_nodes_needed += 1
+            if edge.dst not in self.G:
+                new_nodes_needed += 1
+
+            current_nodes = self.G.number_of_nodes()
+            if current_nodes + new_nodes_needed > self._max_nodes:
+                if self._hard_limit_fail_mode == 'evict':
+                    # Trigger eviction
+                    self._logger.info(
+                        f"KG node limit reached ({current_nodes}/{self._max_nodes}). "
+                        f"Triggering {self._eviction_strategy.value} eviction..."
+                    )
+                    eviction_result = self.evict_to_capacity()
+                    if eviction_result.nodes_evicted == 0:
+                        self._logger.warning("Eviction failed to free nodes. Rejecting edge.")
+                        return False
+                elif self._hard_limit_fail_mode == 'reject':
+                    self._logger.warning(f"KG node limit reached. Rejecting edge: {edge.src} → {edge.dst}")
+                    return False
+                elif self._hard_limit_fail_mode == 'warn':
+                    self._logger.warning(f"KG node limit exceeded ({current_nodes}/{self._max_nodes}). Allowing edge.")
+
+        if self._hard_limit_enforce and self._max_edges > 0:
+            current_edges = self.G.number_of_edges()
+            if current_edges >= self._max_edges:
+                if self._hard_limit_fail_mode == 'evict':
+                    self._logger.info(
+                        f"KG edge limit reached ({current_edges}/{self._max_edges}). "
+                        f"Triggering eviction..."
+                    )
+                    eviction_result = self.evict_to_capacity()
+                    if eviction_result.edges_removed == 0:
+                        self._logger.warning("Eviction failed to free edges. Rejecting edge.")
+                        return False
+                elif self._hard_limit_fail_mode == 'reject':
+                    self._logger.warning(f"KG edge limit reached. Rejecting edge: {edge.src} → {edge.dst}")
+                    return False
+                elif self._hard_limit_fail_mode == 'warn':
+                    self._logger.warning(f"KG edge limit exceeded ({current_edges}/{self._max_edges}). Allowing edge.")
+
+        # Growth monitoring alerts
+        if self._enable_growth_monitoring and self._max_nodes > 0:
+            current_nodes = self.G.number_of_nodes()
+            usage_ratio = current_nodes / self._max_nodes
+            if usage_ratio >= self._growth_alert_threshold:
+                self._logger.warning(
+                    f"KG growth alert: {usage_ratio:.1%} of node limit "
+                    f"({current_nodes}/{self._max_nodes})"
+                )
+
+        # =====================================================================
+        # Create nodes and track access stats
+        # =====================================================================
         if edge.src not in self.G:
             self.G.add_node(edge.src)
+            # Initialize access stats for new node
+            lifecycle = edge.metadata.get('lifecycle_scope', LifecycleScope.TEMPORARY)
+            if isinstance(lifecycle, str):
+                try:
+                    lifecycle = LifecycleScope(lifecycle)
+                except ValueError:
+                    lifecycle = LifecycleScope.TEMPORARY
+            self._node_stats[edge.src] = NodeAccessStats(lifecycle_scope=lifecycle)
+
         if edge.dst not in self.G:
             self.G.add_node(edge.dst)
-        
+            lifecycle = edge.metadata.get('lifecycle_scope', LifecycleScope.TEMPORARY)
+            if isinstance(lifecycle, str):
+                try:
+                    lifecycle = LifecycleScope(lifecycle)
+                except ValueError:
+                    lifecycle = LifecycleScope.TEMPORARY
+            self._node_stats[edge.dst] = NodeAccessStats(lifecycle_scope=lifecycle)
+
+        # Record access for both nodes
+        if edge.src in self._node_stats:
+            self._node_stats[edge.src].record_access()
+        if edge.dst in self._node_stats:
+            self._node_stats[edge.dst].record_access()
+
+        # =====================================================================
         # Add edge with all metadata
+        # =====================================================================
         # Note: NetworkX uses 'key' as edge identifier in MultiDiGraph,
         # so we need to handle it specially if present in metadata
         edge_attrs = {
@@ -259,15 +479,17 @@ class KG:
                 edge_attrs[k] = v
 
         self.G.add_edge(edge.src, edge.dst, **edge_attrs)
-        
+
         # Update entity index for fast lookups
         if edge.src not in self._entity_index:
             self._entity_index[edge.src] = set()
         if edge.dst not in self._entity_index:
             self._entity_index[edge.dst] = set()
-        
+
         self._entity_index[edge.src].add(edge.dst)
         self._entity_index[edge.dst].add(edge.src)
+
+        return True
     
     def add_edges(self, edges: List[KGEdge]) -> None:
         """Bulk add edges (more efficient than individual adds)."""
@@ -511,6 +733,412 @@ class KG:
             "avg_degree": sum(dict(self.G.degree()).values()) / max(1, self.G.number_of_nodes()),
             "is_connected": nx.is_weakly_connected(self.G) if self.G.number_of_nodes() > 0 else False,
         }
+
+    # ========================================================================
+    # Eviction Methods (Phase 1: Bounded Growth - December 2025)
+    # ========================================================================
+
+    def evict_to_capacity(self) -> EvictionResult:
+        """
+        Evict nodes to bring KG back within capacity limits.
+
+        Uses the configured eviction strategy (LRU, LFU, importance-weighted, or scope-aware)
+        to select which nodes to remove. Evicts down to target ratio (default: 75% of max).
+
+        Returns:
+            EvictionResult with eviction statistics
+        """
+        start_time = time.time()
+        nodes_before = self.G.number_of_nodes()
+        edges_before = self.G.number_of_edges()
+
+        # Calculate target (evict to 75% of max by default)
+        if self._max_nodes > 0:
+            target_nodes = int(self._max_nodes * self._eviction_target_ratio)
+            nodes_to_evict = max(0, nodes_before - target_nodes)
+        else:
+            nodes_to_evict = 0
+
+        if nodes_to_evict == 0:
+            return EvictionResult(
+                nodes_evicted=0,
+                edges_removed=0,
+                nodes_before=nodes_before,
+                nodes_after=nodes_before,
+                edges_before=edges_before,
+                edges_after=edges_before,
+                strategy_used=self._eviction_strategy,
+                eviction_time_ms=0.0,
+                evicted_node_ids=[]
+            )
+
+        # Cap at batch size
+        nodes_to_evict = min(nodes_to_evict, self._eviction_batch_size)
+
+        # Select nodes to evict based on strategy
+        if self._eviction_strategy == EvictionStrategy.LRU:
+            nodes_to_remove = self._select_lru_nodes(nodes_to_evict)
+        elif self._eviction_strategy == EvictionStrategy.LFU:
+            nodes_to_remove = self._select_lfu_nodes(nodes_to_evict)
+        elif self._eviction_strategy == EvictionStrategy.IMPORTANCE_WEIGHTED:
+            nodes_to_remove = self._select_importance_weighted_nodes(nodes_to_evict)
+        elif self._eviction_strategy == EvictionStrategy.SCOPE_AWARE:
+            nodes_to_remove = self._select_scope_aware_nodes(nodes_to_evict)
+        else:
+            # Fallback to LRU
+            nodes_to_remove = self._select_lru_nodes(nodes_to_evict)
+
+        # Remove selected nodes (NetworkX removes associated edges automatically)
+        evicted_ids = []
+        for node_id in nodes_to_remove:
+            if node_id in self.G:
+                self.G.remove_node(node_id)
+                evicted_ids.append(node_id)
+                # Clean up tracking
+                self._node_stats.pop(node_id, None)
+                self._entity_index.pop(node_id, None)
+
+        # Update entity index for remaining nodes
+        for node_id in list(self._entity_index.keys()):
+            if node_id in self._entity_index:
+                self._entity_index[node_id] -= set(evicted_ids)
+
+        nodes_after = self.G.number_of_nodes()
+        edges_after = self.G.number_of_edges()
+        elapsed_ms = (time.time() - start_time) * 1000
+
+        result = EvictionResult(
+            nodes_evicted=len(evicted_ids),
+            edges_removed=edges_before - edges_after,
+            nodes_before=nodes_before,
+            nodes_after=nodes_after,
+            edges_before=edges_before,
+            edges_after=edges_after,
+            strategy_used=self._eviction_strategy,
+            eviction_time_ms=elapsed_ms,
+            evicted_node_ids=evicted_ids
+        )
+
+        # Track history
+        self._eviction_history.append(result)
+        self._total_evictions += result.nodes_evicted
+
+        self._logger.info(
+            f"Eviction complete: {result.nodes_evicted} nodes, {result.edges_removed} edges "
+            f"removed in {elapsed_ms:.1f}ms ({result.nodes_before} → {result.nodes_after} nodes)"
+        )
+
+        return result
+
+    def _select_lru_nodes(self, count: int) -> List[str]:
+        """
+        Select nodes by Least Recently Used (evict nodes accessed longest ago).
+
+        Args:
+            count: Number of nodes to select
+
+        Returns:
+            List of node IDs to evict
+        """
+        now = datetime.now()
+        min_age = timedelta(hours=self._eviction_min_age_hours)
+
+        candidates = []
+        for node_id in self.G.nodes():
+            stats = self._node_stats.get(node_id)
+            if stats is None:
+                # No stats = very old node, high priority for eviction
+                candidates.append((node_id, datetime.min))
+                continue
+
+            # Skip permanent nodes
+            if self._eviction_preserve_permanent and stats.lifecycle_scope == LifecycleScope.PERMANENT:
+                continue
+
+            # Skip nodes younger than min age
+            age = now - stats.created_at
+            if age < min_age:
+                continue
+
+            candidates.append((node_id, stats.last_accessed))
+
+        # Sort by last_accessed (oldest first)
+        candidates.sort(key=lambda x: x[1])
+
+        return [node_id for node_id, _ in candidates[:count]]
+
+    def _select_lfu_nodes(self, count: int) -> List[str]:
+        """
+        Select nodes by Least Frequently Used (evict nodes with fewest accesses).
+
+        Args:
+            count: Number of nodes to select
+
+        Returns:
+            List of node IDs to evict
+        """
+        now = datetime.now()
+        min_age = timedelta(hours=self._eviction_min_age_hours)
+
+        candidates = []
+        for node_id in self.G.nodes():
+            stats = self._node_stats.get(node_id)
+            if stats is None:
+                # No stats = no accesses tracked, high priority for eviction
+                candidates.append((node_id, 0))
+                continue
+
+            # Skip permanent nodes
+            if self._eviction_preserve_permanent and stats.lifecycle_scope == LifecycleScope.PERMANENT:
+                continue
+
+            # Skip nodes younger than min age
+            age = now - stats.created_at
+            if age < min_age:
+                continue
+
+            candidates.append((node_id, stats.access_count))
+
+        # Sort by access_count (lowest first)
+        candidates.sort(key=lambda x: x[1])
+
+        return [node_id for node_id, _ in candidates[:count]]
+
+    def _select_importance_weighted_nodes(self, count: int) -> List[str]:
+        """
+        Select nodes by multi-signal importance score.
+
+        Importance = weighted combination of:
+        - Recency: Time since last access (lower = more important)
+        - Access frequency: Number of accesses (higher = more important)
+        - Centrality: Graph degree (higher = more important)
+        - Connections: Number of neighbors (higher = more important)
+        - Lifecycle: PERMANENT > SEMANTIC > WORKING > TEMPORARY > EPHEMERAL
+
+        Args:
+            count: Number of nodes to select
+
+        Returns:
+            List of node IDs to evict (lowest importance first)
+        """
+        now = datetime.now()
+        min_age = timedelta(hours=self._eviction_min_age_hours)
+
+        # Calculate importance for each node
+        scored_nodes = []
+        max_access = 1
+        max_degree = 1
+
+        # First pass: find max values for normalization
+        for node_id in self.G.nodes():
+            stats = self._node_stats.get(node_id)
+            if stats:
+                max_access = max(max_access, stats.access_count)
+            degree = self.G.degree(node_id)
+            max_degree = max(max_degree, degree)
+
+        # Lifecycle scores (higher = more protected)
+        lifecycle_scores = {
+            LifecycleScope.PERMANENT: 1.0,
+            LifecycleScope.SEMANTIC: 0.8,
+            LifecycleScope.WORKING: 0.5,
+            LifecycleScope.TEMPORARY: 0.2,
+            LifecycleScope.EPHEMERAL: 0.0,
+        }
+
+        # Second pass: calculate importance scores
+        for node_id in self.G.nodes():
+            stats = self._node_stats.get(node_id)
+
+            # Skip permanent nodes
+            if stats and self._eviction_preserve_permanent and stats.lifecycle_scope == LifecycleScope.PERMANENT:
+                continue
+
+            # Skip nodes younger than min age
+            if stats:
+                age = now - stats.created_at
+                if age < min_age:
+                    continue
+
+            # Calculate component scores
+            if stats:
+                # Recency: hours since last access (normalized, inverted: more recent = higher)
+                hours_since = (now - stats.last_accessed).total_seconds() / 3600
+                recency_score = max(0, 1.0 - (hours_since / 168))  # 168 hours = 1 week
+
+                # Access: normalized access count
+                access_score = stats.access_count / max_access if max_access > 0 else 0
+
+                # Lifecycle: from lookup
+                lifecycle_score = lifecycle_scores.get(stats.lifecycle_scope, 0.2)
+            else:
+                recency_score = 0.0
+                access_score = 0.0
+                lifecycle_score = 0.0
+
+            # Centrality: normalized degree
+            degree = self.G.degree(node_id)
+            centrality_score = degree / max_degree if max_degree > 0 else 0
+
+            # Connection: number of neighbors (use entity index if available)
+            neighbors = len(self._entity_index.get(node_id, set()))
+            connection_score = min(1.0, neighbors / 10)  # Normalize to 10 neighbors
+
+            # Weighted importance
+            importance = (
+                self._importance_weights['recency'] * recency_score +
+                self._importance_weights['access'] * access_score +
+                self._importance_weights['centrality'] * centrality_score +
+                self._importance_weights['connection'] * connection_score +
+                self._importance_weights['lifecycle'] * lifecycle_score
+            )
+
+            scored_nodes.append((node_id, importance))
+
+        # Sort by importance (lowest first - these get evicted)
+        scored_nodes.sort(key=lambda x: x[1])
+
+        return [node_id for node_id, _ in scored_nodes[:count]]
+
+    def _select_scope_aware_nodes(self, count: int) -> List[str]:
+        """
+        Select nodes by lifecycle scope (evict EPHEMERAL → TEMPORARY → WORKING first).
+
+        Within each scope, uses LRU as tiebreaker.
+
+        Args:
+            count: Number of nodes to select
+
+        Returns:
+            List of node IDs to evict
+        """
+        now = datetime.now()
+        min_age = timedelta(hours=self._eviction_min_age_hours)
+
+        # Group nodes by lifecycle scope
+        scope_order = [
+            LifecycleScope.EPHEMERAL,
+            LifecycleScope.TEMPORARY,
+            LifecycleScope.WORKING,
+            LifecycleScope.SEMANTIC,
+            # PERMANENT never evicted
+        ]
+
+        scope_buckets: Dict[LifecycleScope, List[Tuple[str, datetime]]] = {
+            scope: [] for scope in scope_order
+        }
+
+        for node_id in self.G.nodes():
+            stats = self._node_stats.get(node_id)
+
+            if stats is None:
+                # No stats = treat as TEMPORARY
+                scope_buckets[LifecycleScope.TEMPORARY].append((node_id, datetime.min))
+                continue
+
+            # Skip permanent nodes
+            if self._eviction_preserve_permanent and stats.lifecycle_scope == LifecycleScope.PERMANENT:
+                continue
+
+            # Skip nodes younger than min age
+            age = now - stats.created_at
+            if age < min_age:
+                continue
+
+            if stats.lifecycle_scope in scope_buckets:
+                scope_buckets[stats.lifecycle_scope].append((node_id, stats.last_accessed))
+
+        # Collect nodes in scope order, using LRU within each scope
+        result = []
+        for scope in scope_order:
+            bucket = scope_buckets[scope]
+            # Sort by last_accessed within scope (oldest first)
+            bucket.sort(key=lambda x: x[1])
+
+            for node_id, _ in bucket:
+                result.append(node_id)
+                if len(result) >= count:
+                    return result
+
+        return result
+
+    def set_node_lifecycle(self, node_id: str, scope: LifecycleScope) -> bool:
+        """
+        Set lifecycle scope for a node.
+
+        Args:
+            node_id: Node to update
+            scope: New lifecycle scope
+
+        Returns:
+            True if node exists and was updated
+        """
+        if node_id not in self.G:
+            return False
+
+        if node_id not in self._node_stats:
+            self._node_stats[node_id] = NodeAccessStats(lifecycle_scope=scope)
+        else:
+            self._node_stats[node_id].lifecycle_scope = scope
+
+        return True
+
+    def pin_node(self, node_id: str) -> bool:
+        """
+        Pin a node to prevent eviction (sets lifecycle to PERMANENT).
+
+        Args:
+            node_id: Node to pin
+
+        Returns:
+            True if node exists and was pinned
+        """
+        return self.set_node_lifecycle(node_id, LifecycleScope.PERMANENT)
+
+    def get_eviction_stats(self) -> Dict:
+        """
+        Get eviction statistics.
+
+        Returns:
+            Dict with eviction history and totals
+        """
+        return {
+            "total_evictions": self._total_evictions,
+            "eviction_count": len(self._eviction_history),
+            "recent_evictions": [
+                {
+                    "nodes_evicted": e.nodes_evicted,
+                    "edges_removed": e.edges_removed,
+                    "strategy": e.strategy_used.value,
+                    "time_ms": e.eviction_time_ms,
+                }
+                for e in self._eviction_history[-10:]  # Last 10
+            ],
+            "current_usage": {
+                "nodes": self.G.number_of_nodes(),
+                "edges": self.G.number_of_edges(),
+                "max_nodes": self._max_nodes,
+                "max_edges": self._max_edges,
+                "node_usage_ratio": self.G.number_of_nodes() / self._max_nodes if self._max_nodes > 0 else 0,
+                "edge_usage_ratio": self.G.number_of_edges() / self._max_edges if self._max_edges > 0 else 0,
+            }
+        }
+
+    def record_access(self, node_id: str) -> None:
+        """
+        Record an access to a node (updates last_accessed and access_count).
+
+        Call this when a node is used in retrieval or reasoning.
+
+        Args:
+            node_id: Node that was accessed
+        """
+        if node_id in self._node_stats:
+            self._node_stats[node_id].record_access()
+        elif node_id in self.G:
+            # Create stats if missing
+            self._node_stats[node_id] = NodeAccessStats()
+            self._node_stats[node_id].record_access()
 
     # ========================================================================
     # Temporal Methods - Bi-Temporal Model & Edge Invalidation
