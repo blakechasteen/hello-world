@@ -82,6 +82,15 @@ from .anticipatory_retrieval import (
     create_session_context,
 )
 
+# Solved Memory Integration (December 2025) - Unified 5 Pillars
+from .solved_memory_integration import (
+    SolvedMemoryIntegration,
+    SolvedMemoryConfig,
+    SolvedMemoryStats,
+    create_solved_memory_integration,
+    attach_solved_memory,
+)
+
 # Weaving Metaphor Aliases
 YarnGraph = KG  # The persistent symbolic memory - discrete thread structure
 ReflectionBuffer = MemoryManager  # Learning loop - stores outcomes for improvement
@@ -190,6 +199,12 @@ __all__ = [
     'PrefetchResult',
     'create_anticipatory_retrieval',
     'create_session_context',
+    # Solved Memory Integration (December 2025)
+    'SolvedMemoryIntegration',
+    'SolvedMemoryConfig',
+    'SolvedMemoryStats',
+    'create_solved_memory_integration',
+    'attach_solved_memory',
     # Awareness (consolidated Dec 2025)
     'BetaWaveContextPacker',
     'BetaWavePacker',  # Backward compat alias

@@ -15,9 +15,11 @@ This module is a drop-in replacement for standard WarpSpace with
 significant performance improvements for large-scale deployments.
 """
 
+from __future__ import annotations
+
 import logging
 import numpy as np
-from typing import Dict, List, Any, Optional, Union, Tuple
+from typing import Dict, List, Any, Optional, Union, Tuple, TYPE_CHECKING
 from dataclasses import dataclass
 import warnings
 
@@ -31,6 +33,10 @@ from HoloLoom.alignment.safety_guardrails import (
 
 logger = logging.getLogger(__name__)
 
+# Type checking imports (not evaluated at runtime)
+if TYPE_CHECKING:
+    import torch as torch_types
+
 # Optional PyTorch for GPU acceleration
 try:
     import torch
@@ -41,6 +47,7 @@ try:
 except ImportError:
     HAS_TORCH = False
     DEVICE = None
+    torch = None  # type: ignore
     logger.warning("PyTorch not available. GPU acceleration disabled.")
 
 
