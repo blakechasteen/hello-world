@@ -148,17 +148,25 @@ class MatryoshkaEmbeddings:
                 self.base_model_name or
                 os.environ.get("HOLOLOOM_BASE_ENCODER", "nomic-ai/nomic-embed-text-v1.5")  # Modern 768d model (2024)
             )
-            try:
-                self._model = SentenceTransformer(model_name, trust_remote_code=True)
-                # Probe to get base dimension
-                probe = self._model.encode(["test"], normalize_embeddings=True)[0]
-                self.base_dim = len(probe)
-                # Rebuild projections with correct base_dim
-                self._build_projection(seed=12345)
-            except Exception as e:
-                warnings.warn(f"Failed to load {model_name}: {e}")
+            allow_remote = os.environ.get("HOLOLOOM_ALLOW_REMOTE_EMBEDDINGS", "0") == "1"
+            # Default to offline-friendly behavior unless explicitly opted-in.
+            # If remote loading is disabled, fall back to deterministic random
+            # embeddings immediately instead of waiting on network retries.
+            if not allow_remote:
                 self._model = None
                 self.base_dim = max(self.sizes)
+            else:
+                try:
+                    self._model = SentenceTransformer(model_name, trust_remote_code=True)
+                    # Probe to get base dimension
+                    probe = self._model.encode(["test"], normalize_embeddings=True)[0]
+                    self.base_dim = len(probe)
+                    # Rebuild projections with correct base_dim
+                    self._build_projection(seed=12345)
+                except Exception as e:
+                    warnings.warn(f"Failed to load {model_name}: {e}")
+                    self._model = None
+                    self.base_dim = max(self.sizes)
         else:
             self._model = None
             self.base_dim = max(self.sizes)
