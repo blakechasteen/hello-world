@@ -20,10 +20,25 @@ Key insight: Combine statistical learning with geometric/dynamic structure.
 import numpy as np
 from typing import List, Dict, Tuple, Optional, Callable
 from dataclasses import dataclass
-from sklearn.linear_model import Ridge, LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.decomposition import PCA, FastICA
-from scipy.integrate import odeint
+import warnings
+
+try:
+    from sklearn.linear_model import Ridge, LinearRegression
+    from sklearn.preprocessing import PolynomialFeatures
+    from sklearn.decomposition import PCA, FastICA
+    _SKLEARN_AVAILABLE = True
+except ImportError:
+    _SKLEARN_AVAILABLE = False
+    Ridge = LinearRegression = PolynomialFeatures = PCA = FastICA = None
+    warnings.warn("sklearn not available. System identification features will be limited.")
+
+try:
+    from scipy.integrate import odeint
+    _SCIPY_AVAILABLE = True
+except ImportError:
+    _SCIPY_AVAILABLE = False
+    odeint = None
+    warnings.warn("scipy not available. System identification integration features will be limited.")
 
 
 @dataclass
