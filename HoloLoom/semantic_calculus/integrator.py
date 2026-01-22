@@ -53,7 +53,10 @@ class SemanticState:
 
     def hamiltonian(self, potential_fn: Callable, mass: float = 1.0) -> float:
         """H = T + V"""
-        return self.kinetic_energy(mass) + potential_fn(self.q)
+        # kinetic_energy is a property (default mass=1.0)
+        # Compute kinetic energy directly with specified mass
+        kinetic = 0.5 * np.dot(self.p, self.p) / mass
+        return kinetic + potential_fn(self.q)
 
 
 class GeometricIntegrator:

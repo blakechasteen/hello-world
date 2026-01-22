@@ -673,9 +673,7 @@ async def spin_email_mbox(
 
     return SpinResult(
         shards=shards,
-        success=True,
-        items_processed=len(shards),
-        items_filtered=0
+        success=True
     )
 
 

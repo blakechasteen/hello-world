@@ -28,7 +28,7 @@ from dataclasses import dataclass
 import webbrowser
 
 from ..weaving_orchestrator import WeavingOrchestrator
-from ..documentation.types import Query
+from ..Documentation.types import Query
 from ..fabric.spacetime import Spacetime
 from .constructor import DashboardConstructor
 from .html_renderer import HTMLRenderer
@@ -271,7 +271,7 @@ async def weave_and_visualize(
             open_browser=True
         )
     """
-    from ..documentation.types import Query as QueryType
+    from ..Documentation.types import Query as QueryType
 
     orchestrator = DashboardOrchestrator(
         cfg=cfg,

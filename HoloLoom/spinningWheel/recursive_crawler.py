@@ -24,7 +24,7 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceSignals,
     ImportanceScore,
 )
-from HoloLoom.documentation.types import MemoryShard
+from HoloLoom.protocols.types import MemoryShard
 
 # Import WebsiteSpinner for page fetching
 try:

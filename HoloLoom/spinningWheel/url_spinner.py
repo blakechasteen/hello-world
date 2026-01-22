@@ -626,9 +626,7 @@ async def spin_url(
 
     return SpinResult(
         shards=shards,
-        success=True,
-        items_processed=len(shards),
-        items_filtered=0
+        success=True
     )
 
 
@@ -660,9 +658,7 @@ async def spin_website(
 
     return SpinResult(
         shards=shards,
-        success=True,
-        items_processed=len(shards),
-        items_filtered=0
+        success=True
     )
 
 

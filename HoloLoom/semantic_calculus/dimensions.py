@@ -931,7 +931,7 @@ COGNITIVE_COMPLEXITY_DIMENSIONS = [
         negative_exemplars=["incoherent", "inconsistent", "fragmented", "disintegrated", "illogical"]
     ),
     SemanticDimension(
-        name="Emergence",
+        name="SelfOrganization",
         positive_exemplars=["emergent", "arising", "self-organizing", "spontaneous", "unpredictable"],
         negative_exemplars=["predetermined", "planned", "controlled", "predictable", "imposed"]
     ),
