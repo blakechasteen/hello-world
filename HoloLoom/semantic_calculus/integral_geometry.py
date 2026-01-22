@@ -25,8 +25,17 @@ This is how we recover FULL semantic structure from partial observations.
 
 import numpy as np
 from typing import Callable, List, Tuple, Optional, Dict
-from scipy.ndimage import gaussian_filter
-from scipy.interpolate import RegularGridInterpolator
+import warnings
+
+try:
+    from scipy.ndimage import gaussian_filter
+    from scipy.interpolate import RegularGridInterpolator
+    _SCIPY_AVAILABLE = True
+except ImportError:
+    _SCIPY_AVAILABLE = False
+    gaussian_filter = None
+    RegularGridInterpolator = None
+    warnings.warn("scipy not available. Integral geometry features will be limited.")
 
 
 class RadonTransform:

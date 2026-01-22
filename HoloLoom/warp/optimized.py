@@ -279,7 +279,7 @@ class GPUWarpSpace:
         self,
         query_embedding: np.ndarray,
         temperature: float = 1.0
-    ) -> torch.Tensor:
+    ) -> "torch.Tensor":
         """
         Compute attention weights on GPU.
 
@@ -317,7 +317,7 @@ class GPUWarpSpace:
 
         return attention
 
-    def weighted_context(self, attention: torch.Tensor) -> np.ndarray:
+    def weighted_context(self, attention: "torch.Tensor") -> np.ndarray:
         """
         Compute weighted context vector on GPU.
 

@@ -23,7 +23,15 @@ This is the "moral compass" for semantic navigation.
 import numpy as np
 from typing import Dict, List, Tuple, Optional, Callable
 from dataclasses import dataclass
-from scipy.optimize import minimize
+import warnings
+
+try:
+    from scipy.optimize import minimize
+    _SCIPY_AVAILABLE = True
+except ImportError:
+    _SCIPY_AVAILABLE = False
+    minimize = None
+    warnings.warn("scipy not available. EthicalSemanticPolicy optimization features will be limited.")
 
 
 @dataclass
