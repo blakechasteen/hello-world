@@ -4709,6 +4709,74 @@ consolidator = MemoryConsolidator(
 
 ---
 
+## 5 Pillars of Solved Memory (January 2025)
+
+**Status**: ✅ Production Ready
+**Location**: `HoloLoom/memory/solved_memory_integration.py`
+**Test Coverage**: 281/291 tests passing (96.6%)
+**Documentation**: [SOLVED_MEMORY_5_PILLARS.md](docs/features/SOLVED_MEMORY_5_PILLARS.md)
+
+Comprehensive memory management architecture addressing the fundamental challenges of long-running AI memory systems.
+
+### The 5 Pillars
+
+| Pillar | Problem Solved | Key Feature |
+|--------|---------------|-------------|
+| **Phase 1: Bounded Growth** | Unbounded KG growth | LRU/LFU eviction at configurable limits |
+| **Phase 2: Unified Forgetting** | Fragmented memory cleanup | Centralized ForgetManager with 7 policies |
+| **Phase 3: Outcome→Retrieval** | No learning from results | Thompson Sampling-style contribution boosting |
+| **Phase 4: Delta Storage** | Inefficient snapshots | Operation deltas with checkpoint/reconstruct |
+| **Phase 5: Anticipatory Retrieval** | Reactive-only retrieval | Query classification + follow-up prefetching |
+
+### Quick Start
+
+```python
+from HoloLoom.memory.solved_memory_integration import (
+    SolvedMemoryIntegration,
+    SolvedMemoryConfig,
+    create_solved_memory_integration,
+)
+
+# Create with all 5 pillars enabled
+integration = create_solved_memory_integration(orchestrator)
+await integration.initialize()
+await integration.start_background_tasks()
+
+# Use in weaving - all pillars automatically applied
+spacetime = await integration.weave_with_solved_memory(query)
+
+# Get statistics across all pillars
+stats = integration.get_stats()
+print(stats.to_dict())
+```
+
+### Configuration Presets
+
+```python
+# Default - all pillars enabled
+config = SolvedMemoryConfig.default()
+
+# Production - tuned for scale (50K nodes, 200K edges)
+config = SolvedMemoryConfig.production()
+
+# Minimal - for testing (no background tasks)
+config = SolvedMemoryConfig.minimal()
+```
+
+### Key Files
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `memory/forget_manager.py` | ~600 | Unified forgetting with 7 policies |
+| `memory/shard_contribution.py` | ~550 | Thompson Sampling contribution tracking |
+| `memory/delta_storage.py` | ~700 | Delta operations, checkpointing |
+| `memory/anticipatory_retrieval.py` | ~800 | Query classification, prefetching |
+| `memory/solved_memory_integration.py` | ~500 | Unified 5-pillar integration |
+
+See [SOLVED_MEMORY_5_PILLARS.md](docs/features/SOLVED_MEMORY_5_PILLARS.md) for complete documentation.
+
+---
+
 ## Temporal Queries & Time-Travel (November 2025)
 
 **Status**: ✅ Production Ready (2025-11-22)
