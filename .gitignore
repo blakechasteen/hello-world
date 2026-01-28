@@ -103,6 +103,9 @@ HoloLoom/frontier_test_output/
 .promptly/
 .xterminator/
 
+# Ralph Loop Engine state (runtime artifact)
+.ralph/
+
 # Kubernetes secrets (NEVER commit real credentials)
 infra/kubernetes/secrets.yaml
 **/secrets.yaml
