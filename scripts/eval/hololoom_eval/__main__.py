@@ -12,6 +12,7 @@ Usage:
     python -m scripts.eval.hololoom_eval --dashboard  # Generate HTML dashboard
     python -m scripts.eval.hololoom_eval --seed 42    # Reproducible run
     python -m scripts.eval.hololoom_eval --compare    # Compare with previous run
+    python -m scripts.eval.hololoom_eval --triple-verify  # 3-pass stability verification
     python -m scripts.eval.hololoom_eval --benchmark retrieval  # Specific benchmark
 """
 
@@ -120,6 +121,7 @@ Examples:
   python -m scripts.eval.hololoom_eval --dashboard  # HTML dashboard report
   python -m scripts.eval.hololoom_eval --seed 42    # Reproducible run
   python -m scripts.eval.hololoom_eval --compare    # Compare with previous run
+  python -m scripts.eval.hololoom_eval --triple-verify  # 3-pass stability check
   python -m scripts.eval.hololoom_eval -v           # Verbose output
 
 Benchmarks (8 total):
@@ -201,6 +203,14 @@ Benchmarks (8 total):
         help="Compare results with previous evaluation run"
     )
 
+    # v2.1: Triple verification
+    parser.add_argument(
+        "--triple-verify",
+        action="store_true",
+        dest="triple_verify",
+        help="Run each benchmark 3 times with different seeds to verify stability"
+    )
+
     args = parser.parse_args()
 
     # Determine mode
@@ -221,15 +231,18 @@ Benchmarks (8 total):
             print("Dashboard: enabled")
         if args.compare:
             print("Compare: enabled")
+        if args.triple_verify:
+            print("Triple Verify: enabled (3 passes per benchmark)")
         print(f"Started: {datetime.now().isoformat()}")
         print()
 
-    # Create runner with v2.0 options
+    # Create runner with v2.0+ options
     runner = EvaluationRunner(
         mode=mode,
         seed=args.seed,
         generate_dashboard=args.dashboard,
         compare_previous=args.compare,
+        triple_verify=args.triple_verify,
     )
 
     try:

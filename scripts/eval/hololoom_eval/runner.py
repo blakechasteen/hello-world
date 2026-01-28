@@ -88,6 +88,7 @@ class EvaluationRunner:
         seed: Optional[int] = None,
         generate_dashboard: bool = False,
         compare_previous: bool = False,
+        triple_verify: bool = False,
     ):
         self.mode = mode
         self.output_dir = Path(output_dir)
@@ -96,6 +97,7 @@ class EvaluationRunner:
         self.seed = seed
         self.generate_dashboard = generate_dashboard
         self.compare_previous = compare_previous
+        self.triple_verify = triple_verify
 
         # Set global seed for reproducibility
         if seed is not None:
@@ -266,6 +268,10 @@ class EvaluationRunner:
         # Compare with previous run
         if self.compare_previous:
             self._compare_with_previous(report)
+
+        # Triple verification
+        if self.triple_verify:
+            self._run_triple_verification(report, deps)
 
         return report
 
@@ -500,6 +506,133 @@ class EvaluationRunner:
             print(f"📊 HTML dashboard: {dashboard_path}")
         except Exception as e:
             print(f"⚠️  Could not generate dashboard: {e}")
+
+    def _get_benchmark_map(self, deps: Dict[str, bool]) -> Dict[str, tuple]:
+        """Return benchmark name -> (display_name, callable) map."""
+        from .benchmarks import (
+            run_retrieval_benchmark,
+            run_learning_benchmark,
+            run_ablation_benchmark,
+            run_latency_benchmark,
+            run_graph_benchmark,
+            run_cache_benchmark,
+            run_stress_benchmark,
+            run_semantic_benchmark,
+        )
+        return {
+            "Retrieval Quality": lambda: run_retrieval_benchmark(self.mode, deps),
+            "Semantic Quality": lambda: run_semantic_benchmark(self.mode, deps),
+            "Cache Effectiveness": lambda: run_cache_benchmark(self.mode, deps),
+            "Latency": lambda: run_latency_benchmark(self.mode, deps),
+            "Knowledge Graph Value": lambda: run_graph_benchmark(self.mode, deps),
+            "Feature Ablation": lambda: run_ablation_benchmark(self.mode, deps),
+            "Stress Robustness": lambda: run_stress_benchmark(self.mode, deps),
+            "Learning Effectiveness": lambda: run_learning_benchmark(self.mode, deps),
+        }
+
+    def _run_triple_verification(self, report: EvaluationReport, deps: Dict[str, bool]):
+        """Run triple verification passes on all benchmarks in the report."""
+        from .triple_verification import (
+            PassResult,
+            verify_benchmark,
+            build_verification_report,
+            print_verification_report,
+            DEFAULT_SEEDS,
+        )
+
+        print()
+        print("=" * 70)
+        print("  TRIPLE VERIFICATION (running 2 additional passes per benchmark)")
+        print("=" * 70)
+        print()
+
+        benchmark_map = self._get_benchmark_map(deps)
+        verification_start = time.perf_counter()
+        verification_results = []
+
+        # Names of benchmarks that were actually run
+        ran_names = [r.name for r in report.benchmarks]
+
+        for result in report.benchmarks:
+            name = result.name
+            if name not in benchmark_map:
+                continue
+
+            # Pass 1: Use the result we already have (from the main run)
+            pass1 = PassResult(
+                pass_number=1,
+                pass_label="baseline",
+                score=result.score,
+                passed=result.passed,
+                verdict=result.verdict,
+                duration_seconds=result.duration_seconds,
+                seed_used=self.seed,
+                error=result.error,
+            )
+
+            pass_results = [pass1]
+
+            # Passes 2 and 3: re-run with different seeds
+            for pass_num, pass_label, seed_val in [
+                (2, "confirmation", DEFAULT_SEEDS[1]),
+                (3, "stress_confirmation", DEFAULT_SEEDS[2]),
+            ]:
+                print(f"   Pass {pass_num}/3: {name} (seed={seed_val})")
+
+                # Set seed for this pass
+                from .reproducibility import set_global_seed
+                set_global_seed(seed_val)
+
+                start = time.perf_counter()
+                try:
+                    bench_fn = benchmark_map[name]
+                    pass_result_raw = asyncio.get_event_loop().run_until_complete(bench_fn())
+                    elapsed = time.perf_counter() - start
+                    pass_results.append(PassResult(
+                        pass_number=pass_num,
+                        pass_label=pass_label,
+                        score=pass_result_raw.score,
+                        passed=pass_result_raw.passed,
+                        verdict=pass_result_raw.verdict,
+                        duration_seconds=elapsed,
+                        seed_used=seed_val,
+                        error=pass_result_raw.error,
+                    ))
+                    status = "PASS" if pass_result_raw.passed else "FAIL"
+                    print(f"     -> {status} (score: {pass_result_raw.score:.3f}, {elapsed:.1f}s)")
+                except Exception as e:
+                    elapsed = time.perf_counter() - start
+                    pass_results.append(PassResult(
+                        pass_number=pass_num,
+                        pass_label=pass_label,
+                        score=0.0,
+                        passed=False,
+                        verdict=f"Error: {e}",
+                        duration_seconds=elapsed,
+                        seed_used=seed_val,
+                        error=str(e),
+                    ))
+                    print(f"     -> ERROR: {e}")
+
+            # Restore original seed if set
+            if self.seed is not None:
+                from .reproducibility import set_global_seed
+                set_global_seed(self.seed)
+
+            verification_results.append(verify_benchmark(name, pass_results))
+
+        total_duration = time.perf_counter() - verification_start
+        tv_report = build_verification_report(verification_results, total_duration)
+        print_verification_report(tv_report)
+
+        # Save triple verification results
+        try:
+            tv_path = self.output_dir / f"triple_verification_{report.mode}.json"
+            with open(tv_path, "w") as f:
+                json.dump(tv_report.to_dict(), f, indent=2)
+            print(f"Triple verification saved: {tv_path}")
+        except Exception as e:
+            print(f"Could not save triple verification: {e}")
 
     def _compare_with_previous(self, report: EvaluationReport):
         """Compare current run with most recent previous run."""
