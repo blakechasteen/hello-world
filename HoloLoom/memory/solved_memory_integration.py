@@ -307,11 +307,10 @@ class SolvedMemoryIntegration:
 
         # Phase 4: Delta Storage
         if self.config.enable_delta_storage:
-            delta_config = DeltaStoreConfig(
-                checkpoint_interval_deltas=self.config.delta_checkpoint_interval,
-                max_checkpoints=self.config.delta_max_checkpoints,
+            # create_delta_store takes (checkpoint_interval: int, max_deltas: int)
+            self.delta_store = create_delta_store(
+                checkpoint_interval=self.config.delta_checkpoint_interval,
             )
-            self.delta_store = create_delta_store(delta_config)
             self.delta_reconstructor = create_reconstructor(self.delta_store)
             self.logger.info(f"  [Phase 4] Delta Storage: checkpoint_interval={self.config.delta_checkpoint_interval}, "
                            f"max_checkpoints={self.config.delta_max_checkpoints}")
@@ -493,9 +492,15 @@ class SolvedMemoryIntegration:
         target_id: str,
         old_state: Optional[Dict[str, Any]] = None,
         new_state: Optional[Dict[str, Any]] = None,
+        source: str = "integration",
     ) -> None:
         """
         Record a delta for state changes (Phase 4).
+
+        Delegates to the correct DeltaStore method based on operation type:
+        - ADD → record_add(target_id, target_type, state)
+        - UPDATE → record_update(target_id, target_type, before, after)
+        - DELETE → record_delete(target_id, target_type, before)
 
         Args:
             operation: ADD, UPDATE, or DELETE
@@ -503,23 +508,35 @@ class SolvedMemoryIntegration:
             target_id: ID of the target
             old_state: Previous state (for UPDATE/DELETE)
             new_state: New state (for ADD/UPDATE)
+            source: What caused this change
         """
         if not self.delta_store:
             return
 
-        self.delta_store.record_delta(
-            operation=operation,
-            target_type=target_type,
-            target_id=target_id,
-            old_state=old_state,
-            new_state=new_state,
-        )
-        self.stats.deltas_recorded += 1
+        if operation == DeltaOperation.ADD:
+            self.delta_store.record_add(
+                target_id=target_id,
+                target_type=target_type,
+                state=new_state or {},
+                source=source,
+            )
+        elif operation == DeltaOperation.UPDATE:
+            self.delta_store.record_update(
+                target_id=target_id,
+                target_type=target_type,
+                before=old_state or {},
+                after=new_state or {},
+                source=source,
+            )
+        elif operation == DeltaOperation.DELETE:
+            self.delta_store.record_delete(
+                target_id=target_id,
+                target_type=target_type,
+                before=old_state or {},
+                source=source,
+            )
 
-        # Check for auto-checkpoint
-        if self.delta_store.stats.total_deltas % self.config.delta_checkpoint_interval == 0:
-            self.delta_store.create_checkpoint()
-            self.stats.checkpoints_created += 1
+        self.stats.deltas_recorded += 1
 
     async def process_query(
         self,
@@ -541,12 +558,12 @@ class SolvedMemoryIntegration:
         # Phase 5: Check for prefetch hit
         prefetch_result = self.pre_retrieval(query_text)
 
-        if prefetch_result['prefetch_hit']:
-            # Use prefetched results
+        if prefetch_result['prefetch_hit'] and prefetch_result['prefetched_shards']:
+            # Use prefetched results only if we actually have data
             results = prefetch_result['prefetched_shards']
             self.logger.debug(f"Prefetch hit! Using {len(results)} prefetched shards")
         else:
-            # Normal retrieval
+            # Normal retrieval (also falls back here if prefetch hit but no data)
             results = await retrieval_fn(query_text)
 
         # Phase 3: Boost results based on contribution history
