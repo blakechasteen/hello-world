@@ -264,19 +264,22 @@ class SolvedMemoryIntegration:
         self.logger.info("Initializing 5 Pillars of Solved Memory...")
 
         # Phase 1: Bounded Growth - Configure KG limits
+        # KG stores limits in PRIVATE attributes (_max_nodes, _max_edges, etc.)
+        # and checks _hard_limit_enforce to decide whether eviction is active.
         if self.config.enable_bounded_growth and self.kg:
-            self.kg.kg_max_nodes = self.config.kg_max_nodes
-            self.kg.kg_max_edges = self.config.kg_max_edges
-            self.kg.eviction_strategy = self.config.kg_eviction_strategy
+            self.kg._max_nodes = self.config.kg_max_nodes
+            self.kg._max_edges = self.config.kg_max_edges
+            self.kg._hard_limit_enforce = True
+            self.kg._eviction_strategy = self.config.kg_eviction_strategy
             self.logger.info(f"  [Phase 1] Bounded Growth: max_nodes={self.config.kg_max_nodes}, "
                            f"max_edges={self.config.kg_max_edges}, strategy={self.config.kg_eviction_strategy.value}")
 
         # Phase 2: Unified Forgetting
         if self.config.enable_forgetting:
             forget_config = ForgetConfig(
-                default_policy=self.config.forget_policy,
+                kg_eviction_policy=self.config.forget_policy,
                 enable_kg_eviction=True,
-                enable_hot_pattern_decay=True,
+                enable_hot_decay=True,
                 enable_lifecycle_ttl=True,
             )
             self.forget_manager = create_forget_manager(forget_config)
@@ -305,7 +308,7 @@ class SolvedMemoryIntegration:
         # Phase 4: Delta Storage
         if self.config.enable_delta_storage:
             delta_config = DeltaStoreConfig(
-                auto_checkpoint_interval=self.config.delta_checkpoint_interval,
+                checkpoint_interval_deltas=self.config.delta_checkpoint_interval,
                 max_checkpoints=self.config.delta_max_checkpoints,
             )
             self.delta_store = create_delta_store(delta_config)
@@ -321,7 +324,8 @@ class SolvedMemoryIntegration:
                 prefetch_k=self.config.anticipatory_prefetch_k,
             )
             self.anticipatory = create_anticipatory_retrieval(anticipatory_config)
-            self.session_context = create_session_context()
+            import uuid
+            self.session_context = create_session_context(session_id=str(uuid.uuid4()))
             self.logger.info(f"  [Phase 5] Anticipatory Retrieval: prefetch={self.config.anticipatory_prefetch_enabled}, "
                            f"max_predictions={self.config.anticipatory_max_predictions}")
 
@@ -352,8 +356,9 @@ class SolvedMemoryIntegration:
                 await asyncio.sleep(self.config.forget_interval_seconds)
 
                 if self.forget_manager:
-                    events = await self.forget_manager.forget()
-                    total_forgotten = sum(e.count for e in events)
+                    # forget_now() returns Dict[str, ForgetEvent]
+                    events = await self.forget_manager.forget_now()
+                    total_forgotten = sum(e.items_affected for e in events.values())
                     self.stats.forget_runs += 1
                     self.stats.total_forgotten += total_forgotten
 
@@ -380,15 +385,15 @@ class SolvedMemoryIntegration:
         if not self.anticipatory or not self.session_context:
             return result
 
-        # Check if this query was predicted and prefetched
-        prefetch_result = self.anticipatory.check_prefetch_hit(
+        # Check if this query was predicted by a previous cycle
+        was_predicted = self.anticipatory.record_prediction_hit(
+            self.session_context,
             query_text,
-            self.session_context
         )
 
-        if prefetch_result and prefetch_result.hit:
+        if was_predicted:
+            # Check if prefetched results are in the session cache
             result['prefetch_hit'] = True
-            result['prefetched_shards'] = prefetch_result.shards
             self.stats.prefetch_hits += 1
         else:
             self.stats.prefetch_misses += 1
@@ -422,6 +427,19 @@ class SolvedMemoryIntegration:
         self._current_retrieved_shards = [
             getattr(shard, 'id', str(i)) for i, (shard, _) in enumerate(results)
         ]
+
+        # Record retrieval in contribution tracker (required before record_outcome)
+        if self.contribution_tracker and self._current_retrieved_shards:
+            retrieval_scores = {
+                getattr(shard, 'id', str(i)): score
+                for i, (shard, score) in enumerate(results)
+            }
+            self.contribution_tracker.record_retrieval(
+                query_text=query_id or "",
+                shard_ids=self._current_retrieved_shards,
+                retrieval_scores=retrieval_scores,
+                query_id=self._current_query_id,
+            )
 
         # Boost results
         boosted = self.retrieval_booster.boost_results(results)
@@ -459,13 +477,12 @@ class SolvedMemoryIntegration:
         if not query_id:
             return
 
-        # Record outcome for each retrieved shard
-        for shard_id in self._current_retrieved_shards:
-            self.contribution_tracker.record_outcome(
-                shard_id=shard_id,
-                confidence=confidence,
-                feedback=feedback,
-            )
+        # Record outcome on the tracker (matches record_retrieval's query_id)
+        self.contribution_tracker.record_outcome(
+            query_id=query_id,
+            confidence=confidence,
+            feedback=feedback,
+        )
 
         self.stats.outcomes_recorded += 1
 
@@ -544,15 +561,22 @@ class SolvedMemoryIntegration:
 
         # Phase 5: Predict follow-up queries and prefetch
         if self.anticipatory and self.session_context:
-            await self.anticipatory.process_query_async(
-                query_text,
+            # process_query is synchronous — returns predicted follow-ups
+            predictions = self.anticipatory.process_query(
                 self.session_context,
-                retrieval_fn,
+                query_text,
             )
+            # Prefetch results for predicted queries (async)
+            if predictions:
+                await self.anticipatory.prefetch(
+                    self.session_context,
+                    predictions,
+                )
 
         # Update stats
         self.stats.total_queries += 1
-        self.stats.total_weave_time_ms += (time.time() - start_time) * 1000
+        elapsed_ms = (time.time() - start_time) * 1000
+        self.stats.total_weave_time_ms += elapsed_ms
 
         # Update KG stats
         if self.kg:
