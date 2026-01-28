@@ -21,15 +21,15 @@ from datetime import datetime
 from typing import Optional, Tuple
 from pathlib import Path
 
-from promptly.core.database import PromptlyDatabase
+from promptly.core.database import PromptlyDB
 
 
-def get_database() -> PromptlyDatabase:
+def get_database() -> PromptlyDB:
     """Get database instance."""
-    return PromptlyDatabase()
+    return PromptlyDB()
 
 
-def get_analytics_engine(db: PromptlyDatabase):
+def get_analytics_engine(db: PromptlyDB):
     """Get analytics engine."""
     from promptly.analytics.engine import PromptAnalyticsEngine
     return PromptAnalyticsEngine(db)
