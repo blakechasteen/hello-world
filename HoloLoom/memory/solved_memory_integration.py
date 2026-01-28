@@ -27,7 +27,7 @@ Integrates the 5 Pillars of Solved Memory into HoloLoom's WeavingOrchestrator.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Any, Dict, List, Callable
+from typing import Optional, Any, Dict, List, Callable, Protocol, Set, runtime_checkable
 from datetime import datetime
 import asyncio
 import logging
@@ -80,6 +80,67 @@ from HoloLoom.memory.anticipatory_retrieval import (
 
 logger = logging.getLogger(__name__)
 
+
+# =============================================================================
+# Pillar Protocol (for extensibility)
+# =============================================================================
+
+@runtime_checkable
+class Pillar(Protocol):
+    """
+    Protocol for memory pillars (extensibility point).
+
+    Each pillar implements this protocol to enable:
+    - Uniform lifecycle management (initialize/shutdown)
+    - Consistent hook interface (pre/post retrieval)
+    - Statistics collection
+    - Easy addition of new pillars
+
+    Example of adding a new pillar:
+
+        class Phase6_ContextCompression:
+            '''Pillar 6: Context Compression for token optimization.'''
+
+            def initialize(self, config: Dict[str, Any]) -> None:
+                self.compressor = create_compressor(config)
+
+            def shutdown(self) -> None:
+                self.compressor.flush()
+
+            def pre_retrieval(self, query: str) -> Dict[str, Any]:
+                return {'compression_hint': self.compressor.predict_ratio(query)}
+
+            def post_retrieval(self, results: List[Any]) -> List[Any]:
+                return self.compressor.compress_results(results)
+
+            def get_stats(self) -> Dict[str, Any]:
+                return {'compression_ratio': self.compressor.avg_ratio}
+    """
+
+    def initialize(self, config: Dict[str, Any]) -> None:
+        """Initialize the pillar with configuration."""
+        ...
+
+    def shutdown(self) -> None:
+        """Cleanup resources on shutdown."""
+        ...
+
+    def pre_retrieval(self, query: str) -> Dict[str, Any]:
+        """Hook called before retrieval. Returns metadata to merge into result."""
+        ...
+
+    def post_retrieval(self, results: List[Any]) -> List[Any]:
+        """Hook called after retrieval. Can modify/filter results."""
+        ...
+
+    def get_stats(self) -> Dict[str, Any]:
+        """Return pillar-specific statistics."""
+        ...
+
+
+# =============================================================================
+# Configuration
+# =============================================================================
 
 @dataclass
 class SolvedMemoryConfig:
@@ -256,6 +317,101 @@ class SolvedMemoryIntegration:
         self._initialized = False
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
+    # =========================================================================
+    # Phase Initialization Methods (called from initialize())
+    # =========================================================================
+
+    def _init_phase1_bounded_growth(self) -> None:
+        """Initialize Phase 1: Bounded Growth via KG limits."""
+        if not self.config.enable_bounded_growth or not self.kg:
+            return
+
+        self.kg.configure_limits(
+            max_nodes=self.config.kg_max_nodes,
+            max_edges=self.config.kg_max_edges,
+            eviction_strategy=self.config.kg_eviction_strategy,
+            enforce=True,
+        )
+        self.logger.info(f"  [Phase 1] Bounded Growth: {self.kg.limits}")
+
+    def _init_phase2_unified_forgetting(self) -> None:
+        """Initialize Phase 2: Unified Forgetting manager."""
+        if not self.config.enable_forgetting:
+            return
+
+        forget_config = ForgetConfig(
+            kg_eviction_policy=self.config.forget_policy,
+            enable_kg_eviction=True,
+            enable_hot_decay=True,
+            enable_lifecycle_ttl=True,
+        )
+        self.forget_manager = create_forget_manager(forget_config)
+
+        if self.kg:
+            self.forget_manager.register_kg(self.kg)
+
+        self.logger.info(
+            f"  [Phase 2] Unified Forgetting: policy={self.config.forget_policy.value}, "
+            f"interval={self.config.forget_interval_seconds}s"
+        )
+
+    def _init_phase3_outcome_retrieval(self) -> None:
+        """Initialize Phase 3: Outcome→Retrieval contribution tracking."""
+        if not self.config.enable_contribution_tracking:
+            return
+
+        self.contribution_tracker = create_contribution_tracker(
+            max_records=10000,
+            enable_decay=True,
+            decay_rate=self.config.contribution_decay_rate,
+        )
+        self.retrieval_booster = create_retrieval_booster(self.contribution_tracker)
+        self.contribution_integration = create_contribution_integration(None)
+
+        self.logger.info(
+            f"  [Phase 3] Outcome→Retrieval: boost_enabled={self.config.contribution_boost_enabled}, "
+            f"decay_rate={self.config.contribution_decay_rate}"
+        )
+
+    def _init_phase4_delta_storage(self) -> None:
+        """Initialize Phase 4: Delta Storage for efficient snapshots."""
+        if not self.config.enable_delta_storage:
+            return
+
+        self.delta_store = create_delta_store(
+            checkpoint_interval=self.config.delta_checkpoint_interval,
+        )
+        self.delta_reconstructor = create_reconstructor(self.delta_store)
+
+        self.logger.info(
+            f"  [Phase 4] Delta Storage: checkpoint_interval={self.config.delta_checkpoint_interval}, "
+            f"max_checkpoints={self.config.delta_max_checkpoints}"
+        )
+
+    def _init_phase5_anticipatory_retrieval(self) -> None:
+        """Initialize Phase 5: Anticipatory Retrieval for query prediction."""
+        if not self.config.enable_anticipatory:
+            return
+
+        import uuid
+
+        anticipatory_config = AnticipatoryConfig(
+            prefetch_enabled=self.config.anticipatory_prefetch_enabled,
+            max_predictions=self.config.anticipatory_max_predictions,
+            prefetch_k=self.config.anticipatory_prefetch_k,
+        )
+        self.anticipatory = create_anticipatory_retrieval(anticipatory_config)
+        self.session_context = create_session_context(session_id=str(uuid.uuid4()))
+
+        self.logger.info(
+            f"  [Phase 5] Anticipatory Retrieval: prefetch={self.config.anticipatory_prefetch_enabled}, "
+            f"max_predictions={self.config.anticipatory_max_predictions}"
+        )
+
+    # =========================================================================
+    # Main Initialization
+    # =========================================================================
+
     async def initialize(self) -> None:
         """Initialize all 5 pillars."""
         if self._initialized:
@@ -263,70 +419,11 @@ class SolvedMemoryIntegration:
 
         self.logger.info("Initializing 5 Pillars of Solved Memory...")
 
-        # Phase 1: Bounded Growth - Configure KG limits
-        # KG stores limits in PRIVATE attributes (_max_nodes, _max_edges, etc.)
-        # and checks _hard_limit_enforce to decide whether eviction is active.
-        if self.config.enable_bounded_growth and self.kg:
-            self.kg._max_nodes = self.config.kg_max_nodes
-            self.kg._max_edges = self.config.kg_max_edges
-            self.kg._hard_limit_enforce = True
-            self.kg._eviction_strategy = self.config.kg_eviction_strategy
-            self.logger.info(f"  [Phase 1] Bounded Growth: max_nodes={self.config.kg_max_nodes}, "
-                           f"max_edges={self.config.kg_max_edges}, strategy={self.config.kg_eviction_strategy.value}")
-
-        # Phase 2: Unified Forgetting
-        if self.config.enable_forgetting:
-            forget_config = ForgetConfig(
-                kg_eviction_policy=self.config.forget_policy,
-                enable_kg_eviction=True,
-                enable_hot_decay=True,
-                enable_lifecycle_ttl=True,
-            )
-            self.forget_manager = create_forget_manager(forget_config)
-
-            # Register KG as subsystem if available
-            if self.kg:
-                self.forget_manager.register_kg(self.kg)
-
-            self.logger.info(f"  [Phase 2] Unified Forgetting: policy={self.config.forget_policy.value}, "
-                           f"interval={self.config.forget_interval_seconds}s")
-
-        # Phase 3: Outcome→Retrieval Loop
-        if self.config.enable_contribution_tracking:
-            self.contribution_tracker = create_contribution_tracker(
-                max_records=10000,
-                enable_decay=True,
-                decay_rate=self.config.contribution_decay_rate,
-            )
-            self.retrieval_booster = create_retrieval_booster(self.contribution_tracker)
-
-            # Note: create_contribution_integration takes HoloLoom Config, not a special config
-            self.contribution_integration = create_contribution_integration(None)
-            self.logger.info(f"  [Phase 3] Outcome→Retrieval: boost_enabled={self.config.contribution_boost_enabled}, "
-                           f"decay_rate={self.config.contribution_decay_rate}")
-
-        # Phase 4: Delta Storage
-        if self.config.enable_delta_storage:
-            # create_delta_store takes (checkpoint_interval: int, max_deltas: int)
-            self.delta_store = create_delta_store(
-                checkpoint_interval=self.config.delta_checkpoint_interval,
-            )
-            self.delta_reconstructor = create_reconstructor(self.delta_store)
-            self.logger.info(f"  [Phase 4] Delta Storage: checkpoint_interval={self.config.delta_checkpoint_interval}, "
-                           f"max_checkpoints={self.config.delta_max_checkpoints}")
-
-        # Phase 5: Anticipatory Retrieval
-        if self.config.enable_anticipatory:
-            anticipatory_config = AnticipatoryConfig(
-                prefetch_enabled=self.config.anticipatory_prefetch_enabled,
-                max_predictions=self.config.anticipatory_max_predictions,
-                prefetch_k=self.config.anticipatory_prefetch_k,
-            )
-            self.anticipatory = create_anticipatory_retrieval(anticipatory_config)
-            import uuid
-            self.session_context = create_session_context(session_id=str(uuid.uuid4()))
-            self.logger.info(f"  [Phase 5] Anticipatory Retrieval: prefetch={self.config.anticipatory_prefetch_enabled}, "
-                           f"max_predictions={self.config.anticipatory_max_predictions}")
+        self._init_phase1_bounded_growth()
+        self._init_phase2_unified_forgetting()
+        self._init_phase3_outcome_retrieval()
+        self._init_phase4_delta_storage()
+        self._init_phase5_anticipatory_retrieval()
 
         self._initialized = True
         self.logger.info("5 Pillars of Solved Memory initialized successfully!")
@@ -371,14 +468,21 @@ class SolvedMemoryIntegration:
 
     def pre_retrieval(self, query_text: str) -> Dict[str, Any]:
         """
-        Pre-retrieval hook: Check for prefetched results (Phase 5).
+        Pre-retrieval hook: Check if query was predicted (Phase 5).
+
+        Note: "Prefetch" in this system means predicted queries have their
+        memory IDs stored for priority boosting during retrieval. The actual
+        shard content is NOT cached - we use the IDs to boost relevance scores
+        when those shards appear in normal retrieval results.
 
         Returns:
-            Dict with prefetch_hit (bool) and prefetched_shards (list)
+            Dict with:
+                - prefetch_hit: bool - True if query was predicted
+                - prefetched_ids: Set[str] - IDs to boost in retrieval
         """
         result = {
             'prefetch_hit': False,
-            'prefetched_shards': [],
+            'prefetched_ids': set(),
         }
 
         if not self.anticipatory or not self.session_context:
@@ -391,8 +495,8 @@ class SolvedMemoryIntegration:
         )
 
         if was_predicted:
-            # Check if prefetched results are in the session cache
             result['prefetch_hit'] = True
+            result['prefetched_ids'] = self.session_context.prefetched_memory_ids or set()
             self.stats.prefetch_hits += 1
         else:
             self.stats.prefetch_misses += 1
@@ -406,18 +510,29 @@ class SolvedMemoryIntegration:
     def boost_retrieval_results(
         self,
         results: List[Any],
-        query_id: Optional[str] = None
+        query_id: Optional[str] = None,
+        prefetched_ids: Optional[Set[str]] = None,
     ) -> List[Any]:
         """
-        Boost retrieval results based on contribution history (Phase 3).
+        Boost retrieval results based on contribution history (Phase 3) and
+        prefetch predictions (Phase 5).
 
         Args:
             results: List of (shard, score) tuples
             query_id: Optional query ID for tracking
+            prefetched_ids: Optional set of IDs predicted by Phase 5 to boost
 
         Returns:
             Boosted and re-ranked results
         """
+        # Phase 5: Apply prefetch boost (1.2x for predicted shards)
+        if prefetched_ids:
+            prefetch_boost = 1.2
+            results = [
+                (shard, score * prefetch_boost if getattr(shard, 'id', str(i)) in prefetched_ids else score)
+                for i, (shard, score) in enumerate(results)
+            ]
+
         if not self.retrieval_booster or not self.config.enable_contribution_tracking:
             return results
 
@@ -485,6 +600,56 @@ class SolvedMemoryIntegration:
 
         self.stats.outcomes_recorded += 1
 
+    # =========================================================================
+    # Delta Operation Dispatch (Phase 4)
+    # =========================================================================
+
+    def _dispatch_delta_add(
+        self, target_id: str, target_type: DeltaTarget,
+        old_state: Optional[Dict], new_state: Optional[Dict], source: str
+    ) -> None:
+        """Dispatch handler for ADD operations."""
+        self.delta_store.record_add(
+            target_id=target_id,
+            target_type=target_type,
+            state=new_state or {},
+            source=source,
+        )
+
+    def _dispatch_delta_update(
+        self, target_id: str, target_type: DeltaTarget,
+        old_state: Optional[Dict], new_state: Optional[Dict], source: str
+    ) -> None:
+        """Dispatch handler for UPDATE operations."""
+        self.delta_store.record_update(
+            target_id=target_id,
+            target_type=target_type,
+            before=old_state or {},
+            after=new_state or {},
+            source=source,
+        )
+
+    def _dispatch_delta_delete(
+        self, target_id: str, target_type: DeltaTarget,
+        old_state: Optional[Dict], new_state: Optional[Dict], source: str
+    ) -> None:
+        """Dispatch handler for DELETE operations."""
+        self.delta_store.record_delete(
+            target_id=target_id,
+            target_type=target_type,
+            before=old_state or {},
+            source=source,
+        )
+
+    @property
+    def _delta_dispatch_table(self) -> Dict[DeltaOperation, Callable]:
+        """Dispatch table mapping operations to handlers."""
+        return {
+            DeltaOperation.ADD: self._dispatch_delta_add,
+            DeltaOperation.UPDATE: self._dispatch_delta_update,
+            DeltaOperation.DELETE: self._dispatch_delta_delete,
+        }
+
     def record_delta(
         self,
         operation: DeltaOperation,
@@ -497,7 +662,7 @@ class SolvedMemoryIntegration:
         """
         Record a delta for state changes (Phase 4).
 
-        Delegates to the correct DeltaStore method based on operation type:
+        Uses dispatch pattern to delegate to the correct handler:
         - ADD → record_add(target_id, target_type, state)
         - UPDATE → record_update(target_id, target_type, before, after)
         - DELETE → record_delete(target_id, target_type, before)
@@ -513,30 +678,12 @@ class SolvedMemoryIntegration:
         if not self.delta_store:
             return
 
-        if operation == DeltaOperation.ADD:
-            self.delta_store.record_add(
-                target_id=target_id,
-                target_type=target_type,
-                state=new_state or {},
-                source=source,
-            )
-        elif operation == DeltaOperation.UPDATE:
-            self.delta_store.record_update(
-                target_id=target_id,
-                target_type=target_type,
-                before=old_state or {},
-                after=new_state or {},
-                source=source,
-            )
-        elif operation == DeltaOperation.DELETE:
-            self.delta_store.record_delete(
-                target_id=target_id,
-                target_type=target_type,
-                before=old_state or {},
-                source=source,
-            )
-
-        self.stats.deltas_recorded += 1
+        handler = self._delta_dispatch_table.get(operation)
+        if handler:
+            handler(target_id, target_type, old_state, new_state, source)
+            self.stats.deltas_recorded += 1
+        else:
+            self.logger.warning(f"Unknown delta operation: {operation}")
 
     async def process_query(
         self,
@@ -555,26 +702,27 @@ class SolvedMemoryIntegration:
         """
         start_time = time.time()
 
-        # Phase 5: Check for prefetch hit
+        # Phase 5: Check for prefetch hit (get IDs for boosting)
         prefetch_result = self.pre_retrieval(query_text)
+        prefetched_ids = prefetch_result.get('prefetched_ids', set())
 
-        if prefetch_result['prefetch_hit'] and prefetch_result['prefetched_shards']:
-            # Use prefetched results only if we actually have data
-            results = prefetch_result['prefetched_shards']
-            self.logger.debug(f"Prefetch hit! Using {len(results)} prefetched shards")
-        else:
-            # Normal retrieval (also falls back here if prefetch hit but no data)
-            results = await retrieval_fn(query_text)
+        if prefetch_result['prefetch_hit']:
+            self.logger.debug(
+                f"Prefetch hit! {len(prefetched_ids)} memory IDs will be boosted"
+            )
 
-        # Phase 3: Boost results based on contribution history
+        # Always perform retrieval (prefetch provides boost, not cached content)
+        results = await retrieval_fn(query_text)
+
+        # Phase 3 + 5: Boost results based on contribution history AND prefetch predictions
         if isinstance(results, list) and results:
             if isinstance(results[0], tuple):
                 # Already (shard, score) format
-                results = self.boost_retrieval_results(results)
+                results = self.boost_retrieval_results(results, prefetched_ids=prefetched_ids)
             else:
                 # Convert to (shard, score) format
                 results = [(r, 1.0) for r in results]
-                results = self.boost_retrieval_results(results)
+                results = self.boost_retrieval_results(results, prefetched_ids=prefetched_ids)
 
         # Phase 5: Predict follow-up queries and prefetch
         if self.anticipatory and self.session_context:

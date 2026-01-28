@@ -355,7 +355,82 @@ class KG:
 
         # Logger
         self._logger = logging.getLogger(__name__)
-    
+
+    # =========================================================================
+    # Public Configuration API (Phase 1: Bounded Growth - December 2025)
+    # =========================================================================
+
+    def configure_limits(
+        self,
+        max_nodes: Optional[int] = None,
+        max_edges: Optional[int] = None,
+        eviction_strategy: Optional[EvictionStrategy] = None,
+        enforce: bool = True,
+    ) -> 'KG':
+        """
+        Configure bounded growth limits (fluent API).
+
+        This is the recommended way to set KG limits instead of
+        accessing private attributes directly.
+
+        Args:
+            max_nodes: Maximum number of nodes (None = unchanged)
+            max_edges: Maximum number of edges (None = unchanged)
+            eviction_strategy: Strategy for eviction when limits reached
+            enforce: Whether to enforce hard limits (triggers eviction)
+
+        Returns:
+            self (for method chaining)
+
+        Example:
+            kg.configure_limits(
+                max_nodes=10000,
+                max_edges=50000,
+                eviction_strategy=EvictionStrategy.LRU,
+                enforce=True
+            )
+        """
+        if max_nodes is not None:
+            self._max_nodes = max_nodes
+        if max_edges is not None:
+            self._max_edges = max_edges
+        if eviction_strategy is not None:
+            self._eviction_strategy = eviction_strategy
+        self._hard_limit_enforce = enforce
+
+        self._logger.info(
+            f"KG limits configured: max_nodes={self._max_nodes}, "
+            f"max_edges={self._max_edges}, strategy={self._eviction_strategy.value}, "
+            f"enforce={self._hard_limit_enforce}"
+        )
+
+        return self
+
+    @property
+    def limits(self) -> Dict[str, Any]:
+        """
+        Get current limit configuration (read-only).
+
+        Returns:
+            Dict with max_nodes, max_edges, strategy, enforce, current usage
+        """
+        return {
+            'max_nodes': self._max_nodes,
+            'max_edges': self._max_edges,
+            'eviction_strategy': self._eviction_strategy.value,
+            'enforce': self._hard_limit_enforce,
+            'current_nodes': self.G.number_of_nodes(),
+            'current_edges': self.G.number_of_edges(),
+            'node_usage_pct': (
+                self.G.number_of_nodes() / self._max_nodes * 100
+                if self._max_nodes > 0 else 0
+            ),
+            'edge_usage_pct': (
+                self.G.number_of_edges() / self._max_edges * 100
+                if self._max_edges > 0 else 0
+            ),
+        }
+
     def add_edge(self, edge: KGEdge) -> bool:
         """
         Add an edge to the knowledge graph.
