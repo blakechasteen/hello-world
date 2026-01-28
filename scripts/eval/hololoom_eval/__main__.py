@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-HoloLoom Evaluation Framework CLI
+HoloLoom Evaluation Framework CLI v2.0
 
 One-click comprehensive testing to evaluate if HoloLoom provides value.
 
@@ -9,7 +9,10 @@ Usage:
     python -m scripts.eval.hololoom_eval --quick      # Fast sanity check (~1 min)
     python -m scripts.eval.hololoom_eval --full       # Comprehensive (~10 min)
     python -m scripts.eval.hololoom_eval --json       # Output JSON format
-    python -m scripts.eval.hololoom_eval --benchmark retrieval  # Run specific benchmark
+    python -m scripts.eval.hololoom_eval --dashboard  # Generate HTML dashboard
+    python -m scripts.eval.hololoom_eval --seed 42    # Reproducible run
+    python -m scripts.eval.hololoom_eval --compare    # Compare with previous run
+    python -m scripts.eval.hololoom_eval --benchmark retrieval  # Specific benchmark
 """
 
 import argparse
@@ -25,7 +28,7 @@ def print_banner():
     """Print startup banner."""
     print()
     print("=" * 70)
-    print("  HoloLoom Evaluation Framework v1.0")
+    print("  HoloLoom Evaluation Framework v2.0")
     print("  Testing: Does complexity provide value?")
     print("=" * 70)
     print()
@@ -35,7 +38,7 @@ def print_report(report, verbose: bool = False):
     """Print evaluation report in human-readable format."""
 
     # Overall result
-    status = "✅ PASS" if report.overall_passed else "❌ FAIL"
+    status = "PASS" if report.overall_passed else "FAIL"
     print(f"\n{'=' * 70}")
     print(f"  OVERALL: {status}  (Score: {report.overall_score:.2f}/1.00)")
     print(f"{'=' * 70}\n")
@@ -45,14 +48,26 @@ def print_report(report, verbose: bool = False):
     print("-" * 70)
 
     for result in report.benchmarks:
-        status_icon = "✅" if result.passed else "❌"
-        print(f"  {status_icon} {result.name:<25} Score: {result.score:.2f}  {result.verdict}")
+        status_icon = "PASS" if result.passed else "FAIL"
+        error_note = " [ERROR]" if result.error else ""
+        print(f"  [{status_icon}] {result.name:<25} Score: {result.score:.2f}  {result.verdict}{error_note}")
+
+    # Statistical summary (v2.0)
+    if report.statistical_summary:
+        print(f"\n{'STATISTICAL SUMMARY:'}")
+        print("-" * 70)
+        stats = report.statistical_summary
+        if "overall" in stats:
+            overall = stats["overall"]
+            ci = overall.get("ci_95", {})
+            print(f"  Overall Score: {overall.get('mean', 0):.3f} (95% CI: [{ci.get('lower', 0):.3f}, {ci.get('upper', 0):.3f}])")
+            print(f"  Std Dev: {overall.get('std', 0):.3f}  |  N = {overall.get('n', 0)} benchmarks")
 
     # Dependencies
     print(f"\n{'DEPENDENCIES:'}")
     print("-" * 70)
     for dep, available in report.dependencies.items():
-        icon = "✅" if available else "❌"
+        icon = "[OK]" if available else "[--]"
         print(f"  {icon} {dep}")
 
     # Summary
@@ -63,20 +78,11 @@ def print_report(report, verbose: bool = False):
     print(f"  Timestamp: {report.timestamp}")
 
     # Recommendations
-    if not report.overall_passed:
+    if report.recommendations:
         print(f"\n{'RECOMMENDATIONS:'}")
         print("-" * 70)
-
-        missing_deps = [dep for dep, avail in report.dependencies.items() if not avail]
-        if missing_deps:
-            print(f"  1. Install missing dependencies:")
-            print(f"     pip install {' '.join(missing_deps)}")
-
-        failed = [r for r in report.benchmarks if not r.passed]
-        if failed:
-            print(f"  2. Failed benchmarks to investigate:")
-            for r in failed:
-                print(f"     - {r.name}: {r.verdict}")
+        for i, rec in enumerate(report.recommendations, 1):
+            print(f"  {i}. {rec}")
 
     # Verbose details
     if verbose:
@@ -87,11 +93,13 @@ def print_report(report, verbose: bool = False):
             print(f"  Score: {result.score:.3f}")
             print(f"  Passed: {result.passed}")
             print(f"  Verdict: {result.verdict}")
+            if result.error:
+                print(f"  Error: {result.error}")
             if result.details:
                 print(f"  Details:")
                 for key, value in result.details.items():
                     if isinstance(value, (dict, list)):
-                        print(f"    {key}: {json.dumps(value, indent=6)[:200]}...")
+                        print(f"    {key}: {json.dumps(value, indent=6, default=str)[:200]}...")
                     else:
                         print(f"    {key}: {value}")
 
@@ -101,7 +109,7 @@ def print_report(report, verbose: bool = False):
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
-        description="HoloLoom Evaluation Framework - Test if complexity provides value",
+        description="HoloLoom Evaluation Framework v2.0 - Test if complexity provides value",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -109,15 +117,20 @@ Examples:
   python -m scripts.eval.hololoom_eval --quick      # Fast sanity check (~1 min)
   python -m scripts.eval.hololoom_eval --full       # Comprehensive (~10 min)
   python -m scripts.eval.hololoom_eval --json       # JSON output
+  python -m scripts.eval.hololoom_eval --dashboard  # HTML dashboard report
+  python -m scripts.eval.hololoom_eval --seed 42    # Reproducible run
+  python -m scripts.eval.hololoom_eval --compare    # Compare with previous run
   python -m scripts.eval.hololoom_eval -v           # Verbose output
 
-Benchmarks:
+Benchmarks (8 total):
   - retrieval: Compares HoloLoom vs BM25/Vector/Hybrid baselines
   - learning:  Tests if system improves over time
   - ablation:  Measures value of each component
   - latency:   Validates performance targets
   - graph:     Tests knowledge graph value
   - cache:     Measures cache effectiveness
+  - stress:    Tests robustness to adversarial/edge-case queries
+  - semantic:  Evaluates semantic quality beyond keyword matching
         """
     )
 
@@ -151,7 +164,10 @@ Benchmarks:
     # Specific benchmark
     parser.add_argument(
         "--benchmark", "-b",
-        choices=["retrieval", "learning", "ablation", "latency", "graph", "cache"],
+        choices=[
+            "retrieval", "learning", "ablation", "latency",
+            "graph", "cache", "stress", "semantic",
+        ],
         help="Run only a specific benchmark"
     )
 
@@ -160,6 +176,29 @@ Benchmarks:
         "--output", "-o",
         type=str,
         help="Save results to file"
+    )
+
+    # v2.0: Dashboard generation
+    parser.add_argument(
+        "--dashboard", "--report",
+        action="store_true",
+        dest="dashboard",
+        help="Generate self-contained HTML dashboard report"
+    )
+
+    # v2.0: Reproducibility seed
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed for reproducible results (e.g. --seed 42)"
+    )
+
+    # v2.0: Compare with previous run
+    parser.add_argument(
+        "--compare",
+        action="store_true",
+        help="Compare results with previous evaluation run"
     )
 
     args = parser.parse_args()
@@ -176,11 +215,22 @@ Benchmarks:
     if not args.json:
         print_banner()
         print(f"Mode: {mode.value.upper()}")
+        if args.seed is not None:
+            print(f"Seed: {args.seed}")
+        if args.dashboard:
+            print("Dashboard: enabled")
+        if args.compare:
+            print("Compare: enabled")
         print(f"Started: {datetime.now().isoformat()}")
         print()
 
-    # Create runner and execute
-    runner = EvaluationRunner(mode=mode)
+    # Create runner with v2.0 options
+    runner = EvaluationRunner(
+        mode=mode,
+        seed=args.seed,
+        generate_dashboard=args.dashboard,
+        compare_previous=args.compare,
+    )
 
     try:
         if args.benchmark:

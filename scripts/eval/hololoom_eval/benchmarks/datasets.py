@@ -49,6 +49,31 @@ EVALUATION_CORPUS: List[Dict[str, str]] = [
     {"id": "cs_1", "text": "Reinforcement learning trains agents to make sequential decisions by maximizing cumulative rewards through trial and error in an environment."},
     {"id": "cs_2", "text": "Caching stores frequently accessed data in fast memory to reduce latency. Cache hit rates measure how often requested data is found in cache."},
     {"id": "cs_3", "text": "Latency is the time delay between a request and response. P95 latency means 95% of requests complete within that time."},
+
+    # Optimization & Training (expanded January 2026)
+    {"id": "opt_1", "text": "Gradient descent is an optimization algorithm that iteratively adjusts parameters in the direction of steepest descent of the loss function. Learning rate controls step size."},
+    {"id": "opt_2", "text": "Adam optimizer combines momentum and adaptive learning rates. It maintains exponentially decaying averages of past gradients and squared gradients."},
+    {"id": "opt_3", "text": "Overfitting occurs when a model memorizes training data rather than learning generalizable patterns. Regularization techniques like dropout and weight decay help prevent it."},
+
+    # Evaluation Metrics
+    {"id": "eval_1", "text": "Precision measures the fraction of retrieved documents that are relevant. Recall measures the fraction of relevant documents that are retrieved. The F1 score is their harmonic mean."},
+    {"id": "eval_2", "text": "NDCG (Normalized Discounted Cumulative Gain) evaluates ranking quality by giving higher weight to relevant documents appearing earlier in the results list."},
+    {"id": "eval_3", "text": "Mean Reciprocal Rank (MRR) measures the average position of the first relevant result across queries. Higher MRR indicates better top-result placement."},
+
+    # Graph & Structured Knowledge
+    {"id": "gk_1", "text": "Graph neural networks operate on graph-structured data by aggregating information from neighboring nodes. They enable learning on social networks, molecular structures, and knowledge graphs."},
+    {"id": "gk_2", "text": "Entity resolution identifies when different records refer to the same real-world entity. It is crucial for knowledge graph construction and data integration."},
+    {"id": "gk_3", "text": "Multi-hop reasoning traverses multiple edges in a knowledge graph to answer complex queries that require connecting multiple facts together."},
+
+    # Embeddings & Representations
+    {"id": "emb_1", "text": "Word2Vec learns word embeddings by predicting surrounding words (CBOW) or predicting a word from context (Skip-gram). Similar words have similar vector representations."},
+    {"id": "emb_2", "text": "Sentence embeddings capture the meaning of entire sentences as fixed-length vectors. Models like Sentence-BERT fine-tune transformers for semantic similarity tasks."},
+    {"id": "emb_3", "text": "Dimensionality reduction techniques like PCA and t-SNE project high-dimensional embeddings into lower dimensions for visualization while preserving important structure."},
+
+    # Systems & Scalability
+    {"id": "sys_1", "text": "Distributed systems split computation across multiple machines for scalability. Consensus protocols like Raft and Paxos ensure consistency despite failures."},
+    {"id": "sys_2", "text": "Vector databases like Qdrant and Pinecone are optimized for approximate nearest neighbor search on high-dimensional embeddings using algorithms like HNSW."},
+    {"id": "sys_3", "text": "Batch processing handles large datasets efficiently by processing records in groups rather than individually. Stream processing handles data in real-time as it arrives."},
 ]
 
 # ============================================================================
