@@ -273,6 +273,8 @@ class HybridMemoryStore:
             try:
                 await backend.store(memory, user_id)
                 stored_count += 1
+            except (ConnectionError, OSError, TimeoutError) as e:
+                warnings.warn(f"[WARN] Store failed ({name}), connection error: {e}")
             except Exception as e:
                 warnings.warn(f"[WARN] Store failed ({name}): {e}")
 
@@ -367,6 +369,8 @@ class HybridMemoryStore:
         for name, backend in self.backends:
             try:
                 results[name] = await backend.recall(query, limit=limit * 2)
+            except (ConnectionError, OSError, TimeoutError) as e:
+                warnings.warn(f"[WARN] Recall failed ({name}), connection error: {e}")
             except Exception as e:
                 warnings.warn(f"[WARN] Recall failed ({name}): {e}")
 
@@ -477,6 +481,9 @@ class HybridMemoryStore:
                 health['backends'][name] = await backend.health_check()
                 if health['backends'][name].get('status') != 'healthy':
                     unhealthy_count += 1
+            except (ConnectionError, OSError, TimeoutError) as e:
+                health['backends'][name] = {'status': 'unhealthy', 'error': f'connection error: {e}'}
+                unhealthy_count += 1
             except Exception as e:
                 health['backends'][name] = {'status': 'unhealthy', 'error': str(e)}
                 unhealthy_count += 1
@@ -485,7 +492,7 @@ class HybridMemoryStore:
         if self.fallback:
             try:
                 health['backends']['networkx'] = await self.fallback.health_check()
-            except Exception:
+            except (AttributeError, NotImplementedError):
                 health['backends']['networkx'] = {'status': 'healthy'}  # NetworkX always healthy
 
         # Overall status
@@ -625,10 +632,15 @@ def _try_init_neo4j(config: Config) -> tuple[Any, Optional[str]]:
             logger.warning(f"Neo4j unhealthy: {health}")
 
         return neo4j, None
-    except Exception as e:
+    except (ConnectionError, OSError, TimeoutError) as e:
         # SECURITY: Sanitize error message to remove potential credentials
         error_msg = sanitize_error_message(str(e))
         warnings.warn(f"[WARN] Neo4j connection failed: {error_msg}")
+        return None, error_msg
+    except Exception as e:
+        # Catch unexpected errors (e.g., auth failures, config issues)
+        error_msg = sanitize_error_message(str(e))
+        warnings.warn(f"[WARN] Neo4j initialization failed: {error_msg}")
         return None, error_msg
 
 
@@ -670,10 +682,15 @@ def _try_init_qdrant(config: Config) -> tuple[Any, Optional[str]]:
         logger.info(f"Qdrant connection pool established")
 
         return qdrant, None
-    except Exception as e:
+    except (ConnectionError, OSError, TimeoutError) as e:
         # SECURITY: Sanitize error message to remove potential credentials
         error_msg = sanitize_error_message(str(e))
         warnings.warn(f"[WARN] Qdrant connection failed: {error_msg}")
+        return None, error_msg
+    except Exception as e:
+        # Catch unexpected errors (e.g., auth failures, config issues)
+        error_msg = sanitize_error_message(str(e))
+        warnings.warn(f"[WARN] Qdrant initialization failed: {error_msg}")
         return None, error_msg
 
 

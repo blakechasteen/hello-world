@@ -110,7 +110,7 @@ class EvaluationFunctionProtocol(Protocol):
                 try:
                     exec(response)
                     return 1.0
-                except:
+                except Exception:
                     return 0.0
     """
 

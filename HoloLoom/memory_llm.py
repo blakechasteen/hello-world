@@ -110,7 +110,7 @@ class MemoryLLM:
         if self._embedder:
             try:
                 embedding = self._embedder.encode(text)
-            except:
+            except Exception:
                 pass
 
         self._memories.append(Memory(
