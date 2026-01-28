@@ -16,9 +16,17 @@ from .dag import CausalNode, CausalEdge, CausalDAG, NodeType
 from .query import CausalQuery, QueryType, CausalAnswer
 from .intervention import InterventionEngine
 from .counterfactual import CounterfactualEngine
-from .neural_scm import NeuralStructuralCausalModel, NeuralMechanism
 from .discovery import CausalDiscovery, ActiveCausalLearner
 from .temporal import TemporalCausalDAG, TemporalEdge, TemporalState
+
+# Conditionally import neural_scm (requires torch)
+try:
+    from .neural_scm import NeuralStructuralCausalModel, NeuralMechanism
+    _NEURAL_AVAILABLE = True
+except (ImportError, NameError):
+    NeuralStructuralCausalModel = None
+    NeuralMechanism = None
+    _NEURAL_AVAILABLE = False
 
 __all__ = [
     'CausalNode',
@@ -30,11 +38,13 @@ __all__ = [
     'CausalAnswer',
     'InterventionEngine',
     'CounterfactualEngine',
-    'NeuralStructuralCausalModel',
-    'NeuralMechanism',
     'CausalDiscovery',
     'ActiveCausalLearner',
     'TemporalCausalDAG',
     'TemporalEdge',
     'TemporalState'
 ]
+
+# Add neural components to __all__ only if available
+if _NEURAL_AVAILABLE:
+    __all__.extend(['NeuralStructuralCausalModel', 'NeuralMechanism'])
