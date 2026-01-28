@@ -182,11 +182,17 @@ See [`ui/markdown/README.md`](ui/markdown/README.md) for full documentation!
 - ✅ Lesson 9: Best Practices & Patterns
 - ✅ Lesson 10: Graduation & What's Next
 
-### Intermediate Lessons (11-20)
-- 🔜 Memory Backends
-- 🔜 Persistent Storage
-- 🔜 Advanced Querying
-- 🔜 Recursive Learning
+### Intermediate Lessons (11-20) 🎉 50% COMPLETE!
+- ✅ Lesson 11: Advanced Memory Systems (INMEMORY/HYBRID/HYPERSPACE)
+- ✅ Lesson 12: Multimodal Input with SpinningWheel (47 adapters)
+- ✅ Lesson 13: Embeddings & Matryoshka Representations
+- ✅ Lesson 14: Policy Engines & Thompson Sampling
+- ✅ Lesson 15: Recursive Learning & Self-Improvement
+- 🔜 Lesson 16: Building Production Applications
+- 🔜 Lesson 17: Performance Optimization & Profiling
+- 🔜 Lesson 18: Testing Strategies (Unit/Integration/E2E)
+- 🔜 Lesson 19: Integration Patterns & Best Practices
+- 🔜 Lesson 20: **Project** - Production RAG System
 
 ### Advanced Lessons (21-30)
 - 🔜 Custom Adapters
@@ -359,13 +365,20 @@ Edit `core/progress.py` → `_define_badges()` method
 - ✅ 2.5+ hours of learning material
 - ✅ Multiple quizzes and challenges
 
-### 🚀 Phase 4 (In Progress)
+### 🚀 Phase 4 (In Progress - 50% Milestone Reached!)
 - ✅ **AI Tutor** - HoloLoom teaches HoloLoom! (Terminal + Web UI complete)
   - 🤖 Ask questions anytime
   - 💡 Get personalized recommendations
   - 🎯 Context-aware hints
   - 📚 Sources lessons in responses
-- 🔜 Intermediate lessons (11-20)
+- 🎉 **Intermediate lessons** (11-15 complete - 50% of track!)
+  - ✅ Lesson 11: Advanced Memory Systems (~3,400 lines)
+  - ✅ Lesson 12: Multimodal Input (~5,400 lines)
+  - ✅ Lesson 13: Embeddings & Matryoshka (~6,500 lines)
+  - ✅ Lesson 14: Policy Engines (~7,000 lines)
+  - ✅ Lesson 15: Recursive Learning (~10,000 lines)
+  - **Total: 32,300+ lines of intermediate content!**
+- 🔜 Intermediate lessons (16-20) - Next phase
 - 🔜 Advanced lessons (21-30)
 
 ### 💭 Phase 5 & Beyond (Future)
