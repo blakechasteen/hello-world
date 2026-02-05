@@ -27,6 +27,7 @@ import time
 import traceback
 
 from .config import RalphConfig, ResetStrategy
+from .context_monitor import ContextMonitor, CeilingAction
 from .state import (
     RalphState,
     StateCheckpoint,
@@ -251,8 +252,10 @@ class RalphEngine:
         self._post_iteration_hooks: List[Callable] = []
         self._on_reset_hooks: List[Callable] = []
 
-        # Context monitor (will be set up if auto_monitor enabled)
+        # Context monitor (set up if auto_monitor enabled or ceiling enabled)
         self._context_monitor = None
+        if self.config.auto_monitor or self.config.context_ceiling.enabled:
+            self._context_monitor = ContextMonitor()
 
         # Setup logging
         if self.config.verbose:
@@ -375,6 +378,50 @@ class RalphEngine:
 
         return None
 
+    async def _check_ceiling(self) -> Optional[CeilingAction]:
+        """
+        Check and enforce context ceiling if enabled.
+
+        The ceiling proactively trims context to stay within the LLM's
+        optimal performance zone, rather than waiting for a full reset.
+
+        Returns CeilingAction if trimming occurred, None if ceiling
+        is disabled or not yet reached.
+
+        Added: 2026-02-05
+        """
+        ceiling_cfg = self.config.context_ceiling
+        if not ceiling_cfg.enabled or self._context_monitor is None:
+            return None
+
+        if not self._context_monitor.should_trim(
+            ceiling_tokens=ceiling_cfg.ceiling_tokens,
+            headroom=ceiling_cfg.headroom,
+        ):
+            return None
+
+        action = self._context_monitor.check_ceiling(
+            ceiling_tokens=ceiling_cfg.ceiling_tokens,
+            headroom=ceiling_cfg.headroom,
+            prune_ratio=ceiling_cfg.prune_ratio,
+            prune_order=ceiling_cfg.prune_order,
+            strategy=ceiling_cfg.strategy.value,
+        )
+
+        if action.triggered:
+            logger.info(
+                f"Ceiling enforced: trimmed {action.tokens_trimmed} tokens "
+                f"({action.trim_percent:.1%}), {action.tokens_after} remaining"
+            )
+            # Fire the callback if configured
+            if ceiling_cfg.on_ceiling_trim is not None:
+                try:
+                    ceiling_cfg.on_ceiling_trim(action)
+                except Exception as e:
+                    logger.warning(f"Ceiling trim callback failed: {e}")
+
+        return action
+
     async def _trigger_reset(self, reason: str) -> StateCheckpoint:
         """Trigger a context reset."""
         logger.info(f"Triggering context reset: {reason}")
@@ -477,6 +524,15 @@ class RalphEngine:
                 await self._trigger_reset(reset_reason)
                 break
 
+            # Enforce context ceiling (proactive trimming)
+            # Added: 2026-02-05
+            ceiling_action = await self._check_ceiling()
+            if ceiling_action and ceiling_action.triggered:
+                # Record ceiling trim in iteration metadata
+                self._state.metadata.setdefault("ceiling_trims", []).append(
+                    ceiling_action.to_dict()
+                )
+
             # Delay between iterations
             if self.config.iteration_delay > 0:
                 await asyncio.sleep(self.config.iteration_delay)
@@ -551,7 +607,7 @@ class RalphEngine:
         if self._state is None:
             return {"status": "no_active_loop"}
 
-        return {
+        status = {
             "loop_id": self._state.loop_id,
             "task": self._state.task,
             "status": self._status.value,
@@ -561,3 +617,13 @@ class RalphEngine:
             "consecutive_errors": self._state.consecutive_errors,
             "last_update": self._state.updated_at,
         }
+
+        # Include ceiling status if enabled
+        ceiling_cfg = self.config.context_ceiling
+        if ceiling_cfg.enabled and self._context_monitor is not None:
+            status["ceiling"] = self._context_monitor.get_ceiling_status(
+                ceiling_tokens=ceiling_cfg.ceiling_tokens,
+                headroom=ceiling_cfg.headroom,
+            )
+
+        return status

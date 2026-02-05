@@ -51,7 +51,12 @@ Automatic Reset:
 Created: 2026-01-28
 """
 
-from .config import RalphConfig, ContextThresholds
+from .config import (
+    RalphConfig,
+    ContextThresholds,
+    CeilingStrategy,
+    ContextCeilingConfig,
+)
 from .state import (
     RalphState,
     StateCheckpoint,
@@ -83,6 +88,8 @@ from .context_monitor import (
     ContextUsage,
     ResetTrigger,
     AutoResetConfig,
+    CeilingAction,
+    create_ceiling_monitor,
 )
 from .convenience import (
     ralph_loop,
@@ -94,6 +101,8 @@ __all__ = [
     # Config
     "RalphConfig",
     "ContextThresholds",
+    "CeilingStrategy",
+    "ContextCeilingConfig",
     # State
     "RalphState",
     "StateCheckpoint",
@@ -121,6 +130,8 @@ __all__ = [
     "ContextUsage",
     "ResetTrigger",
     "AutoResetConfig",
+    "CeilingAction",
+    "create_ceiling_monitor",
     # Convenience
     "ralph_loop",
     "reset_context",

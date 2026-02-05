@@ -3,13 +3,15 @@
 Ralph Loop Engine - Context Window Monitor.
 
 Monitors context window usage and triggers automatic resets
-when thresholds are exceeded.
+when thresholds are exceeded. Also supports the "keep at 60k"
+ceiling trick for proactive context trimming.
 
 "When the context fills up, you get a fresh agent with fresh context,
 picking up where the last one left off."
 - Geoff Huntley
 
 Created: 2026-01-28
+Updated: 2026-02-05 - Added context ceiling enforcement
 """
 
 from dataclasses import dataclass, field
@@ -34,6 +36,7 @@ class ResetTrigger(Enum):
     ERROR_LIMIT = "error_limit"
     TIMEOUT = "timeout"
     CONSOLIDATION = "consolidation"
+    CEILING_TRIM = "ceiling_trim"
 
 
 @dataclass
@@ -62,6 +65,48 @@ class ContextUsage:
             "estimated_percent": self.estimated_percent,
             "trigger_level": self.trigger_level.value if self.trigger_level else None,
             "details": self.details,
+        }
+
+
+@dataclass
+class CeilingAction:
+    """Describes a context ceiling trim action taken.
+
+    Returned by ContextMonitor.check_ceiling() when the ceiling
+    is approached and content needs to be trimmed.
+
+    Added: 2026-02-05
+    """
+
+    triggered: bool
+    tokens_before: int
+    tokens_after: int
+    tokens_trimmed: int
+    strategy_used: str
+    categories_trimmed: Dict[str, int] = field(default_factory=dict)
+    timestamp: str = ""
+
+    def __post_init__(self):
+        if not self.timestamp:
+            self.timestamp = datetime.utcnow().isoformat()
+
+    @property
+    def trim_percent(self) -> float:
+        """What fraction of tokens were trimmed."""
+        if self.tokens_before == 0:
+            return 0.0
+        return self.tokens_trimmed / self.tokens_before
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "triggered": self.triggered,
+            "tokens_before": self.tokens_before,
+            "tokens_after": self.tokens_after,
+            "tokens_trimmed": self.tokens_trimmed,
+            "trim_percent": self.trim_percent,
+            "strategy_used": self.strategy_used,
+            "categories_trimmed": self.categories_trimmed,
+            "timestamp": self.timestamp,
         }
 
 
@@ -201,6 +246,79 @@ class ContextEstimator:
             "remaining_tokens": self.context_window_size - total,
         }
 
+    def prune_to_target(
+        self,
+        target_tokens: int,
+        prune_ratio: float = 0.30,
+        prune_order: Optional[List[str]] = None,
+    ) -> Dict[str, int]:
+        """
+        Prune tracked content to reach target token count.
+
+        Removes content from categories in reverse prune_order
+        (last in order = highest value = pruned last).
+
+        Args:
+            target_tokens: Target token count after pruning
+            prune_ratio: Fraction of each category to prune per pass
+            prune_order: Categories in order of importance
+                         (first = most important, last = least important)
+
+        Returns:
+            Dict of category -> tokens_removed
+
+        Added: 2026-02-05
+        """
+        if prune_order is None:
+            prune_order = ["system", "messages", "memory", "tools"]
+
+        current_tokens = self.estimate_tokens()
+        if current_tokens <= target_tokens:
+            return {}
+
+        tokens_to_remove = current_tokens - target_tokens
+        removed: Dict[str, int] = {}
+
+        # Map category names to internal char counters
+        category_attrs = {
+            "messages": "_message_chars",
+            "system": "_system_chars",
+            "memory": "_memory_chars",
+            "tools": "_tool_chars",
+        }
+
+        # Prune in reverse order (least important first)
+        for category in reversed(prune_order):
+            if tokens_to_remove <= 0:
+                break
+
+            attr = category_attrs.get(category)
+            if attr is None:
+                continue
+
+            current_chars = getattr(self, attr)
+            if current_chars == 0:
+                continue
+
+            # Calculate chars to remove from this category
+            chars_to_remove = int(current_chars * prune_ratio)
+            tokens_from_this = int(chars_to_remove / self.chars_per_token)
+
+            # Don't remove more than we need
+            if tokens_from_this > tokens_to_remove:
+                chars_to_remove = int(tokens_to_remove * self.chars_per_token)
+                tokens_from_this = tokens_to_remove
+
+            # Don't remove more than exists
+            chars_to_remove = min(chars_to_remove, current_chars)
+            tokens_from_this = int(chars_to_remove / self.chars_per_token)
+
+            setattr(self, attr, current_chars - chars_to_remove)
+            removed[category] = tokens_from_this
+            tokens_to_remove -= tokens_from_this
+
+        return removed
+
 
 class ContextMonitor:
     """
@@ -334,6 +452,123 @@ class ContextMonitor:
             ),
         }
 
+    def check_ceiling(
+        self,
+        ceiling_tokens: int,
+        headroom: float = 0.10,
+        prune_ratio: float = 0.30,
+        prune_order: Optional[List[str]] = None,
+        strategy: str = "hybrid",
+    ) -> CeilingAction:
+        """
+        Check if context exceeds the ceiling and trim if needed.
+
+        This implements the "keep at 60k" trick: instead of waiting for
+        a full reset, proactively trim context to stay within the optimal
+        performance zone.
+
+        Args:
+            ceiling_tokens: Maximum token count to maintain
+            headroom: Fraction of ceiling used as buffer (start trimming at
+                      ceiling * (1 - headroom))
+            prune_ratio: Fraction of each category to prune per pass
+            prune_order: Categories in order of importance
+            strategy: "prune", "summarize", or "hybrid"
+
+        Returns:
+            CeilingAction describing what was done
+
+        Added: 2026-02-05
+        """
+        current_tokens = self.estimator.estimate_tokens()
+        trim_threshold = int(ceiling_tokens * (1.0 - headroom))
+
+        if current_tokens < trim_threshold:
+            return CeilingAction(
+                triggered=False,
+                tokens_before=current_tokens,
+                tokens_after=current_tokens,
+                tokens_trimmed=0,
+                strategy_used=strategy,
+            )
+
+        # Calculate target after trimming (with extra headroom)
+        target_after = int(ceiling_tokens * (1.0 - headroom * 2))
+
+        logger.info(
+            f"Context ceiling trim: {current_tokens} tokens "
+            f"(threshold: {trim_threshold}, target: {target_after})"
+        )
+
+        # Execute the prune
+        categories_trimmed = self.estimator.prune_to_target(
+            target_tokens=target_after,
+            prune_ratio=prune_ratio,
+            prune_order=prune_order,
+        )
+
+        tokens_after = self.estimator.estimate_tokens()
+        tokens_trimmed = current_tokens - tokens_after
+
+        action = CeilingAction(
+            triggered=True,
+            tokens_before=current_tokens,
+            tokens_after=tokens_after,
+            tokens_trimmed=tokens_trimmed,
+            strategy_used=strategy,
+            categories_trimmed=categories_trimmed,
+        )
+
+        # Record in usage history as a ceiling trim event
+        usage = ContextUsage(
+            timestamp=action.timestamp,
+            estimated_tokens=tokens_after,
+            estimated_percent=self.estimator.estimate_percent(),
+            trigger_level=ResetTrigger.CEILING_TRIM,
+            details={
+                "ceiling_action": action.to_dict(),
+            },
+        )
+        self._usage_history.append(usage)
+
+        logger.info(
+            f"Ceiling trim complete: {tokens_trimmed} tokens removed "
+            f"({action.trim_percent:.1%}), now at {tokens_after} tokens"
+        )
+
+        return action
+
+    def should_trim(self, ceiling_tokens: int, headroom: float = 0.10) -> bool:
+        """Check if context is approaching the ceiling and needs trimming.
+
+        Added: 2026-02-05
+        """
+        current_tokens = self.estimator.estimate_tokens()
+        trim_threshold = int(ceiling_tokens * (1.0 - headroom))
+        return current_tokens >= trim_threshold
+
+    def get_ceiling_status(
+        self, ceiling_tokens: int, headroom: float = 0.10
+    ) -> Dict[str, Any]:
+        """Get current status relative to the ceiling.
+
+        Added: 2026-02-05
+        """
+        current_tokens = self.estimator.estimate_tokens()
+        trim_threshold = int(ceiling_tokens * (1.0 - headroom))
+        target_after = int(ceiling_tokens * (1.0 - headroom * 2))
+
+        return {
+            "ceiling_tokens": ceiling_tokens,
+            "current_tokens": current_tokens,
+            "trim_threshold": trim_threshold,
+            "target_after_trim": target_after,
+            "tokens_until_trim": max(0, trim_threshold - current_tokens),
+            "ceiling_percent": current_tokens / ceiling_tokens if ceiling_tokens > 0 else 0.0,
+            "needs_trim": current_tokens >= trim_threshold,
+            "headroom": headroom,
+        }
+
     def get_projection(self, tokens_per_iteration: int = 5000) -> Dict[str, Any]:
         """
         Project when reset will be needed based on current rate.
@@ -388,6 +623,33 @@ def create_context_monitor(
     """
     config_class = AutoResetConfig.conservative if conservative else AutoResetConfig.default
     config = config_class()
+    config.context_window_size = context_window_size
+    config.on_warning = on_warning
+    config.on_reset = on_reset
+
+    return ContextMonitor(config=config)
+
+
+def create_ceiling_monitor(
+    ceiling_tokens: int = 60_000,
+    context_window_size: int = 150_000,
+    on_warning: Optional[Callable] = None,
+    on_reset: Optional[Callable] = None,
+) -> ContextMonitor:
+    """
+    Create a context monitor with ceiling enforcement enabled.
+
+    Convenience function for the "keep at 60k" pattern.
+
+    Args:
+        ceiling_tokens: Target ceiling in tokens (default: 60,000)
+        context_window_size: Full context window size (tokens)
+        on_warning: Callback when warning threshold exceeded
+        on_reset: Callback when reset threshold exceeded
+
+    Added: 2026-02-05
+    """
+    config = AutoResetConfig.default()
     config.context_window_size = context_window_size
     config.on_warning = on_warning
     config.on_reset = on_reset

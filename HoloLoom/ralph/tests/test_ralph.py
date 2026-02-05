@@ -70,7 +70,13 @@ from HoloLoom.ralph.context_monitor import (
     ContextUsage,
     AutoResetConfig,
     ResetTrigger,
+    CeilingAction,
     create_context_monitor,
+    create_ceiling_monitor,
+)
+from HoloLoom.ralph.config import (
+    CeilingStrategy,
+    ContextCeilingConfig,
 )
 from HoloLoom.ralph.convenience import (
     ralph_loop,
@@ -808,6 +814,379 @@ class TestConvenienceFunctions:
 
         assert engine is not None
         assert engine.config.max_iterations == config.max_iterations
+
+
+# ============== Context Ceiling Tests ==============
+
+
+class TestContextCeiling:
+    """Tests for context ceiling (keep-at-N-tokens) feature.
+
+    Added: 2026-02-05
+    """
+
+    # --- ContextCeilingConfig tests ---
+
+    def test_ceiling_config_disabled_by_default(self):
+        """Test that ceiling is disabled by default in RalphConfig."""
+        config = RalphConfig.default()
+
+        assert config.context_ceiling.enabled is False
+
+    def test_ceiling_config_keep_at_60k(self):
+        """Test keep_at_60k preset."""
+        ceiling = ContextCeilingConfig.keep_at_60k()
+
+        assert ceiling.enabled is True
+        assert ceiling.ceiling_tokens == 60_000
+        assert ceiling.headroom == 0.10
+        assert ceiling.strategy == CeilingStrategy.HYBRID
+
+    def test_ceiling_config_keep_at_40k(self):
+        """Test keep_at_40k preset (aggressive)."""
+        ceiling = ContextCeilingConfig.keep_at_40k()
+
+        assert ceiling.enabled is True
+        assert ceiling.ceiling_tokens == 40_000
+        assert ceiling.prune_ratio == 0.40
+
+    def test_ceiling_config_keep_at_100k(self):
+        """Test keep_at_100k preset (relaxed)."""
+        ceiling = ContextCeilingConfig.keep_at_100k()
+
+        assert ceiling.enabled is True
+        assert ceiling.ceiling_tokens == 100_000
+        assert ceiling.prune_ratio == 0.20
+
+    def test_ceiling_config_disabled_factory(self):
+        """Test disabled() factory method."""
+        ceiling = ContextCeilingConfig.disabled()
+
+        assert ceiling.enabled is False
+
+    def test_ceiling_config_trim_threshold(self):
+        """Test trim_threshold property calculation."""
+        ceiling = ContextCeilingConfig.keep_at_60k()
+
+        # trim_threshold = ceiling * (1 - headroom) = 60000 * 0.90 = 54000
+        assert ceiling.trim_threshold == 54_000
+
+    def test_ceiling_config_target_after_trim(self):
+        """Test target_after_trim property calculation."""
+        ceiling = ContextCeilingConfig.keep_at_60k()
+
+        # target_after_trim = ceiling * (1 - headroom * 2) = 60000 * 0.80 = 48000
+        assert ceiling.target_after_trim == 48_000
+
+    # --- CeilingAction tests ---
+
+    def test_ceiling_action_not_triggered(self):
+        """Test CeilingAction when no trim is needed."""
+        action = CeilingAction(
+            triggered=False,
+            tokens_before=40_000,
+            tokens_after=40_000,
+            tokens_trimmed=0,
+            strategy_used="hybrid",
+        )
+
+        assert action.triggered is False
+        assert action.trim_percent == 0.0
+
+    def test_ceiling_action_triggered(self):
+        """Test CeilingAction when trim occurred."""
+        action = CeilingAction(
+            triggered=True,
+            tokens_before=60_000,
+            tokens_after=48_000,
+            tokens_trimmed=12_000,
+            strategy_used="hybrid",
+            categories_trimmed={"tools": 8_000, "memory": 4_000},
+        )
+
+        assert action.triggered is True
+        assert action.tokens_trimmed == 12_000
+        assert action.trim_percent == 0.2  # 12000 / 60000
+
+    def test_ceiling_action_to_dict(self):
+        """Test CeilingAction serialization."""
+        action = CeilingAction(
+            triggered=True,
+            tokens_before=60_000,
+            tokens_after=48_000,
+            tokens_trimmed=12_000,
+            strategy_used="prune",
+            categories_trimmed={"tools": 12_000},
+        )
+
+        data = action.to_dict()
+
+        assert data["triggered"] is True
+        assert data["tokens_trimmed"] == 12_000
+        assert data["trim_percent"] == 0.2
+        assert data["strategy_used"] == "prune"
+        assert "timestamp" in data
+
+    def test_ceiling_action_zero_tokens_before(self):
+        """Test trim_percent when tokens_before is 0."""
+        action = CeilingAction(
+            triggered=False,
+            tokens_before=0,
+            tokens_after=0,
+            tokens_trimmed=0,
+            strategy_used="hybrid",
+        )
+
+        assert action.trim_percent == 0.0
+
+    # --- ContextEstimator.prune_to_target tests ---
+
+    def test_prune_to_target_no_prune_needed(self):
+        """Test prune_to_target when already under target."""
+        estimator = ContextEstimator(context_window_size=100_000)
+        estimator.add_message("x" * 400)  # 100 tokens
+
+        removed = estimator.prune_to_target(target_tokens=200)
+
+        assert removed == {}
+        assert estimator.estimate_tokens() == 100
+
+    def test_prune_to_target_prunes_least_important_first(self):
+        """Test that pruning starts with least important category."""
+        estimator = ContextEstimator(context_window_size=100_000)
+        # Default prune_order: ["system", "messages", "memory", "tools"]
+        # Reversed (pruned first): tools, memory, messages, system
+        estimator.add_system("s" * 400)     # 100 tokens
+        estimator.add_message("m" * 400)     # 100 tokens
+        estimator.add_memory("r" * 400)      # 100 tokens
+        estimator.add_tool_output("t" * 400) # 100 tokens
+        # Total: 400 tokens
+
+        removed = estimator.prune_to_target(
+            target_tokens=300,
+            prune_ratio=0.50,
+        )
+
+        # Tools should be pruned first (least important in default order)
+        assert "tools" in removed
+        total_removed = sum(removed.values())
+        assert total_removed >= 100  # At least 100 tokens removed
+
+    def test_prune_to_target_respects_prune_ratio(self):
+        """Test that prune_ratio limits per-category pruning."""
+        estimator = ContextEstimator(context_window_size=100_000)
+        estimator.add_tool_output("t" * 4000)  # 1000 tokens
+        # Total: 1000 tokens
+
+        removed = estimator.prune_to_target(
+            target_tokens=500,
+            prune_ratio=0.30,  # Max 30% of each category per pass
+        )
+
+        # With 30% ratio on 1000 tokens, removes at most 300 tokens
+        if "tools" in removed:
+            assert removed["tools"] <= 300
+
+    def test_prune_to_target_custom_order(self):
+        """Test pruning with custom category order."""
+        estimator = ContextEstimator(context_window_size=100_000)
+        estimator.add_system("s" * 4000)      # 1000 tokens
+        estimator.add_tool_output("t" * 4000)  # 1000 tokens
+        # Total: 2000 tokens
+
+        # Reverse default: system is least important, tools most important
+        removed = estimator.prune_to_target(
+            target_tokens=1500,
+            prune_ratio=1.0,  # Allow full removal
+            prune_order=["tools", "system"],  # tools most important, system least
+        )
+
+        # System should be pruned first (last in order = highest value = pruned last)
+        # With reversed order, system comes last so it's pruned first
+        assert "system" in removed
+
+    # --- ContextMonitor.check_ceiling tests ---
+
+    def test_check_ceiling_not_triggered(self):
+        """Test check_ceiling when below threshold."""
+        monitor = ContextMonitor()
+        # Add minimal content - well below any ceiling
+        monitor.estimator.add_message("x" * 100)
+
+        action = monitor.check_ceiling(
+            ceiling_tokens=60_000,
+            headroom=0.10,
+        )
+
+        assert action.triggered is False
+        assert action.tokens_trimmed == 0
+
+    def test_check_ceiling_triggered(self):
+        """Test check_ceiling when above threshold."""
+        monitor = ContextMonitor(
+            config=AutoResetConfig(context_window_size=100_000)
+        )
+        # Add enough content to exceed trim threshold
+        # ceiling=1000, headroom=0.10, trim_threshold=900
+        # Need > 900 tokens = 3600 chars
+        monitor.estimator.add_tool_output("t" * 4000)  # 1000 tokens
+        monitor.estimator.add_message("m" * 4000)  # 1000 tokens
+        # Total: 2000 tokens, well above ceiling of 1000
+
+        action = monitor.check_ceiling(
+            ceiling_tokens=1000,
+            headroom=0.10,
+            prune_ratio=0.50,
+        )
+
+        assert action.triggered is True
+        assert action.tokens_trimmed > 0
+        assert action.tokens_after < action.tokens_before
+
+    def test_check_ceiling_records_in_history(self):
+        """Test that ceiling trim is recorded in usage history."""
+        monitor = ContextMonitor()
+        # Exceed ceiling
+        monitor.estimator.add_tool_output("t" * 4000)
+
+        action = monitor.check_ceiling(
+            ceiling_tokens=500,
+            headroom=0.10,
+        )
+
+        assert action.triggered is True
+        history = monitor.get_usage_history()
+        assert len(history) > 0
+        assert history[-1]["trigger_level"] == ResetTrigger.CEILING_TRIM.value
+
+    # --- ContextMonitor.should_trim tests ---
+
+    def test_should_trim_below_threshold(self):
+        """Test should_trim when below threshold."""
+        monitor = ContextMonitor()
+        monitor.estimator.add_message("x" * 100)
+
+        assert monitor.should_trim(ceiling_tokens=60_000) is False
+
+    def test_should_trim_above_threshold(self):
+        """Test should_trim when above threshold."""
+        monitor = ContextMonitor()
+        # ceiling=1000, headroom=0.10, trim_threshold=900
+        # Need >= 900 tokens = 3600 chars
+        monitor.estimator.add_message("x" * 4000)
+
+        assert monitor.should_trim(ceiling_tokens=1000, headroom=0.10) is True
+
+    def test_should_trim_at_boundary(self):
+        """Test should_trim at exact boundary."""
+        monitor = ContextMonitor()
+        # ceiling=100, headroom=0.10, trim_threshold=90
+        # 90 tokens = 360 chars
+        monitor.estimator.add_message("x" * 360)
+
+        assert monitor.should_trim(ceiling_tokens=100, headroom=0.10) is True
+
+    # --- ContextMonitor.get_ceiling_status tests ---
+
+    def test_get_ceiling_status(self):
+        """Test ceiling status reporting."""
+        monitor = ContextMonitor()
+        monitor.estimator.add_message("x" * 2000)  # 500 tokens
+
+        status = monitor.get_ceiling_status(
+            ceiling_tokens=60_000,
+            headroom=0.10,
+        )
+
+        assert status["ceiling_tokens"] == 60_000
+        assert status["current_tokens"] == 500
+        assert status["trim_threshold"] == 54_000  # 60000 * 0.90
+        assert status["target_after_trim"] == 48_000  # 60000 * 0.80
+        assert status["tokens_until_trim"] == 53_500  # 54000 - 500
+        assert status["needs_trim"] is False
+        assert status["headroom"] == 0.10
+
+    def test_get_ceiling_status_needs_trim(self):
+        """Test ceiling status when trim is needed."""
+        monitor = ContextMonitor()
+        # 1000 tokens = 4000 chars; ceiling 1000, threshold 900
+        monitor.estimator.add_message("x" * 4000)
+
+        status = monitor.get_ceiling_status(
+            ceiling_tokens=1000,
+            headroom=0.10,
+        )
+
+        assert status["needs_trim"] is True
+        assert status["tokens_until_trim"] == 0
+        assert status["ceiling_percent"] == 1.0  # 1000 / 1000
+
+    # --- create_ceiling_monitor tests ---
+
+    def test_create_ceiling_monitor_default(self):
+        """Test creating ceiling monitor with defaults."""
+        monitor = create_ceiling_monitor()
+
+        assert monitor is not None
+        assert isinstance(monitor, ContextMonitor)
+
+    def test_create_ceiling_monitor_custom(self):
+        """Test creating ceiling monitor with custom settings."""
+        warnings = []
+
+        def on_warn(usage):
+            warnings.append(usage)
+
+        monitor = create_ceiling_monitor(
+            ceiling_tokens=40_000,
+            context_window_size=200_000,
+            on_warning=on_warn,
+        )
+
+        assert monitor is not None
+        assert monitor.config.context_window_size == 200_000
+        assert monitor.config.on_warning is on_warn
+
+    # --- CeilingStrategy enum tests ---
+
+    def test_ceiling_strategies(self):
+        """Test CeilingStrategy enum values."""
+        assert CeilingStrategy.SUMMARIZE.value == "summarize"
+        assert CeilingStrategy.PRUNE.value == "prune"
+        assert CeilingStrategy.HYBRID.value == "hybrid"
+
+    # --- RalphConfig ceiling serialization tests ---
+
+    def test_config_ceiling_to_dict(self):
+        """Test that ceiling config serializes correctly."""
+        config = RalphConfig.default()
+        config.context_ceiling = ContextCeilingConfig.keep_at_60k()
+
+        data = config.to_dict()
+
+        assert data["context_ceiling"]["enabled"] is True
+        assert data["context_ceiling"]["ceiling_tokens"] == 60_000
+        assert data["context_ceiling"]["strategy"] == "hybrid"
+
+    def test_config_ceiling_from_dict(self):
+        """Test that ceiling config deserializes correctly."""
+        data = {
+            "context_ceiling": {
+                "enabled": True,
+                "ceiling_tokens": 40_000,
+                "headroom": 0.15,
+                "strategy": "prune",
+                "prune_ratio": 0.40,
+            },
+        }
+
+        config = RalphConfig.from_dict(data)
+
+        assert config.context_ceiling.enabled is True
+        assert config.context_ceiling.ceiling_tokens == 40_000
+        assert config.context_ceiling.headroom == 0.15
+        assert config.context_ceiling.strategy == CeilingStrategy.PRUNE
+        assert config.context_ceiling.prune_ratio == 0.40
 
 
 # ============== Integration Tests ==============

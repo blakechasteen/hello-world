@@ -24,6 +24,21 @@ class ResetStrategy(Enum):
     CONSOLIDATE = "consolidate"   # Run memory consolidation, then reset
 
 
+class CeilingStrategy(Enum):
+    """Strategy for enforcing context ceiling (keep-at-N-tokens trick).
+
+    Instead of waiting for thresholds to trigger a full reset, the ceiling
+    proactively trims context to stay within the LLM's optimal performance
+    zone. This keeps the model sharp by never letting context grow stale.
+
+    Added: 2026-02-05
+    """
+
+    SUMMARIZE = "summarize"       # Summarize oldest messages into a digest
+    PRUNE = "prune"               # Drop lowest-value content by category
+    HYBRID = "hybrid"             # Summarize + prune (recommended)
+
+
 class StateBackend(Enum):
     """Where to persist Ralph state between iterations."""
 
@@ -93,6 +108,100 @@ class ContextThresholds:
 
 
 @dataclass
+class ContextCeilingConfig:
+    """
+    Configuration for the context ceiling (keep-at-N-tokens trick).
+
+    Rather than allowing context to grow until a hard reset is needed,
+    the ceiling proactively trims context to stay within a target token
+    count. This keeps the LLM in its optimal performance zone where
+    attention is most effective.
+
+    The trick: LLMs perform best when context stays well below their
+    maximum. By capping at ~60k tokens (for a 200k window), you get
+    consistently high-quality outputs without the degradation that
+    comes from bloated context.
+
+    Added: 2026-02-05
+    """
+
+    # Enable context ceiling enforcement
+    enabled: bool = False
+
+    # Target ceiling in tokens - context will be trimmed to stay below this
+    ceiling_tokens: int = 60_000
+
+    # Headroom fraction - start trimming when within this % of the ceiling
+    # e.g., 0.10 means start at 90% of ceiling (54k for a 60k ceiling)
+    headroom: float = 0.10
+
+    # How to enforce the ceiling
+    strategy: CeilingStrategy = CeilingStrategy.HYBRID
+
+    # When pruning, what fraction of each category to drop (0-1)
+    # Higher = more aggressive pruning per cycle
+    prune_ratio: float = 0.30
+
+    # Categories to prune in order of priority (last = pruned first)
+    prune_order: List[str] = field(default_factory=lambda: [
+        "system",     # System prompts - pruned last (most important)
+        "messages",   # Conversation history
+        "memory",     # Retrieved memories
+        "tools",      # Tool outputs - pruned first (most verbose)
+    ])
+
+    # Callback when ceiling enforcement occurs
+    on_ceiling_trim: Optional[Any] = None
+
+    @property
+    def trim_threshold(self) -> int:
+        """Token count at which trimming should begin."""
+        return int(self.ceiling_tokens * (1.0 - self.headroom))
+
+    @property
+    def target_after_trim(self) -> int:
+        """Target token count after trimming (with comfortable headroom)."""
+        return int(self.ceiling_tokens * (1.0 - self.headroom * 2))
+
+    @classmethod
+    def keep_at_60k(cls) -> "ContextCeilingConfig":
+        """The classic 60k ceiling - sweet spot for most LLMs."""
+        return cls(
+            enabled=True,
+            ceiling_tokens=60_000,
+            headroom=0.10,
+            strategy=CeilingStrategy.HYBRID,
+        )
+
+    @classmethod
+    def keep_at_40k(cls) -> "ContextCeilingConfig":
+        """Aggressive 40k ceiling - maximum sharpness."""
+        return cls(
+            enabled=True,
+            ceiling_tokens=40_000,
+            headroom=0.10,
+            strategy=CeilingStrategy.HYBRID,
+            prune_ratio=0.40,
+        )
+
+    @classmethod
+    def keep_at_100k(cls) -> "ContextCeilingConfig":
+        """Relaxed 100k ceiling - more context, slightly less sharp."""
+        return cls(
+            enabled=True,
+            ceiling_tokens=100_000,
+            headroom=0.10,
+            strategy=CeilingStrategy.HYBRID,
+            prune_ratio=0.20,
+        )
+
+    @classmethod
+    def disabled(cls) -> "ContextCeilingConfig":
+        """No ceiling enforcement."""
+        return cls(enabled=False)
+
+
+@dataclass
 class RalphConfig:
     """
     Configuration for the Ralph Loop Engine.
@@ -150,6 +259,12 @@ class RalphConfig:
 
     # How often to check context usage (iterations)
     monitor_interval: int = 1
+
+    # Context ceiling - proactive context capping (keep-at-N-tokens trick)
+    # Added: 2026-02-05
+    context_ceiling: ContextCeilingConfig = field(
+        default_factory=ContextCeilingConfig.disabled
+    )
 
     # --- Memory Integration ---
 
@@ -288,6 +403,13 @@ class RalphConfig:
             },
             "reset_strategy": self.reset_strategy.value,
             "auto_monitor": self.auto_monitor,
+            "context_ceiling": {
+                "enabled": self.context_ceiling.enabled,
+                "ceiling_tokens": self.context_ceiling.ceiling_tokens,
+                "headroom": self.context_ceiling.headroom,
+                "strategy": self.context_ceiling.strategy.value,
+                "prune_ratio": self.context_ceiling.prune_ratio,
+            },
             "use_memory_systems": self.use_memory_systems,
             "consolidate_on_reset": self.consolidate_on_reset,
             "preserve_hot_patterns": self.preserve_hot_patterns,
@@ -310,9 +432,21 @@ class RalphConfig:
         if isinstance(reset_strategy, str):
             reset_strategy = ResetStrategy(reset_strategy)
 
+        ceiling_data = data.pop("context_ceiling", {})
+        if ceiling_data:
+            ceiling_strategy = ceiling_data.pop("strategy", "hybrid")
+            if isinstance(ceiling_strategy, str):
+                ceiling_strategy = CeilingStrategy(ceiling_strategy)
+            context_ceiling = ContextCeilingConfig(
+                strategy=ceiling_strategy, **ceiling_data
+            )
+        else:
+            context_ceiling = ContextCeilingConfig.disabled()
+
         return cls(
             context_thresholds=thresholds,
             state_backend=state_backend,
             reset_strategy=reset_strategy,
+            context_ceiling=context_ceiling,
             **data
         )
