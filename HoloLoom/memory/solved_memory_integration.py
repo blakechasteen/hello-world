@@ -27,7 +27,10 @@ Integrates the 5 Pillars of Solved Memory into HoloLoom's WeavingOrchestrator.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, Any, Dict, List, Callable, Protocol, Set, runtime_checkable
+from typing import (
+    Optional, Any, Dict, List, Callable, Protocol, Set, Tuple,
+    Awaitable, Union, runtime_checkable,
+)
 from datetime import datetime
 import asyncio
 import logging
@@ -136,6 +139,39 @@ class Pillar(Protocol):
     def get_stats(self) -> Dict[str, Any]:
         """Return pillar-specific statistics."""
         ...
+
+
+# =============================================================================
+# Typed Protocols for subsystem safety
+# =============================================================================
+
+@runtime_checkable
+class RetrievableShard(Protocol):
+    """Protocol for objects returned by retrieval functions.
+
+    Any shard used in the contribution/boosting pipeline must expose
+    an ``id`` attribute so we can track it across retrievals and outcomes.
+    """
+
+    @property
+    def id(self) -> str: ...
+
+
+# The retrieval function signature used throughout the integration:
+#   async def retrieve(query_text: str) -> List[Tuple[shard, float]]
+RetrievalFn = Callable[[str], Awaitable[List[Tuple[Any, float]]]]
+
+
+@runtime_checkable
+class OrchestratorLike(Protocol):
+    """Minimal protocol for objects passed to ``attach_solved_memory``.
+
+    We access these attributes via getattr with fallbacks, so they are
+    all optional — but declaring them here makes the intent explicit.
+    """
+
+    kg: Optional[KG]
+    memory: Optional[Any]
 
 
 # =============================================================================
@@ -688,8 +724,8 @@ class SolvedMemoryIntegration:
     async def process_query(
         self,
         query_text: str,
-        retrieval_fn: Callable,
-    ) -> List[Any]:
+        retrieval_fn: RetrievalFn,
+    ) -> List[Tuple[Any, float]]:
         """
         Process a query through all 5 pillars.
 
@@ -799,7 +835,7 @@ def create_solved_memory_integration(
 
 # Convenience function to attach to orchestrator
 async def attach_solved_memory(
-    orchestrator: Any,
+    orchestrator: Union[OrchestratorLike, Any],
     config: Optional[SolvedMemoryConfig] = None,
 ) -> SolvedMemoryIntegration:
     """
