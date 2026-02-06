@@ -1,0 +1,1202 @@
+[
+  {
+    "month": 1,
+    "mrr": 0,
+    "arr": 0,
+    "customers": 0,
+    "leads": 10,
+    "nps": 53.5,
+    "churn_rate": 0.046,
+    "features_shipped": 0,
+    "github_stars": 152,
+    "brand_awareness": 0.015,
+    "total_revenue": 0.0,
+    "marketing": {
+      "channel": "content_marketing",
+      "new_leads": 10,
+      "organic_leads": 2,
+      "total_leads": 12,
+      "awareness": 0.015,
+      "reward": 0.667,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "outbound_enterprise",
+      "leads_worked": 2,
+      "new_customers": 0,
+      "new_mrr": 0.0,
+      "conversion_rate": 0.022,
+      "reward": 0.0,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "performance_optimization",
+      "features_shipped": 0,
+      "nps_delta": 2.9,
+      "nps": 52.9,
+      "reward": 0.24,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "proactive_outreach",
+      "new_tickets": 1,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.026,
+      "reward": 0.3,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 2,
+    "mrr": 0,
+    "arr": 0,
+    "customers": 0,
+    "leads": 17,
+    "nps": 55.4,
+    "churn_rate": 0.042,
+    "features_shipped": 0,
+    "github_stars": 153,
+    "brand_awareness": 0.02,
+    "total_revenue": 0.0,
+    "marketing": {
+      "channel": "content_marketing",
+      "new_leads": 8,
+      "organic_leads": 3,
+      "total_leads": 11,
+      "awareness": 0.02,
+      "reward": 0.533,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "outbound_enterprise",
+      "leads_worked": 4,
+      "new_customers": 0,
+      "new_mrr": 0.0,
+      "conversion_rate": 0.044,
+      "reward": 0.0,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "performance_optimization",
+      "features_shipped": 0,
+      "nps_delta": 1.0,
+      "nps": 54.5,
+      "reward": 0.24,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "fast_response",
+      "new_tickets": 1,
+      "resolved": 1,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.028,
+      "reward": 0.7,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 3,
+    "mrr": 353.91,
+    "arr": 4246.94,
+    "customers": 1,
+    "leads": 9,
+    "nps": 59.9,
+    "churn_rate": 0.039,
+    "features_shipped": 1,
+    "github_stars": 157,
+    "brand_awareness": 0.025,
+    "total_revenue": 353.91,
+    "marketing": {
+      "channel": "content_marketing",
+      "new_leads": 8,
+      "organic_leads": 3,
+      "total_leads": 11,
+      "awareness": 0.025,
+      "reward": 0.533,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "inbound_demo",
+      "leads_worked": 19,
+      "new_customers": 1,
+      "new_mrr": 353.91,
+      "conversion_rate": 0.069,
+      "reward": 0.071,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "improve_onboarding",
+      "features_shipped": 1,
+      "nps_delta": 3.9,
+      "nps": 59.3,
+      "reward": 0.33,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "proactive_outreach",
+      "new_tickets": 0,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.021,
+      "reward": 0.3,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 4,
+    "mrr": 837.49,
+    "arr": 10049.9,
+    "customers": 2,
+    "leads": 7,
+    "nps": 58.6,
+    "churn_rate": 0.037,
+    "features_shipped": 2,
+    "github_stars": 181,
+    "brand_awareness": 0.031,
+    "total_revenue": 1191.4,
+    "marketing": {
+      "channel": "open_source_community",
+      "new_leads": 8,
+      "organic_leads": 4,
+      "total_leads": 12,
+      "awareness": 0.031,
+      "reward": 0.533,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "inbound_demo",
+      "leads_worked": 14,
+      "new_customers": 1,
+      "new_mrr": 483.58,
+      "conversion_rate": 0.115,
+      "reward": 0.097,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "add_integrations",
+      "features_shipped": 1,
+      "nps_delta": -1.6,
+      "nps": 58.3,
+      "reward": 0.12,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "escalation_to_engineering",
+      "new_tickets": 0,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.027,
+      "reward": 0.15,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 5,
+    "mrr": 837.49,
+    "arr": 10049.9,
+    "customers": 2,
+    "leads": 4,
+    "nps": 62.2,
+    "churn_rate": 0.032,
+    "features_shipped": 4,
+    "github_stars": 186,
+    "brand_awareness": 0.036,
+    "total_revenue": 2028.89,
+    "marketing": {
+      "channel": "content_marketing",
+      "new_leads": 2,
+      "organic_leads": 4,
+      "total_leads": 6,
+      "awareness": 0.036,
+      "reward": 0.133,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "inbound_demo",
+      "leads_worked": 9,
+      "new_customers": 0,
+      "new_mrr": 0.0,
+      "conversion_rate": 0.076,
+      "reward": 0.0,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "ship_core_features",
+      "features_shipped": 2,
+      "nps_delta": 2.7,
+      "nps": 61.3,
+      "reward": 0.25,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "fast_response",
+      "new_tickets": 0,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.022,
+      "reward": 0.2,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 6,
+    "mrr": 837.49,
+    "arr": 10049.9,
+    "customers": 2,
+    "leads": 6,
+    "nps": 67.6,
+    "churn_rate": 0.024,
+    "features_shipped": 4,
+    "github_stars": 190,
+    "brand_awareness": 0.041,
+    "total_revenue": 2866.39,
+    "marketing": {
+      "channel": "content_marketing",
+      "new_leads": 11,
+      "organic_leads": 3,
+      "total_leads": 14,
+      "awareness": 0.041,
+      "reward": 0.733,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "inbound_demo",
+      "leads_worked": 12,
+      "new_customers": 0,
+      "new_mrr": 0.0,
+      "conversion_rate": 0.068,
+      "reward": 0.0,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "reduce_complexity",
+      "features_shipped": 0,
+      "nps_delta": 4.5,
+      "nps": 66.7,
+      "reward": 0.48,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "fast_response",
+      "new_tickets": 2,
+      "resolved": 2,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.018,
+      "reward": 0.867,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 7,
+    "mrr": 837.49,
+    "arr": 10049.9,
+    "customers": 2,
+    "leads": 14,
+    "nps": 73.3,
+    "churn_rate": 0.016,
+    "features_shipped": 4,
+    "github_stars": 192,
+    "brand_awareness": 0.046,
+    "total_revenue": 3703.88,
+    "marketing": {
+      "channel": "content_marketing",
+      "new_leads": 6,
+      "organic_leads": 5,
+      "total_leads": 11,
+      "awareness": 0.046,
+      "reward": 0.4,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "outbound_enterprise",
+      "leads_worked": 3,
+      "new_customers": 0,
+      "new_mrr": 0.0,
+      "conversion_rate": 0.022,
+      "reward": 0.0,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "reduce_complexity",
+      "features_shipped": 0,
+      "nps_delta": 5.4,
+      "nps": 73.0,
+      "reward": 0.48,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "knowledge_base",
+      "new_tickets": 0,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.015,
+      "reward": 0.1,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 8,
+    "mrr": 1127.33,
+    "arr": 13528.0,
+    "customers": 3,
+    "leads": 15,
+    "nps": 75.1,
+    "churn_rate": 0.014,
+    "features_shipped": 5,
+    "github_stars": 194,
+    "brand_awareness": 0.054,
+    "total_revenue": 4831.21,
+    "marketing": {
+      "channel": "conference_talks",
+      "new_leads": 11,
+      "organic_leads": 5,
+      "total_leads": 16,
+      "awareness": 0.054,
+      "reward": 0.733,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "product_led_growth",
+      "leads_worked": 15,
+      "new_customers": 1,
+      "new_mrr": 289.84,
+      "conversion_rate": 0.07,
+      "reward": 0.058,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "add_integrations",
+      "features_shipped": 1,
+      "nps_delta": 0.9,
+      "nps": 74.2,
+      "reward": 0.12,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "fast_response",
+      "new_tickets": 2,
+      "resolved": 2,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.012,
+      "reward": 0.867,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 9,
+    "mrr": 1127.33,
+    "arr": 13528.0,
+    "customers": 3,
+    "leads": 24,
+    "nps": 78.4,
+    "churn_rate": 0.011,
+    "features_shipped": 6,
+    "github_stars": 198,
+    "brand_awareness": 0.056,
+    "total_revenue": 5958.54,
+    "marketing": {
+      "channel": "paid_ads",
+      "new_leads": 10,
+      "organic_leads": 5,
+      "total_leads": 15,
+      "awareness": 0.056,
+      "reward": 0.667,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "outbound_enterprise",
+      "leads_worked": 6,
+      "new_customers": 0,
+      "new_mrr": 0.0,
+      "conversion_rate": 0.017,
+      "reward": 0.0,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "improve_onboarding",
+      "features_shipped": 1,
+      "nps_delta": 3.0,
+      "nps": 78.1,
+      "reward": 0.33,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "escalation_to_engineering",
+      "new_tickets": 0,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.01,
+      "reward": 0.15,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 10,
+    "mrr": 1373.82,
+    "arr": 16485.82,
+    "customers": 4,
+    "leads": 12,
+    "nps": 81.1,
+    "churn_rate": 0.01,
+    "features_shipped": 8,
+    "github_stars": 200,
+    "brand_awareness": 0.06,
+    "total_revenue": 7332.36,
+    "marketing": {
+      "channel": "partnerships",
+      "new_leads": 0,
+      "organic_leads": 6,
+      "total_leads": 6,
+      "awareness": 0.06,
+      "reward": 0.0,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "free_trial_conversion",
+      "leads_worked": 18,
+      "new_customers": 1,
+      "new_mrr": 246.48,
+      "conversion_rate": 0.097,
+      "reward": 0.049,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "ship_core_features",
+      "features_shipped": 2,
+      "nps_delta": 2.4,
+      "nps": 80.8,
+      "reward": 0.25,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "knowledge_base",
+      "new_tickets": 0,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.009,
+      "reward": 0.1,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 11,
+    "mrr": 1706.19,
+    "arr": 20474.3,
+    "customers": 5,
+    "leads": 9,
+    "nps": 83.7,
+    "churn_rate": 0.01,
+    "features_shipped": 8,
+    "github_stars": 224,
+    "brand_awareness": 0.066,
+    "total_revenue": 9038.55,
+    "marketing": {
+      "channel": "open_source_community",
+      "new_leads": 3,
+      "organic_leads": 7,
+      "total_leads": 10,
+      "awareness": 0.066,
+      "reward": 0.2,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "free_trial_conversion",
+      "leads_worked": 13,
+      "new_customers": 1,
+      "new_mrr": 332.37,
+      "conversion_rate": 0.083,
+      "reward": 0.066,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "performance_optimization",
+      "features_shipped": 0,
+      "nps_delta": 2.1,
+      "nps": 83.1,
+      "reward": 0.24,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "proactive_outreach",
+      "new_tickets": 0,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.007,
+      "reward": 0.3,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 12,
+    "mrr": 1706.19,
+    "arr": 20474.3,
+    "customers": 5,
+    "leads": 11,
+    "nps": 85.3,
+    "churn_rate": 0.01,
+    "features_shipped": 9,
+    "github_stars": 227,
+    "brand_awareness": 0.07,
+    "total_revenue": 10744.75,
+    "marketing": {
+      "channel": "partnerships",
+      "new_leads": 3,
+      "organic_leads": 9,
+      "total_leads": 12,
+      "awareness": 0.07,
+      "reward": 0.2,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "product_led_growth",
+      "leads_worked": 10,
+      "new_customers": 0,
+      "new_mrr": 0.0,
+      "conversion_rate": 0.08,
+      "reward": 0.0,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "improve_onboarding",
+      "features_shipped": 1,
+      "nps_delta": 0.6,
+      "nps": 84.4,
+      "reward": 0.33,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "fast_response",
+      "new_tickets": 2,
+      "resolved": 2,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.008,
+      "reward": 0.867,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 13,
+    "mrr": 2690.28,
+    "arr": 32283.31,
+    "customers": 7,
+    "leads": 9,
+    "nps": 87.1,
+    "churn_rate": 0.01,
+    "features_shipped": 9,
+    "github_stars": 228,
+    "brand_awareness": 0.074,
+    "total_revenue": 13435.02,
+    "marketing": {
+      "channel": "partnerships",
+      "new_leads": 11,
+      "organic_leads": 8,
+      "total_leads": 19,
+      "awareness": 0.074,
+      "reward": 0.733,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "inbound_demo",
+      "leads_worked": 21,
+      "new_customers": 2,
+      "new_mrr": 984.08,
+      "conversion_rate": 0.12,
+      "reward": 0.197,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "performance_optimization",
+      "features_shipped": 0,
+      "nps_delta": 1.6,
+      "nps": 86.8,
+      "reward": 0.24,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "knowledge_base",
+      "new_tickets": 0,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.009,
+      "reward": 0.1,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 14,
+    "mrr": 3906.9,
+    "arr": 46882.81,
+    "customers": 10,
+    "leads": 12,
+    "nps": 91.9,
+    "churn_rate": 0.01,
+    "features_shipped": 11,
+    "github_stars": 229,
+    "brand_awareness": 0.078,
+    "total_revenue": 17341.92,
+    "marketing": {
+      "channel": "partnerships",
+      "new_leads": 21,
+      "organic_leads": 8,
+      "total_leads": 29,
+      "awareness": 0.078,
+      "reward": 1.0,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "inbound_demo",
+      "leads_worked": 26,
+      "new_customers": 3,
+      "new_mrr": 1216.63,
+      "conversion_rate": 0.129,
+      "reward": 0.243,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "ship_core_features",
+      "features_shipped": 2,
+      "nps_delta": 3.9,
+      "nps": 91.0,
+      "reward": 0.25,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "fast_response",
+      "new_tickets": 0,
+      "resolved": 0,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.008,
+      "reward": 0.2,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 15,
+    "mrr": 4744.17,
+    "arr": 56930.07,
+    "customers": 13,
+    "leads": 25,
+    "nps": 95.4,
+    "churn_rate": 0.01,
+    "features_shipped": 13,
+    "github_stars": 230,
+    "brand_awareness": 0.08,
+    "total_revenue": 22086.09,
+    "marketing": {
+      "channel": "paid_ads",
+      "new_leads": 30,
+      "organic_leads": 7,
+      "total_leads": 37,
+      "awareness": 0.08,
+      "reward": 1.0,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "product_led_growth",
+      "leads_worked": 24,
+      "new_customers": 3,
+      "new_mrr": 837.27,
+      "conversion_rate": 0.139,
+      "reward": 0.167,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "ship_core_features",
+      "features_shipped": 2,
+      "nps_delta": 3.2,
+      "nps": 95.1,
+      "reward": 0.25,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "knowledge_base",
+      "new_tickets": 1,
+      "resolved": 1,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.009,
+      "reward": 0.6,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 16,
+    "mrr": 5989.51,
+    "arr": 71874.15,
+    "customers": 16,
+    "leads": 11,
+    "nps": 97.1,
+    "churn_rate": 0.01,
+    "features_shipped": 13,
+    "github_stars": 232,
+    "brand_awareness": 0.082,
+    "total_revenue": 28075.61,
+    "marketing": {
+      "channel": "paid_ads",
+      "new_leads": 4,
+      "organic_leads": 7,
+      "total_leads": 11,
+      "awareness": 0.082,
+      "reward": 0.267,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "inbound_demo",
+      "leads_worked": 25,
+      "new_customers": 3,
+      "new_mrr": 1245.34,
+      "conversion_rate": 0.123,
+      "reward": 0.249,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "performance_optimization",
+      "features_shipped": 0,
+      "nps_delta": 1.4,
+      "nps": 96.8,
+      "reward": 0.24,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "knowledge_base",
+      "new_tickets": 3,
+      "resolved": 2,
+      "open_tickets": 2,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.009,
+      "reward": 0.5,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 17,
+    "mrr": 6394.5,
+    "arr": 76734.04,
+    "customers": 17,
+    "leads": 10,
+    "nps": 99.5,
+    "churn_rate": 0.01,
+    "features_shipped": 14,
+    "github_stars": 235,
+    "brand_awareness": 0.09,
+    "total_revenue": 34470.11,
+    "marketing": {
+      "channel": "conference_talks",
+      "new_leads": 3,
+      "organic_leads": 10,
+      "total_leads": 13,
+      "awareness": 0.09,
+      "reward": 0.2,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "free_trial_conversion",
+      "leads_worked": 14,
+      "new_customers": 1,
+      "new_mrr": 404.99,
+      "conversion_rate": 0.125,
+      "reward": 0.081,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "add_integrations",
+      "features_shipped": 1,
+      "nps_delta": 1.5,
+      "nps": 98.6,
+      "reward": 0.12,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "fast_response",
+      "new_tickets": 4,
+      "resolved": 4,
+      "open_tickets": 2,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.008,
+      "reward": 0.867,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 18,
+    "mrr": 6576.44,
+    "arr": 78917.28,
+    "customers": 18,
+    "leads": 15,
+    "nps": 100,
+    "churn_rate": 0.01,
+    "features_shipped": 16,
+    "github_stars": 237,
+    "brand_awareness": 0.095,
+    "total_revenue": 41046.55,
+    "marketing": {
+      "channel": "content_marketing",
+      "new_leads": 6,
+      "organic_leads": 13,
+      "total_leads": 19,
+      "awareness": 0.095,
+      "reward": 0.4,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "product_led_growth",
+      "leads_worked": 14,
+      "new_customers": 1,
+      "new_mrr": 181.94,
+      "conversion_rate": 0.123,
+      "reward": 0.036,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "ship_core_features",
+      "features_shipped": 2,
+      "nps_delta": 2.3,
+      "nps": 100,
+      "reward": 0.25,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "fast_response",
+      "new_tickets": 9,
+      "resolved": 8,
+      "open_tickets": 3,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.008,
+      "reward": 0.867,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 19,
+    "mrr": 6576.44,
+    "arr": 78917.28,
+    "customers": 18,
+    "leads": 25,
+    "nps": 100,
+    "churn_rate": 0.01,
+    "features_shipped": 16,
+    "github_stars": 241,
+    "brand_awareness": 0.1,
+    "total_revenue": 47622.99,
+    "marketing": {
+      "channel": "content_marketing",
+      "new_leads": 5,
+      "organic_leads": 11,
+      "total_leads": 16,
+      "awareness": 0.1,
+      "reward": 0.333,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "outbound_enterprise",
+      "leads_worked": 6,
+      "new_customers": 0,
+      "new_mrr": 0.0,
+      "conversion_rate": 0.042,
+      "reward": 0.0,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "performance_optimization",
+      "features_shipped": 0,
+      "nps_delta": 1.3,
+      "nps": 100,
+      "reward": 0.24,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "escalation_to_engineering",
+      "new_tickets": 1,
+      "resolved": 2,
+      "open_tickets": 2,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.009,
+      "reward": 0.817,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 20,
+    "mrr": 8134.88,
+    "arr": 97618.56,
+    "customers": 22,
+    "leads": 13,
+    "nps": 100,
+    "churn_rate": 0.01,
+    "features_shipped": 17,
+    "github_stars": 259,
+    "brand_awareness": 0.106,
+    "total_revenue": 55757.87,
+    "marketing": {
+      "channel": "open_source_community",
+      "new_leads": 5,
+      "organic_leads": 11,
+      "total_leads": 16,
+      "awareness": 0.106,
+      "reward": 0.333,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "inbound_demo",
+      "leads_worked": 28,
+      "new_customers": 4,
+      "new_mrr": 1558.44,
+      "conversion_rate": 0.161,
+      "reward": 0.312,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "add_integrations",
+      "features_shipped": 1,
+      "nps_delta": 1.2,
+      "nps": 100,
+      "reward": 0.12,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "proactive_outreach",
+      "new_tickets": 2,
+      "resolved": 2,
+      "open_tickets": 2,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.007,
+      "reward": 0.8,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 21,
+    "mrr": 8134.88,
+    "arr": 97618.56,
+    "customers": 22,
+    "leads": 26,
+    "nps": 100,
+    "churn_rate": 0.01,
+    "features_shipped": 17,
+    "github_stars": 260,
+    "brand_awareness": 0.111,
+    "total_revenue": 63892.75,
+    "marketing": {
+      "channel": "content_marketing",
+      "new_leads": 5,
+      "organic_leads": 14,
+      "total_leads": 19,
+      "awareness": 0.111,
+      "reward": 0.333,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "outbound_enterprise",
+      "leads_worked": 6,
+      "new_customers": 0,
+      "new_mrr": 0.0,
+      "conversion_rate": 0.05,
+      "reward": 0.0,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "performance_optimization",
+      "features_shipped": 0,
+      "nps_delta": 1.0,
+      "nps": 100,
+      "reward": 0.24,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "fast_response",
+      "new_tickets": 4,
+      "resolved": 4,
+      "open_tickets": 2,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.008,
+      "reward": 0.867,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 22,
+    "mrr": 8492.75,
+    "arr": 101913.04,
+    "customers": 24,
+    "leads": 20,
+    "nps": 100,
+    "churn_rate": 0.01,
+    "features_shipped": 17,
+    "github_stars": 279,
+    "brand_awareness": 0.117,
+    "total_revenue": 72385.5,
+    "marketing": {
+      "channel": "open_source_community",
+      "new_leads": 5,
+      "organic_leads": 8,
+      "total_leads": 13,
+      "awareness": 0.117,
+      "reward": 0.333,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "product_led_growth",
+      "leads_worked": 19,
+      "new_customers": 2,
+      "new_mrr": 357.87,
+      "conversion_rate": 0.155,
+      "reward": 0.072,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "performance_optimization",
+      "features_shipped": 0,
+      "nps_delta": 3.4,
+      "nps": 100,
+      "reward": 0.24,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "knowledge_base",
+      "new_tickets": 0,
+      "resolved": 1,
+      "open_tickets": 1,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.009,
+      "reward": 1.0,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 23,
+    "mrr": 8884.16,
+    "arr": 106609.88,
+    "customers": 26,
+    "leads": 20,
+    "nps": 100,
+    "churn_rate": 0.01,
+    "features_shipped": 19,
+    "github_stars": 283,
+    "brand_awareness": 0.119,
+    "total_revenue": 81269.66,
+    "marketing": {
+      "channel": "paid_ads",
+      "new_leads": 7,
+      "organic_leads": 13,
+      "total_leads": 20,
+      "awareness": 0.119,
+      "reward": 0.467,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "product_led_growth",
+      "leads_worked": 20,
+      "new_customers": 2,
+      "new_mrr": 391.4,
+      "conversion_rate": 0.115,
+      "reward": 0.078,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "ship_core_features",
+      "features_shipped": 2,
+      "nps_delta": 2.8,
+      "nps": 100,
+      "reward": 0.25,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "escalation_to_engineering",
+      "new_tickets": 3,
+      "resolved": 2,
+      "open_tickets": 2,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.009,
+      "reward": 0.55,
+      "wm_context_size": 10
+    }
+  },
+  {
+    "month": 24,
+    "mrr": 9402.17,
+    "arr": 112826.04,
+    "customers": 28,
+    "leads": 15,
+    "nps": 100,
+    "churn_rate": 0.01,
+    "features_shipped": 19,
+    "github_stars": 288,
+    "brand_awareness": 0.127,
+    "total_revenue": 90671.83,
+    "marketing": {
+      "channel": "conference_talks",
+      "new_leads": 0,
+      "organic_leads": 16,
+      "total_leads": 16,
+      "awareness": 0.127,
+      "reward": 0.0,
+      "wm_context_size": 12
+    },
+    "sales": {
+      "strategy": "free_trial_conversion",
+      "leads_worked": 21,
+      "new_customers": 2,
+      "new_mrr": 518.01,
+      "conversion_rate": 0.106,
+      "reward": 0.104,
+      "wm_context_size": 10
+    },
+    "product": {
+      "focus": "reduce_complexity",
+      "features_shipped": 0,
+      "nps_delta": 4.1,
+      "nps": 100,
+      "reward": 0.48,
+      "wm_context_size": 15
+    },
+    "support": {
+      "approach": "proactive_outreach",
+      "new_tickets": 5,
+      "resolved": 4,
+      "open_tickets": 3,
+      "churned": 0,
+      "lost_mrr": 0.0,
+      "churn_rate": 0.007,
+      "reward": 0.8,
+      "wm_context_size": 10
+    }
+  }
+]
