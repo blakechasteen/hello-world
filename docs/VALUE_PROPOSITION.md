@@ -210,6 +210,109 @@ Three execution modes trade off latency vs. capability:
 
 ---
 
+## Where This Fits in the AI Industry (2026)
+
+The AI landscape has shifted in ways that make HoloLoom's approach more relevant, not less.
+
+### Foundation Models Are Commoditizing
+
+Claude, GPT, Gemini, Llama, Mistral, DeepSeek — the base capability (text generation, reasoning, code) is increasingly available from many providers at decreasing cost. The moat is no longer "which model do you have access to?" It's "what system do you build around the model?"
+
+**HoloLoom's position**: Model-agnostic infrastructure. Swap Anthropic for OpenAI for Ollama without changing your application. The value is in the memory, learning, safety, and provenance layers — not in the LLM itself.
+
+### Agentic AI Is the Frontier
+
+The industry has moved from chatbot (stateless Q&A) to agent (persistent state, tool use, planning, multi-step execution). Anthropic's MCP, OpenAI's Assistants API, Google's agent frameworks — everyone is building agent infrastructure.
+
+But agents need things chatbots don't:
+- **Persistent memory** that survives across sessions and compounds over time
+- **Learning from outcomes** so the agent improves without retraining
+- **Safety gating** so the agent doesn't execute harmful tool calls
+- **Audit trails** so you can explain what the agent did and why
+
+This is HoloLoom's core architecture. The 9-step weaving cycle, the 7 learning loops, the alignment framework, the Spacetime provenance — all designed for exactly this transition.
+
+### Interpretability Is Becoming Regulatory
+
+The EU AI Act is in effect. US regulation is developing. Industry self-regulation is accelerating. High-risk AI systems will increasingly be required to explain their decisions, maintain audit trails, and demonstrate safety.
+
+HoloLoom's Dark Trace (SAE decomposition, multi-model fingerprinting, activation steering) and complete Spacetime provenance aren't just research features — they're compliance infrastructure. As regulation tightens, the gap between systems that can explain themselves and systems that can't becomes a market boundary.
+
+### Self-Hosting Demand Is Growing
+
+Data sovereignty concerns, regulatory requirements, and cost optimization are driving organizations away from cloud-only AI providers. Self-hosted infrastructure is no longer a niche requirement — it's a strategic necessity for many enterprises.
+
+HoloLoom is self-hosting-first. Runs on your infrastructure. Ollama for local LLM inference. Neo4j + Qdrant via Docker or Kubernetes. No data leaves your network unless you choose to use cloud LLM providers.
+
+### The "AI Memory" Problem Remains Unsolved
+
+Despite massive industry investment, most AI systems are still fundamentally stateless. Sessions end, knowledge is lost. OpenAI's memory feature is a thin persistence layer. LangChain's memory modules are conversation buffers, not knowledge systems.
+
+HoloLoom has 11 specialized memory systems (vector, graph, cache, awareness, spring dynamics, multi-wave, warp space, photo, visual compression, query cache, reflection buffer) coordinated by a unified conductor. This isn't a feature — it's the architecture.
+
+---
+
+## Roadmap Alignment
+
+HoloLoom's current production capabilities (Phases 1-5) and planned development (Phases 6-10) map to industry trends:
+
+### What Exists Today (Production-Ready)
+
+| Capability | Status | Industry Need |
+|------------|--------|---------------|
+| 11 memory systems + conductor | Production | Persistent agent state |
+| 7 learning loops | Production | Adaptive improvement |
+| Alignment framework + audit trail | Production | Regulatory compliance |
+| Dark Trace interpretability (10 phases) | Production | Explainability requirements |
+| Level 4 Agentic RAG | Production | Knowledge-grounded agents |
+| 47 input adapters (SpinningWheel) | Production | Multimodal ingestion |
+| Docker + Kubernetes deployment | Production | Self-hosting infrastructure |
+| LangChain integration layer | Production | Ecosystem interoperability |
+
+### What's Coming (Planned Phases)
+
+**Phase 6 — Production Hardening** (near-term): Multi-region deployment, auto-scaling, monitoring dashboards, SOC2 path. Closing the gap between "production-ready code" and "production-deployed service."
+
+**Phase 7 — Multi-Agent Collaboration** (2026): Agent registry, message passing, collaborative memory, consensus mechanisms. HoloLoom agents working together, not just individually. This aligns with the industry's move toward multi-agent architectures (AutoGen, CrewAI, Anthropic's multi-agent patterns).
+
+**Phase 8 — Autonomous Task Execution** (2026): Goal-oriented planning, subtask generation, self-evaluation, long-running task management. Moving from reactive (answer questions) to proactive (accomplish goals).
+
+**Phase 9 — Meta-Learning** (2026): The system learns how to learn — neural architecture search for routing, automatic hyperparameter tuning, transfer learning across domains. This is where the 7 learning loops compound into something qualitatively different.
+
+**Phase 10 — Research Platform** (2026+): Open benchmarking, research API, community challenges, academic partnerships. Becoming the standard platform for AI memory and adaptive intelligence research.
+
+### The Strategic Bet
+
+The roadmap bets that **the infrastructure layer between LLMs and applications will be the most valuable layer in the AI stack** — more valuable than the models themselves (which are commoditizing) and more valuable than the applications (which are domain-specific and fragmented).
+
+HoloLoom is building that infrastructure layer with properties that are hard to replicate: multi-timescale learning that requires deep architectural integration, safety that's structural rather than superficial, and interpretability that's comprehensive rather than cosmetic.
+
+---
+
+## Future Potential: What Compounds
+
+Some aspects of HoloLoom's architecture have compounding returns that increase in value over time:
+
+**The learning loops compound with data**. After 1,000 queries, the Thompson Sampling priors are well-calibrated, hot patterns are reliable, and the routing layer handles most queries optimally. After 10,000 queries, the system has built substantial institutional knowledge that doesn't exist anywhere else. This is a genuine switching cost — leaving HoloLoom means losing the learned state.
+
+**The knowledge graph compounds with use**. Every `experience()` call adds to the Yarn Graph. Entity relationships, temporal connections, causal chains — the graph grows denser and more valuable. Multi-hop reasoning that was impossible at 50 nodes becomes powerful at 5,000 nodes. The physics-based memory systems (spring dynamics, beta wave activation) produce richer results as the graph grows.
+
+**The interpretability story compounds with regulation**. Every Spacetime artifact is audit-ready. As regulatory requirements increase, the cost of retroactively adding interpretability to other systems rises. HoloLoom's interpretability is baked in from day one.
+
+**The multi-agent roadmap compounds with scale**. When Phase 7 delivers multi-agent collaboration, each agent brings its learned state. A fleet of specialized HoloLoom agents — each expert in a domain, sharing knowledge through collaborative memory — is qualitatively different from a fleet of stateless agents that restart from scratch on every task.
+
+### Honest Risks to the Bet
+
+**Complexity risk**: 914K LOC is a significant system. Maintaining, extending, and onboarding contributors requires sustained effort. Simpler systems with fewer capabilities may win on adoption speed.
+
+**Adoption risk**: The value proposition requires investment (deployment, learning curve, operational overhead). Teams may choose the easier path of LangChain + vector store even if it's less capable.
+
+**Timing risk**: If LLM providers build robust memory, learning, and safety into their APIs (OpenAI's direction), some of HoloLoom's value may be absorbed by the platform layer.
+
+**Single-developer risk**: The project's depth is impressive but depends on sustained development velocity. Community building and contribution pathways are critical for long-term viability.
+
+---
+
 ## Getting Started
 
 If the value proposition resonates, the evaluation path is:
@@ -224,11 +327,21 @@ If the value proposition resonates, the evaluation path is:
 
 ## Summary
 
-HoloLoom's value is concentrated in four capabilities that most AI infrastructure doesn't provide:
+HoloLoom's value proposition rests on a structural claim: **the most valuable layer in the AI stack is the adaptive intelligence infrastructure between LLMs and applications** — and that layer needs to learn, remember, explain, and stay safe.
 
-1. **Learning that compounds** — every query makes the system measurably better
-2. **Provenance that's complete** — every decision is traceable and auditable
-3. **Safety that's structural** — guardrails are in the pipeline, not around it
-4. **Degradation that's graceful** — failures reduce capability, never crash the system
+Today's capabilities:
+1. **Learning that compounds** — 7 loops, <3ms overhead, measurable improvement after 100 queries
+2. **Memory that persists** — 11 systems, symbolic + neural, knowledge graphs that grow with use
+3. **Provenance that's complete** — every decision traceable, every artifact auditable
+4. **Safety that's structural** — guardrails in the pipeline, alignment in the architecture
+5. **Degradation that's graceful** — failures reduce capability, never crash the system
 
-If you need AI infrastructure that improves with use, explains its reasoning, and fails safely — and you're willing to invest in deploying and understanding a substantial system — HoloLoom provides something the lightweight frameworks don't attempt.
+Tomorrow's trajectory:
+- Multi-agent collaboration (2026) — HoloLoom agents that learn together
+- Autonomous task execution — from reactive to proactive intelligence
+- Meta-learning — the system learns how to learn
+- Research platform — standardizing the field of adaptive AI memory
+
+The bet is that as foundation models commoditize, as agents become the default interaction pattern, as regulation demands interpretability, and as enterprises require self-hosting — the systems that can learn, explain, and stay safe will define the next layer of AI infrastructure.
+
+HoloLoom is building that layer.
