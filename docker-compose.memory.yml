@@ -1,0 +1,45 @@
+version: "3.9"
+
+# Memory Bus MVP: Neo4j (authority) + Postgres (audit/configs/plans/aliases)
+# Usage: docker compose -f docker-compose.memory.yml up -d
+
+services:
+  neo4j:
+    image: neo4j:5-community
+    container_name: memory-neo4j
+    ports:
+      - "7474:7474"   # HTTP browser
+      - "7687:7687"   # Bolt protocol
+    environment:
+      NEO4J_AUTH: neo4j/hololoom
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_server_memory_heap_max__size: "512m"
+    volumes:
+      - neo4j_memory_data:/data
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "hololoom", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: memory-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: hololoom
+      POSTGRES_PASSWORD: hololoom
+      POSTGRES_DB: hololoom
+    volumes:
+      - pg_memory_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hololoom"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  neo4j_memory_data:
+  pg_memory_data:
