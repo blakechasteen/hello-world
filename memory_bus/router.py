@@ -62,6 +62,8 @@ class MemoryRouter:
         items: list[MemoryItem] = []
         resolution_path = ResolutionPath.EXACT
         warnings: list[str] = []
+        semantic_stub_reached = False
+        no_results_reason: str | None = None
 
         tier = self._pressure.tier
         min_importance = self._pressure.min_importance()
@@ -135,13 +137,20 @@ class MemoryRouter:
             # ---- SEMANTIC: STUB -------------------------------------------
             if not items:
                 resolution_path = ResolutionPath.SEMANTIC
+                semantic_stub_reached = True
                 if not self._pressure.is_semantic_allowed():
+                    no_results_reason = (
+                        "semantic_disabled_by_pressure"
+                    )
                     warnings.append(
                         "Semantic fallback disabled at pressure "
                         f"{tier.value}. Provide entity IDs or names for "
                         "structured retrieval."
                     )
                 else:
+                    no_results_reason = (
+                        "semantic_not_implemented"
+                    )
                     warnings.append(
                         "Semantic search not available in MVP. "
                         "Use entity_ids or entity_names for structured queries. "
@@ -161,6 +170,8 @@ class MemoryRouter:
                 resolution_path=resolution_path,
                 pressure_tier=tier,
                 warnings=warnings,
+                semantic_stub_reached=semantic_stub_reached,
+                no_results_reason=no_results_reason or f"error: {exc}",
             )
 
         # Deduplicate by ID
@@ -208,6 +219,8 @@ class MemoryRouter:
             pressure_tier=tier,
             formatted_context=formatted_text,
             warnings=warnings,
+            semantic_stub_reached=semantic_stub_reached,
+            no_results_reason=no_results_reason,
         )
 
     async def _audit(

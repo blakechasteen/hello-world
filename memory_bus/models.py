@@ -195,6 +195,9 @@ class MemoryResult(BaseModel):
     query_id: str = Field(default_factory=lambda: uuid.uuid4().hex[:12])
     formatted_context: str = ""
     warnings: list[str] = Field(default_factory=list)
+    # Distinguishes "stub can't search" from "real search found nothing"
+    semantic_stub_reached: bool = False
+    no_results_reason: Optional[str] = None
 
 
 class ResolveCandidate(BaseModel):
