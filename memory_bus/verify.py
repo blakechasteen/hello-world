@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 class EntityMention:
     """A detected entity mention in model output."""
 
-    __slots__ = ("text", "grounded", "grounded_via", "entity_id")
+    __slots__ = ("text", "grounded", "grounded_via", "entity_id", "false_positive")
 
     def __init__(
         self,
@@ -50,19 +50,26 @@ class EntityMention:
         grounded: bool = False,
         grounded_via: str = "",
         entity_id: str | None = None,
+        false_positive: bool = False,
     ):
         self.text = text
         self.grounded = grounded
         self.grounded_via = grounded_via  # "primed_id" | "primed_name" | "alias" | "neo4j_search"
         self.entity_id = entity_id
+        # Operator can mark a mention as a false positive (not a real entity).
+        # Tracked in audit to measure regex extraction quality.
+        self.false_positive = false_positive
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "text": self.text,
             "grounded": self.grounded,
             "grounded_via": self.grounded_via,
             "entity_id": self.entity_id,
         }
+        if self.false_positive:
+            d["false_positive"] = True
+        return d
 
 
 class VerificationResult:
@@ -110,16 +117,39 @@ class VerificationResult:
             return 1.0
         return self.grounded_count / self.total_mentions
 
+    @property
+    def false_positive_count(self) -> int:
+        """Mentions operator marked as not real entities (extraction noise)."""
+        return sum(1 for m in self.mentions if m.false_positive)
+
+    def mark_false_positive(self, mention_text: str) -> bool:
+        """
+        Mark a mention as a false positive (not a real entity).
+
+        Call this when an operator or downstream check determines the
+        regex extracted a non-entity. Tracked in audit for extraction
+        quality measurement.
+
+        Returns True if mention was found and marked.
+        """
+        for m in self.mentions:
+            if m.text == mention_text:
+                m.false_positive = True
+                return True
+        return False
+
     def to_dict(self) -> dict:
-        return {
+        d = {
             "total_mentions": self.total_mentions,
             "grounded_count": self.grounded_count,
             "ungrounded_count": self.ungrounded_count,
             "confabulation_rate": round(self.confabulation_rate, 4),
             "grounding_rate": round(self.grounding_rate, 4),
+            "false_positive_count": self.false_positive_count,
             "grounded": [m.to_dict() for m in self.grounded_mentions],
             "ungrounded": [m.to_dict() for m in self.ungrounded_mentions],
         }
+        return d
 
 
 # ---------------------------------------------------------------------------
@@ -310,6 +340,7 @@ class EntityVerifier:
                         "total_mentions": result.total_mentions,
                         "grounded_count": result.grounded_count,
                         "ungrounded_count": result.ungrounded_count,
+                        "false_positive_count": result.false_positive_count,
                         "confabulation_rate": round(
                             result.confabulation_rate, 4
                         ),
