@@ -75,6 +75,7 @@ class AuditAction(str, Enum):
     RESOLVE = "resolve"
     EXPLAIN = "explain"
     PROMOTE = "promote"
+    VERIFY = "verify"
     ERROR = "error"
 
 
@@ -169,6 +170,9 @@ class MemoryQuery(BaseModel):
     token_budget: Optional[int] = None  # per-query cap; None = use default
     loom_id: Optional[str] = None
     loop_id: Optional[str] = None
+    # Aggressive priming: load recent episodes even when structured path
+    # finds results, to reduce confabulation from incomplete context.
+    aggressive_prime: bool = False
 
 
 class MemoryItem(BaseModel):

@@ -134,6 +134,32 @@ class MemoryRouter:
                     if ep.significance >= min_importance:
                         items.append(self._neo4j.episode_to_item(ep))
 
+            # ---- AGGRESSIVE PRIMING (optional) -------------------------
+            # When aggressive_prime=True and we found some items, also
+            # load recent episodes to fill context. This reduces
+            # confabulation by giving the model more grounded context
+            # rather than relying on its gap-detection ability.
+            if query.aggressive_prime and items and tier in (
+                PressureTier.TIER0, PressureTier.TIER1,
+            ):
+                existing_ids = {i.id for i in items}
+                try:
+                    recent = await self._neo4j.query_recent_episodes(
+                        loom_origin=query.loom_id,
+                        limit=min(query.max_results, 10),
+                    )
+                    for ep in recent:
+                        if (
+                            ep.id not in existing_ids
+                            and ep.significance >= min_importance
+                        ):
+                            items.append(self._neo4j.episode_to_item(ep))
+                            existing_ids.add(ep.id)
+                except Exception as exc:
+                    logger.warning(
+                        "Aggressive priming failed: %s", exc
+                    )
+
             # ---- SEMANTIC: STUB -------------------------------------------
             if not items:
                 resolution_path = ResolutionPath.SEMANTIC

@@ -43,6 +43,7 @@ from .pressure import PressureEngine
 from .promotion import PromotionEngine
 from .resolve import resolve_entity
 from .router import MemoryRouter
+from .verify import EntityVerifier, VerificationResult
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,7 @@ class MemoryBus:
         self._pressure = PressureEngine(context_window=context_window)
         self._router: Optional[MemoryRouter] = None
         self._promotion: Optional[PromotionEngine] = None
+        self._verifier: Optional[EntityVerifier] = None
         self._context_window = context_window
 
     # ---- lifecycle --------------------------------------------------------
@@ -86,6 +88,7 @@ class MemoryBus:
             context_window=self._context_window,
         )
         self._promotion = PromotionEngine(neo4j=self._neo4j, pg=self._pg)
+        self._verifier = EntityVerifier(neo4j=self._neo4j, pg=self._pg)
         logger.info("MemoryBus connected")
 
     async def close(self) -> None:
@@ -119,6 +122,7 @@ class MemoryBus:
         token_budget: int | None = None,
         loom_id: str | None = None,
         loop_id: str | None = None,
+        aggressive_prime: bool = False,
     ) -> MemoryResult:
         """Query memory with structured-first routing cascade."""
         from datetime import datetime
@@ -139,6 +143,7 @@ class MemoryBus:
             token_budget=token_budget,
             loom_id=loom_id,
             loop_id=loop_id,
+            aggressive_prime=aggressive_prime,
         )
 
         assert self._router is not None, "MemoryBus not connected"
@@ -296,6 +301,102 @@ class MemoryBus:
     def memory_pressure(self) -> PressureStatus:
         """Return current pressure tier + signals + policy."""
         return self._pressure.status()
+
+    # ---- MCP Tool 6: memory_verify -----------------------------------------
+
+    async def memory_verify(
+        self,
+        *,
+        response_text: str,
+        primed_entity_ids: list[str] | None = None,
+        primed_entity_names: list[str] | None = None,
+        loom_id: str | None = None,
+        loop_id: str | None = None,
+    ) -> dict[str, Any]:
+        """
+        Post-response entity verification.
+
+        Checks whether entities mentioned in model response are grounded
+        in memory (via primed context, aliases, or Neo4j search).
+        Returns confabulation rate and ungrounded entity list.
+        """
+        assert self._verifier is not None, "MemoryBus not connected"
+        result = await self._verifier.verify(
+            response_text=response_text,
+            primed_entity_ids=primed_entity_ids,
+            primed_entity_names=primed_entity_names,
+            loom_id=loom_id,
+            loop_id=loop_id,
+        )
+        return result.to_dict()
+
+    # ---- MCP Resource: memory://confabulation_stats -------------------------
+
+    async def confabulation_stats(
+        self,
+        *,
+        loom_id: str | None = None,
+        limit: int = 100,
+    ) -> dict[str, Any]:
+        """
+        Aggregate confabulation metrics from audit log.
+
+        Returns overall confabulation rate, trend, and per-loop breakdown.
+        """
+        try:
+            rows = await self._pg.get_audit_rows(
+                loom_id=loom_id,
+                action=AuditAction.VERIFY,
+                limit=limit,
+            )
+        except Exception:
+            return {
+                "total_verifications": 0,
+                "avg_confabulation_rate": 0.0,
+                "avg_grounding_rate": 1.0,
+                "trend": [],
+            }
+
+        if not rows:
+            return {
+                "total_verifications": 0,
+                "avg_confabulation_rate": 0.0,
+                "avg_grounding_rate": 1.0,
+                "trend": [],
+            }
+
+        rates: list[float] = []
+        total_grounded = 0
+        total_ungrounded = 0
+        trend: list[dict[str, Any]] = []
+
+        for row in rows:
+            details = row.details or {}
+            rate = details.get("confabulation_rate", 0.0)
+            rates.append(rate)
+            total_grounded += details.get("grounded_count", 0)
+            total_ungrounded += details.get("ungrounded_count", 0)
+            trend.append({
+                "loop_id": row.loop_id,
+                "timestamp": row.timestamp.isoformat() if row.timestamp else None,
+                "confabulation_rate": rate,
+                "total_mentions": details.get("total_mentions", 0),
+            })
+
+        total_mentions = total_grounded + total_ungrounded
+        overall_rate = (
+            total_ungrounded / total_mentions if total_mentions > 0 else 0.0
+        )
+
+        return {
+            "total_verifications": len(rows),
+            "total_entity_mentions": total_mentions,
+            "total_grounded": total_grounded,
+            "total_ungrounded": total_ungrounded,
+            "avg_confabulation_rate": round(overall_rate, 4),
+            "avg_grounding_rate": round(1.0 - overall_rate, 4),
+            "trend": trend[:20],  # Most recent 20
+        }
 
     # ---- Pressure management (for orchestrator use) -----------------------
 
