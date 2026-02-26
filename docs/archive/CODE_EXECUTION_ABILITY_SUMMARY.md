@@ -195,8 +195,8 @@ Test Breakdown:
 ## Usage Example
 
 ```python
-from HoloLoom.departments.proto.abilities.core.code_execution import CodeExecutionAbility
-from HoloLoom.departments.proto.abilities.protocol import (
+from HoloLoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+from HoloLoom.apps.departments.proto.abilities.protocol import (
     AbilityContext,
     AbilityTrustLevel
 )
@@ -378,7 +378,7 @@ print(f"Verified: {verification.verified}")
 
 1. **Use the ability**:
    ```python
-   from HoloLoom.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+   from HoloLoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
 
    ability = CodeExecutionAbility()
    # See documentation for usage examples

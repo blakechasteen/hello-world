@@ -26,7 +26,7 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from HoloLoom.apps.chatops.core.matrix_bot import MatrixBot
     from HoloLoom.apps.chatops.core.chatops_bridge import ChatOpsOrchestrator
-    from HoloLoom.departments.claude_code import ClaudeCodeDepartment
+    from HoloLoom.apps.departments.claude_code import ClaudeCodeDepartment
 
 try:
     from nio import MatrixRoom, RoomMessageText

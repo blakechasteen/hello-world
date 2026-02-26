@@ -217,7 +217,7 @@ if response['result']['cpu_percent'] > 80:
 **Example**:
 ```python
 from HoloLoom.departments import get_department
-from HoloLoom.departments.protocol import PrivacyEnvelope, PrivacyLevel
+from HoloLoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel
 
 context_dept = get_department("context")
 
@@ -326,7 +326,7 @@ To create a new department:
 
 1. **Inherit from BaseDepartment**:
 ```python
-from HoloLoom.departments.protocol import BaseDepartment, DepartmentRequest, DepartmentResponse
+from HoloLoom.apps.departments.protocol import BaseDepartment, DepartmentRequest, DepartmentResponse
 
 class MyDepartment(BaseDepartment):
     def __init__(self, department_id: str):

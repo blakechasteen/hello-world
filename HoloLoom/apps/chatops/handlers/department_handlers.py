@@ -26,7 +26,7 @@ import json
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.departments.registry import DepartmentRegistry
+    from HoloLoom.apps.departments.registry import DepartmentRegistry
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -36,7 +36,7 @@ except ImportError:
 
 # Department imports
 try:
-    from HoloLoom.departments.registry import (
+    from HoloLoom.apps.departments.registry import (
         DepartmentRegistry,
         DepartmentInstance,
         get_global_registry,

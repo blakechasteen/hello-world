@@ -24,7 +24,7 @@ loop support.
 ```python
 from HoloLoom.chaining import Chain, ChainStep, StepType, ChainPatterns
 from HoloLoom.chaining import ChainOrchestrator
-from HoloLoom.departments.rag_department import RAGDepartment
+from HoloLoom.apps.departments.rag_department import RAGDepartment
 
 # Use a pre-built pattern
 chain = ChainPatterns.verified_query()  # execute → verify

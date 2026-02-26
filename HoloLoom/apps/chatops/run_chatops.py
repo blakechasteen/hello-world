@@ -48,7 +48,7 @@ except ImportError:
 
 # Claude Code integration
 try:
-    from HoloLoom.departments.claude_code import ClaudeCodeDepartment
+    from HoloLoom.apps.departments.claude_code import ClaudeCodeDepartment
     from HoloLoom.apps.chatops.handlers.code_handlers import register_code_handlers
     CLAUDE_CODE_AVAILABLE = True
 except ImportError as e:

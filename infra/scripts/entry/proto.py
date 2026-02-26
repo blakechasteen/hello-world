@@ -52,7 +52,7 @@ repo_root = Path(__file__).parent
 sys.path.insert(0, str(repo_root))
 
 # Import and run CLI
-from HoloLoom.departments.proto.adapters.cli.main import cli
+from HoloLoom.apps.departments.proto.adapters.cli.main import cli
 
 
 if __name__ == "__main__":

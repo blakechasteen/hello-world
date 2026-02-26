@@ -27,7 +27,7 @@ The Chaining System provides a declarative, pattern-based approach to building m
 
 ```python
 from HoloLoom.chaining import Chain, ChainPatterns, ChainOrchestrator
-from HoloLoom.departments.protocol import DepartmentRequest
+from HoloLoom.apps.departments.protocol import DepartmentRequest
 
 # Use pre-built simple_query pattern
 chain = ChainPatterns.simple_query()
@@ -373,7 +373,7 @@ from HoloLoom.chaining import Chain, ChainStep, StepType, ChainOrchestrator, Cha
 
 ```python
 from HoloLoom.chaining import ChainOrchestrator, ChainPatterns
-from HoloLoom.departments.rag_department import RAGDepartment
+from HoloLoom.apps.departments.rag_department import RAGDepartment
 
 # Use a pre-built pattern
 chain = ChainPatterns.verified_query()  # execute → verify → output
@@ -829,7 +829,7 @@ Chain: my_chain
 The chaining system works with any department implementing `DepartmentProtocol`:
 
 ```python
-from HoloLoom.departments.rag_department import RAGDepartment
+from HoloLoom.apps.departments.rag_department import RAGDepartment
 
 async with RAGDepartment() as rag_dept:
     orchestrator = ChainOrchestrator(rag_dept)

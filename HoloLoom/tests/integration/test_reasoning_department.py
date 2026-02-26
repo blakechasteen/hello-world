@@ -22,7 +22,7 @@ from HoloLoom.departments import (
     DepartmentRegistry,
     DepartmentRequest
 )
-from HoloLoom.departments.reasoning import (
+from HoloLoom.apps.departments.reasoning import (
     ReasoningDepartment,
     MultiHopReasoner,
     CausalInferenceEngine,

@@ -39,7 +39,7 @@ import numpy as np
 from typing import List
 import asyncio
 
-from HoloLoom.departments.metalearning import (
+from HoloLoom.apps.departments.metalearning import (
     MetaLearningDepartment,
     FewShotLearner,
     TransferLearner,
@@ -308,7 +308,7 @@ def test_meta_adaptation_statistics():
     engine = MetaAdaptationEngine()
 
     # Record some performances
-    from HoloLoom.departments.metalearning.metalearning import LearningStrategy
+    from HoloLoom.apps.departments.metalearning.metalearning import LearningStrategy
     strategy = LearningStrategy(
         strategy_id="test",
         adaptation_type=AdaptationStrategy.PROTOTYPICAL,

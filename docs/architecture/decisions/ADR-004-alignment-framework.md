@@ -350,7 +350,7 @@ async def safe_execute(request):
 # Context Department + Alignment Framework
 from HoloLoom.departments import get_department
 from HoloLoom.alignment import AuditTrail
-from HoloLoom.departments.protocol import PrivacyEnvelope, PrivacyLevel
+from HoloLoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel
 
 context_dept = get_department("context")
 audit_trail = AuditTrail(persist_path="./hipaa_audit")

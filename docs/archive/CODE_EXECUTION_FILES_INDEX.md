@@ -82,7 +82,7 @@ All files are located in: HoloLoom/departments/proto/abilities/core/
    8. Preflight rejection
    
    Run with:
-   python -m HoloLoom.departments.proto.abilities.core.examples 1
+   python -m HoloLoom.apps.departments.proto.abilities.core.examples 1
    (Replace 1 with example number)
 
 ### Module Files
@@ -133,21 +133,21 @@ All files are located in: HoloLoom/departments/proto/abilities/core/
 ## Usage Quick Reference
 
 ### Basic Execution
-from HoloLoom.departments.proto.abilities.core import CodeExecutionAbility
-from HoloLoom.departments.proto.abilities.protocol import AbilityContext
+from HoloLoom.apps.departments.proto.abilities.core import CodeExecutionAbility
+from HoloLoom.apps.departments.proto.abilities.protocol import AbilityContext
 
 ability = CodeExecutionAbility()
 context = AbilityContext(session_id="test", user_confirmed=True)
 result = await ability.execute({"code": "print('hi')"}, context)
 
 ### With Configuration
-from HoloLoom.departments.proto.abilities.core import CodeExecutionConfig
+from HoloLoom.apps.departments.proto.abilities.core import CodeExecutionConfig
 
 config = CodeExecutionConfig(max_timeout=60.0, max_output_length=500_000)
 ability = CodeExecutionAbility(config)
 
 ### Registry Integration
-from HoloLoom.departments.proto.abilities.registry import AbilityRegistry
+from HoloLoom.apps.departments.proto.abilities.registry import AbilityRegistry
 
 registry = AbilityRegistry()
 registry.register(CodeExecutionAbility())
@@ -208,7 +208,7 @@ Integration:
 
 ## Protocol Compliance
 
-Implements: HoloLoom.departments.proto.abilities.protocol.BaseAbility
+Implements: HoloLoom.apps.departments.proto.abilities.protocol.BaseAbility
 
 Methods:
 - preflight(context) -> PreflightResult

@@ -20,7 +20,7 @@ import asyncio
 from pathlib import Path
 
 from HoloLoom.departments import DepartmentRequest, DepartmentRegistry
-from HoloLoom.departments.beekeeping import MasterWeaverDepartment
+from HoloLoom.apps.departments.beekeeping import MasterWeaverDepartment
 
 
 # ============================================================================

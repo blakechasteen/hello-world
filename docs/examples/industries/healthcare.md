@@ -39,7 +39,7 @@ Real-world implementation of HoloLoom for healthcare applications with HIPAA com
 
 ```python
 from HoloLoom.departments import get_department
-from HoloLoom.departments.protocol import PrivacyLevel, PrivacyEnvelope
+from HoloLoom.apps.departments.protocol import PrivacyLevel, PrivacyEnvelope
 
 # Configure Context Department with HIPAA privacy
 context_dept = get_department("context")
@@ -73,7 +73,7 @@ response = await context_dept.process(request)
 ### 2. RBAC (Role-Based Access Control)
 
 ```python
-from HoloLoom.departments.context_department import ContextDepartment, UserContext
+from HoloLoom.apps.departments.context_department import ContextDepartment, UserContext
 
 # Define user roles
 physician_context = UserContext(
@@ -176,7 +176,7 @@ asyncio.run(main())
 ### 4. De-Identification for Research
 
 ```python
-from HoloLoom.departments.context_department import deidentify_phi
+from HoloLoom.apps.departments.context_department import deidentify_phi
 
 # Original PHI
 phi_data = {
@@ -206,7 +206,7 @@ print(deidentified)
 
 ```python
 from HoloLoom.departments import get_department
-from HoloLoom.departments.protocol import PrivacyEnvelope, PrivacyLevel
+from HoloLoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel
 import asyncio
 
 async def clinical_decision_support(patient_id, query, user_context):
@@ -456,7 +456,7 @@ See [Production Deployment Guide](../../guides/production/deployment.md) for com
 ```python
 import pytest
 from HoloLoom.departments import get_department
-from HoloLoom.departments.protocol import PrivacyEnvelope, PrivacyLevel, UserContext
+from HoloLoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel, UserContext
 
 @pytest.mark.asyncio
 async def test_rbac_blocks_unauthorized_access():
@@ -504,7 +504,7 @@ async def test_audit_trail_logs_phi_access():
 @pytest.mark.asyncio
 async def test_deidentification_removes_phi():
     """Test that de-identification removes HIPAA identifiers"""
-    from HoloLoom.departments.context_department import deidentify_phi
+    from HoloLoom.apps.departments.context_department import deidentify_phi
 
     phi = {
         "name": "John Doe",

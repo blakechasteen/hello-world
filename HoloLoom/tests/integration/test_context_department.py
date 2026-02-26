@@ -24,7 +24,7 @@ from HoloLoom.departments import (
     DepartmentRequest,
     ConfidenceLevel
 )
-from HoloLoom.departments.context import ContextDepartment
+from HoloLoom.apps.departments.context import ContextDepartment
 from HoloLoom.config import Config
 from HoloLoom.protocols.types import MemoryShard
 

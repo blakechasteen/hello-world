@@ -25,11 +25,11 @@ from HoloLoom.departments import (
     DepartmentRegistry
 )
 from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.departments.context import ContextDepartment
-from HoloLoom.departments.beekeeping import MasterWeaverDepartment
-from HoloLoom.departments.infrastructure import InfrastructureDepartment
-from HoloLoom.departments.verification import VerificationDepartment
-from HoloLoom.departments.orchestration import OrchestrationDepartment
+from HoloLoom.apps.departments.context import ContextDepartment
+from HoloLoom.apps.departments.beekeeping import MasterWeaverDepartment
+from HoloLoom.apps.departments.infrastructure import InfrastructureDepartment
+from HoloLoom.apps.departments.verification import VerificationDepartment
+from HoloLoom.apps.departments.orchestration import OrchestrationDepartment
 
 
 # ============================================================================

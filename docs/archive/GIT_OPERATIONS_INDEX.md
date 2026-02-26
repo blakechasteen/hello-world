@@ -135,8 +135,8 @@ Complete implementation of the **Git Operations ability** for Proto - a Tier 2 P
 
 ### Basic Status Check
 ```python
-from HoloLoom.departments.proto.abilities.core import GitOperationsAbility
-from HoloLoom.departments.proto.abilities.protocol import AbilityContext
+from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
+from HoloLoom.apps.departments.proto.abilities.protocol import AbilityContext
 
 ability = GitOperationsAbility()
 context = AbilityContext(working_directory="/repo")
@@ -201,12 +201,12 @@ __all__ = [
 
 ### 2. Direct Import
 ```python
-from HoloLoom.departments.proto.abilities.core import GitOperationsAbility
+from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
 ```
 
 ### 3. Proto Integration
 ```python
-from HoloLoom.departments.proto import Proto
+from HoloLoom.apps.departments.proto import Proto
 
 proto = Proto()
 proto.register_ability(GitOperationsAbility())
@@ -302,7 +302,7 @@ See: **GIT_OPERATIONS_SUMMARY.md**
 
 ### Import
 ```python
-from HoloLoom.departments.proto.abilities.core import GitOperationsAbility
+from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
 ```
 
 ### Create

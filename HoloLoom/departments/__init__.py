@@ -1,136 +1,46 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-HoloLoom Departments - Modular nested learning architecture.
+HoloLoom departments — MOVED to HoloLoom.apps.departments
+==========================================================
 
-This package provides the core framework for building modular, marketplace-ready
-departments that compose through confidence negotiation.
-
-Quick Start:
-
-    # Import core types
-    from HoloLoom.departments import (
-        Department,
-        BaseDepartment,
-        DepartmentRegistry,
-        DepartmentRequest,
-        DepartmentResponse,
-        ConfidenceLevel,
-        ConfidenceMetadata
-    )
-
-    # Create a department
-    class MyDepartment(BaseDepartment):
-        def __init__(self):
-            super().__init__(
-                name="my_dept",
-                domain="my_domain",
-                version="1.0.0",
-                supported_tasks=["my_task"],
-                confidence_range=(0.6, 0.9)
-            )
-
-        async def execute(self, request):
-            # Your logic here
-            return DepartmentResponse(
-                task_id=request.task_id,
-                result={"answer": "42"},
-                confidence=ConfidenceMetadata.from_score(0.85)
-            )
-
-        async def verify(self, response):
-            return VerificationResult(
-                sufficient=True,
-                confidence_valid=True,
-                reasoning_sound=True
-            )
-
-        async def refine(self, request, prior_response, verification):
-            # Improvement logic
-            return await self.execute(request)
-
-    # Register and use
-    registry = DepartmentRegistry()
-    await registry.register(MyDepartment())
-
-    request = DepartmentRequest(
-        task_id="req_001",
-        task_type="my_task",
-        parameters={}
-    )
-
-    response = await registry.route_request(request)
+This shim installs a ``sys.meta_path`` finder so that **any** import of
+``HoloLoom.departments`` or ``HoloLoom.departments.*`` is transparently
+redirected to ``HoloLoom.apps.departments``.  A one-time
+``DeprecationWarning`` is emitted to encourage migration.
 """
 
-# ============================================================================
-# Core Protocol
-# ============================================================================
-
-# Import from canonical location (protocols/) directly to avoid
-# triggering the deprecation warning in the .protocol shim.
-from HoloLoom.protocols.department import (
-    # Confidence System
-    ConfidenceLevel,
-    ConfidenceMetadata,
-
-    # Request/Response
-    DepartmentRequest,
-    DepartmentResponse,
-
-    # Verification
-    VerificationResult,
-
-    # Marketplace
-    DepartmentManifest,
-    DepartmentConfig,
-
-    # Protocol
-    Department,
-
-    # Utilities
-    compute_learning_rate,
-    should_update_now,
-)
-
-# ============================================================================
-# Base Implementation
-# ============================================================================
-
-from .base import BaseDepartment
-
-# ============================================================================
-# Registry
-# ============================================================================
-
-from .registry import DepartmentRegistry, DepartmentInstance
+import importlib
+import warnings
+import sys
 
 
-# ============================================================================
-# Public API
-# ============================================================================
+class _DeprecatedFinder:
+    """Meta-path finder that redirects HoloLoom.departments.* imports."""
 
-__all__ = [
-    # Protocol Types
-    "ConfidenceLevel",
-    "ConfidenceMetadata",
-    "DepartmentRequest",
-    "DepartmentResponse",
-    "VerificationResult",
-    "DepartmentManifest",
-    "DepartmentConfig",
-    "Department",
+    _PREFIX = "HoloLoom.departments."
 
-    # Base Classes
-    "BaseDepartment",
+    def find_module(self, fullname, path=None):
+        if fullname == "HoloLoom.departments" or fullname.startswith(
+            self._PREFIX
+        ):
+            return self
+        return None
 
-    # Registry
-    "DepartmentRegistry",
-    "DepartmentInstance",
+    def load_module(self, fullname):
+        if fullname in sys.modules:
+            return sys.modules[fullname]
+        new_name = fullname.replace(
+            "HoloLoom.departments", "HoloLoom.apps.departments", 1
+        )
+        warnings.warn(
+            f"Importing from {fullname} is deprecated. "
+            f"Use {new_name} instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        real = importlib.import_module(new_name)
+        sys.modules[fullname] = real
+        return real
 
-    # Utilities
-    "compute_learning_rate",
-    "should_update_now"
-]
 
-
-__version__ = "1.0.0"
+if not any(isinstance(f, _DeprecatedFinder) for f in sys.meta_path):
+    sys.meta_path.insert(0, _DeprecatedFinder())

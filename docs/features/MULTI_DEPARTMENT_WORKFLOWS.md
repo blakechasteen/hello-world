@@ -29,7 +29,7 @@ HoloLoom's departments use **two different protocols**:
 
 **Key Types**:
 ```python
-from HoloLoom.departments.protocol import (
+from HoloLoom.apps.departments.protocol import (
     DepartmentRequest,      # task_type, parameters, context, constraints
     DepartmentResponse,     # result, confidence (ConfidenceMetadata), metadata
     VerificationResult,     # verified, checks, overall_score

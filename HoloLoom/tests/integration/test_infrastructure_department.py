@@ -21,7 +21,7 @@ import tempfile
 from pathlib import Path
 
 from HoloLoom.departments import DepartmentRequest, DepartmentRegistry
-from HoloLoom.departments.infrastructure import (
+from HoloLoom.apps.departments.infrastructure import (
     InfrastructureDepartment,
     ZeroCopyEmbeddingStore,
     EmbeddingView

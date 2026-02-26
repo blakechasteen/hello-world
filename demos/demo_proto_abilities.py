@@ -9,7 +9,7 @@ Run with: PYTHONPATH=. python demos/demo_proto_abilities.py
 """
 
 import asyncio
-from HoloLoom.departments.proto.abilities import (
+from HoloLoom.apps.departments.proto.abilities import (
     AbilityTier,
     AbilityTrustLevel,
     AbilityManifest,

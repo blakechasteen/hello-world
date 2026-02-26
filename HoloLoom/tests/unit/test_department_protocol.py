@@ -36,8 +36,8 @@ from HoloLoom.protocols.department import (
     create_simple_request,
     create_simple_response
 )
-from HoloLoom.departments.base import BaseDepartment
-from HoloLoom.departments.registry import DepartmentRegistry
+from HoloLoom.apps.departments.base import BaseDepartment
+from HoloLoom.apps.departments.registry import DepartmentRegistry
 
 
 # ============================================================================

@@ -68,7 +68,7 @@ class Warper:
             return self._planning_available
 
         try:
-            from HoloLoom.departments.planning_department import PlanningDepartment
+            from HoloLoom.apps.departments.planning_department import PlanningDepartment
             self._planning_available = True
         except ImportError:
             self._planning_available = False
@@ -167,7 +167,7 @@ class Warper:
 
     async def _llm_decompose(self, goal: str) -> List[str]:
         """Use PlanningDepartment for goal decomposition."""
-        from HoloLoom.departments.planning_department import PlanningDepartment
+        from HoloLoom.apps.departments.planning_department import PlanningDepartment
 
         planning = PlanningDepartment()
         result = await planning.request({

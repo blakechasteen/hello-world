@@ -26,7 +26,7 @@ The **Recursive Reasoner** is a complete self-improving system that automaticall
 
 ```python
 from HoloLoom.config import Config
-from HoloLoom.departments.rag_department import RAGDepartment
+from HoloLoom.apps.departments.rag_department import RAGDepartment
 
 # Initialize RAG Department
 async with RAGDepartment(config=Config.fast()) as rag:

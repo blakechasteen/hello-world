@@ -876,8 +876,8 @@ class ContextDepartment(BaseDepartment):
 # tests/departments/test_context_department.py
 
 import pytest
-from HoloLoom.departments.context import ContextDepartment
-from HoloLoom.departments.protocol import DepartmentRequest, DepartmentConfig
+from HoloLoom.apps.departments.context import ContextDepartment
+from HoloLoom.apps.departments.protocol import DepartmentRequest, DepartmentConfig
 
 @pytest.mark.asyncio
 async def test_execute_returns_response():
@@ -951,7 +951,7 @@ async def test_learning_loop():
 # tests/integration/test_context_department_integration.py
 
 import pytest
-from HoloLoom.departments.context import ContextDepartment
+from HoloLoom.apps.departments.context import ContextDepartment
 from HoloLoom.config import Config
 
 @pytest.mark.asyncio
