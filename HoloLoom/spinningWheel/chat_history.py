@@ -40,7 +40,13 @@ from datetime import datetime
 from dataclasses import dataclass
 
 from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.web_dashboard.conversation_manager import ConversationManager, Message, Conversation
+
+try:
+    from HoloLoom.web_dashboard.conversation_manager import ConversationManager, Message, Conversation
+except ImportError:
+    ConversationManager = None  # type: ignore[assignment,misc]
+    Message = None  # type: ignore[assignment,misc]
+    Conversation = None  # type: ignore[assignment,misc]
 
 
 @dataclass
