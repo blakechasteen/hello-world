@@ -1,7 +1,8 @@
 # HoloLoom Module Taxonomy
 
 **Date**: 2026-02-25
-**Purpose**: Classify every directory into Core Infrastructure, Extension, App, or Tooling
+**Updated**: 2026-02-26 — Refined target structure (dropped `extensions/` wrapper)
+**Purpose**: Classify every directory into Core, Optional Module, App, or Tooling
 **Goal**: Establish clear boundaries so the repo communicates its own architecture
 
 ---
@@ -51,68 +52,80 @@ incomplete.
 
 ---
 
-## Layer 2: Core Extensions (optional power-ups to core)
+## Layer 2: Optional Modules (flat peers to core)
 
-These extend core capabilities but are **not required** for the basic pipeline to
-work. An app could use HoloLoom without any of these.
+Everything that isn't core. These extend capabilities but the basic weaving
+pipeline works without any of them. They don't import each other — each is
+independently installable.
 
-| Directory | LOC | What It Is | Why Extension, Not Core |
-|-----------|-----|-----------|------------------------|
-| `agentic/` | 25,447 | Multi-step reasoning with verification | Core works with single-step |
+No `extensions/` wrapper. The grouping lives in `pyproject.toml` extras and
+documentation, not the directory tree.
+
+| Directory | LOC | What It Is | Why Not Core |
+|-----------|-----|-----------|--------------|
+| `agentic/` | 25,447 | Multi-step reasoning | Core works with single-step |
 | `alignment/` | 23,763 | Safety guardrails, audit trail | Core works without safety gates |
-| `rag/` | 14,795 | Level 4 agentic RAG | Core has memory; RAG is a pattern on top |
-| `context_packing/` | 6,844 | Beta wave context optimization | Optimization, not requirement |
-| `routing/` | 8,754 | Smart query complexity classification | Core works without routing |
-| `semantic_calculus/` | 12,501 | 244 interpretable semantic axes | Advanced analysis layer |
-| `dark_trace/` | 66,315 | SAE interpretability suite | Observability, not execution |
-| `prompting/` | 17,460 | MRF metaprompting framework | Prompt quality, not core pipeline |
-| `search/` | 4,682 | Vector + BM25 hybrid search | Alternative retrieval method |
-| `bandits/` | 4,285 | Extended exploration strategies | Core has Thompson; this extends |
-| `context/` | 6,006 | Production hardening (circuit breakers, rate limits) | Operational, not functional |
-| `memory_symphony/` | ~1,700 | Multi-system memory coordination | Optimization layer |
+| `rag/` | 14,795 | Level 4 agentic RAG | RAG is a pattern on top of memory |
+| `dark_trace/` | 66,315 | SAE interpretability | Observability, not execution |
+| `prompting/` | 17,460 | MRF metaprompting | Prompt quality, not core pipeline |
+| `routing/` | 8,754 | Query complexity classification | Core works without routing |
+| `semantic_calculus/` | 12,501 | 244 semantic axes | Advanced analysis layer |
+| `context_packing/` | 6,844 | Beta wave optimization | Optimization, not requirement |
+| `search/` | 4,682 | Vector + BM25 hybrid | Alternative retrieval method |
+| `bandits/` | 4,285 | Extended exploration | Core has Thompson; this extends |
+| `context/` | 6,006 | Circuit breakers, rate limits | Operational, not functional |
+| `memory_symphony/` | ~1,700 | Multi-system coordination | Optimization layer |
 | `spinningWheel/` | 29,020 | 47 input adapters | Data ingestion, not reasoning |
 | `integrations/` | 6,129 | LangChain bridge | Third-party integration |
 | `chaining/` | 5,045 | 17 chain patterns | Composition patterns |
-| `physics/` | 4,053 | Helmholtz free energy optimization | Advanced math backend |
-| `planning/` | 3,535 | POMDP planning under uncertainty | Advanced planning |
+| `physics/` | 4,053 | Helmholtz free energy | Advanced math backend |
+| `planning/` | 3,535 | POMDP planning | Advanced planning |
 | `causal/` | 3,150 | Pearl's do-calculus | Advanced reasoning |
 | `explainability/` | ~3,000 | 7 XAI techniques | Observability |
 | `reasoning/` | 2,631 | Multi-modal reasoning | Extended reasoning |
 | `verification/` | ~2,000 | Chain of verification | Quality checking |
+| `visualization/` | 25,925 | Jenny adaptive viz runtime | Implements viz protocol from core |
+| `voice/` | 16,759 | STT/TTS voice commands | Input modality |
+| `vision/` | ~8,000 | YOLO, MiDaS, SLAM | Input modality |
+| `spatial/` | 16,102 | WebXR AR/VR | Output modality |
+| `collaboration/` | 7,616 | Multi-user workspaces | Multi-user feature |
+| `dreamweaving/` | ~5,000 | Creative world building | Creative feature |
+| `departments/` | 38,131 | Multi-department B2B | Enterprise routing |
+| `eggroll/` | 4,561 | Distributed evolution | Distributed compute |
+| `federation/` | 20,379 | Gossip + DHT | Distributed infra |
+| `server/` | 22,804 | FastAPI server | Deployment infra |
+| `thirdeye/` | 13,883 | Scene understanding | Vision analysis |
+| `redteam/` | 40,821 | Adversarial testing | Dev/testing tool |
 
-**Subtotal: ~250,000 LOC** — Power-ups. Should be independently installable.
+**Subtotal: ~470,000 LOC** — Optional capabilities. Install what you need.
+
+**Note on the previous version**: This list used to be split into "extensions"
+(Layer 2) and "apps" (Layer 3). Most of what was called an "app" — voice,
+vision, server, federation, redteam, visualization — is really an optional
+module. The test: does it have its own users and UI? If not, it's a module.
 
 ---
 
-## Layer 3: Apps (built ON HoloLoom, not part of it)
+## Layer 3: Apps (built ON HoloLoom, separate packages)
 
-These are end-user-facing applications that consume HoloLoom as infrastructure.
-**They should not live inside the `HoloLoom/` package.**
+These have their own users, their own UIs, their own reason to exist.
+**They should not live inside the `hololoom/` package.**
 
 | Current Location | LOC | What It Is | Should Be |
 |-----------------|-----|-----------|-----------|
-| `apps/elle/` | 30,948 | AR guide companion | `apps/elle/` ✅ already correct |
-| `HoloLoom/visualization/` (Jenny) | 25,925 | Adaptive viz runtime | `apps/jenny/` |
-| `apps/trough/` + `apps/xterminator/` | 24,686 | Code quality QA system | `apps/trough/` ✅ already correct |
+| `apps/elle/` | 30,948 | AR guide companion | `apps/elle/` ✅ |
+| `apps/trough/` + `apps/xterminator/` | 24,686 | Code quality QA | `apps/trough/` ✅ |
 | `HoloLoom/chatops/` | 44,221 | Matrix.org chatbot | `apps/chatops/` |
 | `HoloLoom/web_dashboard/` | 23,029 | Visual workflow builder | `apps/workflow_builder/` |
-| `HoloLoom/departments/` | 38,131 | Multi-department B2B system | `apps/departments/` |
-| `HoloLoom/redteam/` | 40,821 | Adversarial red-teaming | `apps/redteam/` |
-| `apps/bosspig/` | 5,510 | Business doc slop detector | `apps/bosspig/` ✅ already correct |
-| `apps/sous/` | 19,189 | Kitchen management AI | `apps/sous/` ✅ already correct |
-| `HoloLoom/server/` | 22,804 | FastAPI server | `apps/server/` |
-| `HoloLoom/collaboration/` | 7,616 | Multi-user workspaces | `apps/collaboration/` |
-| `HoloLoom/dreamweaving/` | ~5,000 | Creative world building | `apps/dreamweaving/` |
-| `HoloLoom/spatial/` | 16,102 | WebXR AR/VR integration | `apps/spatial/` |
-| `HoloLoom/voice/` | 16,759 | STT/TTS voice commands | `apps/voice/` |
-| `HoloLoom/vision/` | ~8,000 | YOLO, MiDaS, SLAM | `apps/vision/` |
-| `HoloLoom/thirdeye/` | 13,883 | Scene understanding viz | `apps/thirdeye/` |
-| `HoloLoom/federation/` | 20,379 | Distributed gossip + DHT | `apps/federation/` |
-| `HoloLoom/eggroll/` | 4,561 | Distributed evolution | `apps/eggroll/` |
+| `apps/bosspig/` | 5,510 | Business doc slop detector | `apps/bosspig/` ✅ |
+| `apps/sous/` | 19,189 | Kitchen management AI | `apps/sous/` ✅ |
 
-**Subtotal: ~370,000 LOC** — This is more than half the codebase.
+**Subtotal: ~150,000 LOC**
 
-**Key insight**: The majority of HoloLoom's code is apps, not infrastructure.
+**The app test**: Does it have its own end users who don't know or care about
+HoloLoom's internals? Does it have its own UI (CLI, web, chat)? Then it's an
+app. ChatOps has Matrix users. Elle has AR users. Sous has kitchen staff.
+These are products, not modules.
 
 ---
 
@@ -170,96 +183,176 @@ These could go either way:
 
 ---
 
-## The Numbers Tell the Story
+## The Numbers (Revised)
 
 | Layer | LOC | % of Codebase | Directory Count |
 |-------|-----|--------------|-----------------|
-| **Core Infrastructure** | ~122K | 13% | 13 dirs |
-| **Core Extensions** | ~250K | 27% | 21 dirs |
-| **Apps** | ~370K | 40% | 18 dirs |
+| **Core** | ~122K | 13% | 13 dirs |
+| **Optional Modules** | ~470K | 51% | 33 dirs |
+| **Apps** | ~150K | 16% | 6 dirs |
 | **Tooling & Tests** | ~150K | 16% | 12 dirs |
 | **Unclear** | ~40K | 4% | 25 dirs |
 
-**40% of the codebase is apps masquerading as infrastructure.**
+The core product is 13% of the code. That's fine — it's the 13% everything
+else depends on. The optional modules are the bulk, which makes sense for a
+platform: the value is in what you can plug in.
 
-That's why the repo feels unfocused — the core product is 13% of the code,
-buried under layers of applications and extensions that all live at the same
-directory level.
+The previous version inflated the "apps" count by classifying voice, vision,
+server, etc. as apps. They're not — they're modules. The actual apps (elle,
+chatops, sous, etc.) are ~16%, which feels right for end-user products built
+on a platform.
 
 ---
 
-## Proposed Target Structure
+## Proposed Target Structure (Revised 2026-02-26)
+
+The previous version of this doc proposed `core/` + `extensions/`. On review,
+the `extensions/` wrapper doesn't earn its keep. `voice/` and `federation/` are
+both just "optional" — the filesystem doesn't need to encode *why* they're
+optional. That distinction belongs in `pyproject.toml` extras and docs.
+
+**Two levels: core, and everything else.**
 
 ```
-hololoom/                          ← Renamed, lowercase (PEP 8)
-├── core/                          ← Layer 1: The Product (~122K LOC)
-│   ├── memory/
-│   ├── embedding/
-│   ├── policy/
-│   ├── orchestrator/              ← Consolidate 6 files here
-│   ├── warp/
-│   ├── convergence/
-│   ├── fabric/
-│   ├── chrono/
-│   ├── resonance/
-│   ├── loom/
-│   ├── recursive/
-│   ├── reflection/
-│   └── protocols/
+hololoom/                          ← The package (lowercase, PEP 8)
 │
-├── extensions/                    ← Layer 2: Optional Power-ups (~250K LOC)
-│   ├── agentic/
-│   ├── alignment/
-│   ├── rag/
-│   ├── dark_trace/
-│   ├── routing/
-│   ├── semantic_calculus/
-│   ├── context_packing/
-│   ├── prompting/
-│   ├── search/
-│   ├── spinningWheel/
-│   └── ...
+├── core/                          ← Always installed (~122K LOC)
+│   ├── protocols/                 ← Zero-dep contracts (includes viz protocol)
+│   ├── memory/                    ← Knowledge graph, vector store, awareness
+│   ├── embedding/                 ← Matryoshka multi-scale
+│   ├── policy/                    ← Thompson Sampling decision engine
+│   ├── convergence/               ← Probability collapse → actions
+│   ├── orchestrator/              ← 9-step weaving cycle
+│   ├── warp/                      ← Tensioned tensor manifold
+│   ├── fabric/                    ← Spacetime output with provenance
+│   ├── chrono/                    ← Temporal windows
+│   ├── resonance/                 ← Feature extraction (DotPlasma)
+│   ├── loom/                      ← Pattern card selection
+│   ├── recursive/                 ← Self-improving learning loops
+│   └── reflection/                ← Episodic buffer, PPO
 │
-apps/                              ← Layer 3: Separate from package
-├── elle/
-├── jenny/
-├── trough/
-├── chatops/
+├── agentic/                       ← Flat optional peers (~250K LOC total)
+├── alignment/                     ← None of these import each other.
+├── rag/                           ← Install what you need.
+├── dark_trace/
+├── routing/
+├── semantic_calculus/
+├── context_packing/
+├── prompting/
+├── search/
+├── bandits/
+├── context/
+├── memory_symphony/
+├── spinningWheel/
+├── integrations/
+├── chaining/
+├── physics/
+├── planning/
+├── causal/
+├── explainability/
+├── reasoning/
+├── verification/
+├── voice/
+├── vision/
+├── spatial/
+├── visualization/                 ← Jenny (implements viz protocol from core)
+├── collaboration/
+├── dreamweaving/
 ├── departments/
-├── workflow_builder/
-├── server/                        ← Or this could be top-level
+├── eggroll/
+├── federation/
+├── server/
+├── thirdeye/
+└── redteam/                       ← Dev tool, but still just an optional module
+```
+
+**Apps** — separate packages, not inside `hololoom/`:
+
+```
+apps/
+├── elle/                          ← AR guide companion
+├── trough/ + xterminator/         ← Code quality QA
+├── chatops/                       ← Matrix.org chatbot
+├── workflow_builder/              ← Visual workflow builder
+├── bosspig/                       ← Business doc slop detector
+├── sous/                          ← Kitchen management AI
 └── ...
+```
 
-tools/                             ← Layer 4: Development support
-├── scripts/
-├── performance/
-├── tuning/
-└── security/
+**Support** — at the repo root:
 
-tests/                             ← All tests at root
+```
+tests/                             ← All tests
 ├── unit/
 ├── integration/
 └── e2e/
-
-docs/                              ← Documentation
+tools/                             ← Dev utilities, tuning, security
 infra/                             ← Docker, K8s, monitoring
+docs/                              ← Documentation
 demos/                             ← Examples
 ```
 
-This structure makes the architecture **self-documenting**. A new developer
-immediately understands:
-- `core/` is the product
-- `extensions/` are optional add-ons
-- `apps/` are things built with the product
-- Everything else is support
+### Why This Structure
+
+**What we dropped**: The `extensions/` directory. It was a category for the sake
+of having a category. `voice/` and `federation/` and `rag/` are all just
+"optional modules that don't import each other." They don't need a parent folder
+to tell you that.
+
+**Where the categories live instead**:
+
+- **`pyproject.toml` extras** — `pip install hololoom[voice,vision]`,
+  `pip install hololoom[server,federation]`
+- **Documentation** — "Input modalities: voice, vision. Output: spatial,
+  visualization. Infra: server, federation."
+- **Not the directory tree** — A developer shouldn't have to open
+  `extensions/` → `input_modalities/` → `voice/` to find the voice module.
+  `from hololoom.voice import ...` is enough.
+
+**The test**: If you can't explain why two modules are in the same folder
+(beyond "they're both optional"), the folder shouldn't exist.
+
+### How `core/` Earns Its Folder
+
+Unlike `extensions/`, the `core/` grouping passes the test:
+
+- Everything in `core/` is **always installed** — no extras needed
+- Everything in `core/` is required for the **basic weaving pipeline** to work
+- Removing any `core/` module breaks the system
+- `core/` modules **do** import each other (orchestrator imports memory,
+  policy, convergence, etc.)
+
+The boundary is: "does the weaving cycle break without this?" Yes → core.
+No → optional peer.
 
 ---
 
 ## Migration Path
 
-This doesn't have to happen all at once. Suggested order:
+Suggested order, each step independently valuable:
 
-1. **Move apps out of HoloLoom/** (biggest clarity win, least breakage)
-2. **Consolidate the "unclear" micro-modules** into their parent systems
-3. **Split core/ vs extensions/** inside HoloLoom/
-4. **Rename to lowercase** (breaking change, do last)
+1. **Move apps out of `HoloLoom/`** — biggest clarity win, least breakage.
+   chatops, departments, web_dashboard, server → `apps/`
+
+2. **Consolidate micro-modules** — merge `neural/` into `policy/`, `math/`
+   into `warp/`, `input/` into `spinningWheel/`, `synthesis/` into `fabric/`,
+   `weaving/` into `orchestrator/`, etc. (the "unclear" list above)
+
+3. **Create `core/`** — move the 13 core directories under `core/`. Update
+   imports. This is the biggest refactor but makes the product visible.
+
+4. **Flatten optional modules** — everything left in `hololoom/` that isn't
+   `core/` stays as a flat peer. No `extensions/` wrapper.
+
+5. **Rename to lowercase** — `HoloLoom/` → `hololoom/`. Breaking change,
+   do last.
+
+6. **Add `pyproject.toml` extras** — define install groups:
+   ```toml
+   [project.optional-dependencies]
+   voice = ["whisper", "pyttsx3"]
+   vision = ["ultralytics", "opencv-python"]
+   server = ["fastapi", "uvicorn"]
+   federation = ["kademlia"]
+   all = ["hololoom[voice,vision,server,federation,...]"]
+   ```
