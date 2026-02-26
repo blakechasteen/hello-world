@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.web_dashboard.conversation_manager import ConversationManager
+from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager
 from HoloLoom.spinningWheel import ChatHistorySpinner
 
 

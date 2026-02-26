@@ -7,7 +7,7 @@ Seeds the marketplace with:
 - Initial featured templates
 
 Usage:
-    python -m HoloLoom.web_dashboard.marketplace_seed [--db-path ./workflows.db]
+    python -m HoloLoom.apps.workflow_builder.marketplace_seed [--db-path ./workflows.db]
 """
 
 import asyncio

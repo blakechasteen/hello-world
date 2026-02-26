@@ -45,7 +45,7 @@ except ImportError:
 
 # Workflow generator for NLP synthesis
 try:
-    from HoloLoom.web_dashboard.workflow_generator import WorkflowGenerator
+    from HoloLoom.apps.workflow_builder.workflow_generator import WorkflowGenerator
     GENERATOR_AVAILABLE = True
 except ImportError:
     GENERATOR_AVAILABLE = False

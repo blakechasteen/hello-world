@@ -15,7 +15,7 @@ Endpoints:
     GET  /api/marketplace/templates/{id}/export - Export template JSON
 
 Usage:
-    from HoloLoom.web_dashboard.workflow_marketplace import create_marketplace_router
+    from HoloLoom.apps.workflow_builder.workflow_marketplace import create_marketplace_router
 
     app = FastAPI()
     router = await create_marketplace_router("./workflows.db")

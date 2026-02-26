@@ -21,8 +21,8 @@
 **Changes Made**:
 ```python
 # Added imports (lines 81-83)
-from HoloLoom.web_dashboard.voice_integration import create_voice_integration
-from HoloLoom.web_dashboard.voice_endpoints import add_voice_endpoints
+from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
+from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # Added global variable (line 113)
 voice_integration = None

@@ -66,8 +66,8 @@ Edit `HoloLoom/web_dashboard/agentic_server.py`:
 
 **Add imports** (around line 70):
 ```python
-from HoloLoom.web_dashboard.voice_integration import create_voice_integration
-from HoloLoom.web_dashboard.voice_endpoints import add_voice_endpoints
+from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
+from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 ```
 
 **Add global** (around line 106):

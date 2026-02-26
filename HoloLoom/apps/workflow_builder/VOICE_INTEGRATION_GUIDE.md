@@ -42,8 +42,8 @@ Edit `HoloLoom/web_dashboard/agentic_server.py`:
 
 ```python
 # Add import at top (around line 70)
-from HoloLoom.web_dashboard.voice_integration import create_voice_integration
-from HoloLoom.web_dashboard.voice_endpoints import add_voice_endpoints
+from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
+from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # Add global variable (around line 106)
 voice_integration = None
@@ -52,8 +52,8 @@ voice_integration = None
 # Initialize Voice Integration
 logger.info("Initializing Voice Integration...")
 try:
-    from HoloLoom.web_dashboard.voice_integration import create_voice_integration
-    from HoloLoom.web_dashboard.voice_endpoints import add_voice_endpoints
+    from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
+    from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
     voice_integration = await create_voice_integration(
         tts_backend="bark",  # or "elevenlabs" or "pyttsx3"
@@ -344,8 +344,8 @@ Here's the complete code to add to `agentic_server.py`:
 # ============================================================================
 
 # 1. Add imports at top (around line 70)
-from HoloLoom.web_dashboard.voice_integration import create_voice_integration
-from HoloLoom.web_dashboard.voice_endpoints import add_voice_endpoints
+from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
+from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # 2. Add global variable (around line 106)
 voice_integration = None

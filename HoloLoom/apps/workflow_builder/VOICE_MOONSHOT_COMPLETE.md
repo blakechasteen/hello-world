@@ -171,8 +171,8 @@ Add to `HoloLoom/web_dashboard/agentic_server.py`:
 
 ```python
 # Add imports (line ~70)
-from HoloLoom.web_dashboard.voice_integration import create_voice_integration
-from HoloLoom.web_dashboard.voice_endpoints import add_voice_endpoints
+from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
+from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # Add global (line ~106)
 voice_integration = None

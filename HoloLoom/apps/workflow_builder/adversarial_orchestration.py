@@ -35,7 +35,7 @@ from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass
 from enum import Enum
 
-from HoloLoom.web_dashboard.agent_orchestration import (
+from HoloLoom.apps.workflow_builder.agent_orchestration import (
     AgentOrchestrationSystem,
     PersistentAgent,
     TaskPriority,

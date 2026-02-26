@@ -57,7 +57,7 @@ async def startup_event():
     global thread_manager
 
     # Import here to avoid circular dependency
-    from HoloLoom.web_dashboard.thread_manager import ThreadManager
+    from HoloLoom.apps.workflow_builder.thread_manager import ThreadManager
 
     # Initialize persistent memory backend (optional)
     memory_backend = None

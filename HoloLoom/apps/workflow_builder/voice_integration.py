@@ -11,7 +11,7 @@ Features:
 - WebSocket streaming for real-time voice
 
 Usage:
-    from HoloLoom.web_dashboard.voice_integration import VoiceIntegration
+    from HoloLoom.apps.workflow_builder.voice_integration import VoiceIntegration
 
     voice = VoiceIntegration(tts_backend="bark")
     await voice.setup()

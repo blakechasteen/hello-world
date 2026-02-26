@@ -13,7 +13,7 @@ Features:
 
 Usage:
     from HoloLoom.spinningWheel.chat_history import ChatHistorySpinner
-    from HoloLoom.web_dashboard.conversation_manager import ConversationManager
+    from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager
 
     # Ingest all conversations
     conv_mgr = ConversationManager("./data/conversations.db")
@@ -42,7 +42,7 @@ from dataclasses import dataclass
 from HoloLoom.protocols.types import MemoryShard
 
 try:
-    from HoloLoom.web_dashboard.conversation_manager import ConversationManager, Message, Conversation
+    from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager, Message, Conversation
 except ImportError:
     ConversationManager = None  # type: ignore[assignment,misc]
     Message = None  # type: ignore[assignment,misc]
@@ -469,7 +469,7 @@ class ChatHistoryAutoCapture:
 
     Usage:
         from HoloLoom import HoloLoom
-        from HoloLoom.web_dashboard.conversation_manager import ConversationManager
+        from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager
         from HoloLoom.spinningWheel.chat_history import ChatHistoryAutoCapture
 
         conv_mgr = ConversationManager()

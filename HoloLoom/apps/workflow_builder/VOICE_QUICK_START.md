@@ -36,8 +36,8 @@ Open `HoloLoom/web_dashboard/agentic_server.py` and make these changes:
 
 #### 2.1 Add Imports (around line 70)
 ```python
-from HoloLoom.web_dashboard.voice_integration import create_voice_integration
-from HoloLoom.web_dashboard.voice_endpoints import add_voice_endpoints
+from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
+from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 ```
 
 #### 2.2 Add Global Variable (around line 106)

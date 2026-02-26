@@ -124,7 +124,7 @@ async def test_chat_archiving():
     print("  Chat Archiving with Embeddings Test")
     print("="*70 + "\n")
 
-    from HoloLoom.web_dashboard.thread_manager import ThreadManager, Message
+    from HoloLoom.apps.workflow_builder.thread_manager import ThreadManager, Message
     from HoloLoom.awareness import CompositionalAwarenessLayer, DualStreamGenerator, OllamaLLM
 
     # Initialize components

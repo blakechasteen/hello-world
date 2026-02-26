@@ -122,7 +122,7 @@ Backend Settings:
 
 ```python
 from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.web_dashboard.workflow_executor import WorkflowExecutor
+from HoloLoom.apps.workflow_builder.workflow_executor import WorkflowExecutor
 
 # Create FUSED configuration
 config = Config.fused()

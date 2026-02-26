@@ -18,7 +18,7 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.web_dashboard.adversarial_orchestration import (
+from HoloLoom.apps.workflow_builder.adversarial_orchestration import (
     create_adversarial_orchestration_system,
     TaskPriority,
     TaskType,

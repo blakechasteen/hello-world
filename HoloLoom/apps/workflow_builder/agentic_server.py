@@ -58,14 +58,14 @@ from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
 from HoloLoom.config import Config, MemoryBackend
 from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.alignment.audit_trail import OutcomeType, AuditTrail
-from HoloLoom.web_dashboard.conversation_manager import ConversationManager
-from HoloLoom.web_dashboard.promptly_bridge import PromptlyBridge, PROMPTLY_AVAILABLE
+from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager
+from HoloLoom.apps.workflow_builder.promptly_bridge import PromptlyBridge, PROMPTLY_AVAILABLE
 
 # MCTS Agent Pool for background learning
 from HoloLoom.agents.background_learner import create_agent_pool
 
 # Multi-threaded conversation manager with breakthrough sharing
-from HoloLoom.web_dashboard.conversation_thread_manager import create_conversation_thread_manager
+from HoloLoom.apps.workflow_builder.conversation_thread_manager import create_conversation_thread_manager
 
 # Spinners for content ingestion
 from HoloLoom.spinningWheel.youtube_spinner import YouTubeSpinner, TRANSCRIPT_API_AVAILABLE as YOUTUBE_AVAILABLE
@@ -79,8 +79,8 @@ from HoloLoom.spinningWheel.matrix_spinner import MatrixSpinner, MATRIX_AVAILABL
 from HoloLoom.spinningWheel.url_spinner import URLSpinner, WEB_AVAILABLE as URL_AVAILABLE
 
 # Voice integration for conversational dashboard
-from HoloLoom.web_dashboard.voice_integration import create_voice_integration
-from HoloLoom.web_dashboard.voice_endpoints import add_voice_endpoints
+from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
+from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # Active WebSocket connections
 active_connections: List[WebSocket] = []
@@ -2646,4 +2646,4 @@ if __name__ == "__main__":
     print("="*60)
     print("\n  Open your browser to: http://localhost:8002\n")
 
-    uvicorn.run("HoloLoom.web_dashboard.agentic_server:app", host="0.0.0.0", port=8002, log_level="info")
+    uvicorn.run("HoloLoom.apps.workflow_builder.agentic_server:app", host="0.0.0.0", port=8002, log_level="info")

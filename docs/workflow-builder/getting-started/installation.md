@@ -120,7 +120,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY HoloLoom /app/HoloLoom
 
 EXPOSE 8001
-CMD ["uvicorn", "HoloLoom.web_dashboard.workflow_executor:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "HoloLoom.apps.workflow_builder.workflow_executor:app", "--host", "0.0.0.0", "--port", "8001"]
 ```
 
 ```yaml

@@ -47,7 +47,7 @@ except ImportError as e:
 
 # Import new production components (persistence, auth, CRDT, agents)
 try:
-    from HoloLoom.web_dashboard.workflow_persistence import (
+    from HoloLoom.apps.workflow_builder.workflow_persistence import (
         WorkflowPersistence, WorkflowRecord, VersionRecord, ExecutionRecord
     )
     PERSISTENCE_AVAILABLE = True
@@ -56,7 +56,7 @@ except ImportError as e:
     PERSISTENCE_AVAILABLE = False
 
 try:
-    from HoloLoom.web_dashboard.workflow_auth import (
+    from HoloLoom.apps.workflow_builder.workflow_auth import (
         get_auth_context, require_permission, AuthContext,
         is_multi_user_enabled, get_current_mode
     )
@@ -66,7 +66,7 @@ except ImportError as e:
     AUTH_AVAILABLE = False
 
 try:
-    from HoloLoom.web_dashboard.workflow_crdt import (
+    from HoloLoom.apps.workflow_builder.workflow_crdt import (
         WorkflowCRDTState, CRDTStateManager, OperationType, Operation
     )
     CRDT_V2_AVAILABLE = True
@@ -75,7 +75,7 @@ except ImportError as e:
     CRDT_V2_AVAILABLE = False
 
 try:
-    from HoloLoom.web_dashboard.workflow_agents import (
+    from HoloLoom.apps.workflow_builder.workflow_agents import (
         WorkflowAgentExecutor, AgentResult, execute_agent as execute_real_agent
     )
     REAL_AGENTS_AVAILABLE = True
@@ -85,7 +85,7 @@ except ImportError as e:
 
 # Import LLM agent executor
 try:
-    from HoloLoom.web_dashboard.llm_executor import execute_llm_agent
+    from HoloLoom.apps.workflow_builder.llm_executor import execute_llm_agent
     LLM_AGENTS_AVAILABLE = True
 except ImportError as e:
     logger.warning(f"LLM agents not available: {e}")
@@ -102,7 +102,7 @@ except ImportError as e:
 
 # Import optimization engine
 try:
-    from HoloLoom.web_dashboard.optimization_engine import ThompsonOptimizer
+    from HoloLoom.apps.workflow_builder.optimization_engine import ThompsonOptimizer
     optimizer = ThompsonOptimizer()
     OPTIMIZATION_AVAILABLE = True
 except ImportError as e:
@@ -1295,7 +1295,7 @@ async def execute_workflow(request: ExecutionRequest):
     owner_id = "default"
     if AUTH_AVAILABLE:
         try:
-            from HoloLoom.web_dashboard.workflow_auth import get_auth_context_sync
+            from HoloLoom.apps.workflow_builder.workflow_auth import get_auth_context_sync
             auth = get_auth_context_sync()
             if "execute" not in auth.permissions:
                 raise HTTPException(status_code=403, detail="Execute permission required")
@@ -1535,7 +1535,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Handle based on CRDT version
                     if crdt_version == 'v2' and CRDT_V2_AVAILABLE:
                         # CRDT v2: Create proper operation with vector clock
-                        from HoloLoom.web_dashboard.workflow_crdt import OperationType, Operation
+                        from HoloLoom.apps.workflow_builder.workflow_crdt import OperationType, Operation
 
                         op_type_str = operation_data.get('type', 'update_node')
                         op_type_map = {
@@ -1602,7 +1602,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     crdt_version = session.get('crdt_version', 'v1')
 
                     if crdt_version == 'v2' and CRDT_V2_AVAILABLE:
-                        from HoloLoom.web_dashboard.workflow_crdt import Operation
+                        from HoloLoom.apps.workflow_builder.workflow_crdt import Operation
 
                         remote_ops = message.get('operations', [])
                         applied_count = 0
@@ -1871,7 +1871,7 @@ async def save_workflow_version(request: SaveVersionRequest):
     if AUTH_AVAILABLE:
         try:
             # In multi-user mode, this would require proper auth headers
-            from HoloLoom.web_dashboard.workflow_auth import get_auth_context_sync
+            from HoloLoom.apps.workflow_builder.workflow_auth import get_auth_context_sync
             auth = get_auth_context_sync()
             owner_id = auth.user_id
         except Exception as e:

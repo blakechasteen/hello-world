@@ -8,13 +8,13 @@ Demonstrates the complete marketplace functionality:
 
 Usage:
     # Seed database and start server
-    python -m HoloLoom.web_dashboard.demo_marketplace
+    python -m HoloLoom.apps.workflow_builder.demo_marketplace
 
     # Just seed (no server)
-    python -m HoloLoom.web_dashboard.demo_marketplace --seed-only
+    python -m HoloLoom.apps.workflow_builder.demo_marketplace --seed-only
 
     # Just show API examples
-    python -m HoloLoom.web_dashboard.demo_marketplace --examples-only
+    python -m HoloLoom.apps.workflow_builder.demo_marketplace --examples-only
 """
 
 import asyncio
