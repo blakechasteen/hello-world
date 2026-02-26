@@ -280,7 +280,7 @@ def awareness_handlers(mock_awareness_graph, mock_spring_dynamics, mock_wave_eng
         ),
     }):
         # Import handlers
-        from HoloLoom.chatops.handlers import awareness_handlers as ah
+        from HoloLoom.apps.chatops.handlers import awareness_handlers as ah
 
         # Set global instances
         ah.set_awareness_graph(mock_awareness_graph)
@@ -730,7 +730,7 @@ class TestHandlerRegistration:
 
     def test_awareness_handlers_class(self, mock_awareness_graph, mock_spring_dynamics, mock_wave_engine):
         """Test AwarenessHandlers class initialization."""
-        from HoloLoom.chatops.handlers.awareness_handlers import AwarenessHandlers
+        from HoloLoom.apps.chatops.handlers.awareness_handlers import AwarenessHandlers
 
         handlers = AwarenessHandlers(
             mock_awareness_graph,

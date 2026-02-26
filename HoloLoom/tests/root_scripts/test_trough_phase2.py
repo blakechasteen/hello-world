@@ -230,4 +230,4 @@ if __name__ == "__main__":
     except requests.exceptions.ConnectionError:
         print("\n❌ ERROR: Cannot connect to server at http://localhost:8000")
         print("   Make sure the server is running:")
-        print("   PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --reload --port 8000")
+        print("   PYTHONPATH=. uvicorn HoloLoom.apps.server.agentic_api:app --reload --port 8000")

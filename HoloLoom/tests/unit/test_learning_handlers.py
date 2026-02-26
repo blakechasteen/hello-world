@@ -366,7 +366,7 @@ def learning_handlers(mock_learning_engine, mock_hot_tracker, mock_reflection_bu
             ReflectionMetrics=MockReflectionMetrics
         ),
     }):
-        from HoloLoom.chatops.handlers import learning_handlers as lh
+        from HoloLoom.apps.chatops.handlers import learning_handlers as lh
 
         # Set global instances
         lh.set_learning_engine(mock_learning_engine)

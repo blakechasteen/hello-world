@@ -12,8 +12,8 @@ import os
 # Add paths - go up to repository root (tests/integration/chatops -> repo root)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
-from HoloLoom.chatops.matrix_bot import MatrixBot, MatrixBotConfig
-from HoloLoom.chatops.hololoom_handlers import HoloLoomMatrixHandlers
+from HoloLoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
+from HoloLoom.apps.chatops.hololoom_handlers import HoloLoomMatrixHandlers
 
 
 def print_section(title: str):

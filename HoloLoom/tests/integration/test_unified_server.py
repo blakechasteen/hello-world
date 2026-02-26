@@ -25,7 +25,7 @@ from httpx import AsyncClient
 from fastapi.testclient import TestClient
 
 # Import server app
-from HoloLoom.server.unified_server import app, state
+from HoloLoom.apps.server.unified_server import app, state
 
 
 @pytest.fixture

@@ -24,7 +24,7 @@ import time
 from typing import Dict, Any
 from fastapi.testclient import TestClient
 
-from HoloLoom.server.agentic_api import app
+from HoloLoom.apps.server.agentic_api import app
 from HoloLoom.config import Config, MemoryBackend
 from HoloLoom.memory.backend_factory import create_memory_backend
 from HoloLoom.protocols.types import MemoryShard

@@ -27,7 +27,7 @@ from unittest.mock import Mock, AsyncMock, patch
 def client():
     """Create test client for FastAPI app."""
     try:
-        from HoloLoom.server.agentic_api import app
+        from HoloLoom.apps.server.agentic_api import app
         return TestClient(app)
     except ImportError:
         pytest.skip("FastAPI server not available")

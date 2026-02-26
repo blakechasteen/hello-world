@@ -17,8 +17,8 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Import existing APIs
-from HoloLoom.server.agentic_api import app as agentic_app
-from HoloLoom.server.agent_manager_api import app as manager_app
+from HoloLoom.apps.server.agentic_api import app as agentic_app
+from HoloLoom.apps.server.agent_manager_api import app as manager_app
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

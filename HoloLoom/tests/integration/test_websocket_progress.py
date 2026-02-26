@@ -10,7 +10,7 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 
-from HoloLoom.chatops.handlers.websocket_progress import (
+from HoloLoom.apps.chatops.handlers.websocket_progress import (
     JobMessageType,
     JobProgressMessage,
     JobProgressManager,

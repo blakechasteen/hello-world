@@ -256,7 +256,7 @@ async def main():
     print("Demo Complete!")
     print("=" * 80)
     print("\nNext Steps:")
-    print("  1. Start the server: uvicorn HoloLoom.server.agentic_api:app --reload")
+    print("  1. Start the server: uvicorn HoloLoom.apps.server.agentic_api:app --reload")
     print("  2. Test endpoint: curl -X POST http://localhost:8000/detect/logic \\")
     print("                    -H 'Content-Type: application/json' \\")
     print("                    -d '{\"code\": \"def divide(a, b): return a / b\", \"language\": \"python\"}'")

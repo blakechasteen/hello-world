@@ -353,8 +353,8 @@ async def cmd_agent_status(args):
         else:
             print(f"  Hypervisor:    {Colors.YELLOW}offline{Colors.ENDC}")
             print(f"\n{Colors.DIM}Start servers with:{Colors.ENDC}")
-            print(f"  uvicorn HoloLoom.server.agentic_api:app --port 8000")
-            print(f"  uvicorn HoloLoom.server.agent_manager_api:app --port 8002")
+            print(f"  uvicorn HoloLoom.apps.server.agentic_api:app --port 8000")
+            print(f"  uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002")
             return
 
         # Get detailed stats from Agent Manager
@@ -405,7 +405,7 @@ async def cmd_agent_logs(args):
         health = await client.check_agentic_health()
         if health.get("status") != "ok":
             print(f"  {Colors.YELLOW}Agentic API offline{Colors.ENDC}")
-            print(f"\n  Start with: uvicorn HoloLoom.server.agentic_api:app --port 8000")
+            print(f"\n  Start with: uvicorn HoloLoom.apps.server.agentic_api:app --port 8000")
             return
 
         # Get audit trail
@@ -482,7 +482,7 @@ async def cmd_cluster_status(args):
             print(f"  Eggroll:       {Colors.YELLOW}Not running{Colors.ENDC}")
 
             print(f"\n{Colors.DIM}Start Agent Manager server:{Colors.ENDC}")
-            print(f"  uvicorn HoloLoom.server.agent_manager_api:app --port 8002")
+            print(f"  uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002")
 
             print(f"\n{Colors.DIM}To enable distributed mode:{Colors.ENDC}")
             print(f"  1. Configure federation in config.yaml")
@@ -515,7 +515,7 @@ async def cmd_cluster_nodes(args):
 
         if not nodes:
             print(f"  {Colors.DIM}No cluster nodes - running in standalone mode{Colors.ENDC}")
-            print(f"\n  Start Agent Manager: uvicorn HoloLoom.server.agent_manager_api:app --port 8002")
+            print(f"\n  Start Agent Manager: uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002")
             return
 
         # Display nodes

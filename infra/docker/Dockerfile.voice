@@ -91,4 +91,4 @@ CMD ["python", "-m", "HoloLoom.voice.voice_agent"]
 # CMD ["python", "demos/demo_voice_agent.py"]
 
 # Alternative entrypoint for server mode
-# CMD ["uvicorn", "HoloLoom.server.voice_api:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "HoloLoom.apps.server.voice_api:app", "--host", "0.0.0.0", "--port", "8000"]

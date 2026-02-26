@@ -133,9 +133,9 @@ setup_commands:
     desc: "Start backends (optional)"
 
 server_commands:
-  - cmd: "uvicorn HoloLoom.server.agentic_api:app --port 8000"
+  - cmd: "uvicorn HoloLoom.apps.server.agentic_api:app --port 8000"
     desc: "Start Agentic API (queries, monitoring)"
-  - cmd: "uvicorn HoloLoom.server.agent_manager_api:app --port 8002"
+  - cmd: "uvicorn HoloLoom.apps.server.agent_manager_api:app --port 8002"
     desc: "Start Agent Manager (threads, swarms)"
 
 testing_commands:

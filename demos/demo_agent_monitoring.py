@@ -12,7 +12,7 @@ Shows:
 
 Usage:
     # Terminal 1: Start the server
-    PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --port 8000
+    PYTHONPATH=. uvicorn HoloLoom.apps.server.agentic_api:app --port 8000
 
     # Terminal 2: Run this demo
     PYTHONPATH=. python demos/demo_agent_monitoring.py
@@ -110,7 +110,7 @@ class MonitorClient:
             return True
         except Exception as e:
             print(f"⚠️  Could not connect to WebSocket: {e}")
-            print("   Make sure server is running: uvicorn HoloLoom.server.agentic_api:app --port 8000")
+            print("   Make sure server is running: uvicorn HoloLoom.apps.server.agentic_api:app --port 8000")
             return False
 
     async def listen(self, duration: float = 30.0):

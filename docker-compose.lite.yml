@@ -105,7 +105,7 @@ services:
         pip install --no-cache-dir torch numpy gymnasium fastapi uvicorn httpx aiohttp &&
         pip install --no-cache-dir networkx qdrant-client neo4j sentence-transformers &&
         pip install --no-cache-dir anthropic openai ollama 2>/dev/null || true &&
-        uvicorn HoloLoom.server.agentic_api:app --host 0.0.0.0 --port 8000
+        uvicorn HoloLoom.apps.server.agentic_api:app --host 0.0.0.0 --port 8000
       "
 
 volumes:

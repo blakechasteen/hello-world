@@ -272,7 +272,7 @@ async def main():
     print("✨ Demo Complete!")
     print()
     print("Next steps:")
-    print("  1. Start HoloLoom server: uvicorn HoloLoom.server.agentic_api:app")
+    print("  1. Start HoloLoom server: uvicorn HoloLoom.apps.server.agentic_api:app")
     print("  2. Open VS Code with Squad extension")
     print("  3. Run 'Squad: Index Workspace'")
     print("  4. Try 'Squad: Fix AI Slop' on broken code!")

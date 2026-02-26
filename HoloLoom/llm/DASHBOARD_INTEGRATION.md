@@ -12,7 +12,7 @@ Add LLM router to `promptly-matrix-bot/dashboard_server.py`:
 
 ```python
 # Add at top of file
-from HoloLoom.server.llm_api import router as llm_router
+from HoloLoom.apps.server.llm_api import router as llm_router
 
 # Add after app creation
 app.include_router(llm_router)
@@ -35,7 +35,7 @@ from bot.hololoom_integration_enhanced import EnhancedHoloLoomBot
 from bot.audit_trail import AuditTrail
 
 # NEW: LLM imports
-from HoloLoom.server.llm_api import router as llm_router
+from HoloLoom.apps.server.llm_api import router as llm_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

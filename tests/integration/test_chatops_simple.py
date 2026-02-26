@@ -23,7 +23,7 @@ async def test_imports():
     # Test 1: Matrix Bot
     print("1. Testing MatrixBot imports...")
     try:
-        from HoloLoom.chatops.core.matrix_bot import MatrixBot, MatrixBotConfig
+        from HoloLoom.apps.chatops.core.matrix_bot import MatrixBot, MatrixBotConfig
         print("   [OK] MatrixBot imported successfully")
     except Exception as e:
         print(f"   [FAIL] MatrixBot import failed: {e}")
@@ -32,7 +32,7 @@ async def test_imports():
     # Test 2: ChatOps Bridge
     print("2. Testing ChatOpsOrchestrator imports...")
     try:
-        from HoloLoom.chatops.core.chatops_bridge import ChatOpsOrchestrator, ConversationContext
+        from HoloLoom.apps.chatops.core.chatops_bridge import ChatOpsOrchestrator, ConversationContext
         print("   [OK] ChatOpsOrchestrator imported successfully")
     except Exception as e:
         print(f"   [FAIL] ChatOpsOrchestrator import failed: {e}")
@@ -41,7 +41,7 @@ async def test_imports():
     # Test 3: Conversation Memory
     print("3. Testing ConversationMemory imports...")
     try:
-        from HoloLoom.chatops.core.conversation_memory import ConversationMemory
+        from HoloLoom.apps.chatops.core.conversation_memory import ConversationMemory
         print("   [OK] ConversationMemory imported successfully")
     except Exception as e:
         print(f"   [FAIL] ConversationMemory import failed: {e}")
@@ -116,7 +116,7 @@ async def test_chatops_orchestrator():
     print()
 
     try:
-        from HoloLoom.chatops.core.chatops_bridge import ChatOpsOrchestrator
+        from HoloLoom.apps.chatops.core.chatops_bridge import ChatOpsOrchestrator
         from HoloLoom.config import Config
 
         print("Creating ChatOpsOrchestrator...")
@@ -132,7 +132,7 @@ async def test_chatops_orchestrator():
 
         # Test conversation context
         print("Testing conversation context...")
-        from HoloLoom.chatops.core.chatops_bridge import ConversationContext
+        from HoloLoom.apps.chatops.core.chatops_bridge import ConversationContext
 
         ctx = ConversationContext(
             room_id="!test:matrix.org",
@@ -165,7 +165,7 @@ async def test_matrix_config():
     print()
 
     try:
-        from HoloLoom.chatops.core.matrix_bot import MatrixBotConfig
+        from HoloLoom.apps.chatops.core.matrix_bot import MatrixBotConfig
 
         print("Creating test Matrix config...")
         config = MatrixBotConfig(

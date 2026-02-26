@@ -379,7 +379,7 @@ def alignment_handlers(mock_guardrails, mock_audit_trail):
         ),
     }):
         # Import after patching
-        from HoloLoom.chatops.handlers import alignment_handlers as ah
+        from HoloLoom.apps.chatops.handlers import alignment_handlers as ah
 
         # Set global instances
         ah.set_guardrails(mock_guardrails)

@@ -358,7 +358,7 @@ def context_handlers(mock_packer, mock_spreader, mock_scorer, mock_kg):
         ),
     }):
         # Import handlers
-        from HoloLoom.chatops.handlers import context_handlers as ch
+        from HoloLoom.apps.chatops.handlers import context_handlers as ch
 
         # Set global instances
         ch.set_context_packer(mock_packer)
@@ -779,7 +779,7 @@ class TestHandlerRegistration:
 
     def test_context_handlers_class(self, mock_packer, mock_spreader, mock_scorer, mock_kg):
         """Test ContextHandlers class initialization."""
-        from HoloLoom.chatops.handlers.context_handlers import ContextHandlers
+        from HoloLoom.apps.chatops.handlers.context_handlers import ContextHandlers
 
         handlers = ContextHandlers(
             mock_packer,

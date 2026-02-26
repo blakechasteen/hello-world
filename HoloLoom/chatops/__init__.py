@@ -1,82 +1,44 @@
 """
-HoloLoom ChatOps
-================
-Matrix.org chatbot integration with HoloLoom neural decision-making.
+HoloLoom chatops — MOVED to HoloLoom.apps.chatops
 
-Organization:
-    core/       - Core bot components (Matrix client, bridge, memory, skills)
-    handlers/   - Advanced features (multimodal, threads, proactive)
-    examples/   - Example implementations
-    docs/       - Documentation
-    deploy/     - Deployment scripts and tests
-
-Quick Start:
-    >>> from HoloLoom.chatops import ChatOpsRunner
-    >>> import asyncio
-    >>>
-    >>> config = {
-    ...     "matrix": {
-    ...         "homeserver_url": "https://matrix.org",
-    ...         "user_id": "@bot:matrix.org",
-    ...         "access_token": "YOUR_TOKEN",
-    ...         "rooms": ["#test:matrix.org"]
-    ...     }
-    ... }
-    >>>
-    >>> runner = ChatOpsRunner(config)
-    >>> asyncio.run(runner.run())
+This package was relocated on 2026-02-26.
+Import from ``HoloLoom.apps.chatops`` instead.
 """
 
-# Core components - always available
-from HoloLoom.chatops.core import (
-    MatrixBot,
-    MatrixBotConfig,
-    ChatOpsOrchestrator,
-    ConversationContext,
-    ConversationMemory,
-    EntityType,
-    RelationType,
-    ChatOpsSkills,
-    SkillResult,
-    ChatOpsSkill,
-)
+import importlib
+import warnings
+import sys
 
-# Main runner
-try:
-    from HoloLoom.chatops.run_chatops import ChatOpsRunner
-    _RUNNER_AVAILABLE = True
-except ImportError:
-    _RUNNER_AVAILABLE = False
 
-# Optional handlers - import if available
-try:
-    from HoloLoom.chatops.handlers import (
-        MultimodalHandler,
-        ThreadHandler,
-        ProactiveAgent,
-    )
-    _HANDLERS_AVAILABLE = True
-except ImportError:
-    _HANDLERS_AVAILABLE = False
+class _DeprecatedFinder:
+    """Meta-path finder that redirects HoloLoom.chatops.* imports."""
 
-__all__ = [
-    # Core
-    "MatrixBot",
-    "MatrixBotConfig",
-    "ChatOpsOrchestrator",
-    "ConversationContext",
-    "ConversationMemory",
-    "EntityType",
-    "RelationType",
-    "ChatOpsSkills",
-    "SkillResult",
-    "ChatOpsSkill",
-]
+    _PREFIX = "HoloLoom.chatops."
 
-if _RUNNER_AVAILABLE:
-    __all__.append("ChatOpsRunner")
+    def find_module(self, fullname, path=None):
+        if fullname == "HoloLoom.chatops" or fullname.startswith(self._PREFIX):
+            return self
+        return None
 
-if _HANDLERS_AVAILABLE:
-    __all__.extend(["MultimodalHandler", "ThreadHandler", "ProactiveAgent"])
+    def load_module(self, fullname):
+        if fullname in sys.modules:
+            return sys.modules[fullname]
 
-__version__ = "0.2.0"  # Bumped for reorganization
+        new_name = fullname.replace(
+            "HoloLoom.chatops", "HoloLoom.apps.chatops", 1
+        )
+
+        warnings.warn(
+            f"Importing from {fullname} is deprecated. "
+            f"Use {new_name} instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        real = importlib.import_module(new_name)
+        sys.modules[fullname] = real
+        return real
+
+
+if not any(isinstance(f, _DeprecatedFinder) for f in sys.meta_path):
+    sys.meta_path.insert(0, _DeprecatedFinder())

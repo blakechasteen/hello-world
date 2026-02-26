@@ -74,7 +74,7 @@ def audit_trail():
 @pytest.mark.asyncio
 async def test_rate_limiter_concurrent_requests():
     """Test rate limiter handles concurrent requests without corruption."""
-    from HoloLoom.server.agentic_api import RateLimiter
+    from HoloLoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=10, window_seconds=1)
 
@@ -95,7 +95,7 @@ async def test_rate_limiter_concurrent_requests():
 @pytest.mark.asyncio
 async def test_rate_limiter_no_state_corruption():
     """Test rate limiter state remains consistent under concurrent load."""
-    from HoloLoom.server.agentic_api import RateLimiter
+    from HoloLoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=5, window_seconds=1)
     client_id = "test_client"
@@ -113,7 +113,7 @@ async def test_rate_limiter_no_state_corruption():
 @pytest.mark.asyncio
 async def test_rate_limiter_multiple_clients_isolated():
     """Test rate limiting is isolated per client."""
-    from HoloLoom.server.agentic_api import RateLimiter
+    from HoloLoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=3, window_seconds=1)
 
@@ -135,7 +135,7 @@ async def test_rate_limiter_multiple_clients_isolated():
 @pytest.mark.asyncio
 async def test_rate_limiter_window_sliding():
     """Test rate limiter window slides correctly under concurrent load."""
-    from HoloLoom.server.agentic_api import RateLimiter
+    from HoloLoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=5, window_seconds=1)
     client_id = "test_client"
@@ -154,7 +154,7 @@ async def test_rate_limiter_window_sliding():
 @pytest.mark.asyncio
 async def test_rate_limiter_stress_test():
     """Stress test rate limiter with high concurrent load."""
-    from HoloLoom.server.agentic_api import RateLimiter
+    from HoloLoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=50, window_seconds=1)
 
