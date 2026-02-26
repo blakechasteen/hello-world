@@ -42,7 +42,7 @@ try:
         get_global_registry,
         create_registry
     )
-    from HoloLoom.departments.protocol import (
+    from HoloLoom.protocols.department import (
         DepartmentRequest,
         DepartmentResponse,
         ConfidenceLevel,

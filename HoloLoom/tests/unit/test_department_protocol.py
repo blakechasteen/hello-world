@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 from uuid import UUID
 
-from HoloLoom.departments.protocol import (
+from HoloLoom.protocols.department import (
     ConfidenceLevel,
     ConfidenceMetadata,
     DepartmentRequest,

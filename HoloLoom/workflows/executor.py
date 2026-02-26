@@ -421,7 +421,7 @@ class WorkflowExecutor:
         max_sources = node.params.get("max_sources", 5)
 
         dept = await self._get_department("rag")
-        from HoloLoom.departments.protocol import DepartmentRequest
+        from HoloLoom.protocols.department import DepartmentRequest
 
         request = DepartmentRequest(
             department_id="rag",
@@ -458,7 +458,7 @@ class WorkflowExecutor:
 
     async def _execute_verify_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Verify response using DS-STAR."""
-        from HoloLoom.departments.protocol import DepartmentResponse, ConfidenceMetadata
+        from HoloLoom.protocols.department import DepartmentResponse, ConfidenceMetadata
 
         # Create mock response for verification
         response = DepartmentResponse(

@@ -27,7 +27,7 @@ import random
 from HoloLoom.loom.base_loom import BaseLoom
 from HoloLoom.loom.protocol import REACH, DiscoveryInsight, PatternInsight
 from HoloLoom.fabric.fabric import Fabric
-from HoloLoom.departments.protocol import (
+from HoloLoom.protocols.department import (
     DepartmentRequest,
     DepartmentResponse,
     ConfidenceMetadata,

@@ -28,7 +28,7 @@ from HoloLoom.chaining import (
     ChainPatterns,
     Conditions,
 )
-from HoloLoom.departments.protocol import DepartmentRequest, DepartmentResponse, ConfidenceMetadata
+from HoloLoom.protocols.department import DepartmentRequest, DepartmentResponse, ConfidenceMetadata
 from unittest.mock import AsyncMock, MagicMock
 
 # Configure logging

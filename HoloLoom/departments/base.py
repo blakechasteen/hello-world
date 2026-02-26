@@ -28,7 +28,7 @@ import asyncio
 import time
 import logging
 
-from .protocol import (
+from HoloLoom.protocols.department import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -38,7 +38,7 @@ from .protocol import (
     DepartmentConfig,
     DepartmentManifest,
     compute_learning_rate,
-    should_update_now
+    should_update_now,
 )
 
 

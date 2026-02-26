@@ -38,7 +38,7 @@ from HoloLoom.loom.protocol import (
     DiscoveryInsight,
 )
 from HoloLoom.fabric.fabric import Fabric, Tension
-from HoloLoom.departments.protocol import (
+from HoloLoom.protocols.department import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -442,7 +442,7 @@ class BaseLoom(DreamingMixin, ABC):
         Returns:
             Verification result
         """
-        from HoloLoom.departments.protocol import VerificationCheck, VerificationStatus
+        from HoloLoom.protocols.department import VerificationCheck, VerificationStatus
 
         checks = []
 

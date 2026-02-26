@@ -35,6 +35,7 @@ Usage:
 Author: mythRL Team
 Date: 2025-10-27 (Phase 1 Protocol Standardization - Task 1.1)
 Updated: 2025-12-03 (Phase 2A Conscience Integration)
+Updated: 2026-02-26 (Department Protocol extracted from departments/)
 """
 
 # ============================================================================
@@ -137,6 +138,42 @@ from .conscience import (
 )
 
 # ============================================================================
+# Import Department Protocol (February 2026 — extracted from departments/)
+# ============================================================================
+
+from .department import (
+    # Confidence
+    ConfidenceLevel,
+    ConfidenceMetadata,
+    # Privacy
+    PrivacyLevel,
+    PrivacyEnvelope,
+    # Requests and Responses
+    DepartmentRequest,
+    DepartmentResponse,
+    # Verification
+    VerificationStatus,
+    VerificationCheck,
+    DSStarCheck,
+    VerificationResult,
+    # Protocols
+    Department,
+    DepartmentProtocol,
+    # Helpers
+    create_simple_request,
+    create_simple_response,
+    # Type Aliases
+    DepartmentFactory,
+    VerificationFunction,
+    # Configuration
+    DepartmentConfig,
+    DepartmentManifest,
+    # Learning Functions
+    compute_learning_rate,
+    should_update_now,
+)
+
+# ============================================================================
 # Re-exports from Documentation.types for convenience
 # ============================================================================
 
@@ -225,6 +262,28 @@ __all__ = [
     'create_allowed_decision',
     'create_blocked_decision',
     'create_review_decision',
+
+    # ===== Department Protocol (February 2026) =====
+    'ConfidenceLevel',
+    'ConfidenceMetadata',
+    'PrivacyLevel',
+    'PrivacyEnvelope',
+    'DepartmentRequest',
+    'DepartmentResponse',
+    'VerificationStatus',
+    'VerificationCheck',
+    'DSStarCheck',
+    'VerificationResult',
+    'Department',
+    'DepartmentProtocol',
+    'create_simple_request',
+    'create_simple_response',
+    'DepartmentFactory',
+    'VerificationFunction',
+    'DepartmentConfig',
+    'DepartmentManifest',
+    'compute_learning_rate',
+    'should_update_now',
 
     # ===== Compatibility Aliases =====
     'ToolExecutionProtocol',

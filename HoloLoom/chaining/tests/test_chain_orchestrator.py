@@ -30,7 +30,7 @@ from HoloLoom.chaining import (
     Conditions,
     CommonConditions,
 )
-from HoloLoom.departments.protocol import DepartmentRequest, DepartmentResponse, ConfidenceMetadata
+from HoloLoom.protocols.department import DepartmentRequest, DepartmentResponse, ConfidenceMetadata
 
 
 # ============================================================================

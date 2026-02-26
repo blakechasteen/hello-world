@@ -66,7 +66,9 @@ Quick Start:
 # Core Protocol
 # ============================================================================
 
-from .protocol import (
+# Import from canonical location (protocols/) directly to avoid
+# triggering the deprecation warning in the .protocol shim.
+from HoloLoom.protocols.department import (
     # Confidence System
     ConfidenceLevel,
     ConfidenceMetadata,
@@ -87,7 +89,7 @@ from .protocol import (
 
     # Utilities
     compute_learning_rate,
-    should_update_now
+    should_update_now,
 )
 
 # ============================================================================

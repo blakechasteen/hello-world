@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from datetime import datetime
 
-from HoloLoom.departments.protocol import DepartmentRequest, DepartmentResponse
+from HoloLoom.protocols.department import DepartmentRequest, DepartmentResponse
 from .chain import Chain, ChainStep, StepType
 from .types import (
     StepResult,
