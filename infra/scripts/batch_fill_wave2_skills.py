@@ -10,7 +10,7 @@ SKILLS_CONTENT = {
         "description_short": "Discover emergent patterns (loops, clusters, threads, resonance) in HoloLoom's knowledge graph for insight generation.",
         "description_long": "Knowledge graphs contain hidden structures that reveal deep insights when discovered. This skill exposes UnifiedMemory.discover_patterns() to find 4 types of emergent patterns: LOOP (cycles/feedback), CLUSTER (tightly connected groups), THREAD (narrative chains), and RESONANCE (highly activated memories). Each pattern type reveals different aspects of knowledge structure: loops show feedback systems, clusters reveal topics, threads expose causality, and resonance highlights current focus.",
         "capabilities": ["read", "python"],
-        "dependencies": "HoloLoom.memory.unified (UnifiedMemory.discover_patterns())",
+        "dependencies": "hololoom.memory.unified (UnifiedMemory.discover_patterns())",
         "input_schema": '''{
   "pattern_types": ["loop", "cluster", "thread", "resonance"],
   "min_strength": "number - 0.0-1.0, minimum pattern strength (default: 0.4)",
@@ -65,7 +65,7 @@ SKILLS_CONTENT = {
         "description_short": "Multi-pass recursive refinement using ELEGANCE and VERIFY strategies for quality improvement.",
         "description_long": "Great answers aren't written, they're refined. This skill exposes AdvancedRefiner to iteratively improve results through multi-pass refinement. Two strategies: ELEGANCE (clarity -> simplicity -> beauty) and VERIFY (accuracy -> completeness -> consistency). Each pass improves a specific quality dimension with measurable trajectory. Perfect for low-confidence results that need polishing or complex tasks requiring multiple perspectives.",
         "capabilities": ["read", "python"],
-        "dependencies": "HoloLoom.recursive.advanced_refiner (AdvancedRefiner)",
+        "dependencies": "hololoom.recursive.advanced_refiner (AdvancedRefiner)",
         "input_schema": '''{
   "initial_result": "string - Result to refine",
   "strategy": "elegance|verify|auto (auto-select based on initial_result)",
@@ -119,7 +119,7 @@ quality = 0.7 * confidence + 0.2 * context_richness + 0.1 * completeness
         "description_short": "Explain why specific memories were retrieved using Semantic Calculus 16-axis analysis.",
         "description_long": "Transparency builds trust. This skill explains retrieval results by analyzing queries along 16 interpretable semantic axes (sentiment, formality, technicality, certainty, urgency, abstraction, etc.). Shows which axes drove the match, highlights unexpected connections, and reveals hidden query intent. Perfect for debugging poor retrieval, understanding why certain memories surfaced, or explaining AI decisions to users.",
         "capabilities": ["read", "python"],
-        "dependencies": "HoloLoom.semantic_calculus (228D projections, 16 axes)",
+        "dependencies": "hololoom.semantic_calculus (228D projections, 16 axes)",
         "input_schema": '''{
   "query": "string - Original search query",
   "retrieved_memories": [
@@ -176,7 +176,7 @@ emotionality, actionability, novelty, controversy
         "description_short": "Explain Thompson Sampling bandit decisions using Bayesian prior analysis.",
         "description_long": "Thompson Sampling balances exploration/exploitation through Bayesian priors (α, β). This skill explains bandit decisions by showing expected rewards, uncertainty levels, exploration probabilities, and why specific tools were selected. Visualizes α/β distributions, compares tools, and identifies when exploration vs exploitation dominated. Perfect for debugging policy behavior, understanding tool selection, or explaining AI exploration to users.",
         "capabilities": ["read", "python"],
-        "dependencies": "HoloLoom.policy.unified (Thompson Sampling bandit)",
+        "dependencies": "hololoom.policy.unified (Thompson Sampling bandit)",
         "input_schema": '''{
   "tool_stats": [
     {"tool": "string", "alpha": "number", "beta": "number", "n_pulls": "number"}
@@ -232,7 +232,7 @@ emotionality, actionability, novelty, controversy
         "description_short": "Pre-flight safety checks using HoloLoom alignment framework for risk-aware action gating.",
         "description_long": "Safety first. This skill performs comprehensive pre-flight checks before executing potentially risky actions. Integrates with Safety Guardrails to assess risk levels (LOW/MEDIUM/HIGH/CRITICAL), detects adversarial patterns, checks instrumental convergence (power-seeking), and requires human-in-the-loop for high-risk actions. Returns actionable safety recommendations and automatic abort triggers.",
         "capabilities": ["read", "python"],
-        "dependencies": "HoloLoom.alignment.safety_guardrails (SafetyGuardrails)",
+        "dependencies": "hololoom.alignment.safety_guardrails (SafetyGuardrails)",
         "input_schema": '''{
   "action": "string - Action to execute",
   "context": {"object - Execution context (code, data, permissions, etc.)"},
@@ -285,7 +285,7 @@ emotionality, actionability, novelty, controversy
         "description_short": "Compress knowledge graphs to PNG images for 5-20x token savings in LLM context.",
         "description_long": "Context is expensive. This skill uses visual compression to convert knowledge graphs into PNG images, achieving 5-20x token savings while preserving entity relationships. Automatic compression when sources > threshold (default: 10), supports knowledge graphs and retrieval results, returns PNG bytes + compression metrics. Perfect for RAG systems, multimodal LLMs, or any scenario where graph context exceeds token budgets.",
         "capabilities": ["read", "python"],
-        "dependencies": "HoloLoom.memory.visual_compression (compress_graph_to_image)",
+        "dependencies": "hololoom.memory.visual_compression (compress_graph_to_image)",
         "input_schema": '''{
   "graph": "object - Knowledge graph or list of memory nodes",
   "compression_threshold": "number - Min nodes to trigger compression (default: 10)",
@@ -340,7 +340,7 @@ emotionality, actionability, novelty, controversy
         "description_short": "Visualize awareness graph metrics (activation, coherence, temporal) for memory monitoring.",
         "description_long": "Monitor the mind. This skill visualizes awareness graph metrics to understand memory state: activation levels (which memories are 'awake'), coherence (how well-connected active memories are), temporal dynamics (activation decay over time), and network-wide statistics. Generates HTML dashboards with interactive charts, tracks activation trajectories, detects anomalies, and provides recommendations for memory health.",
         "capabilities": ["read", "python"],
-        "dependencies": "HoloLoom.memory.awareness_graph (AwarenessGraph.get_metrics())",
+        "dependencies": "hololoom.memory.awareness_graph (AwarenessGraph.get_metrics())",
         "input_schema": '''{
   "include_history": "boolean - Include historical metrics (default: false)",
   "history_window": "number - Hours of history (default: 24)",

@@ -1,0 +1,385 @@
+{
+  "version": "1.0",
+  "name": "BDR Outbound Sequence",
+  "description": "Complete 12-day outbound sales sequence with Thompson Sampling optimization",
+  "created": "2025-11-05",
+  "nodes": [
+    {
+      "id": "node_1",
+      "type": "hololoom Query",
+      "position": {"x": 50, "y": 100},
+      "config": {
+        "title": "Prospect Research",
+        "description": "Day 0: Deep research on prospect and company",
+        "mode": "research",
+        "max_steps": 5,
+        "query_template": "Research {{prospect_name}} at {{company_name}}: recent news, tech stack, pain points related to {{our_category}}, hiring signals, competitive intelligence"
+      }
+    },
+    {
+      "id": "node_2",
+      "type": "Matryoshka Embedder",
+      "position": {"x": 250, "y": 100},
+      "config": {
+        "title": "Encode Research Context",
+        "description": "Create multi-scale embeddings of research findings",
+        "scales": [96, 192, 384],
+        "enable_spectral": true
+      }
+    },
+    {
+      "id": "node_3",
+      "type": "Memory Store",
+      "position": {"x": 450, "y": 100},
+      "config": {
+        "title": "Store Prospect Intelligence",
+        "description": "Persist research to knowledge graph",
+        "shard_type": "prospect_research",
+        "enable_fusion": true
+      }
+    },
+    {
+      "id": "node_4",
+      "type": "Thompson Sampler",
+      "position": {"x": 50, "y": 250},
+      "config": {
+        "title": "Select Subject Line Variant",
+        "description": "Day 1: Thompson Sampling chooses optimal subject line",
+        "tool_options": [
+          "subject_funding_news",
+          "subject_tech_stack",
+          "subject_hiring_signal",
+          "subject_pain_point",
+          "subject_competitor_trigger"
+        ],
+        "exploration_rate": 0.25,
+        "context_features": ["persona", "industry", "company_size"]
+      }
+    },
+    {
+      "id": "node_5",
+      "type": "Context Retriever",
+      "position": {"x": 250, "y": 250},
+      "config": {
+        "title": "Retrieve Personalization Context",
+        "description": "Pull relevant research findings for email",
+        "query": "{{selected_subject_line}} context for {{prospect_name}}",
+        "top_k": 5,
+        "enable_multimodal": false
+      }
+    },
+    {
+      "id": "node_6",
+      "type": "hololoom Query",
+      "position": {"x": 450, "y": 250},
+      "config": {
+        "title": "Generate Personalized Email",
+        "description": "Day 1: Craft email with selected subject + context",
+        "mode": "direct",
+        "max_steps": 1,
+        "query_template": "Write a personalized cold email to {{prospect_name}} using subject line variant: {{selected_variant}} and context: {{retrieval_context}}. Keep it under 100 words, value-first, specific CTA."
+      }
+    },
+    {
+      "id": "node_7",
+      "type": "Response Generator",
+      "position": {"x": 650, "y": 250},
+      "config": {
+        "title": "Format Email Output",
+        "description": "Structure email for sending",
+        "format": "json",
+        "fields": ["subject", "body", "prospect_id", "timestamp", "variant_id"]
+      }
+    },
+    {
+      "id": "node_8",
+      "type": "Conditional Branch",
+      "position": {"x": 50, "y": 400},
+      "config": {
+        "title": "Day 3 Decision",
+        "description": "Did prospect open email? Branch strategy",
+        "condition": "{{email_opened}} == true",
+        "true_path": "linkedin_connection",
+        "false_path": "wait_and_retry"
+      }
+    },
+    {
+      "id": "node_9",
+      "type": "hololoom Query",
+      "position": {"x": 250, "y": 350},
+      "config": {
+        "title": "LinkedIn Connection Note",
+        "description": "Day 3 (if opened): Personalized connection request",
+        "mode": "verify",
+        "max_steps": 2,
+        "query_template": "Verify {{prospect_name}} at {{company_name}} has pain point: {{pain_point}}. Then write a 200-character LinkedIn connection note that references their recent activity: {{linkedin_activity}}"
+      }
+    },
+    {
+      "id": "node_10",
+      "type": "hololoom Query",
+      "position": {"x": 250, "y": 450},
+      "config": {
+        "title": "Wait & Retry Email",
+        "description": "Day 3 (if not opened): New subject line attempt",
+        "mode": "direct",
+        "max_steps": 1,
+        "query_template": "Generate a different subject line (not {{previous_subject}}) for {{prospect_name}}. Focus on: {{secondary_pain_point}}"
+      }
+    },
+    {
+      "id": "node_11",
+      "type": "Conditional Branch",
+      "position": {"x": 450, "y": 400},
+      "config": {
+        "title": "Day 5 Decision",
+        "description": "LinkedIn accepted? Plan call strategy",
+        "condition": "{{linkedin_accepted}} == true OR {{email_replied}} == true",
+        "true_path": "warm_call",
+        "false_path": "cold_call"
+      }
+    },
+    {
+      "id": "node_12",
+      "type": "hololoom Query",
+      "position": {"x": 650, "y": 350},
+      "config": {
+        "title": "Warm Call Script",
+        "description": "Day 5 (engaged): Reference previous touchpoints",
+        "mode": "plan_execute",
+        "max_steps": 4,
+        "query_template": "Plan a discovery call with {{prospect_name}}. Context: opened email (subject: {{subject_line}}), accepted LinkedIn. Persona: {{persona_type}}. Generate: opening, 3 discovery questions, objection responses, next steps."
+      }
+    },
+    {
+      "id": "node_13",
+      "type": "hololoom Query",
+      "position": {"x": 650, "y": 450},
+      "config": {
+        "title": "Cold Call Script",
+        "description": "Day 5 (not engaged): Pattern interrupt approach",
+        "mode": "plan_execute",
+        "max_steps": 3,
+        "query_template": "Plan a cold call to {{prospect_name}}. Context: no engagement yet. Use pattern interrupt referencing: {{trigger_event}}. Persona: {{persona_type}}."
+      }
+    },
+    {
+      "id": "node_14",
+      "type": "Memory Store",
+      "position": {"x": 850, "y": 400},
+      "config": {
+        "title": "Log Call Outcome",
+        "description": "Store call result for learning",
+        "shard_type": "call_outcome",
+        "metadata": ["connected", "duration_seconds", "objections_raised", "next_action"]
+      }
+    },
+    {
+      "id": "node_15",
+      "type": "Conditional Branch",
+      "position": {"x": 50, "y": 550},
+      "config": {
+        "title": "Day 7 Decision",
+        "description": "Any engagement? Choose follow-up strategy",
+        "condition": "{{any_engagement}} == true",
+        "true_path": "value_add_followup",
+        "false_path": "multi_thread"
+      }
+    },
+    {
+      "id": "node_16",
+      "type": "Context Retriever",
+      "position": {"x": 250, "y": 520},
+      "config": {
+        "title": "Find Relevant Content",
+        "description": "Day 7 (engaged): Pull value-add resources",
+        "query": "case studies, competitive intel, or insights relevant to {{prospect_pain_point}} in {{industry}}",
+        "top_k": 3,
+        "filter_type": "content_assets"
+      }
+    },
+    {
+      "id": "node_17",
+      "type": "hololoom Query",
+      "position": {"x": 450, "y": 520},
+      "config": {
+        "title": "Value-Add Follow-up",
+        "description": "Day 7: Send content, not a pitch",
+        "mode": "direct",
+        "max_steps": 1,
+        "query_template": "Write a follow-up email to {{prospect_name}} sharing this content: {{retrieved_content}}. Reference their {{engagement_type}} (opened email/accepted LinkedIn). No ask, just value."
+      }
+    },
+    {
+      "id": "node_18",
+      "type": "Multi-Query",
+      "position": {"x": 250, "y": 620},
+      "config": {
+        "title": "Multi-Thread Research",
+        "description": "Day 7 (no engagement): Find other contacts",
+        "sub_queries": [
+          "Find peers of {{prospect_name}} at {{company_name}} in {{department}}",
+          "Find decision-maker above {{prospect_name}}",
+          "Find champions (users of {{our_category}}) at {{company_name}}"
+        ]
+      }
+    },
+    {
+      "id": "node_19",
+      "type": "Thompson Sampler",
+      "position": {"x": 450, "y": 620},
+      "config": {
+        "title": "Select Multi-Thread Target",
+        "description": "Choose best alternative contact",
+        "tool_options": ["peer", "manager", "champion"],
+        "exploration_rate": 0.3,
+        "context_features": ["seniority", "department", "engagement_likelihood"]
+      }
+    },
+    {
+      "id": "node_20",
+      "type": "Conditional Branch",
+      "position": {"x": 50, "y": 720},
+      "config": {
+        "title": "Day 10 Decision",
+        "description": "Monitor LinkedIn activity?",
+        "condition": "{{prospect_posted_recently}} == true",
+        "true_path": "engage_content",
+        "false_path": "skip_to_breakup"
+      }
+    },
+    {
+      "id": "node_21",
+      "type": "hololoom Query",
+      "position": {"x": 250, "y": 690},
+      "config": {
+        "title": "Generate Comment",
+        "description": "Day 10: Thoughtful LinkedIn engagement",
+        "mode": "direct",
+        "max_steps": 1,
+        "query_template": "Prospect posted on LinkedIn: '{{post_content}}'. Write a genuine, insightful comment (not salesy) that relates to {{our_domain}}."
+      }
+    },
+    {
+      "id": "node_22",
+      "type": "hololoom Query",
+      "position": {"x": 250, "y": 790},
+      "config": {
+        "title": "Breakup Email",
+        "description": "Day 12: Graceful exit with future trigger",
+        "mode": "direct",
+        "max_steps": 1,
+        "query_template": "Write a breakup email to {{prospect_name}}. Context: 6 touchpoints, no engagement. Be respectful, leave door open with trigger: {{future_trigger_event}}. Offer 'reply NOT A FIT' opt-out."
+      }
+    },
+    {
+      "id": "node_23",
+      "type": "Memory Store",
+      "position": {"x": 450, "y": 790},
+      "config": {
+        "title": "Log Sequence Completion",
+        "description": "Store full sequence outcome",
+        "shard_type": "sequence_outcome",
+        "metadata": [
+          "touchpoints_sent",
+          "engagement_rate",
+          "meeting_booked",
+          "breakup_reply_received",
+          "winning_variants",
+          "persona",
+          "industry",
+          "company_size"
+        ]
+      }
+    },
+    {
+      "id": "node_24",
+      "type": "Recursive Refiner",
+      "position": {"x": 650, "y": 720},
+      "config": {
+        "title": "Background Learning",
+        "description": "Continuous: Update Thompson priors",
+        "strategy": "elegance",
+        "max_iterations": 1,
+        "quality_threshold": 0.85,
+        "update_frequency_seconds": 300
+      }
+    },
+    {
+      "id": "node_25",
+      "type": "Safety Guardrails",
+      "position": {"x": 850, "y": 100},
+      "config": {
+        "title": "Compliance Check",
+        "description": "Gate all emails through safety guardrails",
+        "risk_threshold": "medium",
+        "enable_human_in_loop": false,
+        "checks": [
+          "no_false_claims",
+          "no_spam_keywords",
+          "unsubscribe_link_present",
+          "gdpr_compliant"
+        ]
+      }
+    },
+    {
+      "id": "node_26",
+      "type": "Response Generator",
+      "position": {"x": 650, "y": 790},
+      "config": {
+        "title": "Final Report",
+        "description": "Generate sequence analytics",
+        "format": "markdown",
+        "fields": [
+          "prospect_name",
+          "sequence_duration_days",
+          "touchpoints_sent",
+          "engagement_metrics",
+          "meeting_booked",
+          "learned_insights",
+          "recommended_next_action"
+        ]
+      }
+    }
+  ],
+  "connections": [
+    {"from": "node_1", "to": "node_2", "label": "research_output"},
+    {"from": "node_2", "to": "node_3", "label": "embeddings"},
+    {"from": "node_3", "to": "node_4", "label": "stored_context"},
+    {"from": "node_4", "to": "node_5", "label": "selected_variant"},
+    {"from": "node_5", "to": "node_6", "label": "personalization_context"},
+    {"from": "node_6", "to": "node_25", "label": "draft_email"},
+    {"from": "node_25", "to": "node_7", "label": "approved_email"},
+    {"from": "node_7", "to": "node_8", "label": "email_sent"},
+    {"from": "node_8", "to": "node_9", "label": "true_branch"},
+    {"from": "node_8", "to": "node_10", "label": "false_branch"},
+    {"from": "node_9", "to": "node_11", "label": "linkedin_action"},
+    {"from": "node_10", "to": "node_11", "label": "retry_attempt"},
+    {"from": "node_11", "to": "node_12", "label": "true_branch"},
+    {"from": "node_11", "to": "node_13", "label": "false_branch"},
+    {"from": "node_12", "to": "node_14", "label": "call_script"},
+    {"from": "node_13", "to": "node_14", "label": "call_script"},
+    {"from": "node_14", "to": "node_15", "label": "call_logged"},
+    {"from": "node_15", "to": "node_16", "label": "true_branch"},
+    {"from": "node_15", "to": "node_18", "label": "false_branch"},
+    {"from": "node_16", "to": "node_17", "label": "content_assets"},
+    {"from": "node_17", "to": "node_20", "label": "followup_sent"},
+    {"from": "node_18", "to": "node_19", "label": "alternative_contacts"},
+    {"from": "node_19", "to": "node_20", "label": "multi_thread_started"},
+    {"from": "node_20", "to": "node_21", "label": "true_branch"},
+    {"from": "node_20", "to": "node_22", "label": "false_branch"},
+    {"from": "node_21", "to": "node_22", "label": "engagement_done"},
+    {"from": "node_22", "to": "node_23", "label": "sequence_complete"},
+    {"from": "node_23", "to": "node_26", "label": "analytics_data"},
+    {"from": "node_24", "to": "node_4", "label": "updated_priors"},
+    {"from": "node_23", "to": "node_24", "label": "feedback_loop"}
+  ],
+  "metadata": {
+    "total_nodes": 26,
+    "total_duration_days": 12,
+    "touchpoints": 8,
+    "decision_points": 5,
+    "learning_loops": 2,
+    "compliance_gates": 1
+  }
+}

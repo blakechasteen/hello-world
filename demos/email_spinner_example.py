@@ -19,13 +19,13 @@ import asyncio
 from pathlib import Path
 from typing import List
 
-from HoloLoom.spinningWheel.email_spinner import (
+from hololoom.spinningWheel.email_spinner import (
     EmailSpinner,
     spin_email_archive,
     create_email_scorer
 )
-from HoloLoom.spinningWheel.protocol import SpinResult
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.spinningWheel.protocol import SpinResult
+from hololoom.documentation.types import MemoryShard
 
 
 # =============================================================================

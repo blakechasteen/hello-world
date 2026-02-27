@@ -15,7 +15,7 @@
 ```
 MLLogicDetector
   → codebase_ingestion.Language
-    → HoloLoom.memory.graph.KG
+    → hololoom.memory.graph.KG
       → [Infinite loop at import time]
 ```
 
@@ -24,7 +24,7 @@ MLLogicDetector
 **Workaround**: None currently
 
 **Fix**:
-1. Investigate `HoloLoom/memory/graph.py` for code executing at import time
+1. Investigate `hololoom/memory/graph.py` for code executing at import time
 2. Move execution code to functions/methods
 3. Break circular imports if present
 
@@ -86,7 +86,7 @@ Due to the above issues, the following features are temporarily disabled:
 1. **Investigate memory/graph.py**
    ```bash
    # Find code executing at import
-   grep -n "^[^#].*=" HoloLoom/memory/graph.py | grep -v "class\|def"
+   grep -n "^[^#].*=" hololoom/memory/graph.py | grep -v "class\|def"
    ```
 
 2. **Move import-time code to init**
@@ -96,7 +96,7 @@ Due to the above issues, the following features are temporarily disabled:
 
 3. **Test import**
    ```bash
-   PYTHONPATH=. python -c "from HoloLoom.memory.graph import KG; print('OK')"
+   PYTHONPATH=. python -c "from hololoom.memory.graph import KG; print('OK')"
    ```
 
 ### Phase 1.2: CFG Fix (4-8 hours)

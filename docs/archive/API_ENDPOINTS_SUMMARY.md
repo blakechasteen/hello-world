@@ -1,6 +1,6 @@
 # HoloLoom Workflow Executor - Enhanced API Endpoints
 
-**File Modified**: `HoloLoom/web_dashboard/workflow_executor.py`
+**File Modified**: `hololoom/web_dashboard/workflow_executor.py`
 **Date**: December 9, 2025
 **Changes**: Added 3 new API endpoints with proper Pydantic models and comprehensive documentation
 
@@ -350,7 +350,7 @@ Potential improvements for follow-up work:
 
 ## Files Modified
 
-- `HoloLoom/web_dashboard/workflow_executor.py` - Lines 117-976
+- `hololoom/web_dashboard/workflow_executor.py` - Lines 117-976
 
 ## Lines Added
 

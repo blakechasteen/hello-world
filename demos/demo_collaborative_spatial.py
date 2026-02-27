@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Spatial imports
-from HoloLoom.spatial.collaborative_session import (
+from hololoom.spatial.collaborative_session import (
     CollaborativeSpatialSession,
     create_collaborative_spatial_session,
     create_and_start_session,
@@ -34,9 +34,9 @@ from HoloLoom.spatial.collaborative_session import (
     SharedSpatialObject,
     GestureMapping
 )
-from HoloLoom.spatial.math_types import Vector3, Quaternion, Color, Transform
-from HoloLoom.spatial.hand_tracking import HandGesture, GestureType
-from HoloLoom.collaboration.session import SessionType
+from hololoom.spatial.math_types import Vector3, Quaternion, Color, Transform
+from hololoom.spatial.hand_tracking import HandGesture, GestureType
+from hololoom.collaboration.session import SessionType
 
 
 def print_header(title: str):

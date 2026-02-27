@@ -36,13 +36,13 @@
 **Actions:**
 ```bash
 # Generate coverage report
-pytest HoloLoom/tests/ --cov=HoloLoom --cov-report=html
+pytest hololoom/tests/ --cov=HoloLoom --cov-report=html
 
 # Identify untested code
 coverage report --show-missing
 
 # Find complex untested code
-radon cc HoloLoom/ -a -nb --min B | \
+radon cc hololoom/ -a -nb --min B | \
   xargs -I {} echo "High complexity, check coverage: {}"
 ```
 
@@ -192,7 +192,7 @@ memray run your_script.py
 memray flamegraph memray-output.bin
 
 # Continuous monitoring
-pytest HoloLoom/tests/ --memray
+pytest hololoom/tests/ --memray
 ```
 
 **Test Scenarios:**
@@ -312,11 +312,11 @@ safety check
 pip-audit
 
 # Code scanning
-bandit -r HoloLoom/
-semgrep --config=auto HoloLoom/
+bandit -r hololoom/
+semgrep --config=auto hololoom/
 
 # Secret scanning
-trufflehog filesystem HoloLoom/
+trufflehog filesystem hololoom/
 ```
 
 **Deliverables:**
@@ -409,13 +409,13 @@ trufflehog filesystem HoloLoom/
 ### Test Framework
 ```bash
 # Unit/Integration tests
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 
 # Coverage
 pytest --cov=HoloLoom --cov-report=html
 
 # Performance
-pytest HoloLoom/tests/performance/ --benchmark
+pytest hololoom/tests/performance/ --benchmark
 
 # Stress
 locust -f tests/stress/locustfile.py
@@ -440,8 +440,8 @@ safety check
 pip-audit
 
 # SAST
-bandit -r HoloLoom/
-semgrep --config=auto HoloLoom/
+bandit -r hololoom/
+semgrep --config=auto hololoom/
 
 # Container scanning
 trivy image hololoom:latest

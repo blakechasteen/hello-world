@@ -120,14 +120,14 @@ async def demo_example_1():
     proposal1 = create_proposal(
         original_code='with open(config_path) as f:\n        return json.load(f)',
         category='error_handling',
-        file_path='HoloLoom/config_loader.py',
+        file_path='hololoom/config_loader.py',
         line_number=6
     )
 
     proposal2 = create_proposal(
         original_code='with open(output_path, \'w\') as f:\n        json.dump(results, f, indent=2)',
         category='error_handling',
-        file_path='HoloLoom/config_loader.py',
+        file_path='hololoom/config_loader.py',
         line_number=11
     )
 
@@ -163,7 +163,7 @@ async def demo_example_2():
     proposal = create_proposal(
         original_code='API_KEY = "sk-abc123def456..."',
         category='hardcoded_values',
-        file_path='HoloLoom/llm_client.py',
+        file_path='hololoom/llm_client.py',
         line_number=4,
         severity='high'
     )
@@ -202,7 +202,7 @@ async def demo_example_3():
     proposal = create_proposal(
         original_code='timestamp = datetime.now()',
         category='datetime',
-        file_path='HoloLoom/reporting.py',
+        file_path='hololoom/reporting.py',
         line_number=6
     )
 

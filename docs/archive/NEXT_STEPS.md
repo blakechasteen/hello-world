@@ -14,7 +14,7 @@
 
 2. **✅ Comprehensive Documentation Created**
    - Full ecosystem architecture ([MYTHRL_ECOSYSTEM_ARCHITECTURE.md](./MYTHRL_ECOSYSTEM_ARCHITECTURE.md))
-   - darkTrace technical design ([../HoloLoom/darkTrace/README.md](../HoloLoom/darkTrace/README.md))
+   - darkTrace technical design ([../hololoom/darkTrace/README.md](../hololoom/darkTrace/README.md))
    - Smart dashboard intelligence layer design
    - Integration patterns for all apps
 
@@ -36,7 +36,7 @@ mkdir -p apps/darkTrace apps/Promptly apps/narrative_analyzer
 
 # Move darkTrace README to correct location
 mkdir -p apps/darkTrace/docs
-# (README already exists at HoloLoom/darkTrace/README.md - will move later)
+# (README already exists at hololoom/darkTrace/README.md - will move later)
 ```
 
 ### 2. darkTrace Foundation (Priority 1)
@@ -45,7 +45,7 @@ mkdir -p apps/darkTrace/docs
 
 ```
 apps/darkTrace/
-├── README.md                          # Move from HoloLoom/darkTrace/
+├── README.md                          # Move from hololoom/darkTrace/
 ├── pyproject.toml                     # NEW - Define as package
 ├── darkTrace/
 │   ├── __init__.py                   # NEW - Public API exports
@@ -233,9 +233,9 @@ class NarrativeAnalyzerAPI:
 
 ### Week 3: darkTrace Layer 2 (Analyzers)
 - [ ] Implement `TrajectoryPredictor`
-- [ ] Integrate `system_id.py` from HoloLoom
+- [ ] Integrate `system_id.py` from hololoom
 - [ ] Implement `FingerprintGenerator`
-- [ ] Integrate `flow_calculus.py` from HoloLoom
+- [ ] Integrate `flow_calculus.py` from hololoom
 - [ ] Write tests
 - [ ] CLI working: `darktrace predict`, `darktrace fingerprint`
 
@@ -316,7 +316,7 @@ cd apps/narrative_analyzer && pip install -e . && narrative-analyzer --help
 | Document | Status | Location |
 |----------|--------|----------|
 | Ecosystem Architecture | ✅ Complete | `docs/MYTHRL_ECOSYSTEM_ARCHITECTURE.md` |
-| darkTrace README | ✅ Complete | `HoloLoom/darkTrace/README.md` (will move) |
+| darkTrace README | ✅ Complete | `hololoom/darkTrace/README.md` (will move) |
 | darkTrace Architecture | ✅ Complete | In README |
 | Smart Dashboard Design | ✅ Complete | In Ecosystem doc |
 | Integration Patterns | ✅ Complete | In Ecosystem doc |
@@ -336,7 +336,7 @@ cd apps/narrative_analyzer && pip install -e . && narrative-analyzer --help
    - Need to standardize as `apps/narrative_analyzer/`
 
 3. **HoloLoom Core Imports**
-   - All apps should import: `from HoloLoom.semantic_calculus import ...`
+   - All apps should import: `from hololoom.semantic_calculus import ...`
    - Verify this works after directory moves
 
 ---

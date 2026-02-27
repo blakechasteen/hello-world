@@ -1,7 +1,7 @@
 # HoloLoom Search Module - Documentation Created
 
 **Date**: December 11, 2025
-**Task**: Create comprehensive documentation for HoloLoom/search/
+**Task**: Create comprehensive documentation for hololoom/search/
 **Status**: ✅ Complete
 
 ---
@@ -9,7 +9,7 @@
 ## What Was Created
 
 A comprehensive README documenting the HoloLoom Search Module:
-- **File**: `HoloLoom/search/README_COMPREHENSIVE.md`
+- **File**: `hololoom/search/README_COMPREHENSIVE.md`
 - **Length**: ~4,000+ lines of production documentation
 - **Format**: Professional markdown following HoloLoom standards (like SPRING_DYNAMICS.md)
 
@@ -341,14 +341,14 @@ Philosophy: *"Agents all the way down"*
 
 ## File Location
 
-📁 **Location**: `/HoloLoom/search/README_COMPREHENSIVE.md`
+📁 **Location**: `/hololoom/search/README_COMPREHENSIVE.md`
 
 **Companion Files**:
-- Existing `/HoloLoom/search/README.md` (agentic focus)
-- Existing `/HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md` (crawler focus)
+- Existing `/hololoom/search/README.md` (agentic focus)
+- Existing `/hololoom/search/README_WEB_CRAWLER_INTEGRATION.md` (crawler focus)
 
 **New Comprehensive Documentation**:
-- `/HoloLoom/search/README_COMPREHENSIVE.md` (unified reference)
+- `/hololoom/search/README_COMPREHENSIVE.md` (unified reference)
 
 ---
 
@@ -358,13 +358,13 @@ Philosophy: *"Agents all the way down"*
 
 ```bash
 # Read comprehensive documentation
-cat HoloLoom/search/README_COMPREHENSIVE.md
+cat hololoom/search/README_COMPREHENSIVE.md
 
 # Quick reference (in your editor)
-code HoloLoom/search/README_COMPREHENSIVE.md
+code hololoom/search/README_COMPREHENSIVE.md
 
 # Or jump to section (e.g., Performance)
-less HoloLoom/search/README_COMPREHENSIVE.md
+less hololoom/search/README_COMPREHENSIVE.md
 # Then search: /Performance
 ```
 

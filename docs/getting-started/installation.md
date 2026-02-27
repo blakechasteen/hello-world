@@ -56,7 +56,7 @@ pip install gymnasium matplotlib
 
 ```bash
 # Test import
-python -c "from HoloLoom import HoloLoom; print('HoloLoom installed successfully!')"
+python -c "from hololoom import hololoom; print('HoloLoom installed successfully!')"
 ```
 
 ---
@@ -189,8 +189,8 @@ ENABLE_AUDIT_TRAIL=true
 ### 3. Verify Production Setup
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
 import asyncio
 
 async def verify():
@@ -221,26 +221,26 @@ pip install pytest pytest-asyncio black mypy
 
 ```bash
 # All tests
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 
 # Unit tests only (fast)
-pytest HoloLoom/tests/unit/ -v
+pytest hololoom/tests/unit/ -v
 
 # Integration tests
-pytest HoloLoom/tests/integration/ -v
+pytest hololoom/tests/integration/ -v
 
 # End-to-end tests
-pytest HoloLoom/tests/e2e/ -v
+pytest hololoom/tests/e2e/ -v
 ```
 
 ### 3. Code Formatting
 
 ```bash
 # Format code
-black HoloLoom/
+black hololoom/
 
 # Type checking
-mypy HoloLoom/ --ignore-missing-imports
+mypy hololoom/ --ignore-missing-imports
 ```
 
 ---
@@ -356,7 +356,7 @@ After installation, verify:
 - [ ] Docker services running (if HYBRID backend)
 - [ ] Neo4j accessible at http://localhost:7474
 - [ ] Qdrant accessible at http://localhost:6333
-- [ ] Tests passing: `pytest HoloLoom/tests/unit/ -v`
+- [ ] Tests passing: `pytest hololoom/tests/unit/ -v`
 - [ ] Simple query works (see [Quickstart](quickstart.md))
 
 ---

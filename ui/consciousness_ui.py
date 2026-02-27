@@ -23,10 +23,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import awareness components directly
 try:
-    from HoloLoom.awareness.compositional_awareness import CompositionalAwarenessLayer
-    from HoloLoom.awareness.context_packer import SmartContextPacker, TokenBudget
-    from HoloLoom.awareness.dual_stream import DualStreamGenerator
-    from HoloLoom.awareness.memory_fusion import MemoryFusion, MultipassConfig
+    from hololoom.awareness.compositional_awareness import CompositionalAwarenessLayer
+    from hololoom.awareness.context_packer import SmartContextPacker, TokenBudget
+    from hololoom.awareness.dual_stream import DualStreamGenerator
+    from hololoom.awareness.memory_fusion import MemoryFusion, MultipassConfig
 except ImportError as e:
     print(f"Import error: {e}")
     print("Installing standalone versions...")

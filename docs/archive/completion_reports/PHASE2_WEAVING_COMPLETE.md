@@ -20,7 +20,7 @@
 ## What We Built
 
 ### WeavingOrchestrator Class ✨
-**Location:** [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py)
+**Location:** [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py)
 
 **The Complete Weaving Cycle:**
 ```
@@ -39,32 +39,32 @@
 ## Technical Implementation
 
 ### Modules Integrated
-1. **LoomCommand** ([loom/command.py](HoloLoom/loom/command.py))
+1. **LoomCommand** ([loom/command.py](hololoom/loom/command.py))
    - Selects pattern card based on query
    - Auto-selection: short queries → BARE, long → FAST/FUSED
    - Tracks pattern usage statistics
 
-2. **ChronoTrigger** ([chrono/trigger.py](HoloLoom/chrono/trigger.py))
+2. **ChronoTrigger** ([chrono/trigger.py](hololoom/chrono/trigger.py))
    - Creates temporal windows
    - Monitors operations with timeouts
    - Records execution metrics
 
-3. **ResonanceShed** ([resonance/shed.py](HoloLoom/resonance/shed.py))
+3. **ResonanceShed** ([resonance/shed.py](hololoom/resonance/shed.py))
    - Lifts feature threads (motif, embedding, spectral)
    - Creates DotPlasma interference patterns
    - Multi-modal feature fusion
 
-4. **WarpSpace** ([warp/space.py](HoloLoom/warp/space.py))
+4. **WarpSpace** ([warp/space.py](hololoom/warp/space.py))
    - Tensions threads into continuous manifold
    - Multi-scale embedding operations
    - Discrete ↔ Continuous transitions
 
-5. **ConvergenceEngine** ([convergence/engine.py](HoloLoom/convergence/engine.py))
+5. **ConvergenceEngine** ([convergence/engine.py](hololoom/convergence/engine.py))
    - Collapses continuous → discrete
    - Thompson Sampling exploration
    - Multiple collapse strategies
 
-6. **Spacetime** ([fabric/spacetime.py](HoloLoom/fabric/spacetime.py))
+6. **Spacetime** ([fabric/spacetime.py](hololoom/fabric/spacetime.py))
    - Complete computational trace
    - Full provenance for every decision
    - Serializable output fabric
@@ -132,8 +132,8 @@ Every weaving produces a Spacetime object with:
 
 ### Simple Usage
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 
 # Create orchestrator
 weaver = WeavingOrchestrator(
@@ -159,7 +159,7 @@ stats = weaver.get_statistics()
 
 ### Factory Function
 ```python
-from HoloLoom.weaving_orchestrator import create_weaving_orchestrator
+from hololoom.weaving_orchestrator import create_weaving_orchestrator
 
 # Quick creation
 weaver = create_weaving_orchestrator(
@@ -209,7 +209,7 @@ weaver = create_weaving_orchestrator(
 ## Files Modified/Created
 
 ### Created
-1. **HoloLoom/weaving_orchestrator.py** (562 lines)
+1. **hololoom/weaving_orchestrator.py** (562 lines)
    - Complete WeavingOrchestrator class
    - All 6 modules integrated
    - Working demo
@@ -318,7 +318,7 @@ See [INTEGRATION_SPRINT.md](INTEGRATION_SPRINT.md) for Phase 3 plan.
 Run the weaving orchestrator demo:
 ```bash
 export PYTHONPATH=.
-python HoloLoom/weaving_orchestrator.py
+python hololoom/weaving_orchestrator.py
 ```
 
 Output shows:

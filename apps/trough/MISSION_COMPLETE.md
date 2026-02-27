@@ -258,7 +258,7 @@ $ npm run compile
    - Demonstrates automatic optimization
    - Line 850: `calculateImportantValue()` test function
 
-7. **[HoloLoom/loom/command.py](HoloLoom/loom/command.py)** (1 line fix)
+7. **[hololoom/loom/command.py](hololoom/loom/command.py)** (1 line fix)
    - Fixed BARE pattern embedding scale mismatch
    - Changed scale from 96 → 768 for nomic-embed-text-v1.5 compatibility
 
@@ -318,7 +318,7 @@ ERROR: Weaving cycle failed
 - SpectralEmbeddings initialized with `sizes=[768]` (nomic-embed default)
 - When BARE pattern auto-selected, requested scale 96 which didn't exist
 
-**Fix**: [HoloLoom/loom/command.py:122](../HoloLoom/loom/command.py#L122)
+**Fix**: [hololoom/loom/command.py:122](../hololoom/loom/command.py#L122)
 ```python
 # Before (broken)
 BARE_PATTERN = PatternSpec(
@@ -335,8 +335,8 @@ BARE_PATTERN = PatternSpec(
 
 **Verification**:
 ```
-INFO:HoloLoom.loom.command:Selected pattern: bare
-INFO:HoloLoom.warp.space:WarpSpace initialized (scales=[768])
+INFO:hololoom.loom.command:Selected pattern: bare
+INFO:hololoom.warp.space:WarpSpace initialized (scales=[768])
 ✅ No more KeyError!
 ```
 
@@ -579,7 +579,7 @@ squad/src/
 - Main implementation: `squad/src/extension.ts`
 - Server bridge: `squad/src/HoloLoomBridge.ts`
 - Tests: `squad/test_sdk_enhancements.ts`
-- Server fix: `HoloLoom/loom/command.py`
+- Server fix: `hololoom/loom/command.py`
 
 **Key Functions**:
 - `optimizeContext()`: Lines 249-298 in extension.ts

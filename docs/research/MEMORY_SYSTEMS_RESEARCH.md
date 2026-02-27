@@ -247,7 +247,7 @@ memories = memory_manager.search(
 )
 ```
 
-**Implementation**: Use Mem0's API design pattern in `HoloLoom/memory/lifecycle_manager.py`
+**Implementation**: Use Mem0's API design pattern in `hololoom/memory/lifecycle_manager.py`
 
 ---
 
@@ -268,7 +268,7 @@ class TemporalEdge:
 # Action: Invalidate Python edge (valid_to=2024-06-01), keep for historical queries
 ```
 
-**Implementation**: Extend `KGEdge` in `HoloLoom/memory/graph.py`
+**Implementation**: Extend `KGEdge` in `hololoom/memory/graph.py`
 
 ---
 
@@ -298,7 +298,7 @@ agent.call_tool("store_memory", {
 })
 ```
 
-**Implementation**: Add memory tools to `HoloLoom/agentic/core.py`
+**Implementation**: Add memory tools to `hololoom/agentic/core.py`
 
 ---
 
@@ -330,7 +330,7 @@ class MemoryConsolidator:
                 episode.metadata["consolidated"] = True
 ```
 
-**Implementation**: Add to `HoloLoom/memory/consolidation.py` (NEW FILE)
+**Implementation**: Add to `hololoom/memory/consolidation.py` (NEW FILE)
 
 ---
 
@@ -357,7 +357,7 @@ class HybridRetriever:
         return reranked[:k]
 ```
 
-**Implementation**: Extend `ModeAwareRetriever` in `HoloLoom/memory/task_aware_retrieval.py`
+**Implementation**: Extend `ModeAwareRetriever` in `hololoom/memory/task_aware_retrieval.py`
 
 ---
 
@@ -383,7 +383,7 @@ class RelationshipType(Enum):
 # Relationship: new_edge.type = RelationshipType.UPDATES, old_edge.metadata["isLatest"] = False
 ```
 
-**Implementation**: Extend `EdgeType` in `HoloLoom/memory/graph.py`
+**Implementation**: Extend `EdgeType` in `hololoom/memory/graph.py`
 
 ---
 
@@ -405,7 +405,7 @@ if contradicts_existing:
     kg.invalidate_edge(old_edge, invalid_from=now)  # Mark old edge invalid
 ```
 
-**Implementation**: Already partially implemented in `HoloLoom/memory/graph.py`, optimize further
+**Implementation**: Already partially implemented in `hololoom/memory/graph.py`, optimize further
 
 ---
 
@@ -432,8 +432,8 @@ if contradicts_existing:
 **From**: Mem0 (multi-level) + Graphiti (bi-temporal)
 
 **Files**:
-- `HoloLoom/memory/lifecycle_manager.py` - Multi-level memory (USER/SESSION/AGENT)
-- `HoloLoom/memory/graph.py` - Add bi-temporal edges (event_time + ingestion_time + valid_from + valid_to)
+- `hololoom/memory/lifecycle_manager.py` - Multi-level memory (USER/SESSION/AGENT)
+- `hololoom/memory/graph.py` - Add bi-temporal edges (event_time + ingestion_time + valid_from + valid_to)
 
 **Tests**:
 - `test_multi_level_memory.py` - Test user/session/agent scoping
@@ -445,8 +445,8 @@ if contradicts_existing:
 **From**: LangMem (both features)
 
 **Files**:
-- `HoloLoom/agentic/memory_tools.py` - Memory management tools for agents
-- `HoloLoom/memory/consolidation.py` - Background episodic → semantic conversion
+- `hololoom/agentic/memory_tools.py` - Memory management tools for agents
+- `hololoom/memory/consolidation.py` - Background episodic → semantic conversion
 
 **Tests**:
 - `test_agent_memory_control.py` - Test agent-driven storage
@@ -458,8 +458,8 @@ if contradicts_existing:
 **From**: Graphiti (hybrid retrieval) + SuperMemory (relationship types)
 
 **Files**:
-- `HoloLoom/memory/hybrid_retrieval.py` - Semantic + BM25 + Graph
-- `HoloLoom/memory/graph.py` - Add UPDATES/EXTENDS/DERIVES relationships
+- `hololoom/memory/hybrid_retrieval.py` - Semantic + BM25 + Graph
+- `hololoom/memory/graph.py` - Add UPDATES/EXTENDS/DERIVES relationships
 
 **Tests**:
 - `test_hybrid_retrieval.py` - Test combined retrieval strategies
@@ -471,8 +471,8 @@ if contradicts_existing:
 **From**: Graphiti (Neo4j) + Research goals
 
 **Files**:
-- `HoloLoom/memory/portability.py` - Export to Neo4j, Mem0, LangMem formats
-- `HoloLoom/memory/neo4j_backend.py` - Production Neo4j backend (optional)
+- `hololoom/memory/portability.py` - Export to Neo4j, Mem0, LangMem formats
+- `hololoom/memory/neo4j_backend.py` - Production Neo4j backend (optional)
 
 **Tests**:
 - `test_portability.py` - Test export/import across systems

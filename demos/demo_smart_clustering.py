@@ -60,7 +60,7 @@ def main():
 
     # Check dependencies
     try:
-        from HoloLoom.clustering import cluster, generate_cluster_summary
+        from hololoom.semantic_calculus import cluster, generate_cluster_summary
     except ImportError as e:
         print(f"Import error: {e}")
         print("\nMake sure to run with PYTHONPATH=.")

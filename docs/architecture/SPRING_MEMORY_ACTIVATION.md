@@ -82,7 +82,7 @@ Query → Initial Activation
 
 #### 1. **Yarn Graph → Spring Network**
 
-**Current** (`HoloLoom/memory/graph.py`):
+**Current** (`hololoom/memory/graph.py`):
 ```python
 class YarnGraph:
     def __init__(self):
@@ -135,7 +135,7 @@ class YarnGraph:
 
 #### 2. **WeavingOrchestrator Integration**
 
-**Current** (`HoloLoom/weaving_orchestrator.py:L234-250`):
+**Current** (`hololoom/weaving_orchestrator.py:L234-250`):
 ```python
 async def _retrieve_context(self, query: Query) -> List[MemoryShard]:
     # Static retrieval
@@ -172,7 +172,7 @@ async def _retrieve_context(self, query: Query) -> List[MemoryShard]:
 
 #### 3. **Configuration Extension**
 
-**Add to** (`HoloLoom/config.py`):
+**Add to** (`hololoom/config.py`):
 ```python
 @dataclass
 class Config:

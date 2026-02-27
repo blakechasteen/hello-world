@@ -20,13 +20,13 @@ import asyncio
 from pathlib import Path
 from typing import List
 
-from HoloLoom.spinningWheel.codebase_spinner import (
+from hololoom.spinningWheel.codebase_spinner import (
     CodebaseSpinner,
     spin_codebase,
     create_codebase_scorer
 )
-from HoloLoom.spinningWheel.protocol import SpinResult
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.spinningWheel.protocol import SpinResult
+from hololoom.documentation.types import MemoryShard
 
 
 # =============================================================================
@@ -52,7 +52,7 @@ async def example_1_basic_file():
 
     try:
         # Spin a single file
-        file_path = Path("./HoloLoom/policy/unified.py")
+        file_path = Path("./hololoom/policy/unified.py")
         result: SpinResult = await spinner.spin(file_path)
 
         print(f"\nProcessed: {result.items_processed} files")
@@ -98,7 +98,7 @@ async def example_2_directory():
 
     try:
         # Spin entire directory
-        code_dir = Path("./HoloLoom/policy/")
+        code_dir = Path("./hololoom/policy/")
         result = await spinner.spin_directory(code_dir, recursive=True)
 
         print(f"\nProcessed: {result.items_processed} files")
@@ -147,7 +147,7 @@ async def example_3_importance_filtering():
     print("Example 3: Importance Filtering")
     print("=" * 60)
 
-    code_dir = Path("./HoloLoom/")
+    code_dir = Path("./hololoom/")
     thresholds = [0.2, 0.5, 0.8]
 
     for threshold in thresholds:
@@ -250,7 +250,7 @@ async def example_5_streaming():
         max_files=1000  # Large codebase
     )
 
-    code_dir = Path("./HoloLoom/")
+    code_dir = Path("./hololoom/")
 
     try:
         shard_count = 0
@@ -309,7 +309,7 @@ async def example_6_custom_scoring():
     # Override scorer
     spinner.importance_scorer = scorer
 
-    code_dir = Path("./HoloLoom/policy/")
+    code_dir = Path("./hololoom/policy/")
 
     try:
         result = await spinner.spin_directory(code_dir, recursive=True)
@@ -356,7 +356,7 @@ async def example_7_with_tests():
         max_files=100
     )
 
-    code_dir = Path("./HoloLoom/tests/")
+    code_dir = Path("./hololoom/tests/")
 
     try:
         result = await spinner.spin_directory(code_dir, recursive=True)

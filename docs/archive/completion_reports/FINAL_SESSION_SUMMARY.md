@@ -151,10 +151,10 @@ The previous session completed a full 4-phase integration sprint:
 ## Unified API Usage
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 # Create instance
-loom = await HoloLoom.create(
+loom = await hololoom.create(
     pattern="fast",           # BARE, FAST, or FUSED
     memory_backend="simple",  # simple, neo4j, qdrant, hybrid
     enable_synthesis=True     # Enable pattern extraction
@@ -186,9 +186,9 @@ print(f"Chats: {stats['chat_count']}")
 ## Key Files Reference
 
 ### Integration Code
-- `HoloLoom/weaving_orchestrator.py` - Complete weaving cycle
-- `HoloLoom/synthesis_bridge.py` - Synthesis integration
-- `HoloLoom/unified_api.py` - Unified API class
+- `hololoom/weaving_orchestrator.py` - Complete weaving cycle
+- `hololoom/synthesis_bridge.py` - Synthesis integration
+- `hololoom/unified_api.py` - Unified API class
 
 ### Documentation
 - `INTEGRATION_SPRINT_COMPLETE.md` - Master overview
@@ -207,7 +207,7 @@ print(f"Chats: {stats['chat_count']}")
 ### Demo
 ```bash
 export PYTHONPATH=.
-python HoloLoom/unified_api.py
+python hololoom/unified_api.py
 ```
 
 ### Quick Test
@@ -215,10 +215,10 @@ python HoloLoom/unified_api.py
 export PYTHONPATH=.
 python -c "
 import asyncio
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async def test():
-    loom = await HoloLoom.create()
+    loom = await hololoom.create()
     result = await loom.query('What is HoloLoom?')
     print(result.response)
 

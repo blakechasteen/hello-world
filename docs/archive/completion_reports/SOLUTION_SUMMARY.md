@@ -33,11 +33,11 @@ Step 3: Storing another memory...
 
 ### Modified Files
 
-1. **[HoloLoom/memory/mcp_server.py](HoloLoom/memory/mcp_server.py)** (line 945)
+1. **[hololoom/memory/mcp_server.py](hololoom/memory/mcp_server.py)** (line 945)
    - Disabled Mem0 (enable_mem0=False)
    - Using Qdrant + Neo4j directly
 
-2. **[HoloLoom/memory/stores/mem0_store.py](HoloLoom/memory/stores/mem0_store.py)** (line 55-73)
+2. **[hololoom/memory/stores/mem0_store.py](hololoom/memory/stores/mem0_store.py)** (line 55-73)
    - Updated to use Ollama instead of OpenAI (for future use)
    - Currently disabled in MCP server
 
@@ -70,8 +70,8 @@ Once you restart Claude Desktop, you'll have these tools:
 
 ```python
 import asyncio
-from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
-from HoloLoom.memory.protocol import Memory
+from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
+from hololoom.memory.protocol import Memory
 from datetime import datetime
 
 async def store_memory():
@@ -111,8 +111,8 @@ This will:
 ```python
 # Add this to the end of gated_multipass_demo.py
 
-from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
-from HoloLoom.memory.protocol import shards_to_memories
+from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
+from hololoom.memory.protocol import shards_to_memories
 
 async def store_shards(shards):
     store = QdrantMemoryStore()
@@ -156,8 +156,8 @@ if shards:
 
 - [MEMORY_STORAGE_ISSUE.md](MEMORY_STORAGE_ISSUE.md) - Full problem analysis
 - [test_direct_storage.py](test_direct_storage.py) - Proof that storage works
-- [HoloLoom/memory/mcp_server.py](HoloLoom/memory/mcp_server.py) - MCP server config
-- [HoloLoom/memory/stores/qdrant_store.py](HoloLoom/memory/stores/qdrant_store.py) - Qdrant implementation
+- [hololoom/memory/mcp_server.py](hololoom/memory/mcp_server.py) - MCP server config
+- [hololoom/memory/stores/qdrant_store.py](hololoom/memory/stores/qdrant_store.py) - Qdrant implementation
 
 ## Verification
 

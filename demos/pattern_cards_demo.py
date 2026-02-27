@@ -24,7 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.loom.card_loader import PatternCard
+from hololoom.loom.card_loader import PatternCard
 
 
 def demo_basic_loading():
@@ -170,7 +170,7 @@ def demo_custom_card():
     print(f"  Custom extensions: {list(research.extensions.keys())}")
 
     # Save custom card
-    cards_dir = Path(__file__).parent.parent / "HoloLoom" / "cards"
+    cards_dir = Path(__file__).parent.parent / "hololoom" / "cards"
     research.save("research", cards_dir=cards_dir)
     print(f"\n  ✓ Saved to: {cards_dir / 'research.yaml'}")
 

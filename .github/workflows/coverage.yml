@@ -37,7 +37,7 @@ jobs:
 
     - name: Generate coverage report
       run: |
-        pytest HoloLoom/tests/ -v --cov=HoloLoom --cov-branch --cov-report=xml --cov-report=term-missing
+        pytest hololoom/tests/ -v --cov=hololoom --cov-branch --cov-report=xml --cov-report=term-missing
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3

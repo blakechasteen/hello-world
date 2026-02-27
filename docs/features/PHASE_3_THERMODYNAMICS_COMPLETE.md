@@ -92,7 +92,7 @@ ThermodynamicOptimizer
 ### Basic Thermodynamic Optimization
 
 ```python
-from HoloLoom.physics import ThermodynamicOptimizer
+from hololoom.physics import ThermodynamicOptimizer
 
 # Create optimizer (starts hot, cools down)
 thermo = ThermodynamicOptimizer(
@@ -141,7 +141,7 @@ for t in range(20):
 ### Energy Calculation
 
 ```python
-from HoloLoom.physics import EnergyCalculator
+from hololoom.physics import EnergyCalculator
 
 # Compute energy from cost/error/latency
 energy = EnergyCalculator.compute_energy(
@@ -164,7 +164,7 @@ energies = EnergyCalculator.compute_action_energies(
 ### Entropy Calculation
 
 ```python
-from HoloLoom.physics import EntropyCalculator
+from hololoom.physics import EntropyCalculator
 
 # Shannon entropy of probability distribution
 import numpy as np
@@ -187,7 +187,7 @@ greedy_diversity = EntropyCalculator.diversity_score(actions, greedy_counts)
 ### Temperature Scheduling
 
 ```python
-from HoloLoom.physics import TemperatureScheduler, CoolingSchedule
+from hololoom.physics import TemperatureScheduler, CoolingSchedule
 
 # Exponential cooling (fast)
 scheduler = TemperatureScheduler(
@@ -383,9 +383,9 @@ Observation:
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `HoloLoom/physics/thermodynamics.py` | 450 | Core thermodynamic engine |
+| `hololoom/physics/thermodynamics.py` | 450 | Core thermodynamic engine |
 | `demos/demo_thermodynamics_simple.py` | 325 | Comprehensive demo |
-| `HoloLoom/physics/__init__.py` | +15 | Phase 3 exports |
+| `hololoom/physics/__init__.py` | +15 | Phase 3 exports |
 
 **Total**: ~790 lines
 
@@ -396,7 +396,7 @@ Observation:
 ### With WeavingOrchestrator (Future)
 
 ```python
-from HoloLoom.physics import ThermodynamicOptimizer
+from hololoom.physics import ThermodynamicOptimizer
 
 # Add to orchestrator initialization
 self.thermo_optimizer = ThermodynamicOptimizer(

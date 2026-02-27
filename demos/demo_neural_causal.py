@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, '.')
 
 import numpy as np
-from HoloLoom.causal import (
+from hololoom.causal import (
     CausalNode, CausalEdge, CausalDAG, NodeType,
     NeuralStructuralCausalModel
 )

@@ -30,7 +30,7 @@ async def demo_basic_operations():
     print("Demo 1: Basic Operations (experience/recall/reflect)")
     print("=" * 60)
 
-    from HoloLoom import HoloLoomLite
+    from hololoom import HoloLoomLite
 
     async with HoloLoomLite() as loom:
         # Store some memories
@@ -79,7 +79,7 @@ async def demo_reasoning_modes():
     print("Demo 2: Agentic Reasoning Modes")
     print("=" * 60)
 
-    from HoloLoom import HoloLoomLite
+    from hololoom import HoloLoomLite
 
     async with HoloLoomLite() as loom:
         # Store some knowledge first
@@ -123,7 +123,7 @@ async def demo_safety_checks():
     print("Demo 3: Safety Guardrails")
     print("=" * 60)
 
-    from HoloLoom import HoloLoomLite
+    from hololoom import HoloLoomLite
 
     async with HoloLoomLite(enable_safety=True) as loom:
         # Check various actions
@@ -154,7 +154,7 @@ async def demo_startup_performance():
     print("\n1. HoloLoom Lite startup time:")
     start = time.time()
 
-    from HoloLoom import HoloLoomLite
+    from hololoom import HoloLoomLite
     loom = HoloLoomLite()
     await loom._initialize()
 
@@ -185,7 +185,7 @@ async def demo_rag_query():
     print("Demo 5: RAG Query Integration")
     print("=" * 60)
 
-    from HoloLoom import HoloLoomLite
+    from hololoom import HoloLoomLite
 
     async with HoloLoomLite() as loom:
         # Store knowledge

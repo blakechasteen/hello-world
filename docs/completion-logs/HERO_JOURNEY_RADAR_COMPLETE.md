@@ -225,8 +225,8 @@ npm run dev
 ## Integration with mythRL
 
 This radar chart integrates with:
-- **Narrative Intelligence** (`HoloLoom/narrative_intelligence.py`)
-- **Matryoshka Depth** (`HoloLoom/matryoshka_depth.py`)
+- **Narrative Intelligence** (`hololoom/narrative_intelligence.py`)
+- **Matryoshka Depth** (`hololoom/matryoshka_depth.py`)
 - **Cross-Domain Adapter** (works across mythology, business, science, etc.)
 - **Streaming Analysis** (real-time updates during long texts)
 

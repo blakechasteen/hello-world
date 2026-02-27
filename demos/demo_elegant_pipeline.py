@@ -20,10 +20,10 @@ import numpy as np
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.awareness.compositional_awareness import CompositionalAwarenessLayer
-from HoloLoom.awareness.beta_wave_packer import BetaWaveContextPacker, TokenBudget
-from HoloLoom.memory.multi_wave_engine import MultiWaveMemoryEngine, MultiWaveConfig
-from HoloLoom.memory.spring_dynamics_engine import SpringEngineConfig
+from hololoom.awareness.compositional_awareness import CompositionalAwarenessLayer
+from hololoom.awareness.beta_wave_packer import BetaWaveContextPacker, TokenBudget
+from hololoom.memory.multi_wave_engine import MultiWaveMemoryEngine, MultiWaveConfig
+from hololoom.memory.spring_dynamics_engine import SpringEngineConfig
 
 
 def print_section(title: str, char: str = "=", width: int = 100):

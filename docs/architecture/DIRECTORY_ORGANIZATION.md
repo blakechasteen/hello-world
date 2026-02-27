@@ -8,7 +8,7 @@
 
 ```
 mythRL/
-├── HoloLoom/               # Core system (all modules)
+├── hololoom/               # Core system (all modules)
 ├── demos/                  # Usage examples
 ├── tests/                  # Test files
 ├── config/                 # Configuration files
@@ -31,7 +31,7 @@ mythRL/
 
 ### Core Directories
 
-**HoloLoom/**
+**hololoom/**
 - Complete weaving architecture
 - All system modules (policy, embedding, memory, etc.)
 - Main entry point: `unified_api.py`
@@ -98,7 +98,7 @@ mythRL/
 **ONLY essential files:**
 - `README.md` - Main project README
 - `CLAUDE.md` - Developer guide
-- `HoloLoom.py` - Legacy entry point
+- `hololoom.py` - Legacy entry point
 - `example.prompty` - Promptly example
 - `PR_DRAFT_v1.0.1.md` - PR template
 
@@ -174,12 +174,12 @@ mythRL/
 **Getting Started:**
 - Start here: [README.md](../README.md)
 - Developer guide: [CLAUDE.md](../CLAUDE.md)
-- Quick demo: `python HoloLoom/unified_api.py`
+- Quick demo: `python hololoom/unified_api.py`
 
 **Core Code:**
-- Unified API: [HoloLoom/unified_api.py](../HoloLoom/unified_api.py)
-- Weaving: [HoloLoom/weaving_orchestrator.py](../HoloLoom/weaving_orchestrator.py)
-- Synthesis: [HoloLoom/synthesis_bridge.py](../HoloLoom/synthesis_bridge.py)
+- Unified API: [hololoom/unified_api.py](../hololoom/unified_api.py)
+- Weaving: [hololoom/weaving_orchestrator.py](../hololoom/weaving_orchestrator.py)
+- Synthesis: [hololoom/synthesis_bridge.py](../hololoom/synthesis_bridge.py)
 
 **Examples:**
 - Quickstart: [demos/01_quickstart.py](../demos/01_quickstart.py)
@@ -223,7 +223,7 @@ mythRL/
 ├── 10+ test_*.py files in root
 ├── Multiple config files in root
 ├── Temporary files (nul, transcripts, etc.)
-├── HoloLoom/
+├── hololoom/
 ├── demos/
 └── ... (total chaos)
 ```
@@ -231,7 +231,7 @@ mythRL/
 ### After Cleanup
 ```
 mythRL/
-├── HoloLoom/           # Core system
+├── hololoom/           # Core system
 ├── demos/              # Examples
 ├── tests/              # All tests
 ├── config/             # All configs

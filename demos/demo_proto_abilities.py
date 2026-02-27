@@ -9,7 +9,7 @@ Run with: PYTHONPATH=. python demos/demo_proto_abilities.py
 """
 
 import asyncio
-from HoloLoom.departments.proto.abilities import (
+from hololoom.apps.departments.proto.abilities import (
     AbilityTier,
     AbilityTrustLevel,
     AbilityManifest,
@@ -30,7 +30,7 @@ class SkillMappingAbility(BaseAbility):
         super().__init__(AbilityManifest(
             name='memory_skill_wrapper',
             version='1.0.0',
-            description='Memory skill wrapper from HoloLoom',
+            description='Memory skill wrapper from hololoom',
             author='HoloLoom',
             tier=AbilityTier.SKILL_MAPPING,
             trust_level=AbilityTrustLevel.CORE,

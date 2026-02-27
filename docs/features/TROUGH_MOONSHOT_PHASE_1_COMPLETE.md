@@ -23,7 +23,7 @@
 
 ### 1. Comprehensive AI Slop Detection (15 Categories)
 
-**File**: `HoloLoom/agentic/ai_slop_detector.py` (1,200+ lines)
+**File**: `hololoom/agentic/ai_slop_detector.py` (1,200+ lines)
 
 **Coverage**:
 1. ✅ **Hallucinations** - Non-existent functions/classes
@@ -60,7 +60,7 @@ curl -X POST http://localhost:8000/detect/slop \
 
 ### 2. ML-Based Logic Error Detection (9 Algorithms)
 
-**File**: `HoloLoom/agentic/ml_logic_detector.py` (715 lines)
+**File**: `hololoom/agentic/ml_logic_detector.py` (715 lines)
 
 **Implemented Algorithms**:
 1. ✅ **Infinite Loops** - Tarjan's SCC algorithm

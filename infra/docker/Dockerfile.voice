@@ -1,4 +1,4 @@
-# Dockerfile for HoloLoom VoiceAgent Production Deployment
+# Dockerfile for hololoom VoiceAgent Production Deployment
 # ========================================================
 # Multi-stage build for optimized production image
 # Date: November 15, 2025
@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY HoloLoom/voice/requirements.txt /build/voice-requirements.txt
+COPY hololoom/voice/requirements.txt /build/voice-requirements.txt
 COPY requirements.txt /build/hololoom-requirements.txt
 
 # Create virtual environment
@@ -38,7 +38,7 @@ FROM python:3.10-slim
 
 # Metadata
 LABEL maintainer="Blake Chasteen <blake@example.com>"
-LABEL description="HoloLoom VoiceAgent - Production Voice Interaction Service"
+LABEL description="hololoom VoiceAgent - Production Voice Interaction Service"
 LABEL version="1.0.0"
 
 # Set environment variables
@@ -69,7 +69,7 @@ RUN groupadd -r hololoom && \
 WORKDIR /app
 
 # Copy application code
-COPY --chown=hololoom:hololoom HoloLoom/ /app/HoloLoom/
+COPY --chown=hololoom:hololoom hololoom/ /app/hololoom/
 COPY --chown=hololoom:hololoom demos/ /app/demos/
 COPY --chown=hololoom:hololoom *.py /app/
 
@@ -78,17 +78,17 @@ USER hololoom
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "from HoloLoom.voice import VoiceAgent; print('healthy')" || exit 1
+    CMD python -c "from hololoom.voice import VoiceAgent; print('healthy')" || exit 1
 
 # Expose port (if running as HTTP service)
 EXPOSE 8000
 
 # Default command - can be overridden
-CMD ["python", "-m", "HoloLoom.voice.voice_agent"]
+CMD ["python", "-m", "hololoom.voice.voice_agent"]
 
 
 # Alternative entrypoint for demo mode
 # CMD ["python", "demos/demo_voice_agent.py"]
 
 # Alternative entrypoint for server mode
-# CMD ["uvicorn", "HoloLoom.server.voice_api:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "hololoom.apps.server.voice_api:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -11,7 +11,7 @@ A complete, modern template gallery UI for the HoloLoom workflow builder, enabli
 ## Files Created
 
 ### 1. **template_gallery.html** (Core UI - 1,100+ lines)
-**Location**: `HoloLoom/web_dashboard/template_gallery.html`
+**Location**: `hololoom/web_dashboard/template_gallery.html`
 
 Complete, standalone HTML file containing:
 - ✅ Full responsive design (desktop/tablet/mobile)
@@ -61,7 +61,7 @@ MODAL
 ```
 
 ### 2. **template_gallery.js** (Advanced Features - 500+ lines)
-**Location**: `HoloLoom/web_dashboard/template_gallery.js`
+**Location**: `hololoom/web_dashboard/template_gallery.js`
 
 Optional JavaScript module providing:
 - ✅ TemplateGallery class for programmatic access
@@ -103,7 +103,7 @@ gallery.importTemplate(file)
 ```
 
 ### 3. **TEMPLATE_GALLERY_README.md** (Full Documentation - 600+ lines)
-**Location**: `HoloLoom/web_dashboard/TEMPLATE_GALLERY_README.md`
+**Location**: `hololoom/web_dashboard/TEMPLATE_GALLERY_README.md`
 
 Complete technical documentation:
 - ✅ Feature overview
@@ -123,7 +123,7 @@ Complete technical documentation:
 - ✅ Code examples
 
 ### 4. **TEMPLATE_GALLERY_QUICK_START.md** (User Guide)
-**Location**: `HoloLoom/web_dashboard/TEMPLATE_GALLERY_QUICK_START.md`
+**Location**: `hololoom/web_dashboard/TEMPLATE_GALLERY_QUICK_START.md`
 
 Quick reference for end users:
 - ✅ What it is (30-second explanation)
@@ -186,15 +186,15 @@ Safety (1):
 ### Direct File
 ```bash
 # Windows
-start HoloLoom/web_dashboard/template_gallery.html
+start hololoom/web_dashboard/template_gallery.html
 
 # Mac/Linux
-open HoloLoom/web_dashboard/template_gallery.html
+open hololoom/web_dashboard/template_gallery.html
 ```
 
 ### Local Dev Server (Recommended)
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python -m http.server 8000
 # Visit: http://localhost:8000/template_gallery.html
 ```
@@ -303,7 +303,7 @@ if (templateFile) {
 ## Customization Guide
 
 ### Add New Template
-1. Add JSON file to `HoloLoom/web_dashboard/example_workflows/`
+1. Add JSON file to `hololoom/web_dashboard/example_workflows/`
 2. Update `TEMPLATE_METADATA` in `template_gallery.html`:
 ```javascript
 TEMPLATE_METADATA = {
@@ -424,17 +424,17 @@ body {
 
 ```
 Created Files (4):
-✅ HoloLoom/web_dashboard/template_gallery.html (1,100 lines)
-✅ HoloLoom/web_dashboard/template_gallery.js (500 lines)
-✅ HoloLoom/web_dashboard/TEMPLATE_GALLERY_README.md (600 lines)
-✅ HoloLoom/web_dashboard/TEMPLATE_GALLERY_QUICK_START.md (300 lines)
+✅ hololoom/web_dashboard/template_gallery.html (1,100 lines)
+✅ hololoom/web_dashboard/template_gallery.js (500 lines)
+✅ hololoom/web_dashboard/TEMPLATE_GALLERY_README.md (600 lines)
+✅ hololoom/web_dashboard/TEMPLATE_GALLERY_QUICK_START.md (300 lines)
 
 Documentation Files (1):
 ✅ TEMPLATE_GALLERY_WAVE1_COMPLETE.md (this file)
 
 Unchanged (Existing):
-- HoloLoom/web_dashboard/example_workflows/*.json (8 templates)
-- HoloLoom/web_dashboard/workflow_builder.html (will integrate)
+- hololoom/web_dashboard/example_workflows/*.json (8 templates)
+- hololoom/web_dashboard/workflow_builder.html (will integrate)
 
 Total: 2,500+ lines of new code and documentation
 ```

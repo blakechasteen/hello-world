@@ -10,10 +10,10 @@ Usage:
 
 import asyncio
 from datetime import datetime
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.config import Config
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
-from HoloLoom.alignment.audit_trail import AuditTrail
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.alignment.audit_trail import AuditTrail
 
 
 def create_test_shards():

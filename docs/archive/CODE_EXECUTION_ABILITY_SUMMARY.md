@@ -1,7 +1,7 @@
 # Code Execution Ability - Implementation Summary
 
 **Status**: ✅ Production Ready (2025-12-03)
-**Location**: `HoloLoom/departments/proto/abilities/core/code_execution.py`
+**Location**: `hololoom/departments/proto/abilities/core/code_execution.py`
 **Tests**: 38/38 passing (100%)
 **Documentation**: Complete with examples and troubleshooting
 
@@ -195,8 +195,8 @@ Test Breakdown:
 ## Usage Example
 
 ```python
-from HoloLoom.departments.proto.abilities.core.code_execution import CodeExecutionAbility
-from HoloLoom.departments.proto.abilities.protocol import (
+from hololoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+from hololoom.apps.departments.proto.abilities.protocol import (
     AbilityContext,
     AbilityTrustLevel
 )
@@ -325,13 +325,13 @@ print(f"Verified: {verification.verified}")
 
 ## Files Created
 
-1. **`HoloLoom/departments/proto/abilities/core/code_execution.py`** (890 lines)
+1. **`hololoom/departments/proto/abilities/core/code_execution.py`** (890 lines)
    - Core implementation
 
-2. **`HoloLoom/departments/proto/abilities/core/test_code_execution.py`** (450 lines)
+2. **`hololoom/departments/proto/abilities/core/test_code_execution.py`** (450 lines)
    - Comprehensive test suite (38 tests, all passing)
 
-3. **`HoloLoom/departments/proto/abilities/core/CODE_EXECUTION_README.md`** (1000+ lines)
+3. **`hololoom/departments/proto/abilities/core/CODE_EXECUTION_README.md`** (1000+ lines)
    - Complete documentation with examples
 
 ## What's Next
@@ -378,7 +378,7 @@ print(f"Verified: {verification.verified}")
 
 1. **Use the ability**:
    ```python
-   from HoloLoom.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+   from hololoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
 
    ability = CodeExecutionAbility()
    # See documentation for usage examples
@@ -386,12 +386,12 @@ print(f"Verified: {verification.verified}")
 
 2. **Run tests**:
    ```bash
-   pytest HoloLoom/departments/proto/abilities/core/test_code_execution.py -v
+   pytest hololoom/departments/proto/abilities/core/test_code_execution.py -v
    ```
 
 3. **Read documentation**:
    ```bash
-   cat HoloLoom/departments/proto/abilities/core/CODE_EXECUTION_README.md
+   cat hololoom/departments/proto/abilities/core/CODE_EXECUTION_README.md
    ```
 
 ## Conclusion

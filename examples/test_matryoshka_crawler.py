@@ -13,7 +13,7 @@ import asyncio
 import sys
 sys.path.insert(0, 'c:/Users/blake/OneDrive/Documents/mythRL')
 
-from HoloLoom.spinningWheel.recursive_crawler import (
+from hololoom.spinningWheel.recursive_crawler import (
     CrawlConfig,
     CrawlState,
     LinkInfo,

@@ -10,7 +10,7 @@
 
 ### Tests Created
 
-**File:** `HoloLoom/tests/unit/test_compositional_cache_edge_cases.py` (363 lines, 21 tests)
+**File:** `hololoom/tests/unit/test_compositional_cache_edge_cases.py` (363 lines, 21 tests)
 
 **Contents:**
 - 6 test classes covering multi-tier caching, merge composition, eviction, threading, statistics, edge cases
@@ -59,7 +59,7 @@
 
 ### Tests Created
 
-**File:** `HoloLoom/tests/e2e/test_bare_mode_e2e.py` (357 lines, 17 tests)
+**File:** `hololoom/tests/e2e/test_bare_mode_e2e.py` (357 lines, 17 tests)
 
 **Contents:**
 - 8 test classes covering query types, edge cases, performance, memory, concurrency, caching, configuration, response quality

@@ -1,5 +1,5 @@
 #!/bin/bash
-# HoloLoom Deployment Verification Script
+# hololoom Deployment Verification Script
 # Usage: ./scripts/verify-deployment.sh [quickstart|lite|full]
 #
 # Checks that all services are running and responding correctly.
@@ -51,7 +51,7 @@ FAILED=0
 print_header() {
     echo ""
     echo "============================================"
-    echo " HoloLoom Deployment Verification"
+    echo " hololoom Deployment Verification"
     echo " Mode: $DEPLOYMENT"
     echo "============================================"
     echo ""
@@ -147,7 +147,7 @@ print_summary() {
         echo -e "${GREEN}All checks passed!${NC}"
         echo ""
         echo "Access points:"
-        echo "  - HoloLoom API: $API_URL"
+        echo "  - hololoom API: $API_URL"
         echo "  - Neo4j Browser: $NEO4J_URL"
         echo "  - Qdrant Dashboard: $QDRANT_URL/dashboard"
         [[ -n "$GRAFANA_URL" ]] && echo "  - Grafana: $GRAFANA_URL"
@@ -189,7 +189,7 @@ echo "Service Endpoints:"
 echo "-----------------"
 check_service "Neo4j HTTP" "$NEO4J_URL"
 check_service "Qdrant REST" "$QDRANT_URL" "/health"
-check_service "HoloLoom API" "$API_URL" "/health"
+check_service "hololoom API" "$API_URL" "/health"
 [[ -n "$PROMETHEUS_URL" ]] && check_service "Prometheus" "$PROMETHEUS_URL" "/-/healthy"
 [[ -n "$GRAFANA_URL" ]] && check_service "Grafana" "$GRAFANA_URL" "/api/health"
 

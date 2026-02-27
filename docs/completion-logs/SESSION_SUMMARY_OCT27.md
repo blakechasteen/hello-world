@@ -25,7 +25,7 @@
 - Python connectivity tests passing
 
 **Files:**
-- Fixed: `HoloLoom/docker-compose.yml`
+- Fixed: `hololoom/docker-compose.yml`
 - Created: `test_backends_quick.py`
 
 ---

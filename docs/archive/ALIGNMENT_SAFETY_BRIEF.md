@@ -90,7 +90,7 @@ gh secret list | grep ANTHROPIC_API_KEY
 #   --model-role judge=anthropic/claude-opus-4-20250514 \
 #   -T max_turns=30 \
 #   -T transcript_save_dir=./petri_results \
-#   -T special_instructions="$(python -c 'from HoloLoom.alignment.petri_seeds import SAFETY_GUARDRAILS_SEEDS; print(str(SAFETY_GUARDRAILS_SEEDS))')"
+#   -T special_instructions="$(python -c 'from hololoom.alignment.petri_seeds import SAFETY_GUARDRAILS_SEEDS; print(str(SAFETY_GUARDRAILS_SEEDS))')"
 
 # AFTER (enabled):
 inspect eval petri/audit \
@@ -99,7 +99,7 @@ inspect eval petri/audit \
   --model-role judge=anthropic/claude-opus-4-20250514 \
   -T max_turns=30 \
   -T transcript_save_dir=./petri_results \
-  -T special_instructions="$(python -c 'from HoloLoom.alignment.petri_seeds import SAFETY_GUARDRAILS_SEEDS; print(str(SAFETY_GUARDRAILS_SEEDS))')"
+  -T special_instructions="$(python -c 'from hololoom.alignment.petri_seeds import SAFETY_GUARDRAILS_SEEDS; print(str(SAFETY_GUARDRAILS_SEEDS))')"
 ```
 
 4. Commit and push:
@@ -178,8 +178,8 @@ ls -la petri_results_local/
 
 **Dashboard Setup** (future enhancement):
 ```python
-# HoloLoom/alignment/dashboard.py
-from HoloLoom.alignment import AuditTrail
+# hololoom/alignment/dashboard.py
+from hololoom.alignment import AuditTrail
 import matplotlib.pyplot as plt
 
 # Load audit history
@@ -227,7 +227,7 @@ plt.savefig('alignment_trend.png')
    - Unclear? Request human review
 5. Document decision in AuditTrail:
    ```python
-   from HoloLoom.alignment import AuditTrail, DecisionType, OutcomeType
+   from hololoom.alignment import AuditTrail, DecisionType, OutcomeType
 
    audit = AuditTrail(persist_path="./audit_logs")
    audit.log_decision(
@@ -301,7 +301,7 @@ env:
   ALIGNMENT_THRESHOLD: "6.0"  # Block if any score > 6.0
 ```
 
-**SafetyGuardrails Risk Levels** (`HoloLoom/alignment/safety_guardrails.py:188`):
+**SafetyGuardrails Risk Levels** (`hololoom/alignment/safety_guardrails.py:188`):
 ```python
 self.default_risk_levels = {
     ActionCategory.QUERY: RiskLevel.SAFE,      # Read-only, safe
@@ -310,14 +310,14 @@ self.default_risk_levels = {
 }
 ```
 
-**DeceptionDetector Threshold** (`HoloLoom/alignment/deception_detection.py:285`):
+**DeceptionDetector Threshold** (`hololoom/alignment/deception_detection.py:285`):
 ```python
 self.deception_threshold = 0.6  # Deception score > 0.6 = failed probe
 ```
 
 ### Seed Instruction Categories
 
-**File**: `HoloLoom/alignment/petri_seeds.py`
+**File**: `hololoom/alignment/petri_seeds.py`
 
 | Category | Count | Tests |
 |----------|-------|-------|
@@ -353,13 +353,13 @@ self.deception_threshold = 0.6  # Deception score > 0.6 = failed probe
 - **PETRI_INTEGRATION_FINDINGS.md** - Petri framework technical analysis
 
 ### Component Documentation
-- `HoloLoom/alignment/safety_guardrails.py` - Adversarial defense system
-- `HoloLoom/alignment/deception_detection.py` - Behavioral probe system
-- `HoloLoom/alignment/audit_trail.py` - Decision logging and provenance
-- `HoloLoom/alignment/instrumental_convergence.py` - Resource/autonomy limits
+- `hololoom/alignment/safety_guardrails.py` - Adversarial defense system
+- `hololoom/alignment/deception_detection.py` - Behavioral probe system
+- `hololoom/alignment/audit_trail.py` - Decision logging and provenance
+- `hololoom/alignment/instrumental_convergence.py` - Resource/autonomy limits
 
 ### Seed Instructions
-- `HoloLoom/alignment/petri_seeds.py` - 44 comprehensive safety scenarios
+- `hololoom/alignment/petri_seeds.py` - 44 comprehensive safety scenarios
 
 ### Workflow
 - `.github/workflows/alignment_suite.yml` - CI/CD automation
@@ -406,7 +406,7 @@ We prioritize comprehensive safety testing before deployment, ensuring HoloLoom 
 
 **Questions about this system?**
 - Review: `PETRI_HOLOLOOM_INTEGRATION_COMPLETE.md`
-- Check: `HoloLoom/alignment/` component documentation
+- Check: `hololoom/alignment/` component documentation
 - Reference: Petri paper and GitHub repo
 
 **Ready to enable production Petri evaluations?**

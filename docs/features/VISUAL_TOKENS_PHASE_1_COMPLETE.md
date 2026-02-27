@@ -11,7 +11,7 @@
 Phase 1 delivered a complete **multimodal visual memory system** for HoloLoom:
 
 ### 1. PhotoToken (Memory Representation)
-**File**: `HoloLoom/memory/photo_tokens.py` (650 lines)
+**File**: `hololoom/memory/photo_tokens.py` (650 lines)
 
 **Core Features**:
 - ✅ Dataclass for visual memory tokens
@@ -38,7 +38,7 @@ class PhotoToken:
 ```
 
 ### 2. PhotoTokenMemory (Storage Engine)
-**File**: `HoloLoom/memory/photo_tokens.py` (same file, 650 lines total)
+**File**: `hololoom/memory/photo_tokens.py` (same file, 650 lines total)
 
 **Core Features**:
 - ✅ Local file storage (images/ directory)
@@ -70,7 +70,7 @@ async with PhotoTokenMemory("./photo_memory") as memory:
 ```
 
 ### 3. MultimodalEncoder (Embedding Engine)
-**File**: `HoloLoom/memory/multimodal_encoder.py` (400 lines)
+**File**: `hololoom/memory/multimodal_encoder.py` (400 lines)
 
 **Core Features**:
 - ✅ CLIP integration (ViT-B/32 model)
@@ -266,8 +266,8 @@ pip install Pillow numpy openai-clip torch
 
 | File | Lines | Purpose | Status |
 |------|-------|---------|--------|
-| `HoloLoom/memory/photo_tokens.py` | 650 | PhotoToken + PhotoTokenMemory | ✅ Complete |
-| `HoloLoom/memory/multimodal_encoder.py` | 400 | CLIP + structural encoding | ✅ Complete |
+| `hololoom/memory/photo_tokens.py` | 650 | PhotoToken + PhotoTokenMemory | ✅ Complete |
+| `hololoom/memory/multimodal_encoder.py` | 400 | CLIP + structural encoding | ✅ Complete |
 | `demos/demo_photo_memory.py` | 280 | Demo script | ✅ Complete |
 | `PHOTO_TOKENS_YARNGRAPH_INTEGRATION.md` | 500 | Integration design | ✅ Complete |
 | `VISUAL_TOKENS_DESIGN.md` | 500 | Original design doc | ✅ Complete |
@@ -280,7 +280,7 @@ pip install Pillow numpy openai-clip torch
 **Goal**: Integrate PhotoTokens into HoloLoom's unified memory system
 
 ### Task 1: Extend YarnGraph (2 hours)
-**File**: `HoloLoom/memory/graph.py`
+**File**: `hololoom/memory/graph.py`
 
 - [ ] Add `photo_token` to NODE_TYPES
 - [ ] Implement `add_photo_node(photo_token)`
@@ -288,7 +288,7 @@ pip install Pillow numpy openai-clip torch
 - [ ] Test: Add photo, verify edges created
 
 ### Task 2: Multimodal Search (3 hours)
-**File**: `HoloLoom/memory/graph.py`
+**File**: `hololoom/memory/graph.py`
 
 - [ ] Implement `search_multimodal(query, return_types=['text', 'photo'])`
 - [ ] CLIP-based photo ranking
@@ -297,7 +297,7 @@ pip install Pillow numpy openai-clip torch
 - [ ] Test: Returns both text and photo results
 
 ### Task 3: HoloLoom API (2 hours)
-**File**: `HoloLoom/hololoom.py`
+**File**: `hololoom/hololoom.py`
 
 - [ ] Add `remember_photo(image, caption, tags)` method
 - [ ] Extend `recall(query, include_photos=True)` parameter
@@ -416,7 +416,7 @@ results = model(image)
 
 **DeepSeek-OCR** (already integrated in HoloLoom):
 ```python
-from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
+from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
 
 spinner = DeepSeekOCRSpinner()
 text = await spinner.extract_text(image)

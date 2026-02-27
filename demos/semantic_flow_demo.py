@@ -14,11 +14,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import numpy as np
 import matplotlib.pyplot as plt
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     SemanticFlowCalculus,
     SemanticFlowVisualizer
 )
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.embedding.spectral import create_embedder
 
 
 def demo_basic_flow():

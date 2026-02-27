@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 async def demo_text_ingestion():
     """Demo 1: Text ingestion - the simplest case."""
-    from HoloLoom.spinningWheel import spin
+    from hololoom.spinningWheel import spin
 
     print("\n" + "="*80)
     print("DEMO 1: TEXT INGESTION")
@@ -73,7 +73,7 @@ async def demo_text_ingestion():
 
 async def demo_structured_data():
     """Demo 2: Structured data ingestion."""
-    from HoloLoom.spinningWheel import spin
+    from hololoom.spinningWheel import spin
 
     print("\n" + "="*80)
     print("DEMO 2: STRUCTURED DATA INGESTION")
@@ -119,7 +119,7 @@ async def demo_structured_data():
 
 async def demo_batch_ingestion():
     """Demo 3: Batch ingestion of multiple sources."""
-    from HoloLoom.spinningWheel import spin_batch
+    from hololoom.spinningWheel import spin_batch
 
     print("\n" + "="*80)
     print("DEMO 3: BATCH INGESTION")
@@ -156,7 +156,7 @@ async def demo_batch_ingestion():
 
 async def demo_memory_reuse():
     """Demo 4: Incremental ingestion into existing memory."""
-    from HoloLoom.spinningWheel import spin
+    from hololoom.spinningWheel import spin
 
     print("\n" + "="*80)
     print("DEMO 4: INCREMENTAL INGESTION (REUSE MEMORY)")
@@ -205,9 +205,9 @@ async def demo_comparison():
 
     print("\nOLD WAY (manual, verbose):")
     print("""
-    from HoloLoom.spinningWheel.multimodal_spinner import MultiModalSpinner
-    from HoloLoom.memory.backend_factory import create_memory_backend
-    from HoloLoom.config import Config, MemoryBackend
+    from hololoom.spinningWheel.multimodal_spinner import MultiModalSpinner
+    from hololoom.memory.backend_factory import create_memory_backend
+    from hololoom.config import Config, MemoryBackend
 
     # 1. Configure memory backend
     config = Config.bare()
@@ -228,7 +228,7 @@ async def demo_comparison():
 
     print("\nNEW WAY (ruthless):")
     print("""
-    from HoloLoom.spinningWheel import spin
+    from hololoom.spinningWheel import spin
 
     memory = await spin(raw_data)
 
@@ -249,7 +249,7 @@ async def demo_query_learning():
     print("""
     Bridge between querying and learning:
 
-    from HoloLoom.spinningWheel import spin_from_query
+    from hololoom.spinningWheel import spin_from_query
 
     # Execute query and ingest results
     memory = await spin_from_query(

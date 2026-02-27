@@ -99,7 +99,7 @@ class PromptRAGIntegration:
     Retrieves relevant context from multiple sources:
     - Past prompt executions with high quality scores
     - Task-type specific patterns and best practices
-    - Domain knowledge from HoloLoom memory
+    - Domain knowledge from hololoom memory
 
     Context is injected using configurable strategies:
     - prefix: Context appears before the main prompt
@@ -151,7 +151,7 @@ class PromptRAGIntegration:
         Searches multiple sources:
         1. High-quality past executions for similar prompts
         2. Task-type specific patterns and examples
-        3. Domain knowledge from HoloLoom memory (if available)
+        3. Domain knowledge from hololoom memory (if available)
 
         Args:
             prompt_content: The prompt content to find context for
@@ -455,7 +455,7 @@ class PromptRAGIntegration:
         task_type: Optional[str],
         k: int
     ) -> List[RAGContext]:
-        """Retrieve context from HoloLoom memory."""
+        """Retrieve context from hololoom memory."""
         contexts = []
 
         if not self._hololoom_bridge:

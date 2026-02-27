@@ -214,9 +214,9 @@ Fixed 4 critical TODO items in the HoloLoom workflow builder. All implementation
 
 | File | Lines Changed | Status |
 |------|--------------|--------|
-| `HoloLoom/web_dashboard/js/ingestion_ui.js` | +52 (TODO 1), +57 (TODO 2) | ✅ Complete |
-| `HoloLoom/web_dashboard/js/memory_explorer.js` | +127 new method + modified selectEntity | ✅ Complete |
-| `HoloLoom/web_dashboard/js/voice_orchestrator.js` | +36 lines in _trackVoiceMetrics | ✅ Complete |
+| `hololoom/web_dashboard/js/ingestion_ui.js` | +52 (TODO 1), +57 (TODO 2) | ✅ Complete |
+| `hololoom/web_dashboard/js/memory_explorer.js` | +127 new method + modified selectEntity | ✅ Complete |
+| `hololoom/web_dashboard/js/voice_orchestrator.js` | +36 lines in _trackVoiceMetrics | ✅ Complete |
 
 ---
 

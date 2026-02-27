@@ -23,10 +23,10 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.config import Config
-from HoloLoom.departments.rag_department import RAGDepartment
-from HoloLoom.convergence.recursive_reasoner_enhanced import create_recursive_reasoner
-from HoloLoom.protocols.recursive_reasoning import RecursiveConfig, ReasoningStrategy
+from hololoom.config import Config
+from hololoom.apps.departments.rag_department import RAGDepartment
+from hololoom.convergence.recursive_reasoner_enhanced import create_recursive_reasoner
+from hololoom.protocols.recursive_reasoning import RecursiveConfig, ReasoningStrategy
 
 
 # ============================================================================

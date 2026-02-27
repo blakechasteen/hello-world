@@ -20,13 +20,13 @@ HoloLoom is a **mature, production-grade AI system** with exceptional breadth (1
 - **4,485 total test functions** across 267 test files
 - **3-tier test organization**: Unit (<5s), Integration (<30s), E2E (<2min)
 - **100% coverage on critical systems**: Alignment, safety guardrails, memory backends
-- **Evidence**: `HoloLoom/tests/` with comprehensive e2e pipeline tests
+- **Evidence**: `hololoom/tests/` with comprehensive e2e pipeline tests
 
 ### S2. Protocol-Based Architecture (50+ Protocols)
 - **Standardized interface pattern** enables swappable implementations
 - **Key protocols**: `TraceLens`, `ModelAdapter`, `ConscienceProtocol`, `DepartmentProtocol`
 - **Benefit**: Can swap memory backends, LLM providers, visualization targets without code changes
-- **Evidence**: `HoloLoom/*/protocol.py` across 50+ components
+- **Evidence**: `hololoom/*/protocol.py` across 50+ components
 
 ### S3. Production-Grade Memory Systems (11 Integrated Subsystems)
 | System | Purpose | Lines |
@@ -49,7 +49,7 @@ HoloLoom is a **mature, production-grade AI system** with exceptional breadth (1
 - **37.7× faster** scale extraction (warm cache)
 - **50% memory savings** via view-based access
 - **Multi-scale variants**: 384D/256D/96D with spectral features
-- **Evidence**: `HoloLoom/embedding/zero_copy.py` (562 lines)
+- **Evidence**: `hololoom/embedding/zero_copy.py` (562 lines)
 
 ### S5. Complete RAG System (Level 4 Agentic + Graph)
 - **SimpleRAG**: Zero-config with 4 reasoning modes (DIRECT/VERIFY/RESEARCH/PLAN_EXECUTE)
@@ -98,7 +98,7 @@ HoloLoom is a **mature, production-grade AI system** with exceptional breadth (1
 - **16 standard dimensions**: Warmth, Valence, Formality, Urgency, etc.
 - **228 extended dimensions** across 15 semantic categories
 - **PDE-based evolution**: Temporal dynamics tracking
-- **Evidence**: `HoloLoom/semantic_calculus/dimensions.py` (1,720 lines)
+- **Evidence**: `hololoom/semantic_calculus/dimensions.py` (1,720 lines)
 
 ### S11. 47+ Input Adapters (SpinningWheel System)
 - **Audio/Video**: YouTube, podcasts, transcripts
@@ -157,7 +157,7 @@ HoloLoom is a **mature, production-grade AI system** with exceptional breadth (1
 - **Impact**: Hidden bugs, poor debugging experience
 
 ### W6. Architecture Complexity
-- **100+ top-level directories** in HoloLoom/
+- **100+ top-level directories** in hololoom/
 - **Multiple parallel implementations**: Documentation_OLD, utils_OLD, modules/
 - **Deep nesting**: Makes imports fragile, navigation difficult
 - **Impact**: Steep learning curve, high cognitive load
@@ -213,7 +213,7 @@ HoloLoom is a **mature, production-grade AI system** with exceptional breadth (1
 - **Access to**: 100+ document loaders, 20+ LLM providers, 20+ vector stores
 - **Positioning**: "LangChain's breadth + HoloLoom's depth"
 - **Use case**: Rapid prototyping + production learning
-- **Evidence**: `HoloLoom/integrations/langchain/` (2,600+ lines)
+- **Evidence**: `hololoom/integrations/langchain/` (2,600+ lines)
 
 ### O5. Privacy-First Architecture (Regulatory Tailwind)
 - **Features**: TEE processing, differential privacy, verifiable output

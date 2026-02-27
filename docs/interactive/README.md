@@ -65,7 +65,7 @@ graph TD
 #### 1. Click Nodes (Detailed Panel)
 
 Click any node to open the details panel showing:
-- **File Reference**: Exact code location (e.g., `HoloLoom/policy/unified.py:200`)
+- **File Reference**: Exact code location (e.g., `hololoom/policy/unified.py:200`)
 - **Description**: What the component does
 - **Metrics**: Latency, complexity, etc.
 - **Actions**: Jump to code, share link, copy reference
@@ -73,7 +73,7 @@ Click any node to open the details panel showing:
 **Example**:
 ```javascript
 // Click "Neural Policy" node
-// → Shows: HoloLoom/policy/unified.py:200
+// → Shows: hololoom/policy/unified.py:200
 // → Latency: ~35ms
 // → Complexity: High
 ```
@@ -250,10 +250,10 @@ Access framework via `window.HoloLoomInteractive`:
 window.HoloLoomInteractive.closeDetailsPanel();
 
 // Copy text to clipboard
-window.HoloLoomInteractive.copyToClipboard('HoloLoom/policy/unified.py:200');
+window.HoloLoomInteractive.copyToClipboard('hololoom/policy/unified.py:200');
 
 // Jump to code (simulated in demo, integrate with VS Code API in production)
-window.HoloLoomInteractive.jumpToCode('HoloLoom/policy/unified.py:200');
+window.HoloLoomInteractive.jumpToCode('hololoom/policy/unified.py:200');
 
 // Share node permalink
 window.HoloLoomInteractive.shareNode('Neural Policy', 0);

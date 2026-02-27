@@ -241,7 +241,7 @@ The system is designed around a "weaving" metaphor: independent "warp thread" mo
 ## RAG (Retrieval-Augmented Generation) System
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/rag/`
+**Location**: `hololoom/rag/`
 **Level**: Level 4 Agentic RAG + Graph RAG
 **Performance**: <200ms latency, 24/25 tests passing
 
@@ -261,7 +261,7 @@ Most RAG systems stop at Level 2. HoloLoom provides Level 4 out of the box.
 
 **Simple RAG (Text-Only)**:
 ```python
-from HoloLoom.rag import SimpleRAG
+from hololoom.rag import SimpleRAG
 
 # Zero-config initialization
 async with SimpleRAG() as rag:
@@ -280,7 +280,7 @@ async with SimpleRAG() as rag:
 
 **Multimodal RAG (Text + Images)**:
 ```python
-from HoloLoom.rag import MultimodalRAG
+from hololoom.rag import MultimodalRAG
 
 async with MultimodalRAG() as rag:
     # Store photos with CLIP embeddings
@@ -303,7 +303,7 @@ async with MultimodalRAG() as rag:
 
 **RAG Performance Dashboard**:
 ```python
-from HoloLoom.visualization import RAGDashboard
+from hololoom.visualization import RAGDashboard
 
 # Auto-construct dashboard from query history
 queries = [...]  # List of RAGResult objects
@@ -366,7 +366,7 @@ rag = SimpleRAG()  # Uses Config.fast() by default
 
 Customize if needed:
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 rag = SimpleRAG(
     config=Config.fused(),           # BARE/FAST/FUSED modes
@@ -439,7 +439,7 @@ if result.compressed_context:
 Auto-constructed visualizations following Edward Tufte principles:
 
 ```python
-from HoloLoom.visualization import RAGDashboard
+from hololoom.visualization import RAGDashboard
 
 # Collect query results
 results = []
@@ -468,16 +468,16 @@ dashboard.save("performance.html")
 ### Files & Documentation
 
 **Core Implementation**:
-- `HoloLoom/rag/simple_rag.py` (375 lines) - Main RAG wrapper
-- `HoloLoom/rag/multimodal_rag.py` (675 lines) - Multimodal extension
-- `HoloLoom/rag/visual_qa.py` (432 lines) - OCR + CLIP engine
+- `hololoom/rag/simple_rag.py` (375 lines) - Main RAG wrapper
+- `hololoom/rag/multimodal_rag.py` (675 lines) - Multimodal extension
+- `hololoom/rag/visual_qa.py` (432 lines) - OCR + CLIP engine
 
 **Tests**:
-- `HoloLoom/rag/tests/test_simple_rag.py` (425 lines) - 24/25 tests passing
-- `HoloLoom/rag/tests/test_multimodal_rag.py` (581 lines) - 21/21 tests passing
+- `hololoom/rag/tests/test_simple_rag.py` (425 lines) - 24/25 tests passing
+- `hololoom/rag/tests/test_multimodal_rag.py` (581 lines) - 21/21 tests passing
 
 **Visualization**:
-- `HoloLoom/visualization/rag_dashboard.py` (612 lines) - Dashboard builder
+- `hololoom/visualization/rag_dashboard.py` (612 lines) - Dashboard builder
 
 **Demos** (Progressive Complexity):
 - `demos/demo_rag_qa_simple.py` (92 lines) - **Start here!** Basic Q&A
@@ -488,9 +488,9 @@ dashboard.save("performance.html")
 - `demos/demo_rag_dashboard.py` (175 lines) - Performance dashboard
 
 **Documentation**:
-- `HoloLoom/rag/README.md` (596 lines) - Simple RAG API reference
-- `HoloLoom/rag/MULTIMODAL_README.md` (877 lines) - Multimodal capabilities
-- `HoloLoom/visualization/RAG_DASHBOARD_README.md` (576 lines) - Dashboard guide
+- `hololoom/rag/README.md` (596 lines) - Simple RAG API reference
+- `hololoom/rag/MULTIMODAL_README.md` (877 lines) - Multimodal capabilities
+- `hololoom/visualization/RAG_DASHBOARD_README.md` (576 lines) - Dashboard guide
 - `demos/RAG_DEMOS_README.md` (455 lines) - Learning path
 
 **Total**: 11,418 lines of production code, tests, and documentation
@@ -532,15 +532,15 @@ PYTHONPATH=. python demos/demo_rag_dashboard.py
 
 ```bash
 # Test Simple RAG
-pytest HoloLoom/rag/tests/test_simple_rag.py -v
+pytest hololoom/rag/tests/test_simple_rag.py -v
 # Result: 24/25 passing (96%)
 
 # Test Multimodal RAG
-pytest HoloLoom/rag/tests/test_multimodal_rag.py -v
+pytest hololoom/rag/tests/test_multimodal_rag.py -v
 # Result: 21/21 passing (100%)
 
 # Test all RAG components
-pytest HoloLoom/rag/ -v
+pytest hololoom/rag/ -v
 ```
 
 ### Integration with HoloLoom
@@ -585,14 +585,14 @@ RAG leverages HoloLoom's existing infrastructure:
 ### SQL Context Packer (December 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/rag/sql_context_packer.py` (723 lines)
+**Location**: `hololoom/rag/sql_context_packer.py` (723 lines)
 **Performance**: 30-70% token savings with MI-aware optimization
 
 Database-aware context packing for SQL RAG queries using mutual information scoring.
 
 **Quick Start**:
 ```python
-from HoloLoom.rag.sql_context_packer import SQLContextPacker, PackingStrategy
+from hololoom.rag.sql_context_packer import SQLContextPacker, PackingStrategy
 
 # Create packer
 packer = SQLContextPacker(strategy=PackingStrategy.BALANCED)
@@ -643,7 +643,7 @@ row_mi = calculate_row_mi(row_content, query)
 
 **Performance**: ~5ms for 100 rows × 10 columns
 
-See [HoloLoom/rag/sql_context_packer.py](HoloLoom/rag/sql_context_packer.py) for implementation details.
+See [hololoom/rag/sql_context_packer.py](hololoom/rag/sql_context_packer.py) for implementation details.
 
 ---
 
@@ -689,7 +689,7 @@ See [HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md](docs/HOLOLOOM_MASTER_SCOPE_AND_SEQUE
 ## Jenny Visualization Runtime (December 2025)
 
 **Status**: ✅ Production Ready (v1.0.0)
-**Location**: `HoloLoom/visualization/`
+**Location**: `hololoom/visualization/`
 **Philosophy**: "Disposable pixels, durable decisions"
 **Total Code**: ~8,500 lines across 14 core files
 
@@ -704,8 +704,8 @@ Jenny is HoloLoom's intelligent visualization runtime that transforms Spacetime 
 ### Quick Start
 
 ```python
-from HoloLoom.visualization.jenny_runtime import JennyRuntime, create_runtime
-from HoloLoom.visualization.jenny_spec import JennySpec, PanelTypeJenny, PanelSizeJenny
+from hololoom.visualization.jenny_runtime import JennyRuntime, create_runtime
+from hololoom.visualization.jenny_spec import JennySpec, PanelTypeJenny, PanelSizeJenny
 
 # Create runtime (auto-registers renderers)
 runtime = create_runtime(enable_learning=True)
@@ -757,7 +757,7 @@ Jenny implements 6 moonshot phases for comprehensive visualization capabilities:
 Singleton registry with priority-based renderer selection:
 
 ```python
-from HoloLoom.visualization.jenny_renderer_registry import RendererRegistry, RenderTarget
+from hololoom.visualization.jenny_renderer_registry import RendererRegistry, RenderTarget
 
 registry = RendererRegistry()  # Singleton
 
@@ -775,7 +775,7 @@ ar_renderer = registry.get_for_target(RenderTarget.AR)
 Production-grade async HTTP client with connection pooling and retry:
 
 ```python
-from HoloLoom.visualization.jenny_llm_client import LLMClientConfig
+from hololoom.visualization.jenny_llm_client import LLMClientConfig
 
 # Development (fast, less reliable)
 fast_config = LLMClientConfig.fast()
@@ -797,7 +797,7 @@ reliable_config = LLMClientConfig.reliable()
 Complete accessibility layer for universal access:
 
 ```python
-from HoloLoom.visualization.jenny_accessibility import (
+from hololoom.visualization.jenny_accessibility import (
     AriaAttributes, AriaRole, AriaLive, AriaRelevant,
     KeyboardHandler, FocusManager
 )
@@ -820,8 +820,8 @@ aria = AriaAttributes(
 TypeScript-friendly JSON output for React applications:
 
 ```python
-from HoloLoom.visualization.jenny_renderer import ReactRenderer
-from HoloLoom.visualization.jenny_renderer_registry import RenderTarget
+from hololoom.visualization.jenny_renderer import ReactRenderer
+from hololoom.visualization.jenny_renderer_registry import RenderTarget
 
 renderer = ReactRenderer()
 props_json = await renderer.render(specs, target=RenderTarget.REACT)
@@ -836,8 +836,8 @@ props_json = await renderer.render(specs, target=RenderTarget.REACT)
 3D spatial panel specifications for AR/VR environments:
 
 ```python
-from HoloLoom.visualization.jenny_renderer import ARRenderer
-from HoloLoom.visualization.jenny_renderer_registry import RenderTarget
+from hololoom.visualization.jenny_renderer import ARRenderer
+from hololoom.visualization.jenny_renderer_registry import RenderTarget
 
 renderer = ARRenderer()
 ar_json = await renderer.render(specs, target=RenderTarget.AR)
@@ -852,7 +852,7 @@ ar_json = await renderer.render(specs, target=RenderTarget.AR)
 Event-based metrics collection and dashboard generation:
 
 ```python
-from HoloLoom.visualization.jenny_analytics import (
+from hololoom.visualization.jenny_analytics import (
     JennyAnalyticsCollector, JennyAnalyticsDashboard
 )
 
@@ -876,8 +876,8 @@ html = dashboard.render_html()  # Full HTML dashboard
 Jenny learns optimal panel types for different query types using Bayesian Thompson Sampling:
 
 ```python
-from HoloLoom.visualization.jenny_panel_learner import PanelTypeLearner
-from HoloLoom.visualization.jenny_learning_callback import ACTION_LEARNING_MAP
+from hololoom.visualization.jenny_panel_learner import PanelTypeLearner
+from hololoom.visualization.jenny_learning_callback import ACTION_LEARNING_MAP
 
 # Create learner
 learner = PanelTypeLearner()
@@ -955,10 +955,10 @@ PYTHONPATH=. python demos/demo_jenny_learning_loop.py
 
 ```bash
 # Run Jenny integration tests
-pytest HoloLoom/tests/integration/test_jenny_moonshot.py -v
+pytest hololoom/tests/integration/test_jenny_moonshot.py -v
 
 # Run MRF tests
-pytest HoloLoom/tests/unit/test_jenny_mrf.py -v
+pytest hololoom/tests/unit/test_jenny_mrf.py -v
 ```
 
 ### When to Use Jenny
@@ -980,9 +980,9 @@ pytest HoloLoom/tests/unit/test_jenny_mrf.py -v
 Jenny integrates with HoloLoom's weaving cycle:
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.visualization.jenny_runtime import create_runtime
-from HoloLoom.visualization.jenny_mrf_compiler import create_mrf_compiler
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.visualization.jenny_runtime import create_runtime
+from hololoom.visualization.jenny_mrf_compiler import create_mrf_compiler
 
 # Weave query
 orchestrator = WeavingOrchestrator(cfg=config, shards=shards)
@@ -1014,9 +1014,9 @@ html = await runtime.render(specs, target="html")
 ## Metaprompting Refinement Framework (MRF) - November 2025
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/prompting/`
+**Location**: `hololoom/prompting/`
 **Performance**: +30% avg quality improvement, <50ms overhead
-**Documentation**: [unified_mrf.py](HoloLoom/prompting/unified_mrf.py), [analytics/](HoloLoom/prompting/analytics/)
+**Documentation**: [unified_mrf.py](hololoom/prompting/unified_mrf.py), [analytics/](hololoom/prompting/analytics/)
 
 Comprehensive metaprompting framework that refines all HoloLoom prompts using a principled 7-component structure, with integrated Thompson Sampling learning and A/B testing for continuous improvement.
 
@@ -1038,7 +1038,7 @@ The Metaprompting Refinement Framework (MRF) provides production-grade prompt en
 ### Quick Start
 
 ```python
-from HoloLoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategy
+from hololoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategy
 
 # Create MRF engine
 mrf = UnifiedMRF(model_provider="claude")
@@ -1070,8 +1070,8 @@ print(refined.strategy_used)     # Which strategy was selected
 
 **1. Agentic Reasoning Integration**:
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
-from HoloLoom.prompting.unified_mrf import enable_mrf_for_agentic
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.prompting.unified_mrf import enable_mrf_for_agentic
 
 # Enable MRF for agentic system
 orchestrator = await create_agentic_orchestrator(config, shards)
@@ -1086,8 +1086,8 @@ result = await orchestrator.reason(
 
 **2. RAG Integration**:
 ```python
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.prompting.unified_mrf import enable_mrf_for_rag
+from hololoom.rag import SimpleRAG
+from hololoom.prompting.unified_mrf import enable_mrf_for_rag
 
 # Create RAG with MRF enhancement
 rag = SimpleRAG()
@@ -1100,7 +1100,7 @@ result = await rag.query("What is Thompson Sampling?")
 
 **3. Alignment Framework Integration**:
 ```python
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.alignment import SafetyGuardrails
 
 # Create guardrails with MRF enhancement
 guardrails = SafetyGuardrails(
@@ -1120,7 +1120,7 @@ prompt = guardrails.get_mrf_risk_assessment_prompt(
 
 **Real-time Performance Monitoring**:
 ```python
-from HoloLoom.prompting.analytics import create_dashboard
+from hololoom.prompting.analytics import create_dashboard
 
 # Create dashboard with learning and A/B testing
 dashboard = create_dashboard(
@@ -1228,23 +1228,23 @@ Each adapter adjusts:
 ### Key Files
 
 **Core Framework** (~2,500 lines):
-- `HoloLoom/prompting/unified_mrf.py` (915 lines) - Main MRF engine
-- `HoloLoom/prompting/model_adapters.py` (420 lines) - Provider-specific adapters
-- `HoloLoom/prompting/quality_assessment.py` (380 lines) - Quality scoring
+- `hololoom/prompting/unified_mrf.py` (915 lines) - Main MRF engine
+- `hololoom/prompting/model_adapters.py` (420 lines) - Provider-specific adapters
+- `hololoom/prompting/quality_assessment.py` (380 lines) - Quality scoring
 
 **Analytics System** (~1,800 lines):
-- `HoloLoom/prompting/analytics/dashboard.py` (900+ lines) - Real-time monitoring
-- `HoloLoom/prompting/analytics/learning.py` (536 lines) - Thompson Sampling learner
-- `HoloLoom/prompting/analytics/ab_testing.py` (473 lines) - A/B testing framework
+- `hololoom/prompting/analytics/dashboard.py` (900+ lines) - Real-time monitoring
+- `hololoom/prompting/analytics/learning.py` (536 lines) - Thompson Sampling learner
+- `hololoom/prompting/analytics/ab_testing.py` (473 lines) - A/B testing framework
 
 **Integration Modules** (~1,200 lines):
-- `HoloLoom/agentic/mrf_integration.py` (422 lines) - Agentic reasoning
-- `HoloLoom/rag/mrf_integration.py` (385 lines) - RAG system
-- `HoloLoom/alignment/mrf_integration.py` (450 lines) - Alignment framework
+- `hololoom/agentic/mrf_integration.py` (422 lines) - Agentic reasoning
+- `hololoom/rag/mrf_integration.py` (385 lines) - RAG system
+- `hololoom/alignment/mrf_integration.py` (450 lines) - Alignment framework
 
 **Tests** (~800 lines):
-- `HoloLoom/prompting/tests/test_unified_mrf.py` - Core framework tests
-- `HoloLoom/alignment/tests/test_mrf_integration.py` (318 lines) - 18 integration tests
+- `hololoom/prompting/tests/test_unified_mrf.py` - Core framework tests
+- `hololoom/alignment/tests/test_mrf_integration.py` (318 lines) - 18 integration tests
 
 **Total**: ~6,300 lines of production code, tests, and documentation
 
@@ -1336,7 +1336,7 @@ Use mrf_prompt_refiner with model_provider=ollama to optimize this for local mod
 #### Programmatic API
 
 ```python
-from HoloLoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategyType, ModelProvider
+from hololoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategyType, ModelProvider
 
 mrf = UnifiedMRF()
 
@@ -1491,7 +1491,7 @@ PYTHONPATH=. python demos/demo_mrf_skill.py
 #### Key Files
 
 - **Skill Specification**: `skills/domain/mrf_prompt_refiner/skill.markdown` (374 lines)
-- **Implementation**: `HoloLoom/prompting/unified_mrf.py` (lines 857-1028, 172 lines added)
+- **Implementation**: `hololoom/prompting/unified_mrf.py` (lines 857-1028, 172 lines added)
 - **Demo**: `demos/demo_mrf_skill.py` (379 lines)
 - **Summary**: `MRF_SKILL_COMPLETE.md` (231 lines)
 
@@ -1502,7 +1502,7 @@ PYTHONPATH=. python demos/demo_mrf_skill.py
 ## Prompt Testing Framework (November 2025, Updated December 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/prompting/testing/`
+**Location**: `hololoom/prompting/testing/`
 **Updated**: December 2025 - LLMJudge Integration
 **Performance**: LLM-based evaluation with heuristic fallback
 
@@ -1522,7 +1522,7 @@ The framework now uses **LLMJudge** for LLM-powered quality evaluation:
 
 **Quick Start**:
 ```python
-from HoloLoom.prompting.testing import create_test_suite, PromptTestConfig
+from hololoom.prompting.testing import create_test_suite, PromptTestConfig
 
 # Create test suite with LLM evaluation (default)
 config = PromptTestConfig(
@@ -1554,18 +1554,18 @@ Each criterion is scored 0.0-1.0, with an overall score computed.
 
 ```bash
 # Run all tests with LLM evaluation
-python -m HoloLoom.prompting.testing.test_suite
+python -m hololoom.prompting.testing.test_suite
 
 # Use specific provider
-python -m HoloLoom.prompting.testing.test_suite \
+python -m hololoom.prompting.testing.test_suite \
   --llm-provider anthropic \
   --llm-model claude-3-5-sonnet-20241022
 
 # Disable LLM (use heuristics)
-python -m HoloLoom.prompting.testing.test_suite --no-llm-judge
+python -m hololoom.prompting.testing.test_suite --no-llm-judge
 
 # Save results
-python -m HoloLoom.prompting.testing.test_suite \
+python -m hololoom.prompting.testing.test_suite \
   --output results/test_report.json
 ```
 
@@ -1589,16 +1589,16 @@ python -m HoloLoom.prompting.testing.test_suite \
 
 ### Documentation
 
-Complete testing guide at [HoloLoom/prompting/testing/README.md](HoloLoom/prompting/testing/README.md).
+Complete testing guide at [hololoom/prompting/testing/README.md](hololoom/prompting/testing/README.md).
 
 ---
 
 ## Context Packing System (November 2025, Phase 5: December 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/context_packing/`
+**Location**: `hololoom/context_packing/`
 **Performance**: 40-90% token savings
-**Documentation**: [README.md](HoloLoom/context_packing/README.md)
+**Documentation**: [README.md](hololoom/context_packing/README.md)
 **Phase 5**: Information-theoretic packing (Tishby's Information Bottleneck)
 
 Physics-inspired context compression that achieves 40-90% token savings while preserving information density through beta wave activation spreading, multi-signal importance scoring, and Matryoshka-aware embedding compression.
@@ -1615,7 +1615,7 @@ The Context Packing System solves the LLM context window problem by intelligentl
 ### Quick Start
 
 ```python
-from HoloLoom.context_packing import ContextPacker, ContextPackerConfig
+from hololoom.context_packing import ContextPacker, ContextPackerConfig
 
 # Create packer with balanced preset (40-60% savings)
 config = ContextPackerConfig.balanced()
@@ -1648,7 +1648,7 @@ Compression ratio: 50.0%
 Physics-based activation propagation across knowledge graphs using neuroscience-inspired beta wave dynamics (12-30 Hz):
 
 ```python
-from HoloLoom.context_packing import ActivationSpreader
+from hololoom.context_packing import ActivationSpreader
 
 spreader = ActivationSpreader()
 activation_map = spreader.spread_activation(
@@ -1683,7 +1683,7 @@ Combines 7 importance signals to rank memory nodes:
 | **Information Content** | 25% | Mutual information I(Node; Query) - **Phase 5** |
 
 ```python
-from HoloLoom.context_packing import ImportanceScorer
+from hololoom.context_packing import ImportanceScorer
 
 scorer = ImportanceScorer()
 importance_scores = scorer.score_batch(
@@ -1705,7 +1705,7 @@ Multi-scale compression using Matryoshka embeddings:
 - **Very low** (<0.25): Dropped
 
 ```python
-from HoloLoom.context_packing import ContextCompressor
+from hololoom.context_packing import ContextCompressor
 
 compressor = ContextCompressor()
 kept_nodes, scale_assignments = compressor.matryoshka_compress(
@@ -1731,7 +1731,7 @@ Information-theoretic compression using Tishby's Information Bottleneck principl
 
 **Quick Start**:
 ```python
-from HoloLoom.context_packing import information_budget_pack
+from hololoom.context_packing import information_budget_pack
 
 # Pack with information budget constraint
 nodes, scales, mi_scores = information_budget_pack(
@@ -1798,8 +1798,8 @@ config = ContextPackerConfig.research()
 Context packing integrates seamlessly with HoloLoom's memory system:
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.context_packing import ContextPacker
+from hololoom import hololoom
+from hololoom.context_packing import ContextPacker
 
 async with HoloLoom() as loom:
     # Retrieve initial candidates from memory
@@ -1825,7 +1825,7 @@ async with HoloLoom() as loom:
 ### Running the Demo
 
 ```bash
-PYTHONPATH=. python HoloLoom/context_packing/demo_context_packing.py
+PYTHONPATH=. python hololoom/context_packing/demo_context_packing.py
 ```
 
 Demonstrates:
@@ -1874,7 +1874,7 @@ Demonstrates:
 ## Portal Orchestration Stages (December 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/orchestrator/stages/`
+**Location**: `hololoom/orchestrator/stages/`
 **Files**: `steps_0_3.py` (349 lines), `steps_4_6.py` (673 lines), `steps_7_9.py` (514 lines)
 **Total**: 1,639 lines of production code
 **Date**: 2025-12-09
@@ -1973,7 +1973,7 @@ These steps execute **concurrently** via `asyncio.gather` for 40-120ms speedup:
 ### Quick Start
 
 ```python
-from HoloLoom.orchestrator.stages import (
+from hololoom.orchestrator.stages import (
     execute_step1_pattern_selection,
     execute_step2_chrono_trigger,
     execute_step3_thread_selection,
@@ -1982,7 +1982,7 @@ from HoloLoom.orchestrator.stages import (
     execute_step8_tool_execution,
     execute_step9_spacetime_fabric
 )
-from HoloLoom.orchestrator.context import WeavingContext
+from hololoom.orchestrator.context import WeavingContext
 
 # Create context
 ctx = WeavingContext(query=query)
@@ -2056,7 +2056,7 @@ Portal stages integrate seamlessly with existing orchestrator:
 
 ```python
 # In WeavingOrchestrator.weave()
-from HoloLoom.orchestrator.stages import execute_steps_4_6_parallel
+from hololoom.orchestrator.stages import execute_steps_4_6_parallel
 
 # Replace monolithic feature extraction with parallel stages
 ctx = await execute_steps_4_6_parallel(
@@ -2098,7 +2098,7 @@ ctx = await execute_steps_4_6_parallel(
 ## Context Packing Adaptive Learning (Phase 6.4 - December 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/context_packing/learning.py`
+**Location**: `hololoom/context_packing/learning.py`
 **Lines**: 536 lines of production code
 **Date**: 2025-12-09
 
@@ -2125,7 +2125,7 @@ Uses Beta(α, β) posterior for success rate estimation:
 - Budget scaling: High success rate → lower budget (aggressive), Low → higher budget (conservative)
 
 ```python
-from HoloLoom.context_packing import ThompsonSampler
+from hololoom.context_packing import ThompsonSampler
 
 sampler = ThompsonSampler(
     base_budget=5.0,        # Default MI budget
@@ -2138,7 +2138,7 @@ sampler = ThompsonSampler(
 budget = sampler.sample()  # Uses Beta posterior
 
 # Update with outcome
-from HoloLoom.context_packing import BudgetOutcome, QueryComplexity
+from hololoom.context_packing import BudgetOutcome, QueryComplexity
 
 outcome = BudgetOutcome(
     complexity=QueryComplexity.MODERATE,
@@ -2155,7 +2155,7 @@ sampler.update(outcome)
 Maintains separate Thompson Samplers for each complexity level (TRIVIAL, SIMPLE, MODERATE, COMPLEX, RESEARCH):
 
 ```python
-from HoloLoom.context_packing import AdaptiveBudgetLearner, QueryComplexity
+from hololoom.context_packing import AdaptiveBudgetLearner, QueryComplexity
 
 learner = AdaptiveBudgetLearner(
     quality_threshold=0.7,
@@ -2188,7 +2188,7 @@ print(f"Reasoning: {rec.reasoning}")
 **Convenience API** (uses global learner):
 
 ```python
-from HoloLoom.context_packing import (
+from hololoom.context_packing import (
     get_adaptive_budget,
     record_outcome,
     get_learning_statistics
@@ -2227,7 +2227,7 @@ for complexity, comp_stats in stats['by_complexity'].items():
 ### Integration with Context Packing
 
 ```python
-from HoloLoom.context_packing import (
+from hololoom.context_packing import (
     information_budget_pack,
     get_adaptive_budget,
     record_outcome,
@@ -2389,7 +2389,7 @@ stats['by_complexity']['moderate']['beta']              # Beta param
 ## Consciousness Integration - Epistemic Awareness (Phase 1 - November 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/awareness/` + integrations across all systems
+**Location**: `hololoom/awareness/` + integrations across all systems
 **Performance**: <5ms overhead per query
 **Test Coverage**: 4/4 core integrations complete
 
@@ -2410,12 +2410,12 @@ The Consciousness Integration (Phase 1) brings epistemic awareness to HoloLoom b
 ### Quick Start
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
-from HoloLoom.protocols.types import Query
+from hololoom import hololoom
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.rag import SimpleRAG
+from hololoom.alignment import SafetyGuardrails
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.protocols.types import Query
 
 # All systems automatically integrate awareness if available
 config = Config.fast()
@@ -2464,7 +2464,7 @@ for step in result.steps_taken:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     Awareness Layer                          │
-│  (HoloLoom/awareness/ + HoloLoom/memory/awareness_graph.py) │
+│  (hololoom/awareness/ + hololoom/memory/awareness_graph.py) │
 │                                                               │
 │  • Semantic topology tracking (228D space)                   │
 │  • Activation spreading across memory graph                  │
@@ -2490,7 +2490,7 @@ for step in result.steps_taken:
 
 ### Integration 1: Weaving Orchestrator
 
-**File**: `HoloLoom/weaving_orchestrator.py`
+**File**: `hololoom/weaving_orchestrator.py`
 **Changes**: Awareness perception → features → spacetime metadata
 
 **Injection Points**:
@@ -2518,7 +2518,7 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 
 ### Integration 2: RAG System
 
-**File**: `HoloLoom/rag/simple_rag.py`
+**File**: `hololoom/rag/simple_rag.py`
 **Changes**: Added `epistemic_confidence` field to `RAGResult`
 
 **Epistemic Confidence Calculation**:
@@ -2552,7 +2552,7 @@ async with SimpleRAG() as rag:
 
 ### Integration 3: Alignment Framework
 
-**File**: `HoloLoom/alignment/safety_guardrails.py`
+**File**: `hololoom/alignment/safety_guardrails.py`
 **Changes**: Epistemic humility risk adjustment
 
 **Risk Adjustment Logic**:
@@ -2590,7 +2590,7 @@ assert 'epistemic_warning' in decision.metadata
 
 ### Integration 4: Agentic Reasoning
 
-**File**: `HoloLoom/agentic/core.py`
+**File**: `hololoom/agentic/core.py`
 **Changes**: Multi-query epistemic tracking with early stopping
 
 **Features**:
@@ -2693,17 +2693,17 @@ Roadmap for Phase 2+ (planned):
 4. **Epistemic Calibration** - Learn optimal thresholds from outcomes
 5. **Uncertainty Decomposition** - Separate epistemic vs aleatoric uncertainty
 
-See `HoloLoom/awareness/` for complete consciousness layer capabilities.
+See `hololoom/awareness/` for complete consciousness layer capabilities.
 
 ### Key Files
 
 **Core Implementation**:
-- `HoloLoom/awareness/__init__.py` - Awareness layer exports
-- `HoloLoom/memory/awareness_graph.py` - Activation tracking (800 lines)
-- `HoloLoom/weaving_orchestrator.py` - Orchestrator integration (lines 430-445, 894-932, 1479-1491, 1635-1649)
-- `HoloLoom/rag/simple_rag.py` - RAG integration (lines 62-83, 449-487)
-- `HoloLoom/alignment/safety_guardrails.py` - Alignment integration (lines 384-389, 416-470, 506-508)
-- `HoloLoom/agentic/core.py` - Agentic integration (lines 96-99, 124-162, 447-554)
+- `hololoom/awareness/__init__.py` - Awareness layer exports
+- `hololoom/memory/awareness_graph.py` - Activation tracking (800 lines)
+- `hololoom/weaving_orchestrator.py` - Orchestrator integration (lines 430-445, 894-932, 1479-1491, 1635-1649)
+- `hololoom/rag/simple_rag.py` - RAG integration (lines 62-83, 449-487)
+- `hololoom/alignment/safety_guardrails.py` - Alignment integration (lines 384-389, 416-470, 506-508)
+- `hololoom/agentic/core.py` - Agentic integration (lines 96-99, 124-162, 447-554)
 
 **Demo**:
 - `demos/demo_consciousness_integration.py` - Complete showcase (330 lines)
@@ -2715,9 +2715,9 @@ See `HoloLoom/awareness/` for complete consciousness layer capabilities.
 ## Memory Symphony - Unified Memory Coordination (November 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/memory_symphony/`
+**Location**: `hololoom/memory_symphony/`
 **Performance**: <50ms (FAST), <150ms (BALANCED), <300ms (DEEP)
-**Documentation**: [README.md](HoloLoom/memory_symphony/README.md)
+**Documentation**: [README.md](hololoom/memory_symphony/README.md)
 
 Intelligent orchestration across 7 memory systems for optimal performance and information density. Automatically selects the best memory access strategy and coordinates across multiple memory systems for maximum performance.
 
@@ -2742,9 +2742,9 @@ Memory Symphony is a unified memory coordination layer that sits above HoloLoom'
 ### Quick Start
 
 ```python
-from HoloLoom.memory_symphony import MemoryConductor, MemoryQuery, MemoryStrategy
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.config import Config
+from hololoom.memory_symphony import MemoryConductor, MemoryQuery, MemoryStrategy
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config
 
 # Create memory backend
 config = Config.fast()
@@ -2921,11 +2921,11 @@ for system, count in metrics.system_usage.items():
 Memory Symphony integrates seamlessly with HoloLoom's memory system:
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.memory_symphony import create_memory_conductor, MemoryQuery
+from hololoom import hololoom
+from hololoom.memory_symphony import create_memory_conductor, MemoryQuery
 
 async with HoloLoom() as loom:
-    # Get memory backend from HoloLoom
+    # Get memory backend from hololoom
     memory = loom.memory_backend
 
     # Create conductor
@@ -2943,7 +2943,7 @@ async with HoloLoom() as loom:
 ### UnifiedMemory Integration (November 2025)
 
 **Status**: ✅ Automatic Integration
-**Location**: `HoloLoom/memory/unified.py`
+**Location**: `hololoom/memory/unified.py`
 **Tests**: 21/21 passing
 
 UnifiedMemory now **automatically uses Memory Conductor** for intelligent multi-system coordination! No configuration needed - just use the familiar `recall()` method and get automatic routing across all 7 memory systems.
@@ -2958,7 +2958,7 @@ When you call `UnifiedMemory.recall()`, it automatically:
 
 **Example**:
 ```python
-from HoloLoom.memory.unified import UnifiedMemory, RecallStrategy
+from hololoom.memory.unified import UnifiedMemory, RecallStrategy
 
 # Create unified memory (conductor enabled by default)
 memory = UnifiedMemory(backend=your_backend)
@@ -3021,7 +3021,7 @@ memory = UnifiedMemory(backend=your_backend, enable_conductor=False)
 Comprehensive test coverage (21 tests):
 
 ```bash
-python -m pytest HoloLoom/tests/unit/test_unified_memory_conductor.py -v
+python -m pytest hololoom/tests/unit/test_unified_memory_conductor.py -v
 # 21/21 passing
 ```
 
@@ -3043,7 +3043,7 @@ python -m pytest HoloLoom/tests/unit/test_unified_memory_conductor.py -v
 #### Implementation Details
 
 **Files Modified**:
-- `HoloLoom/memory/unified.py` (+85 lines)
+- `hololoom/memory/unified.py` (+85 lines)
   - Line 95-159: `__init__()` creates MemoryConductor
   - Line 458-513: `_map_strategy()` and `_convert_results()` helpers
   - Line 256-338: `recall()` updated to use conductor
@@ -3051,7 +3051,7 @@ python -m pytest HoloLoom/tests/unit/test_unified_memory_conductor.py -v
 **Key Integration Points**:
 ```python
 # In UnifiedMemory.__init__()
-from HoloLoom.memory_symphony import MemoryConductor, MemoryStrategy
+from hololoom.memory_symphony import MemoryConductor, MemoryStrategy
 self._conductor = MemoryConductor(
     memory_backend=self._backend,
     enable_cache=True,
@@ -3074,7 +3074,7 @@ else:
 ### Running the Demo
 
 ```bash
-PYTHONPATH=. python HoloLoom/memory_symphony/demo_memory_symphony.py
+PYTHONPATH=. python hololoom/memory_symphony/demo_memory_symphony.py
 ```
 
 Demonstrates:
@@ -3130,7 +3130,7 @@ Demonstrates:
 ## UnifiedMemory Navigation & Pattern Discovery (November 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/memory/unified.py` (lines 281-910)
+**Location**: `hololoom/memory/unified.py` (lines 281-910)
 **Tests**: 31/31 passing
 **Demo**: [demo_memory_navigation.py](demos/demo_memory_navigation.py)
 
@@ -3159,8 +3159,8 @@ Navigate through memory space using 4 intuitive directions:
 #### Quick Start
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.memory.unified import NavigationDirection
+from hololoom import hololoom
+from hololoom.memory.unified import NavigationDirection
 
 async with HoloLoom() as loom:
     # Create some interconnected memories
@@ -3185,7 +3185,7 @@ async with HoloLoom() as loom:
 #### All 4 Navigation Modes
 
 ```python
-from HoloLoom.memory.unified import NavigationDirection
+from hololoom.memory.unified import NavigationDirection
 
 # 1. FORWARD - Follow the narrative thread
 forward = memory.navigate(
@@ -3399,7 +3399,7 @@ Demonstrates:
 Comprehensive test suite with 31 test cases:
 
 ```bash
-pytest HoloLoom/tests/unit/test_unified_memory_navigation.py -v
+pytest hololoom/tests/unit/test_unified_memory_navigation.py -v
 ```
 
 **Test Coverage**:
@@ -3437,8 +3437,8 @@ clusters = memory.discover_patterns(["cluster"], min_strength=0.6)
 ### Implementation Details
 
 **Files**:
-- `HoloLoom/memory/unified.py` (lines 281-910) - Core implementation
-- `HoloLoom/tests/unit/test_unified_memory_navigation.py` - Tests
+- `hololoom/memory/unified.py` (lines 281-910) - Core implementation
+- `hololoom/tests/unit/test_unified_memory_navigation.py` - Tests
 - `demos/demo_memory_navigation.py` - Demo
 
 **Dependencies**: NetworkX (graph algorithms), NumPy (optional, for numerical operations)
@@ -3457,8 +3457,8 @@ clusters = memory.discover_patterns(["cluster"], min_strength=0.6)
 ## LangChain Integration (November 2025)
 
 **Status**: ✅ Production Ready (v1.0.0)
-**Location**: `HoloLoom/integrations/langchain/`
-**Documentation**: [README.md](HoloLoom/integrations/langchain/README.md)
+**Location**: `hololoom/integrations/langchain/`
+**Documentation**: [README.md](hololoom/integrations/langchain/README.md)
 
 Comprehensive integration bringing LangChain's ecosystem (100+ document loaders, 20+ LLM providers, 20+ vector stores) to HoloLoom.
 
@@ -3478,7 +3478,7 @@ The LangChain integration adds three major capabilities:
 #### 1. Document Loading
 
 ```python
-from HoloLoom.integrations.langchain import UniversalDocumentLoader
+from hololoom.integrations.langchain import UniversalDocumentLoader
 
 loader = UniversalDocumentLoader()
 
@@ -3488,7 +3488,7 @@ shards = loader.load("https://example.com/article")
 shards = loader.load_directory("docs/", glob_pattern="**/*.md")
 
 # Specialized loaders
-from HoloLoom.integrations.langchain import load_github_repo, load_slack_workspace
+from hololoom.integrations.langchain import load_github_repo, load_slack_workspace
 
 shards = load_github_repo("https://github.com/user/repo", branch="main")
 shards = load_slack_workspace("slack_export/")
@@ -3505,7 +3505,7 @@ shards = load_slack_workspace("slack_export/")
 #### 2. Multi-Provider LLMs
 
 ```python
-from HoloLoom.integrations.langchain import MultiProviderLLM
+from hololoom.integrations.langchain import MultiProviderLLM
 
 # OpenAI
 llm = MultiProviderLLM(provider="openai", model="gpt-4")
@@ -3519,7 +3519,7 @@ response = llm("Write a Python function")
 llm = MultiProviderLLM(provider="ollama", model="llama3.2:3b")
 
 # Auto-select best available
-from HoloLoom.integrations.langchain import create_best_available_llm
+from hololoom.integrations.langchain import create_best_available_llm
 llm = create_best_available_llm()  # Tries Anthropic → OpenAI → Cohere → Ollama
 ```
 
@@ -3540,7 +3540,7 @@ for token in llm.stream("Write a story"):
 #### 3. Vector Stores
 
 ```python
-from HoloLoom.integrations.langchain import VectorStoreFactory
+from hololoom.integrations.langchain import VectorStoreFactory
 
 # Create vector store
 store = VectorStoreFactory(store_type="qdrant", host="localhost", port=6333)
@@ -3569,12 +3569,12 @@ results = store.hybrid_search("machine learning", k=10, alpha=0.7)
 #### 4. Interactive CLI
 
 ```bash
-python -m HoloLoom.integrations.langchain.prototyping
+python -m hololoom.integrations.langchain.prototyping
 ```
 
 Or programmatically:
 ```python
-from HoloLoom.integrations.langchain import quick_start
+from hololoom.integrations.langchain import quick_start
 quick_start()
 ```
 
@@ -3599,8 +3599,8 @@ hololoom> query What are the main findings?
 ### Complete RAG Pipeline
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.integrations.langchain import (
+from hololoom import hololoom
+from hololoom.integrations.langchain import (
     UniversalDocumentLoader,
     MultiProviderLLM,
     VectorStoreFactory
@@ -3635,7 +3635,7 @@ asyncio.run(complete_rag())
 ### Quick Prototyping API
 
 ```python
-from HoloLoom.integrations.langchain import QuickPrototype
+from hololoom.integrations.langchain import QuickPrototype
 
 async def main():
     proto = QuickPrototype()
@@ -3737,7 +3737,7 @@ pip install qdrant-client chromadb pinecone-client faiss-cpu
 ## Production Hardening (November 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/context/`
+**Location**: `hololoom/context/`
 **Tests**: 25/25 passing (100%)
 **Overhead**: <2ms per query
 
@@ -3785,7 +3785,7 @@ Enterprise-grade infrastructure for production deployment with fault tolerance, 
 ### Quick Start
 
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     ProductionConfig,
     create_system_monitor,
     create_circuit_breaker_registry,
@@ -3889,7 +3889,7 @@ config = ProductionConfig(
 
 ```python
 from fastapi import FastAPI
-from HoloLoom.context import create_production_router
+from hololoom.context import create_production_router
 
 app = FastAPI()
 router = await create_production_router(
@@ -3913,9 +3913,9 @@ async def metrics_endpoint():
 
 ### Documentation
 
-- **[PRODUCTION_QUICK_START.md](HoloLoom/context/PRODUCTION_QUICK_START.md)** - 5-minute setup guide
-- **[PERFORMANCE_TUNING_GUIDE.md](HoloLoom/context/PERFORMANCE_TUNING_GUIDE.md)** - Optimization tips
-- **[TROUBLESHOOTING_GUIDE.md](HoloLoom/context/TROUBLESHOOTING_GUIDE.md)** - Common issues
+- **[PRODUCTION_QUICK_START.md](hololoom/context/PRODUCTION_QUICK_START.md)** - 5-minute setup guide
+- **[PERFORMANCE_TUNING_GUIDE.md](hololoom/context/PERFORMANCE_TUNING_GUIDE.md)** - Optimization tips
+- **[TROUBLESHOOTING_GUIDE.md](hololoom/context/TROUBLESHOOTING_GUIDE.md)** - Common issues
 - **[MIGRATION_GUIDE.md](docs/guides/MIGRATION_GUIDE.md)** - Upgrade from v1.0 to v1.1
 
 ### Monitoring
@@ -3934,7 +3934,7 @@ context_memory_usage_mb 456
 
 ```bash
 # Run production hardening tests
-pytest HoloLoom/context/ -v
+pytest hololoom/context/ -v
 
 # Results: 25/25 passing
 # - Foundation infrastructure: 13/13
@@ -3947,7 +3947,7 @@ pytest HoloLoom/context/ -v
 ## ChatOps Job Observability (December 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/chatops/handlers/`
+**Location**: `hololoom/chatops/handlers/`
 **Performance**: <100ms job submission, real-time progress streaming
 
 Complete observability stack for HoloLoom ChatOps job execution.
@@ -4098,7 +4098,7 @@ hololoom_jobs_total{status="completed"} 42
 
 ### Grafana Dashboard
 
-Import `HoloLoom/chatops/dashboards/hololoom_jobs.json` for:
+Import `hololoom/chatops/dashboards/hololoom_jobs.json` for:
 - Job throughput over time
 - Queue depth gauge
 - Latency percentile trends
@@ -4120,8 +4120,8 @@ Import `HoloLoom/chatops/dashboards/hololoom_jobs.json` for:
 
 ```bash
 # Run integration tests
-pytest HoloLoom/tests/integration/test_prometheus_metrics.py -v
-pytest HoloLoom/tests/integration/test_websocket_progress.py -v
+pytest hololoom/tests/integration/test_prometheus_metrics.py -v
+pytest hololoom/tests/integration/test_websocket_progress.py -v
 ```
 
 ---
@@ -4197,7 +4197,7 @@ ENV PYTHONPATH=/app
 HEALTHCHECK --interval=30s --timeout=10s \
     CMD wget --spider http://localhost:8000/health || exit 1
 EXPOSE 8000
-CMD ["uvicorn", "HoloLoom.server.agentic_api:app", \
+CMD ["uvicorn", "hololoom.server.agentic_api:app", \
      "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
 ```
 
@@ -4302,9 +4302,9 @@ spec:
 
 ### Health Check Endpoint
 
-**UnifiedMemory Health Check** ([unified.py:1047-1154](HoloLoom/memory/unified.py:1047)):
+**UnifiedMemory Health Check** ([unified.py:1047-1154](hololoom/memory/unified.py:1047)):
 ```python
-from HoloLoom.memory.unified import UnifiedMemory
+from hololoom.memory.unified import UnifiedMemory
 
 memory = UnifiedMemory(backend=backend)
 
@@ -4355,8 +4355,8 @@ readinessProbe:
 
 **Backend Auto-Fallback**:
 ```python
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
 
 config = Config.fused()
 config.memory_backend = MemoryBackend.HYBRID  # Prefers Neo4j + Qdrant
@@ -4445,7 +4445,7 @@ kubectl get events -n hololoom --sort-by='.lastTimestamp'
 ## Memory Consolidation & Lifecycle (November 2025)
 
 **Status**: ✅ Production Ready (2025-11-22)
-**Location**: `HoloLoom/memory/consolidation.py`, `HoloLoom/memory/unified.py`
+**Location**: `hololoom/memory/consolidation.py`, `hololoom/memory/unified.py`
 **Background**: Automatic consolidation every 60 minutes
 
 Complete memory consolidation system for episodic → semantic conversion, deduplication, and lifecycle management (archive/prune).
@@ -4463,8 +4463,8 @@ Memory consolidation runs in the background, converting raw episodic memories in
 
 **Basic Usage**:
 ```python
-from HoloLoom.memory.consolidation import MemoryConsolidator
-from HoloLoom.memory.unified import UnifiedMemory
+from hololoom.memory.consolidation import MemoryConsolidator
+from hololoom.memory.unified import UnifiedMemory
 
 # Create unified memory
 memory = UnifiedMemory(backend=backend)
@@ -4505,7 +4505,7 @@ print(stats)
 
 ### Consolidation Strategies
 
-**1. Deduplication** ([consolidation.py:89-156](HoloLoom/memory/consolidation.py:89)):
+**1. Deduplication** ([consolidation.py:89-156](hololoom/memory/consolidation.py:89)):
 ```python
 # Merges memories with >95% similarity
 # Example:
@@ -4520,7 +4520,7 @@ consolidator = MemoryConsolidator(
 )
 ```
 
-**2. Fact Extraction** ([consolidation.py:158-225](HoloLoom/memory/consolidation.py:158)):
+**2. Fact Extraction** ([consolidation.py:158-225](hololoom/memory/consolidation.py:158)):
 ```python
 # Extracts discrete facts from experiences
 # Example input: "I learned that Python uses indentation for blocks"
@@ -4537,7 +4537,7 @@ consolidator = MemoryConsolidator(
 # Fallback to rule-based if LLM unavailable (graceful degradation)
 ```
 
-**3. Entity Extraction** ([consolidation.py:227-294](HoloLoom/memory/consolidation.py:227)):
+**3. Entity Extraction** ([consolidation.py:227-294](hololoom/memory/consolidation.py:227)):
 ```python
 # Identifies entities and relationships
 # Example: "Thompson Sampling is a Bayesian algorithm"
@@ -4547,7 +4547,7 @@ consolidator = MemoryConsolidator(
 # Relationship: Thompson Sampling --IS_A--> Bayesian algorithm
 ```
 
-**4. Summarization** ([consolidation.py:296-363](HoloLoom/memory/consolidation.py:296)):
+**4. Summarization** ([consolidation.py:296-363](hololoom/memory/consolidation.py:296)):
 ```python
 # Creates compressed semantic summaries
 # Example: 10 memories about "Python decorators" →
@@ -4562,7 +4562,7 @@ consolidator = MemoryConsolidator(
 
 ### Memory Lifecycle Management
 
-**Archive Old Memories** ([consolidation.py:365-432](HoloLoom/memory/consolidation.py:365)):
+**Archive Old Memories** ([consolidation.py:365-432](hololoom/memory/consolidation.py:365)):
 ```python
 # Moves old, rarely-accessed memories to archive
 # Frees up active memory space
@@ -4575,7 +4575,7 @@ consolidator = MemoryConsolidator(
 )
 ```
 
-**Prune Stale Knowledge** ([consolidation.py:434-501](HoloLoom/memory/consolidation.py:434)):
+**Prune Stale Knowledge** ([consolidation.py:434-501](hololoom/memory/consolidation.py:434)):
 ```python
 # Removes contradicted or outdated knowledge
 # Example: "Python 2 is the latest version" → pruned (contradicts newer info)
@@ -4602,9 +4602,9 @@ print(stats)
 
 ### Background Consolidation
 
-**Automatic Mode** ([consolidation.py:245-262](HoloLoom/memory/consolidation.py:245)):
+**Automatic Mode** ([consolidation.py:245-262](hololoom/memory/consolidation.py:245)):
 ```python
-from HoloLoom.memory.consolidation import MemoryConsolidator
+from hololoom.memory.consolidation import MemoryConsolidator
 
 async with MemoryConsolidator(
     stream_manager=stream_manager,
@@ -4651,7 +4651,7 @@ await consolidator.stop_background_consolidation()  # Graceful shutdown
 UnifiedMemory automatically integrates consolidation:
 
 ```python
-from HoloLoom.memory.unified import UnifiedMemory
+from hololoom.memory.unified import UnifiedMemory
 
 # Create unified memory (consolidation enabled by default)
 async with UnifiedMemory(
@@ -4703,16 +4703,16 @@ consolidator = MemoryConsolidator(
 
 ### Files
 
-- **HoloLoom/memory/consolidation.py** (789 lines) - Complete consolidation system
-- **HoloLoom/memory/unified.py** - Integration with UnifiedMemory
-- **HoloLoom/memory/lifecycle_manager.py** - Archive/prune logic
+- **hololoom/memory/consolidation.py** (789 lines) - Complete consolidation system
+- **hololoom/memory/unified.py** - Integration with UnifiedMemory
+- **hololoom/memory/lifecycle_manager.py** - Archive/prune logic
 
 ---
 
 ## Temporal Queries & Time-Travel (November 2025)
 
 **Status**: ✅ Production Ready (2025-11-22)
-**Location**: `HoloLoom/memory/unified.py`
+**Location**: `hololoom/memory/unified.py`
 **Methods**: `time_travel()`, `what_happened_between()`, `detect_temporal_patterns()`
 
 Complete temporal query capabilities for exploring memory evolution over time.
@@ -4728,7 +4728,7 @@ Temporal queries enable:
 
 **Time-Travel Snapshots**:
 ```python
-from HoloLoom.memory.unified import UnifiedMemory
+from hololoom.memory.unified import UnifiedMemory
 
 memory = UnifiedMemory(backend=backend)
 
@@ -4771,7 +4771,7 @@ for pattern in patterns:
 
 ### Time-Travel Implementation
 
-**Method Signature** ([unified.py:555-652](HoloLoom/memory/unified.py:555)):
+**Method Signature** ([unified.py:555-652](hololoom/memory/unified.py:555)):
 ```python
 def time_travel(self, timestamp: str) -> Dict[str, Any]:
     """
@@ -4810,7 +4810,7 @@ print(f"Memories added since yesterday: "
 
 ### Time-Range Queries
 
-**Method Signature** ([unified.py:654-724](HoloLoom/memory/unified.py:654)):
+**Method Signature** ([unified.py:654-724](hololoom/memory/unified.py:654)):
 ```python
 def what_happened_between(
     self,
@@ -4862,7 +4862,7 @@ relevant_memories = [
 
 ### Temporal Pattern Detection
 
-**Method Signature** ([unified.py:726-869](HoloLoom/memory/unified.py:726)):
+**Method Signature** ([unified.py:726-869](hololoom/memory/unified.py:726)):
 ```python
 def detect_temporal_patterns(
     self,
@@ -5063,15 +5063,15 @@ snapshot = memory.time_travel(datetime.now().isoformat())
 
 ### Files
 
-- **HoloLoom/memory/unified.py** (lines 555-869) - All 3 temporal query methods
-- **HoloLoom/tests/unit/test_unified_memory_conductor.py** - Comprehensive test suite
+- **hololoom/memory/unified.py** (lines 555-869) - All 3 temporal query methods
+- **hololoom/tests/unit/test_unified_memory_conductor.py** - Comprehensive test suite
 
 ---
 
 ## Smart Query Routing (November 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/routing/`
+**Location**: `hololoom/routing/`
 **Performance**: <50ms for simple queries (10x speedup)
 **Accuracy**: 95%+ classification accuracy
 
@@ -5090,7 +5090,7 @@ Intelligent query complexity classification with fast-path routing and adaptive 
 ### Architecture
 
 ```python
-from HoloLoom.routing import (
+from hololoom.routing import (
     QueryClassifier,
     FastPathRouter,
     create_classifier,
@@ -5193,8 +5193,8 @@ The routing system learns from classification outcomes and adapts over time:
 ### Integration Example
 
 ```python
-from HoloLoom.routing import create_smart_router
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.routing import create_smart_router
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Create smart router with learning
 router = create_smart_router(
@@ -5230,7 +5230,7 @@ async def process_query(text: str):
 Real-time classification metrics:
 
 ```python
-from HoloLoom.routing import get_telemetry
+from hololoom.routing import get_telemetry
 
 telemetry = get_telemetry()
 print(f"Total classified: {telemetry.total_classified}")
@@ -5258,7 +5258,7 @@ Pattern deployment: ~100ms (async, every 24 hours)
 ### Configuration
 
 ```python
-from HoloLoom.routing import QueryClassifierConfig
+from hololoom.routing import QueryClassifierConfig
 
 config = QueryClassifierConfig(
     enable_learning=True,
@@ -5277,10 +5277,10 @@ classifier = create_classifier(config)
 
 ```bash
 # Run routing tests
-pytest HoloLoom/routing/ -v
+pytest hololoom/routing/ -v
 
 # Run adaptive learning integration tests
-pytest HoloLoom/routing/learning/tests/ -v
+pytest hololoom/routing/learning/tests/ -v
 
 # Results:
 # - Query classification: 15/15 passing
@@ -5290,8 +5290,8 @@ pytest HoloLoom/routing/learning/tests/ -v
 
 ### Documentation
 
-- **[HoloLoom/routing/README.md](HoloLoom/routing/README.md)** - Architecture overview
-- **[HoloLoom/routing/learning/README.md](HoloLoom/routing/learning/README.md)** - Adaptive learning details
+- **[hololoom/routing/README.md](hololoom/routing/README.md)** - Architecture overview
+- **[hololoom/routing/learning/README.md](hololoom/routing/learning/README.md)** - Adaptive learning details
 - **[PHASE_3_DOCUMENTATION.md](.archive/session_docs/PHASE_3_DOCUMENTATION.md)** - Complete Phase 3 implementation docs
 - **[PERFORMANCE_BENCHMARKS.md](docs/archive/PERFORMANCE_BENCHMARKS.md)** - Performance analysis
 - **[MIGRATION_GUIDE.md](docs/guides/MIGRATION_GUIDE.md)** - Upgrade guide
@@ -5395,7 +5395,7 @@ python -m xterminator.fixer fix path/to/code.py --validate --git-safe
 
 **Integrated with HoloLoom**:
 ```python
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 
 qa_dept = get_department("quality_assurance")
 result = await qa_dept.process({
@@ -5530,7 +5530,7 @@ print(result.suggested_actions)
 Elle can use HoloLoom's memory system for context:
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 from elle.engine import ElleEngine
 
 loom = HoloLoom()
@@ -5545,7 +5545,7 @@ result = await engine.process(scene, intent)
 ## Departments: Multi-Department Architecture
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/departments/`
+**Location**: `hololoom/departments/`
 **Total Files**: 22 Python files
 **Documentation**: [HOLOLOOM_CONTEXT_DEPARTMENT_MAPPING.md](HOLOLOOM_CONTEXT_DEPARTMENT_MAPPING.md)
 
@@ -5604,7 +5604,7 @@ class DepartmentProtocol(Protocol):
 
 **Register a Department**:
 ```python
-from HoloLoom.departments import register_department, DepartmentBase
+from hololoom.departments import register_department, DepartmentBase
 
 class MyDepartment(DepartmentBase):
     async def process(self, request):
@@ -5616,7 +5616,7 @@ register_department("my_dept", MyDepartment())
 
 **Use a Department**:
 ```python
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 
 dept = get_department("quality_assurance")
 result = await dept.process({
@@ -5627,7 +5627,7 @@ result = await dept.process({
 
 **Cross-Department Workflow**:
 ```python
-from HoloLoom.departments import DepartmentOrchestrator
+from hololoom.departments import DepartmentOrchestrator
 
 orchestrator = DepartmentOrchestrator()
 
@@ -5678,7 +5678,7 @@ HoloLoom implements **7 independent learning systems** that operate at different
 
 ### 1. Policy Engine (Per-Query Learning)
 
-**Location**: `HoloLoom/policy/unified.py` (1,247 lines)
+**Location**: `hololoom/policy/unified.py` (1,247 lines)
 **Timescale**: Per-query (<1ms overhead)
 **What it learns**: Tool selection patterns, bandit priors
 
@@ -5697,7 +5697,7 @@ action = policy.forward(features, context)
 
 ### 2. Reflection Buffer (5-Minute Cycles)
 
-**Location**: `HoloLoom/reflection/buffer.py` (487 lines)
+**Location**: `hololoom/reflection/buffer.py` (487 lines)
 **Timescale**: 5-minute windows
 **What it learns**: Query-response quality patterns, temporal trends
 
@@ -5716,7 +5716,7 @@ async with ReflectionBuffer(capacity=1000) as buffer:
 
 ### 3. Recursive Learning (60-Second Background Loop)
 
-**Location**: `HoloLoom/recursive/` (750 lines)
+**Location**: `hololoom/recursive/` (750 lines)
 **Timescale**: 60-second background updates
 **What it learns**: Hot patterns, refinement strategies, Thompson priors
 
@@ -5735,7 +5735,7 @@ async with FullLearningEngine(enable_background_learning=True) as engine:
 
 ### 4. Semantic Calculus (Per-Query Projection)
 
-**Location**: `HoloLoom/semantic_calculus/` (1,850 lines)
+**Location**: `hololoom/semantic_calculus/` (1,850 lines)
 **Timescale**: Per-query
 **What it learns**: 228D semantic space projections (16 interpretable axes)
 
@@ -5765,7 +5765,7 @@ async with FullLearningEngine(enable_background_learning=True) as engine:
 
 ### 5. Adaptive Query Routing (Hourly Pattern Mining)
 
-**Location**: `HoloLoom/routing/learning/` (2,683 lines)
+**Location**: `hololoom/routing/learning/` (2,683 lines)
 **Timescale**: Hourly validation + daily reports
 **What it learns**: Query complexity patterns, routing rules
 
@@ -5786,7 +5786,7 @@ classifier = AdaptiveMoonshotClassifier(
 
 ### 6. PPO Training (Offline RL)
 
-**Location**: `HoloLoom/train_agent.py` + `reflection/ppo_trainer.py` (892 lines)
+**Location**: `hololoom/train_agent.py` + `reflection/ppo_trainer.py` (892 lines)
 **Timescale**: Offline training (hours/days)
 **What it learns**: Policy network weights, value function
 
@@ -5798,13 +5798,13 @@ classifier = AdaptiveMoonshotClassifier(
 
 **Usage**:
 ```bash
-PYTHONPATH=. python -c "from HoloLoom.train_agent import PPOTrainer; \
+PYTHONPATH=. python -c "from hololoom.train_agent import PPOTrainer; \
 t=PPOTrainer(env_name='CartPole-v1', total_timesteps=50000); t.train()"
 ```
 
 ### 7. Hot Pattern Feedback (10-Query Windows)
 
-**Location**: `HoloLoom/recursive/hot_pattern_feedback.py` (780 lines)
+**Location**: `hololoom/recursive/hot_pattern_feedback.py` (780 lines)
 **Timescale**: 10-query rolling windows
 **What it learns**: Access patterns, retrieval weights
 
@@ -5857,7 +5857,7 @@ This multi-timescale approach enables:
 ## Phase 3: Adaptive Learning System (November 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/routing/learning/`
+**Location**: `hololoom/routing/learning/`
 **Documentation**: [PHASE_3_DOCUMENTATION.md](.archive/session_docs/PHASE_3_DOCUMENTATION.md)
 
 Phase 3 integrates a complete **Adaptive Learning System** into HoloLoom's query routing layer, enabling automatic pattern discovery, continuous accuracy monitoring, and safe pattern deployment.
@@ -5875,7 +5875,7 @@ The Adaptive Learning System provides:
 ### Quick Start
 
 ```python
-from HoloLoom.routing.query_classifier_adaptive import AdaptiveMoonshotClassifier
+from hololoom.routing.query_classifier_adaptive import AdaptiveMoonshotClassifier
 
 # Create adaptive classifier with background learning
 classifier = AdaptiveMoonshotClassifier(
@@ -5900,22 +5900,22 @@ print(f"Validation Accuracy: {stats['validation_accuracy']:.1%}")
 
 Phase 3 implements a 4-component architecture:
 
-1. **PatternMiner** ([pattern_miner.py](HoloLoom/routing/learning/pattern_miner.py:1)) - 425 lines
+1. **PatternMiner** ([pattern_miner.py](hololoom/routing/learning/pattern_miner.py:1)) - 425 lines
    - Extracts high-quality patterns from production logs (n-gram → regex)
    - Quality scoring: precision, recall, F1, support
    - Configurable thresholds (min precision: 95%, min support: 10)
 
-2. **ContinuousValidator** ([continuous_validator.py](HoloLoom/routing/learning/continuous_validator.py:1)) - 469 lines
+2. **ContinuousValidator** ([continuous_validator.py](hololoom/routing/learning/continuous_validator.py:1)) - 469 lines
    - Hourly/daily validation with regression detection (>2% drop)
    - Trend analysis (7-day, 30-day moving averages)
    - Alert generation with severity levels (WARNING, CRITICAL)
 
-3. **AdaptiveUpdater** ([adaptive_updater.py](HoloLoom/routing/learning/adaptive_updater.py:1)) - 682 lines
+3. **AdaptiveUpdater** ([adaptive_updater.py](hololoom/routing/learning/adaptive_updater.py:1)) - 682 lines
    - Safe deployment strategies (SHADOW, AB_TEST, GRADUAL)
    - Automatic rollback on regression
    - Pattern versioning (keeps last 10 versions)
 
-4. **PerformanceReporter** ([performance_reporter.py](HoloLoom/routing/learning/performance_reporter.py:1)) - 627 lines
+4. **PerformanceReporter** ([performance_reporter.py](hololoom/routing/learning/performance_reporter.py:1)) - 627 lines
    - Daily/weekly reports with recommendations
    - Prometheus metrics export
    - Slack/email alert formatting
@@ -5980,7 +5980,7 @@ Severity: CRITICAL
 Run comprehensive integration tests:
 
 ```bash
-pytest HoloLoom/routing/learning/tests/test_adaptive_integration.py -v
+pytest hololoom/routing/learning/tests/test_adaptive_integration.py -v
 ```
 
 **Test Coverage**: 13/13 integration tests passing
@@ -6008,12 +6008,12 @@ pytest HoloLoom/routing/learning/tests/test_adaptive_integration.py -v
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| [query_classifier_adaptive.py](HoloLoom/routing/learning/query_classifier_adaptive.py:1) | 480 | Main adaptive classifier integration |
-| [pattern_miner.py](HoloLoom/routing/learning/pattern_miner.py:1) | 425 | Automatic pattern discovery |
-| [continuous_validator.py](HoloLoom/routing/learning/continuous_validator.py:1) | 469 | Hourly accuracy monitoring |
-| [adaptive_updater.py](HoloLoom/routing/learning/adaptive_updater.py:1) | 682 | Safe pattern deployment |
-| [performance_reporter.py](HoloLoom/routing/learning/performance_reporter.py:1) | 627 | Daily/weekly reports + metrics |
-| [test_adaptive_integration.py](HoloLoom/routing/learning/tests/test_adaptive_integration.py:1) | 465 | Integration test suite (13 tests) |
+| [query_classifier_adaptive.py](hololoom/routing/learning/query_classifier_adaptive.py:1) | 480 | Main adaptive classifier integration |
+| [pattern_miner.py](hololoom/routing/learning/pattern_miner.py:1) | 425 | Automatic pattern discovery |
+| [continuous_validator.py](hololoom/routing/learning/continuous_validator.py:1) | 469 | Hourly accuracy monitoring |
+| [adaptive_updater.py](hololoom/routing/learning/adaptive_updater.py:1) | 682 | Safe pattern deployment |
+| [performance_reporter.py](hololoom/routing/learning/performance_reporter.py:1) | 627 | Daily/weekly reports + metrics |
+| [test_adaptive_integration.py](hololoom/routing/learning/tests/test_adaptive_integration.py:1) | 465 | Integration test suite (13 tests) |
 
 ### Documentation
 
@@ -6070,16 +6070,16 @@ Tests are organized into three tiers for fast feedback loops:
 
 ```bash
 # Unit Tests (Fast - <5s) - Isolated component testing
-pytest HoloLoom/tests/unit/ -v
+pytest hololoom/tests/unit/ -v
 
 # Integration Tests (Medium - <30s) - Multi-component testing
-pytest HoloLoom/tests/integration/ -v
+pytest hololoom/tests/integration/ -v
 
 # End-to-End Tests (Slow - <2min) - Full pipeline testing
-pytest HoloLoom/tests/e2e/ -v
+pytest hololoom/tests/e2e/ -v
 
 # Run all tests
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 ```
 
 **Key Tests:**
@@ -6097,7 +6097,7 @@ Validates 3-backend architecture (INMEMORY/HYBRID/HYPERSPACE) and auto-fallback.
 
 Run a short CartPole training session:
 ```bash
-PYTHONPATH=. .venv/bin/python -c "from HoloLoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
+PYTHONPATH=. .venv/bin/python -c "from hololoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
 ```
 
 Training checkpoints are saved to the specified `log_dir`.
@@ -6106,7 +6106,7 @@ Training checkpoints are saved to the specified `log_dir`.
 
 Example usage of the full HoloLoom orchestrator:
 ```bash
-PYTHONPATH=. .venv/bin/python HoloLoom/orchestrator.py
+PYTHONPATH=. .venv/bin/python hololoom/orchestrator.py
 ```
 
 This runs a demo showing query → features → context → decision → response pipeline.
@@ -6115,7 +6115,7 @@ This runs a demo showing query → features → context → decision → respons
 
 ### Core Design Philosophy
 
-**"Warp Thread" Modules**: Each major component (motif detection, embedding, memory, policy) is independent and protocol-based. They don't import from each other, only from shared types (`HoloLoom/documentation/types.py`).
+**"Warp Thread" Modules**: Each major component (motif detection, embedding, memory, policy) is independent and protocol-based. They don't import from each other, only from shared types (`hololoom/documentation/types.py`).
 
 **"Shuttle" Orchestrator**: The `orchestrator.py` is the only module that imports from all others. It weaves components together into the full processing pipeline.
 
@@ -6123,61 +6123,61 @@ This runs a demo showing query → features → context → decision → respons
 
 HoloLoom implements a complete weaving metaphor as first-class abstractions:
 
-#### 1. Yarn Graph (HoloLoom/memory/graph.py)
+#### 1. Yarn Graph (hololoom/memory/graph.py)
 The persistent symbolic memory - discrete thread structure stored as a NetworkX MultiDiGraph.
 - **Alias**: `YarnGraph = KG`
 - **Backward Compat**: `LegacyShardsAdapter` wraps deprecated `shards` parameter (December 2025)
 - Entities and relationships form the "threads" of memory
 - Remains discrete until "tensioned" into Warp Space
 
-#### 2. Loom Command (HoloLoom/loom/command.py)
+#### 2. Loom Command (hololoom/loom/command.py)
 Pattern card selector that chooses execution template (BARE/FAST/FUSED).
 - **Classes**: `LoomCommand`, `PatternCard`, `PatternSpec`
 - Determines which warp threads to lift and how densely to weave
 - Configures scales, features, timeouts for entire cycle
 
-#### 3. Chrono Trigger (HoloLoom/chrono/trigger.py)
+#### 3. Chrono Trigger (hololoom/chrono/trigger.py)
 Temporal control system managing time-dependent aspects.
 - **Classes**: `ChronoTrigger`, `TemporalWindow`, `ExecutionLimits`
 - Controls when threads activate (temporal windows)
 - Manages execution timing, rhythm (heartbeat), halt conditions
 - Handles thread decay and system evolution over time
 
-#### 4. Resonance Shed (HoloLoom/resonance/shed.py)
+#### 4. Resonance Shed (hololoom/resonance/shed.py)
 Feature interference zone where extraction threads combine.
 - **Classes**: `ResonanceShed`, `FeatureThread`
 - Lifts feature threads (motif, embedding, spectral)
 - Creates interference patterns through multi-modal fusion
 - Produces DotPlasma (flowing feature representation)
 
-#### 5. DotPlasma (HoloLoom/documentation/types.py)
+#### 5. DotPlasma (hololoom/documentation/types.py)
 The "feature fluid" - flowing continuous representation.
 - **Alias**: `DotPlasma = Features`
 - Malleable medium between extraction and decision
 - Contains motifs (symbolic), embeddings (continuous), spectral (topological)
 
-#### 6. Warp Space (HoloLoom/warp/space.py)
+#### 6. Warp Space (hololoom/warp/space.py)
 Tensioned tensor field for continuous mathematics.
 - **Classes**: `WarpSpace`, `TensionedThread`
 - Temporary manifold where activated threads undergo tensor operations
 - Lifecycle: tension() → compute() → collapse()
 - Detensions back to discrete Yarn Graph after computation
 
-#### 7. Convergence Engine (HoloLoom/convergence/engine.py)
+#### 7. Convergence Engine (hololoom/convergence/engine.py)
 Decision collapse from continuous → discrete.
 - **Classes**: `ConvergenceEngine`, `CollapseStrategy`, `ThompsonBandit`
 - Collapses probability distributions to discrete tool selections
 - Strategies: ARGMAX, EPSILON_GREEDY, BAYESIAN_BLEND, PURE_THOMPSON
 - Thompson Sampling for exploration/exploitation balance
 
-#### 8. Spacetime (HoloLoom/fabric/spacetime.py)
+#### 8. Spacetime (hololoom/fabric/spacetime.py)
 Woven fabric - structured output with complete lineage.
 - **Classes**: `Spacetime`, `WeavingTrace`, `FabricCollection`
 - 4-dimensional output: 3D semantic space + 1D temporal trace
 - Full computational provenance for debugging and reflection learning
 - Serializable for persistence and analysis
 
-#### 9. Reflection Buffer (HoloLoom/memory/cache.py)
+#### 9. Reflection Buffer (hololoom/memory/cache.py)
 Learning loop - stores outcomes for improvement.
 - **Alias**: `ReflectionBuffer = MemoryManager`
 - Episodic buffer of recent interactions
@@ -6267,7 +6267,7 @@ This architecture enables:
 
 ### Key Components
 
-#### 1. Weaving Orchestrator (`HoloLoom/weaving_orchestrator.py`)
+#### 1. Weaving Orchestrator (`hololoom/weaving_orchestrator.py`)
 
 **UPDATED (Task 1.2 - Oct 27, 2025):** The Shuttle architecture has been integrated into the canonical `WeavingOrchestrator`.
 
@@ -6304,9 +6304,9 @@ The WeavingOrchestrator implements the full 9-step weaving cycle with mythRL pro
 
 Usage:
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.Documentation.types import Query
 
 config = Config.fused()
 async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
@@ -6314,7 +6314,7 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
     # Automatic cleanup on exit
 ```
 
-#### 2. Policy Engine (`HoloLoom/policy/unified.py`)
+#### 2. Policy Engine (`hololoom/policy/unified.py`)
 Neural decision-making with three bandit exploration strategies:
 - **Epsilon-Greedy** (default): 90% neural exploitation, 10% Thompson Sampling exploration
 - **Bayesian Blend**: Combines neural predictions (70%) with bandit priors (30%)
@@ -6328,7 +6328,7 @@ The policy uses:
 
 Key fix from code review: Bandit now updates statistics for the **actually selected tool** (previously disconnected).
 
-#### 3. Configuration (`HoloLoom/config.py`)
+#### 3. Configuration (`hololoom/config.py`)
 Three execution modes:
 - **BARE**: Minimal processing (regex motifs, single scale, simple policy) - fastest
 - **FAST**: Balanced (hybrid motifs, 2 scales, neural policy) - good tradeoff
@@ -6336,7 +6336,7 @@ Three execution modes:
 
 Access via factory methods:
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 cfg_fast = Config.fast()
 cfg_fused = Config.fused()
 ```
@@ -6375,7 +6375,7 @@ HoloLoom integrates **11 specialized memory systems** working in concert:
 Importance-weighted, budget-aware graph traversal that replaces fixed-depth expansion.
 
 **Status**: ✅ Production Ready (Phase 1 of 4)
-**Location**: `HoloLoom/memory/adaptive_expansion.py` (~620 lines)
+**Location**: `hololoom/memory/adaptive_expansion.py` (~620 lines)
 **Performance**: 79.8% token savings, budget-aware traversal
 **Testing**: 25 comprehensive tests passing
 
@@ -6391,7 +6391,7 @@ Replaces uniform fixed-depth expansion (max_hops=1-3) with intelligent, adaptive
 ### Quick Start
 
 ```python
-from HoloLoom.memory.adaptive_expansion import expand_context_adaptive
+from hololoom.memory.adaptive_expansion import expand_context_adaptive
 
 result = await expand_context_adaptive(
     query="What is Thompson Sampling?",
@@ -6468,7 +6468,7 @@ Demonstrates:
 ### Testing
 
 ```bash
-pytest HoloLoom/memory/tests/test_adaptive_expansion.py -v
+pytest hololoom/memory/tests/test_adaptive_expansion.py -v
 ```
 
 **Test Coverage** (25 tests):
@@ -6507,8 +6507,8 @@ pytest HoloLoom/memory/tests/test_adaptive_expansion.py -v
 
 ### Files
 
-- **Core**: `HoloLoom/memory/adaptive_expansion.py` (620 lines)
-- **Tests**: `HoloLoom/memory/tests/test_adaptive_expansion.py` (400 lines)
+- **Core**: `hololoom/memory/adaptive_expansion.py` (620 lines)
+- **Tests**: `hololoom/memory/tests/test_adaptive_expansion.py` (400 lines)
 - **Demo**: `demos/demo_adaptive_expansion.py` (390 lines)
 
 **Total**: ~1,410 lines of production code, tests, and demos
@@ -6520,7 +6520,7 @@ pytest HoloLoom/memory/tests/test_adaptive_expansion.py -v
 Progressive context expansion with async iteration. Yields chunks as discovered rather than waiting for full expansion.
 
 **Status**: ✅ Production Ready (Phase 2 of 4)
-**Location**: `HoloLoom/memory/streaming_expansion.py` (~650 lines)
+**Location**: `hololoom/memory/streaming_expansion.py` (~650 lines)
 **Performance**: 60-80% lower latency to first token, progressive loading
 **Testing**: 16 comprehensive tests passing (100%)
 
@@ -6536,7 +6536,7 @@ Streams context chunks progressively instead of batch retrieval:
 ### Quick Start
 
 ```python
-from HoloLoom.memory.streaming_expansion import stream_context_expansion
+from hololoom.memory.streaming_expansion import stream_context_expansion
 
 async for chunk in stream_context_expansion(
     query="What is Thompson Sampling?",
@@ -6631,7 +6631,7 @@ Demonstrates:
 ### Testing
 
 ```bash
-pytest HoloLoom/memory/tests/test_streaming_expansion.py -v
+pytest hololoom/memory/tests/test_streaming_expansion.py -v
 ```
 
 **Test Coverage** (16 tests, 100% passing):
@@ -6657,8 +6657,8 @@ pytest HoloLoom/memory/tests/test_streaming_expansion.py -v
 
 ### Files
 
-- **Core**: `HoloLoom/memory/streaming_expansion.py` (650 lines)
-- **Tests**: `HoloLoom/memory/tests/test_streaming_expansion.py` (500 lines)
+- **Core**: `hololoom/memory/streaming_expansion.py` (650 lines)
+- **Tests**: `hololoom/memory/tests/test_streaming_expansion.py` (500 lines)
 - **Demo**: `demos/demo_streaming_expansion.py` (490 lines)
 
 **Total**: ~1,640 lines of production code, tests, and demos
@@ -6670,7 +6670,7 @@ pytest HoloLoom/memory/tests/test_streaming_expansion.py -v
 Combines streaming expansion with concurrent LLM generation for minimal latency. Tokens are yielded as generated, achieving <100ms to first token.
 
 **Status**: ✅ Production Ready (Phase 3 + Phase 4)
-**Location**: `HoloLoom/memory/interleaved_generation.py` (~740 lines)
+**Location**: `hololoom/memory/interleaved_generation.py` (~740 lines)
 **Performance**: <100ms first token (Phase 4), 20-40% end-to-end speedup (Phase 3)
 **Testing**: 24/24 comprehensive tests passing (100%)
 
@@ -6687,7 +6687,7 @@ Interleaves context expansion and LLM generation for progressive output:
 
 **Phase 3 (BATCHED mode - default)**:
 ```python
-from HoloLoom.memory.interleaved_generation import stream_interleaved_expansion_generation
+from hololoom.memory.interleaved_generation import stream_interleaved_expansion_generation
 
 async for item in stream_interleaved_expansion_generation(
     query="What is Thompson Sampling?",
@@ -6704,7 +6704,7 @@ async for item in stream_interleaved_expansion_generation(
 
 **Phase 4 (CONCURRENT mode - true streaming)**:
 ```python
-from HoloLoom.memory.interleaved_generation import (
+from hololoom.memory.interleaved_generation import (
     stream_interleaved_expansion_generation,
     StreamMode
 )
@@ -6785,9 +6785,9 @@ Tokens generated: 20
 
 ### Files
 
-- **Core**: `HoloLoom/memory/interleaved_generation.py` (~740 lines)
-- **Tests**: `HoloLoom/memory/tests/test_interleaved_generation.py` (487 lines, Phase 3)
-- **Tests**: `HoloLoom/memory/tests/test_phase4_concurrent.py` (331 lines, Phase 4)
+- **Core**: `hololoom/memory/interleaved_generation.py` (~740 lines)
+- **Tests**: `hololoom/memory/tests/test_interleaved_generation.py` (487 lines, Phase 3)
+- **Tests**: `hololoom/memory/tests/test_phase4_concurrent.py` (331 lines, Phase 4)
 - **Demo**: `demos/demo_interleaved_generation.py` (375 lines, Phase 3)
 - **Demo**: `demos/demo_phase4_concurrent.py` (398 lines, Phase 4)
 
@@ -6814,7 +6814,7 @@ Tokens generated: 20
 Three advanced features building on the Phase 3+4 foundation: adaptive context feeding, agentic graph navigation, and context summarization.
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/memory/interleaved_generation_advanced.py` (~713 lines)
+**Location**: `hololoom/memory/interleaved_generation_advanced.py` (~713 lines)
 **Performance**: Real-time context updates during generation
 **Testing**: 18/18 comprehensive tests passing (100%)
 
@@ -6828,7 +6828,7 @@ Extends the Phase 4 interleaved generation with three advanced capabilities:
 ### Quick Start
 
 ```python
-from HoloLoom.memory.interleaved_generation_advanced import (
+from hololoom.memory.interleaved_generation_advanced import (
     AdvancedInterleavedManager,
     MockAdaptiveLLM,
     stream_advanced_generation
@@ -6915,8 +6915,8 @@ manager = AdvancedInterleavedManager(
 
 ### Files
 
-- **Core**: `HoloLoom/memory/interleaved_generation_advanced.py` (713 lines)
-- **Tests**: `HoloLoom/memory/tests/test_advanced_features.py` (554 lines)
+- **Core**: `hololoom/memory/interleaved_generation_advanced.py` (713 lines)
+- **Tests**: `hololoom/memory/tests/test_advanced_features.py` (554 lines)
 
 **Total**: ~1,267 lines of production code and tests
 
@@ -6935,13 +6935,13 @@ manager = AdvancedInterleavedManager(
 
 ---
 
-#### 5. Embeddings (`HoloLoom/embedding/spectral.py`)
+#### 5. Embeddings (`hololoom/embedding/spectral.py`)
 Matryoshka embeddings at multiple scales (96, 192, 384 dimensions) with:
 - Multi-scale fusion for retrieval
 - Spectral features: graph Laplacian eigenvalues, SVD topic components
 - Optional sentence-transformers backend (degrades gracefully without it)
 
-**Zero-Copy Embeddings** (`HoloLoom/embedding/zero_copy.py`) - **November 2025**
+**Zero-Copy Embeddings** (`hololoom/embedding/zero_copy.py`) - **November 2025**
 
 High-performance embedding layer using memory-mapped storage and view-based multi-scale access:
 
@@ -6961,11 +6961,11 @@ config.zero_copy_cache_size = 10000
 
 **Key Innovation:** Leverages Matryoshka "prefix property" - the first k dimensions contain the k-d representation. This enables zero-copy array slicing instead of matrix multiplication.
 
-**Documentation:** See [ZERO_COPY_ARCHITECTURE.md](HoloLoom/embedding/ZERO_COPY_ARCHITECTURE.md) for complete details.
+**Documentation:** See [ZERO_COPY_ARCHITECTURE.md](hololoom/embedding/ZERO_COPY_ARCHITECTURE.md) for complete details.
 
 **Trade-off:** ~2-5% retrieval quality loss (no learned projections), but 37x speedup in isolated embeddings and 50% memory savings make it worth it for latency-critical applications.
 
-#### 6. SpinningWheel (`HoloLoom/spinningWheel/`)
+#### 6. SpinningWheel (`hololoom/spinningWheel/`)
 
 **47 specialized input adapters** that convert raw data → `MemoryShard` objects across diverse modalities:
 
@@ -7004,9 +7004,9 @@ config.zero_copy_cache_size = 10000
 
 **Total**: ~5,200 lines across 47 specialized adapters
 
-See `HoloLoom/spinningWheel/README.md` for complete adapter reference.
+See `hololoom/spinningWheel/README.md` for complete adapter reference.
 
-#### 7. Training (`HoloLoom/train_agent`)
+#### 7. Training (`hololoom/train_agent`)
 PPO trainer for RL environments with:
 - GAE (Generalized Advantage Estimation)
 - Optional ICM/RND curiosity modules
@@ -7143,7 +7143,7 @@ See `DOCKER_MEMORY_SETUP.md` for complete setup guide.
 
 **Root Directory** (8 Python files, ~4,665 lines):
 ```
-HoloLoom/
+hololoom/
 ├── __init__.py                  # Package entry point (72 lines)
 ├── config.py                    # Configuration (BARE/FAST/FUSED modes) (460 lines)
 ├── hololoom.py                  # Unified memory system API (471 lines)
@@ -7184,7 +7184,7 @@ HoloLoom/
 
 **Usage Example**:
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     # Experience (form memories)
@@ -7244,7 +7244,7 @@ async with HoloLoom() as loom:
 
 **Usage Example**:
 ```python
-from HoloLoom.terminal_ui import TerminalUI
+from hololoom.terminal_ui import TerminalUI
 
 # Start interactive session
 ui = TerminalUI()
@@ -7296,7 +7296,7 @@ await ui.execute_command("recall What did I learn about Python?")
 
 **Configuration**:
 ```python
-from HoloLoom.weaving_orchestrator_llm import WeavingOrchestratorLLM
+from hololoom.weaving_orchestrator_llm import WeavingOrchestratorLLM
 
 orchestrator = WeavingOrchestratorLLM(
     cfg=Config.fused(),
@@ -7340,7 +7340,7 @@ spacetime = await orchestrator.weave(
 
 **Organized Subdirectories:**
 ```
-HoloLoom/
+hololoom/
 ├── tests/                     # All tests (Phase 2)
 │   ├── unit/                  # Fast isolated tests (<5s)
 │   ├── integration/           # Multi-component tests (<30s)
@@ -7430,7 +7430,7 @@ HoloLoom/
 **Repository Root:**
 ```
 mythRL/
-├── HoloLoom/                  # Main package
+├── hololoom/                  # Main package
 ├── demos/                     # Demo scripts
 ├── tests/                     # Root-level integration tests
 ├── experiments/               # Automated experiment framework (Oct 2025)
@@ -7488,13 +7488,13 @@ The orchestrator uses `async/await` for the main processing pipeline, enabling:
 **CRITICAL**: When running HoloLoom modules, set `PYTHONPATH=.` from repository root or run with proper path:
 ```bash
 # Correct - from repository root
-PYTHONPATH=. python HoloLoom/test_unified_policy.py
+PYTHONPATH=. python hololoom/test_unified_policy.py
 
 # Also correct - cd into directory
 cd HoloLoom && python test_unified_policy.py
 ```
 
-The codebase uses absolute imports like `from HoloLoom.policy.unified import ...`, which require the repository root to be on the Python path.
+The codebase uses absolute imports like `from hololoom.policy.unified import ...`, which require the repository root to be on the Python path.
 
 ### Testing Strategy
 
@@ -7588,7 +7588,7 @@ Phase 5 integrates three breakthrough technologies:
 Enable Phase 5 in your config:
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # Basic Phase 5 (compositional cache only)
 config = Config.fused()
@@ -7611,9 +7611,9 @@ config.prefilter_keep_ratio = 0.7
 ### Usage
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import Query, MemoryShard
 
 # Create config with Phase 5 enabled
 config = Config.fused()
@@ -7693,7 +7693,7 @@ shuttle = WeavingShuttle(cfg=config, shards=shards)
 
 **Dynamic Backends** (persistent storage):
 ```python
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.backend_factory import create_memory_backend
 
 memory = await create_memory_backend(config)
 shuttle = WeavingShuttle(cfg=config, memory=memory)
@@ -7723,8 +7723,8 @@ See `DOCKER_MEMORY_SETUP.md` for complete setup guide and `UNIFIED_MEMORY_INTEGR
 ### Production Example
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
 
 config = Config.fused()
 config.memory_backend = MemoryBackend.HYBRID
@@ -7745,8 +7745,8 @@ HoloLoom implements proper resource management through async context managers:
 ### Using Context Managers (Recommended)
 
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
 
 config = Config.fast()
 shards = create_memory_shards()
@@ -7805,7 +7805,7 @@ async with ReflectionBuffer(capacity=1000, persist_path="./reflections") as buff
 ## Recursive Learning System
 
 **Status**: ✅ All 5 Phases Complete (October 29, 2025)
-**Location**: `HoloLoom/recursive/`
+**Location**: `hololoom/recursive/`
 **Total Code**: ~4,700 lines across 5 phases
 
 The Recursive Learning System is a self-improving knowledge architecture that learns from every interaction, adapts continuously, and maintains complete provenance of all decisions.
@@ -7917,7 +7917,7 @@ graph TD
 Tracks complete provenance of every decision:
 
 ```python
-from HoloLoom.recursive import weave_with_scratchpad
+from hololoom.recursive import weave_with_scratchpad
 
 spacetime, scratchpad = await weave_with_scratchpad(
     Query(text="What is Thompson Sampling?"),
@@ -7940,7 +7940,7 @@ print(scratchpad.get_history())
 Learns from successful queries:
 
 ```python
-from HoloLoom.recursive import LearningLoopEngine
+from hololoom.recursive import LearningLoopEngine
 
 async with LearningLoopEngine(cfg=config, shards=shards) as engine:
     spacetime = await engine.weave_and_learn(query)
@@ -7960,7 +7960,7 @@ async with LearningLoopEngine(cfg=config, shards=shards) as engine:
 Adapts retrieval based on usage:
 
 ```python
-from HoloLoom.recursive import HotPatternFeedbackEngine
+from hololoom.recursive import HotPatternFeedbackEngine
 
 async with HotPatternFeedbackEngine(cfg=config, shards=shards) as engine:
     spacetime = await engine.weave(query)
@@ -7986,7 +7986,7 @@ heat = access_count × success_rate × avg_confidence
 Multiple refinement strategies with quality tracking:
 
 ```python
-from HoloLoom.recursive import AdvancedRefiner, RefinementStrategy
+from hololoom.recursive import AdvancedRefiner, RefinementStrategy
 
 refiner = AdvancedRefiner(orchestrator, enable_learning=True)
 
@@ -8028,7 +8028,7 @@ quality = 0.7 × confidence + 0.2 × context_richness + 0.1 × response_complete
 Background learning with Bayesian updates:
 
 ```python
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.recursive import FullLearningEngine
 
 async with FullLearningEngine(
     cfg=config,
@@ -8073,7 +8073,7 @@ weight = (successes + 1) / (total + 2)  # Laplace smoothing
 
 **Simple (Phase 1 only)**:
 ```python
-from HoloLoom.recursive import weave_with_scratchpad
+from hololoom.recursive import weave_with_scratchpad
 
 spacetime, scratchpad = await weave_with_scratchpad(
     Query(text="Explain recursion"),
@@ -8084,7 +8084,7 @@ spacetime, scratchpad = await weave_with_scratchpad(
 
 **With Learning (Phases 1-3)**:
 ```python
-from HoloLoom.recursive import HotPatternFeedbackEngine
+from hololoom.recursive import HotPatternFeedbackEngine
 
 async with HotPatternFeedbackEngine(cfg=config, shards=shards) as engine:
     spacetime = await engine.weave(query)
@@ -8092,7 +8092,7 @@ async with HotPatternFeedbackEngine(cfg=config, shards=shards) as engine:
 
 **Full System (All 5 Phases)**:
 ```python
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.recursive import FullLearningEngine
 
 async with FullLearningEngine(
     cfg=config,
@@ -8144,7 +8144,7 @@ PYTHONPATH=. python demos/demo_full_recursive_learning.py
 ## Alignment Framework
 
 **Status**: ✅ Production Ready (v1.0.0 - November 2025)
-**Location**: `HoloLoom/alignment/`
+**Location**: `hololoom/alignment/`
 **Performance**: 0.103 ms overhead (29x faster than target)
 **Test Coverage**: 46 functional tests + 13 performance benchmarks
 
@@ -8181,8 +8181,8 @@ Every decision is gated by safety checks, monitored for deception, bound by reso
 ### Quick Start
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails, AuditTrail
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.alignment import SafetyGuardrails, AuditTrail
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Enable alignment framework
 config = Config.fused()
@@ -8216,9 +8216,9 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### Production Deployment
 
 ```python
-from HoloLoom.alignment import create_guardrails, create_audit_trail
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.alignment import create_guardrails, create_audit_trail
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 
 # Orchestrator with full alignment
 config = Config.fused()
@@ -8253,16 +8253,16 @@ async with WeavingOrchestrator(
 
 ```bash
 # All alignment tests
-pytest HoloLoom/alignment/tests/ -v
+pytest hololoom/alignment/tests/ -v
 
 # Performance benchmarks
-pytest HoloLoom/alignment/tests/test_performance.py -v
+pytest hololoom/alignment/tests/test_performance.py -v
 ```
 
 ## Dark Trace: Interpretability & Responsibility Suite (December 2025)
 
 **Status**: ✅ Production Ready (Phases 1-10 Complete)
-**Location**: `HoloLoom/dark_trace/`
+**Location**: `hololoom/dark_trace/`
 **Total Code**: ~15,000+ lines across 10 phases
 **Test Coverage**: 47 tests passing (100%)
 
@@ -8280,7 +8280,7 @@ Dark Trace implements the research foundations from:
 ### Quick Start
 
 ```python
-from HoloLoom.dark_trace import DarkTraceEngine, TraceConfig, create_engine
+from hololoom.dark_trace import DarkTraceEngine, TraceConfig, create_engine
 
 # Create engine with standard preset
 config = TraceConfig.standard(input_dim=384)
@@ -8325,7 +8325,7 @@ Unified adapter protocol for interpretability across any model type.
 
 **Model Adapters**:
 ```python
-from HoloLoom.dark_trace.models import (
+from hololoom.dark_trace.models import (
     ModelAdapter,
     PolicyAdapter,
     TransformerAdapter,
@@ -8342,7 +8342,7 @@ adapter.inject_steering(steering_vector, layer="readout", scale=0.5)
 
 **Cross-Model Fingerprinting**:
 ```python
-from HoloLoom.dark_trace.models import (
+from hololoom.dark_trace.models import (
     ModelFingerprinter,
     compare_fingerprints,
     find_universal_features,
@@ -8388,7 +8388,7 @@ Seamless integration with HoloLoom's weaving orchestrator.
 
 **Quick Integration**:
 ```python
-from HoloLoom.integrations import (
+from hololoom.integrations import (
     DarkTraceIntegration,
     IntegrationConfig,
     IntegrationMode,
@@ -8431,7 +8431,7 @@ print(f"Blocked: {result.features_blocked}")
 
 **Decorator Usage**:
 ```python
-from HoloLoom.integrations import with_interpretability, IntegrationMode
+from hololoom.integrations import with_interpretability, IntegrationMode
 
 class MyOrchestrator:
     @with_interpretability(mode=IntegrationMode.ACTIVE)
@@ -8492,10 +8492,10 @@ if result.safety_blocked:
 
 ```bash
 # All Dark Trace tests
-pytest HoloLoom/dark_trace/tests/ -v
+pytest hololoom/dark_trace/tests/ -v
 
 # Integration tests specifically
-pytest HoloLoom/dark_trace/tests/test_dark_trace_integration.py -v
+pytest hololoom/dark_trace/tests/test_dark_trace_integration.py -v
 # Result: 47 passed
 ```
 
@@ -8512,14 +8512,14 @@ pytest HoloLoom/dark_trace/tests/test_dark_trace_integration.py -v
 
 ### Documentation
 
-- **[README.md](HoloLoom/dark_trace/README.md)** - Complete system documentation (1,300+ lines)
+- **[README.md](hololoom/dark_trace/README.md)** - Complete system documentation (1,300+ lines)
 - **API Reference** - See `__init__.py` exports (91 public symbols)
 - **Examples** - Integration examples in README Phase 9-10 sections
 
 ## Agentic Reasoning System
 
 **Status**: ✅ Complete (November 2025)
-**Location**: `HoloLoom/agentic/`
+**Location**: `hololoom/agentic/`
 **Integration**: VS Code extension, FastAPI server
 
 The Agentic Reasoning System enables multi-query reasoning with automatic verification, plan-execute workflows, and research-style exploration.
@@ -8536,7 +8536,7 @@ The Agentic Reasoning System enables multi-query reasoning with automatic verifi
 ### Usage
 
 ```python
-from HoloLoom.agentic import AgenticOrchestrator, ReasoningMode
+from hololoom.agentic import AgenticOrchestrator, ReasoningMode
 
 async with AgenticOrchestrator(cfg=config, shards=shards) as orchestrator:
     # Research mode: explores topic from multiple angles
@@ -8557,8 +8557,8 @@ async with AgenticOrchestrator(cfg=config, shards=shards) as orchestrator:
 The agentic system automatically integrates with the alignment framework:
 
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator
-from HoloLoom.alignment import create_guardrails
+from hololoom.agentic import create_agentic_orchestrator
+from hololoom.alignment import create_guardrails
 
 # Orchestrator with alignment checks
 guardrails = create_guardrails(enable_human_in_loop=True)
@@ -8583,14 +8583,14 @@ async with create_agentic_orchestrator(
 ### Context Handoff (December 2025)
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/agentic/context_handoff.py` (562 lines)
+**Location**: `hololoom/agentic/context_handoff.py` (562 lines)
 **Performance**: MI-based context passing between reasoning steps
 
 Intelligent context passing between multi-agent reasoning steps using mutual information scoring to minimize redundancy and maximize relevance.
 
 **Quick Start**:
 ```python
-from HoloLoom.agentic.context_handoff import ContextHandoff, HandoffStrategy, ContextItem
+from hololoom.agentic.context_handoff import ContextHandoff, HandoffStrategy, ContextItem
 
 # Create handoff engine
 handoff = ContextHandoff(strategy=HandoffStrategy.BALANCED)
@@ -8655,7 +8655,7 @@ final_score = mi_score - (redundancy * redundancy_weight)
 
 **Integration with Agentic Reasoning**:
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
 
 orchestrator = await create_agentic_orchestrator(
     config,
@@ -8679,14 +8679,14 @@ for step in result.steps_taken:
 
 **Performance**: ~2-5ms per handoff for 20 context items
 
-See [HoloLoom/agentic/context_handoff.py](HoloLoom/agentic/context_handoff.py) for implementation details.
+See [hololoom/agentic/context_handoff.py](hololoom/agentic/context_handoff.py) for implementation details.
 
 ---
 
 ## FastAPI Server
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/server/`
+**Location**: `hololoom/server/`
 **Port**: 8000 (default)
 
 FastAPI server exposing HoloLoom's agentic intelligence to external clients (VS Code Squad extension, web apps, etc).
@@ -8695,10 +8695,10 @@ FastAPI server exposing HoloLoom's agentic intelligence to external clients (VS 
 
 ```bash
 # Development mode (with auto-reload)
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --reload --port 8000
 
 # Production mode
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --host 0.0.0.0 --port 8000 --workers 4
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ### Main Endpoints
@@ -8770,7 +8770,7 @@ AgenticOrchestrator
 ## AR API Security Features
 
 **Status**: ✅ Production Ready (November 2025)
-**Documentation**: `HoloLoom/server/AR_API_SECURITY.md`
+**Documentation**: `hololoom/server/AR_API_SECURITY.md`
 **Updated**: 2025-11-26
 
 The AR API (`ar_api.py`) implements comprehensive security measures for production deployment:
@@ -8916,12 +8916,12 @@ vision_rate_limiter = RateLimiter(
 )
 ```
 
-For complete documentation including error responses, testing scripts, and monitoring setup, see `HoloLoom/server/AR_API_SECURITY.md`.
+For complete documentation including error responses, testing scripts, and monitoring setup, see `hololoom/server/AR_API_SECURITY.md`.
 
 ## Visual Workflow Builder
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/web_dashboard/`
+**Location**: `hololoom/web_dashboard/`
 **Port**: 8001 (workflow executor)
 
 Drag-and-drop visual workflow builder for creating complex multi-agent pipelines.
@@ -8930,7 +8930,7 @@ Drag-and-drop visual workflow builder for creating complex multi-agent pipelines
 
 ```bash
 # Start the backend executor
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 
 # Open workflow_builder.html in browser
@@ -9023,7 +9023,7 @@ Content-Type: application/json
 
 ### Documentation
 
-See [WORKFLOW_BUILDER_COMPLETE.md](.archive/session_docs_cleanup_nov7_2025/WORKFLOW_BUILDER_COMPLETE.md) and [HoloLoom/web_dashboard/README_WORKFLOW_BUILDER.md](HoloLoom/web_dashboard/README_WORKFLOW_BUILDER.md) for complete documentation.
+See [WORKFLOW_BUILDER_COMPLETE.md](.archive/session_docs_cleanup_nov7_2025/WORKFLOW_BUILDER_COMPLETE.md) and [hololoom/web_dashboard/README_WORKFLOW_BUILDER.md](hololoom/web_dashboard/README_WORKFLOW_BUILDER.md) for complete documentation.
 
 ## Experiments Framework
 
@@ -9134,7 +9134,7 @@ HoloLoom contains several powerful features and systems that work silently in th
 
 #### 1. Awareness Graph (Memory Activation System)
 
-**Location**: `HoloLoom/memory/awareness_graph.py` (~800 lines)
+**Location**: `hololoom/memory/awareness_graph.py` (~800 lines)
 **Status**: Production-ready, actively used by `hololoom.py`
 
 **What it does**:
@@ -9144,11 +9144,11 @@ HoloLoom contains several powerful features and systems that work silently in th
 - Temporal decay of inactive memories
 - Network-wide awareness metrics (active nodes, mean activation, coherence)
 
-**Why it's hidden**: Abstracted behind `HoloLoom.get_metrics()` API
+**Why it's hidden**: Abstracted behind `hololoom.get_metrics()` API
 
 **How to use**:
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     await loom.experience("Thompson Sampling balances exploration")
@@ -9159,9 +9159,9 @@ async with HoloLoom() as loom:
 
 #### 2. Spring Dynamics (Physics-Based Memory)
 
-**Location**: `HoloLoom/memory/spring_dynamics.py` (699 lines)
+**Location**: `hololoom/memory/spring_dynamics.py` (699 lines)
 **Status**: ✅ Production Ready (November 2025)
-**Documentation**: **[SPRING_DYNAMICS.md](HoloLoom/memory/SPRING_DYNAMICS.md)**
+**Documentation**: **[SPRING_DYNAMICS.md](hololoom/memory/SPRING_DYNAMICS.md)**
 
 **What it does**:
 - Physics-driven spreading activation using Hooke's Law: `F = -k × (aᵢ - aⱼ) - c × vᵢ`
@@ -9171,7 +9171,7 @@ async with HoloLoom() as loom:
 
 **Quick Start**:
 ```python
-from HoloLoom.memory.spring_dynamics import SpringDynamics, SpringConfig
+from hololoom.memory.spring_dynamics import SpringDynamics, SpringConfig
 
 config = SpringConfig(use_advanced_integrator=True, integrator_type="verlet")
 dynamics = SpringDynamics(kg, config)
@@ -9180,13 +9180,13 @@ result = dynamics.propagate()
 print(f"Found {len(result.activated_nodes)} related memories")
 ```
 
-**See**: [SPRING_DYNAMICS.md](HoloLoom/memory/SPRING_DYNAMICS.md) for complete API reference
+**See**: [SPRING_DYNAMICS.md](hololoom/memory/SPRING_DYNAMICS.md) for complete API reference
 
 #### 3. Multi-Wave Engine (Brain Wave Memory Consolidation)
 
-**Location**: `HoloLoom/memory/multi_wave_engine.py` (623 lines)
+**Location**: `hololoom/memory/multi_wave_engine.py` (623 lines)
 **Status**: ✅ Production Ready (October 2025)
-**Documentation**: **[MULTI_WAVE_ENGINE.md](HoloLoom/memory/MULTI_WAVE_ENGINE.md)**
+**Documentation**: **[MULTI_WAVE_ENGINE.md](hololoom/memory/MULTI_WAVE_ENGINE.md)**
 
 **What it does**:
 - Brain wave-inspired memory consolidation (5 modes: BETA, ALPHA, THETA, DELTA, REM)
@@ -9204,11 +9204,11 @@ print(f"Found {len(result.activated_nodes)} related memories")
 | **DELTA** | >2 hr idle (70%) | Weak connection pruning |
 | **REM** | >2 hr idle (30%) | Creative bridging |
 
-**See**: [MULTI_WAVE_ENGINE.md](HoloLoom/memory/MULTI_WAVE_ENGINE.md) for complete API reference
+**See**: [MULTI_WAVE_ENGINE.md](hololoom/memory/MULTI_WAVE_ENGINE.md) for complete API reference
 
 #### 4. 47 SpinningWheel Adapters
 
-**Location**: `HoloLoom/spinningWheel/` (~5,200 lines total)
+**Location**: `hololoom/spinningWheel/` (~5,200 lines total)
 **Status**: Most adapters production-ready
 
 **Undocumented adapters** (beyond Audio and YouTube):
@@ -9223,15 +9223,15 @@ print(f"Found {len(result.activated_nodes)} related memories")
 
 **How to discover**:
 ```bash
-ls HoloLoom/spinningWheel/*.py
-# Or check HoloLoom/spinningWheel/README.md (if exists)
+ls hololoom/spinningWheel/*.py
+# Or check hololoom/spinningWheel/README.md (if exists)
 ```
 
 #### 5. Semantic Dimensions (244 Interpretable Axes)
 
-**Location**: `HoloLoom/semantic_calculus/dimensions.py` (1,720 lines)
+**Location**: `hololoom/semantic_calculus/dimensions.py` (1,720 lines)
 **Status**: ✅ Production Ready (November 2025)
-**Documentation**: **[SEMANTIC_DIMENSIONS.md](HoloLoom/semantic_calculus/SEMANTIC_DIMENSIONS.md)**
+**Documentation**: **[SEMANTIC_DIMENSIONS.md](hololoom/semantic_calculus/SEMANTIC_DIMENSIONS.md)**
 
 **What it does**:
 - Projects 384D embeddings onto 244 human-interpretable semantic axes
@@ -9250,7 +9250,7 @@ ls HoloLoom/spinningWheel/*.py
 
 **Quick Start**:
 ```python
-from HoloLoom.semantic_calculus import SemanticSpectrum, STANDARD_DIMENSIONS
+from hololoom.semantic_calculus import SemanticSpectrum, STANDARD_DIMENSIONS
 
 spectrum = SemanticSpectrum(dimensions=STANDARD_DIMENSIONS)
 spectrum.learn_axes(embed_fn)
@@ -9258,13 +9258,13 @@ projection = spectrum.project_vector(query_embedding)
 print(f"Urgency: {projection['Urgency']:.2f}")
 ```
 
-**See**: [SEMANTIC_DIMENSIONS.md](HoloLoom/semantic_calculus/SEMANTIC_DIMENSIONS.md) for complete 244-dimension reference
+**See**: [SEMANTIC_DIMENSIONS.md](hololoom/semantic_calculus/SEMANTIC_DIMENSIONS.md) for complete 244-dimension reference
 
 #### 6. Visual Compression (Graph→Image for Token Savings)
 
-**Location**: `HoloLoom/memory/visual_compression.py` (674 lines)
+**Location**: `hololoom/memory/visual_compression.py` (674 lines)
 **Status**: ✅ Production Ready (November 2025)
-**Documentation**: **[VISUAL_COMPRESSION.md](HoloLoom/memory/VISUAL_COMPRESSION.md)**
+**Documentation**: **[VISUAL_COMPRESSION.md](hololoom/memory/VISUAL_COMPRESSION.md)**
 
 **What it does**:
 - Converts structured data (graphs, tables, code) to images for 2-5x token savings
@@ -9282,17 +9282,17 @@ print(f"Urgency: {projection['Urgency']:.2f}")
 
 **Quick Start**:
 ```python
-from HoloLoom.memory.visual_compression import compress_to_visual
+from hololoom.memory.visual_compression import compress_to_visual
 
 image, metrics = compress_to_visual(kg, compression_type='graph')
 print(f"Compression: {metrics.compression_ratio:.2f}×")
 ```
 
-**See**: [VISUAL_COMPRESSION.md](HoloLoom/memory/VISUAL_COMPRESSION.md) for complete API reference
+**See**: [VISUAL_COMPRESSION.md](hololoom/memory/VISUAL_COMPRESSION.md) for complete API reference
 
 #### 7. Query Cache (100x Speedup)
 
-**Location**: `HoloLoom/memory/query_cache.py` (~340 lines)
+**Location**: `hololoom/memory/query_cache.py` (~340 lines)
 **Status**: Production-ready, enabled by default in FAST/FUSED
 
 **What it does**:
@@ -9305,7 +9305,7 @@ print(f"Compression: {metrics.compression_ratio:.2f}×")
 
 **How to configure**:
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 config = Config.fused()
 config.query_cache_size = 10000  # Default: 5000
 config.query_cache_ttl = 3600    # 1 hour TTL
@@ -9313,7 +9313,7 @@ config.query_cache_ttl = 3600    # 1 hour TTL
 
 #### 8. Warp Space (Tensioned Tensor Field)
 
-**Location**: `HoloLoom/warp/space.py` (~890 lines)
+**Location**: `hololoom/warp/space.py` (~890 lines)
 **Status**: Production-ready, used in FULL/RESEARCH complexity modes
 
 **What it does**:
@@ -9334,7 +9334,7 @@ await warp_space.collapse()  # Back to discrete
 
 #### 9. Convergence Engine (Decision Collapse)
 
-**Location**: `HoloLoom/convergence/engine.py` (~540 lines)
+**Location**: `hololoom/convergence/engine.py` (~540 lines)
 **Status**: Production-ready, used in all weaving cycles
 
 **What it does**:
@@ -9347,8 +9347,8 @@ await warp_space.collapse()  # Back to discrete
 
 **How to configure**:
 ```python
-from HoloLoom.convergence.engine import CollapseStrategy
-from HoloLoom.config import Config
+from hololoom.convergence.engine import CollapseStrategy
+from hololoom.config import Config
 
 config = Config.fused()
 config.collapse_strategy = CollapseStrategy.PURE_THOMPSON
@@ -9377,42 +9377,42 @@ These features were uncovered through:
 **Total Hidden Systems Documented**: 24 systems, ~150,000+ lines of code
 
 **Mega-Systems** (8 systems):
-1. ✅ **Agents System**: [README.md](HoloLoom/agents/README.md) - MCTS multi-agent orchestration, Trinity Working Memory
-2. ✅ **Causal Reasoning**: [README.md](HoloLoom/causal/README.md) - Pearl's do-calculus, counterfactual inference
-3. ✅ **Federation**: [README.md](HoloLoom/federation/README.md) - SWIM Gossip Protocol + Kademlia DHT
-4. ✅ **Handoff**: [README.md](HoloLoom/handoff/README.md) - 7-layer security, CRDT sync, context handoffs
-5. ✅ **Collaboration**: [README.md](HoloLoom/collaboration/README.md) - Multi-user workspaces, presence tracking
-6. ✅ **RedTeam CARTS**: [README.md](HoloLoom/redteam/README.md) - Thompson Sampling adversarial testing
-7. ✅ **Chaining**: [README.md](HoloLoom/chaining/README.md) - 17 chain patterns, LLMChain
-8. ✅ **Eggroll Distributed**: [README.md](HoloLoom/eggroll/README.md) - Distributed evolutionary strategies
+1. ✅ **Agents System**: [README.md](hololoom/agents/README.md) - MCTS multi-agent orchestration, Trinity Working Memory
+2. ✅ **Causal Reasoning**: [README.md](hololoom/causal/README.md) - Pearl's do-calculus, counterfactual inference
+3. ✅ **Federation**: [README.md](hololoom/federation/README.md) - SWIM Gossip Protocol + Kademlia DHT
+4. ✅ **Handoff**: [README.md](hololoom/handoff/README.md) - 7-layer security, CRDT sync, context handoffs
+5. ✅ **Collaboration**: [README.md](hololoom/collaboration/README.md) - Multi-user workspaces, presence tracking
+6. ✅ **RedTeam CARTS**: [README.md](hololoom/redteam/README.md) - Thompson Sampling adversarial testing
+7. ✅ **Chaining**: [README.md](hololoom/chaining/README.md) - 17 chain patterns, LLMChain
+8. ✅ **Eggroll Distributed**: [README.md](hololoom/eggroll/README.md) - Distributed evolutionary strategies
 
 **Major Systems** (8 systems):
-9. ✅ **Physics Engine**: [README.md](HoloLoom/physics/README.md) - Helmholtz Free Energy optimization
-10. ✅ **Verification CoVe**: [README.md](HoloLoom/verification/README.md) - Chain of Verification
-11. ✅ **Reasoning Layer 3**: [README.md](HoloLoom/reasoning/README.md) - 84,671 lines, multi-modal reasoning
-12. ✅ **Planning POMDP**: [README.md](HoloLoom/planning/README.md) - Planning under uncertainty
-13. ✅ **Explainability XAI**: [README.md](HoloLoom/explainability/README.md) - 7 XAI techniques
-14. ✅ **Search System**: [README.md](HoloLoom/search/README.md) - Vector + BM25 hybrid search
-15. ✅ **Performance Monitor**: [README.md](HoloLoom/performance/README.md) - Metrics, profiling, bottleneck detection
-16. ✅ **DreamWeaving**: [README.md](HoloLoom/dreamweaving/README.md) - Creative world building
+9. ✅ **Physics Engine**: [README.md](hololoom/physics/README.md) - Helmholtz Free Energy optimization
+10. ✅ **Verification CoVe**: [README.md](hololoom/verification/README.md) - Chain of Verification
+11. ✅ **Reasoning Layer 3**: [README.md](hololoom/reasoning/README.md) - 84,671 lines, multi-modal reasoning
+12. ✅ **Planning POMDP**: [README.md](hololoom/planning/README.md) - Planning under uncertainty
+13. ✅ **Explainability XAI**: [README.md](hololoom/explainability/README.md) - 7 XAI techniques
+14. ✅ **Search System**: [README.md](hololoom/search/README.md) - Vector + BM25 hybrid search
+15. ✅ **Performance Monitor**: [README.md](hololoom/performance/README.md) - Metrics, profiling, bottleneck detection
+16. ✅ **DreamWeaving**: [README.md](hololoom/dreamweaving/README.md) - Creative world building
 
 **Multimodal Systems** (4 systems):
-17. ✅ **Spatial Computing**: [README.md](HoloLoom/spatial/README.md) - WebXR AR/VR integration
-18. ✅ **Voice System**: [README.md](HoloLoom/voice/README.md) - STT/TTS, voice commands
-19. ✅ **Vision System**: [README.md](HoloLoom/vision/README.md) - YOLO, MiDaS, SLAM
-20. ✅ **ThirdEye**: [README.md](HoloLoom/thirdeye/README.md) - Scene understanding visualization
+17. ✅ **Spatial Computing**: [README.md](hololoom/spatial/README.md) - WebXR AR/VR integration
+18. ✅ **Voice System**: [README.md](hololoom/voice/README.md) - STT/TTS, voice commands
+19. ✅ **Vision System**: [README.md](hololoom/vision/README.md) - YOLO, MiDaS, SLAM
+20. ✅ **ThirdEye**: [README.md](hololoom/thirdeye/README.md) - Scene understanding visualization
 
 **Infrastructure Systems** (4 systems):
-21. ✅ **DataPig Quality**: [README.md](HoloLoom/datapig/README.md) - Data quality assurance
-22. ✅ **Shuttle v2**: [README.md](HoloLoom/shuttle/README.md) - Enhanced transport layer
-23. ✅ **Tapestry VCS**: [README.md](HoloLoom/tapestry/README.md) - Session continuity, thread management
-24. ✅ **Dark Trace (Phases 1-10)**: [README.md](HoloLoom/dark_trace/README.md) - Complete interpretability suite with SAE, multi-model support, orchestrator integration
+21. ✅ **DataPig Quality**: [README.md](hololoom/datapig/README.md) - Data quality assurance
+22. ✅ **Shuttle v2**: [README.md](hololoom/shuttle/README.md) - Enhanced transport layer
+23. ✅ **Tapestry VCS**: [README.md](hololoom/tapestry/README.md) - Session continuity, thread management
+24. ✅ **Dark Trace (Phases 1-10)**: [README.md](hololoom/dark_trace/README.md) - Complete interpretability suite with SAE, multi-model support, orchestrator integration
 
 **Memory Systems** (previously documented):
-- ✅ **Spring Dynamics**: [SPRING_DYNAMICS.md](HoloLoom/memory/SPRING_DYNAMICS.md) - Physics-based spreading activation
-- ✅ **Multi-Wave Engine**: [MULTI_WAVE_ENGINE.md](HoloLoom/memory/MULTI_WAVE_ENGINE.md) - Brain wave consolidation
-- ✅ **Semantic Dimensions**: [SEMANTIC_DIMENSIONS.md](HoloLoom/semantic_calculus/SEMANTIC_DIMENSIONS.md) - 244 interpretable axes
-- ✅ **Visual Compression**: [VISUAL_COMPRESSION.md](HoloLoom/memory/VISUAL_COMPRESSION.md) - Graph→Image token savings
+- ✅ **Spring Dynamics**: [SPRING_DYNAMICS.md](hololoom/memory/SPRING_DYNAMICS.md) - Physics-based spreading activation
+- ✅ **Multi-Wave Engine**: [MULTI_WAVE_ENGINE.md](hololoom/memory/MULTI_WAVE_ENGINE.md) - Brain wave consolidation
+- ✅ **Semantic Dimensions**: [SEMANTIC_DIMENSIONS.md](hololoom/semantic_calculus/SEMANTIC_DIMENSIONS.md) - 244 interpretable axes
+- ✅ **Visual Compression**: [VISUAL_COMPRESSION.md](hololoom/memory/VISUAL_COMPRESSION.md) - Graph→Image token savings
 
 **Remaining Documentation Priority**:
 1. 🟡 **Medium**: SpinningWheel adapters (47 adapters - good coverage in existing README)
@@ -9426,10 +9426,10 @@ These features were uncovered through:
 find HoloLoom -name "*.py" | wc -l
 
 # Search for undocumented classes
-grep -r "class.*:" HoloLoom/**/*.py | grep -v test | wc -l
+grep -r "class.*:" hololoom/**/*.py | grep -v test | wc -l
 
 # Find protocol implementations
-grep -r "Protocol" HoloLoom/**/*.py
+grep -r "Protocol" hololoom/**/*.py
 
 # Analyze import graph (BACKLOG - low priority tooling)
 python -c "import ast; ..." # BACKLOG: Import analyzer tool (December 2025)
@@ -9456,15 +9456,15 @@ python -c "import ast; ..." # BACKLOG: Import analyzer tool (December 2025)
 3. Add to factory in `spinningWheel/__init__.py`
 4. Parse raw data format and extract entities/motifs
 
-Example: See `HoloLoom/spinningWheel/youtube.py` for a complete implementation
+Example: See `hololoom/spinningWheel/youtube.py` for a complete implementation
 ```python
-from HoloLoom.spinningWheel import transcribe_youtube
+from hololoom.spinningWheel import transcribe_youtube
 
 # Quick usage
 shards = await transcribe_youtube('VIDEO_ID', chunk_duration=60.0)
 
 # Or use the spinner directly
-from HoloLoom.spinningWheel import YouTubeSpinner, YouTubeSpinnerConfig
+from hololoom.spinningWheel import YouTubeSpinner, YouTubeSpinnerConfig
 
 config = YouTubeSpinnerConfig(chunk_duration=60.0, enable_enrichment=True)
 spinner = YouTubeSpinner(config)
@@ -9474,7 +9474,7 @@ shards = await spinner.spin({'url': 'VIDEO_ID', 'languages': ['en']})
 ### Tuning Exploration Strategy
 Change bandit strategy when creating policy:
 ```python
-from HoloLoom.policy.unified import BanditStrategy
+from hololoom.policy.unified import BanditStrategy
 policy = create_policy(
     mem_dim=384,
     emb=emb,
@@ -9492,14 +9492,14 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
 
 **Available Visualizations**:
 
-1. **Small Multiples** (`HoloLoom/visualization/small_multiples.py`)
+1. **Small Multiples** (`hololoom/visualization/small_multiples.py`)
    - Compare multiple queries side-by-side
    - Consistent scales for fair comparison
    - Highlights best/worst automatically (★ and ⚠)
    - Inline sparklines show trends
    - Usage:
    ```python
-   from HoloLoom.visualization.small_multiples import render_small_multiples
+   from hololoom.visualization.small_multiples import render_small_multiples
 
    queries = [
        {'query_text': 'Query A', 'latency_ms': 95, 'confidence': 0.92,
@@ -9510,13 +9510,13 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    html = render_small_multiples(queries, layout='grid', max_columns=4)
    ```
 
-2. **Data Density Tables** (`HoloLoom/visualization/density_table.py`)
+2. **Data Density Tables** (`hololoom/visualization/density_table.py`)
    - Maximum information per square inch
    - Inline sparklines, delta indicators, bottleneck detection
    - Tight spacing, small fonts, monospace numbers
    - Usage:
    ```python
-   from HoloLoom.visualization.density_table import render_stage_timing_table
+   from hololoom.visualization.density_table import render_stage_timing_table
 
    stages = [
        {'name': 'Retrieval', 'duration_ms': 50.5,
@@ -9532,7 +9532,7 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    - Auto-normalization, endpoint indicators
    - See [TUFTE_SPARKLINES_PHASE_2_1_COMPLETE.md](.archive/session_docs/TUFTE_SPARKLINES_PHASE_2_1_COMPLETE.md) for details
 
-4. **Stage Waterfall Charts** (`HoloLoom/visualization/stage_waterfall.py`)
+4. **Stage Waterfall Charts** (`hololoom/visualization/stage_waterfall.py`)
    - Sequential pipeline timing with horizontal stacked bars
    - Automatic bottleneck detection (stages >40% of total time)
    - Status indicators (success, warning, error, skipped)
@@ -9540,7 +9540,7 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    - Parallel execution visualization support
    - Usage:
    ```python
-   from HoloLoom.visualization.stage_waterfall import render_pipeline_waterfall
+   from hololoom.visualization.stage_waterfall import render_pipeline_waterfall
 
    # After weaving
    spacetime = await orchestrator.weave(query)
@@ -9553,7 +9553,7 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    )
 
    # Or create custom stages
-   from HoloLoom.visualization.stage_waterfall import WaterfallStage, StageStatus
+   from hololoom.visualization.stage_waterfall import WaterfallStage, StageStatus
 
    stages = [
        WaterfallStage(name='Retrieval', start_ms=0, duration_ms=50.5,
@@ -9563,7 +9563,7 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    html = renderer.render(stages)
    ```
 
-5. **Confidence Trajectory** (`HoloLoom/visualization/confidence_trajectory.py`)
+5. **Confidence Trajectory** (`hololoom/visualization/confidence_trajectory.py`)
    - Time series confidence tracking with anomaly detection
    - Automatic anomaly detection (4 types: sudden drop, prolonged low, high variance, cache miss cluster)
    - Cache effectiveness visualization (hit/miss markers)
@@ -9571,7 +9571,7 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    - Comprehensive programmatic API for automated tool calling
    - Usage:
    ```python
-   from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+   from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
    # Simple usage - just confidence scores
    confidences = [0.92, 0.88, 0.65, 0.87, 0.91]
@@ -9616,9 +9616,9 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    - HIGH_VARIANCE: Std dev >0.15 in rolling window (amber markers)
    - CACHE_MISS_CLUSTER: 3+ cache misses in rolling window (indigo markers)
 
-   **API Reference**: See [CONFIDENCE_TRAJECTORY_API.md](HoloLoom/visualization/CONFIDENCE_TRAJECTORY_API.md) (1000+ lines comprehensive documentation)
+   **API Reference**: See [CONFIDENCE_TRAJECTORY_API.md](hololoom/visualization/CONFIDENCE_TRAJECTORY_API.md) (1000+ lines comprehensive documentation)
 
-6. **Cache Effectiveness Gauge** (`HoloLoom/visualization/cache_gauge.py`)
+6. **Cache Effectiveness Gauge** (`hololoom/visualization/cache_gauge.py`)
    - Radial gauge showing cache performance metrics
    - 5 effectiveness ratings (excellent, good, fair, poor, critical)
    - Performance metrics (hit rate, latencies, time saved, speedup)
@@ -9626,7 +9626,7 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    - Simple programmatic API for monitoring dashboards
    - Usage:
    ```python
-   from HoloLoom.visualization.cache_gauge import render_cache_gauge
+   from hololoom.visualization.cache_gauge import render_cache_gauge
 
    # Simple usage
    html = render_cache_gauge(
@@ -9672,18 +9672,18 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    - POOR (Red): Hit rate 20-40%, low speedup
    - CRITICAL (Dark Red): Hit rate <20%
 
-7. **Knowledge Graph Network** (`HoloLoom/visualization/knowledge_graph.py`)
+7. **Knowledge Graph Network** (`hololoom/visualization/knowledge_graph.py`)
    - Force-directed graph layout (Fruchterman-Reingold algorithm)
    - Node sizing by degree/importance (8-24px)
    - Semantic edge type colors (7 relationship types)
    - Interactive tooltips with node details
    - Path highlighting for reasoning chains
-   - Direct integration with HoloLoom.memory.graph.KG
+   - Direct integration with hololoom.memory.graph.KG
    - Zero dependencies (pure HTML/CSS/SVG)
    - Usage:
    ```python
-   from HoloLoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
-   from HoloLoom.memory.graph import KG, KGEdge
+   from hololoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
+   from hololoom.memory.graph import KG, KGEdge
 
    # Create knowledge graph
    kg = KG()
@@ -9710,7 +9710,7 @@ HoloLoom implements Edward Tufte's visualization principles: **"Above all else s
    )
 
    # Also supports NetworkX MultiDiGraph directly
-   from HoloLoom.visualization.knowledge_graph import render_knowledge_graph_from_networkx
+   from hololoom.visualization.knowledge_graph import render_knowledge_graph_from_networkx
    import networkx as nx
 
    G = nx.MultiDiGraph()

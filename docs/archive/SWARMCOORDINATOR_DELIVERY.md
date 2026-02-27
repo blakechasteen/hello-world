@@ -29,7 +29,7 @@ A **complete, production-ready SwarmCoordinator** has been implemented that orch
 
 ### 1. Core Implementation
 
-**File**: `HoloLoom/redteam/swarm/coordinator.py` (941 lines)
+**File**: `hololoom/redteam/swarm/coordinator.py` (941 lines)
 
 **Complete SwarmCoordinator class implementing CoordinatorProtocol**:
 
@@ -69,7 +69,7 @@ class SwarmCoordinator:
 
 ### 2. Comprehensive Testing
 
-**File**: `HoloLoom/redteam/swarm/tests/test_coordinator.py` (662 lines)
+**File**: `hololoom/redteam/swarm/tests/test_coordinator.py` (662 lines)
 
 **Complete test suite with 30+ unit tests** covering:
 
@@ -301,7 +301,7 @@ Parallel Efficiency: ~80%
 ## File Structure
 
 ```
-HoloLoom/redteam/swarm/
+hololoom/redteam/swarm/
 ├── coordinator.py                          941 lines ✅
 │   ├── SwarmCoordinator class
 │   ├── SwarmMetrics dataclass
@@ -348,8 +348,8 @@ HoloLoom/redteam/swarm/
 ### Installation
 
 ```python
-from HoloLoom.redteam.swarm.coordinator import SwarmCoordinator
-from HoloLoom.redteam.swarm.communication import MessageBus
+from hololoom.redteam.swarm.coordinator import SwarmCoordinator
+from hololoom.redteam.swarm.communication import MessageBus
 
 # Create and start coordinator
 bus = MessageBus()
@@ -544,7 +544,7 @@ The coordinator is ready for immediate deployment in multi-agent red team operat
 For questions or issues:
 - Review `COORDINATOR_DOCUMENTATION.md` for API reference
 - Check `COORDINATOR_USAGE_EXAMPLE.py` for usage patterns
-- Run tests with: `pytest HoloLoom/redteam/swarm/tests/test_coordinator.py -v`
+- Run tests with: `pytest hololoom/redteam/swarm/tests/test_coordinator.py -v`
 
 ---
 

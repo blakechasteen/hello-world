@@ -5,7 +5,7 @@ Ritual Context Handoff
 Created: December 30, 2025
 Purpose: MI-aware context filtering between ritual phases
 
-Mirrors HoloLoom/agentic/context_handoff.py pattern.
+Mirrors hololoom/agentic/context_handoff.py pattern.
 Ensures each phase receives:
 - High-relevance context from previous phases
 - Minimal redundancy

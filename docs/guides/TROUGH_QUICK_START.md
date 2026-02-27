@@ -25,7 +25,7 @@ cd mythRL
 pip install fastapi uvicorn networkx
 
 # Start the server
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --reload --port 8000
 ```
 
 **Expected output**:

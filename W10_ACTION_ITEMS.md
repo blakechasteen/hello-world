@@ -104,7 +104,7 @@ LLM_PROVIDER=ollama  # or anthropic, openai
 **Steps**:
 1. Copy to `.env` locally
 2. Update values for your setup
-3. `HoloLoom/config.py` already respects these
+3. `hololoom/config.py` already respects these
 
 ---
 
@@ -177,14 +177,14 @@ def check_hololoom():
     """Check HoloLoom imports"""
     print("\n🧠 HoloLoom Imports:")
     try:
-        from HoloLoom import HoloLoom
+        from hololoom import hololoom
         print("  ✅ HoloLoom (main)")
     except ImportError as e:
         print(f"  ❌ HoloLoom - {e}")
         return False
 
     try:
-        from HoloLoom.lite import HoloLoomLite
+        from hololoom.lite import HoloLoomLite
         print("  ✅ HoloLoomLite")
     except ImportError as e:
         print(f"  ❌ HoloLoomLite - {e}")
@@ -260,9 +260,9 @@ def main():
     if core_ok:
         print("✅ HoloLoom is ready to use!")
         print("\nQuick start:")
-        print("  python -m HoloLoom.lite repl")
+        print("  python -m hololoom.lite repl")
         print("\nOr in Python:")
-        print("  from HoloLoom import HoloLoomLite")
+        print("  from hololoom import HoloLoomLite")
         print("  async with HoloLoomLite() as loom:")
         print("      await loom.experience('your knowledge')")
     else:
@@ -301,7 +301,7 @@ python verify_setup.py
 **First time?** Start here:
 1. Run: `python verify_setup.py`
 2. Read: [Installation Guide](installation.md) (5 min)
-3. Try: `python -m HoloLoom.lite repl`
+3. Try: `python -m hololoom.lite repl`
 
 **Want to learn more?**
 - Read: [Visual Quick Start](VISUAL_QUICK_START.md) (30+ min, comprehensive)
@@ -323,18 +323,18 @@ python verify_setup.py
 **Current**:
 ```toml
 [project.scripts]
-hololoom = "HoloLoom.cli:main"
+hololoom = "hololoom.cli:main"
 ```
 
 **Add these** (if not already present):
 ```toml
 [project.scripts]
-hololoom = "HoloLoom.cli:main"
-hololoom-lite = "HoloLoom.lite:main"
+hololoom = "hololoom.cli:main"
+hololoom-lite = "hololoom.lite:main"
 hololoom-verify = "verify_setup:main"
 ```
 
-**Why**: Users can run `hololoom-lite repl` instead of `PYTHONPATH=. python -m HoloLoom.lite repl`
+**Why**: Users can run `hololoom-lite repl` instead of `PYTHONPATH=. python -m hololoom.lite repl`
 
 **Note**: Requires `pip install -e .` for local development
 
@@ -403,7 +403,7 @@ pip install hololoom[production]  # + Neo4j/Qdrant
 
 ### 8. Add Model Download Progress (1-2 hours)
 
-**File**: `HoloLoom/embedding/spectral.py` (or wherever models are downloaded)
+**File**: `hololoom/embedding/spectral.py` (or wherever models are downloaded)
 
 **Change**:
 ```python
@@ -431,7 +431,7 @@ with tqdm(total=137, unit='MB', desc='Downloading') as pbar:
 ### 9. Create Setup Wizard (3-4 hours)
 
 ```bash
-python -m HoloLoom.install
+python -m hololoom.install
 ```
 
 **Interactive flow**:
@@ -507,7 +507,7 @@ python verify_setup.py
 # Expected: ✅ All core, some optional
 
 # 2. Start Lite
-python -m HoloLoom.lite repl
+python -m hololoom.lite repl
 # Expected: Interactive prompt
 
 # 3. Test Docker template
@@ -530,11 +530,11 @@ pip install --index-url https://test.pypi.org/simple/ hololoom[lite]
 ### Phase 3 Verification
 ```bash
 # 1. Run setup wizard
-python -m HoloLoom.install
+python -m hololoom.install
 # Expected: Interactive, auto-detects platform
 
 # 2. Try lightweight runtime
-from HoloLoom.lite_minimal import HoloLoomMinimal
+from hololoom.lite_minimal import HoloLoomMinimal
 # Expected: Works without torch
 ```
 

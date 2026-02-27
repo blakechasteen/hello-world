@@ -12,7 +12,7 @@ import asyncio
 from datetime import datetime
 
 # Phase 0: Core architecture imports
-from HoloLoom.dreamweaving import (
+from hololoom.dreamweaving import (
     DreamWeaver,
     DreamWeaverConfig,
     WorldEntity,
@@ -23,8 +23,8 @@ from HoloLoom.dreamweaving import (
     ConsistencyLevel,
 )
 
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.config import Config
+from hololoom.documentation.types import MemoryShard
 
 
 def print_header(title: str):

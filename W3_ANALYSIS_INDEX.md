@@ -3,7 +3,7 @@
 **Analysis Date**: December 31, 2025
 **Status**: COMPLETE (RESEARCH ONLY)
 **Project**: HoloLoom (mythRL)
-**Scope**: 2,026 Python files in HoloLoom/ directory
+**Scope**: 2,026 Python files in hololoom/ directory
 
 ---
 
@@ -136,34 +136,34 @@ Architectural Clarity:     Needs work ⚠️
 ## 📂 Files Mentioned (Top 20)
 
 ### Critical Duplicates
-1. `HoloLoom/weaving_shuttle.py` - Compatibility shim
-2. `HoloLoom/weaving_orchestrator.py` - Canonical
-3. `HoloLoom/weaving_orchestrator_refactored.py` - Alternative?
-4. `HoloLoom/shuttle/orchestrator_v2.py` - v2 variant
+1. `hololoom/weaving_shuttle.py` - Compatibility shim
+2. `hololoom/weaving_orchestrator.py` - Canonical
+3. `hololoom/weaving_orchestrator_refactored.py` - Alternative?
+4. `hololoom/shuttle/orchestrator_v2.py` - v2 variant
 
 ### Quality Trajectory
-5. `HoloLoom/redteam/refinement/quality_trajectory.py`
-6. `HoloLoom/redteam/refinement/quality_trajectory_updated.py` - DUPLICATE
-7. `HoloLoom/redteam/refinement/quality_trajectory_extensions.py`
+5. `hololoom/redteam/refinement/quality_trajectory.py`
+6. `hololoom/redteam/refinement/quality_trajectory_updated.py` - DUPLICATE
+7. `hololoom/redteam/refinement/quality_trajectory_extensions.py`
 
 ### Legacy/Adapters
-8. `HoloLoom/memory/weaving_adapter.py` - Compat bridge
-9. `HoloLoom/memory/graph.py` - LegacyShardsAdapter
-10. `HoloLoom/dark_trace/sae/legacy.py` - Legacy SAE
+8. `hololoom/memory/weaving_adapter.py` - Compat bridge
+9. `hololoom/memory/graph.py` - LegacyShardsAdapter
+10. `hololoom/dark_trace/sae/legacy.py` - Legacy SAE
 
 ### Files Using Shim (Update These)
-11. `HoloLoom/chatops/handlers/hololoom_handlers.py`
-12. `HoloLoom/tests/unit/test_weaving_shuttle.py`
-13. `HoloLoom/tests/e2e/test_fused_mode_e2e.py`
-14. `HoloLoom/tests/e2e/test_fast_mode_e2e.py`
-15. `HoloLoom/tests/e2e/test_bare_mode_e2e.py`
-16. `HoloLoom/tests/e2e/test_full_pipeline.py`
-17. `HoloLoom/tests/integration/test_shuttle_integration.py`
-18. `HoloLoom/tests/integration/test_enhanced_shuttle.py`
-19. `HoloLoom/tests/integration/test_complexity_tuning.py`
-20. `HoloLoom/performance/benchmark.py`
+11. `hololoom/chatops/handlers/hololoom_handlers.py`
+12. `hololoom/tests/unit/test_weaving_shuttle.py`
+13. `hololoom/tests/e2e/test_fused_mode_e2e.py`
+14. `hololoom/tests/e2e/test_fast_mode_e2e.py`
+15. `hololoom/tests/e2e/test_bare_mode_e2e.py`
+16. `hololoom/tests/e2e/test_full_pipeline.py`
+17. `hololoom/tests/integration/test_shuttle_integration.py`
+18. `hololoom/tests/integration/test_enhanced_shuttle.py`
+19. `hololoom/tests/integration/test_complexity_tuning.py`
+20. `hololoom/performance/benchmark.py`
 
-(+ 1 more file: `HoloLoom/tests/unit/test_orchestrator_refactoring.py`)
+(+ 1 more file: `hololoom/tests/unit/test_orchestrator_refactoring.py`)
 
 ---
 

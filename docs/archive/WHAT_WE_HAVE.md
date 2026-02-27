@@ -21,7 +21,7 @@
 
 ### 1. Weaving Architecture (Core Cycle)
 
-**Location:** `HoloLoom/weaving_orchestrator.py`
+**Location:** `hololoom/weaving_orchestrator.py`
 
 **7 Stages:**
 1. **LoomCommand** - Pattern selection (BARE/FAST/FUSED)
@@ -40,7 +40,7 @@
 
 ### 2. MCTS Flux Capacitor (Decision Engine)
 
-**Location:** `HoloLoom/convergence/mcts_engine.py`
+**Location:** `hololoom/convergence/mcts_engine.py`
 
 **Components:**
 - `MCTSNode` - Tree node with Thompson Sampling priors
@@ -70,7 +70,7 @@ Thompson priors: ['0.500', '0.500', '0.500', '0.500', '0.500']
 
 ### 3. Matryoshka Gating (Efficient Retrieval)
 
-**Location:** `HoloLoom/embedding/matryoshka_gate.py`
+**Location:** `hololoom/embedding/matryoshka_gate.py`
 
 **Components:**
 - `GateConfig` - Configuration for multi-scale gating
@@ -103,7 +103,7 @@ Stage 3 (384d): 5 → 5 candidates (final ranking)
 
 ### 4. Synthesis Bridge (Pattern Extraction)
 
-**Location:** `HoloLoom/synthesis_bridge.py`
+**Location:** `hololoom/synthesis_bridge.py`
 
 **Components:**
 - `MemoryEnricher` - Entity and topic extraction
@@ -133,7 +133,7 @@ Confidence: 0.00
 
 ### 5. Multi-Modal Data Ingestion (SpinningWheel)
 
-**Location:** `HoloLoom/spinningWheel/`
+**Location:** `hololoom/spinningWheel/`
 
 **Spinners:**
 - `TextSpinner` - Plain text processing
@@ -154,7 +154,7 @@ Confidence: 0.00
 
 ### 6. Memory Systems
 
-**Location:** `HoloLoom/memory/`
+**Location:** `hololoom/memory/`
 
 **Components:**
 - `protocol.py` - Unified memory interface
@@ -176,7 +176,7 @@ Confidence: 0.00
 
 ### 7. Unified API (Entry Point)
 
-**Location:** `HoloLoom/unified_api.py`
+**Location:** `hololoom/unified_api.py`
 
 **Main Class:**
 ```python
@@ -195,7 +195,7 @@ class HoloLoom:
 
 ### 8. Embedding Systems
 
-**Location:** `HoloLoom/embedding/`
+**Location:** `hololoom/embedding/`
 
 **Components:**
 - `spectral.py` - MatryoshkaEmbeddings (multi-scale)
@@ -219,7 +219,7 @@ class HoloLoom:
 
 ### 9. Configuration System
 
-**Location:** `HoloLoom/config.py`
+**Location:** `hololoom/config.py`
 
 **Modes:**
 - **BARE:** Minimal (regex motifs, single scale, simple policy)
@@ -233,7 +233,7 @@ class HoloLoom:
 ## File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── weaving_orchestrator.py      # Main orchestrator (562 lines)
 ├── synthesis_bridge.py           # Synthesis integration (450 lines)
 ├── unified_api.py                # Unified API (~600 lines)
@@ -371,36 +371,36 @@ HoloLoom/
 
 ### 1. MCTS Flux Capacitor (Standalone)
 ```bash
-python HoloLoom/convergence/mcts_engine.py
+python hololoom/convergence/mcts_engine.py
 ```
 **Expected:** 5 decisions, visit counts, Thompson priors, stats
 
 ### 2. Matryoshka Gating (Standalone)
 ```bash
-python HoloLoom/embedding/matryoshka_gate.py
+python hololoom/embedding/matryoshka_gate.py
 ```
 **Expected:** 3-stage filtering, 15→5→5→5 candidates, stats
 
 ### 3. Weaving Orchestrator (Integrated)
 ```bash
-python HoloLoom/weaving_orchestrator.py
+python hololoom/weaving_orchestrator.py
 ```
 **Expected:** 3 queries, complete cycle, MCTS decisions, stats
 
 ### 4. Unified API (User-Facing)
 ```bash
-python HoloLoom/unified_api.py
+python hololoom/unified_api.py
 ```
 **Expected:** Query + chat modes, synthesis results, conversation tracking
 
 ### 5. Individual Modules
 ```bash
 # Synthesis
-python HoloLoom/synthesis_bridge.py
+python hololoom/synthesis_bridge.py
 
 # SpinningWheel spinners
-python HoloLoom/spinningWheel/text.py
-python HoloLoom/spinningWheel/youtube.py
+python hololoom/spinningWheel/text.py
+python hololoom/spinningWheel/youtube.py
 ```
 
 ---
@@ -434,11 +434,11 @@ python HoloLoom/spinningWheel/youtube.py
 ### Phase 1: Smoke Tests (Do all modules load?)
 ```python
 # Test imports
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.convergence.mcts_engine import MCTSConvergenceEngine
-from HoloLoom.embedding.matryoshka_gate import MatryoshkaGate
-from HoloLoom.synthesis_bridge import SynthesisBridge
-from HoloLoom.unified_api import HoloLoom
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.convergence.mcts_engine import MCTSConvergenceEngine
+from hololoom.embedding.matryoshka_gate import MatryoshkaGate
+from hololoom.synthesis_bridge import SynthesisBridge
+from hololoom.unified_api import hololoom
 
 print("All imports successful!")
 ```

@@ -16,13 +16,13 @@ Run:
     python demos/demo_model_adapters.py
 """
 
-from HoloLoom.prompting import (
+from hololoom.prompting import (
     create_adapter,
     create_metaprompt,
     create_metaprompt_auto,
     enhance_request
 )
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 
 def demo_individual_adapters():

@@ -86,13 +86,13 @@ python Promptly/promptly/ui/terminal_app_wired.py
 
 ```bash
 # Test integration
-PYTHONPATH=. python HoloLoom/chatops/test_bot_simple.py
+PYTHONPATH=. python hololoom/chatops/test_bot_simple.py
 ```
 
 **Deploy to Matrix server:**
 
 ```bash
-python HoloLoom/chatops/run_bot.py \
+python hololoom/chatops/run_bot.py \
   --user @yourbot:matrix.org \
   --password your_password \
   --hololoom-mode fast
@@ -105,7 +105,7 @@ export MATRIX_HOMESERVER="https://matrix.org"
 export MATRIX_USER="@yourbot:matrix.org"
 export MATRIX_PASSWORD="your_password"
 
-python HoloLoom/chatops/run_bot.py
+python hololoom/chatops/run_bot.py
 ```
 
 **Commands (in Matrix room):**
@@ -118,7 +118,7 @@ python HoloLoom/chatops/run_bot.py
 - `!help` - Command help
 - `!ping` - Health check
 
-**Production deployment:** See [HoloLoom/chatops/DEPLOYMENT_GUIDE.md](HoloLoom/chatops/DEPLOYMENT_GUIDE.md)
+**Production deployment:** See [hololoom/chatops/DEPLOYMENT_GUIDE.md](hololoom/chatops/DEPLOYMENT_GUIDE.md)
 
 ---
 
@@ -181,7 +181,7 @@ python HoloLoom/chatops/run_bot.py
 
 ```python
 # In code
-from HoloLoom.config import Config
+from hololoom.config import Config
 config = Config.bare()  # or .fast() or .fused()
 
 # Command line
@@ -203,16 +203,16 @@ python run_bot.py --hololoom-mode fast
 - `Promptly/promptly/ui/terminal_app_wired.py` - Interactive TUI
 
 ### Matrix Bot
-- `HoloLoom/chatops/run_bot.py` - Main launcher
-- `HoloLoom/chatops/handlers/hololoom_handlers.py` - Command handlers
-- `HoloLoom/chatops/test_bot_simple.py` - Integration tests
-- `HoloLoom/chatops/DEPLOYMENT_GUIDE.md` - Production deployment
+- `hololoom/chatops/run_bot.py` - Main launcher
+- `hololoom/chatops/handlers/hololoom_handlers.py` - Command handlers
+- `hololoom/chatops/test_bot_simple.py` - Integration tests
+- `hololoom/chatops/DEPLOYMENT_GUIDE.md` - Production deployment
 
 ### Core System
-- `HoloLoom/weaving_orchestrator.py` - Main orchestrator
-- `HoloLoom/config.py` - Configuration
-- `HoloLoom/memory/stores/` - Memory backends
-- `HoloLoom/convergence/mcts_engine.py` - MCTS implementation
+- `hololoom/weaving_orchestrator.py` - Main orchestrator
+- `hololoom/config.py` - Configuration
+- `hololoom/memory/stores/` - Memory backends
+- `hololoom/convergence/mcts_engine.py` - MCTS implementation
 
 ### Documentation
 - `QUICKSTART.md` - This file
@@ -237,8 +237,8 @@ python run_bot.py --hololoom-mode fast
 
 **Python API:**
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 
 orchestrator = WeavingOrchestrator(config=Config.fast())
 await orchestrator.add_knowledge("Your knowledge here")
@@ -345,7 +345,7 @@ python Promptly/promptly/ui/terminal_app_wired.py
 
 # Check imports
 python -c "import textual; print('Textual OK')"
-python -c "from HoloLoom.weaving_orchestrator import WeavingOrchestrator; print('HoloLoom OK')"
+python -c "from hololoom.weaving_orchestrator import WeavingOrchestrator; print('HoloLoom OK')"
 ```
 
 ### Matrix bot commands not working
@@ -386,18 +386,18 @@ python -c "from HoloLoom.weaving_orchestrator import WeavingOrchestrator; print(
 - **This Guide:** Quick start for all components
 - **[THREE_TASKS_COMPLETE.md](THREE_TASKS_COMPLETE.md)** - Recent work summary
 - **[DEMO_COMPLETE.md](demos/DEMO_COMPLETE.md)** - End-to-end demo details
-- **[DEPLOYMENT_GUIDE.md](HoloLoom/chatops/DEPLOYMENT_GUIDE.md)** - Matrix bot production ops
+- **[DEPLOYMENT_GUIDE.md](hololoom/chatops/DEPLOYMENT_GUIDE.md)** - Matrix bot production ops
 - **[CLAUDE.md](CLAUDE.md)** - Developer guide
 
 ### Code Examples
 - **[complete_weaving_demo.py](demos/complete_weaving_demo.py)** - Full pipeline demo
 - **[terminal_app_wired.py](Promptly/promptly/ui/terminal_app_wired.py)** - Terminal UI implementation
-- **[test_bot_simple.py](HoloLoom/chatops/test_bot_simple.py)** - Integration tests
+- **[test_bot_simple.py](hololoom/chatops/test_bot_simple.py)** - Integration tests
 
 ### Architecture
-- **[weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py)** - Main orchestrator
-- **[mcts_engine.py](HoloLoom/convergence/mcts_engine.py)** - MCTS implementation
-- **[hybrid_store.py](HoloLoom/memory/stores/hybrid_store.py)** - Memory system
+- **[weaving_orchestrator.py](hololoom/weaving_orchestrator.py)** - Main orchestrator
+- **[mcts_engine.py](hololoom/convergence/mcts_engine.py)** - MCTS implementation
+- **[hybrid_store.py](hololoom/memory/stores/hybrid_store.py)** - Memory system
 
 ---
 
@@ -418,7 +418,7 @@ python -c "from HoloLoom.weaving_orchestrator import WeavingOrchestrator; print(
 
 **Questions?**
 - Check [CLAUDE.md](CLAUDE.md) for developer guide
-- Review [DEPLOYMENT_GUIDE.md](HoloLoom/chatops/DEPLOYMENT_GUIDE.md) for Matrix bot
+- Review [DEPLOYMENT_GUIDE.md](hololoom/chatops/DEPLOYMENT_GUIDE.md) for Matrix bot
 - See [DEMO_COMPLETE.md](demos/DEMO_COMPLETE.md) for demo details
 
 **Issues?**

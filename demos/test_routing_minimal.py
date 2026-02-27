@@ -4,9 +4,9 @@ Minimal test of query routing - isolate the issue.
 """
 
 import asyncio
-from HoloLoom.routing.query_classifier import QueryClassifier
-from HoloLoom.routing.fast_paths import handle_trivial_query, handle_simple_query
-from HoloLoom.documentation.types import Query
+from hololoom.routing.query_classifier import QueryClassifier
+from hololoom.routing.fast_paths import handle_trivial_query, handle_simple_query
+from hololoom.documentation.types import Query
 
 
 async def test_trivial():

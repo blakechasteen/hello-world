@@ -5,7 +5,7 @@
 ## Created Files
 
 ### 1. Core Configuration Module
-**File**: `HoloLoom/portal/hololoom_bridge/config.py` (111 lines)
+**File**: `hololoom/portal/hololoom_bridge/config.py` (111 lines)
 
 **BridgeConfig Pydantic Model**:
 - `hololoom_url: str = "http://localhost:8000"` - HoloLoom server URL
@@ -23,12 +23,12 @@
 - Priority: ENV > YAML > Defaults
 
 ### 2. YAML Configuration
-**File**: `HoloLoom/portal/configs/bridge.yaml` (24 lines)
+**File**: `hololoom/portal/configs/bridge.yaml` (24 lines)
 
 Well-commented configuration file with all parameters and defaults.
 
 ### 3. Documentation
-**File**: `HoloLoom/portal/hololoom_bridge/CONFIG_README.md` (400+ lines)
+**File**: `hololoom/portal/hololoom_bridge/CONFIG_README.md` (400+ lines)
 
 Comprehensive guide including:
 - Configuration parameter documentation
@@ -80,12 +80,12 @@ export HOLOLOOM_LOCAL_FALLBACK="false"
 ## Integration
 
 ### Already Integrated
-- ✅ `HoloLoom/portal/hololoom_bridge/__init__.py` - Exports BridgeConfig and load_bridge_config
-- ✅ `HoloLoom/portal/hololoom_bridge/bridge.py` - Ready to use load_bridge_config()
+- ✅ `hololoom/portal/hololoom_bridge/__init__.py` - Exports BridgeConfig and load_bridge_config
+- ✅ `hololoom/portal/hololoom_bridge/bridge.py` - Ready to use load_bridge_config()
 
 ### Export API
 ```python
-from HoloLoom.portal.hololoom_bridge import BridgeConfig, load_bridge_config
+from hololoom.portal.hololoom_bridge import BridgeConfig, load_bridge_config
 
 # Use in your code
 config = load_bridge_config()
@@ -95,7 +95,7 @@ config = load_bridge_config()
 
 ### 1. Load Default Configuration
 ```python
-from HoloLoom.portal.hololoom_bridge import load_bridge_config
+from hololoom.portal.hololoom_bridge import load_bridge_config
 
 config = load_bridge_config()
 print(config.hololoom_url)  # "http://localhost:8000"
@@ -205,7 +205,7 @@ All features tested and verified:
 
 2. **Use in portal_server**:
    ```python
-   from HoloLoom.portal.hololoom_bridge import load_bridge_config
+   from hololoom.portal.hololoom_bridge import load_bridge_config
 
    config = load_bridge_config()
    bridge = HoloLoomBridge(config)
@@ -218,7 +218,7 @@ All features tested and verified:
 
 ## Documentation Links
 
-- **[CONFIG_README.md](HoloLoom/portal/hololoom_bridge/CONFIG_README.md)** - Complete guide
-- **[CONFIG_SUMMARY.txt](HoloLoom/portal/hololoom_bridge/CONFIG_SUMMARY.txt)** - Quick reference
-- **[bridge.yaml](HoloLoom/portal/configs/bridge.yaml)** - Configuration file
-- **[config.py](HoloLoom/portal/hololoom_bridge/config.py)** - Source code
+- **[CONFIG_README.md](hololoom/portal/hololoom_bridge/CONFIG_README.md)** - Complete guide
+- **[CONFIG_SUMMARY.txt](hololoom/portal/hololoom_bridge/CONFIG_SUMMARY.txt)** - Quick reference
+- **[bridge.yaml](hololoom/portal/configs/bridge.yaml)** - Configuration file
+- **[config.py](hololoom/portal/hololoom_bridge/config.py)** - Source code

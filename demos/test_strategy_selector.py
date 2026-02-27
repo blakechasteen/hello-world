@@ -9,8 +9,8 @@ from dataclasses import dataclass, field
 from typing import Dict, List
 from datetime import datetime
 
-from HoloLoom.visualization.strategy import StrategySelector, QueryIntent, UserPreferences
-from HoloLoom.visualization.dashboard import ComplexityLevel
+from hololoom.visualization.strategy import StrategySelector, QueryIntent, UserPreferences
+from hololoom.visualization.dashboard import ComplexityLevel
 
 
 @dataclass
@@ -162,7 +162,7 @@ def test_user_preferences():
     print("=" * 70)
 
     # Hide timeline panels
-    from HoloLoom.visualization.dashboard import PanelType
+    from hololoom.visualization.dashboard import PanelType
     prefs = UserPreferences(
         hidden_panels=[PanelType.TIMELINE],
         preferred_panels=[PanelType.METRIC]

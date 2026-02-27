@@ -10,7 +10,7 @@
 
 ### 1. Thompson Sampling Edge Case Tests (100% Complete)
 
-**Created:** `HoloLoom/tests/unit/test_thompson_sampling_edge_cases.py` (268 lines, 18 tests)
+**Created:** `hololoom/tests/unit/test_thompson_sampling_edge_cases.py` (268 lines, 18 tests)
 
 **All 18 tests passing:**
 - ✅ test_success_zero_edge_case - Validates ValueError for Beta(0, β)
@@ -51,7 +51,7 @@
 
 ### 2. Orchestrator Refactoring (100% Complete)
 
-**File:** `HoloLoom/weaving_orchestrator.py`
+**File:** `hololoom/weaving_orchestrator.py`
 
 **Before Refactoring:**
 ```
@@ -123,13 +123,13 @@ __init__: 64 lines (63% reduction, -109 lines)
 
 **Root Cause:** Loading `MatryoshkaEmbeddings` model per test (~3s load time)
 
-**Solution:** Session-scoped fixture in `HoloLoom/tests/conftest.py`
+**Solution:** Session-scoped fixture in `hololoom/tests/conftest.py`
 
 ```python
 @pytest.fixture(scope="session")
 def cached_embeddings():
     """Session-scoped embedding model to avoid loading for every test."""
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     return MatryoshkaEmbeddings(sizes=[96, 192, 384])
 ```
 

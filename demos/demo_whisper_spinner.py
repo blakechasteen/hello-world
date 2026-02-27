@@ -7,7 +7,7 @@ Demonstrates transcribing audio files with the WhisperSpinner.
 
 import asyncio
 from pathlib import Path
-from HoloLoom.spinningWheel.whisper_spinner import (
+from hololoom.spinningWheel.whisper_spinner import (
     WhisperSpinner,
     transcribe_audio,
     transcribe_with_timecodes

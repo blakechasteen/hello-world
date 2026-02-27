@@ -19,7 +19,7 @@ from typing import List
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Routing system
-from HoloLoom.memory.routing import (
+from hololoom.memory.routing import (
     RuleBasedRouter,
     LearnedRouter,
     RoutingExperiment,

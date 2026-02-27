@@ -13,7 +13,7 @@ Successfully completed Sprint 1.5 to fill critical gaps in the analysis suite be
 ## Modules Added
 
 ### 1. Numerical Analysis (556 lines)
-**File**: `HoloLoom/warp/math/analysis/numerical_analysis.py`
+**File**: `hololoom/warp/math/analysis/numerical_analysis.py`
 
 **Classes**:
 - `RootFinder`: Bisection, Newton, secant, multidimensional Newton
@@ -25,7 +25,7 @@ Successfully completed Sprint 1.5 to fill critical gaps in the analysis suite be
 **Impact**: CRITICAL for AI/ML - adds all essential numerical methods for optimization and ODE solving.
 
 ### 2. Probability Theory (497 lines)
-**File**: `HoloLoom/warp/math/analysis/probability_theory.py`
+**File**: `hololoom/warp/math/analysis/probability_theory.py`
 
 **Classes**:
 - `ProbabilitySpace`: Discrete probability spaces
@@ -40,7 +40,7 @@ Successfully completed Sprint 1.5 to fill critical gaps in the analysis suite be
 **Impact**: ESSENTIAL - we had measure theory but no actual probability theory!
 
 ### 3. Distribution Theory (309 lines)
-**File**: `HoloLoom/warp/math/analysis/distribution_theory.py`
+**File**: `hololoom/warp/math/analysis/distribution_theory.py`
 
 **Classes**:
 - `SchwartzFunction`: Rapidly decreasing test functions

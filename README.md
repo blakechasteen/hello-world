@@ -96,9 +96,9 @@ pip install torch numpy networkx sentence-transformers
 ### Basic Usage
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import Query, MemoryShard
 
 # 1. Create memory (example data)
 shards = [
@@ -306,9 +306,9 @@ config = Config.fused()
 ### Simple Query
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import Query
 
 config = Config.fast()
 async with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:
@@ -322,7 +322,7 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as shuttle:
 ### With Reflection (Learning)
 
 ```python
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.recursive import FullLearningEngine
 
 # Enable full 5-phase learning
 async with FullLearningEngine(
@@ -345,8 +345,8 @@ async with FullLearningEngine(
 ### Persistent Memory
 
 ```python
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.config import MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.config import MemoryBackend
 
 # Use Neo4j + Qdrant (production)
 config.memory_backend = MemoryBackend.HYBRID
@@ -447,16 +447,16 @@ HoloLoom has **450+ test assertions** across unit, integration, and E2E tests:
 
 ```bash
 # Unit tests (fast, <500ms each)
-pytest HoloLoom/tests/unit/ -v
+pytest hololoom/tests/unit/ -v
 
 # Integration tests (<2s each)
-pytest HoloLoom/tests/integration/ -v
+pytest hololoom/tests/integration/ -v
 
 # End-to-end tests (<30s each)
-pytest HoloLoom/tests/e2e/ -v
+pytest hololoom/tests/e2e/ -v
 
 # Full test suite
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 
 # v1.0 simplification tests
 python test_v1_simplification.py
@@ -475,7 +475,7 @@ Generate detailed coverage reports to identify untested code:
 
 ```bash
 # Generate coverage report (HTML + Terminal)
-pytest HoloLoom/tests/ --cov=HoloLoom --cov-report=html --cov-report=term-missing
+pytest hololoom/tests/ --cov=HoloLoom --cov-report=html --cov-report=term-missing
 
 # View HTML report in browser
 open htmlcov/index.html  # macOS
@@ -483,7 +483,7 @@ start htmlcov/index.html # Windows
 xdg-open htmlcov/index.html # Linux
 
 # Generate XML report (for CI/CD integration)
-pytest HoloLoom/tests/ --cov=HoloLoom --cov-report=xml
+pytest hololoom/tests/ --cov=HoloLoom --cov-report=xml
 
 # Generate coverage badge
 coverage-badge -o coverage.svg -f

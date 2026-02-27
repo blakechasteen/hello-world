@@ -13,7 +13,7 @@ HoloLoom Federation is a production-ready decentralized P2P network system
 with EXCELLENT, COMPREHENSIVE documentation.
 
 Primary Documentation:
-  📄 /HoloLoom/federation/README.md (1,150 lines)
+  📄 /hololoom/federation/README.md (1,150 lines)
   Status: ✅ Complete and production-ready
   Contains: Overview, examples, protocols, API reference, troubleshooting
 
@@ -88,7 +88,7 @@ Requirements from CLAUDE.md:
    Delivered: "✅ Production Ready (December 2025)"
 
 ✅ Location and line count
-   Delivered: "HoloLoom/federation/ (4,357 lines across 9 files)"
+   Delivered: "hololoom/federation/ (4,357 lines across 9 files)"
 
 ✅ Overview (2-3 paragraphs on SWIM, Kademlia, P2P)
    Delivered: 4 detailed paragraphs (lines 15-32)
@@ -333,7 +333,7 @@ FILES LOCATION
 ================================================================================
 
 Primary Documentation:
-  📄 /HoloLoom/federation/README.md
+  📄 /hololoom/federation/README.md
 
 Supplemental Documentation (in repository root):
   📄 /FEDERATION_DOCUMENTATION_ANALYSIS.md
@@ -344,9 +344,9 @@ Supplemental Documentation (in repository root):
   📄 /FEDERATION_DOCUMENTATION_MANIFEST.txt (this file)
 
 Codebase:
-  📁 /HoloLoom/federation/ - All implementation files
-  📁 /HoloLoom/federation/tests/ - Test suite
-  📁 /HoloLoom/federation/transport/ - Transport layer
+  📁 /hololoom/federation/ - All implementation files
+  📁 /hololoom/federation/tests/ - Test suite
+  📁 /hololoom/federation/transport/ - Transport layer
 
 ================================================================================
 FINAL STATUS

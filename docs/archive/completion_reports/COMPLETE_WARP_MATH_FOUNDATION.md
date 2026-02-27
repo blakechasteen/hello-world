@@ -24,7 +24,7 @@ HoloLoom's Warp Drive now contains a **complete mathematical foundation** spanni
 
 ### Sprint 1 & 1.5: Analysis Foundations (11 modules, ~6,500 lines)
 
-**Location**: `HoloLoom/warp/math/analysis/`
+**Location**: `hololoom/warp/math/analysis/`
 
 1. **real_analysis.py** (766 lines)
    - Metric spaces, completeness, compactness
@@ -94,7 +94,7 @@ HoloLoom's Warp Drive now contains a **complete mathematical foundation** spanni
 
 ### Sprint 2: Algebra & Symmetry (4 modules, ~2,100 lines)
 
-**Location**: `HoloLoom/warp/math/algebra/`
+**Location**: `hololoom/warp/math/algebra/`
 
 12. **abstract_algebra.py** (743 lines)
     - Groups (cyclic, symmetric, dihedral)
@@ -123,7 +123,7 @@ HoloLoom's Warp Drive now contains a **complete mathematical foundation** spanni
 
 ### Sprint 4: Geometry & Physics (3 modules, ~3,600 lines)
 
-**Location**: `HoloLoom/warp/math/geometry/`
+**Location**: `hololoom/warp/math/geometry/`
 
 16. **differential_geometry.py** (820 lines)
     - Smooth manifolds, charts, atlases
@@ -153,7 +153,7 @@ HoloLoom's Warp Drive now contains a **complete mathematical foundation** spanni
 
 ### Sprint 5: Decision & Information (3 modules, ~3,200 lines)
 
-**Location**: `HoloLoom/warp/math/decision/`
+**Location**: `hololoom/warp/math/decision/`
 
 19. **information_theory.py** (1,100 lines)
     - Shannon entropy, joint/conditional entropy
@@ -185,7 +185,7 @@ HoloLoom's Warp Drive now contains a **complete mathematical foundation** spanni
 
 ### Sprint 6: Logic & Foundations (2 modules, ~2,600 lines)
 
-**Location**: `HoloLoom/warp/math/logic/`
+**Location**: `hololoom/warp/math/logic/`
 
 22. **mathematical_logic.py** (1,300 lines)
     - Propositional logic, truth tables, SAT
@@ -267,9 +267,9 @@ Each module includes test suite with:
 
 All modules properly exported via `__init__.py`:
 ```python
-from HoloLoom.warp.math.analysis import Entropy, FourierTransform
-from HoloLoom.warp.math.geometry import RiemannianMetric, Geodesic
-from HoloLoom.warp.math.decision import NashEquilibrium, MutualInformation
+from hololoom.warp.math.analysis import Entropy, FourierTransform
+from hololoom.warp.math.geometry import RiemannianMetric, Geodesic
+from hololoom.warp.math.decision import NashEquilibrium, MutualInformation
 ```
 
 ---
@@ -321,7 +321,7 @@ from HoloLoom.warp.math.decision import NashEquilibrium, MutualInformation
 ### Example 1: Riemannian Optimization
 
 ```python
-from HoloLoom.warp.math.geometry import RiemannianMetric, Geodesic
+from hololoom.warp.math.geometry import RiemannianMetric, Geodesic
 
 # Define manifold (sphere)
 metric = RiemannianMetric.sphere(radius=1.0)
@@ -338,7 +338,7 @@ path, velocities = geodesic.integrate(start, velocity, t_final=np.pi/2)
 ### Example 2: Game-Theoretic Multi-Agent Learning
 
 ```python
-from HoloLoom.warp.math.decision import NormalFormGame, NashEquilibrium
+from hololoom.warp.math.decision import NormalFormGame, NashEquilibrium
 
 # Define 2-player game
 game = NormalFormGame.prisoners_dilemma()
@@ -351,7 +351,7 @@ equilibria = NashEquilibrium.find_pure(game)
 ### Example 3: Information-Theoretic Feature Selection
 
 ```python
-from HoloLoom.warp.math.decision import MutualInformation
+from hololoom.warp.math.decision import MutualInformation
 
 # Compute MI between features and target
 mi = MutualInformation.from_samples(features_x, target_y)
@@ -363,7 +363,7 @@ selected_features = np.argsort(mi)[-k:]
 ### Example 4: Stochastic Differential Equations
 
 ```python
-from HoloLoom.warp.math.analysis import BrownianMotion, SDESolver
+from hololoom.warp.math.analysis import BrownianMotion, SDESolver
 
 # Define SDE: dX = μ X dt + σ X dW (geometric Brownian motion)
 mu, sigma = 0.05, 0.2

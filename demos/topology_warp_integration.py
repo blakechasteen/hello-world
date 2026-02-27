@@ -21,14 +21,14 @@ from datetime import datetime
 import sys
 sys.path.insert(0, '.')
 
-from HoloLoom.warp.space import WarpSpace
-from HoloLoom.warp.topology import (
+from hololoom.warp.space import WarpSpace
+from hololoom.warp.topology import (
     PersistentHomology,
     MapperAlgorithm,
     TopologicalFeatureExtractor,
     VietorisRipsComplex
 )
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

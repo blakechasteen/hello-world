@@ -124,7 +124,7 @@
     },
     {
       "name": "promptly_hololoom_enhance",
-      "description": "Enhance a prompt with contextual information from HoloLoom memory using RAG (Retrieval-Augmented Generation).",
+      "description": "Enhance a prompt with contextual information from hololoom memory using RAG (Retrieval-Augmented Generation).",
       "input_schema": {
         "type": "object",
         "properties": {
@@ -638,7 +638,7 @@
       },
       {
         "name": "promptly_hololoom_enhance",
-        "description": "Enhance prompt with RAG context from HoloLoom",
+        "description": "Enhance prompt with RAG context from hololoom",
         "inputSchema": {
           "type": "object",
           "properties": {

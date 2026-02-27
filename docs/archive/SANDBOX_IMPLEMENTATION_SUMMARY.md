@@ -1,7 +1,7 @@
 # Sandbox Protocols & Resource Monitor Implementation Summary
 
 **Status**: Production Ready (December 5, 2025)
-**Module**: `HoloLoom.redteam.sandbox`
+**Module**: `hololoom.redteam.sandbox`
 **Total Code**: ~450 lines (protocols: 150, monitor: 300)
 **Documentation**: 3 comprehensive guides
 **Test Coverage**: 24 tests (100% passing)
@@ -123,7 +123,7 @@ AUTO       → Auto-detect best available
 ### Configuration
 
 ```python
-from HoloLoom.redteam.sandbox import SandboxMode, SandboxConfig
+from hololoom.redteam.sandbox import SandboxMode, SandboxConfig
 
 config = SandboxConfig(
     mode=SandboxMode.AUTO,
@@ -143,7 +143,7 @@ if config.is_isolated:
 ### Resource Monitoring
 
 ```python
-from HoloLoom.redteam.sandbox import ResourceMonitor
+from hololoom.redteam.sandbox import ResourceMonitor
 
 monitor = ResourceMonitor(sample_interval_ms=100)
 
@@ -164,7 +164,7 @@ print(summary)  # Pretty-printed statistics
 ### Result Inspection
 
 ```python
-from HoloLoom.redteam.sandbox import SandboxResult
+from hololoom.redteam.sandbox import SandboxResult
 
 result = SandboxResult(...)
 
@@ -183,7 +183,7 @@ if result.had_violations:
 
 ```python
 import asyncio
-from HoloLoom.redteam.sandbox import SandboxMode, SandboxConfig, ResourceMonitor
+from hololoom.redteam.sandbox import SandboxMode, SandboxConfig, ResourceMonitor
 
 async def execute_attack(command):
     # Configuration
@@ -274,7 +274,7 @@ asyncio.run(execute_attack(["python", "attack.py"]))
 ## File Structure
 
 ```
-HoloLoom/redteam/sandbox/
+hololoom/redteam/sandbox/
 ├── __init__.py                      # Package exports, lazy loading
 ├── protocols.py                     # SandboxMode, SandboxConfig, SandboxResult, Protocols
 ├── monitor.py                       # ResourceMonitor, ResourceSample, ResourceSummary
@@ -291,7 +291,7 @@ The sandbox system integrates with CARTS red team module:
 
 ```python
 # In CARTS attack executor
-from HoloLoom.redteam.sandbox import SandboxConfig, ResourceMonitor
+from hololoom.redteam.sandbox import SandboxConfig, ResourceMonitor
 
 class CARTSAttackExecutor:
     def __init__(self):
@@ -382,7 +382,7 @@ class CARTSAttackExecutor:
 
 **Getting Help**:
 ```python
-from HoloLoom.redteam.sandbox import validate_sandbox_config
+from hololoom.redteam.sandbox import validate_sandbox_config
 
 # Check configuration validity
 warnings = validate_sandbox_config(your_config)
@@ -404,6 +404,6 @@ Ready for immediate integration into CARTS Phase 2 attack execution pipeline.
 ---
 
 **Generated**: 2025-12-05
-**Module**: `HoloLoom.redteam.sandbox`
+**Module**: `hololoom.redteam.sandbox`
 **Status**: Production Ready
 **Author**: CARTS Team

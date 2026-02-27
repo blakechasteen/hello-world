@@ -19,14 +19,14 @@ from dataclasses import dataclass
 import networkx as nx
 
 # Math modules
-from HoloLoom.warp.math.information import entropy, mutual_information, DistributionPair
-from HoloLoom.warp.math.graph import (
+from hololoom.warp.math.information import entropy, mutual_information, DistributionPair
+from hololoom.warp.math.graph import (
     compute_laplacian, fiedler_vector, algebraic_connectivity,
     SpectralClustering
 )
-from HoloLoom.warp.math.decision.game_theory import NormalFormGame, NashEquilibrium
-from HoloLoom.warp.math.causal import CausalGraph
-from HoloLoom.warp.math.decision.regret_minimization import Hedge
+from hololoom.warp.math.decision.game_theory import NormalFormGame, NashEquilibrium
+from hololoom.warp.math.causal import CausalGraph
+from hololoom.warp.math.decision.regret_minimization import Hedge
 
 
 @dataclass

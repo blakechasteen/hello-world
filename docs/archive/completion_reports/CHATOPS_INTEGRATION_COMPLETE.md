@@ -26,7 +26,7 @@ Successfully integrated HoloLoom's new WeavingShuttle architecture with the Matr
 - Idempotent `close()` method
 
 ### 3. ✅ ChatOps Integration
-- Updated [HoloLoom/chatops/handlers/hololoom_handlers.py](HoloLoom/chatops/handlers/hololoom_handlers.py)
+- Updated [hololoom/chatops/handlers/hololoom_handlers.py](hololoom/chatops/handlers/hololoom_handlers.py)
 - Replaced old orchestrator with WeavingShuttle
 - Added 3 new commands
 - Enhanced 5 existing commands
@@ -144,7 +144,7 @@ Every `!weave` command now executes:
 
 ### Files Modified
 
-**HoloLoom/chatops/handlers/hololoom_handlers.py** (309 insertions, 96 deletions)
+**hololoom/chatops/handlers/hololoom_handlers.py** (309 insertions, 96 deletions)
 
 **Key Changes:**
 ```python
@@ -153,7 +153,7 @@ from weaving_orchestrator import WeavingOrchestrator
 self.orchestrator = WeavingOrchestrator(...)
 
 # After
-from HoloLoom.weaving_shuttle import WeavingShuttle
+from hololoom.weaving_shuttle import WeavingShuttle
 self.shuttle = WeavingShuttle(
     cfg=config,
     shards=memory_shards,
@@ -385,7 +385,7 @@ To test the complete system:
 $env:PYTHONPATH = "."
 
 # Run bot (requires Matrix credentials)
-python HoloLoom/chatops/run_bot.py --hololoom-mode fast
+python hololoom/chatops/run_bot.py --hololoom-mode fast
 
 # In Matrix room:
 !weave What is Thompson Sampling?

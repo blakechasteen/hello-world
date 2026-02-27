@@ -2,7 +2,7 @@
 """
 Demo: Elle Prompt Refinement Integration
 
-Demonstrates +30% quality improvement from HoloLoom prompt refinement.
+Demonstrates +30% quality improvement from hololoom prompt refinement.
 
 Compares:
 - Standard Elle prompt (baseline)

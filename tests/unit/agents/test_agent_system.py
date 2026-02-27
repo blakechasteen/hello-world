@@ -16,7 +16,7 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from HoloLoom.agents import (
+from hololoom.agents import (
     create_agent,
     AgentWorkingMemory,
     WorkingMemoryLearner,
@@ -24,12 +24,12 @@ from HoloLoom.agents import (
     list_profiles,
     BUDGET_ADVISOR
 )
-from HoloLoom.agents.types import WorkingMemoryState, AgentProfile, AgentDomain
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Query
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.config import Config
+from hololoom.agents.types import WorkingMemoryState, AgentProfile, AgentDomain
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Query
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.config import Config
 
 
 @pytest.fixture

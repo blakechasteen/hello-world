@@ -2,7 +2,7 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 /**
  * Auto-generated sidebars for API documentation.
- * Pulls README.md files from HoloLoom/ subdirectories.
+ * Pulls README.md files from hololoom/ subdirectories.
  */
 const sidebars: SidebarsConfig = {
   apiSidebar: [

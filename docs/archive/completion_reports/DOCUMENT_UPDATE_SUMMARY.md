@@ -37,7 +37,7 @@
 **42 modules** implementing rigorous mathematics:
 ```
 
-**Impact:** Accurate count of mathematical modules in HoloLoom/warp/math/
+**Impact:** Accurate count of mathematical modules in hololoom/warp/math/
 **Location:** Part 1, Mathematical Foundation section
 
 ---

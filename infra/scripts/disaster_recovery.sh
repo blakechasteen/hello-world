@@ -1,5 +1,5 @@
 #!/bin/bash
-# HoloLoom VoiceAgent Disaster Recovery
+# hololoom VoiceAgent Disaster Recovery
 #
 # Restores system from backup with validation
 #
@@ -99,7 +99,7 @@ TEMP_DIR="/tmp/hololoom_recovery_$$"
 START_TIME=$(date +%s)
 
 log_info "========================================="
-log_info "HoloLoom Disaster Recovery"
+log_info "hololoom Disaster Recovery"
 log_info "Starting at $(date)"
 log_info "========================================="
 log_info "Backup: $BACKUP_FILE"
@@ -256,12 +256,12 @@ if [ "$SKIP_CONFIG" = "false" ]; then
 
     # Restore voice configurations
     if [ -d "$TEMP_DIR/$BACKUP_DIR/config/languages" ]; then
-        cp -r "$TEMP_DIR/$BACKUP_DIR/config/languages" HoloLoom/voice/
+        cp -r "$TEMP_DIR/$BACKUP_DIR/config/languages" hololoom/voice/
         log_info "✓ Language configurations restored"
     fi
 
     if [ -d "$TEMP_DIR/$BACKUP_DIR/config/personalities" ]; then
-        cp -r "$TEMP_DIR/$BACKUP_DIR/config/personalities" HoloLoom/voice/
+        cp -r "$TEMP_DIR/$BACKUP_DIR/config/personalities" hololoom/voice/
         log_info "✓ Personality configurations restored"
     fi
 
@@ -356,7 +356,7 @@ DURATION=$((END_TIME - START_TIME))
 # Generate recovery report
 REPORT_FILE="recovery_report_$(date +%Y%m%d_%H%M%S).txt"
 cat > "$REPORT_FILE" <<EOF
-HoloLoom Disaster Recovery Report
+hololoom Disaster Recovery Report
 ===================================
 Recovery Time: $(date)
 Recovery ID: $$

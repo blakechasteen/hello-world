@@ -183,7 +183,7 @@ Sample memories:
 
 ### Created
 
-**[HoloLoom/memory/stores/file_store.py](../../HoloLoom/memory/stores/file_store.py)** (~400 lines)
+**[hololoom/memory/stores/file_store.py](../../hololoom/memory/stores/file_store.py)** (~400 lines)
 - FileMemoryStore implementation
 - Async I/O via thread pool
 - JSONL + numpy storage
@@ -198,7 +198,7 @@ Sample memories:
 
 ### Modified
 
-**[HoloLoom/weaving_orchestrator.py](../../HoloLoom/weaving_orchestrator.py)**
+**[hololoom/weaving_orchestrator.py](../../hololoom/weaving_orchestrator.py)**
 - `_init_memory()`: Hybrid backend support with fallback chain
 - `add_knowledge()`: Now async, works with protocol-based stores
 - `_retrieve_context()`: Now async, returns converted shards
@@ -214,7 +214,7 @@ Sample memories:
 ### Standalone File Store
 
 ```bash
-$ python HoloLoom/memory/stores/file_store.py
+$ python hololoom/memory/stores/file_store.py
 
 FILE MEMORY STORE DEMO
 Initializing embedder...

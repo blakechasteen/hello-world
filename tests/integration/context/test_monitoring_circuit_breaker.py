@@ -24,7 +24,7 @@ sys.path.insert(0, str(repo_root))
 import asyncio
 import pytest
 import time
-from HoloLoom.context.monitoring import (
+from hololoom.context.monitoring import (
     LatencyHistogram,
     PerformanceMonitor,
     ResourceMonitor,
@@ -32,7 +32,7 @@ from HoloLoom.context.monitoring import (
     SystemMonitor,
     create_system_monitor
 )
-from HoloLoom.context.circuit_breaker import (
+from hololoom.context.circuit_breaker import (
     CircuitState,
     CircuitBreakerConfig,
     CircuitBreaker,
@@ -40,7 +40,7 @@ from HoloLoom.context.circuit_breaker import (
     create_circuit_breaker,
     create_circuit_breaker_registry
 )
-from HoloLoom.context.error_handling import CircuitBreakerOpenError
+from hololoom.context.error_handling import CircuitBreakerOpenError
 
 
 # ============================================================================

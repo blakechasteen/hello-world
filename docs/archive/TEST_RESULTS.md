@@ -141,7 +141,7 @@ Total: 0.05s for 5 queries
 
 **Impact:** NONE - Gating actually works, just print statement fails
 
-**Evidence:** Standalone test (`python HoloLoom/embedding/matryoshka_gate.py`) works perfectly
+**Evidence:** Standalone test (`python hololoom/embedding/matryoshka_gate.py`) works perfectly
 
 ---
 

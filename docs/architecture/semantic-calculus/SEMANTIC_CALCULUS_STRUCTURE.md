@@ -2,7 +2,7 @@
 
 ## Current Structure (Flat)
 ```
-HoloLoom/semantic_calculus/
+hololoom/semantic_calculus/
 ├── flow_calculus.py          # Math
 ├── dimensions.py              # Math
 ├── integrator.py              # Math
@@ -22,7 +22,7 @@ HoloLoom/semantic_calculus/
 
 ### Option A: Separate Math Subdirectory
 ```
-HoloLoom/semantic_calculus/
+hololoom/semantic_calculus/
 ├── math/                      # Pure mathematics (independent)
 │   ├── __init__.py
 │   ├── flow.py               # Trajectory, velocity, acceleration
@@ -56,7 +56,7 @@ HoloLoom/semantic_calculus/
 
 ### Option B: Math at Top Level (Following HoloLoom Pattern)
 ```
-HoloLoom/
+hololoom/
 ├── semantic_calculus/         # Application integration
 │   ├── __init__.py
 │   ├── config.py             # Configuration
@@ -84,12 +84,12 @@ HoloLoom/
 - ✅ Follows HoloLoom's top-level module pattern
 - ✅ Math is completely independent module
 - ✅ Can be published as separate package: `pip install semantic-math`
-- ✅ Clean imports: `from HoloLoom.semantic_math import flow`
+- ✅ Clean imports: `from hololoom.semantic_math import flow`
 - ✅ Semantic calculus focuses on integration only
 
 ### Option C: Keep Current + Add Math Subdirectory
 ```
-HoloLoom/semantic_calculus/
+hololoom/semantic_calculus/
 ├── math/                      # Pure mathematics
 │   ├── flow.py               # Core calculus (move from flow_calculus.py)
 │   ├── spectrum.py           # 16D projection (move from dimensions.py)
@@ -119,7 +119,7 @@ HoloLoom/semantic_calculus/
 
 1. **Create `math/` subdirectory**:
    ```
-   mkdir HoloLoom/semantic_calculus/math
+   mkdir hololoom/semantic_calculus/math
    ```
 
 2. **Move/rename math files**:
@@ -142,7 +142,7 @@ HoloLoom/semantic_calculus/
 
 4. **Final structure**:
    ```
-   HoloLoom/semantic_calculus/
+   hololoom/semantic_calculus/
    ├── math/
    │   ├── __init__.py
    │   ├── flow.py
@@ -164,21 +164,21 @@ HoloLoom/semantic_calculus/
 
 **Old**:
 ```python
-from HoloLoom.semantic_calculus import SemanticFlowCalculus
-from HoloLoom.semantic_calculus import SemanticSpectrum
-from HoloLoom.semantic_calculus import GeometricIntegrator
+from hololoom.semantic_calculus import SemanticFlowCalculus
+from hololoom.semantic_calculus import SemanticSpectrum
+from hololoom.semantic_calculus import GeometricIntegrator
 ```
 
 **New (Clean)**:
 ```python
 # Pure math
-from HoloLoom.semantic_calculus.math import Flow, Spectrum, Dynamics
+from hololoom.semantic_calculus.math import Flow, Spectrum, Dynamics
 
 # Integration
-from HoloLoom.semantic_calculus import SemanticAnalyzer, SemanticCalculusConfig
+from hololoom.semantic_calculus import SemanticAnalyzer, SemanticCalculusConfig
 
 # Or convenience (re-exported in __init__.py)
-from HoloLoom.semantic_calculus import create_semantic_analyzer
+from hololoom.semantic_calculus import create_semantic_analyzer
 ```
 
 ### Benefits of This Approach
@@ -191,7 +191,7 @@ from HoloLoom.semantic_calculus import create_semantic_analyzer
 
 ## Implementation Checklist
 
-- [ ] Create `HoloLoom/semantic_calculus/math/` directory
+- [ ] Create `hololoom/semantic_calculus/math/` directory
 - [ ] Move core math files to `math/` subdirectory
 - [ ] Create `math/__init__.py` with clean exports
 - [ ] Split `integration.py` into `config.py`, `analyzer.py`, `adapter.py`
@@ -202,7 +202,7 @@ from HoloLoom.semantic_calculus import create_semantic_analyzer
 
 ## Example: Math Module Exports
 
-**`HoloLoom/semantic_calculus/math/__init__.py`**:
+**`hololoom/semantic_calculus/math/__init__.py`**:
 ```python
 """
 Pure mathematical operations for semantic calculus.
@@ -245,13 +245,13 @@ __all__ = [
 ]
 ```
 
-**`HoloLoom/semantic_calculus/__init__.py`** (Main):
+**`hololoom/semantic_calculus/__init__.py`** (Main):
 ```python
 """
 Semantic calculus integration for HoloLoom.
 
 Quick Start:
-    from HoloLoom.semantic_calculus import create_semantic_analyzer
+    from hololoom.semantic_calculus import create_semantic_analyzer
 
     analyzer = create_semantic_analyzer(embed_fn)
     result = analyzer.analyze_text("Your text...")

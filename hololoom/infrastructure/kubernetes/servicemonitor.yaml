@@ -1,0 +1,318 @@
+# hololoom ServiceMonitor
+# Part 5: Production Hardening - Day 25
+#
+# Prometheus monitoring configuration:
+# - Metrics scraping
+# - Custom relabeling
+# - Alert rules
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hololoom-api
+  namespace: hololoom
+  labels:
+    app: hololoom-api
+    component: monitoring
+    prometheus: kube-prometheus  # Match Prometheus selector
+spec:
+  # Select service to monitor
+  selector:
+    matchLabels:
+      app: hololoom-api
+      component: backend
+
+  # Namespace selector
+  namespaceSelector:
+    matchNames:
+      - hololoom
+
+  # Endpoints to scrape
+  endpoints:
+    # Metrics endpoint
+    - port: metrics
+      path: /metrics
+      interval: 15s  # Scrape every 15 seconds
+      scrapeTimeout: 10s
+
+      # Relabeling (optional)
+      relabelings:
+        # Add cluster label
+        - sourceLabels: [__address__]
+          targetLabel: cluster
+          replacement: production
+
+        # Add environment label
+        - sourceLabels: [__address__]
+          targetLabel: environment
+          replacement: production
+
+      # Metric relabeling (optional)
+      metricRelabelings:
+        # Drop high-cardinality metrics if needed
+        - sourceLabels: [__name__]
+          regex: 'hololoom_query_latency_seconds_bucket'
+          action: keep  # Keep histogram buckets
+
+---
+# PrometheusRule for alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: hololoom-alerts
+  namespace: hololoom
+  labels:
+    app: hololoom-api
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: hololoom.performance
+      interval: 30s
+      rules:
+        # Alert: High query latency
+        - alert: HoloLoomHighLatency
+          expr: histogram_quantile(0.95, rate(hololoom_query_latency_seconds_bucket[5m])) > 1
+          for: 5m
+          labels:
+            severity: warning
+            component: performance
+          annotations:
+            summary: "hololoom high query latency"
+            description: "P95 latency is {{ $value }}s (> 1s threshold)"
+
+        # Alert: Very high query latency
+        - alert: HoloLoomVeryHighLatency
+          expr: histogram_quantile(0.95, rate(hololoom_query_latency_seconds_bucket[5m])) > 2
+          for: 2m
+          labels:
+            severity: critical
+            component: performance
+          annotations:
+            summary: "hololoom very high query latency"
+            description: "P95 latency is {{ $value }}s (> 2s threshold)"
+
+        # Alert: High error rate
+        - alert: HoloLoomHighErrorRate
+          expr: rate(hololoom_query_total{status="error"}[5m]) / rate(hololoom_query_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            component: reliability
+          annotations:
+            summary: "hololoom high error rate"
+            description: "Error rate is {{ $value | humanizePercentage }} (> 10% threshold)"
+
+        # Alert: Very high error rate
+        - alert: HoloLoomVeryHighErrorRate
+          expr: rate(hololoom_query_total{status="error"}[5m]) / rate(hololoom_query_total[5m]) > 0.2
+          for: 2m
+          labels:
+            severity: critical
+            component: reliability
+          annotations:
+            summary: "hololoom very high error rate"
+            description: "Error rate is {{ $value | humanizePercentage }} (> 20% threshold)"
+
+        # Alert: Low cache hit rate
+        - alert: HoloLoomLowCacheHitRate
+          expr: rate(hololoom_cache_hits_total[10m]) / rate(hololoom_cache_requests_total[10m]) < 0.3
+          for: 10m
+          labels:
+            severity: warning
+            component: cache
+          annotations:
+            summary: "hololoom low cache hit rate"
+            description: "Cache hit rate is {{ $value | humanizePercentage }} (< 30% threshold)"
+
+    - name: hololoom.availability
+      interval: 30s
+      rules:
+        # Alert: Service down
+        - alert: HoloLoomServiceDown
+          expr: up{job="hololoom-api"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: availability
+          annotations:
+            summary: "hololoom service is down"
+            description: "hololoom service {{ $labels.instance }} is down"
+
+        # Alert: Circuit breaker open
+        - alert: HoloLoomCircuitBreakerOpen
+          expr: hololoom_circuit_breaker_state{state="open"} == 1
+          for: 5m
+          labels:
+            severity: warning
+            component: reliability
+          annotations:
+            summary: "hololoom circuit breaker open"
+            description: "Circuit breaker for {{ $labels.backend }} is open"
+
+        # Alert: Rate limiting active
+        - alert: HoloLoomRateLimitActive
+          expr: rate(hololoom_rate_limit_rejected_total[5m]) > 10
+          for: 5m
+          labels:
+            severity: warning
+            component: traffic
+          annotations:
+            summary: "hololoom rate limiting active"
+            description: "Rate limiter rejecting {{ $value }} requests/sec"
+
+    - name: hololoom.resources
+      interval: 30s
+      rules:
+        # Alert: High memory usage
+        - alert: HoloLoomHighMemory
+          expr: container_memory_usage_bytes{pod=~"hololoom-api-.*"} / container_spec_memory_limit_bytes{pod=~"hololoom-api-.*"} > 0.85
+          for: 5m
+          labels:
+            severity: warning
+            component: resources
+          annotations:
+            summary: "hololoom high memory usage"
+            description: "Memory usage is {{ $value | humanizePercentage }} (> 85% threshold)"
+
+        # Alert: Very high memory usage
+        - alert: HoloLoomVeryHighMemory
+          expr: container_memory_usage_bytes{pod=~"hololoom-api-.*"} / container_spec_memory_limit_bytes{pod=~"hololoom-api-.*"} > 0.95
+          for: 2m
+          labels:
+            severity: critical
+            component: resources
+          annotations:
+            summary: "hololoom very high memory usage"
+            description: "Memory usage is {{ $value | humanizePercentage }} (> 95% threshold)"
+
+        # Alert: High CPU usage
+        - alert: HoloLoomHighCPU
+          expr: rate(container_cpu_usage_seconds_total{pod=~"hololoom-api-.*"}[5m]) / container_spec_cpu_quota{pod=~"hololoom-api-.*"} * 100 > 80
+          for: 10m
+          labels:
+            severity: warning
+            component: resources
+          annotations:
+            summary: "hololoom high CPU usage"
+            description: "CPU usage is {{ $value }}% (> 80% threshold)"
+
+        # Alert: Pod restart loop
+        - alert: HoloLoomPodRestartLoop
+          expr: rate(kube_pod_container_status_restarts_total{pod=~"hololoom-api-.*"}[15m]) > 0
+          for: 15m
+          labels:
+            severity: warning
+            component: stability
+          annotations:
+            summary: "hololoom pod restarting"
+            description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in 15m"
+
+---
+# PodMonitor (alternative to ServiceMonitor)
+# Use if you want to scrape pod metrics directly
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: hololoom-api-pods
+  namespace: hololoom
+  labels:
+    app: hololoom-api
+spec:
+  selector:
+    matchLabels:
+      app: hololoom-api
+      component: backend
+
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+
+---
+# Grafana Dashboard ConfigMap
+# Import this into Grafana for visualization
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hololoom-dashboard
+  namespace: hololoom
+  labels:
+    grafana_dashboard: "1"
+data:
+  hololoom-overview.json: |
+    {
+      "dashboard": {
+        "title": "hololoom Overview",
+        "tags": ["hololoom", "production"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Query Rate (QPS)",
+            "targets": [
+              {
+                "expr": "rate(hololoom_query_total[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Query Latency (p50, p95, p99)",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.50, rate(hololoom_query_latency_seconds_bucket[5m]))",
+                "legendFormat": "p50"
+              },
+              {
+                "expr": "histogram_quantile(0.95, rate(hololoom_query_latency_seconds_bucket[5m]))",
+                "legendFormat": "p95"
+              },
+              {
+                "expr": "histogram_quantile(0.99, rate(hololoom_query_latency_seconds_bucket[5m]))",
+                "legendFormat": "p99"
+              }
+            ]
+          },
+          {
+            "title": "Error Rate",
+            "targets": [
+              {
+                "expr": "rate(hololoom_query_total{status=\"error\"}[5m]) / rate(hololoom_query_total[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Cache Hit Rate",
+            "targets": [
+              {
+                "expr": "rate(hololoom_cache_hits_total[5m]) / rate(hololoom_cache_requests_total[5m])"
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+---
+# Example Prometheus scrape config (if not using ServiceMonitor)
+
+# prometheus.yml:
+# scrape_configs:
+#   - job_name: 'hololoom-api'
+#     kubernetes_sd_configs:
+#       - role: pod
+#         namespaces:
+#           names:
+#             - hololoom
+#     relabel_configs:
+#       - source_labels: [__meta_kubernetes_pod_label_app]
+#         action: keep
+#         regex: hololoom-api
+#       - source_labels: [__meta_kubernetes_pod_name]
+#         target_label: pod
+#       - source_labels: [__meta_kubernetes_namespace]
+#         target_label: namespace
+#     metric_relabel_configs:
+#       - source_labels: [__name__]
+#         regex: 'hololoom_.*'
+#         action: keep

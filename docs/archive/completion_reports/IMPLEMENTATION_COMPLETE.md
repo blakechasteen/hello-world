@@ -174,12 +174,12 @@ MATRIX_HOMESERVER=https://matrix.org
 pip install matrix-nio aiofiles python-magic pyyaml
 
 # 2. Configure
-cp HoloLoom/chatops/config.yaml my_config.yaml
+cp hololoom/chatops/config.yaml my_config.yaml
 # Edit my_config.yaml with your credentials
 
 # 3. Run
 export MATRIX_ACCESS_TOKEN='your_token'
-PYTHONPATH=. python HoloLoom/chatops/run_chatops.py --config my_config.yaml
+PYTHONPATH=. python hololoom/chatops/run_chatops.py --config my_config.yaml
 ```
 
 ### Example Script
@@ -188,7 +188,7 @@ Run [example_quick_start.py](example_quick_start.py) for minimal working example
 
 ```bash
 export MATRIX_ACCESS_TOKEN='your_token'
-PYTHONPATH=. python HoloLoom/chatops/example_quick_start.py
+PYTHONPATH=. python hololoom/chatops/example_quick_start.py
 ```
 
 ### Production Deployment
@@ -312,7 +312,7 @@ docker-compose up -d
 ## File Structure
 
 ```
-HoloLoom/chatops/
+hololoom/chatops/
 ├── __init__.py                    # Package exports
 ├── matrix_bot.py                  # Matrix.org client (380 lines)
 ├── chatops_bridge.py              # Integration orchestrator (450 lines)
@@ -338,25 +338,25 @@ Total: ~2,290 lines of production code
 
 ```bash
 # Test individual components
-pytest HoloLoom/chatops/tests/test_matrix_bot.py
-pytest HoloLoom/chatops/tests/test_conversation_memory.py
-pytest HoloLoom/chatops/tests/test_chatops_bridge.py
+pytest hololoom/chatops/tests/test_matrix_bot.py
+pytest hololoom/chatops/tests/test_conversation_memory.py
+pytest hololoom/chatops/tests/test_chatops_bridge.py
 ```
 
 ### Manual Testing
 
 ```bash
 # 1. Test Matrix bot
-PYTHONPATH=. python HoloLoom/chatops/matrix_bot.py
+PYTHONPATH=. python hololoom/chatops/matrix_bot.py
 
 # 2. Test conversation memory
-PYTHONPATH=. python HoloLoom/chatops/conversation_memory.py
+PYTHONPATH=. python hololoom/chatops/conversation_memory.py
 
 # 3. Test Promptly skills
 PYTHONPATH=. python Promptly/promptly/chatops_skills.py
 
 # 4. Test full integration
-PYTHONPATH=. python HoloLoom/chatops/example_quick_start.py
+PYTHONPATH=. python hololoom/chatops/example_quick_start.py
 ```
 
 ---
@@ -471,7 +471,7 @@ neo4j                     # Neo4j KG backend
 **Memory issues:**
 ```python
 # Check KG size
-from HoloLoom.chatops import ConversationMemory
+from hololoom.chatops import ConversationMemory
 memory = ConversationMemory()
 print(f"Nodes: {len(memory.kg.G.nodes)}")
 ```
@@ -522,7 +522,7 @@ See [README.md](README.md) for full troubleshooting guide.
 
 **Built with:**
 - [matrix-nio](https://github.com/poljar/matrix-nio) - Matrix Python SDK
-- [HoloLoom](../../HoloLoom/) - Neural decision-making framework
+- [HoloLoom](../../hololoom/) - Neural decision-making framework
 - [Promptly](../../Promptly/) - Prompt composition framework
 - [NetworkX](https://networkx.org/) - Graph algorithms
 

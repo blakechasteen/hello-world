@@ -37,7 +37,7 @@ async def main():
     print_banner("PHASE 1: File Discovery", "-")
 
     print(">>> Scanning HoloLoom directory...")
-    files = glob.glob('HoloLoom/**/*.py', recursive=True)
+    files = glob.glob('hololoom/**/*.py', recursive=True)
 
     # Filter out tests and cache
     files = [f for f in files if '__pycache__' not in f and 'test_' not in Path(f).name]

@@ -24,7 +24,7 @@ Successfully integrated unified memory backend support into WeavingShuttle, enab
 
 ### 1. WeavingShuttle Memory Parameter
 
-**File**: `HoloLoom/weaving_shuttle.py`
+**File**: `hololoom/weaving_shuttle.py`
 
 **Changes**:
 - Added optional `memory` parameter to `__init__()`
@@ -44,7 +44,7 @@ shuttle = WeavingShuttle(cfg=config, memory=memory)
 
 ### 2. Dynamic Memory Queries
 
-**File**: `HoloLoom/weaving_shuttle.py` (lines 443-479)
+**File**: `hololoom/weaving_shuttle.py` (lines 443-479)
 
 **Implementation**:
 - Modified Step 6 of weaving cycle (context retrieval)
@@ -69,7 +69,7 @@ Return context
 
 ### 3. Database Connection Lifecycle
 
-**File**: `HoloLoom/weaving_shuttle.py` (lines 906-931)
+**File**: `hololoom/weaving_shuttle.py` (lines 906-931)
 
 **Features**:
 - Checks if memory backend has `close()` method
@@ -263,7 +263,7 @@ Use shards for policy context
 
 ### Config Changes
 
-**File**: `HoloLoom/config.py`
+**File**: `hololoom/config.py`
 
 **Existing Support** (no changes needed):
 - `MemoryBackend` enum with all options
@@ -273,7 +273,7 @@ Use shards for policy context
 
 **Usage**:
 ```python
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 # Pure strategies
 config = Config.fast()
@@ -312,7 +312,7 @@ config.qdrant_port = 6333
 
 **Fix Needed**:
 ```python
-# In HoloLoom/memory/graph.py
+# In hololoom/memory/graph.py
 class KG:
     async def store(self, memory: Memory, user_id: str = "default") -> str:
         """Implement protocol: store memory as graph node"""
@@ -354,7 +354,7 @@ print(f"Healthy backends: {health['healthy_backends']}/{health['total_backends']
 
 **Problem**: Windows filesystem case-insensitive, code uses inconsistent casing
 
-**Evidence**: `from HoloLoom` vs `from HoloLoom`
+**Evidence**: `from hololoom` vs `from hololoom`
 
 **Impact**: Import errors on case-sensitive systems (Linux)
 
@@ -392,8 +392,8 @@ print(f"Healthy backends: {health['healthy_backends']}/{health['total_backends']
 ### Pattern 1: Backward Compatible (Static Shards)
 
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
 
 config = Config.fast()
 shards = create_test_shards()
@@ -411,8 +411,8 @@ async with WeavingShuttle(cfg=config, shards=shards) as shuttle:
 ### Pattern 2: Dynamic Memory (NetworkX)
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
 
 config = Config.fast()
 config.memory_backend = MemoryBackend.NETWORKX
@@ -436,8 +436,8 @@ async with WeavingShuttle(cfg=config, memory=memory) as shuttle:
 ### Pattern 3: Production (Neo4j + Qdrant)
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
 
 config = Config.fused()
 config.memory_backend = MemoryBackend.NEO4J_QDRANT
@@ -522,13 +522,13 @@ async with WeavingShuttle(cfg=config, memory=memory) as shuttle:
 
 ### Modified
 
-1. **`HoloLoom/weaving_shuttle.py`** (+150 lines)
+1. **`hololoom/weaving_shuttle.py`** (+150 lines)
    - Added `memory` parameter
    - Dynamic retrieval logic
    - Database connection cleanup
    - Protocol conversion helper
 
-2. **`HoloLoom/memory/backend_factory.py`** (+2 lines)
+2. **`hololoom/memory/backend_factory.py`** (+2 lines)
    - Fixed Mem0 import exception handling
 
 ### Created

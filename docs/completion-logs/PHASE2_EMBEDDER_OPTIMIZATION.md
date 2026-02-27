@@ -14,7 +14,7 @@ Added lazy loading and caching to the MatryoshkaEmbeddings module for dramatic s
 ## Implementation
 
 ### Files Modified
-- `HoloLoom/embedding/spectral.py` (+50 lines)
+- `hololoom/embedding/spectral.py` (+50 lines)
   - Lazy model loading
   - Embedding cache integration
   - Cache-aware encode_base()

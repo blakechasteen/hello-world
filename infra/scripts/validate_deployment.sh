@@ -6,7 +6,7 @@
 
 set -e  # Exit on error
 
-echo "🚀 HoloLoom VoiceAgent Deployment Validation"
+echo "🚀 hololoom VoiceAgent Deployment Validation"
 echo "==========================================="
 echo ""
 
@@ -81,9 +81,9 @@ echo ""
 echo "Step 3: Integration Tests"
 echo "------------------------"
 
-if [ -d "HoloLoom/voice/tests" ]; then
+if [ -d "hololoom/voice/tests" ]; then
     echo "Running VoiceAgent tests..."
-    PYTHONPATH=. pytest HoloLoom/voice/tests/test_voice_agent.py -v --tb=short
+    PYTHONPATH=. pytest hololoom/voice/tests/test_voice_agent.py -v --tb=short
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✓ ALL TESTS PASSED${NC}"
@@ -122,7 +122,7 @@ echo ""
 echo "1. Voice Input → Transcription → TTS:"
 echo "   python demos/demo_voice_agent.py"
 echo ""
-echo "2. HoloLoom Integration:"
+echo "2. hololoom Integration:"
 echo "   Check that queries are processed through WeavingOrchestrator"
 echo ""
 echo "3. Conversation Memory:"

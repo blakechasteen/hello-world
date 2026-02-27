@@ -2,7 +2,7 @@
 
 ## Current State Analysis
 
-### Existing Protocols in `HoloLoom/protocols/__init__.py`
+### Existing Protocols in `hololoom/protocols/__init__.py`
 ✅ Already standardized:
 - **Embedder** - Vector generation (synchronous encode method)
 - **MotifDetector** - Pattern detection in text
@@ -73,12 +73,12 @@
 ## Migration Strategy
 
 ### Phase 1: Extract Core Types (30 min)
-1. Create `HoloLoom/protocols/types.py`
+1. Create `hololoom/protocols/types.py`
 2. Move `ComplexityLevel`, `ProvenceTrace`, `MythRLResult` from dev/
 3. Update imports in dev/protocol_modules_mythrl.py
 
 ### Phase 2: Migrate New Protocols (1 hour)
-1. Add to `HoloLoom/protocols/__init__.py`:
+1. Add to `hololoom/protocols/__init__.py`:
    - `PatternSelectionProtocol`
    - `FeatureExtractionProtocol`
    - `WarpSpaceProtocol` (NON-NEGOTIABLE)
@@ -93,8 +93,8 @@
    - `PatternDetector` → `MemoryPatternDetector`
 
 ### Phase 3: Update Imports (30 min)
-1. Update `dev/protocol_modules_mythrl.py` to import from HoloLoom/protocols
-2. Update `dev/narrative_depth_protocol.py` to import from HoloLoom/protocols
+1. Update `dev/protocol_modules_mythrl.py` to import from hololoom/protocols
+2. Update `dev/narrative_depth_protocol.py` to import from hololoom/protocols
 3. Search and replace throughout codebase
 
 ### Phase 4: Backward Compatibility (30 min)
@@ -110,7 +110,7 @@
 ## File Structure After Migration
 
 ```
-HoloLoom/
+hololoom/
 ├── protocols/
 │   ├── __init__.py              # All protocol definitions
 │   ├── types.py                 # ComplexityLevel, ProvenceTrace, MythRLResult
@@ -119,15 +119,15 @@ HoloLoom/
 └── ...
 
 dev/
-├── protocol_modules_mythrl.py   # Imports from HoloLoom/protocols, focuses on MythRLShuttle
-├── narrative_depth_protocol.py  # Imports from HoloLoom/protocols
+├── protocol_modules_mythrl.py   # Imports from hololoom/protocols, focuses on MythRLShuttle
+├── narrative_depth_protocol.py  # Imports from hololoom/protocols
 └── ...
 ```
 
 ## Implementation Checklist
 
 ### Phase 1: Core Types
-- [ ] Create `HoloLoom/protocols/types.py`
+- [ ] Create `hololoom/protocols/types.py`
 - [ ] Move `ComplexityLevel` enum
 - [ ] Move `ProvenceTrace` dataclass
 - [ ] Move `MythRLResult` dataclass
@@ -146,7 +146,7 @@ dev/
 ### Phase 3: Import Updates
 - [ ] Update dev/protocol_modules_mythrl.py imports
 - [ ] Update dev/narrative_depth_protocol.py imports
-- [ ] Search and replace in HoloLoom/ modules
+- [ ] Search and replace in hololoom/ modules
 - [ ] Update test files
 
 ### Phase 4: Compatibility
@@ -162,7 +162,7 @@ dev/
 
 ## Success Criteria
 
-✅ All protocols in single source of truth: `HoloLoom/protocols/__init__.py`
+✅ All protocols in single source of truth: `hololoom/protocols/__init__.py`
 ✅ No duplicate protocol definitions across codebase
 ✅ Clear separation of concerns (low-level vs high-level)
 ✅ Backward compatibility maintained with deprecation warnings

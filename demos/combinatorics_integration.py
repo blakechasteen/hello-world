@@ -29,9 +29,9 @@ logger = logging.getLogger(__name__)
 
 # Import HoloLoom components
 try:
-    from HoloLoom.warp.combinatorics import ChainComplex, DiscreteMorseFunction, Sheaf
-    from HoloLoom.warp.space import WarpSpace
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.warp.combinatorics import ChainComplex, DiscreteMorseFunction, Sheaf
+    from hololoom.warp.space import WarpSpace
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     HAS_COMBINATORICS = True
 except ImportError as e:
     logger.warning(f"Could not import combinatorics: {e}")
@@ -39,7 +39,7 @@ except ImportError as e:
 
 # Try to import topology for extended features
 try:
-    from HoloLoom.warp.topology import PersistentHomology, TopologicalFeatureExtractor
+    from hololoom.warp.topology import PersistentHomology, TopologicalFeatureExtractor
     HAS_TOPOLOGY = True
 except ImportError:
     HAS_TOPOLOGY = False

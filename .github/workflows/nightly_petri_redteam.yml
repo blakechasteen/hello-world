@@ -35,9 +35,9 @@ jobs:
         run: |
           python -c "
           import asyncio
-          from HoloLoom.alignment.petri_integration import PetriAlignmentRunner
-          from HoloLoom.safety.petri_config import create_anthropic_config
-          from HoloLoom.alignment.petri_seeds import HOLOLOOM_ALIGNMENT_SEEDS
+          from hololoom.alignment.petri_integration import PetriAlignmentRunner
+          from hololoom.safety.petri_config import create_anthropic_config
+          from hololoom.alignment.petri_seeds import HOLOLOOM_ALIGNMENT_SEEDS
 
           async def main():
               print('Starting Petri alignment evaluation...')

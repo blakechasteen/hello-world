@@ -253,7 +253,7 @@ result = await memory_store.retrieve(
 
 ```
 end_to_end_pipeline_simple.py       # Complete pipeline demo
-HoloLoom/
+hololoom/
 ├── loom/
 │   └── command.py                  # Pattern card selection
 ├── memory/

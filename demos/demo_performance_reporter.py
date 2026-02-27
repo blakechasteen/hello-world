@@ -9,7 +9,7 @@ Date: November 13, 2025
 
 import asyncio
 from pathlib import Path
-from HoloLoom.routing.learning import (
+from hololoom.routing.learning import (
     PerformanceReporter,
     ContinuousValidator,
     AdaptiveUpdater,

@@ -29,12 +29,12 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.awareness import (
+from hololoom.awareness import (
     CompositionalAwarenessLayer,
     DualStreamGenerator,
     MetaAwarenessLayer
 )
-from HoloLoom.terminal_ui import TerminalUI
+from hololoom.terminal_ui import TerminalUI
 from rich.console import Console
 
 

@@ -24,7 +24,7 @@ Implemented comprehensive performance optimizations with query caching and embed
 
 ### Files Created
 ```
-HoloLoom/performance/
+hololoom/performance/
 ├── cache.py (95 lines) - LRU cache implementation
 └── __init__.py (9 lines) - Module exports
 
@@ -57,7 +57,7 @@ Improvement: 42% faster
 
 ### Files Modified
 ```
-HoloLoom/embedding/spectral.py (+50 lines)
+hololoom/embedding/spectral.py (+50 lines)
 demos/performance_benchmark.py (+25 lines)
 
 PHASE2_EMBEDDER_OPTIMIZATION.md (450 lines) - Phase 2 docs
@@ -364,8 +364,8 @@ print(f"Cached embeddings: {stats['size']}")
 
 ### Logging
 ```
-INFO:HoloLoom.weaving_shuttle:[CACHE HIT] Returning cached result
-DEBUG:HoloLoom.weaving_shuttle:[CACHE] Cached result for query
+INFO:hololoom.weaving_shuttle:[CACHE HIT] Returning cached result
+DEBUG:hololoom.weaving_shuttle:[CACHE] Cached result for query
 ```
 
 ---
@@ -396,8 +396,8 @@ DEBUG:HoloLoom.weaving_shuttle:[CACHE] Cached result for query
 
 ### Created (9 files, ~1,800 lines)
 ```
-HoloLoom/performance/cache.py (95 lines)
-HoloLoom/performance/__init__.py (9 lines)
+hololoom/performance/cache.py (95 lines)
+hololoom/performance/__init__.py (9 lines)
 demos/performance_benchmark.py (225 lines)
 PERFORMANCE_IMPROVEMENTS.md (450 lines)
 POLISH_PERFORMANCE_COMPLETE.md (420 lines)
@@ -407,8 +407,8 @@ POLISH_AND_PERFORMANCE_COMPLETE.md (this file, 600 lines)
 
 ### Modified (2 files, ~70 lines)
 ```
-HoloLoom/weaving_shuttle.py (+19 lines)
-HoloLoom/embedding/spectral.py (+50 lines)
+hololoom/weaving_shuttle.py (+19 lines)
+hololoom/embedding/spectral.py (+50 lines)
 ```
 
 ### Total Impact

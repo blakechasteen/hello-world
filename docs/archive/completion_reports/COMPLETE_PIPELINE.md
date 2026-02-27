@@ -296,8 +296,8 @@ Operations: ['metric_verification', 'continuity_check']
 ### Drop-in Integration
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.warp.math.meaning_synthesizer import CompleteMathMeaningPipeline
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.warp.math.meaning_synthesizer import CompleteMathMeaningPipeline
 
 class MathMeaningOrchestrator(WeavingOrchestrator):
     def __init__(self, **kwargs):
@@ -430,7 +430,7 @@ The complete pipeline provides:
 ## Usage Example
 
 ```python
-from HoloLoom.warp.math.meaning_synthesizer import CompleteMathMeaningPipeline
+from hololoom.warp.math.meaning_synthesizer import CompleteMathMeaningPipeline
 
 # Create pipeline
 pipeline = CompleteMathMeaningPipeline(load_state=True)

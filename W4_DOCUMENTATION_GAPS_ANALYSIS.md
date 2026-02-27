@@ -76,15 +76,15 @@ Based on codebase analysis, these large files likely lack comprehensive docstrin
 
 | File Path | Est. Lines | Issue | Impact |
 |-----------|-----------|-------|--------|
-| **HoloLoom/orchestrator/core/*.py** | 5-8K | No individual file documentation | High - core pipeline |
-| **HoloLoom/orchestrator/stages/executors/*.py** | 1-3K each | Stage executors undocumented | High - each is critical |
-| **HoloLoom/agentic/multi_agent.py** | 2-3K | Multi-agent coordination | High - main reasoning |
-| **HoloLoom/agentic/ensemble_decision.py** | 1-2K | Ensemble logic | High - decision making |
-| **HoloLoom/memory/unified.py** | 3-5K | Memory API (mentioned in CLAUDE.md but needs inline docs) | High - public API |
-| **HoloLoom/memory/interleaved_generation*.py** | 2-4K each | Phase 3-4 streaming (mentioned in CLAUDE.md) | Medium - advanced feature |
-| **HoloLoom/ml/trainers/base_trainer.py** | 2-3K | Base training infrastructure | Medium - ML pipeline |
-| **HoloLoom/redteam/swarm/coordinator.py** | 2-3K | Agent swarm coordination | Medium - research |
-| **HoloLoom/alignment/modern_attack_defenses.py** | 2-3K | Defense mechanisms | Medium - safety critical |
+| **hololoom/orchestrator/core/*.py** | 5-8K | No individual file documentation | High - core pipeline |
+| **hololoom/orchestrator/stages/executors/*.py** | 1-3K each | Stage executors undocumented | High - each is critical |
+| **hololoom/agentic/multi_agent.py** | 2-3K | Multi-agent coordination | High - main reasoning |
+| **hololoom/agentic/ensemble_decision.py** | 1-2K | Ensemble logic | High - decision making |
+| **hololoom/memory/unified.py** | 3-5K | Memory API (mentioned in CLAUDE.md but needs inline docs) | High - public API |
+| **hololoom/memory/interleaved_generation*.py** | 2-4K each | Phase 3-4 streaming (mentioned in CLAUDE.md) | Medium - advanced feature |
+| **hololoom/ml/trainers/base_trainer.py** | 2-3K | Base training infrastructure | Medium - ML pipeline |
+| **hololoom/redteam/swarm/coordinator.py** | 2-3K | Agent swarm coordination | Medium - research |
+| **hololoom/alignment/modern_attack_defenses.py** | 2-3K | Defense mechanisms | Medium - safety critical |
 
 ### Missing Class Docstrings
 
@@ -143,7 +143,7 @@ Many subdirectories under major directories lack README files:
 ### Test Organization Documentation
 
 Multiple test directories exist but lack organization docs:
-- HoloLoom/tests/ (unit, integration, e2e, benchmarks) - No test organization README
+- hololoom/tests/ (unit, integration, e2e, benchmarks) - No test organization README
 - Individual test directories (alignment/tests, agentic/tests, etc.) - Vary in documentation
 
 ---
@@ -276,15 +276,15 @@ Based on CLAUDE.md references:
 ### Classes Needing Comprehensive Docstrings
 
 **High Impact** (>5 classes per file):
-- HoloLoom/orchestrator/stages/executors/*.py (8-10 executor classes)
-- HoloLoom/agentic/multi_agent.py (agent classes)
-- HoloLoom/memory/unified.py (memory API classes)
-- HoloLoom/ml/trainers/base_trainer.py (trainer base classes)
+- hololoom/orchestrator/stages/executors/*.py (8-10 executor classes)
+- hololoom/agentic/multi_agent.py (agent classes)
+- hololoom/memory/unified.py (memory API classes)
+- hololoom/ml/trainers/base_trainer.py (trainer base classes)
 
 **Medium Impact** (3-5 classes per file):
-- HoloLoom/alignment/modern_attack_defenses.py
-- HoloLoom/conscience/conscience_integration.py
-- HoloLoom/redteam/swarm/coordinator.py
+- hololoom/alignment/modern_attack_defenses.py
+- hololoom/conscience/conscience_integration.py
+- hololoom/redteam/swarm/coordinator.py
 
 ### Methods Needing Documentation
 

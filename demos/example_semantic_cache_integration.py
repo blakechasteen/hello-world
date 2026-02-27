@@ -5,9 +5,9 @@ Example: Semantic Cache Integration
 Shows how to integrate AdaptiveSemanticCache into existing code.
 """
 
-from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.performance.semantic_cache import AdaptiveSemanticCache
+from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.performance.semantic_cache import AdaptiveSemanticCache
 
 
 # Example 1: Simple standalone usage

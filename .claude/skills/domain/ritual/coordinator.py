@@ -5,7 +5,7 @@ Ritual Agent Coordinator
 Created: December 30, 2025
 Purpose: Autonomous coordinator for ritual phases
 
-Mirrors HoloLoom/agentic/multi_agent.py:MultiAgentCoordinator pattern.
+Mirrors hololoom/agentic/multi_agent.py:MultiAgentCoordinator pattern.
 Implements the 3-stage pattern:
 1. Capability Detection (which phases needed?)
 2. Routing (which agent for each phase? - Thompson Sampling)

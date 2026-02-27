@@ -302,31 +302,31 @@ print(spacetime.response)
 ## Files and Documentation
 
 ### Core Implementation
-- `HoloLoom/warp/math/operation_selector.py` (770 lines)
-- `HoloLoom/warp/math/smart_operation_selector.py` (850 lines)
-- `HoloLoom/warp/math/meaning_synthesizer.py` (740 lines)
-- `HoloLoom/smart_weaving_orchestrator.py` (500 lines)
+- `hololoom/warp/math/operation_selector.py` (770 lines)
+- `hololoom/warp/math/smart_operation_selector.py` (850 lines)
+- `hololoom/warp/math/meaning_synthesizer.py` (740 lines)
+- `hololoom/smart_weaving_orchestrator.py` (500 lines)
 
 ### Testing and Validation
-- `HoloLoom/bootstrap_system.py` (417 lines)
-- `HoloLoom/visualize_bootstrap.py` (220 lines)
-- `HoloLoom/validate_pipeline.py` (376 lines)
-- `HoloLoom/test_smart_integration.py` (80 lines)
+- `hololoom/bootstrap_system.py` (417 lines)
+- `hololoom/visualize_bootstrap.py` (220 lines)
+- `hololoom/validate_pipeline.py` (376 lines)
+- `hololoom/test_smart_integration.py` (80 lines)
 
 ### Documentation
-- `HoloLoom/warp/math/SMART_SELECTOR_COMPLETE.md`
-- `HoloLoom/warp/math/COMPLETE_PIPELINE.md`
-- `HoloLoom/warp/math/MATH_SELECTION_ARCHITECTURE.md`
-- `HoloLoom/RESEARCH_FINDINGS.md`
-- `HoloLoom/ENHANCEMENT_ROADMAP.md`
-- `HoloLoom/PHASE1_COMPLETE.md`
-- `HoloLoom/SYSTEM_STATUS.md` (this file)
+- `hololoom/warp/math/SMART_SELECTOR_COMPLETE.md`
+- `hololoom/warp/math/COMPLETE_PIPELINE.md`
+- `hololoom/warp/math/MATH_SELECTION_ARCHITECTURE.md`
+- `hololoom/RESEARCH_FINDINGS.md`
+- `hololoom/ENHANCEMENT_ROADMAP.md`
+- `hololoom/PHASE1_COMPLETE.md`
+- `hololoom/SYSTEM_STATUS.md` (this file)
 
 ### Results
-- `HoloLoom/bootstrap_results/bootstrap_dashboard.png`
-- `HoloLoom/bootstrap_results/results_TIMESTAMP.json`
-- `HoloLoom/bootstrap_results/learning_curve_TIMESTAMP.json`
-- `HoloLoom/bootstrap_results/statistics_TIMESTAMP.json`
+- `hololoom/bootstrap_results/bootstrap_dashboard.png`
+- `hololoom/bootstrap_results/results_TIMESTAMP.json`
+- `hololoom/bootstrap_results/learning_curve_TIMESTAMP.json`
+- `hololoom/bootstrap_results/statistics_TIMESTAMP.json`
 
 ---
 

@@ -10,7 +10,7 @@
 
 ### Tests Created
 
-**File:** `HoloLoom/tests/unit/test_compositional_cache_edge_cases.py` (363 lines, 21 tests)
+**File:** `hololoom/tests/unit/test_compositional_cache_edge_cases.py` (363 lines, 21 tests)
 
 **Test Coverage:**
 
@@ -61,7 +61,7 @@
 
 ### Tests Created
 
-**File:** `HoloLoom/tests/e2e/test_bare_mode_e2e.py` (357 lines, 17 tests)
+**File:** `hololoom/tests/e2e/test_bare_mode_e2e.py` (357 lines, 17 tests)
 
 **Test Coverage:**
 

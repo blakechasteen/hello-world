@@ -1,4 +1,4 @@
-# Prometheus Configuration for HoloLoom
+# Prometheus Configuration for hololoom
 # ======================================
 # Monitors all production services
 
@@ -22,7 +22,7 @@ rule_files:
 
 # Scrape configurations
 scrape_configs:
-  # HoloLoom Application Metrics
+  # hololoom Application Metrics
   - job_name: 'hololoom'
     static_configs:
       - targets: ['hololoom:8001']

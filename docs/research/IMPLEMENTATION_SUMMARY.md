@@ -43,7 +43,7 @@ A complete VS Code extension that **takes AI-generated broken code and makes it 
 ### Python Backend (HoloLoom Server)
 
 ```
-HoloLoom/
+hololoom/
 ├── server/
 │   └── agentic_api.py          # Updated with new endpoints (839 lines)
 │
@@ -386,7 +386,7 @@ npm install -g typescript eslint  # Optional: for verification
 1. **Start Server**:
    ```bash
    cd mythRL
-   PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --reload --port 8000
+   PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --reload --port 8000
    ```
 
 2. **Compile Extension**:

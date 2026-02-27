@@ -82,7 +82,7 @@ class ARContext:
     Complete AR spatial context at a moment in time.
 
     Represents user's position, orientation, gaze, and all visible objects.
-    Integrated from HoloLoom/voice/ar_context.py patterns.
+    Integrated from hololoom/voice/ar_context.py patterns.
     """
     # User state
     user_position: Vector3
@@ -248,7 +248,7 @@ class VoiceEvent(AREvent):
     """
     Voice command with AR context.
 
-    Integrates with HoloLoom/voice/voice_agent.py patterns.
+    Integrates with hololoom/voice/voice_agent.py patterns.
     """
     transcript: str = ""
     intent: Optional[str] = None  # Classified intent (query, navigate, select, command)

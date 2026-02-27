@@ -25,7 +25,7 @@
 
 **1. Semantic Understanding**
 ```
-HoloLoom/semantic_calculus/
+hololoom/semantic_calculus/
 ├── Measure meaning in 244D space
 ├── Track semantic trajectories
 ├── Detect when topics shift
@@ -43,7 +43,7 @@ Neo4j backend
 
 **3. Agent Orchestration**
 ```
-HoloLoom/weaving_orchestrator.py
+hololoom/weaving_orchestrator.py
 ├── Multi-agent coordination
 ├── Tool execution
 ├── Memory management
@@ -52,7 +52,7 @@ HoloLoom/weaving_orchestrator.py
 
 **4. Embeddings + Classification**
 ```
-HoloLoom/embedding/
+hololoom/embedding/
 ├── Multi-scale embeddings (Matryoshka)
 ├── Semantic projections
 └── Classification capabilities

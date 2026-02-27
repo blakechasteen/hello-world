@@ -15,7 +15,7 @@ Created comprehensive integration bridges connecting Proto (HoloLoom's code agen
 
 ## Files Created
 
-### 1. `HoloLoom/departments/proto/integration/__init__.py` (37 lines)
+### 1. `hololoom/departments/proto/integration/__init__.py` (37 lines)
 
 **Purpose**: Public API for Proto integration bridges
 
@@ -25,7 +25,7 @@ Created comprehensive integration bridges connecting Proto (HoloLoom's code agen
 - `AgenticBridgeResult` - Result dataclass from agentic reasoning
 - `ProtoDepartment` - Proto as a HoloLoom department
 
-### 2. `HoloLoom/departments/proto/integration/agentic_bridge.py` (240 lines)
+### 2. `hololoom/departments/proto/integration/agentic_bridge.py` (240 lines)
 
 **Purpose**: Bridge to HoloLoom's AgenticOrchestrator
 
@@ -65,7 +65,7 @@ Wrapper providing simplified interface to HoloLoom's reasoning:
 - Confidence propagation
 - Metadata enrichment
 
-### 3. `HoloLoom/departments/proto/integration/department_bridge.py` (371 lines)
+### 3. `hololoom/departments/proto/integration/department_bridge.py` (371 lines)
 
 **Purpose**: Implement HoloLoom Department protocol for Proto
 
@@ -137,7 +137,7 @@ DepartmentConfig(
 ```
 Proto (code agent)
     ├─→ AgenticBridge
-    │   └─→ HoloLoom.agentic.core.AgenticOrchestrator
+    │   └─→ hololoom.agentic.core.AgenticOrchestrator
     │       ├─ DIRECT mode (150ms)
     │       ├─ VERIFY mode (600ms)
     │       ├─ RESEARCH mode (900ms)

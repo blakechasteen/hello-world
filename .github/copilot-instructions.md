@@ -8,7 +8,7 @@ mythRL is a revolutionary neural decision-making system built around a **Shuttle
 
 1. **PYTHONPATH is critical**: Always run `$env:PYTHONPATH = "."; python ...` from repo root
 2. **Architecture**: Read the Shuttle-centric design below - it's the system's core innovation
-3. **Entry points**: Use `MythRLShuttle` for new architecture or legacy `HoloLoom.unified_api` for compatibility
+3. **Entry points**: Use `MythRLShuttle` for new architecture or legacy `hololoom.unified_api` for compatibility
 4. **Testing**: Run `$env:PYTHONPATH = "."; python dev/protocol_modules_mythrl.py` to verify new architecture
 5. **Demos**: Check `multipass_memory_demo.py` for advanced memory crawling examples
 
@@ -125,8 +125,8 @@ result = await shuttle.weave(query, context)
 ### Legacy HoloLoom Compatibility
 ```python
 # Legacy approach still works
-from HoloLoom.unified_api import HoloLoom
-loom = await HoloLoom.create(pattern="fast")
+from hololoom.unified_api import hololoom
+loom = await hololoom.create(pattern="fast")
 result = await loom.query("What is HoloLoom?")
 ```
 
@@ -139,7 +139,7 @@ mythRL/
 │   └── shuttle_centric_architecture.py  # Momentum-based gating
 ├── multipass_memory_demo.py         # NEW: Advanced memory crawling demo
 ├── SHUTTLE_ARCHITECTURE_PLAN.md     # NEW: Implementation roadmap
-├── HoloLoom/                        # Legacy components (still supported)
+├── hololoom/                        # Legacy components (still supported)
 │   ├── weaving_orchestrator.py     # Original 9-step weaving
 │   ├── config.py                   # BARE/FAST/FUSED modes
 │   ├── policy/unified.py           # Neural core + Thompson Sampling
@@ -158,7 +158,7 @@ $env:PYTHONPATH = "."; python multipass_memory_demo.py               # Memory cr
 
 ### Legacy Compatibility
 ```powershell
-$env:PYTHONPATH = "."; python HoloLoom/test_unified_policy.py         # 18 tests
+$env:PYTHONPATH = "."; python hololoom/test_unified_policy.py         # 18 tests
 $env:PYTHONPATH = "."; python demos/01_quickstart.py                  # Basic demo
 ```
 
@@ -289,7 +289,7 @@ mythRL represents a **revolutionary advancement** in neural decision-making syst
 
 ```powershell
 # Windows PowerShell - use this pattern everywhere
-$env:PYTHONPATH = "."; python HoloLoom/test_unified_policy.py
+$env:PYTHONPATH = "."; python hololoom/test_unified_policy.py
 $env:PYTHONPATH = "."; python demos/01_quickstart.py
 ```
 
@@ -308,7 +308,7 @@ BARE: 96d (~50ms) | FAST: 96d+192d (~150ms, default) | FUSED: 96d+192d+384d (~30
 
 ### Configuration
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 Config.bare()    # 50ms | Config.fast()    # 150ms | Config.fused()   # 300ms
 ```
 
@@ -324,7 +324,7 @@ All spinners: `async def spin(raw_data) -> List[MemoryShard]`
 
 ### Policy Engine
 ```python
-from HoloLoom.policy.unified import BanditStrategy
+from hololoom.policy.unified import BanditStrategy
 policy = create_policy(bandit_strategy=BanditStrategy.EPSILON_GREEDY, epsilon=0.10)
 # EPSILON_GREEDY (90% exploit), BAYESIAN_BLEND (70/30), PURE_THOMPSON (100% explore)
 ```
@@ -336,15 +336,15 @@ Integrates pattern extraction between ResonanceShed and WarpSpace
 
 ### Tests, Training, Demos
 ```powershell
-$env:PYTHONPATH = "."; python HoloLoom/test_unified_policy.py         # 18 tests
+$env:PYTHONPATH = "."; python hololoom/test_unified_policy.py         # 18 tests
 $env:PYTHONPATH = "."; python demos/01_quickstart.py                  # Basic
-$env:PYTHONPATH = "."; python -c "from HoloLoom.train_agent import PPOTrainer; PPOTrainer(env_name='CartPole-v1', total_timesteps=2000).train()"
+$env:PYTHONPATH = "."; python -c "from hololoom.train_agent import PPOTrainer; PPOTrainer(env_name='CartPole-v1', total_timesteps=2000).train()"
 ```
 
 ### Unified API
 ```python
-from HoloLoom.unified_api import HoloLoom
-loom = await HoloLoom.create(pattern="fast")
+from hololoom.unified_api import hololoom
+loom = await hololoom.create(pattern="fast")
 result = await loom.query("What is HoloLoom?")
 await loom.chat("Tell me more")
 await loom.ingest_text("Knowledge...")
@@ -365,7 +365,7 @@ class CustomSpinner(BaseSpinner):
 ## File Organization
 
 ```
-HoloLoom/
+hololoom/
 ├── weaving_orchestrator.py    # Main cycle (imports all modules)
 ├── config.py                  # BARE/FAST/FUSED modes
 ├── policy/unified.py          # Neural core + Thompson Sampling
@@ -436,7 +436,7 @@ demos/                        # Working examples
 
 ```bash
 cd config && docker-compose up -d neo4j qdrant  # Start
-python HoloLoom/test_backends.py                 # Verify
+python hololoom/test_backends.py                 # Verify
 ```
 
 **Env vars**: `NEO4J_URI`, `QDRANT_URL`, `MATRIX_HOMESERVER` (for bot)
@@ -449,7 +449,7 @@ Meta-prompt composition: chaining, loops, LLM-as-judge, A/B testing, HoloLoom br
 ### Matrix Bot / ChatOps
 Commands: `!weave`, `!memory add/search/stats`, `!analyze`, `!stats`, `!help`
 ```powershell
-$env:PYTHONPATH = "."; python HoloLoom/chatops/run_bot.py --hololoom-mode fast
+$env:PYTHONPATH = "."; python hololoom/chatops/run_bot.py --hololoom-mode fast
 ```
 
 ### mythRL_core
@@ -503,8 +503,8 @@ embedder = MatryoshkaEmbeddings(scales=pattern_spec.scales)
 ### Debugging Commands
 
 ```powershell
-$env:PYTHONPATH = "."; python HoloLoom/test_unified_policy.py
-$env:PYTHONPATH = "."; python -m pytest HoloLoom/tests/test_policy.py::test_epsilon_greedy -v
+$env:PYTHONPATH = "."; python hololoom/test_unified_policy.py
+$env:PYTHONPATH = "."; python -m pytest hololoom/tests/test_policy.py::test_epsilon_greedy -v
 docker-compose ps && docker-compose logs --tail=50 neo4j
 ```
 

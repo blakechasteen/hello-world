@@ -20,8 +20,8 @@ import os
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from HoloLoom.embedding.riemannian_matryoshka import RiemannianMatryoshka, create_riemannian_embedder
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.riemannian_matryoshka import RiemannianMatryoshka, create_riemannian_embedder
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 
 def demo_hierarchical_concepts():

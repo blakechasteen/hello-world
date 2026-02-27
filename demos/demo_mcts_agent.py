@@ -21,12 +21,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import asyncio
 
-from HoloLoom.agents.orchestrator_mcts import create_mcts_agent
-from HoloLoom.agents import create_agent
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Query
-from HoloLoom.config import Config
+from hololoom.agents.orchestrator_mcts import create_mcts_agent
+from hololoom.agents import create_agent
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Query
+from hololoom.config import Config
 
 
 def create_test_knowledge() -> KG:
@@ -242,7 +242,7 @@ async def demo_hierarchical_planning():
     print("\n--- Planning: Create Q4 Budget Report ---")
 
     async with create_mcts_agent('budget', kg, emb) as agent:
-        from HoloLoom.agents.planner_mcts import HierarchicalMCTSPlanner
+        from hololoom.agents.planner_mcts import HierarchicalMCTSPlanner
 
         planner = HierarchicalMCTSPlanner(
             agent=agent,

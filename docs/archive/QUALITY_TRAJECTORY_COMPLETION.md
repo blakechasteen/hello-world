@@ -256,7 +256,7 @@ recommendations = [
 
 ### With HoloLoom Systems
 
-#### 1. **AdvancedRefiner** (HoloLoom/recursive/)
+#### 1. **AdvancedRefiner** (hololoom/recursive/)
 ```python
 for iteration in range(100):
     tracker.record_quality("refinement", attack.quality)
@@ -264,7 +264,7 @@ for iteration in range(100):
         result = await refiner.refine(attack, strategy)
 ```
 
-#### 2. **Redteam Strategies** (HoloLoom/redteam/)
+#### 2. **Redteam Strategies** (hololoom/redteam/)
 ```python
 for strategy in strategies:
     quality = execute_attack(strategy)
@@ -272,7 +272,7 @@ for strategy in strategies:
 best = tracker.get_best_strategy()
 ```
 
-#### 3. **Pattern Discovery** (HoloLoom/redteam/learning/)
+#### 3. **Pattern Discovery** (hololoom/redteam/learning/)
 ```python
 patterns = tracker.discover_patterns()
 analysis = tracker.analyze_patterns()
@@ -331,7 +331,7 @@ The Quality Trajectory Tracking System is production-ready and can be deployed i
 
 ### Installation
 ```python
-from HoloLoom.redteam.refinement import (
+from hololoom.redteam.refinement import (
     QualityTrajectoryTracker,
     StrategyTrajectory,
     RefinementPattern
@@ -357,9 +357,9 @@ print(f"Recommendations: {analysis['recommendations']}")
 ```
 
 ### See Also
-- **[QUALITY_TRAJECTORY_GUIDE.md](HoloLoom/redteam/refinement/QUALITY_TRAJECTORY_GUIDE.md)** - Complete user guide
-- **[quality_trajectory.py](HoloLoom/redteam/refinement/quality_trajectory.py)** - Implementation
-- **[IMPLEMENTATION_SUMMARY.md](HoloLoom/redteam/refinement/IMPLEMENTATION_SUMMARY.md)** - Technical details
+- **[QUALITY_TRAJECTORY_GUIDE.md](hololoom/redteam/refinement/QUALITY_TRAJECTORY_GUIDE.md)** - Complete user guide
+- **[quality_trajectory.py](hololoom/redteam/refinement/quality_trajectory.py)** - Implementation
+- **[IMPLEMENTATION_SUMMARY.md](hololoom/redteam/refinement/IMPLEMENTATION_SUMMARY.md)** - Technical details
 
 ---
 
@@ -394,7 +394,7 @@ The Quality Trajectory Tracking System enhancement is **complete, tested, and re
 
 ### Ready for Use
 The system is deployed at:
-- **Location**: `HoloLoom/redteam/refinement/`
+- **Location**: `hololoom/redteam/refinement/`
 - **Main File**: `quality_trajectory.py` (824 lines)
 - **Documentation**: `QUALITY_TRAJECTORY_GUIDE.md`
 

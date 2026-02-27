@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import List, Dict, Any
 
 # Jenny core components
-from HoloLoom.visualization import (
+from hololoom.visualization import (
     # Phase B: MRF Compiler
     JennyMRFCompiler,
     PanelTypeLearner,

@@ -16,10 +16,10 @@ Date: November 2025
 import asyncio
 import time
 from typing import List, Dict, Any
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.routing.query_classifier import QueryClassifier, QueryComplexity
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.routing.query_classifier import QueryClassifier, QueryComplexity
 
 
 # ============================================================================

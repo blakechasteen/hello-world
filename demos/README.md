@@ -100,7 +100,7 @@ For production, configure:
 - **Qdrant**: Vector database for semantic search
 - **Neo4j+Qdrant**: Hybrid (best quality)
 
-See `HoloLoom/memory/QUICKSTART.md` for setup.
+See `hololoom/memory/QUICKSTART.md` for setup.
 
 ---
 
@@ -116,7 +116,7 @@ HoloLoom has three execution modes:
 
 Change mode in demos:
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # Use FUSED mode instead of FAST
 config = Config.fused()
@@ -132,11 +132,11 @@ After running demos:
 1. **Read architecture**: `CLAUDE.md` - System design
 2. **Review sprint plan**: `INTEGRATION_SPRINT.md` - Roadmap
 3. **Check subsystems**:
-   - `HoloLoom/spinningWheel/` - Data ingestion
-   - `HoloLoom/memory/` - Storage systems
-   - `HoloLoom/policy/` - Decision making
+   - `hololoom/spinningWheel/` - Data ingestion
+   - `hololoom/memory/` - Storage systems
+   - `hololoom/policy/` - Decision making
 
-4. **Advanced usage**: See `HoloLoom/examples/` for more
+4. **Advanced usage**: See `hololoom/examples/` for more
 
 ---
 
@@ -155,12 +155,12 @@ PYTHONPATH=. python demos/01_quickstart.py
 pwd  # Should end with /mythRL
 
 # Check HoloLoom exists
-ls HoloLoom/
+ls hololoom/
 ```
 
 **Memory backend errors:**
 - Default 'simple' backend needs no setup
-- For Neo4j/Qdrant, see `HoloLoom/memory/NEO4J_README.md`
+- For Neo4j/Qdrant, see `hololoom/memory/NEO4J_README.md`
 
 ---
 

@@ -19,16 +19,16 @@ import asyncio
 import time
 import numpy as np
 
-from HoloLoom.agents.mcts_core import MCTSEngine, MCTSStateSpace, MCTSNode
-from HoloLoom.agents.mcts_breakthrough import (
+from hololoom.agents.mcts_core import MCTSEngine, MCTSStateSpace, MCTSNode
+from hololoom.agents.mcts_breakthrough import (
     BreakthroughDetector,
     FeedForwardBroadcaster,
     Breakthrough
 )
-from HoloLoom.agents.working_memory_mcts import WorkingMemoryStateSpace, WorkingMemoryState
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Query
+from hololoom.agents.working_memory_mcts import WorkingMemoryStateSpace, WorkingMemoryState
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Query
 
 
 async def create_test_knowledge():

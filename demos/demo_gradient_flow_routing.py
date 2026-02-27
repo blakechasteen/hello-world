@@ -17,7 +17,7 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.routing import (
+from hololoom.routing import (
     ServerRouter,
     ToolRouter,
     ServerConfig,
@@ -25,7 +25,7 @@ from HoloLoom.routing import (
     create_server_router,
     create_tool_router
 )
-from HoloLoom.physics import GradientFlowEngine, combined_loss
+from hololoom.physics import GradientFlowEngine, combined_loss
 
 
 def demo_datacenter_downhill_flow():

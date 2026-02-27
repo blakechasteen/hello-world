@@ -246,7 +246,7 @@ Meeting with 3 participants, 12 messages exchanged.
 
 **Linux/Mac:**
 ```bash
-./HoloLoom/chatops/deploy_test.sh
+./hololoom/chatops/deploy_test.sh
 ```
 
 **Windows:**
@@ -263,10 +263,10 @@ pip install matrix-nio aiofiles python-magic pyyaml
 export MATRIX_ACCESS_TOKEN='your_token'
 
 # 3. Run verification
-PYTHONPATH=. python HoloLoom/chatops/verify_deployment.py
+PYTHONPATH=. python hololoom/chatops/verify_deployment.py
 
 # 4. Start bot
-PYTHONPATH=. python HoloLoom/chatops/run_chatops.py --config chatops_test_config.yaml
+PYTHONPATH=. python hololoom/chatops/run_chatops.py --config chatops_test_config.yaml
 ```
 
 ### Verification Script
@@ -281,7 +281,7 @@ PYTHONPATH=. python HoloLoom/chatops/run_chatops.py --config chatops_test_config
 6. **MatrixConnectionTest** - Matrix authentication works
 
 ```bash
-python HoloLoom/chatops/verify_deployment.py --config chatops_test_config.yaml
+python hololoom/chatops/verify_deployment.py --config chatops_test_config.yaml
 
 # Output:
 # ✓ PASS - Module Imports
@@ -393,7 +393,7 @@ All Phase 1 commands plus:
 ### Enable Multi-Modal in Chatops Bridge
 
 ```python
-from HoloLoom.chatops import ChatOpsOrchestrator, MultiModalHandler
+from hololoom.chatops import ChatOpsOrchestrator, MultiModalHandler
 
 chatops = ChatOpsOrchestrator(...)
 
@@ -420,7 +420,7 @@ bot.client.add_event_callback(
 ### Enable Thread Awareness
 
 ```python
-from HoloLoom.chatops import ThreadHandler
+from hololoom.chatops import ThreadHandler
 
 thread_handler = ThreadHandler(max_thread_depth=10)
 
@@ -447,7 +447,7 @@ async def handle_message(room, event, message):
 ### Enable Proactive Agent
 
 ```python
-from HoloLoom.chatops import ProactiveAgent
+from hololoom.chatops import ProactiveAgent
 
 agent = ProactiveAgent(
     suggestion_threshold=10,
@@ -534,7 +534,7 @@ async def handle_message(room, event, message):
 ### Phase 2 Implementation (4 files, ~1,200 lines)
 
 ```
-HoloLoom/chatops/
+hololoom/chatops/
 ├── multimodal_handler.py      # 470 lines - Image/file processing
 ├── thread_handler.py           # 380 lines - Thread tracking
 ├── proactive_agent.py          # 580 lines - Pattern detection & automation
@@ -559,26 +559,26 @@ Deployment & Testing (3 files, ~650 lines)
 
 ```bash
 # Test multi-modal
-python HoloLoom/chatops/multimodal_handler.py
+python hololoom/chatops/multimodal_handler.py
 
 # Test threading
-python HoloLoom/chatops/thread_handler.py
+python hololoom/chatops/thread_handler.py
 
 # Test proactive agent
-python HoloLoom/chatops/proactive_agent.py
+python hololoom/chatops/proactive_agent.py
 ```
 
 ### Integration Testing
 
 ```bash
 # Deploy test environment
-./HoloLoom/chatops/deploy_test.sh
+./hololoom/chatops/deploy_test.sh
 
 # Verify deployment
-python HoloLoom/chatops/verify_deployment.py
+python hololoom/chatops/verify_deployment.py
 
 # Run bot with Phase 2 features
-python HoloLoom/chatops/run_chatops.py --config chatops_test_config.yaml
+python hololoom/chatops/run_chatops.py --config chatops_test_config.yaml
 ```
 
 ### Test Scenarios

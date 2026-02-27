@@ -1,5 +1,5 @@
 #!/bin/bash
-# HoloLoom VoiceAgent Backup Automation
+# hololoom VoiceAgent Backup Automation
 #
 # Backs up:
 # - Neo4j knowledge graph
@@ -43,7 +43,7 @@ log_error() {
 mkdir -p "$BACKUP_DIR/$TIMESTAMP"
 
 log_info "========================================="
-log_info "HoloLoom VoiceAgent Backup"
+log_info "hololoom VoiceAgent Backup"
 log_info "Starting at $(date)"
 log_info "========================================="
 
@@ -144,10 +144,10 @@ if [ -f ".env" ]; then
 fi
 
 # Voice agent configurations
-if [ -d "HoloLoom/voice" ]; then
-    cp -r HoloLoom/voice/*.yaml "$BACKUP_DIR/$TIMESTAMP/config/" 2>/dev/null || true
-    cp -r HoloLoom/voice/languages "$BACKUP_DIR/$TIMESTAMP/config/" 2>/dev/null || true
-    cp -r HoloLoom/voice/personalities "$BACKUP_DIR/$TIMESTAMP/config/" 2>/dev/null || true
+if [ -d "hololoom/voice" ]; then
+    cp -r hololoom/voice/*.yaml "$BACKUP_DIR/$TIMESTAMP/config/" 2>/dev/null || true
+    cp -r hololoom/voice/languages "$BACKUP_DIR/$TIMESTAMP/config/" 2>/dev/null || true
+    cp -r hololoom/voice/personalities "$BACKUP_DIR/$TIMESTAMP/config/" 2>/dev/null || true
 fi
 
 # 5. Backup Grafana dashboards
@@ -260,7 +260,7 @@ log_info "✓ $REMAINING backups retained locally"
 # 11. Create backup report
 REPORT_FILE="$BACKUP_DIR/backup_report_$TIMESTAMP.txt"
 cat > "$REPORT_FILE" <<EOF
-HoloLoom VoiceAgent Backup Report
+hololoom VoiceAgent Backup Report
 ==================================
 Timestamp: $TIMESTAMP
 Date: $(date)
@@ -296,7 +296,7 @@ log_info "Report: $REPORT_FILE"
 
 # Optional: Send notification (email/Slack)
 if command -v mail &> /dev/null && [ -n "${BACKUP_EMAIL:-}" ]; then
-    mail -s "HoloLoom Backup Success: $TIMESTAMP" "$BACKUP_EMAIL" < "$REPORT_FILE"
+    mail -s "hololoom Backup Success: $TIMESTAMP" "$BACKUP_EMAIL" < "$REPORT_FILE"
 fi
 
 exit 0

@@ -8,7 +8,7 @@ Get up and running in 5 minutes.
 cd c:\Users\blake\OneDrive\Documents\mythRL
 
 # Start HoloLoom server
-PYTHONPATH=. python -m uvicorn HoloLoom.server.agentic_api:app --reload --port 8000
+PYTHONPATH=. python -m uvicorn hololoom.server.agentic_api:app --reload --port 8000
 ```
 
 You should see:

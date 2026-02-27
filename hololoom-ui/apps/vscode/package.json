@@ -1,6 +1,6 @@
 {
   "name": "hololoom",
-  "displayName": "HoloLoom",
+  "displayName": "hololoom",
   "description": "Intelligent knowledge weaving with multi-scale memory, recursive learning, and transparent AI reasoning",
   "version": "0.1.0",
   "publisher": "hololoom",
@@ -31,37 +31,37 @@
       {
         "command": "hololoom.openChat",
         "title": "Open Chat Panel",
-        "category": "HoloLoom",
+        "category": "hololoom",
         "icon": "$(comment-discussion)"
       },
       {
         "command": "hololoom.query",
         "title": "Query Selection",
-        "category": "HoloLoom",
+        "category": "hololoom",
         "icon": "$(search)"
       },
       {
         "command": "hololoom.explain",
         "title": "Explain Selection",
-        "category": "HoloLoom",
+        "category": "hololoom",
         "icon": "$(lightbulb)"
       },
       {
         "command": "hololoom.remember",
         "title": "Remember Selection",
-        "category": "HoloLoom",
+        "category": "hololoom",
         "icon": "$(save)"
       },
       {
         "command": "hololoom.openMemory",
         "title": "Open Memory Browser",
-        "category": "HoloLoom",
+        "category": "hololoom",
         "icon": "$(database)"
       },
       {
         "command": "hololoom.reconnect",
         "title": "Reconnect to Server",
-        "category": "HoloLoom",
+        "category": "hololoom",
         "icon": "$(refresh)"
       }
     ],
@@ -117,14 +117,14 @@
     "submenus": [
       {
         "id": "hololoom.submenu",
-        "label": "HoloLoom"
+        "label": "hololoom"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
           "id": "hololoom",
-          "title": "HoloLoom",
+          "title": "hololoom",
           "icon": "$(hubot)"
         }
       ]
@@ -146,12 +146,12 @@
       ]
     },
     "configuration": {
-      "title": "HoloLoom",
+      "title": "hololoom",
       "properties": {
         "hololoom.apiEndpoint": {
           "type": "string",
           "default": "http://localhost:8000",
-          "description": "HoloLoom API server endpoint"
+          "description": "hololoom API server endpoint"
         },
         "hololoom.apiTimeout": {
           "type": "number",
@@ -177,7 +177,7 @@
         "hololoom.showStatusBar": {
           "type": "boolean",
           "default": true,
-          "description": "Show HoloLoom status in status bar"
+          "description": "Show hololoom status in status bar"
         },
         "hololoom.autoConnect": {
           "type": "boolean",

@@ -579,7 +579,7 @@ server {
 - [Edward Tufte principles](https://www.edwardtufte.com/) - Visualization design
 
 **Inspired by**:
-- HoloLoom Tufte visualizations (`HoloLoom/visualization/`)
+- HoloLoom Tufte visualizations (`hololoom/visualization/`)
 - Elle Core operational intelligence (`elle/`)
 - Coz farm operations (`coz/`)
 

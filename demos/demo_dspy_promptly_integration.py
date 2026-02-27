@@ -3,7 +3,7 @@
 DSPy-Promptly Integration Demo
 
 Demonstrates the complete DSPy-HoloLoom-Promptly integration:
-1. Creating DSPy signatures from HoloLoom patterns
+1. Creating DSPy signatures from hololoom patterns
 2. Optimizing programs using HoloLoom memory
 3. Building workflows with DSPy steps
 4. Executing end-to-end pipelines
@@ -16,9 +16,9 @@ import asyncio
 import logging
 from pathlib import Path
 
-from HoloLoom.config import Config
-from HoloLoom.promptly.dspy_bridge import DSPyHoloLoom, create_signature
-from HoloLoom.promptly.dspy_workflow_adapter import (
+from hololoom.config import Config
+from hololoom.promptly.dspy_bridge import DSPyHoloLoom, create_signature
+from hololoom.promptly.dspy_workflow_adapter import (
     DSPyWorkflowAdapter,
     create_qa_workflow,
     create_research_workflow
@@ -75,7 +75,7 @@ async def demo_1_basic_signature():
 async def demo_2_optimization_from_memory(bridge: DSPyHoloLoom):
     """Demo 2: Optimizing programs using HoloLoom memory"""
     print("\n" + "="*70)
-    print("DEMO 2: Optimization from HoloLoom Memory")
+    print("DEMO 2: Optimization from hololoom Memory")
     print("="*70 + "\n")
 
     # Create signature for Q&A
@@ -96,7 +96,7 @@ async def demo_2_optimization_from_memory(bridge: DSPyHoloLoom):
 
     # Create unoptimized version for demo
     import dspy
-    from HoloLoom.promptly.dspy_bridge import DSPyProgram
+    from hololoom.promptly.dspy_bridge import DSPyProgram
 
     dspy_sig = sig.to_dspy_signature()
     base_program = dspy.Predict(dspy_sig)

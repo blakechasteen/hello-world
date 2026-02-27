@@ -62,8 +62,8 @@ Savings: 56s per test run (85% faster!) ⚡
 ```
 
 **Files Modified:**
-- `HoloLoom/tests/conftest.py` (+14 lines)
-- `HoloLoom/tests/unit/test_memory_cache.py` (3 tests updated)
+- `hololoom/tests/conftest.py` (+14 lines)
+- `hololoom/tests/unit/test_memory_cache.py` (3 tests updated)
 
 ---
 

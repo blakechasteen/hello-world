@@ -84,7 +84,7 @@ def main():
         else:
             print("To enable refinement:")
             print("  1. Ensure HoloLoom is installed")
-            print("  2. Verify HoloLoom/prompting/metaprompt.py exists")
+            print("  2. Verify hololoom/prompting/metaprompt.py exists")
             print("  3. Import will auto-detect and enable refinement")
             print()
 

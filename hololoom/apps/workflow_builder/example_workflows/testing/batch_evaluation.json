@@ -1,0 +1,275 @@
+{
+  "version": "1.0",
+  "name": "Batch Evaluation & Benchmarking Framework",
+  "description": "A comprehensive workflow for testing AI responses against golden datasets, computing quality metrics across multiple dimensions (semantic similarity, factual accuracy, completeness), and generating detailed benchmark reports with statistical analysis and improvement recommendations.",
+  "tags": ["testing", "evaluation", "benchmarking", "quality", "metrics", "golden-dataset", "statistical-analysis"],
+  "author": "hololoom Team",
+  "created": "2025-12-28",
+  "nodes": [
+    {
+      "id": "dataset_loader",
+      "agentType": "store",
+      "x": 100,
+      "y": 200,
+      "config": {
+        "store_type": "input",
+        "accept": ["json", "csv", "jsonl"],
+        "description": "Load golden dataset with test cases",
+        "validate_schema": true
+      }
+    },
+    {
+      "id": "batch_iterator",
+      "agentType": "loop",
+      "x": 250,
+      "y": 200,
+      "config": {
+        "iterate_over": "test_cases",
+        "max_iterations": 1000,
+        "emit_progress": true,
+        "continue_on_error": true
+      }
+    },
+    {
+      "id": "test_case_parser",
+      "agentType": "synthesizer",
+      "x": 400,
+      "y": 200,
+      "config": {
+        "extract_type": "test_case",
+        "fields": ["query", "expected_answer", "context", "difficulty", "category"],
+        "required_fields": ["query", "expected_answer"]
+      }
+    },
+    {
+      "id": "query_executor",
+      "agentType": "hololoom",
+      "x": 550,
+      "y": 200,
+      "config": {
+        "pattern": "fused",
+        "return_trace": true,
+        "timeout_ms": 30000,
+        "capture_metrics": true
+      }
+    },
+    {
+      "id": "parallel_evaluators",
+      "agentType": "parallel",
+      "x": 700,
+      "y": 200,
+      "config": {
+        "strategy": "fan_out",
+        "timeout_ms": 10000,
+        "collect_all": true
+      }
+    },
+    {
+      "id": "semantic_scorer",
+      "agentType": "hololoom",
+      "x": 850,
+      "y": 100,
+      "config": {
+        "pattern": "fast",
+        "mode": "semantic_similarity",
+        "compare": ["response", "expected"],
+        "metric": "cosine_similarity"
+      }
+    },
+    {
+      "id": "factual_scorer",
+      "agentType": "synthesizer",
+      "x": 850,
+      "y": 200,
+      "config": {
+        "extract_type": "fact_verification",
+        "source": "expected_answer",
+        "check_claims": true,
+        "check_contradictions": true
+      }
+    },
+    {
+      "id": "completeness_scorer",
+      "agentType": "convergence",
+      "x": 850,
+      "y": 300,
+      "config": {
+        "strategy": "coverage_analysis",
+        "dimensions": ["breadth", "depth", "precision"],
+        "weight_missing": 0.5
+      }
+    },
+    {
+      "id": "latency_tracker",
+      "agentType": "store",
+      "x": 850,
+      "y": 400,
+      "config": {
+        "store_type": "metrics",
+        "metrics": ["latency_ms", "token_count", "cache_hit", "memory_used"]
+      }
+    },
+    {
+      "id": "result_aggregator",
+      "agentType": "fusion",
+      "x": 1000,
+      "y": 200,
+      "config": {
+        "strategy": "weighted_merge",
+        "score_weights": {
+          "semantic": 0.4,
+          "factual": 0.3,
+          "completeness": 0.3
+        },
+        "normalize": true
+      }
+    },
+    {
+      "id": "batch_accumulator",
+      "agentType": "store",
+      "x": 1150,
+      "y": 200,
+      "config": {
+        "store_type": "batch_results",
+        "persist": true,
+        "track_failures": true
+      }
+    },
+    {
+      "id": "statistics_computer",
+      "agentType": "synthesizer",
+      "x": 1300,
+      "y": 200,
+      "config": {
+        "extract_type": "statistics",
+        "metrics": ["mean", "std", "min", "max", "p50", "p95", "p99", "pass_rate"],
+        "group_by": ["difficulty", "category"]
+      }
+    },
+    {
+      "id": "report_generator",
+      "agentType": "hololoom",
+      "x": 1450,
+      "y": 200,
+      "config": {
+        "pattern": "fused",
+        "mode": "report_generation",
+        "template": "benchmark_report",
+        "include_visualizations": true,
+        "analyze_failure_patterns": true
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 1600,
+      "y": 200,
+      "config": {
+        "format": "benchmark_report",
+        "sections": ["executive_summary", "detailed_metrics", "failure_analysis", "recommendations", "appendix"]
+      }
+    }
+  ],
+  "connections": [
+    {"id": "c1", "from": "dataset_loader", "to": "batch_iterator"},
+    {"id": "c2", "from": "batch_iterator", "to": "test_case_parser"},
+    {"id": "c3", "from": "test_case_parser", "to": "query_executor"},
+    {"id": "c4", "from": "query_executor", "to": "parallel_evaluators"},
+    {"id": "c5", "from": "parallel_evaluators", "to": "semantic_scorer"},
+    {"id": "c6", "from": "parallel_evaluators", "to": "factual_scorer"},
+    {"id": "c7", "from": "parallel_evaluators", "to": "completeness_scorer"},
+    {"id": "c8", "from": "parallel_evaluators", "to": "latency_tracker"},
+    {"id": "c9", "from": "semantic_scorer", "to": "result_aggregator"},
+    {"id": "c10", "from": "factual_scorer", "to": "result_aggregator"},
+    {"id": "c11", "from": "completeness_scorer", "to": "result_aggregator"},
+    {"id": "c12", "from": "latency_tracker", "to": "batch_accumulator"},
+    {"id": "c13", "from": "result_aggregator", "to": "batch_accumulator"},
+    {"id": "c14", "from": "batch_accumulator", "to": "batch_iterator"},
+    {"id": "c15", "from": "batch_iterator", "to": "statistics_computer", "condition": "loop_complete"},
+    {"id": "c16", "from": "statistics_computer", "to": "report_generator"},
+    {"id": "c17", "from": "report_generator", "to": "final_output"}
+  ],
+  "input_schema": {
+    "dataset": {
+      "type": "file",
+      "required": true,
+      "accept": [".json", ".csv", ".jsonl"],
+      "description": "Golden dataset with test cases. Each case should have 'query' and 'expected_answer' fields."
+    },
+    "dataset_format": {
+      "type": "object",
+      "required": false,
+      "default": {
+        "query_field": "query",
+        "expected_field": "expected",
+        "context_field": "context"
+      },
+      "description": "Field mappings for custom dataset formats"
+    },
+    "pass_threshold": {
+      "type": "number",
+      "required": false,
+      "default": 0.8,
+      "min": 0,
+      "max": 1,
+      "description": "Minimum aggregated score to pass (0-1)"
+    },
+    "sample_size": {
+      "type": "number",
+      "required": false,
+      "description": "Optional limit on number of test cases to run (for quick validation)"
+    },
+    "parallel_workers": {
+      "type": "number",
+      "required": false,
+      "default": 4,
+      "description": "Number of parallel evaluation workers"
+    }
+  },
+  "output_schema": {
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total_tests": {"type": "number"},
+        "passed": {"type": "number"},
+        "failed": {"type": "number"},
+        "pass_rate": {"type": "number"},
+        "avg_score": {"type": "number"},
+        "avg_latency_ms": {"type": "number"},
+        "total_duration_seconds": {"type": "number"}
+      }
+    },
+    "score_distribution": {
+      "type": "object",
+      "description": "Statistical metrics: mean, std, min, max, percentiles (p50, p95, p99)"
+    },
+    "by_dimension": {
+      "type": "object",
+      "description": "Scores broken down by semantic, factual, completeness"
+    },
+    "by_category": {
+      "type": "object",
+      "description": "Scores grouped by test category/difficulty"
+    },
+    "failed_cases": {
+      "type": "array",
+      "description": "Detailed information about failed test cases"
+    },
+    "recommendations": {
+      "type": "array",
+      "description": "Improvement suggestions based on failure pattern analysis"
+    },
+    "detailed_results": {
+      "type": "array",
+      "description": "Per-test-case results with all scores and metrics"
+    }
+  },
+  "evaluation": {
+    "metrics": ["pass_rate", "avg_score", "p95_latency", "failure_pattern_count"],
+    "success_criteria": {
+      "min_pass_rate": 0.85,
+      "max_p95_latency_ms": 5000,
+      "max_failure_cluster_size": 5
+    }
+  }
+}

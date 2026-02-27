@@ -26,7 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.physics import WaveMechanicsEngine
+from hololoom.physics import WaveMechanicsEngine
 
 
 def demo_wave_propagation():

@@ -10,7 +10,7 @@
 ## Critical Issues (Fix Now)
 
 ### 1. Memory Backend Complexity ⚠️ HIGH PRIORITY
-**Problem:** 29 files in `HoloLoom/memory/`, 8 different backend implementations
+**Problem:** 29 files in `hololoom/memory/`, 8 different backend implementations
 
 **Current Backends:**
 ```
@@ -39,11 +39,11 @@ backend = Neo4jBackend() if config.use_neo4j else NetworkXBackend()
 ---
 
 ### 2. Root Directory Clutter ⚠️ MEDIUM PRIORITY
-**Problem:** 15+ files at `HoloLoom/` root, unclear entry points
+**Problem:** 15+ files at `hololoom/` root, unclear entry points
 
 **Current Root:**
 ```
-HoloLoom/
+hololoom/
 ├── weaving_shuttle.py ✓ MAIN ENTRY POINT
 ├── weaving_orchestrator.py ❓ REDUNDANT?
 ├── unified_api.py ✓ KEEP
@@ -87,7 +87,7 @@ Rename:
 
 **Current:**
 ```
-HoloLoom/
+hololoom/
 ├── test_backends.py
 ├── test_smart_integration.py
 ├── test_unified_policy.py
@@ -128,13 +128,13 @@ git status | grep "^D"  # Already deleted but documented
   ✓ smart_weaving_orchestrator.py
 
 # Check import usage:
-grep -r "from.*bootstrap_results" HoloLoom/
+grep -r "from.*bootstrap_results" hololoom/
   → If empty, delete bootstrap_results/
 
-grep -r "from.*darkTrace" HoloLoom/
+grep -r "from.*darkTrace" hololoom/
   → If minimal usage, evaluate
 
-grep -r "protocols\.py" HoloLoom/
+grep -r "protocols\.py" hololoom/
   → If only importing from protocols/, delete protocols.py (duplicate)
 ```
 
@@ -160,10 +160,10 @@ backend = create_memory_backend(config)  # handles all cases internally
 ### 2. **Flat is Better Than Nested**
 ```python
 # Bad:
-from HoloLoom.memory.routing.strategy.adaptive import AdaptiveRouter
+from hololoom.memory.routing.strategy.adaptive import AdaptiveRouter
 
 # Good:
-from HoloLoom.memory import create_backend
+from hololoom.memory import create_backend
 ```
 
 ### 3. **Entry Points are Sacred**
@@ -178,10 +178,10 @@ Everything else: implementation detail
 
 ### 4. **Tests Mirror Structure**
 ```
-HoloLoom/memory/graph.py
+hololoom/memory/graph.py
 tests/unit/test_memory_graph.py
 
-HoloLoom/weaving_shuttle.py
+hololoom/weaving_shuttle.py
 tests/integration/test_weaving_shuttle.py
 ```
 
@@ -193,19 +193,19 @@ tests/integration/test_weaving_shuttle.py
 ```bash
 # Move files (no code changes)
 mkdir -p tools examples/{simple,advanced}
-mv HoloLoom/bootstrap_system.py tools/
-mv HoloLoom/visualize_bootstrap.py examples/
-mv HoloLoom/test_*.py tests/
-mv HoloLoom/check_holoLoom.py tools/
+mv hololoom/bootstrap_system.py tools/
+mv hololoom/visualize_bootstrap.py examples/
+mv hololoom/test_*.py tests/
+mv hololoom/check_holoLoom.py tools/
 
 # Delete obvious dead code
-rm -rf HoloLoom/bootstrap_results  # if unused
+rm -rf hololoom/bootstrap_results  # if unused
 git commit -m "chore: organize project structure"
 ```
 
 ### Phase 2: Memory Simplification (1 hour)
 ```python
-# File: HoloLoom/memory/__init__.py
+# File: hololoom/memory/__init__.py
 # BEFORE: Complex factory with routing
 def create_memory_backend(config):
     if config.backend == "NETWORKX": ...
@@ -244,8 +244,8 @@ mv tests/test_memory_graph.py tests/unit/
 mv tests/test_policy.py tests/unit/
 
 # Move integration tests
-mv HoloLoom/test_backends.py tests/integration/
-mv HoloLoom/test_smart_integration.py tests/integration/
+mv hololoom/test_backends.py tests/integration/
+mv hololoom/test_smart_integration.py tests/integration/
 
 # Create e2e test
 cat > tests/e2e/test_full_pipeline.py << 'EOF'
@@ -268,7 +268,7 @@ EOF
 pip install -e .
 
 # 2. Run
-python -m HoloLoom.weaving_shuttle
+python -m hololoom.weaving_shuttle
 
 # 3. Test
 pytest tests/
@@ -276,7 +276,7 @@ pytest tests/
 
 ## Project Structure
 ```
-HoloLoom/
+hololoom/
 ├── weaving_shuttle.py   # Main entry point
 ├── config.py            # Configuration
 ├── unified_api.py       # Programmatic API
@@ -301,7 +301,7 @@ examples/                # Runnable demos
 pytest tests/ -v
 
 # Check imports
-python -m HoloLoom.weaving_shuttle --help
+python -m hololoom.weaving_shuttle --help
 
 # Verify examples work
 python examples/simple_query_example.py
@@ -343,7 +343,7 @@ Test locations: 1
 
 **When considering a file for deletion, ask:**
 
-1. **Is it imported?** `grep -r "import.*filename" HoloLoom/`
+1. **Is it imported?** `grep -r "import.*filename" hololoom/`
    - If NO → DELETE
 
 2. **Is it tested?** Check `tests/`
@@ -399,7 +399,7 @@ git revert <commit-hash>
 ## ChatOps Roadmap Addition
 
 ```markdown
-# HoloLoom/chatops/ROADMAP.md
+# hololoom/chatops/ROADMAP.md
 
 ## Phase 3: Semantic Learning Integration (Q1 2026)
 
@@ -449,7 +449,7 @@ git revert <commit-hash>
 - [ ] Is `grep -r "import"` output clean and predictable?
 
 **User Experience:**
-- [ ] `pip install -e . && python -m HoloLoom.weaving_shuttle` works
+- [ ] `pip install -e . && python -m hololoom.weaving_shuttle` works
 - [ ] Examples run without modification
 - [ ] Error messages point to correct files
 

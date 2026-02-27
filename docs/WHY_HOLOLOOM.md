@@ -38,7 +38,7 @@ No black boxes. Every step logged. Complete audit trail.
 HoloLoom doesn't blindly execute actions. Every action goes through safety guardrails:
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.alignment import SafetyGuardrails
 
 guardrails = SafetyGuardrails()
 result = guardrails.gate_action(
@@ -69,7 +69,7 @@ HoloLoom actively monitors for deceptive behavior patterns:
 - **Hidden Goal Detection**: Pattern analysis for concealment
 
 ```python
-from HoloLoom.alignment import DeceptionDetector
+from hololoom.alignment import DeceptionDetector
 
 detector = DeceptionDetector()
 analysis = detector.analyze(
@@ -91,7 +91,7 @@ HoloLoom detects and prevents unsafe instrumental behaviors:
 - **Self-preservation**: Resistance to shutdown or modification
 
 ```python
-from HoloLoom.alignment import InstrumentalConvergenceMonitor
+from hololoom.alignment import InstrumentalConvergenceMonitor
 
 monitor = InstrumentalConvergenceMonitor()
 monitor.check_action(
@@ -180,7 +180,7 @@ Beyond alignment, HoloLoom includes Dark Trace for deep interpretability:
 Decompose neural activations into interpretable features:
 
 ```python
-from HoloLoom.dark_trace import DarkTraceEngine
+from hololoom.dark_trace import DarkTraceEngine
 
 engine = DarkTraceEngine(config)
 result = engine.analyze(activations)
@@ -243,7 +243,7 @@ for epoch in range(100):
 
 ```python
 # Adversarial evaluation
-from HoloLoom.redteam import CARTSFramework
+from hololoom.redteam import CARTSFramework
 
 redteam = CARTSFramework()
 vulnerabilities = redteam.evaluate(
@@ -277,7 +277,7 @@ docker-compose -f docker-compose.lite.yml up -d
 ### Step 2: Enable Safety Features
 
 ```python
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     SafetyGuardrails,
     AuditTrail,
     create_aligned_orchestrator
@@ -324,8 +324,8 @@ HoloLoom is more than software - it's a commitment to building AI that humanity 
 ## Resources
 
 - **Documentation**: [docs/](../docs/)
-- **Alignment Framework**: [HoloLoom/alignment/](../HoloLoom/alignment/)
-- **Dark Trace Interpretability**: [HoloLoom/dark_trace/](../HoloLoom/dark_trace/)
+- **Alignment Framework**: [hololoom/alignment/](../hololoom/alignment/)
+- **Dark Trace Interpretability**: [hololoom/dark_trace/](../hololoom/dark_trace/)
 - **Self-Hosting Guide**: [docs/self-hosting/](./self-hosting/)
 - **Contributing**: [CONTRIBUTING.md](./CONTRIBUTING.md)
 

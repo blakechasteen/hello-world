@@ -48,8 +48,8 @@ async def demo_basic_weave():
     """Demonstrate basic multi-perspective querying."""
     print_section("Demo 1: Basic Multi-Perspective Query")
 
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.config import Config
 
     # Create HoloLoom with multi-perspective mode
     config = Config.multi_perspective()
@@ -95,8 +95,8 @@ async def demo_get_perspectives():
     """Demonstrate getting perspective descriptions."""
     print_section("Demo 2: View All Perspectives")
 
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.config import Config
 
     async with HoloLoom(config=Config.multi_perspective()) as loom:
         perspectives = await loom.get_perspectives()
@@ -120,8 +120,8 @@ async def demo_tension_exploration():
     """Demonstrate auto-exploration of disagreement zones."""
     print_section("Demo 3: Tension Exploration")
 
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.config import Config
 
     # Use lower tension threshold to trigger exploration
     config = Config.multi_perspective()
@@ -164,8 +164,8 @@ async def demo_dreaming():
     """Demonstrate background dream consolidation."""
     print_section("Demo 4: Background Dreaming")
 
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.config import Config
 
     config = Config.multi_perspective()
     config.dream_consolidation_interval = 5.0  # Short interval for demo (5 seconds)
@@ -205,8 +205,8 @@ async def demo_combined_api():
     """Demonstrate using both memory API and multi-perspective weaving."""
     print_section("Demo 5: Combined Memory + Multi-Perspective")
 
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.config import Config
 
     async with HoloLoom(config=Config.multi_perspective()) as loom:
         # First, experience some knowledge
@@ -245,8 +245,8 @@ async def demo_config_alternatives():
     """Demonstrate different ways to enable multi-perspective mode."""
     print_section("Demo 6: Config Alternatives")
 
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.config import Config
 
     # Method 1: Using Config.multi_perspective()
     print("Method 1: Config.multi_perspective()")

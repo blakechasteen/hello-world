@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Any
 
 try:
-    from HoloLoom.visualization import DashboardConstructor, DashboardRenderer
+    from hololoom.visualization import DashboardConstructor, DashboardRenderer
     print("OK Imports successful\n")
 except Exception as e:
     print(f"Import error: {e}\n")

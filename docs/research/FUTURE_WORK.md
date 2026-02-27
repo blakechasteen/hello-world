@@ -123,7 +123,7 @@ memory_overhead = compare_memory(results_multi, results_768)
 #### Configuration
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 config = Config.fused()
 
@@ -224,7 +224,7 @@ config.enable_spectral_features = False
 
 **Tech Stack**: FastAPI + React + D3.js
 
-**Deliverable**: `HoloLoom/web_ui/` with standalone dashboard
+**Deliverable**: `hololoom/web_ui/` with standalone dashboard
 
 #### 3. Standardized Evaluation
 

@@ -168,7 +168,7 @@ Only show step progress if time and token budgets are not available.
 
 ### Example 5: Integration with AgentThread
 
-Use with thread data from HoloLoom backend:
+Use with thread data from hololoom backend:
 
 ```tsx
 interface AgentThread {

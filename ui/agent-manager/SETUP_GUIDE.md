@@ -409,7 +409,7 @@ npm run build
 - [TypeScript Documentation](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Zustand Documentation](https://github.com/pmndrs/zustand)
-- [HoloLoom Backend API](../../HoloLoom/server/)
+- [HoloLoom Backend API](../../hololoom/server/)
 
 ## Support
 

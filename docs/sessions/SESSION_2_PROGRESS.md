@@ -105,10 +105,10 @@
 **Total:** 1,576+ lines of strategic planning
 
 ### Code Modified (4 files):
-1. HoloLoom/tests/conftest.py - Session-scoped embedding fixture
-2. HoloLoom/tests/unit/test_memory_cache.py - 3 tests optimized (85% faster)
-3. HoloLoom/tests/unit/test_thompson_sampling_edge_cases.py - 18 tests created (100% passing)
-4. HoloLoom/weaving_orchestrator.py - Refactored __init__ (63% reduction)
+1. hololoom/tests/conftest.py - Session-scoped embedding fixture
+2. hololoom/tests/unit/test_memory_cache.py - 3 tests optimized (85% faster)
+3. hololoom/tests/unit/test_thompson_sampling_edge_cases.py - 18 tests created (100% passing)
+4. hololoom/weaving_orchestrator.py - Refactored __init__ (63% reduction)
 
 ### Performance Improvements:
 - **85% faster embedding tests** (66s → 10s per 20-test run)

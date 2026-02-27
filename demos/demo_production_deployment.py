@@ -23,36 +23,36 @@ from typing import Optional
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     create_guardrails,
     create_detector,
     create_guard,
     create_audit_trail,
 )
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     ActionRequest,
     ActionCategory,
     SafetyGuardrails,
 )
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     DeceptionDetector,
     GoalStatement,
     BehavioralProbe,
     ProbeType,
     ActionObservation,
 )
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
     ResourceBounds,
     ResourceType,
 )
-from HoloLoom.alignment.audit_trail import (
+from hololoom.alignment.audit_trail import (
     AuditTrail,
     DecisionType,
     OutcomeType,
 )
-from HoloLoom.alignment.monitoring import AlignmentMonitor, AlertLevel
-from HoloLoom.alignment.live_monitor import LiveDashboard
+from hololoom.alignment.monitoring import AlignmentMonitor, AlertLevel
+from hololoom.alignment.live_monitor import LiveDashboard
 
 
 class ProductionAlignmentSystem:

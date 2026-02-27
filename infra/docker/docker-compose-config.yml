@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # HoloLoom Neo4j - AI/ML knowledge graph
+  # hololoom Neo4j - AI/ML knowledge graph
   neo4j-hololoom:
     image: neo4j:5.15-community
     container_name: hololoom-neo4j
@@ -44,7 +44,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  # HoloLoom volumes
+  # hololoom volumes
   neo4j_hololoom_data:
   neo4j_hololoom_logs:
   neo4j_hololoom_import:

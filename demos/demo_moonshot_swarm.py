@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any
 
 # Import validation framework
-from HoloLoom.prompting.validation.pipeline import (
+from hololoom.prompting.validation.pipeline import (
     ValidationPipeline,
     ValidationPhase,
     QualityValidator,
@@ -25,7 +25,7 @@ from HoloLoom.prompting.validation.pipeline import (
     UserSatisfactionValidator,
     StatisticalValidator,
 )
-from HoloLoom.prompting.validation.swarm import (
+from hololoom.prompting.validation.swarm import (
     MoonshotSwarm,
     SwarmResults,
 )

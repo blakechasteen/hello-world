@@ -39,8 +39,8 @@ The **matryoshka gate** filters candidates through **embedding scales** (96d →
 **When enabled**, filter candidates BEFORE embedding:
 
 ```python
-from HoloLoom.motif.linguistic import LinguisticMotifDetector
-from HoloLoom.embedding.matryoshka_gate import MatryoshkaGate
+from hololoom.motif.linguistic import LinguisticMotifDetector
+from hololoom.embedding.matryoshka_gate import MatryoshkaGate
 
 # Initialize both gates
 linguistic_gate = LinguisticMotifDetector()
@@ -108,7 +108,7 @@ Query: `"What is passive voice?"`
 #### Enhanced Matryoshka with Linguistic Dimensions
 
 ```python
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 class LinguisticMatryoshkaEmbeddings(MatryoshkaEmbeddings):
     """
@@ -139,7 +139,7 @@ class LinguisticMatryoshkaEmbeddings(MatryoshkaEmbeddings):
         self.linguistic_dims = linguistic_dims
 
         if enable_linguistic:
-            from HoloLoom.motif.linguistic import LinguisticMotifDetector
+            from hololoom.motif.linguistic import LinguisticMotifDetector
             self.linguistic_detector = LinguisticMotifDetector()
         else:
             self.linguistic_detector = None
@@ -414,8 +414,8 @@ final_indices = matryoshka_gate.gate(query, candidates)
 ```
 
 **Files:**
-- `HoloLoom/motif/linguistic.py` (already designed)
-- `HoloLoom/embedding/linguistic_gate.py` (new, 150 lines)
+- `hololoom/motif/linguistic.py` (already designed)
+- `hololoom/embedding/linguistic_gate.py` (new, 150 lines)
 
 ### Full: Linguistic-Enhanced Embeddings (1 week)
 
@@ -437,16 +437,16 @@ gate = LinguisticMatryoshkaGate(
 ```
 
 **Files:**
-- `HoloLoom/embedding/linguistic_matryoshka.py` (new, 400 lines)
-- `HoloLoom/embedding/matryoshka_gate.py` (extend existing)
-- `HoloLoom/semantic_calculus/linguistic_dimensions.py` (42D space)
+- `hololoom/embedding/linguistic_matryoshka.py` (new, 400 lines)
+- `hololoom/embedding/matryoshka_gate.py` (extend existing)
+- `hololoom/semantic_calculus/linguistic_dimensions.py` (42D space)
 
 ---
 
 ## Configuration
 
 ```python
-# HoloLoom/config.py
+# hololoom/config.py
 
 @dataclass
 class Config:
@@ -495,4 +495,4 @@ class Config:
 
 **Status:** Design complete, ready for implementation
 **Depends on:** Chomsky linguistic integration (CHOMSKY_LINGUISTIC_INTEGRATION.md)
-**Integrates with:** Matryoshka gate (HoloLoom/embedding/matryoshka_gate.py)
+**Integrates with:** Matryoshka gate (hololoom/embedding/matryoshka_gate.py)

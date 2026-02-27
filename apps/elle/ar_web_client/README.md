@@ -113,10 +113,10 @@ cd HoloLoom
 pip install fastapi uvicorn websockets
 
 # Start AR API server
-python -m HoloLoom.server.ar_api
+python -m hololoom.server.ar_api
 
 # Or with uvicorn directly
-uvicorn HoloLoom.server.ar_api:app --host 0.0.0.0 --port 8000 --reload
+uvicorn hololoom.server.ar_api:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Backend WebSocket runs on **ws://localhost:8000/ws/ar**
@@ -128,7 +128,7 @@ Backend WebSocket runs on **ws://localhost:8000/ws/ar**
 ### 1. Start Backend
 
 ```bash
-python -m HoloLoom.server.ar_api
+python -m hololoom.server.ar_api
 ```
 
 ### 2. Start Frontend
@@ -397,7 +397,7 @@ Edit `src/components/AROverlay.tsx` to customize visual style based on Elle's my
 
 - **[HOLOLOOM_INTEGRATION_FRAMEWORK.md](../../HOLOLOOM_INTEGRATION_FRAMEWORK.md)** - Complete integration architecture
 - **[elle/README.md](../README.md)** - Elle architecture overview
-- **[HoloLoom/server/README.md](../../HoloLoom/server/README.md)** - Backend API reference
+- **[hololoom/server/README.md](../../hololoom/server/README.md)** - Backend API reference
 
 ### Key Concepts
 

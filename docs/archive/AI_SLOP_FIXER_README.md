@@ -91,7 +91,7 @@ Shows errors inline with VS Code diagnostics.
 
 ```bash
 cd mythRL
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --reload --port 8000
 ```
 
 ### 2. Install VS Code Extension

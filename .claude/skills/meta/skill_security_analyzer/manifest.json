@@ -3,7 +3,7 @@
   "skill": {
     "name": "skill_security_analyzer",
     "version": "1.0.0",
-    "author": "HoloLoom Team",
+    "author": "hololoom Team",
     "category": "meta",
     "tags": [
       "security",

@@ -178,7 +178,7 @@ Start the streaming server:
 
 ```bash
 # From mythRL root
-PYTHONPATH=. uvicorn HoloLoom.server.streaming_api:app --port 8001
+PYTHONPATH=. uvicorn hololoom.server.streaming_api:app --port 8001
 ```
 
 The server provides:

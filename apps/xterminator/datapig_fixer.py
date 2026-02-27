@@ -15,7 +15,7 @@ import logging
 
 # DATAPIG imports
 try:
-    from HoloLoom.datapig import DataQualityIssue, IssueType, Severity
+    from hololoom.datapig import DataQualityIssue, IssueType, Severity
     DATAPIG_AVAILABLE = True
 except ImportError:
     DATAPIG_AVAILABLE = False
@@ -416,7 +416,7 @@ def fix_dataset(data: List[Dict], issues: List[DataQualityIssue], validate: bool
         Fix result with validation status
 
     Example:
-        from HoloLoom.datapig import analyze_dataset
+        from hololoom.datapig import analyze_dataset
         from xterminator.datapig_fixer import fix_dataset
 
         issues = analyze_dataset(data)

@@ -144,7 +144,7 @@ OPENAI_API_KEY=sk-...
 3. **Start services**:
 
 ```bash
-docker-compose -f HoloLoom/docker-compose.yml up -d
+docker-compose -f hololoom/docker-compose.yml up -d
 ```
 
 ### Service Endpoints
@@ -163,7 +163,7 @@ docker-compose -f HoloLoom/docker-compose.yml up -d
 
 ```bash
 # All services
-docker-compose -f HoloLoom/docker-compose.yml ps
+docker-compose -f hololoom/docker-compose.yml ps
 
 # Individual service logs
 docker logs hololoom-neo4j

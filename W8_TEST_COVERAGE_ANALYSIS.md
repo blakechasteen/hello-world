@@ -23,26 +23,26 @@
 These are foundational systems that power HoloLoom and have NO test subdirectories:
 
 #### Memory & Retrieval Systems (7 modules)
-1. **HoloLoom/memory/awareness/** - Activation tracking, memory consciousness
+1. **hololoom/memory/awareness/** - Activation tracking, memory consciousness
    - Files: awareness_graph.py, activation_field.py, awareness_types.py
    - Impact: Core to activation-based retrieval
    - Lines: ~2,500+ estimated
    - Missing: Unit tests for spreading activation, coherence calculation
 
-2. **HoloLoom/memory/yarn/** - Yarn Graph (symbolic memory)
+2. **hololoom/memory/yarn/** - Yarn Graph (symbolic memory)
    - Impact: Knowledge graph backend
    - Missing: Tests for graph operations, entity relationships
 
-3. **HoloLoom/memory/stores/** - Multiple storage backends
+3. **hololoom/memory/stores/** - Multiple storage backends
    - Files: qdrant_store.py, neo4j_graph.py, hybrid_backend.py
    - Impact: Production persistence layer
    - Missing: Integration tests with actual stores
 
-4. **HoloLoom/memory/symphony/** - Memory conductor orchestration
+4. **hololoom/memory/symphony/** - Memory conductor orchestration
    - Impact: Unified multi-system memory coordination
    - Missing: Multi-backend coordination tests
 
-5. **HoloLoom/embedding/** - Matryoshka embeddings (8 files, NO tests)
+5. **hololoom/embedding/** - Matryoshka embeddings (8 files, NO tests)
    - Files: spectral.py (~450 lines), zero_copy.py, matryoshka_gate.py, riemannian_matryoshka.py
    - Impact: Core to multi-scale retrieval, zero-copy optimization
    - Missing:
@@ -50,7 +50,7 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
      - Spectral feature calculation tests
      - Matryoshka gate integration tests
 
-6. **HoloLoom/spinningWheel/** - Input adapters (36+ adapters, NO tests)
+6. **hololoom/spinningWheel/** - Input adapters (36+ adapters, NO tests)
    - Files: 36+ Python files including PDF, YouTube, email, code, git, image spinners
    - Impact: Entry point for all data ingestion
    - Missing:
@@ -59,18 +59,18 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
      - Error handling for malformed inputs
      - Integration with memory backend
 
-7. **HoloLoom/loom/** - Core weaving architecture (3+ files, minimal tests)
+7. **hololoom/loom/** - Core weaving architecture (3+ files, minimal tests)
    - Files: core_looms/, domain_houses/ subdirectories
-   - Tests: HoloLoom/loom/tests/ EXISTS but only 2 files (test_weave_house.py, test_dreaming.py)
+   - Tests: hololoom/loom/tests/ EXISTS but only 2 files (test_weave_house.py, test_dreaming.py)
    - Gap: Domain-specific loom tests missing
 
 #### Neural & Learning Systems (4 modules)
-8. **HoloLoom/neural/** - Neural network components (4 files, NO tests)
+8. **hololoom/neural/** - Neural network components (4 files, NO tests)
    - Files: meta_learning.py, twin_networks.py, value_functions.py
    - Impact: Core to policy learning
    - Missing: Network architecture tests, gradient flow validation
 
-9. **HoloLoom/policy/** - Policy engine (6 files, NO tests)
+9. **hololoom/policy/** - Policy engine (6 files, NO tests)
    - Files: unified.py, thompson_sampling.py, bayesian_policy.py, semantic_nudging.py, gp_policy.py
    - Impact: Tool selection and decision making
    - Missing:
@@ -78,18 +78,18 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
      - Bandit strategy tests
      - Policy weight adaptation tests
 
-10. **HoloLoom/bandits/** - Multi-armed bandit implementations
-    - Tests: HoloLoom/bandits/tests/ EXISTS (2 files)
+10. **hololoom/bandits/** - Multi-armed bandit implementations
+    - Tests: hololoom/bandits/tests/ EXISTS (2 files)
     - Gap: Limited coverage of neural_ts subdirectory variants
 
-11. **HoloLoom/clustering/** - Memory clustering (4 files, NO tests)
+11. **hololoom/clustering/** - Memory clustering (4 files, NO tests)
     - Files: core.py, thompson.py, labeler.py
     - Impact: Memory organization
     - Missing: Clustering algorithm tests
 
 #### Orchestration & Weaving (6 modules)
-12. **HoloLoom/orchestrator/** - Main orchestration pipeline (45+ files!)
-    - Tests: HoloLoom/orchestrator/ has NO tests subdirectory
+12. **hololoom/orchestrator/** - Main orchestration pipeline (45+ files!)
+    - Tests: hololoom/orchestrator/ has NO tests subdirectory
     - Files:
       - core/ (background_tasks.py, complexity_detection.py, metrics_collection.py, stat_mech_integration.py)
       - initialization/ (5 init files)
@@ -105,7 +105,7 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
       - Parallel execution tests (steps_4_6)
       - Pipeline orchestration tests
 
-13. **HoloLoom/weaving/** - Weaving strategies (16 files, NO tests)
+13. **hololoom/weaving/** - Weaving strategies (16 files, NO tests)
     - Files:
       - strategies/ (base.py, lite_strategy.py, fast_strategy.py, full_strategy.py, research_strategy.py, factory.py)
       - stages/ (pattern_selection.py, temporal_control.py, feature_extraction.py, memory_retrieval.py, decision_collapse.py)
@@ -113,22 +113,22 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
     - Impact: Pattern selection (BARE/FAST/FUSED/RESEARCH) controls execution
     - Missing: Strategy selection tests, stage composition tests
 
-14. **HoloLoom/shuttle/** - Weaving transport layer
-    - Tests: HoloLoom/shuttle/tests/ EXISTS (1 file: test_weaving_integration.py)
+14. **hololoom/shuttle/** - Weaving transport layer
+    - Tests: hololoom/shuttle/tests/ EXISTS (1 file: test_weaving_integration.py)
     - Gap: Benchmarks/ subdirectory untested
 
-15. **HoloLoom/convergence/** - Decision collapse engine
-    - Tests: HoloLoom/convergence/tests/ EXISTS (1 file)
+15. **hololoom/convergence/** - Decision collapse engine
+    - Tests: hololoom/convergence/tests/ EXISTS (1 file)
     - Gap: Only recursive_reasoner_test, missing convergence strategy tests
 
-16. **HoloLoom/resonance/** - Feature resonance/fusion
+16. **hololoom/resonance/** - Feature resonance/fusion
     - NO tests directory
     - Missing: Feature fusion tests
 
 #### RAG & Retrieval (2 modules)
-17. **HoloLoom/prompting/** - Prompt refinement framework (3 subdirs, partial tests)
+17. **hololoom/prompting/** - Prompt refinement framework (3 subdirs, partial tests)
     - Files: analytics/, testing/, validation/ subdirectories
-    - Tests: HoloLoom/prompting/ has NO direct tests/ subdirectory
+    - Tests: hololoom/prompting/ has NO direct tests/ subdirectory
     - Modules with NO tests:
       - MRF (Metaprompting Refinement Framework) - core refinement engine
       - Quality assessment module
@@ -139,21 +139,21 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
       - Provider-specific adapter tests
       - Quality scoring validation
 
-18. **HoloLoom/search/** - Search and retrieval backend
-    - Tests: HoloLoom/search/tests/ EXISTS (4 files)
+18. **hololoom/search/** - Search and retrieval backend
+    - Tests: hololoom/search/tests/ EXISTS (4 files)
     - Gap: Providers/ subdirectory completely untested
 
 #### Advanced Systems (4 modules)
-19. **HoloLoom/physics/** - Physics-based memory dynamics (NO tests)
+19. **hololoom/physics/** - Physics-based memory dynamics (NO tests)
     - Impact: Helmholtz Free Energy optimization (from discoveries)
     - Missing: All physics integration tests
 
-20. **HoloLoom/causal/** - Causal reasoning (8 files, NO tests)
+20. **hololoom/causal/** - Causal reasoning (8 files, NO tests)
     - Files: counterfactual.py, dag.py, discovery.py, intervention.py, neural_scm.py, query.py, temporal.py
     - Impact: Counterfactual reasoning
     - Missing: All causal inference tests
 
-21. **HoloLoom/spatial/** - AR/VR spatial computing (20+ files, NO tests)
+21. **hololoom/spatial/** - AR/VR spatial computing (20+ files, NO tests)
     - Files: webxr_graph.py, spatial_anchors.py, hand_tracking.py, avatar_system.py, environment_mapping.py, etc.
     - Impact: AR guide system (Elle), 3D visualization
     - Missing:
@@ -162,59 +162,59 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
       - Avatar system tests
       - WebXR integration tests
 
-22. **HoloLoom/verification/** - Verification chain (CoVe)
-    - Tests: HoloLoom/verification/tests/ EXISTS (1 file: test_verification_chain.py)
+22. **hololoom/verification/** - Verification chain (CoVe)
+    - Tests: hololoom/verification/tests/ EXISTS (1 file: test_verification_chain.py)
     - Gap: Incomplete verification coverage
 
 #### Data & Configuration (3 modules)
-23. **HoloLoom/input/** - Input fusion and routing (9 files, NO tests)
+23. **hololoom/input/** - Input fusion and routing (9 files, NO tests)
     - Files: audio_processor.py, image_processor.py, text_processor.py, router.py, fusion.py, protocol.py
     - Impact: Multimodal input preprocessing
     - Missing: All format conversion tests, fusion logic tests
 
-24. **HoloLoom/config/** - Configuration system (subdirs, partial tests)
+24. **hololoom/config/** - Configuration system (subdirs, partial tests)
     - Subdirs: cards/ (pattern card configs)
     - Missing: Pattern card configuration tests
 
-25. **HoloLoom/context/** - Context management (partial tests)
+25. **hololoom/context/** - Context management (partial tests)
     - Subdirs: context/data/, context/inference/
     - Impact: Query context enrichment
     - Missing: Context inference tests
 
 #### Infrastructure Systems (8 modules)
-26. **HoloLoom/vision/** - Vision system (10+ files per README, NO tests)
+26. **hololoom/vision/** - Vision system (10+ files per README, NO tests)
     - Impact: YOLO, MiDaS, SLAM integration
     - Missing: Vision pipeline tests (discovered system from CLAUDE.md)
 
-27. **HoloLoom/voice/** - Voice system (partial tests)
-    - Tests: HoloLoom/voice/tests/ EXISTS (7 files)
+27. **hololoom/voice/** - Voice system (partial tests)
+    - Tests: hololoom/voice/tests/ EXISTS (7 files)
     - Gap: Missing emotion_bridge, TTS cache, personality integration tests
     - Files missing tests: languages/, personalities/, prompts/, threads/, ux/
 
-28. **HoloLoom/llm/** - LLM client & provider management (4 files, NO tests)
+28. **hololoom/llm/** - LLM client & provider management (4 files, NO tests)
     - Files: unified_client.py, cost_tracker.py
     - Impact: Multi-provider LLM abstraction
     - Missing: Provider switching tests, cost tracking validation
 
-29. **HoloLoom/lsp/** - Language Server Protocol (4 files, minimal tests)
+29. **hololoom/lsp/** - Language Server Protocol (4 files, minimal tests)
     - Tests: Inline test files (test_handlers.py, test_helpers.py) NOT in tests/ subdirectory
     - Gap: Proper test organization
 
-30. **HoloLoom/infrastructure/** - Kubernetes, Grafana, SQL, MCP
+30. **hololoom/infrastructure/** - Kubernetes, Grafana, SQL, MCP
     - NO tests subdirectory
     - Subdirs: kubernetes/, grafana/, sql/, mcp/
     - Missing: K8s deployment tests, metrics export tests
 
-31. **HoloLoom/telemetry/** - Metrics and tracing (5 subdirs, NO tests)
+31. **hololoom/telemetry/** - Metrics and tracing (5 subdirs, NO tests)
     - Subdirs: analytics/, exporters/, metrics/, monitoring/, tracing/
     - Missing: All telemetry pipeline tests
 
-32. **HoloLoom/performance/** - Performance monitoring (NO tests)
+32. **hololoom/performance/** - Performance monitoring (NO tests)
     - Impact: Profiling and bottleneck detection (from discoveries)
     - Missing: All performance profiling tests
 
 #### Application Systems (3 modules)
-33. **HoloLoom/writing/** - Writing system (20+ files across 5 subdirs, NO tests)
+33. **hololoom/writing/** - Writing system (20+ files across 5 subdirs, NO tests)
     - Subdirs: core/, export/, modes/, refinement/, templates/ (21 files total)
     - Files: composer.py, writer.py, protocol.py, html.py, markdown.py, analysis.py, creative.py, narrative.py, technical.py, etc.
     - Impact: Content generation (from discoveries)
@@ -223,7 +223,7 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
       - Export format tests (HTML, Markdown)
       - Refinement tests
 
-34. **HoloLoom/visualization/** - Visualization & Jenny runtime (37 files, NO tests)
+34. **hololoom/visualization/** - Visualization & Jenny runtime (37 files, NO tests)
     - Files: jenny_runtime.py, jenny_renderer.py, jenny_spec.py, jenny_mrf.py, jenny_llm_client.py, jenny_accessibility.py, jenny_analytics.py, stage_waterfall.py, confidence_trajectory.py, cache_gauge.py, knowledge_graph.py, semantic_space.py, dashboard.py, etc.
     - Impact: UI/UX rendering for all outputs
     - Missing:
@@ -232,32 +232,32 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
       - WCAG accessibility tests
       - Tufte visualization tests
 
-35. **HoloLoom/promptly/** - Prompt CLI tool (with examples/ but NO tests)
+35. **hololoom/promptly/** - Prompt CLI tool (with examples/ but NO tests)
     - Impact: Prompt management (legacy, now integrated into alignment)
     - Missing: CLI command tests
 
 #### Miscellaneous (12+ modules)
-36. **HoloLoom/chrono/** - Empty or placeholder (NO tests)
-37. **HoloLoom/collaboration/** - Multi-user workspaces (NO tests)
-38. **HoloLoom/cve/** - Cognitive Visual Extractors (5 files, NO tests)
+36. **hololoom/chrono/** - Empty or placeholder (NO tests)
+37. **hololoom/collaboration/** - Multi-user workspaces (NO tests)
+38. **hololoom/cve/** - Cognitive Visual Extractors (5 files, NO tests)
     - Files: cognitive_extractors.py, cve_server.py, cognitive_protocol.py, tufte_renderer.py
     - Missing: Cognitive extraction tests
 
-39. **HoloLoom/fabric/** - Spacetime fabric output (4 files, NO tests)
+39. **hololoom/fabric/** - Spacetime fabric output (4 files, NO tests)
     - Impact: Structured output generation
     - Missing: Fabric composition tests
 
-40. **HoloLoom/synthesis/** - Synthesis engine (NO tests)
-41. **HoloLoom/motif/** - Motif extraction (NO tests)
-42. **HoloLoom/ml/** - ML utilities (NO tests)
-43. **HoloLoom/explainability/** - Interpretability utils (NO tests)
-44. **HoloLoom/datapig/** - Data quality (NO tests discovered)
-45. **HoloLoom/tuning/** - Hyperparameter tuning (NO tests)
-46. **HoloLoom/tui/** - Terminal UI (NO tests)
-47. **HoloLoom/utils/** - Utility functions (NO tests)
-48. **HoloLoom/tools/** - Developer tools, archive (NO tests)
-49. **HoloLoom/examples/** - Example code (subdirs, NO tests)
-50. **HoloLoom/workflows/** - Workflow definitions (NO tests)
+40. **hololoom/synthesis/** - Synthesis engine (NO tests)
+41. **hololoom/motif/** - Motif extraction (NO tests)
+42. **hololoom/ml/** - ML utilities (NO tests)
+43. **hololoom/explainability/** - Interpretability utils (NO tests)
+44. **hololoom/datapig/** - Data quality (NO tests discovered)
+45. **hololoom/tuning/** - Hyperparameter tuning (NO tests)
+46. **hololoom/tui/** - Terminal UI (NO tests)
+47. **hololoom/utils/** - Utility functions (NO tests)
+48. **hololoom/tools/** - Developer tools, archive (NO tests)
+49. **hololoom/examples/** - Example code (subdirs, NO tests)
+50. **hololoom/workflows/** - Workflow definitions (NO tests)
 
 ---
 
@@ -266,14 +266,14 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
 ### Tier 2: Partially Tested Systems
 
 #### RAG & Retrieval (Robust)
-1. **HoloLoom/rag/tests/** - 8 test files ✓
+1. **hololoom/rag/tests/** - 8 test files ✓
    - test_simple_rag.py, test_multimodal_rag.py, test_streaming.py, test_reranking.py, test_multihop_reasoning.py
    - test_multiagent_rag.py, test_embedding_plugins.py, test_moonshot_integration.py
    - Coverage: Good for RAG core
    - Gap: SQL context packer tests (test_sql_context_packer.py - newer, likely incomplete)
 
 #### Memory Systems (Expanding)
-2. **HoloLoom/memory/tests/** - 8 test files
+2. **hololoom/memory/tests/** - 8 test files
    - test_adaptive_expansion.py, test_streaming_expansion.py, test_interleaved_generation.py
    - test_phase4_concurrent.py, test_advanced_features.py, test_interleaved_security.py
    - test_streaming_systems.py
@@ -287,7 +287,7 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
      - memory stores (qdrant_store, neo4j_graph) - NO tests in this directory
 
 #### Agentic Reasoning (Growing)
-3. **HoloLoom/agentic/tests/** - 8+ test files
+3. **hololoom/agentic/tests/** - 8+ test files
    - test_agentic_safety.py, test_conscience_adapter.py, test_conscience_calibrator.py
    - test_conscience_e2e.py, test_orchestrator_conscience.py, test_per_step_gating.py
    - test_context_handoff.py, test_monitoring.py
@@ -298,7 +298,7 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
      - Context handoff MI scoring - newly added test (coverage unclear)
 
 #### Alignment Framework (Comprehensive)
-4. **HoloLoom/alignment/tests/** - 7+ test files
+4. **hololoom/alignment/tests/** - 7+ test files
    - test_alignment.py, test_concurrency.py, test_explainability.py
    - test_integration_e2e.py, test_performance.py, test_audit_and_monitoring.py
    - test_stress.py, run_benchmarks.py
@@ -306,26 +306,26 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
    - Gap: Risk scoring granularity not fully tested
 
 #### Learning Systems (Good)
-5. **HoloLoom/reflection/tests/** - 1 test file
+5. **hololoom/reflection/tests/** - 1 test file
    - test_feedback_integration.py
    - Gap: Reflection buffer internals, PPO training not tested
 
-6. **HoloLoom/routing/tests/** - 1 test file
+6. **hololoom/routing/tests/** - 1 test file
    - test_query_classifier.py
    - Gap: Adaptive learning pattern mining/validation not tested
 
-7. **HoloLoom/search/tests/** - 4 test files
+7. **hololoom/search/tests/** - 4 test files
    - test_cache.py, test_citation.py, test_matryoshka_search.py, test_web_research_integration.py
    - Gap: Providers/ subdirectory untested
 
 #### Dark Trace (Newer)
-8. **HoloLoom/dark_trace/tests/** - Exists but incomplete
+8. **hololoom/dark_trace/tests/** - Exists but incomplete
    - Main test file for core Dark Trace
    - Gap: sae/tests/, multilayer/tests/, visualization/tests/ exist but unclear coverage
    - Missing: Multi-model fingerprinting tests, integration tests with main weaving
 
 #### Departments (Comprehensive)
-9. **HoloLoom/departments/tests/** - 7 test files
+9. **hololoom/departments/tests/** - 7 test files
    - test_rag_department.py, test_planning_department.py, test_workflows.py
    - test_context_integration.py, test_infrastructure_integration.py, test_orchestration_integration.py
    - test_planning_integration.py
@@ -333,20 +333,20 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
    - Gap: Custom department implementations not tested, B2B policy enforcement not tested
 
 #### Older Systems (Minimal)
-10. **HoloLoom/bandits/tests/** - 2 files (limited)
+10. **hololoom/bandits/tests/** - 2 files (limited)
     - test_synthetic_bandit.py, test_units.py
     - Gap: neural_ts/ subdirectory untested
 
-11. **HoloLoom/chaining/tests/** - 2 files
+11. **hololoom/chaining/tests/** - 2 files
     - test_chain_orchestrator.py, test_new_patterns.py
     - Gap: 17 chain pattern tests incomplete
 
-12. **HoloLoom/context_packing/tests/** - 3 files
+12. **hololoom/context_packing/tests/** - 3 files
     - test_context_packing.py, test_information_scoring.py, test_adaptive_learning.py
     - Coverage: Beta wave activation, importance scoring, adaptive learning
     - Gap: Information budget packing (Phase 5) may lack tests
 
-13. **HoloLoom/ts_core/tests/** - 1 file
+13. **hololoom/ts_core/tests/** - 1 file
     - test_ts_models.py
     - Gap: Incomplete Thompson Sampling test coverage
 
@@ -355,9 +355,9 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
 ## C. STRUCTURAL ISSUES IN TEST ORGANIZATION
 
 ### Issue 1: Tests NOT in Standard test/ Subdirectories
-- **HoloLoom/llm/test_llm_client.py** - Should be in HoloLoom/llm/tests/
-- **HoloLoom/lsp/test_handlers.py, test_helpers.py** - Should be in HoloLoom/lsp/tests/
-- **HoloLoom/loom/tests/test_weave_house.py, test_dreaming.py** - Only 2 tests, may need more
+- **hololoom/llm/test_llm_client.py** - Should be in hololoom/llm/tests/
+- **hololoom/lsp/test_handlers.py, test_helpers.py** - Should be in hololoom/lsp/tests/
+- **hololoom/loom/tests/test_weave_house.py, test_dreaming.py** - Only 2 tests, may need more
 
 ### Issue 2: Inconsistent Test Naming
 - Some tests use `test_*.py` pattern
@@ -366,9 +366,9 @@ These are foundational systems that power HoloLoom and have NO test subdirectori
 
 ### Issue 3: Missing Subdirectory Test Organization
 Several directories with subdirectories have tests at parent level but NOT for subdirectories:
-- **HoloLoom/dark_trace/** - Has tests/ + subdirs, unclear which subdirs have tests
-- **HoloLoom/federation/** - Has tests/ but federation/alignment/, federation/consensus/ may lack tests
-- **HoloLoom/departments/** - Many department types without specific tests
+- **hololoom/dark_trace/** - Has tests/ + subdirs, unclear which subdirs have tests
+- **hololoom/federation/** - Has tests/ but federation/alignment/, federation/consensus/ may lack tests
+- **hololoom/departments/** - Many department types without specific tests
 
 ---
 
@@ -378,31 +378,31 @@ Several directories with subdirectories have tests at parent level but NOT for s
 
 | Rank | Module | Files | Type | Impact | Gap |
 |------|--------|-------|------|--------|-----|
-| 1 | HoloLoom/orchestrator/ | 45+ | Core | CRITICAL - All queries | 9-step cycle untested! |
-| 2 | HoloLoom/weaving/strategies/ | 6 | Core | HIGH - Pattern selection | All strategy tests missing |
-| 3 | HoloLoom/spinningWheel/ | 36+ | Input | HIGH - Data ingestion | 27+ adapters untested |
-| 4 | HoloLoom/embedding/ | 8 | Core | HIGH - Multi-scale retrieval | Zero-copy untested (37x claim!) |
-| 5 | HoloLoom/policy/ | 6 | Core | HIGH - Tool selection | Thompson Sampling untested |
-| 6 | HoloLoom/memory/awareness/ | 3+ | Core | HIGH - Activation | Spreading activation untested |
-| 7 | HoloLoom/memory/stores/ | 3+ | Storage | HIGH - Persistence | Neo4j/Qdrant untested |
-| 8 | HoloLoom/prompting/ | 10+ | Quality | HIGH - Answer quality | MRF untested |
-| 9 | HoloLoom/spatial/ | 20+ | AR/VR | MEDIUM - Elle guide | Spatial compute untested |
-| 10 | HoloLoom/causal/ | 8 | Advanced | MEDIUM - Counterfactual | All causal tests missing |
-| 11 | HoloLoom/vision/ | 10+ | Multimodal | MEDIUM - Scene understanding | All vision untested |
-| 12 | HoloLoom/neural/ | 4 | Learning | MEDIUM - Network learning | All neural tests missing |
-| 13 | HoloLoom/writing/ | 21 | Content | MEDIUM - Content generation | All writing tests missing |
-| 14 | HoloLoom/visualization/ | 37 | UI/UX | MEDIUM - User interface | Jenny/Tufte untested |
-| 15 | HoloLoom/input/ | 9 | Multimodal | MEDIUM - Format handling | All input processor tests |
-| 16 | HoloLoom/infrastructure/ | 15+ | DevOps | MEDIUM - Deployment | K8s/Grafana/SQL untested |
-| 17 | HoloLoom/llm/ | 4 | LLM | MEDIUM - Provider routing | LLM client untested |
-| 18 | HoloLoom/clustering/ | 4 | Memory | LOW - Organization | Clustering untested |
-| 19 | HoloLoom/physics/ | ? | Advanced | LOW - Physics dynamics | Helmholtz untested |
-| 20 | HoloLoom/collaboration/ | ? | Multi-user | LOW - Concurrent use | All collaboration untested |
-| 21 | HoloLoom/telemet ry/ | 20+ | Monitoring | LOW - Observability | All telemetry untested |
-| 22 | HoloLoom/cve/ | 5 | Features | LOW - Cognitive extraction | CVE untested |
-| 23 | HoloLoom/fabric/ | 4 | Output | LOW - Result packaging | Spacetime untested |
-| 24 | HoloLoom/resonance/ | ? | Memory | LOW - Feature fusion | Fusion untested |
-| 25 | HoloLoom/synthesis/ | ? | Generation | LOW - Synthesis | All synthesis untested |
+| 1 | hololoom/orchestrator/ | 45+ | Core | CRITICAL - All queries | 9-step cycle untested! |
+| 2 | hololoom/weaving/strategies/ | 6 | Core | HIGH - Pattern selection | All strategy tests missing |
+| 3 | hololoom/spinningWheel/ | 36+ | Input | HIGH - Data ingestion | 27+ adapters untested |
+| 4 | hololoom/embedding/ | 8 | Core | HIGH - Multi-scale retrieval | Zero-copy untested (37x claim!) |
+| 5 | hololoom/policy/ | 6 | Core | HIGH - Tool selection | Thompson Sampling untested |
+| 6 | hololoom/memory/awareness/ | 3+ | Core | HIGH - Activation | Spreading activation untested |
+| 7 | hololoom/memory/stores/ | 3+ | Storage | HIGH - Persistence | Neo4j/Qdrant untested |
+| 8 | hololoom/prompting/ | 10+ | Quality | HIGH - Answer quality | MRF untested |
+| 9 | hololoom/spatial/ | 20+ | AR/VR | MEDIUM - Elle guide | Spatial compute untested |
+| 10 | hololoom/causal/ | 8 | Advanced | MEDIUM - Counterfactual | All causal tests missing |
+| 11 | hololoom/vision/ | 10+ | Multimodal | MEDIUM - Scene understanding | All vision untested |
+| 12 | hololoom/neural/ | 4 | Learning | MEDIUM - Network learning | All neural tests missing |
+| 13 | hololoom/writing/ | 21 | Content | MEDIUM - Content generation | All writing tests missing |
+| 14 | hololoom/visualization/ | 37 | UI/UX | MEDIUM - User interface | Jenny/Tufte untested |
+| 15 | hololoom/input/ | 9 | Multimodal | MEDIUM - Format handling | All input processor tests |
+| 16 | hololoom/infrastructure/ | 15+ | DevOps | MEDIUM - Deployment | K8s/Grafana/SQL untested |
+| 17 | hololoom/llm/ | 4 | LLM | MEDIUM - Provider routing | LLM client untested |
+| 18 | hololoom/clustering/ | 4 | Memory | LOW - Organization | Clustering untested |
+| 19 | hololoom/physics/ | ? | Advanced | LOW - Physics dynamics | Helmholtz untested |
+| 20 | hololoom/collaboration/ | ? | Multi-user | LOW - Concurrent use | All collaboration untested |
+| 21 | hololoom/telemet ry/ | 20+ | Monitoring | LOW - Observability | All telemetry untested |
+| 22 | hololoom/cve/ | 5 | Features | LOW - Cognitive extraction | CVE untested |
+| 23 | hololoom/fabric/ | 4 | Output | LOW - Result packaging | Spacetime untested |
+| 24 | hololoom/resonance/ | ? | Memory | LOW - Feature fusion | Fusion untested |
+| 25 | hololoom/synthesis/ | ? | Generation | LOW - Synthesis | All synthesis untested |
 
 ---
 

@@ -1,7 +1,7 @@
 """RAG Bridge for Elle - Connects HoloLoom's RAG system to Elle.
 
 Enables Elle to:
-1. Store and retrieve knowledge from HoloLoom's memory system
+1. Store and retrieve knowledge from hololoom's memory system
 2. Use RAG-enhanced responses with source citations
 3. Build context-aware prompts with retrieved information
 
@@ -87,8 +87,8 @@ class ElleRAGBridge:
     async def __aenter__(self):
         """Initialize RAG system."""
         try:
-            from HoloLoom.rag.simple_rag import SimpleRAG
-            from HoloLoom.config import Config
+            from hololoom.rag.simple_rag import SimpleRAG
+            from hololoom.config import Config
 
             config = Config.fast()
 

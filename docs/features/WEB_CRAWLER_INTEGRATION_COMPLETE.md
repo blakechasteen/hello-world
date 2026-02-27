@@ -10,7 +10,7 @@
 
 ## What Was Built
 
-### 1. Integrated Pipeline ([web_crawler_integration.py](HoloLoom/search/web_crawler_integration.py:1))
+### 1. Integrated Pipeline ([web_crawler_integration.py](hololoom/search/web_crawler_integration.py:1))
 
 **Architecture**:
 ```
@@ -100,7 +100,7 @@ This creates a **natural funnel**:
 
 ### Quick Start
 ```python
-from HoloLoom.search.web_crawler_integration import search_and_crawl_web
+from hololoom.search.web_crawler_integration import search_and_crawl_web
 
 # Simple search
 result = await search_and_crawl_web(
@@ -125,7 +125,7 @@ print(result.cited_response)
 
 ### Advanced Configuration
 ```python
-from HoloLoom.search.web_crawler_integration import (
+from hololoom.search.web_crawler_integration import (
     WebCrawlerSearch,
     WebCrawlerSearchConfig
 )
@@ -164,8 +164,8 @@ print(f"Avg pages/crawl: {stats['avg_pages_per_crawl']:.1f}")
 
 **WebResearchOrchestrator**:
 ```python
-from HoloLoom.agentic.web_research import WebResearchOrchestrator
-from HoloLoom.search.web_crawler_integration import WebCrawlerSearch
+from hololoom.agentic.web_research import WebResearchOrchestrator
+from hololoom.search.web_crawler_integration import WebCrawlerSearch
 
 # Use as search backend
 crawler = WebCrawlerSearch(config)
@@ -180,7 +180,7 @@ async with await WebResearchOrchestrator.create(
 
 **WeavingOrchestrator**:
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Enrich memory with crawled content
 result = await search_and_crawl_web("machine learning")
@@ -230,7 +230,7 @@ async with WeavingOrchestrator(cfg=config, shards=result.shards) as orchestrator
 
 ## Files Created
 
-1. **[HoloLoom/search/web_crawler_integration.py](HoloLoom/search/web_crawler_integration.py:1)** (350 lines)
+1. **[hololoom/search/web_crawler_integration.py](hololoom/search/web_crawler_integration.py:1)** (350 lines)
    - Main integration class
    - Configuration dataclass
    - Result dataclass
@@ -241,7 +241,7 @@ async with WeavingOrchestrator(cfg=config, shards=result.shards) as orchestrator
    - Demonstrates all features
    - Performance validation
 
-3. **[HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md:1)** (500+ lines)
+3. **[hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md:1)** (500+ lines)
    - Complete documentation
    - Usage examples
    - Configuration reference
@@ -466,7 +466,7 @@ pip install requests beautifulsoup4
 
 ### Implementation
 
-**File**: [HoloLoom/agentic/web_researcher.py](HoloLoom/agentic/web_researcher.py) (550 lines)
+**File**: [hololoom/agentic/web_researcher.py](hololoom/agentic/web_researcher.py) (550 lines)
 
 **Key Components**:
 ```python
@@ -598,7 +598,7 @@ Verification:
 
 ### Files Added
 
-1. **[HoloLoom/agentic/web_researcher.py](HoloLoom/agentic/web_researcher.py)** (550 lines)
+1. **[hololoom/agentic/web_researcher.py](hololoom/agentic/web_researcher.py)** (550 lines)
    - AgenticWebResearcher class
    - ResearchStrategy enum
    - ResearchPlan dataclass
@@ -611,7 +611,7 @@ Verification:
    - Strategy comparison table
 
 3. **Documentation Updates**:
-   - Updated [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md)
+   - Updated [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md)
    - Updated this file with agentic section
 
 ---

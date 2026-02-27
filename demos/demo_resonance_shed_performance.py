@@ -28,7 +28,7 @@ from typing import List
 from dataclasses import dataclass
 
 # Mock components for benchmarking
-from HoloLoom.documentation.types import Motif
+from hololoom.documentation.types import Motif
 
 
 class MockMotifDetector:
@@ -109,7 +109,7 @@ async def benchmark_resonance_shed():
     print("=" * 80)
     print()
 
-    from HoloLoom.resonance.shed import ResonanceShed
+    from hololoom.resonance.shed import ResonanceShed
 
     # Test configurations
     configs = [

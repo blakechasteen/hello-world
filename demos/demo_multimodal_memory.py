@@ -43,7 +43,7 @@ except ImportError:
     PIL_AVAILABLE = False
     sys.exit(1)
 
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 
 def create_test_image(width=400, height=300, color=(255, 0, 0), text="Test"):

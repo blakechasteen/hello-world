@@ -13,9 +13,9 @@ Run: PYTHONPATH=. python demos/demo_bandit_orchestrator.py
 
 import asyncio
 import numpy as np
-from HoloLoom.weaving_orchestrator_bandit import create_bandit_orchestrator
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.weaving_orchestrator_bandit import create_bandit_orchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
 
 
 def create_demo_shards(n=20):

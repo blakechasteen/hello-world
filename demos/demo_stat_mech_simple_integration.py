@@ -11,9 +11,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 
 async def test_basic_integration():

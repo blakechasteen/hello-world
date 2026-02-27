@@ -38,11 +38,11 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom import hololoom
+from hololoom.config import Config
+from hololoom.Documentation.types import Query
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Import production polish
 try:

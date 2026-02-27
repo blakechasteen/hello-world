@@ -19,9 +19,9 @@ Date: November 2025
 
 import asyncio
 import time
-from HoloLoom.voice.ar_context import create_test_context, ARContext, Vector3
-from HoloLoom.voice.elle_bridge import ElleBridge, ResponseMode
-from HoloLoom.voice.command_router import CommandRouter
+from hololoom.voice.ar_context import create_test_context, ARContext, Vector3
+from hololoom.voice.elle_bridge import ElleBridge, ResponseMode
+from hololoom.voice.command_router import CommandRouter
 
 
 async def demo_voice_query():

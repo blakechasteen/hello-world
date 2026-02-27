@@ -14,18 +14,18 @@ import tempfile
 import os
 from pathlib import Path
 
-from HoloLoom.agentic.codebase_ingestion import (
+from hololoom.agentic.codebase_ingestion import (
     CodebaseIndexer,
     Language,
     PythonParser,
     TypeScriptParser
 )
-from HoloLoom.agentic.hallucination_detector import (
+from hololoom.agentic.hallucination_detector import (
     HallucinationDetector,
     PythonReferenceExtractor,
     TypeScriptReferenceExtractor
 )
-from HoloLoom.agentic.code_verification import (
+from hololoom.agentic.code_verification import (
     CodeVerifier,
     PythonVerifier,
     TypeScriptVerifier

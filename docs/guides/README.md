@@ -7,10 +7,10 @@ A Python-based system that implements computation as a **weaving process** - tra
 ## Quick Start
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 # Create instance
-loom = await HoloLoom.create()
+loom = await hololoom.create()
 
 # Query
 response = await loom.query("What is HoloLoom?")
@@ -27,7 +27,7 @@ await loom.ingest_web("https://example.com")
 **Run Demo:**
 ```bash
 export PYTHONPATH=.
-python HoloLoom/unified_api.py
+python hololoom/unified_api.py
 ```
 
 ---
@@ -66,7 +66,7 @@ HoloLoom treats computation as **literal weaving** through 7 stages:
 
 ```
 mythRL/
-├── HoloLoom/               # Core system modules
+├── hololoom/               # Core system modules
 │   ├── weaving_orchestrator.py   # Main weaving cycle coordinator
 │   ├── weaving_shuttle.py        # Async context manager entry point
 │   ├── unified_api.py             # Unified API (HoloLoom class)
@@ -113,9 +113,9 @@ mythRL/
 ## Key Features
 
 **Unified API:**
-- `HoloLoom.query()` - One-shot queries with full trace
-- `HoloLoom.chat()` - Conversational interface with context
-- `HoloLoom.ingest_*()` - Multi-modal data ingestion
+- `hololoom.query()` - One-shot queries with full trace
+- `hololoom.chat()` - Conversational interface with context
+- `hololoom.ingest_*()` - Multi-modal data ingestion
 
 **Weaving Cycle:**
 - 7-stage processing pipeline (9-12ms execution)
@@ -159,9 +159,9 @@ python -m spacy download en_core_web_sm
 
 ### Basic Query
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
-loom = await HoloLoom.create(pattern="fast")
+loom = await hololoom.create(pattern="fast")
 result = await loom.query("What is Thompson Sampling?")
 
 print(result.response)
@@ -171,7 +171,7 @@ print(f"Entities: {result.trace.synthesis_result['entities']}")
 
 ### Conversational Chat
 ```python
-loom = await HoloLoom.create()
+loom = await hololoom.create()
 
 await loom.chat("What is HoloLoom?")
 await loom.chat("Tell me about the weaving metaphor")
@@ -229,9 +229,9 @@ result = await loom.query("Simple lookup", pattern="bare")
 - [demos/](demos/) - Working examples
 
 **Architecture:**
-- [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py) - Weaving cycle
-- [HoloLoom/synthesis_bridge.py](HoloLoom/synthesis_bridge.py) - Synthesis integration
-- [HoloLoom/unified_api.py](HoloLoom/unified_api.py) - Unified API
+- [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py) - Weaving cycle
+- [hololoom/synthesis_bridge.py](hololoom/synthesis_bridge.py) - Synthesis integration
+- [hololoom/unified_api.py](hololoom/unified_api.py) - Unified API
 
 **Session Logs:**
 - [docs/sessions/](docs/sessions/) - Development session documentation
@@ -245,19 +245,19 @@ result = await loom.query("Simple lookup", pattern="bare")
 
 ```bash
 # Unit Tests (Fast - <5s) - Isolated component testing
-pytest HoloLoom/tests/unit/ -v
+pytest hololoom/tests/unit/ -v
 
 # Integration Tests (Medium - <30s) - Multi-component testing
-pytest HoloLoom/tests/integration/ -v
+pytest hololoom/tests/integration/ -v
 
 # End-to-End Tests (Slow - <2min) - Full pipeline testing
-pytest HoloLoom/tests/e2e/ -v
+pytest hololoom/tests/e2e/ -v
 
 # Run all tests
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 
 # Run demo
-PYTHONPATH=. python HoloLoom/unified_api.py
+PYTHONPATH=. python hololoom/unified_api.py
 
 # Run specific demo
 PYTHONPATH=. python demos/01_quickstart.py

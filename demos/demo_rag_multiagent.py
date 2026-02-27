@@ -23,9 +23,9 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.config import Config
-from HoloLoom.rag.multiagent_rag import MultiAgentRAG
-from HoloLoom.rag.simple_rag import SimpleRAG
+from hololoom.config import Config
+from hololoom.rag.multiagent_rag import MultiAgentRAG
+from hololoom.rag.simple_rag import SimpleRAG
 
 # Rich terminal output
 try:

@@ -2,7 +2,7 @@
 
 **Created**: December 5, 2025
 **Status**: ✅ Complete
-**File**: `HoloLoom/chatops/handlers/redteam_handlers.py`
+**File**: `hololoom/chatops/handlers/redteam_handlers.py`
 **Lines of Code**: 931 lines
 
 ## Overview
@@ -120,8 +120,8 @@ class AttackStats:
 
 ### Basic Setup
 ```python
-from HoloLoom.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
-from HoloLoom.redteam.orchestrator import RedTeamConfig
+from hololoom.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
+from hololoom.redteam.orchestrator import RedTeamConfig
 
 # Create with default config
 handlers = RedTeamMatrixHandlers(bot, enable_alignment=True)
@@ -221,11 +221,11 @@ result = await self.orchestrator.execute_attack(strategy_name)
 
 ## Related Files
 
-1. **Pattern Source**: `HoloLoom/chatops/handlers/hololoom_handlers.py` (954 lines)
-2. **Handler Registry**: `HoloLoom/chatops/handlers/handler_registry.py`
-3. **Alignment Framework**: `HoloLoom/alignment/`
-4. **Red Team Components**: `HoloLoom/redteam/`
-5. **Updated Export**: `HoloLoom/chatops/handlers/__init__.py`
+1. **Pattern Source**: `hololoom/chatops/handlers/hololoom_handlers.py` (954 lines)
+2. **Handler Registry**: `hololoom/chatops/handlers/handler_registry.py`
+3. **Alignment Framework**: `hololoom/alignment/`
+4. **Red Team Components**: `hololoom/redteam/`
+5. **Updated Export**: `hololoom/chatops/handlers/__init__.py`
 
 ## Implementation Highlights
 

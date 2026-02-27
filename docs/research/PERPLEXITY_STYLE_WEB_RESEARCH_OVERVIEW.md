@@ -76,7 +76,7 @@ ResearchResult (Output)
 
 ### 1. MatryoshkaWebSearch (3-Stage Filtering)
 
-**File**: [HoloLoom/search/matryoshka_search.py](HoloLoom/search/matryoshka_search.py)
+**File**: [hololoom/search/matryoshka_search.py](hololoom/search/matryoshka_search.py)
 
 **Performance**:
 ```
@@ -100,7 +100,7 @@ Speedup: 6.25×
 
 ### 2. RecursiveCrawler (Importance Gating)
 
-**File**: [HoloLoom/spinning_wheel/recursive_crawler.py](HoloLoom/spinning_wheel/recursive_crawler.py)
+**File**: [hololoom/spinning_wheel/recursive_crawler.py](hololoom/spinning_wheel/recursive_crawler.py)
 
 **Matryoshka Thresholds**:
 ```python
@@ -125,7 +125,7 @@ importance_thresholds = {
 
 ### 3. WebsiteSpinner (Content Extraction)
 
-**File**: [HoloLoom/spinning_wheel/website.py](HoloLoom/spinning_wheel/website.py)
+**File**: [hololoom/spinning_wheel/website.py](hololoom/spinning_wheel/website.py)
 
 **Extraction**:
 - **Text**: Clean text (removes scripts, ads, navigation)
@@ -138,7 +138,7 @@ importance_thresholds = {
 
 ### 4. WebCrawlerSearch (Integration Layer)
 
-**File**: [HoloLoom/search/web_crawler_integration.py](HoloLoom/search/web_crawler_integration.py) (350 lines)
+**File**: [hololoom/search/web_crawler_integration.py](hololoom/search/web_crawler_integration.py) (350 lines)
 
 **Two Operating Modes**:
 
@@ -180,7 +180,7 @@ class WebCrawlerSearchConfig:
 
 ### 5. AgenticWebResearcher (Autonomous Layer)
 
-**File**: [HoloLoom/agentic/web_researcher.py](HoloLoom/agentic/web_researcher.py) (550 lines)
+**File**: [hololoom/agentic/web_researcher.py](hololoom/agentic/web_researcher.py) (550 lines)
 
 **4 Research Strategies**:
 
@@ -237,7 +237,7 @@ stats = researcher.get_stats()
 ### Quick Start (Core Integration)
 
 ```python
-from HoloLoom.search.web_crawler_integration import search_and_crawl_web
+from hololoom.search.web_crawler_integration import search_and_crawl_web
 
 # Simple search (fast)
 result = await search_and_crawl_web(
@@ -252,7 +252,7 @@ print(result.cited_response)
 ### Deep Research (Agentic Layer)
 
 ```python
-from HoloLoom.agentic.web_researcher import research_web, ResearchStrategy
+from hololoom.agentic.web_researcher import research_web, ResearchStrategy
 
 # Comprehensive autonomous research
 result = await research_web(
@@ -280,8 +280,8 @@ print(result.cited_response)
 ### Advanced Configuration
 
 ```python
-from HoloLoom.agentic.web_researcher import AgenticWebResearcher, ResearchStrategy
-from HoloLoom.search.web_crawler_integration import WebCrawlerSearchConfig
+from hololoom.agentic.web_researcher import AgenticWebResearcher, ResearchStrategy
+from hololoom.search.web_crawler_integration import WebCrawlerSearchConfig
 
 # Custom crawler config
 crawler_config = WebCrawlerSearchConfig(
@@ -394,7 +394,7 @@ print(f"Verification pass rate: {stats['verification_pass_rate']:.2%}")
 
 ### Core Integration (Phase 1)
 
-1. **[HoloLoom/search/web_crawler_integration.py](HoloLoom/search/web_crawler_integration.py)** (350 lines)
+1. **[hololoom/search/web_crawler_integration.py](hololoom/search/web_crawler_integration.py)** (350 lines)
    - WebCrawlerSearch class
    - WebCrawlerSearchConfig dataclass
    - SearchCrawlResult dataclass
@@ -405,7 +405,7 @@ print(f"Verification pass rate: {stats['verification_pass_rate']:.2%}")
    - Performance validation
    - Feature demonstration
 
-3. **[HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md)** (500+ lines)
+3. **[hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md)** (500+ lines)
    - Complete documentation
    - Usage examples
    - Configuration reference
@@ -419,7 +419,7 @@ print(f"Verification pass rate: {stats['verification_pass_rate']:.2%}")
 
 ### Agentic Layer (Phase 2)
 
-5. **[HoloLoom/agentic/web_researcher.py](HoloLoom/agentic/web_researcher.py)** (550 lines)
+5. **[hololoom/agentic/web_researcher.py](hololoom/agentic/web_researcher.py)** (550 lines)
    - AgenticWebResearcher class
    - ResearchStrategy enum (QUICK/STANDARD/COMPREHENSIVE/EXPLORATORY)
    - ResearchPlan dataclass
@@ -444,8 +444,8 @@ print(f"Verification pass rate: {stats['verification_pass_rate']:.2%}")
 
 **Memory System**:
 ```python
-from HoloLoom.search.web_crawler_integration import search_and_crawl_web
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.search.web_crawler_integration import search_and_crawl_web
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Enrich memory with web research
 result = await search_and_crawl_web("machine learning", enable_recursive_crawl=True)
@@ -456,8 +456,8 @@ async with WeavingOrchestrator(cfg=config, shards=result.shards) as orchestrator
 
 **Agentic Reasoning**:
 ```python
-from HoloLoom.agentic.core import AgenticOrchestrator, ReasoningMode
-from HoloLoom.agentic.web_researcher import AgenticWebResearcher
+from hololoom.agentic.core import AgenticOrchestrator, ReasoningMode
+from hololoom.agentic.web_researcher import AgenticWebResearcher
 
 # Combine agentic reasoning with web research
 researcher = AgenticWebResearcher(config=Config.fast())
@@ -473,8 +473,8 @@ async with AgenticOrchestrator(cfg=config, shards=shards) as orchestrator:
 
 **Alignment Framework**:
 ```python
-from HoloLoom.alignment import SafetyGuardrails, AuditTrail
-from HoloLoom.agentic.web_researcher import research_web
+from hololoom.alignment import SafetyGuardrails, AuditTrail
+from hololoom.agentic.web_researcher import research_web
 
 # Gate web research through safety guardrails
 guardrails = SafetyGuardrails(enable_human_in_loop=True)
@@ -554,8 +554,8 @@ export IMPORTANCE_THRESHOLD_DEPTH_2=0.8
 ### Configuration
 
 ```python
-from HoloLoom.search.web_crawler_integration import WebCrawlerSearchConfig
-from HoloLoom.agentic.web_researcher import AgenticWebResearcher
+from hololoom.search.web_crawler_integration import WebCrawlerSearchConfig
+from hololoom.agentic.web_researcher import AgenticWebResearcher
 
 # Production configuration
 config = WebCrawlerSearchConfig(

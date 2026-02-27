@@ -48,7 +48,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # HoloLoom API Server (production deployment)
+  # hololoom API Server (production deployment)
   hololoom-api:
     build:
       context: .
@@ -75,7 +75,7 @@ services:
       - PROMETHEUS_ENABLED=true
       - PROMETHEUS_PORT=9090
     volumes:
-      - ./HoloLoom:/app/HoloLoom:ro
+      - ./hololoom:/app/hololoom:ro
       - ./demos:/app/demos:ro
       - hololoom_logs:/app/logs
       - hololoom_cache:/app/.cache
@@ -97,7 +97,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    command: uvicorn HoloLoom.server.agentic_api:app --host 0.0.0.0 --port 8000 --workers 4
+    command: uvicorn hololoom.apps.server.agentic_api:app --host 0.0.0.0 --port 8000 --workers 4
 
   # Node.js Emotional Intelligence Service (110/100 system)
   emotion-intelligence:
@@ -119,7 +119,7 @@ services:
       - PROMETHEUS_ENABLED=true
       - METRICS_PORT=9091
     volumes:
-      - ./HoloLoom/voice_ux:/app/voice_ux:ro
+      - ./hololoom/voice_ux:/app/voice_ux:ro
       - emotion_logs:/app/logs
     networks:
       - hololoom
@@ -156,7 +156,7 @@ services:
     image: prom/prometheus:v2.47.0
     container_name: hololoom-prometheus
     ports:
-      - "9092:9090"  # Using 9092 to avoid conflict with HoloLoom metrics
+      - "9092:9090"  # Using 9092 to avoid conflict with hololoom metrics
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'

@@ -22,7 +22,7 @@ import os
 from typing import List, Tuple
 
 # Phase 6.4 imports
-from HoloLoom.context_packing.learning import (
+from hololoom.context_packing.learning import (
     QueryComplexity,
     BudgetOutcome,
     BudgetRecommendation,
@@ -500,7 +500,7 @@ Phase 6.4 provides:
 - Simple convenience API for integration
 
 Integration Example:
-    from HoloLoom.context_packing import get_adaptive_budget, record_outcome
+    from hololoom.context_packing import get_adaptive_budget, record_outcome
 
     # Get budget for query complexity
     budget = get_adaptive_budget("moderate")

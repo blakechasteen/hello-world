@@ -429,7 +429,7 @@ python benchmarks/compare.py baseline.json full.json
 ## 📞 Support
 
 **Report performance issues**: https://github.com/yourusername/mythRL/issues
-**Optimization questions**: See [PERFORMANCE_TUNING_GUIDE.md](HoloLoom/context/PERFORMANCE_TUNING_GUIDE.md)
+**Optimization questions**: See [PERFORMANCE_TUNING_GUIDE.md](hololoom/context/PERFORMANCE_TUNING_GUIDE.md)
 
 ---
 

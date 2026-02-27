@@ -1,6 +1,6 @@
 @echo off
 REM Elle AR Demo - iPhone Quick Start
-REM This script starts both HoloLoom backend and web server for iPhone testing
+REM This script starts both hololoom backend and web server for iPhone testing
 
 echo.
 echo ==========================================
@@ -34,9 +34,9 @@ echo ==========================================
 echo   Next Steps:
 echo ==========================================
 echo.
-echo 1. Start HoloLoom backend (in new terminal):
+echo 1. Start hololoom backend (in new terminal):
 echo    cd c:\Users\blake\OneDrive\Documents\mythRL
-echo    python -m HoloLoom.server.agentic_api
+echo    python -m hololoom.server.agentic_api
 echo.
 echo 2. Start web server (this will run below):
 echo    python -m http.server 8080

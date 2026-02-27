@@ -4,7 +4,7 @@
 # Usage: source COVERAGE_QUICK_REFERENCE.sh
 
 echo "==================================================================="
-echo "pytest-cov Quick Reference - HoloLoom"
+echo "pytest-cov Quick Reference - hololoom"
 echo "==================================================================="
 echo ""
 
@@ -16,7 +16,7 @@ coverage_install() {
 
 coverage_test() {
     echo "[2/4] Running tests with coverage..."
-    pytest HoloLoom/tests/ -v
+    pytest hololoom/tests/ -v
 }
 
 coverage_view() {
@@ -70,5 +70,5 @@ echo ""
 
 # Note about auto-coverage
 echo "NOTE: Coverage runs automatically with pytest!"
-echo "      Just run: pytest HoloLoom/tests/ -v"
+echo "      Just run: pytest hololoom/tests/ -v"
 echo ""

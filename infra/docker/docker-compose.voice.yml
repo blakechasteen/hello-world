@@ -1,4 +1,4 @@
-# Docker Compose for HoloLoom VoiceAgent Development
+# Docker Compose for hololoom VoiceAgent Development
 # ====================================================
 # Complete stack for local development and testing
 # Date: November 15, 2025
@@ -19,7 +19,7 @@ services:
       # OpenAI API Key (required for TTS)
       - OPENAI_API_KEY=${OPENAI_API_KEY}
 
-      # HoloLoom Configuration
+      # hololoom Configuration
       - HOLOLOOM_MODE=FAST
       - HOLOLOOM_LOG_LEVEL=INFO
 
@@ -49,7 +49,7 @@ services:
 
     volumes:
       # Mount code for development (remove in production)
-      - ./HoloLoom:/app/HoloLoom:ro
+      - ./hololoom:/app/hololoom:ro
       - ./demos:/app/demos:ro
 
       # Data persistence
@@ -68,7 +68,7 @@ services:
       - hololoom-network
 
     healthcheck:
-      test: ["CMD", "python", "-c", "from HoloLoom.voice import VoiceAgent; print('healthy')"]
+      test: ["CMD", "python", "-c", "from hololoom.voice import VoiceAgent; print('healthy')"]
       interval: 30s
       timeout: 10s
       retries: 3

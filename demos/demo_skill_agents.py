@@ -24,8 +24,8 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.syntax import Syntax
 
-from HoloLoom.config import Config
-from HoloLoom.agentic.skill_agents import (
+from hololoom.config import Config
+from hololoom.agentic.skill_agents import (
     SkillRegistry,
     SkillExecutor,
     execute_skill,

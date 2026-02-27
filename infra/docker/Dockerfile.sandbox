@@ -63,7 +63,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Copy sandbox runtime scripts
-COPY --chown=sandbox:sandbox HoloLoom/redteam/sandbox/runtime/ /opt/sandbox/
+COPY --chown=sandbox:sandbox hololoom/redteam/sandbox/runtime/ /opt/sandbox/
 RUN chmod +x /opt/sandbox/*.sh 2>/dev/null || true
 
 # Switch to non-root user
@@ -85,6 +85,6 @@ CMD ["tail", "-f", "/dev/null"]
 # Labels for identification
 LABEL org.opencontainers.image.title="CARTS Sandbox"
 LABEL org.opencontainers.image.description="Isolated execution environment for CARTS red teaming"
-LABEL org.opencontainers.image.vendor="HoloLoom"
+LABEL org.opencontainers.image.vendor="hololoom"
 LABEL org.opencontainers.image.version="1.0.0"
 LABEL com.carts.security="isolated"

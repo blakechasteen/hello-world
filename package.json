@@ -1,7 +1,7 @@
 {
   "name": "hololoom-lite-vercel",
   "version": "1.0.0",
-  "description": "HoloLoom Lite - Serverless memory and query API for Vercel",
+  "description": "hololoom Lite - Serverless memory and query API for Vercel",
   "main": "index.js",
   "scripts": {
     "dev": "vercel dev",
@@ -17,7 +17,7 @@
     "serverless",
     "api"
   ],
-  "author": "HoloLoom Contributors",
+  "author": "hololoom Contributors",
   "license": "MIT",
   "dependencies": {
     "@vercel/node": "^3.0.0"

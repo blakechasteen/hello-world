@@ -252,7 +252,7 @@ git push heroku main
 
 ### HoloLoom Integration
 - [BACKEND_INTEGRATION.md](Promptly/BACKEND_INTEGRATION.md) - Integration guide
-- [BACKEND_SETUP_GUIDE.md](HoloLoom/BACKEND_SETUP_GUIDE.md) - Backend setup
+- [BACKEND_SETUP_GUIDE.md](hololoom/BACKEND_SETUP_GUIDE.md) - Backend setup
 - [HOLOLOOM_PROMPTLY_INTEGRATION_COMPLETE.md](HOLOLOOM_PROMPTLY_INTEGRATION_COMPLETE.md) - Full integration
 
 ### Future Planning

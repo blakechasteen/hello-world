@@ -20,7 +20,7 @@
 ## What We Built
 
 ### 1. SynthesisBridge Class ✨
-**Location:** [HoloLoom/synthesis_bridge.py](HoloLoom/synthesis_bridge.py)
+**Location:** [hololoom/synthesis_bridge.py](hololoom/synthesis_bridge.py)
 
 **Purpose:** Clean interface between weaving cycle and synthesis modules
 
@@ -92,20 +92,20 @@ QUERY 3: "How does Thompson Sampling work?"
 ### Synthesis Modules Integrated
 All 3 synthesis modules now accessible via bridge:
 
-1. **MemoryEnricher** ([synthesis/enriched_memory.py](HoloLoom/synthesis/enriched_memory.py))
+1. **MemoryEnricher** ([synthesis/enriched_memory.py](hololoom/synthesis/enriched_memory.py))
    - Extracts entities (capitalized terms, domain concepts)
    - Detects reasoning type (question, answer, decision, fact, explanation, etc.)
    - Finds relationships (subject-predicate-object triples)
    - Identifies topics and keywords
 
-2. **PatternExtractor** ([synthesis/pattern_extractor.py](HoloLoom/synthesis/pattern_extractor.py))
+2. **PatternExtractor** ([synthesis/pattern_extractor.py](hololoom/synthesis/pattern_extractor.py))
    - Mines Q&A pairs
    - Extracts reasoning chains
    - Finds causal relationships
    - Identifies analogies, comparisons, procedures
    - Scores pattern confidence
 
-3. **DataSynthesizer** ([synthesis/data_synthesizer.py](HoloLoom/synthesis/data_synthesizer.py))
+3. **DataSynthesizer** ([synthesis/data_synthesizer.py](hololoom/synthesis/data_synthesizer.py))
    - Converts patterns to training examples
    - Supports Alpaca, ChatML, raw formats
    - Adds reasoning chains and context
@@ -158,7 +158,7 @@ spacetime.trace.synthesis_result = {
 ## Files Created/Modified
 
 ### Created
-1. **HoloLoom/synthesis_bridge.py** (450 lines)
+1. **hololoom/synthesis_bridge.py** (450 lines)
    - SynthesisBridge class
    - SynthesisResult dataclass
    - Clean integration interface
@@ -166,7 +166,7 @@ spacetime.trace.synthesis_result = {
    - Working demo
 
 ### Modified
-1. **HoloLoom/weaving_orchestrator.py**
+1. **hololoom/weaving_orchestrator.py**
    - Added SynthesisBridge import
    - Initialized synthesis in __init__
    - Added Stage 3.5 to weaving cycle
@@ -185,7 +185,7 @@ All 3 synthesis modules:
 
 ### Basic Usage
 ```python
-from HoloLoom.synthesis_bridge import SynthesisBridge
+from hololoom.synthesis_bridge import SynthesisBridge
 
 # Create bridge
 bridge = SynthesisBridge(
@@ -334,13 +334,13 @@ Training Data (Alpaca, ChatML, etc.)
 ### Test Synthesis Bridge Standalone
 ```bash
 export PYTHONPATH=.
-python HoloLoom/synthesis_bridge.py
+python hololoom/synthesis_bridge.py
 ```
 
 ### Test Full Weaving with Synthesis
 ```bash
 export PYTHONPATH=.
-python HoloLoom/weaving_orchestrator.py
+python hololoom/weaving_orchestrator.py
 ```
 
 Output shows Stage 3.5 running with entity extraction, reasoning detection, and pattern mining!

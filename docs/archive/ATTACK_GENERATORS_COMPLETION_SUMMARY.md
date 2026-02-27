@@ -117,7 +117,7 @@ payloads = gen.generate_all("constraint")
 
 Convenient creation functions:
 ```python
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     create_context_overflow_generator,
     create_hierarchy_bypass_generator
 )
@@ -170,7 +170,7 @@ hierarchy = create_hierarchy_bypass_generator(seed=42)
 ### Test Execution
 
 ```bash
-pytest HoloLoom/redteam/strategy_generators/test_new_generators.py -v
+pytest hololoom/redteam/strategy_generators/test_new_generators.py -v
 # Result: 26 passed in 0.21s
 ```
 
@@ -200,23 +200,23 @@ pytest HoloLoom/redteam/strategy_generators/test_new_generators.py -v
 ## Files Created/Modified
 
 ### New Files
-1. **HoloLoom/redteam/strategy_generators/context_overflow.py** (340 lines)
+1. **hololoom/redteam/strategy_generators/context_overflow.py** (340 lines)
    - `ContextOverflowPayload` dataclass
    - `ContextOverflowGenerator` class
    - Factory function: `create_context_overflow_generator()`
 
-2. **HoloLoom/redteam/strategy_generators/hierarchy_bypass.py** (330 lines)
+2. **hololoom/redteam/strategy_generators/hierarchy_bypass.py** (330 lines)
    - `HierarchyBypassPayload` dataclass
    - `HierarchyBypassGenerator` class
    - Factory function: `create_hierarchy_bypass_generator()`
 
-3. **HoloLoom/redteam/strategy_generators/test_new_generators.py** (280 lines)
+3. **hololoom/redteam/strategy_generators/test_new_generators.py** (280 lines)
    - 26 comprehensive test functions
    - Test classes: TestContextOverflowGenerator, TestHierarchyBypassGenerator, TestCrossGenerator
    - 100% passing test suite
 
 ### Updated Files
-1. **HoloLoom/redteam/strategy_generators/__init__.py**
+1. **hololoom/redteam/strategy_generators/__init__.py**
    - Added imports for both new generators
    - Added factory function imports
    - Updated `__all__` exports (7 total items)
@@ -245,7 +245,7 @@ pytest HoloLoom/redteam/strategy_generators/test_new_generators.py -v
 
 **Basic Usage**:
 ```python
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     ContextOverflowGenerator,
     HierarchyBypassGenerator
 )
@@ -265,7 +265,7 @@ all_payloads = sorted(
 
 **With CARTS Executor**:
 ```python
-from HoloLoom.redteam import RedTeamOrchestrator
+from hololoom.redteam import RedTeamOrchestrator
 
 orchestrator = RedTeamOrchestrator()
 
@@ -334,7 +334,7 @@ During development, two issues were identified and fixed:
 ### Issue 2: Test Import Paths
 **Problem**: Tests used relative imports (`from context_overflow import ...`) which failed when run with pytest.
 
-**Solution**: Changed to absolute imports (`from HoloLoom.redteam.strategy_generators.context_overflow import ...`)
+**Solution**: Changed to absolute imports (`from hololoom.redteam.strategy_generators.context_overflow import ...`)
 
 ### Issue 3: Test Assertions
 **Problem**: Test assertions were too strict (expecting "false" or "memory" in all descriptions), but some payloads used "contradiction" instead.
@@ -384,8 +384,8 @@ The attack strategy generators are fully functional, thoroughly tested, and read
 
 ## References
 
-- **Implementation**: HoloLoom/redteam/strategy_generators/
-- **Tests**: HoloLoom/redteam/strategy_generators/test_new_generators.py
+- **Implementation**: hololoom/redteam/strategy_generators/
+- **Tests**: hololoom/redteam/strategy_generators/test_new_generators.py
 - **Documentation**: GENERATORS_GUIDE.md, QUICK_START.md
 - **Commit**: d46faa25
 

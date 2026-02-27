@@ -223,9 +223,9 @@ from dataclasses import dataclass
 import pickle
 import hashlib
 
-from HoloLoom.motif.xbar_chunker import XBarNode, UniversalGrammarChunker
-from HoloLoom.warp.merge import MergeOperator, MergedObject
-from HoloLoom.performance.semantic_cache import AdaptiveSemanticCache
+from hololoom.motif.xbar_chunker import XBarNode, UniversalGrammarChunker
+from hololoom.warp.merge import MergeOperator, MergedObject
+from hololoom.performance.semantic_cache import AdaptiveSemanticCache
 
 
 @dataclass
@@ -604,7 +604,7 @@ class WeavingOrchestrator:
 
         # Compositional cache (Phase 5)
         if cfg.use_compositional_cache:
-            from HoloLoom.performance.compositional_cache import CompositionalCache
+            from hololoom.performance.compositional_cache import CompositionalCache
 
             self.compositional_cache = CompositionalCache(
                 ug_chunker=self.ug_chunker,

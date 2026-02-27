@@ -12,7 +12,7 @@
 
 ### 1.1 Ollama Provider - ✅ PRODUCTION READY
 
-**File**: `HoloLoom/llm/providers/ollama_provider.py`
+**File**: `hololoom/llm/providers/ollama_provider.py`
 **Lines**: ~120 lines
 **Status**: Fully implemented with health checks
 
@@ -57,7 +57,7 @@ class OllamaProvider:
 
 ### 1.2 Anthropic Provider - ✅ PRODUCTION READY
 
-**File**: `HoloLoom/llm/providers/anthropic_provider.py`
+**File**: `hololoom/llm/providers/anthropic_provider.py`
 **Lines**: ~150 lines
 **Status**: Fully implemented
 
@@ -92,7 +92,7 @@ class AnthropicProvider:
 
 ### 1.3 OpenAI Provider - ✅ PRODUCTION READY
 
-**File**: `HoloLoom/llm/providers/openai_provider.py`
+**File**: `hololoom/llm/providers/openai_provider.py`
 **Lines**: ~150 lines
 **Status**: Fully implemented
 
@@ -127,7 +127,7 @@ class OpenAIProvider:
 
 ### 1.4 Gemini Provider - ⚠️ NEEDS IMPLEMENTATION
 
-**File**: `HoloLoom/llm/providers/gemini_provider.py`
+**File**: `hololoom/llm/providers/gemini_provider.py`
 **Lines**: ~50 lines (INCOMPLETE)
 **Status**: Stub - ~20% complete
 
@@ -201,7 +201,7 @@ class GeminiProvider:
 
 ### 2.1 Qdrant Store - ✅ PRODUCTION READY
 
-**File**: `HoloLoom/memory/stores/qdrant_store.py`
+**File**: `hololoom/memory/stores/qdrant_store.py`
 **Lines**: 869 lines
 **Status**: Production-grade with connection pooling
 
@@ -268,7 +268,7 @@ QDRANT_API_KEY=optional
 
 ### 2.2 Neo4j Store - ✅ PRODUCTION READY
 
-**File**: `HoloLoom/memory/stores/neo4j_store.py`
+**File**: `hololoom/memory/stores/neo4j_store.py`
 **Lines**: 352 lines
 **Status**: Production-ready
 
@@ -313,7 +313,7 @@ class Neo4jMemoryStore:
 
 ### 2.3 Hybrid Neo4j + Qdrant - ✅ PRODUCTION READY
 
-**File**: `HoloLoom/memory/stores/hybrid_neo4j_qdrant.py`
+**File**: `hololoom/memory/stores/hybrid_neo4j_qdrant.py`
 **Lines**: 528 lines
 **Status**: Production-ready
 
@@ -346,7 +346,7 @@ Return Merged Results
 
 ### 2.4 LangChain Vector Stores - ✅ FACTORY COMPLETE
 
-**File**: `HoloLoom/integrations/langchain/vector_stores.py`
+**File**: `hololoom/integrations/langchain/vector_stores.py`
 **Lines**: Full factory implementation
 **Status**: 100% (factory pattern complete, individual stores may vary)
 
@@ -517,7 +517,7 @@ class VectorStoreFactory:
 
 ### 3.2 WAF Middleware - ❌ INCOMPLETE
 
-**File**: `HoloLoom/server/waf_middleware.py`
+**File**: `hololoom/server/waf_middleware.py`
 **Lines**: ~100 lines (INCOMPLETE)
 **Status**: ~40% complete
 
@@ -666,7 +666,7 @@ curl -X POST "http://localhost:8000/process" \
 
 ### Status: ✅ 100% COMPLETE (38 handlers)
 
-**Location**: `HoloLoom/chatops/`
+**Location**: `hololoom/chatops/`
 **Total Handlers**: 38 files
 **Status**: All fully implemented
 
@@ -702,7 +702,7 @@ hololoom_handlers.py         - Core HoloLoom operations
 
 ### Primary Server - ✅ WORKING
 
-**File**: `HoloLoom/integrations/mcp_server.py` (715 lines)
+**File**: `hololoom/integrations/mcp_server.py` (715 lines)
 **Status**: Production-ready
 
 **Features**:
@@ -735,7 +735,7 @@ hololoom_handlers.py         - Core HoloLoom operations
 
 ### Status: ✅ 100% COMPLETE
 
-**Location**: `HoloLoom/integrations/langchain/`
+**Location**: `hololoom/integrations/langchain/`
 
 #### 1. LLM Providers (454 lines) ✅
 - 20+ providers supported
@@ -763,7 +763,7 @@ hololoom_handlers.py         - Core HoloLoom operations
 
 ### Status: ✅ 100% COMPLETE (10 Phases)
 
-**File**: `HoloLoom/integrations/dark_trace_integration.py` (48 KB)
+**File**: `hololoom/integrations/dark_trace_integration.py` (48 KB)
 **Status**: Production-ready
 
 **Phases Implemented**:

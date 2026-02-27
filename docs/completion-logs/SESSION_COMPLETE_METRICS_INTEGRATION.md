@@ -18,7 +18,7 @@ Complete integration of Prometheus metrics into HoloLoom production system.
   - Memory operations - 4 memories found
 
 ### Phase 2: Prometheus Metrics Module ✅
-**Created**: `HoloLoom/performance/prometheus_metrics.py`
+**Created**: `hololoom/performance/prometheus_metrics.py`
 
 Exports 8 metric types:
 1. `hololoom_query_duration_seconds` - Histogram (9 buckets)
@@ -33,20 +33,20 @@ Exports 8 metric types:
 ### Phase 3: Integration into Core Components ✅
 
 #### A. WeavingOrchestrator
-**File**: `HoloLoom/weaving_orchestrator.py`
+**File**: `hololoom/weaving_orchestrator.py`
 - Added metrics import with graceful fallback
 - Track query completion (pattern, complexity, duration)
 - Track pattern selection
 - Track errors with type and stage
 
 #### B. QueryCache  
-**File**: `HoloLoom/performance/cache.py`
+**File**: `hololoom/performance/cache.py`
 - Added metrics import
 - Track cache hits in get() method
 - Track cache misses (not found + expired)
 
 #### C. ChronoTrigger
-**File**: `HoloLoom/chrono/trigger.py`
+**File**: `hololoom/chrono/trigger.py`
 - Added metrics import
 - Track breathing cycles for all 3 phases:
   - `inhale` - parasympathetic gathering
@@ -78,7 +78,7 @@ ALL METRICS WORKING! ✅
 ## Files Modified
 
 ### Created:
-1. `HoloLoom/performance/prometheus_metrics.py` (new)
+1. `hololoom/performance/prometheus_metrics.py` (new)
 2. `monitoring/prometheus.yml`
 3. `monitoring/grafana-dashboards/dashboard.yml`
 4. `monitoring/grafana-dashboards/hololoom-overview.json`
@@ -87,9 +87,9 @@ ALL METRICS WORKING! ✅
 7. `SESSION_COMPLETE_METRICS_INTEGRATION.md` (this file)
 
 ### Modified:
-1. `HoloLoom/weaving_orchestrator.py` - Added query/error metrics
-2. `HoloLoom/performance/cache.py` - Added cache metrics
-3. `HoloLoom/chrono/trigger.py` - Added breathing metrics
+1. `hololoom/weaving_orchestrator.py` - Added query/error metrics
+2. `hololoom/performance/cache.py` - Added cache metrics
+3. `hololoom/chrono/trigger.py` - Added breathing metrics
 4. `docker-compose.production.yml` - Fixed Qdrant health check
 
 ---
@@ -128,7 +128,7 @@ Pre-configured "HoloLoom Production Overview" includes:
 All metrics imports use try/except with fallback:
 ```python
 try:
-    from HoloLoom.performance.prometheus_metrics import metrics
+    from hololoom.performance.prometheus_metrics import metrics
     METRICS_ENABLED = True
 except ImportError:
     METRICS_ENABLED = False
@@ -140,7 +140,7 @@ If `prometheus_client` not installed, system continues without metrics.
 ChronoTrigger had local variable `metrics` (dict). Resolved by:
 ```python
 if METRICS_ENABLED:
-    from HoloLoom.performance.prometheus_metrics import metrics as prom_metrics
+    from hololoom.performance.prometheus_metrics import metrics as prom_metrics
     prom_metrics.track_breathing('inhale')
 ```
 

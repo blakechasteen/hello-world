@@ -13,7 +13,7 @@ CODE LINES: 1,308+ (implementation + tests + demo)
 ================================================================================
 
 PRODUCTION CODE (510 lines):
-  HoloLoom/redteam/provenance/attack_scratchpad.py
+  hololoom/redteam/provenance/attack_scratchpad.py
     - AttackScratchpadEntry (dataclass)
     - AttackChain (dataclass)
     - AttackStrategy (enum, 25 types)
@@ -33,7 +33,7 @@ PRODUCTION CODE (510 lines):
       * clear() - Clear all data
 
 PACKAGE INTERFACE (18 lines):
-  HoloLoom/redteam/provenance/__init__.py
+  hololoom/redteam/provenance/__init__.py
     - Public API exports
     - AttackScratchpad
     - AttackScratchpadEntry
@@ -42,7 +42,7 @@ PACKAGE INTERFACE (18 lines):
     - DefenseLayer
 
 TEST SUITE (500+ lines, 22 tests):
-  HoloLoom/redteam/provenance/test_attack_scratchpad.py
+  hololoom/redteam/provenance/test_attack_scratchpad.py
     - TestAttackScratchpadEntry (3 tests)
     - TestAttackScratchpad (15 tests)
     - TestAttackChain (2 tests)
@@ -50,7 +50,7 @@ TEST SUITE (500+ lines, 22 tests):
     - ALL PASSING (100%)
 
 DEMO CODE (280+ lines, 5 demos):
-  HoloLoom/redteam/provenance/demo_attack_provenance.py
+  hololoom/redteam/provenance/demo_attack_provenance.py
     - demo_basic_attack_tracking()
     - demo_attack_chain()
     - demo_statistics_analysis()
@@ -237,7 +237,7 @@ CODE QUALITY METRICS:
 ================================================================================
 
 PATTERN ORIGIN:
-  Follows HoloLoom/recursive/scratchpad.py pattern exactly
+  Follows hololoom/recursive/scratchpad.py pattern exactly
   - Dataclass entries for immutability
   - List-based storage with LRU trimming
   - Filter methods returning entry slices
@@ -345,10 +345,10 @@ DEPLOYMENT:
 
 QUICK START (5 minutes):
   1. Read: ATTACK_SCRATCHPAD_QUICK_REF.md (Quick Start section)
-  2. Run: python HoloLoom/redteam/provenance/demo_attack_provenance.py
+  2. Run: python hololoom/redteam/provenance/demo_attack_provenance.py
 
 BASIC USAGE:
-  from HoloLoom.redteam.provenance import (
+  from hololoom.redteam.provenance import (
       AttackScratchpad, AttackStrategy, DefenseLayer
   )
 
@@ -368,7 +368,7 @@ BASIC USAGE:
   print(f"Success rate: {stats['success_rate']:.1%}")
 
 RUNNING TESTS:
-  pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v
+  pytest hololoom/redteam/provenance/test_attack_scratchpad.py -v
 
 ================================================================================
                         DOCUMENTATION GUIDE
@@ -448,8 +448,8 @@ IMPLEMENTATION:
 IMMEDIATE:
   1. Review this summary
   2. Read ATTACK_SCRATCHPAD_IMPLEMENTATION_SUMMARY.md
-  3. Run demo: python HoloLoom/redteam/provenance/demo_attack_provenance.py
-  4. Run tests: pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v
+  3. Run demo: python hololoom/redteam/provenance/demo_attack_provenance.py
+  4. Run tests: pytest hololoom/redteam/provenance/test_attack_scratchpad.py -v
 
 SHORT TERM (Phase 2):
   - Integrate with CARTS main module

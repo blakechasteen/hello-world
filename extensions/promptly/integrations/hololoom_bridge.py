@@ -194,7 +194,7 @@ class HoloLoomBridge:
         """Lazy-load HoloLoom if available."""
         if self._hololoom_available is None:
             try:
-                from HoloLoom import HoloLoom
+                from hololoom import hololoom
                 if self._hololoom is None:
                     self._hololoom = HoloLoom()
                 self._hololoom_available = True
@@ -444,7 +444,7 @@ Output Summary:
             # Build search query from prompt and task
             search_query = f"{task_description} {prompt_content[:200]}"
 
-            # Recall from HoloLoom memory
+            # Recall from hololoom memory
             memories = await self._hololoom.recall(search_query)
 
             for mem in memories[:k]:
@@ -639,7 +639,7 @@ Output Summary:
         # Try to use HoloLoom's agentic reasoning if available
         if await self._ensure_hololoom():
             try:
-                from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+                from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
 
                 # Map mode to HoloLoom's ReasoningMode
                 mode_map = {
@@ -773,7 +773,7 @@ Output Summary:
                     }
                     break
 
-        # Get memory stats from HoloLoom if available
+        # Get memory stats from hololoom if available
         if await self._ensure_hololoom():
             memories = await self._hololoom.recall(f"prompt {prompt_name}")
             stats['memory_stats'] = {

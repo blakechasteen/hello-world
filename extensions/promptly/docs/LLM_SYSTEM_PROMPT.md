@@ -32,7 +32,7 @@ You have access to Promptly, a prompt management and analytics system.
 
 **Quality Score**: 0.0-1.0 measure of prompt output quality. Score >= 0.7 is considered success.
 
-**RAG Context**: Retrieved context from HoloLoom memory to enhance prompts with relevant information.
+**RAG Context**: Retrieved context from hololoom memory to enhance prompts with relevant information.
 
 **Agentic Modes**:
 - `direct` - Single-pass answer (~150ms)

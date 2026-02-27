@@ -56,7 +56,7 @@ try:
     import importlib.util
     llm_spec = importlib.util.spec_from_file_location(
         "llm_integration",
-        Path(__file__).parent.parent / "HoloLoom" / "awareness" / "llm_integration.py"
+        Path(__file__).parent.parent / "hololoom" / "awareness" / "llm_integration.py"
     )
     llm_module = importlib.util.module_from_spec(llm_spec)
     llm_spec.loader.exec_module(llm_module)

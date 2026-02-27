@@ -44,8 +44,8 @@ python Promptly/promptly/web_dashboard_realtime.py
 **Key API Commands:**
 ```python
 # HoloLoom
-from HoloLoom import HoloLoom
-loom = await HoloLoom.create(pattern="fast")
+from hololoom import hololoom
+loom = await hololoom.create(pattern="fast")
 result = await loom.query("What is Thompson Sampling?")
 
 # Promptly
@@ -55,9 +55,9 @@ result = await promptly.execute(prompt="...", model="gpt-4")
 ```
 
 **Essential Files:**
-- Main API: [HoloLoom/unified_api.py:1](HoloLoom/unified_api.py#L1)
-- Configuration: [HoloLoom/config.py:1](HoloLoom/config.py#L1)
-- Tests: [HoloLoom/test_unified_policy.py:1](HoloLoom/test_unified_policy.py#L1)
+- Main API: [hololoom/unified_api.py:1](hololoom/unified_api.py#L1)
+- Configuration: [hololoom/config.py:1](hololoom/config.py#L1)
+- Tests: [hololoom/test_unified_policy.py:1](hololoom/test_unified_policy.py#L1)
 - Terminal UI: [Promptly/promptly/ui/terminal_app_wired.py:1](Promptly/promptly/ui/terminal_app_wired.py#L1)
 
 **Quick Troubleshooting:**
@@ -94,7 +94,7 @@ Query Input
 ### Core Components
 
 #### 1. Weaving Orchestrator
-**Location:** [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py)
+**Location:** [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py)
 **Purpose:** Central coordinator implementing the complete 7-stage pipeline
 **Key Features:**
 - Async/await concurrent processing
@@ -103,7 +103,7 @@ Query Input
 - Tool execution and response assembly
 
 #### 2. Policy Engine (Neural Decision-Making)
-**Location:** [HoloLoom/policy/unified.py](HoloLoom/policy/unified.py) (44,202 lines)
+**Location:** [hololoom/policy/unified.py](hololoom/policy/unified.py) (44,202 lines)
 **Components:**
 - **NeuralCore:** Transformer-based decision network
 - **Thompson Sampling:** Bayesian exploration/exploitation
@@ -118,7 +118,7 @@ Query Input
 **Achievement:** 71% budget savings through smart operation selection
 
 #### 3. Multi-Scale Embeddings
-**Location:** [HoloLoom/embedding/](HoloLoom/embedding/)
+**Location:** [hololoom/embedding/](hololoom/embedding/)
 **Key Files:**
 - `spectral.py` (17,968 lines) - Matryoshka embeddings
 - `matryoshka_gate.py` (14,829 lines) - Progressive filtering
@@ -130,7 +130,7 @@ Query Input
 - Graceful degradation without sentence-transformers
 
 #### 4. Memory Systems
-**Location:** [HoloLoom/memory/](HoloLoom/memory/)
+**Location:** [hololoom/memory/](hololoom/memory/)
 **15+ files** implementing multiple backends:
 
 **Backend Options:**
@@ -147,7 +147,7 @@ Query Input
 - Spectral graph features for policy input
 
 #### 5. SpinningWheel (Multi-Modal Ingestion)
-**Location:** [HoloLoom/spinningWheel/](HoloLoom/spinningWheel/)
+**Location:** [hololoom/spinningWheel/](hololoom/spinningWheel/)
 **10+ specialized "spinners"** for data ingestion:
 
 - **TextSpinner:** Document processing
@@ -164,7 +164,7 @@ Query Input
 **Innovation:** Matryoshka importance gating prevents infinite crawling while capturing relevant content
 
 #### 6. Mathematical Foundation (Warp Drive)
-**Location:** [HoloLoom/warp/math/](HoloLoom/warp/math/)
+**Location:** [hololoom/warp/math/](hololoom/warp/math/)
 **42 modules** implementing rigorous mathematics:
 
 **Domains Covered:**
@@ -183,7 +183,7 @@ Query Input
 - Performance: 9-14ms per query with smart selection
 
 #### 7. Convergence Engines
-**Location:** [HoloLoom/convergence/](HoloLoom/convergence/)
+**Location:** [hololoom/convergence/](hololoom/convergence/)
 **Two decision systems:**
 
 **Standard Engine** (`engine.py` - 14,297 lines)
@@ -199,7 +199,7 @@ Query Input
 - Performance: ~1-2ms overhead
 
 #### 8. ChatOps Integration
-**Location:** [HoloLoom/chatops/](HoloLoom/chatops/)
+**Location:** [hololoom/chatops/](hololoom/chatops/)
 **20+ files** implementing Matrix protocol bot
 
 **Commands:**
@@ -232,12 +232,12 @@ Query Input
 **Keyboard Shortcuts:** Ctrl+W, Ctrl+M, Ctrl+T, Ctrl+S, Ctrl+Q
 
 #### Unified API
-**Location:** [HoloLoom/unified_api.py](HoloLoom/unified_api.py) (18,905 lines)
+**Location:** [hololoom/unified_api.py](hololoom/unified_api.py) (18,905 lines)
 
 **Key Methods:**
 ```python
 # Initialize
-loom = await HoloLoom.create(pattern="fast")
+loom = await hololoom.create(pattern="fast")
 
 # Query
 result = await loom.query("What is reinforcement learning?")
@@ -256,7 +256,7 @@ stats = await loom.get_stats()
 
 ### Configuration System
 
-**Location:** [HoloLoom/config.py](HoloLoom/config.py) (14,239 lines)
+**Location:** [hololoom/config.py](hololoom/config.py) (14,239 lines)
 
 **Three Execution Modes:**
 
@@ -267,7 +267,7 @@ stats = await loom.get_stats()
 | **FUSED** | ~300ms | All features, 3 scales, multi-scale retrieval | Maximum quality |
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 cfg_bare = Config.bare()    # Fastest
 cfg_fast = Config.fast()    # Balanced (default)
@@ -276,7 +276,7 @@ cfg_fused = Config.fused()  # Highest quality
 
 ### Testing & Validation
 
-**Main Test Suite:** [HoloLoom/test_unified_policy.py](HoloLoom/test_unified_policy.py) (22,155 lines)
+**Main Test Suite:** [hololoom/test_unified_policy.py](hololoom/test_unified_policy.py) (22,155 lines)
 **18 comprehensive tests:**
 1. Building blocks (MLP, attention)
 2. Curiosity modules (ICM, RND)
@@ -300,15 +300,15 @@ cfg_fused = Config.fused()  # Highest quality
 ### Documentation
 
 **Major Guides:**
-- [HoloLoom/README.md](HoloLoom/README.md) - Project overview
-- [HoloLoom/SYSTEM_STATUS.md](HoloLoom/SYSTEM_STATUS.md) - Complete status
-- [HoloLoom/PHASE1_COMPLETE.md](HoloLoom/PHASE1_COMPLETE.md) - Bootstrap results
-- [HoloLoom/ENHANCEMENT_ROADMAP.md](HoloLoom/ENHANCEMENT_ROADMAP.md) - Research roadmap
-- [HoloLoom/INTEGRATION_COMPLETE.md](HoloLoom/INTEGRATION_COMPLETE.md) - Math integration
-- [HoloLoom/BACKEND_SETUP_GUIDE.md](HoloLoom/BACKEND_SETUP_GUIDE.md) - Database setup (500+ lines)
-- [HoloLoom/spinningWheel/COMPREHENSIVE_REVIEW.md](HoloLoom/spinningWheel/COMPREHENSIVE_REVIEW.md) - Ingestion guide
-- [HoloLoom/chatops/DEPLOYMENT_GUIDE.md](HoloLoom/chatops/DEPLOYMENT_GUIDE.md) - Production deployment
-- [HoloLoom/warp/math/RESEARCH_FINDINGS.md](HoloLoom/warp/math/RESEARCH_FINDINGS.md) - Mathematical analysis
+- [hololoom/README.md](hololoom/README.md) - Project overview
+- [hololoom/SYSTEM_STATUS.md](hololoom/SYSTEM_STATUS.md) - Complete status
+- [hololoom/PHASE1_COMPLETE.md](hololoom/PHASE1_COMPLETE.md) - Bootstrap results
+- [hololoom/ENHANCEMENT_ROADMAP.md](hololoom/ENHANCEMENT_ROADMAP.md) - Research roadmap
+- [hololoom/INTEGRATION_COMPLETE.md](hololoom/INTEGRATION_COMPLETE.md) - Math integration
+- [hololoom/BACKEND_SETUP_GUIDE.md](hololoom/BACKEND_SETUP_GUIDE.md) - Database setup (500+ lines)
+- [hololoom/spinningWheel/COMPREHENSIVE_REVIEW.md](hololoom/spinningWheel/COMPREHENSIVE_REVIEW.md) - Ingestion guide
+- [hololoom/chatops/DEPLOYMENT_GUIDE.md](hololoom/chatops/DEPLOYMENT_GUIDE.md) - Production deployment
+- [hololoom/warp/math/RESEARCH_FINDINGS.md](hololoom/warp/math/RESEARCH_FINDINGS.md) - Mathematical analysis
 
 ---
 
@@ -645,7 +645,7 @@ promptly stats show                # View analytics
 
 ### Docker Compose Architecture
 
-**Location:** [HoloLoom/docker-compose.yml](HoloLoom/docker-compose.yml)
+**Location:** [hololoom/docker-compose.yml](hololoom/docker-compose.yml)
 
 **Services:**
 ```yaml
@@ -799,42 +799,42 @@ waitress-serve --port=5000 Promptly.promptly.web_dashboard_realtime:app
 
 #### HoloLoom Pattern Selection
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 # BARE mode - fastest (~50ms)
-loom = await HoloLoom.create(pattern="bare")
+loom = await hololoom.create(pattern="bare")
 
 # FAST mode - balanced (~150ms) - DEFAULT
-loom = await HoloLoom.create(pattern="fast")
+loom = await hololoom.create(pattern="fast")
 
 # FUSED mode - highest quality (~300ms)
-loom = await HoloLoom.create(pattern="fused")
+loom = await hololoom.create(pattern="fused")
 ```
 
 #### Memory Backend Selection
 ```python
 # Simple file-based (default, no setup needed)
-loom = await HoloLoom.create(memory_backend="simple")
+loom = await hololoom.create(memory_backend="simple")
 
 # Neo4j knowledge graph (requires Docker)
-loom = await HoloLoom.create(memory_backend="neo4j")
+loom = await hololoom.create(memory_backend="neo4j")
 
 # Qdrant vector search (requires Docker)
-loom = await HoloLoom.create(memory_backend="qdrant")
+loom = await hololoom.create(memory_backend="qdrant")
 
 # Hybrid combination
-loom = await HoloLoom.create(memory_backend="hybrid")
+loom = await hololoom.create(memory_backend="hybrid")
 ```
 
 #### Convergence Strategy
 ```python
-from HoloLoom.convergence import ConvergenceStrategy
+from hololoom.convergence import ConvergenceStrategy
 
 # Standard Thompson Sampling (default, ~1ms)
-loom = await HoloLoom.create(convergence="thompson")
+loom = await hololoom.create(convergence="thompson")
 
 # MCTS with lookahead (~2ms overhead)
-loom = await HoloLoom.create(convergence="mcts", mcts_simulations=50)
+loom = await hololoom.create(convergence="mcts", mcts_simulations=50)
 ```
 
 ### Environment Variables
@@ -876,7 +876,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # See detailed weaving traces
-loom = await HoloLoom.create(log_level="DEBUG")
+loom = await hololoom.create(log_level="DEBUG")
 ```
 
 **Promptly Analytics:**
@@ -900,7 +900,7 @@ docker-compose logs -f qdrant
 
 ```
 mythRL/
-├── HoloLoom/                  # Neural decision system (189 files)
+├── hololoom/                  # Neural decision system (189 files)
 │   ├── weaving_orchestrator.py
 │   ├── policy/unified.py      # 44,202 lines
 │   ├── embedding/             # Multi-scale (2 files)
@@ -934,11 +934,11 @@ mythRL/
 ### Key Files to Know
 
 **HoloLoom:**
-- [HoloLoom/unified_api.py:1](HoloLoom/unified_api.py#L1) - Main entry point (`HoloLoom` class)
-- [HoloLoom/weaving_orchestrator.py:1](HoloLoom/weaving_orchestrator.py#L1) - 7-stage pipeline
-- [HoloLoom/config.py:1](HoloLoom/config.py#L1) - Configuration factory
-- [HoloLoom/policy/unified.py:1](HoloLoom/policy/unified.py#L1) - Neural core + Thompson Sampling
-- [HoloLoom/convergence/mcts_engine.py:1](HoloLoom/convergence/mcts_engine.py#L1) - MCTS implementation
+- [hololoom/unified_api.py:1](hololoom/unified_api.py#L1) - Main entry point (`HoloLoom` class)
+- [hololoom/weaving_orchestrator.py:1](hololoom/weaving_orchestrator.py#L1) - 7-stage pipeline
+- [hololoom/config.py:1](hololoom/config.py#L1) - Configuration factory
+- [hololoom/policy/unified.py:1](hololoom/policy/unified.py#L1) - Neural core + Thompson Sampling
+- [hololoom/convergence/mcts_engine.py:1](hololoom/convergence/mcts_engine.py#L1) - MCTS implementation
 
 **Promptly:**
 - [Promptly/promptly/promptly.py:1](Promptly/promptly/promptly.py#L1) - Prompt engine
@@ -949,23 +949,23 @@ mythRL/
 **Documentation:**
 - [CLAUDE.md:1](CLAUDE.md#L1) - Complete developer guide
 - [QUICKSTART.md:1](QUICKSTART.md#L1) - Getting started
-- [HoloLoom/SYSTEM_STATUS.md:1](HoloLoom/SYSTEM_STATUS.md#L1) - System status
+- [hololoom/SYSTEM_STATUS.md:1](hololoom/SYSTEM_STATUS.md#L1) - System status
 - [Promptly/PROMPTLY_COMPREHENSIVE_REVIEW.md:1](Promptly/PROMPTLY_COMPREHENSIVE_REVIEW.md#L1) - Full review
 
 ### Testing Commands
 
 ```bash
 # HoloLoom - Unified Policy Tests (18 tests)
-PYTHONPATH=. python HoloLoom/test_unified_policy.py
+PYTHONPATH=. python hololoom/test_unified_policy.py
 
 # HoloLoom - Backend Tests
-PYTHONPATH=. python HoloLoom/test_backends.py
+PYTHONPATH=. python hololoom/test_backends.py
 
 # HoloLoom - Smart Integration Tests
-PYTHONPATH=. python HoloLoom/test_smart_integration.py
+PYTHONPATH=. python hololoom/test_smart_integration.py
 
 # HoloLoom - Bootstrap System (100 queries)
-PYTHONPATH=. python HoloLoom/bootstrap_system.py
+PYTHONPATH=. python hololoom/bootstrap_system.py
 
 # Promptly - Quick Test (6 systems)
 python Promptly/QUICK_TEST.py
@@ -979,7 +979,7 @@ PYTHONPATH=. python demos/02_complete_weaving_demo.py
 
 #### 1. Adding a New Tool to HoloLoom
 
-**Step 1:** Add tool to policy [HoloLoom/policy/unified.py:200-220](HoloLoom/policy/unified.py#L200-L220)
+**Step 1:** Add tool to policy [hololoom/policy/unified.py:200-220](hololoom/policy/unified.py#L200-L220)
 ```python
 class NeuralCore(nn.Module):
     def __init__(self, ...):
@@ -991,7 +991,7 @@ class NeuralCore(nn.Module):
         self.n_tools = len(self.tools)
 ```
 
-**Step 2:** Implement execution in orchestrator [HoloLoom/weaving_orchestrator.py:500-600](HoloLoom/weaving_orchestrator.py#L500-L600)
+**Step 2:** Implement execution in orchestrator [hololoom/weaving_orchestrator.py:500-600](hololoom/weaving_orchestrator.py#L500-L600)
 ```python
 class ToolExecutor:
     async def execute(self, tool_name, context):
@@ -1003,9 +1003,9 @@ class ToolExecutor:
 
 #### 2. Creating a New SpinningWheel Spinner
 
-**Step 1:** Inherit from BaseSpinner [HoloLoom/spinningWheel/base.py:1-50](HoloLoom/spinningWheel/base.py#L1-L50)
+**Step 1:** Inherit from BaseSpinner [hololoom/spinningWheel/base.py:1-50](hololoom/spinningWheel/base.py#L1-L50)
 ```python
-from HoloLoom.spinningWheel.base import BaseSpinner
+from hololoom.spinningWheel.base import BaseSpinner
 
 class YourSpinner(BaseSpinner):
     async def spin(self, raw_data: dict) -> List[MemoryShard]:
@@ -1015,11 +1015,11 @@ class YourSpinner(BaseSpinner):
         pass
 ```
 
-**Step 2:** Add to spinner factory [HoloLoom/spinningWheel/__init__.py:1-30](HoloLoom/spinningWheel/__init__.py#L1-L30)
+**Step 2:** Add to spinner factory [hololoom/spinningWheel/__init__.py:1-30](hololoom/spinningWheel/__init__.py#L1-L30)
 
 **Step 3:** Test with unified API:
 ```python
-loom = await HoloLoom.create()
+loom = await hololoom.create()
 shards = await loom.spinner_factory.get_spinner("your_type").spin(data)
 ```
 
@@ -1045,7 +1045,7 @@ promptly loop run --type your_loop --config config.json
 #### 4. Tuning Thompson Sampling Parameters
 
 ```python
-from HoloLoom.policy.unified import BanditStrategy
+from hololoom.policy.unified import BanditStrategy
 
 # Change exploration strategy
 policy = create_policy(
@@ -1065,7 +1065,7 @@ print(f"Best arm: {stats['best_arm']}")
 #### 5. Configuring MCTS Parameters
 
 ```python
-from HoloLoom.convergence.mcts_engine import MCTSEngine
+from hololoom.convergence.mcts_engine import MCTSEngine
 
 engine = MCTSEngine(
     n_simulations=50,      # More = better quality, slower
@@ -1116,7 +1116,7 @@ print(f"Tree visits: {result.metadata['tree_stats']}")
 **2. Enable Matryoshka Gating:**
 ```python
 # 3x speed improvement via progressive filtering
-loom = await HoloLoom.create(
+loom = await hololoom.create(
     pattern="fast",
     enable_matryoshka_gating=True
 )
@@ -1317,10 +1317,10 @@ CREATE TABLE skills (
 
 **HoloLoom Unified API:**
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 # Initialization
-loom = await HoloLoom.create(
+loom = await hololoom.create(
     pattern="fast",              # bare, fast, fused
     memory_backend="neo4j",      # simple, neo4j, qdrant, hybrid
     convergence="thompson",      # thompson, mcts
@@ -1510,7 +1510,7 @@ stats = promptly.get_analytics(
 ### Bootstrap System Results
 
 **Test Run:** 100 diverse queries
-**Location:** [HoloLoom/bootstrap_results/](HoloLoom/bootstrap_results/)
+**Location:** [hololoom/bootstrap_results/](hololoom/bootstrap_results/)
 
 **Metrics:**
 - ✅ **91% validation success rate**
@@ -1582,23 +1582,23 @@ stats = promptly.get_analytics(
 **Getting Started:**
 - [QUICKSTART.md:1](QUICKSTART.md#L1) - 5-minute quick start
 - [CLAUDE.md:1](CLAUDE.md#L1) - Complete developer guide (15,582 lines)
-- [HoloLoom/README.md:1](HoloLoom/README.md#L1) - HoloLoom overview
+- [hololoom/README.md:1](hololoom/README.md#L1) - HoloLoom overview
 - [Promptly/QUICKSTART.md:1](Promptly/QUICKSTART.md#L1) - Promptly getting started
 
 **System Documentation:**
-- [HoloLoom/SYSTEM_STATUS.md:1](HoloLoom/SYSTEM_STATUS.md#L1) - Complete system status
+- [hololoom/SYSTEM_STATUS.md:1](hololoom/SYSTEM_STATUS.md#L1) - Complete system status
 - [Promptly/PROMPTLY_COMPREHENSIVE_REVIEW.md:1](Promptly/PROMPTLY_COMPREHENSIVE_REVIEW.md#L1) - Full review (27,677 lines)
 - [HOLOLOOM_PROMPTLY_INTEGRATION_COMPLETE.md:1](HOLOLOOM_PROMPTLY_INTEGRATION_COMPLETE.md#L1) - Integration guide
 
 **Technical Guides:**
-- [HoloLoom/BACKEND_SETUP_GUIDE.md:1](HoloLoom/BACKEND_SETUP_GUIDE.md#L1) - Database setup (500+ lines)
-- [HoloLoom/chatops/DEPLOYMENT_GUIDE.md:1](HoloLoom/chatops/DEPLOYMENT_GUIDE.md#L1) - ChatOps deployment
-- [HoloLoom/spinningWheel/COMPREHENSIVE_REVIEW.md:1](HoloLoom/spinningWheel/COMPREHENSIVE_REVIEW.md#L1) - Data ingestion
+- [hololoom/BACKEND_SETUP_GUIDE.md:1](hololoom/BACKEND_SETUP_GUIDE.md#L1) - Database setup (500+ lines)
+- [hololoom/chatops/DEPLOYMENT_GUIDE.md:1](hololoom/chatops/DEPLOYMENT_GUIDE.md#L1) - ChatOps deployment
+- [hololoom/spinningWheel/COMPREHENSIVE_REVIEW.md:1](hololoom/spinningWheel/COMPREHENSIVE_REVIEW.md#L1) - Data ingestion
 - [docs/WARP_DRIVE_QUICKSTART.md:1](docs/WARP_DRIVE_QUICKSTART.md#L1) - Mathematical foundations
 
 **Roadmaps & Status:**
 - [Promptly/ROADMAP_v1.1.md:1](Promptly/ROADMAP_v1.1.md#L1) - Feature roadmap
-- [HoloLoom/ENHANCEMENT_ROADMAP.md:1](HoloLoom/ENHANCEMENT_ROADMAP.md#L1) - Research roadmap
+- [hololoom/ENHANCEMENT_ROADMAP.md:1](hololoom/ENHANCEMENT_ROADMAP.md#L1) - Research roadmap
 - [FINAL_DELIVERY_SUMMARY.md:1](FINAL_DELIVERY_SUMMARY.md#L1) - Delivery summary
 - [Promptly/SHIPPED.md:1](Promptly/SHIPPED.md#L1) - Production status
 
@@ -1619,7 +1619,7 @@ stats = promptly.get_analytics(
 ### Configuration Files
 
 **Docker:**
-- [HoloLoom/docker-compose.yml:1](HoloLoom/docker-compose.yml#L1) - Multi-service setup
+- [hololoom/docker-compose.yml:1](hololoom/docker-compose.yml#L1) - Multi-service setup
 - [Promptly/docker-compose.yml:1](Promptly/docker-compose.yml#L1) - Promptly services
 
 **MCP:**
@@ -1737,7 +1737,7 @@ $env:PYTHONPATH="."              # Windows PowerShell
 
 # Or use absolute imports
 cd /path/to/mythRL
-python -m HoloLoom.test_unified_policy
+python -m hololoom.test_unified_policy
 ```
 
 **Problem: File permission errors (Linux/Mac)**
@@ -1754,7 +1754,7 @@ chmod -R 755 .
 **Problem: Out of memory errors**
 ```bash
 # Reduce batch size in config
-loom = await HoloLoom.create(
+loom = await hololoom.create(
     pattern="bare",  # Use lighter mode
     batch_size=16    # Reduce from default 32
 )
@@ -1769,22 +1769,22 @@ docker-compose up -d --scale neo4j=1 --memory=8g
 python -c "import torch; print(torch.cuda.is_available())"
 
 # Force GPU usage
-loom = await HoloLoom.create(device="cuda")
+loom = await hololoom.create(device="cuda")
 
 # Or enable Matryoshka gating for 3x speedup
-loom = await HoloLoom.create(enable_matryoshka_gating=True)
+loom = await hololoom.create(enable_matryoshka_gating=True)
 ```
 
 **Problem: Tests failing**
 ```bash
 # Run tests with verbose output
-PYTHONPATH=. python HoloLoom/test_unified_policy.py -v
+PYTHONPATH=. python hololoom/test_unified_policy.py -v
 
 # Check specific test
-PYTHONPATH=. python -m pytest HoloLoom/test_unified_policy.py::test_name -v
+PYTHONPATH=. python -m pytest hololoom/test_unified_policy.py::test_name -v
 
 # Skip slow tests
-PYTHONPATH=. python HoloLoom/test_unified_policy.py --quick
+PYTHONPATH=. python hololoom/test_unified_policy.py --quick
 ```
 
 #### Dashboard & UI Issues
@@ -1822,7 +1822,7 @@ export WEBSOCKET_TIMEOUT=60
 **Problem: Knowledge graph too large**
 ```bash
 # Use Neo4j backend instead of in-memory
-loom = await HoloLoom.create(memory_backend="neo4j")
+loom = await hololoom.create(memory_backend="neo4j")
 
 # Enable pagination
 results = await loom.search_memory("query", top_k=10, offset=0)
@@ -1892,8 +1892,8 @@ python your_script.py
 
 **Community Resources:**
 - Developer guide: [CLAUDE.md:1](CLAUDE.md#L1)
-- System status: [HoloLoom/SYSTEM_STATUS.md:1](HoloLoom/SYSTEM_STATUS.md#L1)
-- Backend setup: [HoloLoom/BACKEND_SETUP_GUIDE.md:1](HoloLoom/BACKEND_SETUP_GUIDE.md#L1)
+- System status: [hololoom/SYSTEM_STATUS.md:1](hololoom/SYSTEM_STATUS.md#L1)
+- Backend setup: [hololoom/BACKEND_SETUP_GUIDE.md:1](hololoom/BACKEND_SETUP_GUIDE.md#L1)
 
 ---
 
@@ -1955,11 +1955,11 @@ The **mythRL** repository represents a complete, production-ready AI system with
 
 **For Developers:**
 1. Read [CLAUDE.md:1](CLAUDE.md#L1) (complete guide)
-2. Run test suite: `PYTHONPATH=. python HoloLoom/test_unified_policy.py`
-3. Review [HoloLoom/SYSTEM_STATUS.md:1](HoloLoom/SYSTEM_STATUS.md#L1)
+2. Run test suite: `PYTHONPATH=. python hololoom/test_unified_policy.py`
+3. Review [hololoom/SYSTEM_STATUS.md:1](hololoom/SYSTEM_STATUS.md#L1)
 
 **For Production Deployment:**
-1. Read [HoloLoom/BACKEND_SETUP_GUIDE.md:1](HoloLoom/BACKEND_SETUP_GUIDE.md#L1)
+1. Read [hololoom/BACKEND_SETUP_GUIDE.md:1](hololoom/BACKEND_SETUP_GUIDE.md#L1)
 2. Start Docker: `docker-compose up -d`
 3. Deploy: [Promptly/SHIP_IT.md:1](Promptly/SHIP_IT.md#L1)
 

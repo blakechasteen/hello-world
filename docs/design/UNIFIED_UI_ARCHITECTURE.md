@@ -134,7 +134,7 @@ hololoom-ui/
 │   │   │   ├── analytics/     # Dashboard panels
 │   │   │   └── index.ts
 │   │   ├── hooks/
-│   │   │   ├── useHoloLoom.ts # Main API hook
+│   │   │   ├── usehololoom.ts # Main API hook
 │   │   │   ├── useSafety.ts
 │   │   │   ├── useMemory.ts
 │   │   │   ├── useStreaming.ts

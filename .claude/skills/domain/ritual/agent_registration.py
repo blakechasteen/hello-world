@@ -11,7 +11,7 @@ Implements:
 - RitualAgentRegistry with O(1) capability lookup via reverse index
 - DEFAULT_RITUAL_AGENTS for pre-registered phase agents
 
-Follows HoloLoom/agentic/multi_agent.py:AgentRegistry pattern.
+Follows hololoom/agentic/multi_agent.py:AgentRegistry pattern.
 """
 
 from enum import Enum
@@ -75,7 +75,7 @@ class RitualAgentInfo:
     """
     Agent info for ritual phase registration.
 
-    Mirrors HoloLoom/agentic/multi_agent.py:AgentInfo pattern.
+    Mirrors hololoom/agentic/multi_agent.py:AgentInfo pattern.
     Includes performance tracking for Thompson Sampling integration.
     """
     # Identity
@@ -215,7 +215,7 @@ class RitualAgentRegistry:
     """
     Registry for ritual phase agents.
 
-    Mirrors HoloLoom/agentic/multi_agent.py:AgentRegistry pattern.
+    Mirrors hololoom/agentic/multi_agent.py:AgentRegistry pattern.
     O(1) lookup via capability → agent_ids reverse index.
 
     Features:

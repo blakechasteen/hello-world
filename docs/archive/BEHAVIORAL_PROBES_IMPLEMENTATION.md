@@ -2,7 +2,7 @@
 
 **Date**: December 5, 2025
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/redteam/probes/`
+**Location**: `hololoom/redteam/probes/`
 **Total Code**: 430 lines (core system)
 
 ## Overview
@@ -11,7 +11,7 @@ Complete behavioral probe system for systematic vulnerability testing of HoloLoo
 
 ## Files Created
 
-### 1. HoloLoom/redteam/probes/__init__.py (30 lines)
+### 1. hololoom/redteam/probes/__init__.py (30 lines)
 
 Package initialization file. Exports:
 - `AttackProbeType` - Enum of 7 attack types
@@ -20,7 +20,7 @@ Package initialization file. Exports:
 - `VulnerabilityProbeReport` - Comprehensive report dataclass
 - `AttackProber` - Main orchestrator class
 
-### 2. HoloLoom/redteam/probes/behavioral_probes.py (400 lines)
+### 2. hololoom/redteam/probes/behavioral_probes.py (400 lines)
 
 Core behavioral probe system containing:
 
@@ -73,7 +73,7 @@ Comprehensive demonstration of the system showing:
 
 Run with: `PYTHONPATH=. python demos/demo_behavioral_probes.py`
 
-### 4. HoloLoom/redteam/probes/README.md (300+ lines)
+### 4. hololoom/redteam/probes/README.md (300+ lines)
 
 Complete documentation covering:
 - Architecture and overview
@@ -199,7 +199,7 @@ _generate_recommendations() → List[str]
 
 ### Basic Usage
 ```python
-from HoloLoom.redteam.probes import AttackProber
+from hololoom.redteam.probes import AttackProber
 
 prober = AttackProber()
 report = await prober.run_probe_suite("target")
@@ -208,7 +208,7 @@ print(report.summary())
 
 ### With Executor
 ```python
-from HoloLoom.redteam.executor import AttackExecutor
+from hololoom.redteam.executor import AttackExecutor
 
 executor = AttackExecutor(system)
 prober = AttackProber(executor=executor)
@@ -217,7 +217,7 @@ report = await prober.run_probe_suite("target")
 
 ### Filtered Testing
 ```python
-from HoloLoom.redteam.probes import AttackProbeType
+from hololoom.redteam.probes import AttackProbeType
 
 report = await prober.run_probe_suite(
     "target",
@@ -312,15 +312,15 @@ Following HoloLoom patterns:
 ## Integration Points
 
 Works seamlessly with:
-- `HoloLoom.redteam.executor.AttackExecutor` - Probe execution
-- `HoloLoom.redteam.learning.UnifiedLearner` - Attack learning
-- `HoloLoom.alignment.safety_guardrails.SafetyGuardrails` - Safety validation
-- `HoloLoom.alignment.audit_trail.AuditTrail` - Result logging
+- `hololoom.redteam.executor.AttackExecutor` - Probe execution
+- `hololoom.redteam.learning.UnifiedLearner` - Attack learning
+- `hololoom.alignment.safety_guardrails.SafetyGuardrails` - Safety validation
+- `hololoom.alignment.audit_trail.AuditTrail` - Result logging
 
 ## Files Summary
 
 ```
-HoloLoom/redteam/probes/
+hololoom/redteam/probes/
 ├── __init__.py (30 lines)          - Package exports
 └── behavioral_probes.py (400 lines) - Core system
 
@@ -334,7 +334,7 @@ Documentation/
 
 ## Getting Started
 
-1. **Review** the README in `HoloLoom/redteam/probes/README.md`
+1. **Review** the README in `hololoom/redteam/probes/README.md`
 2. **Run** the demo: `PYTHONPATH=. python demos/demo_behavioral_probes.py`
 3. **Explore** the 7 attack categories
 4. **Use** with your target system via `AttackProber`

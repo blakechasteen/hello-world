@@ -224,7 +224,7 @@ class DeploymentVerifier:
 
         # Optional dependencies (nice-to-have)
         print("[OPTIONAL DEPENDENCIES]")
-        self.check("HoloLoom (refinement)", lambda: self.check_python_import("HoloLoom.prompting"), critical=False)
+        self.check("HoloLoom (refinement)", lambda: self.check_python_import("hololoom.prompting"), critical=False)
         self.check("prometheus_client (metrics)", lambda: self.check_python_import("prometheus_client"), critical=False)
         print()
 

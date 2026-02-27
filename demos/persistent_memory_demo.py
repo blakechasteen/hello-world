@@ -24,10 +24,10 @@ from pathlib import Path
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.memory.weaving_adapter import (
+from hololoom.config import Config
+from hololoom.Documentation.types import Query, MemoryShard
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.memory.weaving_adapter import (
     WeavingMemoryAdapter,
     create_weaving_memory
 )
@@ -49,7 +49,7 @@ DEMO_SHARDS = [
         id="shard_002",
         text="The HoloLoom weaving architecture implements a complete 9-step cycle from pattern selection to Spacetime fabric.",
         episode="hololoom_docs",
-        entities=["HoloLoom", "weaving", "Spacetime"],
+        entities=["hololoom", "weaving", "Spacetime"],
         motifs=["ARCHITECTURE", "SYSTEM"]
     ),
     MemoryShard(

@@ -15,7 +15,7 @@ from demos.jenny import register_demo, demo_phase
 
 # Jenny imports
 try:
-    from HoloLoom.visualization.jenny_llm_client import (
+    from hololoom.visualization.jenny_llm_client import (
         LLMClientConfig,
         LLMResponse,
         LLMError,

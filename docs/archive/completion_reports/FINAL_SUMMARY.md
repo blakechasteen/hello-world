@@ -53,7 +53,7 @@ A **complete, production-ready, enterprise-grade chatops system** integrating Ma
 ## 🗂️ Complete File Structure
 
 ```
-HoloLoom/chatops/
+hololoom/chatops/
 │
 ├── Phase 1: Core System (8 files, ~1,830 lines)
 │   ├── __init__.py                    # Package exports
@@ -101,9 +101,9 @@ Total: 20 files, ~5,300 lines of production code
 ```bash
 # 1. Deploy test environment (auto-setup)
 cd mythRL
-./HoloLoom/chatops/deploy_test.bat  # Windows
+./hololoom/chatops/deploy_test.bat  # Windows
 # or
-./HoloLoom/chatops/deploy_test.sh   # Linux/Mac
+./hololoom/chatops/deploy_test.sh   # Linux/Mac
 
 # 2. Configure credentials
 set MATRIX_ACCESS_TOKEN=your_token_here  # Windows
@@ -111,10 +111,10 @@ set MATRIX_ACCESS_TOKEN=your_token_here  # Windows
 export MATRIX_ACCESS_TOKEN='your_token_here'  # Linux/Mac
 
 # 3. Verify deployment
-python HoloLoom/chatops/verify_deployment.py
+python hololoom/chatops/verify_deployment.py
 
 # 4. Run bot
-python HoloLoom/chatops/run_chatops.py --config chatops_test_config.yaml
+python hololoom/chatops/run_chatops.py --config chatops_test_config.yaml
 
 # 5. Test in Matrix room
 # !ping
@@ -361,13 +361,13 @@ logging:
 
 ```bash
 # Unit tests
-pytest HoloLoom/chatops/tests/
+pytest hololoom/chatops/tests/
 
 # Integration tests
-python HoloLoom/chatops/verify_deployment.py
+python hololoom/chatops/verify_deployment.py
 
 # Performance tests
-python HoloLoom/chatops/performance_optimizer.py
+python hololoom/chatops/performance_optimizer.py
 
 # Load testing
 # (Use your preferred load testing tool)

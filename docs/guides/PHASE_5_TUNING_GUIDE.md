@@ -20,7 +20,7 @@
 ### Configuration Template
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # Production configuration (recommended)
 config = Config.fused()
@@ -237,7 +237,7 @@ config.parse_cache_size = max_merge_entries // 5  # ~66k entries
 ### Prometheus Integration
 
 ```python
-from HoloLoom.performance.cache_metrics import CacheMetricsCollector
+from hololoom.performance.cache_metrics import CacheMetricsCollector
 
 # Initialize collector
 metrics = CacheMetricsCollector(cache)
@@ -484,7 +484,7 @@ config.merge_cache_size = 2000000
 
 - [PHASE_5_ACTIVATION_GUIDE.md](PHASE_5_ACTIVATION_GUIDE.md) - Activation instructions
 - [phase5_performance_benchmark.py](../../benchmarks/phase5_performance_benchmark.py) - Benchmark suite
-- [cache_metrics.py](../../HoloLoom/performance/cache_metrics.py) - Prometheus metrics
+- [cache_metrics.py](../../hololoom/performance/cache_metrics.py) - Prometheus metrics
 - [PHASE_5_SHIPPED.md](../../PHASE_5_SHIPPED.md) - Technical summary
 
 ---

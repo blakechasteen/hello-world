@@ -23,13 +23,13 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.web_dashboard.conversation_manager import ConversationManager
-from HoloLoom.spinningWheel.chat_history import (
+from hololoom.apps.workflow_builder.conversation_manager import ConversationManager
+from hololoom.spinningWheel.chat_history import (
     ChatHistorySpinner,
     ChatHistoryAutoCapture,
     ingest_chat_history
 )
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 
 async def demo_basic_ingestion():

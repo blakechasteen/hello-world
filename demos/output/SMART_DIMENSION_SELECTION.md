@@ -187,13 +187,13 @@ Different weights for different use cases:
 ### Code Structure
 
 ```
-HoloLoom/semantic_calculus/
+hololoom/semantic_calculus/
 ├── dimension_selector.py       # Smart selector (NEW!)
 ├── dimensions.py               # 244D dimension definitions
 ├── analyzer.py                 # Updated to use selector
 └── config.py                   # SemanticCalculusConfig
 
-HoloLoom/cards/
+hololoom/cards/
 ├── bare.yaml                   # 8D simple
 ├── fast.yaml                   # 16D standard
 ├── fused.yaml                  # 36D SMART (UPDATED!)
@@ -204,7 +204,7 @@ HoloLoom/cards/
 
 #### Python API
 ```python
-from HoloLoom.semantic_calculus.dimension_selector import (
+from hololoom.semantic_calculus.dimension_selector import (
     SmartDimensionSelector,
     SelectionStrategy,
 )
@@ -411,10 +411,10 @@ if complexity_score > 0.8:
 ## Files Created
 
 ```
-HoloLoom/semantic_calculus/
+hololoom/semantic_calculus/
 └── dimension_selector.py                    # 450 lines, core selector
 
-HoloLoom/cards/
+hololoom/cards/
 └── fused.yaml                                # Updated: dimensions: 36
 
 demos/

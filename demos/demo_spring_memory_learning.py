@@ -19,12 +19,12 @@ Date: November 8, 2025
 import asyncio
 from pathlib import Path
 
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.memory.spring_memory_scoring import (
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.memory.spring_memory_scoring import (
     SpringMemoryScorer,
     AdaptiveSpringRetriever
 )
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.documentation.types import MemoryShard
 
 
 def create_test_knowledge_graph() -> KG:

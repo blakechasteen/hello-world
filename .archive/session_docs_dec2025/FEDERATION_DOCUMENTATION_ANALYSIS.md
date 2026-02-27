@@ -15,7 +15,7 @@ The HoloLoom Federation system has **comprehensive, professional-grade documenta
 ### ✅ All Required Sections Present
 
 - **Status Line**: "✅ Production Ready (December 2025)"
-- **Location & Stats**: "HoloLoom/federation/ (4,357 lines across 9 files)"
+- **Location & Stats**: "hololoom/federation/ (4,357 lines across 9 files)"
 - **Overview**: 3 detailed paragraphs explaining architecture
 - **Quick Start**: 2 complete code examples (basic + production)
 - **Key Components**: Comprehensive table of all modules
@@ -273,7 +273,7 @@ Each includes:
 
 ### Required by CLAUDE.md Instructions
 
-From CLAUDE.md: "Create HoloLoom/federation/README.md with:"
+From CLAUDE.md: "Create hololoom/federation/README.md with:"
 
 ✅ **1. Status line (Production Ready/Experimental + date December 2025)**
 ```
@@ -282,7 +282,7 @@ Status: ✅ Production Ready (December 2025)
 
 ✅ **2. Location and line count**
 ```
-Location: `HoloLoom/federation/` (4,357 lines across 9 files)
+Location: `hololoom/federation/` (4,357 lines across 9 files)
 ```
 
 ✅ **3. Overview (2-3 paragraphs explaining SWIM gossip, Kademlia DHT, P2P federation)**

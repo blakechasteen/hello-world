@@ -19,7 +19,7 @@ KEY FINDINGS
    TIER 1 - MUST TEST (Central Systems):
    ─────────────────────────────────────
 
-   Rank 1: HoloLoom/orchestrator/ (45+ files)
+   Rank 1: hololoom/orchestrator/ (45+ files)
    - THE CENTRAL SYSTEM: All queries go through here
    - 9-step weaving cycle completely untested
    - Stage executors: 8 files, zero tests
@@ -27,27 +27,27 @@ KEY FINDINGS
    - Impact: CRITICAL
    - Effort: 40-60 hours
 
-   Rank 2: HoloLoom/weaving/ (16 files)
+   Rank 2: hololoom/weaving/ (16 files)
    - Pattern selection strategies (BARE/FAST/FUSED/RESEARCH): untested
    - All stage composition: untested
    - Impact: HIGH
    - Effort: 20-30 hours
 
-   Rank 3: HoloLoom/policy/ (6 files)
+   Rank 3: hololoom/policy/ (6 files)
    - Thompson Sampling bandit: UNTESTED (core algorithm!)
    - Policy weight adaptation: untested
    - Tool selection strategies: untested
    - Impact: HIGH
    - Effort: 20-30 hours
 
-   Rank 4: HoloLoom/embedding/ (8 files)
+   Rank 4: hololoom/embedding/ (8 files)
    - Zero-copy optimization: UNTESTED (claims 37x speedup!)
    - Spectral features: untested
    - Matryoshka gate: untested
    - Impact: HIGH (performance claim unvalidated)
    - Effort: 20-30 hours
 
-   Rank 5: HoloLoom/spinningWheel/ (36+ adapters)
+   Rank 5: hololoom/spinningWheel/ (36+ adapters)
    - PDF, YouTube, Email, Git, Code, Image, Audio, etc.
    - 27+ adapters completely untested
    - Entry point for all data ingestion
@@ -212,10 +212,10 @@ STRUCTURAL ISSUES
    - No fixture/mock organization visible
 
 3. Undocumented Features with Tests:
-   - HoloLoom/loom/tests/ - only 2 files (partial)
-   - HoloLoom/bandits/tests/ - only 2 files (neural_ts untested)
-   - HoloLoom/chaining/tests/ - only 2 files (17 patterns?)
-   - HoloLoom/routing/tests/ - only 1 file (learning untested)
+   - hololoom/loom/tests/ - only 2 files (partial)
+   - hololoom/bandits/tests/ - only 2 files (neural_ts untested)
+   - hololoom/chaining/tests/ - only 2 files (17 patterns?)
+   - hololoom/routing/tests/ - only 1 file (learning untested)
 
 ═════════════════════════════════════════════════════════════════════════════
 

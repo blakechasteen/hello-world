@@ -24,12 +24,12 @@ import time
 from typing import List
 
 # HoloLoom core
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.config import Config, ExecutionMode
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config, ExecutionMode
 
 # Alignment framework
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     create_guardrails,
     create_detector,
     create_guard,
@@ -40,7 +40,7 @@ from HoloLoom.alignment import (
 
 # Monitoring
 try:
-    from HoloLoom.alignment.monitoring import AlignmentMonitor
+    from hololoom.alignment.monitoring import AlignmentMonitor
     MONITORING_AVAILABLE = True
 except ImportError:
     MONITORING_AVAILABLE = False
@@ -301,7 +301,7 @@ async def test_end_to_end_pipeline():
 
         # Step 2: Deception detection
         print(f"   2. DeceptionDetector...", end=" ")
-        from HoloLoom.alignment.deception_detection import ActionObservation
+        from hololoom.alignment.deception_detection import ActionObservation
 
         action_obs = ActionObservation(
             action=f"Processing query: {query.text}",
@@ -368,10 +368,10 @@ async def main():
     print("="*80)
     print("\n✅ Integration verified successfully!")
     print("\nNext steps:")
-    print("  - Run full pytest suite: pytest HoloLoom/tests/integration/test_alignment_hololoom.py -v")
-    print("  - Start Prometheus server: python HoloLoom/alignment/prometheus_server.py")
-    print("  - Configure Matrix alerts: see HoloLoom/alignment/matrix_chatops.py")
-    print("  - Deploy to production: see HoloLoom/alignment/PRODUCTION_DEPLOYMENT.md")
+    print("  - Run full pytest suite: pytest hololoom/tests/integration/test_alignment_hololoom.py -v")
+    print("  - Start Prometheus server: python hololoom/alignment/prometheus_server.py")
+    print("  - Configure Matrix alerts: see hololoom/alignment/matrix_chatops.py")
+    print("  - Deploy to production: see hololoom/alignment/PRODUCTION_DEPLOYMENT.md")
     print()
 
 

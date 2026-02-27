@@ -270,7 +270,7 @@ python tests/test_integration.py
 
 ```bash
 # File store standalone
-python HoloLoom/memory/stores/file_store.py
+python hololoom/memory/stores/file_store.py
 
 # Hybrid memory demo
 python demos/06_hybrid_memory.py

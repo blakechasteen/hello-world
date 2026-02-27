@@ -2,7 +2,7 @@
 """
 Code Reviewer Skill Demo
 =========================
-Demonstrates using the code-reviewer skill from HoloLoom's Skills System.
+Demonstrates using the code-reviewer skill from hololoom's Skills System.
 
 This demo shows:
 1. Basic code review
@@ -17,8 +17,8 @@ import asyncio
 import time
 from pathlib import Path
 
-from HoloLoom.agentic import execute_skill, list_available_skills
-from HoloLoom.config import Config
+from hololoom.agentic import execute_skill, list_available_skills
+from hololoom.config import Config
 
 
 async def demo_basic_review():

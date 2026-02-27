@@ -31,89 +31,89 @@
   const NODE_METADATA = {
     // Layer 1: Input Processing
     'Input Processing': {
-      file: 'HoloLoom/input/router.py:15',
+      file: 'hololoom/input/router.py:15',
       description: 'Multi-modal input routing system',
       metrics: { latency: '~20ms', complexity: 'Medium' }
     },
     'Text Processor': {
-      file: 'HoloLoom/input/text_processor.py:30',
+      file: 'hololoom/input/text_processor.py:30',
       description: 'Tokenization and entity extraction',
       metrics: { latency: '~15ms', complexity: 'Low' }
     },
     'Image Processor': {
-      file: 'HoloLoom/input/image_processor.py:45',
+      file: 'hololoom/input/image_processor.py:45',
       description: 'CLIP encoding and OCR (DeepSeek)',
       metrics: { latency: '~200ms', complexity: 'High' }
     },
 
     // Layer 2: Pattern Selection
     'Pattern Selection': {
-      file: 'HoloLoom/loom/command.py:25',
+      file: 'hololoom/loom/command.py:25',
       description: 'Selects BARE/FAST/FUSED execution mode',
       metrics: { latency: '~3ms', complexity: 'Low' }
     },
 
     // Layer 4: Memory Retrieval
     'Memory Retrieval': {
-      file: 'HoloLoom/memory/cache.py:150',
+      file: 'hololoom/memory/cache.py:150',
       description: 'BM25 + semantic similarity search',
       metrics: { latency: '~45ms', complexity: 'Medium' }
     },
     'Yarn Graph': {
-      file: 'HoloLoom/memory/graph.py:1',
+      file: 'hololoom/memory/graph.py:1',
       description: 'NetworkX-based knowledge graph',
       metrics: { latency: '~20ms', complexity: 'Medium' }
     },
 
     // Layer 5: Feature Extraction
     'Feature Extraction': {
-      file: 'HoloLoom/resonance/shed.py:1',
+      file: 'hololoom/resonance/shed.py:1',
       description: 'Motif + Embedding + Spectral extraction',
       metrics: { latency: '~60ms', complexity: 'High' }
     },
     'DotPlasma': {
-      file: 'HoloLoom/documentation/types.py:45',
+      file: 'hololoom/documentation/types.py:45',
       description: 'Unified feature representation',
       metrics: { latency: '~5ms', complexity: 'Low' }
     },
 
     // Layer 7: Decision Making
     'Neural Policy': {
-      file: 'HoloLoom/policy/unified.py:200',
+      file: 'hololoom/policy/unified.py:200',
       description: 'Transformer-based tool selection',
       metrics: { latency: '~35ms', complexity: 'High' }
     },
     'Thompson Sampling': {
-      file: 'HoloLoom/policy/unified.py:450',
+      file: 'hololoom/policy/unified.py:450',
       description: 'Bayesian exploration/exploitation',
       metrics: { latency: '<1ms', complexity: 'Medium' }
     },
     'Convergence Engine': {
-      file: 'HoloLoom/convergence/engine.py:1',
+      file: 'hololoom/convergence/engine.py:1',
       description: 'Probability collapse to discrete action',
       metrics: { latency: '~5ms', complexity: 'Medium' }
     },
 
     // Layer 9: Learning
     'Reflection Buffer': {
-      file: 'HoloLoom/reflection/buffer.py:1',
+      file: 'hololoom/reflection/buffer.py:1',
       description: 'Episodic memory for learning',
       metrics: { latency: '~5ms', complexity: 'Low' }
     },
 
     // Memory Backends
     'INMEMORY': {
-      file: 'HoloLoom/memory/graph.py:1',
+      file: 'hololoom/memory/graph.py:1',
       description: 'NetworkX in-memory graph',
       metrics: { latency: '~20ms', persistence: 'No' }
     },
     'HYBRID': {
-      file: 'HoloLoom/memory/neo4j_graph.py:1',
+      file: 'hololoom/memory/neo4j_graph.py:1',
       description: 'Neo4j + Qdrant persistence',
       metrics: { latency: '~45ms', persistence: 'Yes' }
     },
     'HYPERSPACE': {
-      file: 'HoloLoom/memory/hyperspace_backend.py:1',
+      file: 'hololoom/memory/hyperspace_backend.py:1',
       description: 'Gated multipass recursive',
       metrics: { latency: '~60ms', persistence: 'Yes' }
     }

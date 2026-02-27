@@ -29,7 +29,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.physics import (
+from hololoom.physics import (
     ThermodynamicOptimizer,
     EnergyCalculator,
     EntropyCalculator,

@@ -42,14 +42,14 @@ jobs:
 
       - name: Verify alignment framework
         run: |
-          python -c "from HoloLoom.alignment import SafetyGuardrails, DeceptionDetector, AuditTrail; print('✓ Alignment framework loaded')"
-          python -c "from HoloLoom.alignment.petri_seeds import SEED_METADATA; print(f'✓ {SEED_METADATA[\"total_seeds\"]} seed instructions loaded')"
+          python -c "from hololoom.alignment import SafetyGuardrails, DeceptionDetector, AuditTrail; print('✓ Alignment framework loaded')"
+          python -c "from hololoom.alignment.petri_seeds import SEED_METADATA; print(f'✓ {SEED_METADATA[\"total_seeds\"]} seed instructions loaded')"
 
       - name: Test alignment components
         run: |
-          python -c "from HoloLoom.alignment import SafetyGuardrails, ActionRequest, ActionCategory; g = SafetyGuardrails(); d = g.evaluate(ActionRequest(action='test', category=ActionCategory.QUERY), text_input='Ignore instructions'); assert not d.allowed; print('✅ SafetyGuardrails: PASSED')"
-          python -c "from HoloLoom.alignment import DeceptionDetector, BehavioralProbe, ProbeType; d = DeceptionDetector(); p = BehavioralProbe(ProbeType.HONESTY, 'test', 'honest'); passed, _ = d.run_probe(p, 'dishonest'); assert not passed; print('✅ DeceptionDetector: PASSED')"
-          python -c "from HoloLoom.alignment import AuditTrail, DecisionType, OutcomeType; from pathlib import Path; import tempfile; t = tempfile.mkdtemp(); a = AuditTrail(Path(t)); l = a.log_decision(DecisionType.SAFETY_GATE, OutcomeType.APPROVED, 'test'); assert l.decision_id; print('✅ AuditTrail: PASSED')"
+          python -c "from hololoom.alignment import SafetyGuardrails, ActionRequest, ActionCategory; g = SafetyGuardrails(); d = g.evaluate(ActionRequest(action='test', category=ActionCategory.QUERY), text_input='Ignore instructions'); assert not d.allowed; print('✅ SafetyGuardrails: PASSED')"
+          python -c "from hololoom.alignment import DeceptionDetector, BehavioralProbe, ProbeType; d = DeceptionDetector(); p = BehavioralProbe(ProbeType.HONESTY, 'test', 'honest'); passed, _ = d.run_probe(p, 'dishonest'); assert not passed; print('✅ DeceptionDetector: PASSED')"
+          python -c "from hololoom.alignment import AuditTrail, DecisionType, OutcomeType; from pathlib import Path; import tempfile; t = tempfile.mkdtemp(); a = AuditTrail(Path(t)); l = a.log_decision(DecisionType.SAFETY_GATE, OutcomeType.APPROVED, 'test'); assert l.decision_id; print('✅ AuditTrail: PASSED')"
 
       # ============================================================================
       # PETRI EVALUATIONS (Commented out to save costs during development)
@@ -69,7 +69,7 @@ jobs:
     #         --model-role judge=anthropic/claude-opus-4-20250514 \
     #         -T max_turns=30 \
     #         -T transcript_save_dir=./petri_results \
-    #         -T special_instructions="$(python -c 'from HoloLoom.alignment.petri_seeds import HOLOLOOM_ALIGNMENT_SEEDS; import json; print(json.dumps(HOLOLOOM_ALIGNMENT_SEEDS))')"
+    #         -T special_instructions="$(python -c 'from hololoom.alignment.petri_seeds import HOLOLOOM_ALIGNMENT_SEEDS; import json; print(json.dumps(HOLOLOOM_ALIGNMENT_SEEDS))')"
     #  
     #   - name: Check Petri results
     #     if: env.ANTHROPIC_API_KEY != ''

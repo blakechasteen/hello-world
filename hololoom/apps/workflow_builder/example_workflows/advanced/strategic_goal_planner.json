@@ -1,0 +1,360 @@
+{
+  "version": "1.0",
+  "name": "Strategic Goal Planner",
+  "description": "Hierarchical goal decomposition with constraint satisfaction, resource allocation, risk assessment, and adaptive replanning using Thompson Sampling for decision optimization.",
+  "tags": ["planning", "goals", "strategy", "resource-allocation", "risk-assessment", "optimization"],
+  "author": "hololoom Team",
+  "created": "2025-12-25",
+
+  "nodes": [
+    {
+      "id": "goal_input",
+      "agentType": "store",
+      "x": 100,
+      "y": 300,
+      "config": {
+        "store_type": "input",
+        "accept_types": ["goal_statement", "constraints", "resources"],
+        "description": "Receive goal specification"
+      }
+    },
+    {
+      "id": "goal_parser",
+      "agentType": "hololoom",
+      "x": 250,
+      "y": 300,
+      "config": {
+        "pattern": "fast",
+        "mode": "goal_extraction",
+        "extract": ["objectives", "success_criteria", "timeline"],
+        "description": "Parse and structure goal"
+      }
+    },
+    {
+      "id": "context_analyzer",
+      "agentType": "hololoom",
+      "x": 400,
+      "y": 150,
+      "config": {
+        "pattern": "fused",
+        "mode": "context_analysis",
+        "description": "Analyze current state and context"
+      }
+    },
+    {
+      "id": "constraint_extractor",
+      "agentType": "synthesizer",
+      "x": 400,
+      "y": 300,
+      "config": {
+        "extract_type": "constraints",
+        "categories": ["time", "budget", "resources", "dependencies"],
+        "description": "Extract and categorize constraints"
+      }
+    },
+    {
+      "id": "historical_analyzer",
+      "agentType": "retriever",
+      "x": 400,
+      "y": 450,
+      "config": {
+        "retrieval_type": "similar_goals",
+        "include_outcomes": true,
+        "description": "Find similar past goals and outcomes"
+      }
+    },
+    {
+      "id": "goal_decomposer",
+      "agentType": "hololoom",
+      "x": 600,
+      "y": 300,
+      "config": {
+        "pattern": "fused",
+        "mode": "hierarchical_decomposition",
+        "max_depth": 4,
+        "description": "Break goal into sub-goals hierarchy"
+      }
+    },
+    {
+      "id": "dependency_mapper",
+      "agentType": "fusion",
+      "x": 750,
+      "y": 200,
+      "config": {
+        "strategy": "dependency_graph",
+        "detect_cycles": true,
+        "description": "Map dependencies between sub-goals"
+      }
+    },
+    {
+      "id": "resource_estimator",
+      "agentType": "hololoom",
+      "x": 750,
+      "y": 400,
+      "config": {
+        "pattern": "fused",
+        "mode": "resource_estimation",
+        "estimate_types": ["time", "cost", "effort"],
+        "description": "Estimate resources per sub-goal"
+      }
+    },
+    {
+      "id": "parallel_assessment",
+      "agentType": "parallel",
+      "x": 900,
+      "y": 300,
+      "config": {
+        "strategy": "fan_out",
+        "timeout_ms": 15000,
+        "description": "Parallel risk and feasibility assessment"
+      }
+    },
+    {
+      "id": "risk_assessor",
+      "agentType": "hololoom",
+      "x": 1050,
+      "y": 150,
+      "config": {
+        "pattern": "fused",
+        "mode": "risk_assessment",
+        "risk_categories": ["technical", "resource", "external", "schedule"],
+        "description": "Assess risks per sub-goal"
+      }
+    },
+    {
+      "id": "feasibility_checker",
+      "agentType": "convergence",
+      "x": 1050,
+      "y": 300,
+      "config": {
+        "strategy": "constraint_satisfaction",
+        "description": "Check constraint feasibility"
+      }
+    },
+    {
+      "id": "priority_optimizer",
+      "agentType": "convergence",
+      "x": 1050,
+      "y": 450,
+      "config": {
+        "strategy": "thompson_sampling",
+        "optimize_for": ["impact", "urgency", "dependencies"],
+        "description": "Optimize sub-goal priorities"
+      }
+    },
+    {
+      "id": "schedule_generator",
+      "agentType": "hololoom",
+      "x": 1200,
+      "y": 200,
+      "config": {
+        "pattern": "fused",
+        "mode": "schedule_optimization",
+        "algorithm": "critical_path",
+        "description": "Generate optimized schedule"
+      }
+    },
+    {
+      "id": "resource_allocator",
+      "agentType": "fusion",
+      "x": 1200,
+      "y": 400,
+      "config": {
+        "strategy": "optimal_allocation",
+        "respect_constraints": true,
+        "description": "Allocate resources to schedule"
+      }
+    },
+    {
+      "id": "mitigation_planner",
+      "agentType": "hololoom",
+      "x": 1350,
+      "y": 150,
+      "config": {
+        "pattern": "fast",
+        "mode": "mitigation_strategies",
+        "description": "Plan risk mitigations"
+      }
+    },
+    {
+      "id": "contingency_generator",
+      "agentType": "multiquery",
+      "x": 1350,
+      "y": 350,
+      "config": {
+        "mode": "scenario_planning",
+        "scenarios": ["optimistic", "expected", "pessimistic"],
+        "description": "Generate contingency plans"
+      }
+    },
+    {
+      "id": "milestone_definer",
+      "agentType": "synthesizer",
+      "x": 1500,
+      "y": 250,
+      "config": {
+        "strategy": "milestone_extraction",
+        "include_checkpoints": true,
+        "description": "Define milestones and checkpoints"
+      }
+    },
+    {
+      "id": "success_metrics",
+      "agentType": "synthesizer",
+      "x": 1500,
+      "y": 450,
+      "config": {
+        "strategy": "kpi_definition",
+        "measurable": true,
+        "description": "Define success metrics/KPIs"
+      }
+    },
+    {
+      "id": "plan_validator",
+      "agentType": "loop",
+      "x": 1650,
+      "y": 300,
+      "config": {
+        "strategy": "iterative_refinement",
+        "max_iterations": 3,
+        "exit_condition": "constraints_satisfied",
+        "description": "Validate and refine plan"
+      }
+    },
+    {
+      "id": "plan_formatter",
+      "agentType": "formatter",
+      "x": 1800,
+      "y": 300,
+      "config": {
+        "format": "strategic_plan",
+        "include_gantt": true,
+        "include_risk_matrix": true,
+        "description": "Format final strategic plan"
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 1950,
+      "y": 300,
+      "config": {
+        "format": "strategic_plan_document",
+        "sections": ["executive_summary", "goals", "schedule", "resources", "risks", "milestones", "contingencies"]
+      }
+    }
+  ],
+
+  "connections": [
+    {"id": "c1", "from": "goal_input", "to": "goal_parser"},
+    {"id": "c2", "from": "goal_parser", "to": "context_analyzer"},
+    {"id": "c3", "from": "goal_parser", "to": "constraint_extractor"},
+    {"id": "c4", "from": "goal_parser", "to": "historical_analyzer"},
+    {"id": "c5", "from": "context_analyzer", "to": "goal_decomposer"},
+    {"id": "c6", "from": "constraint_extractor", "to": "goal_decomposer"},
+    {"id": "c7", "from": "historical_analyzer", "to": "goal_decomposer"},
+    {"id": "c8", "from": "goal_decomposer", "to": "dependency_mapper"},
+    {"id": "c9", "from": "goal_decomposer", "to": "resource_estimator"},
+    {"id": "c10", "from": "dependency_mapper", "to": "parallel_assessment"},
+    {"id": "c11", "from": "resource_estimator", "to": "parallel_assessment"},
+    {"id": "c12", "from": "parallel_assessment", "to": "risk_assessor"},
+    {"id": "c13", "from": "parallel_assessment", "to": "feasibility_checker"},
+    {"id": "c14", "from": "parallel_assessment", "to": "priority_optimizer"},
+    {"id": "c15", "from": "risk_assessor", "to": "schedule_generator"},
+    {"id": "c16", "from": "feasibility_checker", "to": "schedule_generator"},
+    {"id": "c17", "from": "priority_optimizer", "to": "schedule_generator"},
+    {"id": "c18", "from": "schedule_generator", "to": "resource_allocator"},
+    {"id": "c19", "from": "risk_assessor", "to": "mitigation_planner"},
+    {"id": "c20", "from": "schedule_generator", "to": "contingency_generator"},
+    {"id": "c21", "from": "resource_allocator", "to": "milestone_definer"},
+    {"id": "c22", "from": "mitigation_planner", "to": "milestone_definer"},
+    {"id": "c23", "from": "contingency_generator", "to": "milestone_definer"},
+    {"id": "c24", "from": "milestone_definer", "to": "success_metrics"},
+    {"id": "c25", "from": "success_metrics", "to": "plan_validator"},
+    {"id": "c26", "from": "plan_validator", "to": "goal_decomposer", "condition": "needs_refinement"},
+    {"id": "c27", "from": "plan_validator", "to": "plan_formatter", "condition": "valid"},
+    {"id": "c28", "from": "plan_formatter", "to": "final_output"}
+  ],
+
+  "input_schema": {
+    "goal": {
+      "type": "string",
+      "required": true,
+      "description": "High-level goal statement"
+    },
+    "timeline": {
+      "type": "object",
+      "required": false,
+      "properties": {
+        "start_date": {"type": "string", "format": "date"},
+        "end_date": {"type": "string", "format": "date"}
+      },
+      "description": "Target timeline"
+    },
+    "budget": {
+      "type": "number",
+      "required": false,
+      "description": "Available budget"
+    },
+    "resources": {
+      "type": "array",
+      "required": false,
+      "description": "Available resources (people, tools, etc.)"
+    },
+    "constraints": {
+      "type": "array",
+      "required": false,
+      "description": "Known constraints or restrictions"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "default": "medium",
+      "description": "Goal priority level"
+    }
+  },
+
+  "output_schema": {
+    "executive_summary": {
+      "type": "string",
+      "description": "Brief summary of the plan"
+    },
+    "goal_hierarchy": {
+      "type": "object",
+      "description": "Hierarchical breakdown of goals"
+    },
+    "schedule": {
+      "type": "object",
+      "description": "Timeline with tasks and dependencies"
+    },
+    "resource_allocation": {
+      "type": "object",
+      "description": "Resource assignments per task"
+    },
+    "risk_assessment": {
+      "type": "array",
+      "description": "Identified risks with mitigations"
+    },
+    "milestones": {
+      "type": "array",
+      "description": "Key milestones and checkpoints"
+    },
+    "success_metrics": {
+      "type": "array",
+      "description": "Measurable KPIs for tracking"
+    },
+    "contingency_plans": {
+      "type": "object",
+      "description": "Plans for different scenarios"
+    }
+  },
+
+  "evaluation": {
+    "metrics": ["goal_coverage", "constraint_satisfaction", "resource_utilization", "risk_coverage"],
+    "success_criteria": {
+      "all_subgoals_scheduled": true,
+      "constraints_satisfied": true,
+      "risks_mitigated_ratio": 0.8
+    }
+  }
+}

@@ -12,8 +12,8 @@ import os
 # Add paths - go up to repository root (tests/integration/chatops -> repo root)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
-from HoloLoom.chatops.matrix_bot import MatrixBot, MatrixBotConfig
-from HoloLoom.chatops.hololoom_handlers import HoloLoomMatrixHandlers
+from hololoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
+from hololoom.apps.chatops.hololoom_handlers import HoloLoomMatrixHandlers
 
 
 def print_section(title: str):
@@ -268,7 +268,7 @@ async def run_all_tests():
         print("🎉 ALL TESTS PASSED! 🎉\n")
         print("The Matrix bot is ready for deployment!\n")
         print("To run live bot:")
-        print("  python HoloLoom/chatops/run_bot.py \\")
+        print("  python hololoom/chatops/run_bot.py \\")
         print("    --user @yourbot:matrix.org \\")
         print("    --password your_password \\")
         print("    --hololoom-mode fast\n")

@@ -9,7 +9,7 @@ Now that all backends implement the complete `MemoryStore` protocol, here's how 
 ### Neo4j Graph Store - "The Relationship Master"
 ```python
 # Best for: Thread weaving, temporal patterns, relationship discovery
-from HoloLoom.memory.stores.neo4j_store import Neo4jMemoryStore
+from hololoom.memory.stores.neo4j_store import Neo4jMemoryStore
 
 neo4j = Neo4jMemoryStore(password="hololoom123")
 
@@ -29,7 +29,7 @@ memory = Memory(
 ### Qdrant Vector Store - "The Similarity Engine"
 ```python
 # Best for: Content similarity, semantic search, multi-scale retrieval
-from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
+from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
 
 qdrant = QdrantMemoryStore(scales=[96, 192, 384])  # Multi-scale embeddings
 
@@ -49,7 +49,7 @@ results = await qdrant.retrieve(
 ### Mem0 Intelligent Store - "The Context Understander"
 ```python
 # Best for: User personalization, intelligent extraction, LLM-powered insights
-from HoloLoom.memory.stores.mem0_store import Mem0MemoryStore
+from hololoom.memory.stores.mem0_store import Mem0MemoryStore
 
 mem0 = Mem0MemoryStore(user_id="blake")
 
@@ -65,7 +65,7 @@ await mem0.store(Memory(
 ### InMemory Cache Store - "The Speed Demon"
 ```python
 # Best for: Session state, immediate access, temporary processing
-from HoloLoom.memory.stores.in_memory_store import InMemoryStore
+from hololoom.memory.stores.in_memory_store import InMemoryStore
 
 cache = InMemoryStore()
 

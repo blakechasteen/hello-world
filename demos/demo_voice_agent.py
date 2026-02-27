@@ -18,13 +18,13 @@ import os
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from HoloLoom.voice import VoiceAgent, OpenAITTS, TurnState
+from hololoom.voice import VoiceAgent, OpenAITTS, TurnState
 
 # Check for HoloLoom availability
 try:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.config import Config
-    from HoloLoom.documentation.types import MemoryShard
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.config import Config
+    from hololoom.documentation.types import MemoryShard
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False

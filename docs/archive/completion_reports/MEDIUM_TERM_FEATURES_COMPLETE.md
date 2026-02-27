@@ -20,7 +20,7 @@ All systems are **production-ready** and **tested**.
 
 ## 1. Smart Deduplication System
 
-**File**: [`HoloLoom/memory/deduplication.py`](HoloLoom/memory/deduplication.py) (441 lines)
+**File**: [`hololoom/memory/deduplication.py`](hololoom/memory/deduplication.py) (441 lines)
 
 ### Features
 
@@ -57,7 +57,7 @@ class ContentSignature:
 ### Usage Example
 
 ```python
-from HoloLoom.memory.deduplication import DeduplicationEngine
+from hololoom.memory.deduplication import DeduplicationEngine
 
 engine = DeduplicationEngine(
     near_threshold=0.85,    # 85% similarity for near-duplicates
@@ -89,7 +89,7 @@ else:
 
 ## 2. Advanced Query Engine
 
-**File**: [`HoloLoom/memory/query_enhancements.py`](HoloLoom/memory/query_enhancements.py) (550 lines)
+**File**: [`hololoom/memory/query_enhancements.py`](hololoom/memory/query_enhancements.py) (550 lines)
 
 ### Features
 
@@ -145,7 +145,7 @@ class AdvancedQueryEngine:
 ### Usage Example
 
 ```python
-from HoloLoom.memory.query_enhancements import (
+from hololoom.memory.query_enhancements import (
     AdvancedQueryEngine,
     QueryFilter,
     QueryOptions,
@@ -167,7 +167,7 @@ options = QueryOptions(sort_by=SortOrder.RECENCY)
 results = await engine.query("beekeeping winter", filters=filters, options=options)
 
 # Example 2: Fluent API
-from HoloLoom.memory.query_enhancements import QueryBuilder
+from hololoom.memory.query_enhancements import QueryBuilder
 
 results = await (
     QueryBuilder(engine, "python async")
@@ -213,7 +213,7 @@ filters = QueryFilter(
 
 ## 3. Reverse Query System
 
-**File**: [`HoloLoom/memory/reverse_query.py`](HoloLoom/memory/reverse_query.py) (420 lines)
+**File**: [`hololoom/memory/reverse_query.py`](hololoom/memory/reverse_query.py) (420 lines)
 
 ### Features
 
@@ -263,7 +263,7 @@ class ReverseQueryEngine:
 ### Usage Example
 
 ```python
-from HoloLoom.memory.reverse_query import (
+from hololoom.memory.reverse_query import (
     ReverseQueryEngine,
     what_queries_find_this,
     how_discoverable,
@@ -323,9 +323,9 @@ Uniqueness: 0.62       (high - has distinctive terms like "varroa")
 All three systems working together:
 
 ```python
-from HoloLoom.memory.deduplication import DeduplicationEngine
-from HoloLoom.memory.query_enhancements import AdvancedQueryEngine, QueryFilter
-from HoloLoom.memory.reverse_query import ReverseQueryEngine
+from hololoom.memory.deduplication import DeduplicationEngine
+from hololoom.memory.query_enhancements import AdvancedQueryEngine, QueryFilter
+from hololoom.memory.reverse_query import ReverseQueryEngine
 
 # Setup
 dedup_engine = DeduplicationEngine()
@@ -440,8 +440,8 @@ If `datasketch` not available, system falls back to Simhash-only matching.
 ### 1. Browser History Auto-Ingest with Deduplication
 
 ```python
-from HoloLoom.spinningWheel.browser_history import get_recent_history
-from HoloLoom.spinningWheel.website import spin_webpage
+from hololoom.spinningWheel.browser_history import get_recent_history
+from hololoom.spinningWheel.website import spin_webpage
 
 visits = get_recent_history(days_back=7, min_duration=30)
 
@@ -539,7 +539,7 @@ All three systems have been validated:
 
 ```bash
 # Deduplication test
-python -c "from HoloLoom.memory.deduplication import DeduplicationEngine; ..."
+python -c "from hololoom.memory.deduplication import DeduplicationEngine; ..."
 
 # Output:
 # ✓ URL normalization (tracking params removed)
@@ -547,7 +547,7 @@ python -c "from HoloLoom.memory.deduplication import DeduplicationEngine; ..."
 # ✓ Near-duplicate detection (87.5% fuzzy match)
 
 # Reverse query test
-python -c "from HoloLoom.memory.reverse_query import ReverseQueryEngine; ..."
+python -c "from hololoom.memory.reverse_query import ReverseQueryEngine; ..."
 
 # Output:
 # ✓ Query generation (exact, likely, possible)
@@ -578,9 +578,9 @@ Ready for use in production pipelines!
 ---
 
 **Related Documentation**:
-- [README_WEBSITE.md](HoloLoom/spinningWheel/README_WEBSITE.md) - Web scraping
+- [README_WEBSITE.md](hololoom/spinningWheel/README_WEBSITE.md) - Web scraping
 - [MULTIMODAL_WEB_SCRAPING.md](MULTIMODAL_WEB_SCRAPING.md) - Text + images
-- [MEMORY_ARCHITECTURE_REFACTOR.md](HoloLoom/Documentation/MEMORY_ARCHITECTURE_REFACTOR.md) - Memory system design
+- [MEMORY_ARCHITECTURE_REFACTOR.md](hololoom/Documentation/MEMORY_ARCHITECTURE_REFACTOR.md) - Memory system design
 
 **Version**: 1.0
 **Status**: Production Ready ✅

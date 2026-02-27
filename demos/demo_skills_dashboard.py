@@ -20,14 +20,14 @@ from pathlib import Path
 
 # Direct import to avoid visualization __init__.py issues
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from HoloLoom.skills.executor import SkillExecutor
-from HoloLoom.skills.metrics import get_tracker
+from hololoom.skills.executor import SkillExecutor
+from hololoom.skills.metrics import get_tracker
 
 # Import dashboard renderer directly
 import importlib.util
 spec = importlib.util.spec_from_file_location(
     "skills_dashboard",
-    Path(__file__).parent.parent / "HoloLoom" / "visualization" / "skills_dashboard.py"
+    Path(__file__).parent.parent / "hololoom" / "visualization" / "skills_dashboard.py"
 )
 skills_dashboard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(skills_dashboard)

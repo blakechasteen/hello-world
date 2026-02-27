@@ -19,13 +19,13 @@ import asyncio
 import time
 from typing import Dict, List
 
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.memory.streaming_expansion import (
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.memory.streaming_expansion import (
     StreamingContextBuilder,
     ChunkYieldStrategy,
     stream_context_expansion
 )
-from HoloLoom.memory.adaptive_expansion import expand_context_adaptive
+from hololoom.memory.adaptive_expansion import expand_context_adaptive
 
 
 # ============================================================================

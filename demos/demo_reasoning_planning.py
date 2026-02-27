@@ -16,16 +16,16 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.reasoning.integration import (
+from hololoom.reasoning.integration import (
     ReasoningEnhancedPlanner,
     PlanExplanation,
     FailureDiagnosis,
     create_planning_knowledge_base
 )
-from HoloLoom.reasoning.deductive import (
+from hololoom.reasoning.deductive import (
     KnowledgeBase, create_fact, create_rule
 )
-from HoloLoom.reasoning.analogical import (
+from hololoom.reasoning.analogical import (
     Domain, create_entity, create_relation, create_domain
 )
 

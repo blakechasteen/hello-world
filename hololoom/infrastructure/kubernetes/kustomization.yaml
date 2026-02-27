@@ -1,0 +1,121 @@
+# Kustomize configuration for hololoom
+# Part 5: Production Hardening - Day 25
+#
+# Deploy with: kubectl apply -k .
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace
+namespace: hololoom
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: hololoom
+  app.kubernetes.io/part-of: hololoom-platform
+  app.kubernetes.io/version: "1.0.0"
+  app.kubernetes.io/managed-by: kustomize
+
+# Common annotations
+commonAnnotations:
+  documentation: "https://github.com/yourusername/hololoom"
+  support: "support@hololoom.ai"
+
+# Resources to deploy
+resources:
+  # Namespace (deploy first)
+  - namespace.yaml
+
+  # Configuration
+  - configmap.yaml
+  - secret.yaml
+
+  # Application
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+
+  # Auto-scaling
+  - hpa.yaml
+
+  # Security
+  - networkpolicy.yaml
+
+  # Monitoring
+  - servicemonitor.yaml
+
+# Images to use (override with kustomize edit set image)
+images:
+  - name: hololoom/api
+    newName: ghcr.io/yourusername/hololoom-api
+    newTag: "1.0.0"
+
+# ConfigMap generator (alternative to configmap.yaml)
+# Uncomment to generate ConfigMap from files
+# configMapGenerator:
+#   - name: hololoom-config
+#     files:
+#       - config.yaml
+
+# Secret generator (alternative to secret.yaml)
+# Uncomment to generate Secret from literals
+# secretGenerator:
+#   - name: hololoom-secrets
+#     literals:
+#       - neo4j.user=neo4j
+#       - neo4j.password=CHANGE_THIS
+#     type: Opaque
+
+# Patches (for environment-specific overrides)
+patchesStrategicMerge: []
+
+# JSON patches (for complex modifications)
+patchesJson6902: []
+
+# Replicas (override for different environments)
+# replicas:
+#   - name: hololoom-api
+#     count: 3
+
+---
+# Example: Environment-specific overlays
+#
+# Directory structure:
+# kubernetes/
+#   base/
+#     - deployment.yaml
+#     - service.yaml
+#     - kustomization.yaml
+#   overlays/
+#     production/
+#       - kustomization.yaml
+#       - replica-count.yaml
+#     staging/
+#       - kustomization.yaml
+#       - replica-count.yaml
+#     development/
+#       - kustomization.yaml
+#       - replica-count.yaml
+
+# overlays/production/kustomization.yaml:
+# apiVersion: kustomize.config.k8s.io/v1beta1
+# kind: Kustomization
+#
+# namespace: hololoom-prod
+#
+# resources:
+#   - ../../base
+#
+# replicas:
+#   - name: hololoom-api
+#     count: 10  # Production: 10 replicas
+#
+# images:
+#   - name: hololoom/api
+#     newTag: "1.0.0"  # Production: stable tag
+#
+# patchesStrategicMerge:
+#   - replica-count.yaml
+
+# Deploy with:
+# kubectl apply -k overlays/production

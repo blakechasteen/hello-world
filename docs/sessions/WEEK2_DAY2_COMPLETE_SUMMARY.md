@@ -259,7 +259,7 @@ def test_repeated_embedding_consistency(self, embedder_single_scale):
 
 2. **List All Tests**:
    ```bash
-   find HoloLoom/tests/unit -name "*.py" -type f | wc -l
+   find hololoom/tests/unit -name "*.py" -type f | wc -l
    # Result: 38 test files (before new edge cases)
    ```
 
@@ -326,21 +326,21 @@ Every edge case test file follows this structure:
 
 ```bash
 # All edge case tests
-pytest HoloLoom/tests/unit/test_*_edge_cases.py -v
+pytest hololoom/tests/unit/test_*_edge_cases.py -v
 
 # Specific edge case test
-pytest HoloLoom/tests/unit/test_config_edge_cases.py -v
-pytest HoloLoom/tests/unit/test_weaving_orchestrator_edge_cases.py -v
-pytest HoloLoom/tests/unit/test_memory_graph_edge_cases.py -v
-pytest HoloLoom/tests/unit/test_bayesian_policy_edge_cases.py -v
-pytest HoloLoom/tests/unit/test_spectral_edge_cases.py -v
+pytest hololoom/tests/unit/test_config_edge_cases.py -v
+pytest hololoom/tests/unit/test_weaving_orchestrator_edge_cases.py -v
+pytest hololoom/tests/unit/test_memory_graph_edge_cases.py -v
+pytest hololoom/tests/unit/test_bayesian_policy_edge_cases.py -v
+pytest hololoom/tests/unit/test_spectral_edge_cases.py -v
 ```
 
 ### Run With Coverage (If Fixed)
 
 ```bash
 # Once pytest-cov is working
-pytest HoloLoom/tests/ --cov=HoloLoom --cov-report=term --cov-report=html
+pytest hololoom/tests/ --cov=HoloLoom --cov-report=term --cov-report=html
 
 # View HTML report
 open htmlcov/index.html

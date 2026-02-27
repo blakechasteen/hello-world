@@ -21,12 +21,12 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from HoloLoom.awareness import (
+from hololoom.awareness import (
     CompositionalAwarenessLayer,
     DualStreamGenerator,
     MetaAwarenessLayer
 )
-from HoloLoom.awareness.llm_integration import create_llm
+from hololoom.awareness.llm_integration import create_llm
 
 
 async def check_ollama():

@@ -34,7 +34,7 @@ from typing import List, Dict, Any
 # Add HoloLoom to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from HoloLoom.voice.tracing import (
+from hololoom.voice.tracing import (
     TracingConfig,
     TracingManager,
     SamplingStrategy

@@ -16,10 +16,10 @@ from pydantic import BaseModel
 import uvicorn
 
 # HoloLoom imports (simplified)
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.fabric.spacetime import Spacetime
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.fabric.spacetime import Spacetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

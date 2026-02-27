@@ -19,7 +19,7 @@ Date: November 2025
 import asyncio
 from datetime import datetime
 
-from HoloLoom.spinningWheel.live_scratchpad import LiveScratchpad
+from hololoom.spinningWheel.live_scratchpad import LiveScratchpad
 
 
 # ============================================================================
@@ -84,7 +84,7 @@ async def demo_domain_detection():
     print("DEMO 1: Domain Detection")
     print("=" * 70)
 
-    from HoloLoom.spinningWheel.domain_router import DomainRouter
+    from hololoom.spinningWheel.domain_router import DomainRouter
 
     router = DomainRouter()
 
@@ -262,9 +262,9 @@ async def main():
     print("=" * 70)
     print("\nTo use the live scratchpad web UI:")
     print("1. Start the API server:")
-    print("   python HoloLoom/server/scratchpad_api.py")
+    print("   python hololoom/server/scratchpad_api.py")
     print("\n2. Open the web UI:")
-    print("   HoloLoom/web_dashboard/live_scratchpad.html")
+    print("   hololoom/web_dashboard/live_scratchpad.html")
     print("\n3. Select a domain, record audio, and watch it auto-populate!")
     print()
 

@@ -57,9 +57,9 @@ curl http://localhost:6333/collections
 Once backends are running, use them in HoloLoom:
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.weaving_shuttle import WeavingShuttle
 
 # Configure for Neo4j + Qdrant hybrid
 config = Config.fused()
@@ -127,7 +127,7 @@ docker-compose logs qdrant
 # - Storage permission issues
 ```
 
-### Connection refused from HoloLoom
+### Connection refused from hololoom
 
 ```bash
 # Verify containers are running

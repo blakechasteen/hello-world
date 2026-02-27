@@ -1,13 +1,13 @@
 # Attack Scratchpad: Quick Reference
 
-**Location**: `HoloLoom/redteam/provenance/`
+**Location**: `hololoom/redteam/provenance/`
 **Status**: ✅ Production Ready (22/22 tests passing)
 **Main File**: `attack_scratchpad.py` (511 lines)
 
 ## Quick Start
 
 ```python
-from HoloLoom.redteam.provenance import AttackScratchpad, AttackStrategy, DefenseLayer
+from hololoom.redteam.provenance import AttackScratchpad, AttackStrategy, DefenseLayer
 
 # Create scratchpad
 scratchpad = AttackScratchpad()
@@ -148,8 +148,8 @@ scratchpad.export_to_json("audit_trail.json")
 
 ### With CARTS Attack Generator
 ```python
-from HoloLoom.redteam.generation import AttackGenerator
-from HoloLoom.redteam.provenance import AttackScratchpad
+from hololoom.redteam.generation import AttackGenerator
+from hololoom.redteam.provenance import AttackScratchpad
 
 generator = AttackGenerator()
 scratchpad = AttackScratchpad()
@@ -203,7 +203,7 @@ print(f"Most effective: {stats['most_effective_strategy']}")
 
 Run all tests:
 ```bash
-pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v
+pytest hololoom/redteam/provenance/test_attack_scratchpad.py -v
 ```
 
 Result: **22/22 passing ✅**
@@ -211,7 +211,7 @@ Result: **22/22 passing ✅**
 ## Demo
 
 ```bash
-python HoloLoom/redteam/provenance/demo_attack_provenance.py
+python hololoom/redteam/provenance/demo_attack_provenance.py
 ```
 
 Covers:
@@ -246,7 +246,7 @@ Covers:
 
 ✅ **Fast**: O(1) add, O(n) analysis with <20ms typical queries
 
-✅ **Follows Pattern**: Compatible with HoloLoom/recursive/scratchpad.py
+✅ **Follows Pattern**: Compatible with hololoom/recursive/scratchpad.py
 
 ## Export Format
 

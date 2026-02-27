@@ -309,10 +309,10 @@ python Promptly/promptly/ui/terminal_app_wired.py
 
 ```bash
 # Quick test
-python HoloLoom/chatops/test_bot_simple.py
+python hololoom/chatops/test_bot_simple.py
 
 # Deploy locally
-python HoloLoom/chatops/run_bot.py \
+python hololoom/chatops/run_bot.py \
   --user @yourbot:matrix.org \
   --password your_password \
   --hololoom-mode fast
@@ -412,10 +412,10 @@ Overall: 3/5 (60%) - Core functionality working!
 - **Usage:** `python Promptly/promptly/ui/terminal_app_wired.py`
 
 ### Matrix Bot
-- **Deployment Guide:** `HoloLoom/chatops/DEPLOYMENT_GUIDE.md`
-- **Test Script:** `HoloLoom/chatops/test_bot_simple.py`
-- **Launcher:** `HoloLoom/chatops/run_bot.py`
-- **Handlers:** `HoloLoom/chatops/handlers/hololoom_handlers.py`
+- **Deployment Guide:** `hololoom/chatops/DEPLOYMENT_GUIDE.md`
+- **Test Script:** `hololoom/chatops/test_bot_simple.py`
+- **Launcher:** `hololoom/chatops/run_bot.py`
+- **Handlers:** `hololoom/chatops/handlers/hololoom_handlers.py`
 
 ### Documentation
 - **This Summary:** `THREE_TASKS_COMPLETE.md`

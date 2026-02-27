@@ -24,35 +24,35 @@
 
 ### Edge Case Test Files (5 files, 3,163 lines)
 
-1. **[HoloLoom/tests/unit/test_config_edge_cases.py](HoloLoom/tests/unit/test_config_edge_cases.py)**
+1. **[hololoom/tests/unit/test_config_edge_cases.py](hololoom/tests/unit/test_config_edge_cases.py)**
    - **Lines**: 379
    - **Test Classes**: 10
    - **Test Methods**: 35+
    - **Focus**: Configuration validation, boundary conditions, serialization
    - **Status**: ✅ Complete
 
-2. **[HoloLoom/tests/unit/test_weaving_orchestrator_edge_cases.py](HoloLoom/tests/unit/test_weaving_orchestrator_edge_cases.py)**
+2. **[hololoom/tests/unit/test_weaving_orchestrator_edge_cases.py](hololoom/tests/unit/test_weaving_orchestrator_edge_cases.py)**
    - **Lines**: 390
    - **Test Classes**: 10
    - **Test Methods**: 25+
    - **Focus**: Orchestrator robustness, concurrency, lifecycle
    - **Status**: ✅ Complete
 
-3. **[HoloLoom/tests/unit/test_memory_graph_edge_cases.py](HoloLoom/tests/unit/test_memory_graph_edge_cases.py)**
+3. **[hololoom/tests/unit/test_memory_graph_edge_cases.py](hololoom/tests/unit/test_memory_graph_edge_cases.py)**
    - **Lines**: 571
    - **Test Classes**: 11
    - **Test Methods**: 30+
    - **Focus**: Knowledge graph edge cases, large-scale operations
    - **Status**: ✅ Complete
 
-4. **[HoloLoom/tests/unit/test_bayesian_policy_edge_cases.py](HoloLoom/tests/unit/test_bayesian_policy_edge_cases.py)**
+4. **[hololoom/tests/unit/test_bayesian_policy_edge_cases.py](hololoom/tests/unit/test_bayesian_policy_edge_cases.py)**
    - **Lines**: 548
    - **Test Classes**: 10
    - **Test Methods**: 35+
    - **Focus**: Thompson Sampling, numerical stability, degenerate distributions
    - **Status**: ✅ Complete
 
-5. **[HoloLoom/tests/unit/test_spectral_edge_cases.py](HoloLoom/tests/unit/test_spectral_edge_cases.py)**
+5. **[hololoom/tests/unit/test_spectral_edge_cases.py](hololoom/tests/unit/test_spectral_edge_cases.py)**
    - **Lines**: 1,275
    - **Test Classes**: 10
    - **Test Methods**: 35+
@@ -131,17 +131,17 @@ find HoloLoom -name "*.py" -type f | grep -E "(policy|embedding|memory|config|we
 ```
 
 **Key Modules**:
-- HoloLoom/config.py
-- HoloLoom/weaving_orchestrator.py
-- HoloLoom/memory/graph.py
-- HoloLoom/policy/unified.py
-- HoloLoom/embedding/spectral.py
+- hololoom/config.py
+- hololoom/weaving_orchestrator.py
+- hololoom/memory/graph.py
+- hololoom/policy/unified.py
+- hololoom/embedding/spectral.py
 
 ### Step 2: List All Tests (15 minutes)
 
 ```bash
 # Find all unit tests
-find HoloLoom/tests/unit -name "*.py" -type f | wc -l
+find hololoom/tests/unit -name "*.py" -type f | wc -l
 
 # Result: 38 test files
 ```

@@ -1,0 +1,265 @@
+{
+  "version": "1.0",
+  "name": "Knowledge Graph Builder",
+  "description": "Progressive knowledge graph construction from unstructured content. Extracts entities, relationships, and builds queryable graph structure with iterative enrichment.",
+  "tags": ["graph", "entity-extraction", "progressive", "knowledge-base"],
+  "author": "hololoom Team",
+  "created": "2025-12-23",
+
+  "nodes": [
+    {
+      "id": "content_chunker",
+      "agentType": "formatter",
+      "x": 100,
+      "y": 300,
+      "config": {
+        "chunk_size": 1000,
+        "overlap": 200,
+        "strategy": "semantic_boundaries",
+        "description": "Chunk content into processable segments"
+      }
+    },
+    {
+      "id": "chunk_iterator",
+      "agentType": "loop",
+      "x": 250,
+      "y": 300,
+      "config": {
+        "iterate_over": "chunks",
+        "max_iterations": 50,
+        "description": "Process each chunk"
+      }
+    },
+    {
+      "id": "entity_extractor",
+      "agentType": "synthesizer",
+      "x": 400,
+      "y": 200,
+      "config": {
+        "extract_type": "entities",
+        "entity_types": ["person", "organization", "concept", "event", "location", "technology"],
+        "description": "Extract named entities from chunk"
+      }
+    },
+    {
+      "id": "relationship_extractor",
+      "agentType": "hololoom",
+      "x": 400,
+      "y": 400,
+      "config": {
+        "pattern": "fast",
+        "task": "relationship_extraction",
+        "relation_types": ["IS_A", "USES", "PART_OF", "CAUSES", "RELATED_TO", "CREATED_BY"],
+        "description": "Extract relationships between entities"
+      }
+    },
+    {
+      "id": "entity_resolver",
+      "agentType": "convergence",
+      "x": 600,
+      "y": 200,
+      "config": {
+        "strategy": "entity_resolution",
+        "similarity_threshold": 0.85,
+        "description": "Resolve duplicate/similar entities"
+      }
+    },
+    {
+      "id": "graph_merger",
+      "agentType": "fusion",
+      "x": 600,
+      "y": 400,
+      "config": {
+        "strategy": "incremental_merge",
+        "conflict_resolution": "confidence_weighted",
+        "description": "Merge new triples into existing graph"
+      }
+    },
+    {
+      "id": "quality_checker",
+      "agentType": "conditional",
+      "x": 750,
+      "y": 300,
+      "config": {
+        "condition": "graph_density < target_density OR orphan_count > threshold",
+        "description": "Check graph quality metrics"
+      }
+    },
+    {
+      "id": "enrichment_search",
+      "agentType": "search",
+      "x": 900,
+      "y": 450,
+      "config": {
+        "k": 10,
+        "strategy": "entity_context",
+        "description": "Search for additional context on sparse nodes"
+      }
+    },
+    {
+      "id": "relationship_inference",
+      "agentType": "hololoom",
+      "x": 1050,
+      "y": 450,
+      "config": {
+        "pattern": "fused",
+        "task": "infer_relationships",
+        "confidence_threshold": 0.7,
+        "description": "Infer implicit relationships"
+      }
+    },
+    {
+      "id": "cycle_detector",
+      "agentType": "synthesizer",
+      "x": 900,
+      "y": 150,
+      "config": {
+        "extract_type": "graph_cycles",
+        "max_cycle_length": 5,
+        "description": "Detect and validate cycles in graph"
+      }
+    },
+    {
+      "id": "consistency_validator",
+      "agentType": "safety",
+      "x": 1050,
+      "y": 150,
+      "config": {
+        "validation_type": "logical_consistency",
+        "check_contradictions": true,
+        "description": "Validate logical consistency of relationships"
+      }
+    },
+    {
+      "id": "graph_store",
+      "agentType": "store",
+      "x": 1200,
+      "y": 300,
+      "config": {
+        "store_type": "knowledge_graph",
+        "index_entities": true,
+        "index_relationships": true,
+        "description": "Persist constructed graph"
+      }
+    },
+    {
+      "id": "statistics_computer",
+      "agentType": "synthesizer",
+      "x": 1350,
+      "y": 200,
+      "config": {
+        "extract_type": "graph_statistics",
+        "metrics": ["node_count", "edge_count", "density", "connected_components", "avg_degree"],
+        "description": "Compute graph statistics"
+      }
+    },
+    {
+      "id": "summary_generator",
+      "agentType": "hololoom",
+      "x": 1350,
+      "y": 400,
+      "config": {
+        "pattern": "fast",
+        "task": "graph_summarization",
+        "description": "Generate human-readable graph summary"
+      }
+    },
+    {
+      "id": "final_output",
+      "agentType": "response",
+      "x": 1500,
+      "y": 300,
+      "config": {
+        "format": "json",
+        "include_graph_visualization": true
+      }
+    }
+  ],
+
+  "connections": [
+    {"id": "c1", "from": "content_chunker", "to": "chunk_iterator"},
+    {"id": "c2", "from": "chunk_iterator", "to": "entity_extractor"},
+    {"id": "c3", "from": "chunk_iterator", "to": "relationship_extractor"},
+    {"id": "c4", "from": "entity_extractor", "to": "entity_resolver"},
+    {"id": "c5", "from": "relationship_extractor", "to": "graph_merger"},
+    {"id": "c6", "from": "entity_resolver", "to": "graph_merger"},
+    {"id": "c7", "from": "graph_merger", "to": "quality_checker"},
+    {"id": "c8", "from": "quality_checker", "to": "cycle_detector", "condition": "false"},
+    {"id": "c9", "from": "quality_checker", "to": "enrichment_search", "condition": "true"},
+    {"id": "c10", "from": "enrichment_search", "to": "relationship_inference"},
+    {"id": "c11", "from": "relationship_inference", "to": "graph_merger"},
+    {"id": "c12", "from": "cycle_detector", "to": "consistency_validator"},
+    {"id": "c13", "from": "consistency_validator", "to": "graph_store"},
+    {"id": "c14", "from": "graph_store", "to": "statistics_computer"},
+    {"id": "c15", "from": "graph_store", "to": "summary_generator"},
+    {"id": "c16", "from": "statistics_computer", "to": "final_output"},
+    {"id": "c17", "from": "summary_generator", "to": "final_output"}
+  ],
+
+  "input_schema": {
+    "content": {
+      "type": "string",
+      "required": true,
+      "description": "Unstructured content to build graph from"
+    },
+    "content_type": {
+      "type": "string",
+      "required": false,
+      "default": "text",
+      "enum": ["text", "markdown", "html", "json"],
+      "description": "Format of input content"
+    },
+    "target_density": {
+      "type": "number",
+      "required": false,
+      "default": 0.3,
+      "description": "Target graph density for quality check"
+    },
+    "existing_graph_id": {
+      "type": "string",
+      "required": false,
+      "description": "ID of existing graph to extend"
+    }
+  },
+
+  "output_schema": {
+    "graph_id": {
+      "type": "string",
+      "description": "ID of constructed/updated graph"
+    },
+    "statistics": {
+      "type": "object",
+      "properties": {
+        "node_count": {"type": "number"},
+        "edge_count": {"type": "number"},
+        "density": {"type": "number"},
+        "connected_components": {"type": "number"}
+      }
+    },
+    "entities": {
+      "type": "array",
+      "description": "List of extracted entities with types"
+    },
+    "relationships": {
+      "type": "array",
+      "description": "List of extracted relationships"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Human-readable summary of graph contents"
+    },
+    "enrichments_made": {
+      "type": "number",
+      "description": "Number of inferred relationships added"
+    }
+  },
+
+  "evaluation": {
+    "metrics": ["entity_precision", "relationship_precision", "graph_density", "processing_time_ms", "enrichment_quality"],
+    "success_criteria": {
+      "min_entity_precision": 0.8,
+      "min_relationship_precision": 0.7,
+      "max_orphan_ratio": 0.1
+    }
+  }
+}

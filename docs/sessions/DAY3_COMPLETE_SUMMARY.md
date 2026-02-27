@@ -10,19 +10,19 @@
 
 ### Extraction Completed
 
-**Created:** `HoloLoom/policy/thompson_sampling.py` (167 lines)
+**Created:** `hololoom/policy/thompson_sampling.py` (167 lines)
 
 **Contents:**
 - `BanditStrategy` enum (5 strategies)
 - `TSBandit` class with full Thompson Sampling logic
 - All methods: `choose()`, `get_priors()`, `select_with_strategy()`, `update()`, `get_stats()`
 
-**Updated:** `HoloLoom/policy/unified.py`
-- Added import: `from HoloLoom.policy.thompson_sampling import BanditStrategy, TSBandit`
+**Updated:** `hololoom/policy/unified.py`
+- Added import: `from hololoom.policy.thompson_sampling import BanditStrategy, TSBandit`
 - Removed 150 lines of Thompson Sampling code (lines 434-584)
 - Added comment marker for extraction
 
-**Updated:** `HoloLoom/policy/__init__.py`
+**Updated:** `hololoom/policy/__init__.py`
 - Re-export `TSBandit` and `BanditStrategy` for backward compatibility
 - All existing imports continue to work
 
@@ -51,7 +51,7 @@
 
 ### Tests Created
 
-**File:** `HoloLoom/tests/unit/test_xbar_chunker_edge_cases.py` (142 lines, 10 tests)
+**File:** `hololoom/tests/unit/test_xbar_chunker_edge_cases.py` (142 lines, 10 tests)
 
 **Test Coverage:**
 
@@ -105,10 +105,10 @@ Efficiency: 75% faster than estimated (4× speed!)
 
 ### Files Modified/Created
 
-1. **Created:** `HoloLoom/policy/thompson_sampling.py` (167 lines)
-2. **Modified:** `HoloLoom/policy/unified.py` (-140 lines)
-3. **Modified:** `HoloLoom/policy/__init__.py` (+3 lines)
-4. **Created:** `HoloLoom/tests/unit/test_xbar_chunker_edge_cases.py` (142 lines, 10 tests)
+1. **Created:** `hololoom/policy/thompson_sampling.py` (167 lines)
+2. **Modified:** `hololoom/policy/unified.py` (-140 lines)
+3. **Modified:** `hololoom/policy/__init__.py` (+3 lines)
+4. **Created:** `hololoom/tests/unit/test_xbar_chunker_edge_cases.py` (142 lines, 10 tests)
 
 **Total:** 2 new files, 2 modified files, 169 lines added (net: +29 after extraction)
 

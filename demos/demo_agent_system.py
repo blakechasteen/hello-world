@@ -18,11 +18,11 @@ Shows:
 import asyncio
 from pathlib import Path
 
-from HoloLoom.agents import create_agent, list_profiles
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.config import Config
+from hololoom.agents import create_agent, list_profiles
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
 
 
 def create_test_knowledge() -> KG:

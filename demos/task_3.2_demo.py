@@ -10,13 +10,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.spinningWheel.multimodal_spinner import (
+from hololoom.spinningWheel.multimodal_spinner import (
     MultiModalSpinner,
     TextSpinner,
     StructuredDataSpinner,
     CrossModalSpinner
 )
-from HoloLoom.input.protocol import ModalityType
+from hololoom.input.protocol import ModalityType
 
 
 def print_header(title: str):

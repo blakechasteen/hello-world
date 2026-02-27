@@ -54,7 +54,7 @@ await weaver.ingest("New knowledge")
 
 ### 3. Backward Compatibility Preserved
 
-**Compatibility Adapter**: `HoloLoom/orchestrator.py`
+**Compatibility Adapter**: `hololoom/orchestrator.py`
 - Maps old `.process()` API to new `.weave()` API
 - Returns `ProcessResult` objects for legacy demos
 - Preserves `HoloLoomOrchestrator` class name
@@ -89,17 +89,17 @@ await weaver.ingest("New knowledge")
 **Created**:
 - `mythRL/__init__.py` (368 lines) - Unified Weaver API
 - `demos/unified_weaver_demo.py` (300 lines) - Comprehensive demo
-- `HoloLoom/orchestrator.py` (100 lines) - Compatibility adapter
+- `hololoom/orchestrator.py` (100 lines) - Compatibility adapter
 
 **Renamed**:
-- `HoloLoom/weaving_shuttle.py` → `HoloLoom/weaving_orchestrator.py`
+- `hololoom/weaving_shuttle.py` → `hololoom/weaving_orchestrator.py`
 
 **Archived**:
-- `HoloLoom/weaving_orchestrator.py` → `archive/legacy/weaving_orchestrator_v1.py`
-- `HoloLoom/orchestrator.py` → `archive/legacy/simple_orchestrator.py`
+- `hololoom/weaving_orchestrator.py` → `archive/legacy/weaving_orchestrator_v1.py`
+- `hololoom/orchestrator.py` → `archive/legacy/simple_orchestrator.py`
 
 **Modified**:
-- `HoloLoom/weaving_orchestrator.py` - Added backward compatibility parameters
+- `hololoom/weaving_orchestrator.py` - Added backward compatibility parameters
 - `.github/copilot-instructions.md` - Updated with Phase 1 changes
 
 ## Testing Results
@@ -115,7 +115,7 @@ await weaver.ingest("New knowledge")
 
 ### Old Way (Still Works)
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 orchestrator = WeavingOrchestrator(cfg=config, shards=shards)
 spacetime = await orchestrator.weave(query)
 ```

@@ -197,7 +197,7 @@ streamlit run demos/narrative_depth_dashboard.py --server.port 8502
 ### Embedding in Applications
 ```python
 # The dashboard uses the same API as production code
-from HoloLoom.narrative_cache import CachedMatryoshkaDepth
+from hololoom.narrative_cache import CachedMatryoshkaDepth
 
 analyzer = CachedMatryoshkaDepth()
 result = await analyzer.analyze_depth(text)

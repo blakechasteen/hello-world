@@ -11,9 +11,9 @@ Date: 2025-11-22
 
 import asyncio
 from datetime import datetime
-from HoloLoom import HoloLoom
-from HoloLoom.memory.unified import NavigationDirection
-from HoloLoom.config import Config
+from hololoom import hololoom
+from hololoom.memory.unified import NavigationDirection
+from hololoom.config import Config
 
 
 def print_section(title: str):

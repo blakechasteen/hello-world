@@ -398,7 +398,7 @@ class MRFBridge:
         """Lazy-load HoloLoom's MRF if available."""
         if self._mrf_available is None:
             try:
-                from HoloLoom.prompting.unified_mrf import UnifiedMRF
+                from hololoom.prompting.unified_mrf import UnifiedMRF
                 self._mrf = UnifiedMRF()
                 self._mrf_available = True
             except ImportError:
@@ -601,7 +601,7 @@ Remember to:
         # Try to use HoloLoom's MRF if available
         if await self._ensure_mrf():
             try:
-                from HoloLoom.prompting.unified_mrf import RefinementStrategyType
+                from hololoom.prompting.unified_mrf import RefinementStrategyType
 
                 # Map strategy
                 strategy_map = {

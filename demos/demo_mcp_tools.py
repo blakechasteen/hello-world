@@ -17,10 +17,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
-    from HoloLoom.mcp_tools import server
+    from hololoom.mcp_tools import server
     MCP_AVAILABLE = True
 except ImportError:
-    print("ERROR: Could not import HoloLoom MCP tools")
+    print("ERROR: Could not import hololoom MCP tools")
     MCP_AVAILABLE = False
     sys.exit(1)
 
@@ -212,7 +212,7 @@ async def main():
     print("   - 'Store this in memory: <fact>'")
     print("   - 'Recall what I said about <topic>'")
     print("   - 'Show me system metrics'")
-    print("\nSee HoloLoom/mcp_tools/README.md for configuration details.")
+    print("\nSee hololoom/mcp_tools/README.md for configuration details.")
 
 
 if __name__ == "__main__":

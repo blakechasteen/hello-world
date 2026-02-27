@@ -410,9 +410,9 @@ Generated: 2025-12-15
 
 import asyncio
 from typing import List, Dict, Any
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 
 async def run_agentic_pipeline(

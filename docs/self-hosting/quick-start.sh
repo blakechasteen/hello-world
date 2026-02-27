@@ -1,11 +1,11 @@
 #!/bin/bash
-# HoloLoom Quick Start Script
+# hololoom Quick Start Script
 # Usage: curl -fsSL https://raw.githubusercontent.com/your-org/hololoom/main/docs/self-hosting/quick-start.sh | bash
 
 set -e
 
 echo "==================================="
-echo "   HoloLoom Self-Hosting Setup"
+echo "   hololoom Self-Hosting Setup"
 echo "==================================="
 echo ""
 
@@ -25,18 +25,18 @@ echo ""
 
 # Clone or update repository
 if [ -d "hololoom" ]; then
-    echo "HoloLoom directory exists, pulling latest..."
+    echo "hololoom directory exists, pulling latest..."
     cd hololoom
     git pull
 else
-    echo "Cloning HoloLoom..."
+    echo "Cloning hololoom..."
     git clone https://github.com/your-org/hololoom.git
     cd hololoom
 fi
 echo ""
 
 # Start services
-echo "Starting HoloLoom services..."
+echo "Starting hololoom services..."
 docker-compose -f docker-compose.lite.yml up -d
 echo ""
 
@@ -62,20 +62,20 @@ else
     echo "  Qdrant:    STARTING"
 fi
 
-# HoloLoom API
+# hololoom API
 if curl -s http://localhost:8000/health > /dev/null; then
-    echo "  HoloLoom:  OK (http://localhost:8000)"
+    echo "  hololoom:  OK (http://localhost:8000)"
 else
-    echo "  HoloLoom:  STARTING (may take 60-90 seconds for first run)"
+    echo "  hololoom:  STARTING (may take 60-90 seconds for first run)"
 fi
 
 echo ""
 echo "==================================="
-echo "   HoloLoom is starting up!"
+echo "   hololoom is starting up!"
 echo "==================================="
 echo ""
 echo "Services:"
-echo "  - HoloLoom API: http://localhost:8000"
+echo "  - hololoom API: http://localhost:8000"
 echo "  - Neo4j Browser: http://localhost:7474 (neo4j/hololoom)"
 echo "  - Qdrant Dashboard: http://localhost:6333/dashboard"
 echo ""

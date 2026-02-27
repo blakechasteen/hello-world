@@ -38,7 +38,7 @@ async def demo_handwritten_notes():
     print("Demo 1: Handwritten Notes with Task Detection")
     print("=" * 70)
 
-    from HoloLoom.spinningWheel import HandwrittenSpinner
+    from hololoom.spinningWheel import HandwrittenSpinner
 
     # Create sample handwritten note (simulated with print text)
     print("\nCreating sample handwritten note...")
@@ -128,7 +128,7 @@ async def demo_receipt_parsing():
     print("Demo 2: Receipt Parsing with Structured Data")
     print("=" * 70)
 
-    from HoloLoom.spinningWheel import ReceiptSpinner
+    from hololoom.spinningWheel import ReceiptSpinner
 
     # Create sample receipt
     print("\nCreating sample receipt...")
@@ -227,8 +227,8 @@ async def demo_batch_processing():
     print("Demo 3: Batch Processing - Mixed Documents")
     print("=" * 70)
 
-    from HoloLoom.spinningWheel import HandwrittenSpinner, ReceiptSpinner
-    from HoloLoom.spinningWheel.ocr_backends import get_all_available_backends
+    from hololoom.spinningWheel import HandwrittenSpinner, ReceiptSpinner
+    from hololoom.spinningWheel.ocr_backends import get_all_available_backends
     import time
 
     # Create multiple sample documents
@@ -311,8 +311,8 @@ async def demo_memory_integration():
     print("Demo 4: HoloLoom Memory Integration")
     print("=" * 70)
 
-    from HoloLoom import HoloLoom
-    from HoloLoom.spinningWheel import HandwrittenSpinner, ReceiptSpinner
+    from hololoom import hololoom
+    from hololoom.spinningWheel import HandwrittenSpinner, ReceiptSpinner
 
     # Create sample documents
     print("\nCreating sample documents for memory...")
@@ -430,7 +430,7 @@ async def demo_backend_comparison():
     print("Demo 5: OCR Backend Quality Comparison")
     print("=" * 70)
 
-    from HoloLoom.spinningWheel.ocr_backends import get_all_available_backends
+    from hololoom.spinningWheel.ocr_backends import get_all_available_backends
 
     # Get backend chain
     chain = get_all_available_backends()

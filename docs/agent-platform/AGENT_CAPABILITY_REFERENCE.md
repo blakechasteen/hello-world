@@ -57,7 +57,7 @@ This is a **binding contract** that specifies:
 **EVERY capability usage is verified. No exceptions.**
 
 ```python
-from HoloLoom.agents import CapabilityEnforcer, CapabilityViolation, ViolationSeverity
+from hololoom.agents import CapabilityEnforcer, CapabilityViolation, ViolationSeverity
 
 class CapabilityEnforcer:
     """
@@ -642,7 +642,7 @@ class BoundaryEnforcer:
 ### Mandatory Registration
 
 ```python
-from HoloLoom.agents import register_enforced_agent, AgentCapability
+from hololoom.agents import register_enforced_agent, AgentCapability
 
 @register_enforced_agent(
     capabilities={

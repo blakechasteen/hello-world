@@ -18,7 +18,7 @@ Extended the HoloLoom Warp Drive with combinatorial topology capabilities:
 
 ## Deliverables
 
-### 1. Core Module ([HoloLoom/warp/combinatorics.py](HoloLoom/warp/combinatorics.py))
+### 1. Core Module ([hololoom/warp/combinatorics.py](hololoom/warp/combinatorics.py))
 
 **Three Major Components (700+ lines):**
 
@@ -34,7 +34,7 @@ Implements simplicial chain complexes with homology computation.
 
 **Example:**
 ```python
-from HoloLoom.warp.combinatorics import ChainComplex
+from hololoom.warp.combinatorics import ChainComplex
 
 # Build complex from knowledge graph
 chains = {
@@ -73,7 +73,7 @@ Simplifies complexes while preserving homology via gradient flow.
 
 **Example:**
 ```python
-from HoloLoom.warp.combinatorics import DiscreteMorseFunction
+from hololoom.warp.combinatorics import DiscreteMorseFunction
 
 # Simplify complex via Morse theory
 morse = DiscreteMorseFunction(complex=complex)
@@ -108,7 +108,7 @@ Measures consistency across knowledge graph via sheaf Laplacian.
 
 **Example:**
 ```python
-from HoloLoom.warp.combinatorics import Sheaf
+from hololoom.warp.combinatorics import Sheaf
 import numpy as np
 
 # Assign feature vectors to entities
@@ -264,7 +264,7 @@ All Integration Tests Passed!
 
 ---
 
-### 4. Updated Exports ([HoloLoom/warp/__init__.py](HoloLoom/warp/__init__.py))
+### 4. Updated Exports ([hololoom/warp/__init__.py](hololoom/warp/__init__.py))
 
 Added combinatorics to warp module exports:
 
@@ -290,7 +290,7 @@ if HAS_COMBINATORICS:
 
 **Usage:**
 ```python
-from HoloLoom.warp import ChainComplex, DiscreteMorseFunction, Sheaf
+from hololoom.warp import ChainComplex, DiscreteMorseFunction, Sheaf
 ```
 
 ---
@@ -396,7 +396,7 @@ and continuous point clouds (Vietoris-Rips).
 
 ### New Files (3)
 
-1. **[HoloLoom/warp/combinatorics.py](HoloLoom/warp/combinatorics.py)** - Core implementation (700+ lines)
+1. **[hololoom/warp/combinatorics.py](hololoom/warp/combinatorics.py)** - Core implementation (700+ lines)
    - `ChainComplex` class (150 lines)
    - `DiscreteMorseFunction` class (200 lines)
    - `Sheaf` class (250 lines)
@@ -413,7 +413,7 @@ and continuous point clouds (Vietoris-Rips).
 
 ### Modified Files (2)
 
-4. **[HoloLoom/warp/__init__.py](HoloLoom/warp/__init__.py)** - Updated exports
+4. **[hololoom/warp/__init__.py](hololoom/warp/__init__.py)** - Updated exports
    - Added combinatorics imports
    - Updated module docstring
    - Extended __all__ list
@@ -429,7 +429,7 @@ and continuous point clouds (Vietoris-Rips).
 ### Core Module Tests
 
 ```bash
-$ python HoloLoom/warp/combinatorics.py
+$ python hololoom/warp/combinatorics.py
 
 ================================================================================
 Combinatorial Topology Demo
@@ -531,8 +531,8 @@ Test 5: Semantic chain complex from embeddings
 ### With WarpSpace
 
 ```python
-from HoloLoom.warp import WarpSpace, ChainComplex
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.warp import WarpSpace, ChainComplex
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Embed documents
 embedder = MatryoshkaEmbeddings([96, 192, 384])
@@ -556,7 +556,7 @@ print(f"Clusters: {h0['dimension']}")
 ### With Topology Module
 
 ```python
-from HoloLoom.warp import PersistentHomology, ChainComplex
+from hololoom.warp import PersistentHomology, ChainComplex
 
 # Persistent homology tracks features across scales
 ph = PersistentHomology(max_dimension=2)
@@ -574,8 +574,8 @@ fixed_loops = h1['dimension']
 ### With Memory Systems
 
 ```python
-from HoloLoom.memory.graph import KG  # YarnGraph alias
-from HoloLoom.warp import ChainComplex, Sheaf
+from hololoom.memory.graph import KG  # YarnGraph alias
+from hololoom.warp import ChainComplex, Sheaf
 
 # Extract subgraph
 kg = KG()
@@ -813,7 +813,7 @@ class Sheaf:
 
 2. **Import in your code:**
    ```python
-   from HoloLoom.warp import ChainComplex, DiscreteMorseFunction, Sheaf
+   from hololoom.warp import ChainComplex, DiscreteMorseFunction, Sheaf
    ```
 
 3. **Try the examples:**
@@ -930,7 +930,7 @@ knowledge representation and reasoning.
 
 ```bash
 # Run core module demo
-python HoloLoom/warp/combinatorics.py
+python hololoom/warp/combinatorics.py
 
 # Run integration demos (6 scenarios)
 python demos/combinatorics_integration.py
@@ -939,7 +939,7 @@ python demos/combinatorics_integration.py
 python test_combinatorics_integration.py
 
 # Import in your code
-python -c "from HoloLoom.warp import ChainComplex, DiscreteMorseFunction, Sheaf; print('✅ Combinatorics loaded')"
+python -c "from hololoom.warp import ChainComplex, DiscreteMorseFunction, Sheaf; print('✅ Combinatorics loaded')"
 ```
 
 ---

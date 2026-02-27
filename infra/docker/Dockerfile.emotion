@@ -1,5 +1,5 @@
 # Dockerfile.emotion
-# Node.js container for HoloLoom 110/100 Emotional Intelligence System
+# Node.js container for hololoom 110/100 Emotional Intelligence System
 # Built: November 2025
 
 FROM node:18-alpine
@@ -11,14 +11,14 @@ RUN apk add --no-cache wget
 WORKDIR /app
 
 # Copy package files
-COPY HoloLoom/voice_ux/milestone3/package*.json ./
+COPY hololoom/voice_ux/milestone3/package*.json ./
 
 # Install Node.js dependencies
 RUN npm ci --only=production && \
     npm cache clean --force
 
 # Copy application source
-COPY HoloLoom/voice_ux/milestone3/ ./
+COPY hololoom/voice_ux/milestone3/ ./
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \

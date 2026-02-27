@@ -394,9 +394,9 @@ async def main():
    5. Adjust max_claims and timeout_seconds based on latency requirements
 
 📚 Documentation:
-   - HoloLoom/prompting/VERIFICATION_INTEGRATION.md
-   - HoloLoom/prompting/unified_mrf.py (MRF engine)
-   - HoloLoom/prompting/verification.py (CoVe implementation)
+   - hololoom/prompting/VERIFICATION_INTEGRATION.md
+   - hololoom/prompting/unified_mrf.py (MRF engine)
+   - hololoom/prompting/verification.py (CoVe implementation)
     """)
     print("=" * 70 + "\n")
 

@@ -63,7 +63,7 @@ class HoloLoomUnifiedBridge:
 
 ### 3. Backend Setup
 
-**[HoloLoom/docker-compose.yml](HoloLoom/docker-compose.yml)** (100 lines)
+**[hololoom/docker-compose.yml](hololoom/docker-compose.yml)** (100 lines)
 - One-command backend startup
 - Includes:
   - Neo4j 5.14.0 (graph database)
@@ -83,7 +83,7 @@ class HoloLoomUnifiedBridge:
 
 ### 4. Documentation
 
-**[HoloLoom/BACKEND_SETUP_GUIDE.md](HoloLoom/BACKEND_SETUP_GUIDE.md)** (500 lines)
+**[hololoom/BACKEND_SETUP_GUIDE.md](hololoom/BACKEND_SETUP_GUIDE.md)** (500 lines)
 - Complete backend setup instructions
 - Docker, local, and cloud deployment options
 - Configuration examples
@@ -98,13 +98,13 @@ class HoloLoomUnifiedBridge:
 - Performance benchmarks
 - Testing procedures
 
-**[HoloLoom/test_backends.py](HoloLoom/test_backends.py)** (250 lines)
+**[hololoom/test_backends.py](hololoom/test_backends.py)** (250 lines)
 - Automated connectivity testing
 - Tests Neo4j, Qdrant, embeddings
 - Tests hybrid store
 - Clear troubleshooting steps
 
-**Run:** `python HoloLoom/test_backends.py`
+**Run:** `python hololoom/test_backends.py`
 
 ---
 
@@ -381,12 +381,12 @@ docker-compose up -d
 
 ## 📚 Documentation Index
 
-1. **[BACKEND_SETUP_GUIDE.md](HoloLoom/BACKEND_SETUP_GUIDE.md)** - Neo4j + Qdrant setup
+1. **[BACKEND_SETUP_GUIDE.md](hololoom/BACKEND_SETUP_GUIDE.md)** - Neo4j + Qdrant setup
 2. **[BACKEND_INTEGRATION.md](Promptly/BACKEND_INTEGRATION.md)** - Promptly integration guide
 3. **[hololoom_unified.py](Promptly/promptly/hololoom_unified.py)** - Bridge implementation
 4. **[demo_hololoom_integration.py](Promptly/demo_hololoom_integration.py)** - Working demo
-5. **[test_backends.py](HoloLoom/test_backends.py)** - Connectivity tests
-6. **[docker-compose.yml](HoloLoom/docker-compose.yml)** - Service definitions
+5. **[test_backends.py](hololoom/test_backends.py)** - Connectivity tests
+6. **[docker-compose.yml](hololoom/docker-compose.yml)** - Service definitions
 
 ---
 

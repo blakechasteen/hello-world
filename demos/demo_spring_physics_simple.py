@@ -11,7 +11,7 @@ Result: 9.6× faster graph retrieval with better semantic results!
 
 import asyncio
 
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
 
 
 async def main():

@@ -13,8 +13,8 @@ Date: November 13, 2025
 
 import asyncio
 import time
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
 
 
 def create_test_shards():
@@ -69,7 +69,7 @@ async def test_moonshot_integration():
     print()
 
     # Import orchestrator and create instance
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
     shards = create_test_shards()
 

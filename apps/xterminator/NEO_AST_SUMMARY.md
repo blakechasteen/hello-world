@@ -227,7 +227,7 @@ def main():
 
 ## Real HoloLoom Example
 
-**File**: `HoloLoom/modules/Features.py`
+**File**: `hololoom/modules/Features.py`
 
 **Issue Detected**: Unused import warning in line 71-78
 
@@ -237,8 +237,8 @@ def main():
 import warnings
 warnings.warn(
     "Local protocol definitions in Features.py are deprecated. "
-    "Import from HoloLoom.protocols instead: "
-    "from HoloLoom.protocols import MotifDetector, Embedder",
+    "Import from hololoom.protocols instead: "
+    "from hololoom.protocols import MotifDetector, Embedder",
     DeprecationWarning,
     stacklevel=2
 )

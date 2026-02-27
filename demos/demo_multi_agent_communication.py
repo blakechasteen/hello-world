@@ -18,7 +18,7 @@ import time
 from typing import Dict, Any, Optional
 
 # Phase 7.1 imports
-from HoloLoom.agentic import (
+from hololoom.agentic import (
     # Enums
     AgentCapability,
     MessageType,

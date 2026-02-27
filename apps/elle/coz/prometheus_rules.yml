@@ -68,7 +68,7 @@ groups:
           summary: "COZ output directory not writable"
           description: "Cannot write to output directory. Check permissions and disk space."
 
-      # INFO: HoloLoom refinement unavailable (not critical)
+      # INFO: hololoom refinement unavailable (not critical)
       - alert: COZHoloLoomUnavailable
         expr: coz_automation_check_status{check="hololoom"} == 0
         for: 1h
@@ -76,8 +76,8 @@ groups:
           severity: info
           component: optional-features
         annotations:
-          summary: "HoloLoom refinement unavailable"
-          description: "HoloLoom refinement module not available. System will run without refinement (this is normal if refinement disabled)."
+          summary: "hololoom refinement unavailable"
+          description: "hololoom refinement module not available. System will run without refinement (this is normal if refinement disabled)."
 
       # WARNING: Multiple failed checks (degraded state)
       - alert: COZSystemDegraded

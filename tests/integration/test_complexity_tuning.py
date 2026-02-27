@@ -1,9 +1,9 @@
 """Comprehensive Complexity Threshold Tuning Test (Task 1.2)"""
 import asyncio
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.protocols import ComplexityLevel
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.protocols import ComplexityLevel
 
 async def main():
     print("=" * 80)

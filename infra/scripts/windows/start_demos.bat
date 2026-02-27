@@ -1,12 +1,12 @@
 @echo off
 REM ============================================================
-REM HoloLoom Demo Suite Launcher
+REM hololoom Demo Suite Launcher
 REM ============================================================
-REM One-click launcher for all HoloLoom demo services
+REM One-click launcher for all hololoom demo services
 REM Created: 2025-11-29
 REM ============================================================
 
-title HoloLoom Demo Suite
+title hololoom Demo Suite
 
 echo.
 echo  ============================================================
@@ -31,7 +31,7 @@ if errorlevel 1 (
 REM Set working directory to script location
 cd /d "%~dp0"
 
-echo [INFO] Starting HoloLoom Demo Services...
+echo [INFO] Starting hololoom Demo Services...
 echo.
 
 REM Create logs directory if not exists
@@ -41,35 +41,35 @@ REM ============================================================
 REM Service 1: Static File Server (Port 8080)
 REM ============================================================
 echo [1/5] Starting Static File Server on port 8080...
-start "HoloLoom-Static-8080" /min cmd /c "cd demos\output && python -m http.server 8080 > ..\..\logs\static_server.log 2>&1"
+start "hololoom-Static-8080" /min cmd /c "cd demos\output && python -m http.server 8080 > ..\..\logs\static_server.log 2>&1"
 timeout /t 2 /nobreak >nul
 
 REM ============================================================
 REM Service 2: Consciousness UI / Gradio (Port 7860)
 REM ============================================================
 echo [2/5] Starting Consciousness UI (Gradio) on port 7860...
-start "HoloLoom-Gradio-7860" /min cmd /c "set PYTHONPATH=. && python ui\consciousness_ui.py > logs\gradio.log 2>&1"
+start "hololoom-Gradio-7860" /min cmd /c "set PYTHONPATH=. && python ui\consciousness_ui.py > logs\gradio.log 2>&1"
 timeout /t 3 /nobreak >nul
 
 REM ============================================================
 REM Service 3: Chat WebSocket Server (Port 8000)
 REM ============================================================
 echo [3/5] Starting Chat Server on port 8000...
-start "HoloLoom-Chat-8000" /min cmd /c "set PYTHONPATH=. && python HoloLoom\web_dashboard\server.py > logs\chat_server.log 2>&1"
+start "hololoom-Chat-8000" /min cmd /c "set PYTHONPATH=. && python hololoom\web_dashboard\server.py > logs\chat_server.log 2>&1"
 timeout /t 2 /nobreak >nul
 
 REM ============================================================
 REM Service 4: Workflow Executor (Port 8001)
 REM ============================================================
 echo [4/5] Starting Workflow Executor on port 8001...
-start "HoloLoom-Workflow-8001" /min cmd /c "set PYTHONPATH=. && python HoloLoom\web_dashboard\workflow_executor.py > logs\workflow.log 2>&1"
+start "hololoom-Workflow-8001" /min cmd /c "set PYTHONPATH=. && python hololoom\web_dashboard\workflow_executor.py > logs\workflow.log 2>&1"
 timeout /t 2 /nobreak >nul
 
 REM ============================================================
 REM Service 5: Agentic API Server (Port 8002)
 REM ============================================================
 echo [5/5] Starting Agentic Server on port 8002...
-start "HoloLoom-Agentic-8002" /min cmd /c "set PYTHONPATH=. && python HoloLoom\server\agentic_api.py > logs\agentic.log 2>&1"
+start "hololoom-Agentic-8002" /min cmd /c "set PYTHONPATH=. && python hololoom\server\agentic_api.py > logs\agentic.log 2>&1"
 timeout /t 3 /nobreak >nul
 
 echo.
@@ -115,7 +115,7 @@ timeout /t 2 /nobreak >nul
 start http://localhost:8080/demo_index.html
 
 echo.
-echo [SUCCESS] HoloLoom Demo Suite is running!
+echo [SUCCESS] hololoom Demo Suite is running!
 echo.
 echo To stop all services, run: stop_demos.bat
 echo Logs are saved in: logs\

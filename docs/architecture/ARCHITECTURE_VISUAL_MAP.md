@@ -835,7 +835,7 @@ Measured: 291× speedup (cold → hot)
 
 Configuration:
 ─────────────────────────────────────────────────────────────────
-from HoloLoom import Config, MemoryBackend
+from hololoom import Config, MemoryBackend
 
 config = Config.fast()
 config.memory_backend = MemoryBackend.INMEMORY   # Default
@@ -1020,48 +1020,48 @@ Result: System continuously improves from every interaction!
 ```
 CORE SYSTEM
 ───────────────────────────────────────────────────────────
-HoloLoom/hololoom.py                    - 10/10 API (410 lines)
-HoloLoom/config.py                      - Configuration (390 lines)
-HoloLoom/weaving_orchestrator.py        - Full 9-step cycle (1100+ lines)
+hololoom/hololoom.py                    - 10/10 API (410 lines)
+hololoom/config.py                      - Configuration (390 lines)
+hololoom/weaving_orchestrator.py        - Full 9-step cycle (1100+ lines)
 
 MEMORY
 ───────────────────────────────────────────────────────────
-HoloLoom/memory/protocol.py             - Memory interfaces (120 lines)
-HoloLoom/memory/graph.py                - Yarn Graph (800+ lines)
-HoloLoom/memory/awareness_graph.py      - Activation fields (650+ lines)
-HoloLoom/memory/multimodal_memory.py    - Multi-modal KG (400+ lines)
-HoloLoom/memory/backend_factory.py      - Backend creation (231 lines)
+hololoom/memory/protocol.py             - Memory interfaces (120 lines)
+hololoom/memory/graph.py                - Yarn Graph (800+ lines)
+hololoom/memory/awareness_graph.py      - Activation fields (650+ lines)
+hololoom/memory/multimodal_memory.py    - Multi-modal KG (400+ lines)
+hololoom/memory/backend_factory.py      - Backend creation (231 lines)
 
 INPUT PROCESSING
 ───────────────────────────────────────────────────────────
-HoloLoom/input/router.py                - Auto-routing (220 lines)
-HoloLoom/input/text_processor.py        - Text features (269 lines)
-HoloLoom/input/image_processor.py       - Image features (300 lines)
-HoloLoom/input/audio_processor.py       - Audio features (270 lines)
-HoloLoom/input/structured_processor.py  - Structured data (314 lines)
-HoloLoom/input/fusion.py                - Modal fusion (280 lines)
+hololoom/input/router.py                - Auto-routing (220 lines)
+hololoom/input/text_processor.py        - Text features (269 lines)
+hololoom/input/image_processor.py       - Image features (300 lines)
+hololoom/input/audio_processor.py       - Audio features (270 lines)
+hololoom/input/structured_processor.py  - Structured data (314 lines)
+hololoom/input/fusion.py                - Modal fusion (280 lines)
 
 FEATURES & CACHING (Phase 5)
 ───────────────────────────────────────────────────────────
-HoloLoom/embedding/spectral.py          - Matryoshka (500+ lines)
-HoloLoom/motif/xbar_chunker.py          - X-bar theory (673 lines)
-HoloLoom/warp/merge.py                  - Merge operator (475 lines)
-HoloLoom/performance/compositional_cache.py - 3-tier cache (658 lines)
+hololoom/embedding/spectral.py          - Matryoshka (500+ lines)
+hololoom/motif/xbar_chunker.py          - X-bar theory (673 lines)
+hololoom/warp/merge.py                  - Merge operator (475 lines)
+hololoom/performance/compositional_cache.py - 3-tier cache (658 lines)
 
 DECISION & LEARNING
 ───────────────────────────────────────────────────────────
-HoloLoom/policy/unified.py              - Neural policy (1200+ lines)
-HoloLoom/convergence/engine.py          - Decision collapse (500+ lines)
-HoloLoom/reflection/buffer.py           - Episodic memory (730 lines)
-HoloLoom/reflection/semantic_learning.py - Multi-task learning (600+ lines)
+hololoom/policy/unified.py              - Neural policy (1200+ lines)
+hololoom/convergence/engine.py          - Decision collapse (500+ lines)
+hololoom/reflection/buffer.py           - Episodic memory (730 lines)
+hololoom/reflection/semantic_learning.py - Multi-task learning (600+ lines)
 
 VISUALIZATION
 ───────────────────────────────────────────────────────────
-HoloLoom/visualization/strategy_selector.py - Auto-strategy (400+ lines)
-HoloLoom/visualization/dashboard.py      - Panel composition (600+ lines)
-HoloLoom/visualization/html_renderer.py  - HTML generation (1000+ lines)
-HoloLoom/visualization/knowledge_graph.py - Force-directed (600+ lines)
-HoloLoom/visualization/confidence_trajectory.py - Anomaly detection (500+ lines)
+hololoom/visualization/strategy_selector.py - Auto-strategy (400+ lines)
+hololoom/visualization/dashboard.py      - Panel composition (600+ lines)
+hololoom/visualization/html_renderer.py  - HTML generation (1000+ lines)
+hololoom/visualization/knowledge_graph.py - Force-directed (600+ lines)
+hololoom/visualization/confidence_trajectory.py - Anomaly detection (500+ lines)
 
 DOCUMENTATION
 ───────────────────────────────────────────────────────────

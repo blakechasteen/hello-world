@@ -26,10 +26,10 @@ from pathlib import Path
 from typing import Dict, List
 import tempfile
 
-from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+from hololoom.config import Config, ExecutionMode
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
 
 
 # ============================================================================
@@ -129,9 +129,9 @@ async def benchmark_orchestrator_integration(
 
     This shows the actual end-to-end impact on query latency.
     """
-    from HoloLoom.resonance.shed import ResonanceShed
-    from HoloLoom.motif.base import create_motif_detector
-    from HoloLoom.embedding.spectral import SpectralFusion
+    from hololoom.resonance.shed import ResonanceShed
+    from hololoom.motif.base import create_motif_detector
+    from hololoom.embedding.spectral import SpectralFusion
 
     results = {}
 

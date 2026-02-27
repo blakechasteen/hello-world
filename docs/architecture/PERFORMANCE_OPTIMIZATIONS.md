@@ -7,7 +7,7 @@ Successfully implemented comprehensive performance optimizations for the HoloLoo
 ## Optimizations Implemented
 
 ### 1. Embedding Cache (LRU)
-**File**: `HoloLoom/semantic_calculus/performance.py`
+**File**: `hololoom/semantic_calculus/performance.py`
 
 - LRU cache with configurable size (default 10,000 words)
 - Automatic batch embedding for cache misses
@@ -95,7 +95,7 @@ Speedup: 2,932x
 ## Module Structure
 
 ```
-HoloLoom/semantic_calculus/
+hololoom/semantic_calculus/
 ├── __init__.py           # Clean public API + performance exports
 ├── performance.py        # NEW: All optimization utilities
 ├── flow_calculus.py      # OPTIMIZED: Batch embedding, vectorization
@@ -112,7 +112,7 @@ HoloLoom/semantic_calculus/
 ### Embedding Cache
 
 ```python
-from HoloLoom.semantic_calculus import EmbeddingCache
+from hololoom.semantic_calculus import EmbeddingCache
 
 # Create cache
 cache = EmbeddingCache(embed_fn, max_size=10000)
@@ -131,7 +131,7 @@ print(f"Hit rate: {stats['hit_rate']:.1%}")
 ### Optimized Trajectory
 
 ```python
-from HoloLoom.semantic_calculus import SemanticFlowCalculus
+from hololoom.semantic_calculus import SemanticFlowCalculus
 
 # Create calculus engine with caching enabled (default)
 calculus = SemanticFlowCalculus(
@@ -152,7 +152,7 @@ print(f"Cache hit rate: {stats['hit_rate']:.1%}")
 ### JIT-Compiled Integration
 
 ```python
-from HoloLoom.semantic_calculus import GeometricIntegrator, HAS_NUMBA
+from hololoom.semantic_calculus import GeometricIntegrator, HAS_NUMBA
 
 if HAS_NUMBA:
     print("JIT compilation available - 10-50x faster integration!")

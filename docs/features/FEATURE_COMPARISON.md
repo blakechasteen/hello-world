@@ -28,7 +28,7 @@ User Query
     ↓
 SimpleRAG.query()
     ├─ Check cache (100x speedup for repeats)
-    ├─ HoloLoom.recall() → Retrieve memories
+    ├─ hololoom.recall() → Retrieve memories
     │  └─ Awareness Graph + Matryoshka embeddings
     ├─ Optional reranking (+10-20% precision)
     └─ Return: RAGResult(response, sources, confidence, mode)
@@ -510,7 +510,7 @@ await rag.reflect(result, feedback={"helpful": True})
 
 ```python
 # Switch from SimpleRAG to WeavingOrchestrator
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 async with WeavingOrchestrator(cfg=config, shards=shards) as orch:
     spacetime = await orch.weave(query)
@@ -534,7 +534,7 @@ guardrails = SafetyGuardrails()
 
 ```python
 # Create agents
-from HoloLoom.agents import CollaborativeAgent
+from hololoom.agents import CollaborativeAgent
 agent1 = CollaborativeAgent(name="researcher", role="Research")
 agent2 = CollaborativeAgent(name="writer", role="Writing")
 ```
@@ -546,7 +546,7 @@ agent2 = CollaborativeAgent(name="writer", role="Writing")
 
 ```python
 # Use production config
-from HoloLoom.context import ProductionConfig
+from hololoom.context import ProductionConfig
 config = ProductionConfig.production()
 ```
 

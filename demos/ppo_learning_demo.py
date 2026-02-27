@@ -23,12 +23,12 @@ from typing import List, Dict
 from datetime import datetime
 
 # HoloLoom imports
-from HoloLoom.config import Config
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.Documentation.types import Query, MemoryShard
-from HoloLoom.reflection.buffer import ReflectionBuffer
-from HoloLoom.reflection.ppo_trainer import PPOTrainer, PPOConfig
-from HoloLoom.reflection.rewards import RewardConfig
+from hololoom.config import Config
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.Documentation.types import Query, MemoryShard
+from hololoom.reflection.buffer import ReflectionBuffer
+from hololoom.reflection.ppo_trainer import PPOTrainer, PPOConfig
+from hololoom.reflection.rewards import RewardConfig
 
 # Set up logging
 logging.basicConfig(

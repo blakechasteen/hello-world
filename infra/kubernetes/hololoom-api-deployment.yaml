@@ -1,4 +1,4 @@
-# HoloLoom API Kubernetes Deployment
+# hololoom API Kubernetes Deployment
 # Production API server with autoscaling
 
 apiVersion: v1

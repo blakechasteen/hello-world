@@ -442,7 +442,7 @@ curl http://localhost:8001/api/agents
 **View Server Logs**:
 ```bash
 # Watch STDOUT while running
-python HoloLoom/web_dashboard/workflow_executor.py
+python hololoom/web_dashboard/workflow_executor.py
 
 # Or check logs if running via systemd/docker
 journalctl -u hololoom-executor -f

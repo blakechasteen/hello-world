@@ -79,7 +79,7 @@ async def run_mrf_planning():
 
     # Try to import MRF
     try:
-        from HoloLoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategyType, ModelProvider
+        from hololoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategyType, ModelProvider
         mrf_available = True
         mrf = UnifiedMRF()
     except ImportError as e:
@@ -293,31 +293,31 @@ async def run_mrf_planning():
     ─────────────────────────────
 
     Day 1-2: WeavingOrchestrator Integration
-    ├── File: HoloLoom/chatops/handlers/hololoom_handlers.py
+    ├── File: hololoom/chatops/handlers/hololoom_handlers.py
     ├── Task: Implement !weave command
     ├── Code:
     │   async def handle_weave(room, event, args, bot):
-    │       from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    │       from hololoom.weaving_orchestrator import WeavingOrchestrator
     │       async with WeavingOrchestrator(cfg=config) as orch:
     │           spacetime = await orch.weave(Query(text=' '.join(args)))
     │           await bot.send_message(room, format_spacetime(spacetime))
     └── Effort: 2-4 hours
 
     Day 2-3: UnifiedMemory Integration
-    ├── File: HoloLoom/chatops/handlers/hololoom_handlers.py
+    ├── File: hololoom/chatops/handlers/hololoom_handlers.py
     ├── Commands: !memory recall, !memory store, !memory search
     ├── Code:
     │   async def handle_memory_recall(room, event, args, bot):
-    │       from HoloLoom.memory.unified import UnifiedMemory
+    │       from hololoom.memory.unified import UnifiedMemory
     │       memories = await memory.recall(' '.join(args), limit=5)
     │       await bot.send_message(room, format_memories(memories))
     └── Effort: 3-4 hours
 
     Day 3-4: SafetyGuardrails Integration
-    ├── File: HoloLoom/chatops/core/chatops_orchestrator.py
+    ├── File: hololoom/chatops/core/chatops_orchestrator.py
     ├── Task: Gate all tool executions through SafetyGuardrails
     ├── Code:
-    │   from HoloLoom.alignment import SafetyGuardrails
+    │   from hololoom.alignment import SafetyGuardrails
     │
     │   async def execute_command(self, command, context):
     │       gate_result = await self.guardrails.gate_action(command, context)
@@ -327,10 +327,10 @@ async def run_mrf_planning():
     └── Effort: 2-3 hours
 
     Day 4-5: SimpleRAG Context Injection
-    ├── File: HoloLoom/chatops/core/chatops_bridge.py
+    ├── File: hololoom/chatops/core/chatops_bridge.py
     ├── Task: Add RAG context to all responses
     ├── Code:
-    │   from HoloLoom.rag import SimpleRAG
+    │   from hololoom.rag import SimpleRAG
     │
     │   async def enhance_response(self, query, response):
     │       async with SimpleRAG() as rag:
@@ -343,19 +343,19 @@ async def run_mrf_planning():
     ──────────────────────────────────
 
     Day 6-7: SpinningWheel Integration
-    ├── File: HoloLoom/chatops/handlers/ingest_handlers.py (NEW)
+    ├── File: hololoom/chatops/handlers/ingest_handlers.py (NEW)
     ├── Commands: !ingest url, !ingest file, !ingest youtube
     ├── Uses: 47 SpinningWheel adapters already available
     └── Effort: 4-5 hours
 
     Day 8-9: AuditTrail Integration
-    ├── File: HoloLoom/chatops/handlers/audit_handlers.py (NEW)
+    ├── File: hololoom/chatops/handlers/audit_handlers.py (NEW)
     ├── Commands: !audit recent, !audit search, !audit export
-    ├── Uses: HoloLoom/alignment/audit_trail.py (already complete)
+    ├── Uses: hololoom/alignment/audit_trail.py (already complete)
     └── Effort: 2-3 hours
 
     Day 10: Help & Documentation
-    ├── File: HoloLoom/chatops/handlers/help_handlers.py
+    ├── File: hololoom/chatops/handlers/help_handlers.py
     ├── Task: Auto-generate help from handler docstrings
     └── Effort: 2-3 hours
 
@@ -377,14 +377,14 @@ async def run_mrf_planning():
     FILES TO CREATE/MODIFY
     ──────────────────────
     CREATE:
-    • HoloLoom/chatops/handlers/hololoom_handlers.py (~300 lines)
-    • HoloLoom/chatops/handlers/ingest_handlers.py (~200 lines)
-    • HoloLoom/chatops/handlers/audit_handlers.py (~150 lines)
+    • hololoom/chatops/handlers/hololoom_handlers.py (~300 lines)
+    • hololoom/chatops/handlers/ingest_handlers.py (~200 lines)
+    • hololoom/chatops/handlers/audit_handlers.py (~150 lines)
 
     MODIFY:
-    • HoloLoom/chatops/core/chatops_orchestrator.py (add guardrails)
-    • HoloLoom/chatops/core/chatops_bridge.py (add RAG context)
-    • HoloLoom/chatops/handlers/__init__.py (register handlers)
+    • hololoom/chatops/core/chatops_orchestrator.py (add guardrails)
+    • hololoom/chatops/core/chatops_bridge.py (add RAG context)
+    • hololoom/chatops/handlers/__init__.py (register handlers)
     """
     print(actionable_plan)
 

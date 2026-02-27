@@ -15,7 +15,7 @@ Successfully implemented **visual compression layer** for HoloLoom, enabling 3-2
 ## What Was Built
 
 ### 1. Visual Compression Module (650+ lines)
-**File**: `HoloLoom/memory/visual_compression.py`
+**File**: `hololoom/memory/visual_compression.py`
 
 **Core Components**:
 - `CompressionType` enum: KNOWLEDGE_GRAPH, TABLE, CODE, DIAGRAM, AUTO
@@ -46,7 +46,7 @@ def compress_to_visual(
 ---
 
 ### 2. HoloLoom API Methods (+215 lines)
-**File**: `HoloLoom/hololoom.py` (lines 643-857)
+**File**: `hololoom/hololoom.py` (lines 643-857)
 
 Added 3 methods for visual compression:
 
@@ -464,7 +464,7 @@ pip install Pillow numpy matplotlib networkx
 ### Basic Compression
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 import networkx as nx
 
 async with HoloLoom() as loom:

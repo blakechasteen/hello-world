@@ -24,7 +24,7 @@ from typing import Any
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.tapestry import (
+from hololoom.tapestry import (
     LoomKeeper,
     Tapestry,
     Thread,
@@ -34,8 +34,8 @@ from HoloLoom.tapestry import (
     FabricCheckResult,
     SignalResult
 )
-from HoloLoom.tapestry.backends.json_backend import JsonTapestryBackend
-from HoloLoom.tapestry.git import GitIntegration
+from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
+from hololoom.tapestry.git import GitIntegration
 
 
 # ─────────────────────────────────────────────────────────────────

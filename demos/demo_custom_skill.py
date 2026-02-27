@@ -22,8 +22,8 @@ import asyncio
 from pathlib import Path
 import yaml
 
-from HoloLoom.agentic import execute_skill, get_registry
-from HoloLoom.config import Config
+from hololoom.agentic import execute_skill, get_registry
+from hololoom.config import Config
 
 
 # Step 1: Define the skill template as Python dict
@@ -113,7 +113,7 @@ def create_skill_yaml_file():
     print("STEP 1: Creating Skill YAML File")
     print("=" * 80)
 
-    skills_dir = Path("HoloLoom/agentic/skills")
+    skills_dir = Path("hololoom/agentic/skills")
     yaml_path = skills_dir / "commit-message-generator.yaml"
 
     # Write YAML file
@@ -364,7 +364,7 @@ Integration Examples:
 
    python3 << EOF
    import asyncio
-   from HoloLoom.agentic import execute_skill
+   from hololoom.agentic import execute_skill
 
    async def main():
        result = await execute_skill(
@@ -409,7 +409,7 @@ Integration Examples:
    # commit-gen.py
    import subprocess
    import asyncio
-   from HoloLoom.agentic import execute_skill
+   from hololoom.agentic import execute_skill
 
    async def main():
        # Get git diff
@@ -441,7 +441,7 @@ async def cleanup():
     print("CLEANUP")
     print("=" * 80)
 
-    yaml_path = Path("HoloLoom/agentic/skills/commit-message-generator.yaml")
+    yaml_path = Path("hololoom/agentic/skills/commit-message-generator.yaml")
 
     if yaml_path.exists():
         choice = input("\nRemove demo skill file? (y/n): ")
@@ -492,7 +492,7 @@ async def main():
 
         print("\nNext Steps:")
         print("• Create your own custom skill using the template")
-        print("• Explore other skills in HoloLoom/agentic/skills/")
+        print("• Explore other skills in hololoom/agentic/skills/")
         print("• Read SKILLS_USAGE.md for complete guide")
         print("• Check skills/README.md for API reference")
 

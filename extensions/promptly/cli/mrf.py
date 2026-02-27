@@ -55,7 +55,7 @@ def get_mrf_bridge():
         click.echo("", err=True)
         click.echo("To enable MRF:", err=True)
         click.echo("  1. Ensure HoloLoom is in your PYTHONPATH", err=True)
-        click.echo("  2. Verify HoloLoom/prompting/unified_mrf.py exists", err=True)
+        click.echo("  2. Verify hololoom/prompting/unified_mrf.py exists", err=True)
         sys.exit(1)
 
 

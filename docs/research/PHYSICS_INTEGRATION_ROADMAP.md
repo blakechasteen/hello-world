@@ -36,9 +36,9 @@ Integrate multiple physics-based optimization systems into HoloLoom, creating a 
 
 ### Key Files
 
-- `HoloLoom/memory/spring_dynamics.py` (699 lines)
-- `HoloLoom/memory/spring_graph_retriever.py` (324 lines)
-- `HoloLoom/memory/spring_memory_scoring.py` (431 lines)
+- `hololoom/memory/spring_dynamics.py` (699 lines)
+- `hololoom/memory/spring_graph_retriever.py` (324 lines)
+- `hololoom/memory/spring_memory_scoring.py` (431 lines)
 
 ### Physics Model
 
@@ -107,17 +107,17 @@ GradientFlowEngine
 
 ### Key Files (Planned)
 
-- `HoloLoom/physics/gradient_flow.py` (500 lines) - Core gradient flow engine
-- `HoloLoom/routing/flow_router.py` (400 lines) - Query router using gradients
-- `HoloLoom/physics/loss_landscape.py` (300 lines) - Loss function definitions
+- `hololoom/physics/gradient_flow.py` (500 lines) - Core gradient flow engine
+- `hololoom/routing/flow_router.py` (400 lines) - Query router using gradients
+- `hololoom/physics/loss_landscape.py` (300 lines) - Loss function definitions
 - `demos/demo_gradient_flow_routing.py` - Datacenter load balancing demo
 - `demos/demo_loss_landscape.py` - Visualization of flow patterns
 
 ### Example Usage
 
 ```python
-from HoloLoom.physics.gradient_flow import GradientFlowRouter
-from HoloLoom.routing.flow_router import create_flow_router
+from hololoom.physics.gradient_flow import GradientFlowRouter
+from hololoom.routing.flow_router import create_flow_router
 
 # Create router with load landscape
 router = create_flow_router(
@@ -194,13 +194,13 @@ FluidDynamicsEngine
 
 ### Key Files (Planned)
 
-- `HoloLoom/physics/fluid_dynamics.py` (600 lines)
-- `HoloLoom/memory/context_flow.py` (500 lines)
+- `hololoom/physics/fluid_dynamics.py` (600 lines)
+- `hololoom/memory/context_flow.py` (500 lines)
 
 ### Example Usage
 
 ```python
-from HoloLoom.physics.fluid_dynamics import ContextFlowEngine
+from hololoom.physics.fluid_dynamics import ContextFlowEngine
 
 # Create fluid dynamics engine
 flow = ContextFlowEngine(
@@ -270,13 +270,13 @@ ThermodynamicsEngine
 
 ### Key Files (Planned)
 
-- `HoloLoom/physics/thermodynamics.py` (400 lines)
-- `HoloLoom/scheduling/thermal_scheduler.py` (300 lines)
+- `hololoom/physics/thermodynamics.py` (400 lines)
+- `hololoom/scheduling/thermal_scheduler.py` (300 lines)
 
 ### Example Usage
 
 ```python
-from HoloLoom.physics.thermodynamics import ThermodynamicOptimizer
+from hololoom.physics.thermodynamics import ThermodynamicOptimizer
 
 # Create thermodynamic optimizer
 thermo = ThermodynamicOptimizer(
@@ -343,13 +343,13 @@ WaveMechanicsEngine
 
 ### Key Files (Planned)
 
-- `HoloLoom/physics/wave_mechanics.py` (500 lines)
-- `HoloLoom/anomaly/wave_detector.py` (400 lines)
+- `hololoom/physics/wave_mechanics.py` (500 lines)
+- `hololoom/anomaly/wave_detector.py` (400 lines)
 
 ### Example Usage
 
 ```python
-from HoloLoom.physics.wave_mechanics import WavePatternDetector
+from hololoom.physics.wave_mechanics import WavePatternDetector
 
 # Create wave detector
 wave = WavePatternDetector(wave_speed=1.0)
@@ -416,13 +416,13 @@ StatisticalMechanicsEngine
 
 ### Key Files (Planned)
 
-- `HoloLoom/physics/statistical_mechanics.py` (500 lines)
-- `HoloLoom/emergence/phase_detector.py` (400 lines)
+- `hololoom/physics/statistical_mechanics.py` (500 lines)
+- `hololoom/emergence/phase_detector.py` (400 lines)
 
 ### Example Usage
 
 ```python
-from HoloLoom.physics.statistical_mechanics import BoltzmannEngine
+from hololoom.physics.statistical_mechanics import BoltzmannEngine
 
 # Create statistical mechanics engine
 stat_mech = BoltzmannEngine(temperature=1.0)
@@ -500,8 +500,8 @@ class UnifiedPhysicsEngine:
 
 ### Key Files (Planned)
 
-- `HoloLoom/physics/unified_engine.py` (800 lines)
-- `HoloLoom/integration/multi_physics.py` (700 lines)
+- `hololoom/physics/unified_engine.py` (800 lines)
+- `hololoom/integration/multi_physics.py` (700 lines)
 
 ### Success Metrics
 
@@ -546,7 +546,7 @@ class UnifiedPhysicsEngine:
 ## Next Steps
 
 **Immediate** (When ready to start Phase 1):
-1. Create `HoloLoom/physics/gradient_flow.py`
+1. Create `hololoom/physics/gradient_flow.py`
 2. Implement datacenter downhill flow demo
 3. Integrate with Spring Physics (Phase 0)
 

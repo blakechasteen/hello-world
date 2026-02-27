@@ -89,7 +89,7 @@ class AgentProtocol(Protocol):
 
 ## Layer 1: SafetyGuardrails (FAIL CLOSED)
 
-**File**: `HoloLoom/alignment/safety_guardrails.py`
+**File**: `hololoom/alignment/safety_guardrails.py`
 **Overhead**: 0.039ms
 **Default**: **DENY ALL**
 
@@ -249,7 +249,7 @@ guardrails = SafetyGuardrails(
 
 ## Layer 2: DeceptionDetection (CONTINUOUS MONITORING)
 
-**File**: `HoloLoom/alignment/deception_detection.py`
+**File**: `hololoom/alignment/deception_detection.py`
 **Overhead**: 0.034ms
 **Mode**: **EVERY ACTION MONITORED**
 
@@ -381,7 +381,7 @@ class GoalDriftDetector:
 
 ## Layer 3: ConvergenceGuard (HARD LIMITS)
 
-**File**: `HoloLoom/alignment/instrumental_convergence.py`
+**File**: `hololoom/alignment/instrumental_convergence.py`
 **Overhead**: 0.015ms
 **Enforcement**: **OS-LEVEL** (cgroups, ulimit)
 
@@ -555,7 +555,7 @@ async def detect_power_seeking(
 
 ## Layer 4: AuditTrail (IMMUTABLE, REPLICATED)
 
-**File**: `HoloLoom/alignment/audit_trail.py`
+**File**: `hololoom/alignment/audit_trail.py`
 **Overhead**: 0.029ms
 **Properties**: **IMMUTABLE, APPEND-ONLY, REPLICATED**
 

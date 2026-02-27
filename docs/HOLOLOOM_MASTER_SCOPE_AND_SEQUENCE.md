@@ -229,7 +229,7 @@ HoloLoom: Cache compositional building blocks
    - FUSED: Full power (200-500ms)
 
 2. **Type System Consolidation**
-   - Single source of truth: `HoloLoom/documentation/types.py`
+   - Single source of truth: `hololoom/documentation/types.py`
    - 30+ core types (Query, Features, ActionPlan, Spacetime, etc.)
    - Protocol-based interfaces
 
@@ -722,7 +722,7 @@ class Spacetime:
 
 ## The Stack: Every Component Explained
 
-### Core System (`HoloLoom/`)
+### Core System (`hololoom/`)
 
 ```
 hololoom.py (410 lines)
@@ -744,7 +744,7 @@ weaving_orchestrator.py (1100+ lines)
    └─ mythRL progressive complexity (3-5-7-9 system)
 ```
 
-### Memory Systems (`HoloLoom/memory/`)
+### Memory Systems (`hololoom/memory/`)
 
 ```
 protocol.py (120 lines)
@@ -782,7 +782,7 @@ hyperspace_backend.py (900+ lines)
 └─ HyperspaceBackend - Gated multipass recursive retrieval
 ```
 
-### Input Processing (`HoloLoom/input/`)
+### Input Processing (`hololoom/input/`)
 
 ```
 router.py (220 lines)
@@ -822,7 +822,7 @@ fusion.py (280 lines)
    └─ Max pooling
 ```
 
-### Embedding & Features (`HoloLoom/embedding/`)
+### Embedding & Features (`hololoom/embedding/`)
 
 ```
 spectral.py (500+ lines)
@@ -847,7 +847,7 @@ simple_embedder.py (176 lines)
    └─ <20ms performance
 ```
 
-### Motif & Pattern Detection (`HoloLoom/motif/`)
+### Motif & Pattern Detection (`hololoom/motif/`)
 
 ```
 motif_detector.py (400+ lines)
@@ -863,7 +863,7 @@ xbar_chunker.py (673 lines)
    └─ Head-driven composition
 ```
 
-### Policy & Decision (`HoloLoom/policy/`)
+### Policy & Decision (`hololoom/policy/`)
 
 ```
 unified.py (1200+ lines)
@@ -883,7 +883,7 @@ semantic_nudging.py (300+ lines)
    └─ Soft constraints
 ```
 
-### Warp Space & Merge (`HoloLoom/warp/`)
+### Warp Space & Merge (`hololoom/warp/`)
 
 ```
 space.py (500+ lines)
@@ -899,7 +899,7 @@ merge.py (475 lines)
    └─ Recursive composition (bottom-up trees)
 ```
 
-### Performance & Caching (`HoloLoom/performance/`)
+### Performance & Caching (`hololoom/performance/`)
 
 ```
 compositional_cache.py (658 lines)
@@ -916,7 +916,7 @@ query_cache.py (300+ lines)
    └─ Automatic invalidation
 ```
 
-### Visualization (`HoloLoom/visualization/`)
+### Visualization (`hololoom/visualization/`)
 
 ```
 strategy_selector.py (400+ lines)
@@ -969,7 +969,7 @@ semantic_space.py (400+ lines)
 └─ Interactive exploration
 ```
 
-### SpinningWheel (Input Adapters) (`HoloLoom/spinningWheel/`)
+### SpinningWheel (Input Adapters) (`hololoom/spinningWheel/`)
 
 ```
 audio.py (400+ lines)
@@ -988,7 +988,7 @@ base.py (200+ lines)
 └─ BaseSpinner - Common interface for all spinners
 ```
 
-### Reflection & Learning (`HoloLoom/reflection/`)
+### Reflection & Learning (`hololoom/reflection/`)
 
 ```
 buffer.py (730 lines)
@@ -1011,7 +1011,7 @@ ppo_trainer.py (800+ lines)
    └─ Configurable architectures
 ```
 
-### Semantic Calculus (`HoloLoom/semantic_calculus/`)
+### Semantic Calculus (`hololoom/semantic_calculus/`)
 
 ```
 dimensions.py (1000+ lines)
@@ -1029,7 +1029,7 @@ integrator.py (500+ lines)
    └─ Dimension scoring
 ```
 
-### Temporal Control (`HoloLoom/chrono/`)
+### Temporal Control (`hololoom/chrono/`)
 
 ```
 trigger.py (400+ lines)
@@ -1039,7 +1039,7 @@ trigger.py (400+ lines)
 └─ Decay functions
 ```
 
-### Convergence (`HoloLoom/convergence/`)
+### Convergence (`hololoom/convergence/`)
 
 ```
 engine.py (500+ lines)
@@ -1059,7 +1059,7 @@ engine.py (500+ lines)
 **Goal:** Use HoloLoom without understanding internals
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 # 1. Create system
 loom = HoloLoom()
@@ -1076,8 +1076,8 @@ await loom.reflect(memories, feedback={"helpful": True})
 ```
 
 **Read:**
-- [HoloLoom/__init__.py](HoloLoom/__init__.py:1-73) - The API surface
-- [HoloLoom/hololoom.py](HoloLoom/hololoom.py:1-410) - Implementation
+- [hololoom/__init__.py](hololoom/__init__.py:1-73) - The API surface
+- [hololoom/hololoom.py](hololoom/hololoom.py:1-410) - Implementation
 
 **Try:**
 - Run `demos/demo_hololoom_integration.py`
@@ -1090,7 +1090,7 @@ await loom.reflect(memories, feedback={"helpful": True})
 **Goal:** Understand BARE/FAST/FUSED tradeoffs
 
 ```python
-from HoloLoom import HoloLoom, Config
+from hololoom import hololoom, Config
 
 # Fast queries (<50ms)
 bare_loom = HoloLoom(config=Config.bare())
@@ -1103,7 +1103,7 @@ fused_loom = HoloLoom(config=Config.fused())
 ```
 
 **Read:**
-- [HoloLoom/config.py](HoloLoom/config.py:1-390) - All configuration options
+- [hololoom/config.py](hololoom/config.py:1-390) - All configuration options
 - [CLAUDE.md](CLAUDE.md:95-103) - Execution modes explained
 
 **Experiment:**
@@ -1131,9 +1131,9 @@ tech_memories = await loom.recall(
 ```
 
 **Read:**
-- [HoloLoom/memory/protocol.py](HoloLoom/memory/protocol.py:1-120) - Memory interface
-- [HoloLoom/memory/graph.py](HoloLoom/memory/graph.py) - Knowledge graph
-- [HoloLoom/memory/awareness_graph.py](HoloLoom/memory/awareness_graph.py) - Activation
+- [hololoom/memory/protocol.py](hololoom/memory/protocol.py:1-120) - Memory interface
+- [hololoom/memory/graph.py](hololoom/memory/graph.py) - Knowledge graph
+- [hololoom/memory/awareness_graph.py](hololoom/memory/awareness_graph.py) - Activation
 
 **Visualize:**
 - Run `demos/demo_awareness.py` to see activation fields
@@ -1156,8 +1156,8 @@ await loom.recall("Show me images of dogs")
 ```
 
 **Read:**
-- [HoloLoom/input/router.py](HoloLoom/input/router.py) - Auto-routing
-- [HoloLoom/input/fusion.py](HoloLoom/input/fusion.py) - Modal fusion
+- [hololoom/input/router.py](hololoom/input/router.py) - Auto-routing
+- [hololoom/input/fusion.py](hololoom/input/fusion.py) - Modal fusion
 - [PHASE_3_TASK_3.1_COMPLETE.md](PHASE_3_TASK_3.1_COMPLETE.md) - Multi-modal overview
 
 **Try:**
@@ -1174,7 +1174,7 @@ await loom.recall("Show me images of dogs")
 
 **Read in order:**
 1. [CLAUDE.md:96-134](CLAUDE.md) - Architecture overview
-2. [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py) - Full cycle
+2. [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py) - Full cycle
 3. [docs/architecture/WEAVING_ARCHITECTURE_COMPLETE.md](docs/architecture/WEAVING_ARCHITECTURE_COMPLETE.md)
 
 **Trace execution:**
@@ -1218,9 +1218,9 @@ loom = HoloLoom(embedder=MatryoshkaEmbedder())  # Quality mode
 ```
 
 **Read:**
-- [HoloLoom/memory/protocol.py](HoloLoom/memory/protocol.py) - Memory protocols
-- [HoloLoom/policy/unified.py](HoloLoom/policy/unified.py) - Policy protocol
-- [HoloLoom/embedding/spectral.py](HoloLoom/embedding/spectral.py) - Embedder protocol
+- [hololoom/memory/protocol.py](hololoom/memory/protocol.py) - Memory protocols
+- [hololoom/policy/unified.py](hololoom/policy/unified.py) - Policy protocol
+- [hololoom/embedding/spectral.py](hololoom/embedding/spectral.py) - Embedder protocol
 
 **Exercise:**
 - Implement your own `Embedder`
@@ -1245,9 +1245,9 @@ HoloLoom: Cache compositional building blocks
 
 **Read:**
 - [PHASE_5_COMPLETE.md](PHASE_5_COMPLETE.md) - Overview & results
-- [HoloLoom/performance/compositional_cache.py](HoloLoom/performance/compositional_cache.py) - Implementation
-- [HoloLoom/motif/xbar_chunker.py](HoloLoom/motif/xbar_chunker.py) - X-bar theory
-- [HoloLoom/warp/merge.py](HoloLoom/warp/merge.py) - Merge operator
+- [hololoom/performance/compositional_cache.py](hololoom/performance/compositional_cache.py) - Implementation
+- [hololoom/motif/xbar_chunker.py](hololoom/motif/xbar_chunker.py) - X-bar theory
+- [hololoom/warp/merge.py](hololoom/warp/merge.py) - Merge operator
 
 **Benchmark:**
 ```bash
@@ -1272,12 +1272,12 @@ python demos/phase5_compositional_cache_demo.py
 
 **Read:**
 - [TUFTE_VISUALIZATION_ROADMAP.md](TUFTE_VISUALIZATION_ROADMAP.md) - Complete guide
-- [HoloLoom/visualization/strategy_selector.py](HoloLoom/visualization/strategy_selector.py) - Auto-strategy
-- [HoloLoom/visualization/html_renderer.py](HoloLoom/visualization/html_renderer.py) - Rendering
+- [hololoom/visualization/strategy_selector.py](hololoom/visualization/strategy_selector.py) - Auto-strategy
+- [hololoom/visualization/html_renderer.py](hololoom/visualization/html_renderer.py) - Rendering
 
 **Create dashboards:**
 ```python
-from HoloLoom.visualization import Dashboard, PanelSpec, PanelType
+from hololoom.visualization import Dashboard, PanelSpec, PanelType
 
 dashboard = Dashboard(strategy="exploratory")
 dashboard.add_panel(PanelSpec(
@@ -1307,7 +1307,7 @@ html = dashboard.render()
 - Explore parameter variation across languages
 
 **Mathematics:**
-- Study [HoloLoom/semantic_calculus/dimensions.py](HoloLoom/semantic_calculus/dimensions.py) - 244D space
+- Study [hololoom/semantic_calculus/dimensions.py](hololoom/semantic_calculus/dimensions.py) - 244D space
 - Understand manifold geometry in Warp Space
 - Examine spectral graph features
 - Explore category theory connections
@@ -1369,8 +1369,8 @@ html = dashboard.render()
 
 **Read:**
 - [AWARENESS_ARCHITECTURE_FIX_SUMMARY.md](AWARENESS_ARCHITECTURE_FIX_SUMMARY.md)
-- [HoloLoom/memory/awareness_graph.py](HoloLoom/memory/awareness_graph.py)
-- [HoloLoom/memory/activation_field.py](HoloLoom/memory/activation_field.py)
+- [hololoom/memory/awareness_graph.py](hololoom/memory/awareness_graph.py)
+- [hololoom/memory/activation_field.py](hololoom/memory/activation_field.py)
 
 ---
 
@@ -1396,8 +1396,8 @@ html = dashboard.render()
 
 **Read:**
 - [PHASE_3_TASK_3.1_COMPLETE.md](PHASE_3_TASK_3.1_COMPLETE.md)
-- [HoloLoom/memory/multimodal_memory.py](HoloLoom/memory/multimodal_memory.py)
-- [HoloLoom/input/fusion.py](HoloLoom/input/fusion.py)
+- [hololoom/memory/multimodal_memory.py](hololoom/memory/multimodal_memory.py)
+- [hololoom/input/fusion.py](hololoom/input/fusion.py)
 
 ---
 
@@ -1811,7 +1811,7 @@ Scaling: O(log n) for retrieval (with indexing)
 ```python
 # server.py
 from fastapi import FastAPI
-from HoloLoom import HoloLoom, Config
+from hololoom import hololoom, Config
 
 app = FastAPI()
 loom = HoloLoom(config=Config.fast())
@@ -1847,7 +1847,7 @@ async def reflect(memory_ids: List[str], feedback: dict):
 
 ```python
 # your_app.py
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 class IntelligentChatbot:
     def __init__(self):
@@ -1887,7 +1887,7 @@ class IntelligentChatbot:
 
 ```python
 # custom_memory_backend.py
-from HoloLoom.memory.protocol import Memory, KGStore
+from hololoom.memory.protocol import Memory, KGStore
 
 class CustomKGStore:
     """Your own graph database integration"""
@@ -1901,7 +1901,7 @@ class CustomKGStore:
         return memories
 
 # Use it
-from HoloLoom import HoloLoom, Config
+from hololoom import hololoom, Config
 
 config = Config.fast()
 config.memory_backend = CustomKGStore()
@@ -1921,7 +1921,7 @@ loom = HoloLoom(config=config)
 
 ```python
 # batch_processor.py
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 import asyncio
 
 async def process_documents(file_paths: List[str]):
@@ -1990,17 +1990,17 @@ python demos/demo_hololoom_integration.py
 pip install pytest black mypy
 
 # 2. Make changes to code
-# Edit HoloLoom/your_file.py
+# Edit hololoom/your_file.py
 
 # 3. Run tests
-pytest HoloLoom/tests/unit/  # Fast tests
-pytest HoloLoom/tests/integration/  # Slower tests
+pytest hololoom/tests/unit/  # Fast tests
+pytest hololoom/tests/integration/  # Slower tests
 
 # 4. Format code
-black HoloLoom/
+black hololoom/
 
 # 5. Type check
-mypy HoloLoom/
+mypy hololoom/
 
 # 6. Commit
 git add .
@@ -2014,12 +2014,12 @@ git push
 
 **Add a new tool:**
 ```python
-# In HoloLoom/tools/your_tool.py
+# In hololoom/tools/your_tool.py
 async def your_tool(query: str) -> str:
     # Your implementation
     return result
 
-# In HoloLoom/policy/unified.py
+# In hololoom/policy/unified.py
 class NeuralCore:
     tools = [
         "search",
@@ -2031,7 +2031,7 @@ class NeuralCore:
 
 **Add a new modality:**
 ```python
-# In HoloLoom/input/your_processor.py
+# In hololoom/input/your_processor.py
 class YourProcessor:
     async def process(self, input_data: Any) -> ProcessedInput:
         # Extract features
@@ -2045,12 +2045,12 @@ class YourProcessor:
             metadata={"source": "your_processor"}
         )
 
-# In HoloLoom/input/router.py - add routing logic
+# In hololoom/input/router.py - add routing logic
 ```
 
 **Add a new visualization:**
 ```python
-# In HoloLoom/visualization/your_viz.py
+# In hololoom/visualization/your_viz.py
 def render_your_viz(data: Dict[str, Any]) -> str:
     """Generate HTML for your visualization"""
     return f"""
@@ -2059,7 +2059,7 @@ def render_your_viz(data: Dict[str, Any]) -> str:
     </div>
     """
 
-# In HoloLoom/visualization/html_renderer.py - register renderer
+# In hololoom/visualization/html_renderer.py - register renderer
 ```
 
 ---
@@ -2069,7 +2069,7 @@ def render_your_viz(data: Dict[str, Any]) -> str:
 ```python
 # tests/test_your_feature.py
 import pytest
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 @pytest.mark.asyncio
 async def test_your_feature():
@@ -2101,7 +2101,7 @@ pytest tests/test_your_feature.py -v
 
 ```python
 # experiment.py
-from HoloLoom import HoloLoom, Config
+from hololoom import hololoom, Config
 import numpy as np
 from pathlib import Path
 import json
@@ -2177,7 +2177,7 @@ asyncio.run(exp.run(n_trials=100))
 
 ```python
 # benchmark.py
-from HoloLoom import HoloLoom, Config
+from hololoom import hololoom, Config
 import time
 import statistics
 
@@ -2351,7 +2351,7 @@ Day 48-49: Full launch (100% of users)
 ### ROI Calculator
 
 ```python
-# Calculate cost savings from HoloLoom
+# Calculate cost savings from hololoom
 
 # Before HoloLoom
 avg_query_cost = 0.02  # $0.02 per LLM API call
@@ -2419,7 +2419,7 @@ roi = (total_annual_benefit - dev_cost) / dev_cost
 
 **Dashboard example:**
 ```python
-from HoloLoom.visualization import Dashboard, PanelType
+from hololoom.visualization import Dashboard, PanelType
 
 dashboard = Dashboard(strategy="optimization")
 

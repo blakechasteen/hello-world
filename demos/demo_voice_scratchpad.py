@@ -14,7 +14,7 @@ Date: November 2025
 """
 
 import asyncio
-from HoloLoom.spinningWheel.voice_scratchpad import VoiceScratchpad, VoicePrompt, VoiceResponse
+from hololoom.spinningWheel.voice_scratchpad import VoiceScratchpad, VoicePrompt, VoiceResponse
 
 
 # ============================================================================
@@ -302,7 +302,7 @@ async def main():
     print("✓ Safety confirmations for high-risk actions")
     print("✓ Natural conversation flow")
     print("\nNext Steps:")
-    print("1. Start voice API: python HoloLoom/server/voice_scratchpad_api.py")
+    print("1. Start voice API: python hololoom/server/voice_scratchpad_api.py")
     print("2. Use with TTS-enabled web UI")
     print("3. Experience fully conversational data entry!")
     print()

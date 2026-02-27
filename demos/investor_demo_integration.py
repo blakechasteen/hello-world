@@ -20,17 +20,17 @@ import time
 from datetime import datetime
 
 # Core HoloLoom imports
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom import hololoom
+from hololoom.config import Config, MemoryBackend
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
 
 # Alignment framework
 try:
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest
-    from HoloLoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest
+    from hololoom.alignment.audit_trail import AuditTrail
     ALIGNMENT_AVAILABLE = True
 except ImportError:
     ALIGNMENT_AVAILABLE = False
@@ -52,7 +52,7 @@ async def demo_memory_integration():
     print("-" * 80)
 
     # Use HoloLoom high-level API (simpler, more reliable)
-    from HoloLoom import HoloLoom
+    from hololoom import hololoom
 
     print(f"🔧 Creating HoloLoom instance...")
     start = time.time()
@@ -108,7 +108,7 @@ async def demo_weaving_orchestrator():
         MemoryShard(
             id="shard_demo2_1",
             text="HoloLoom is a neural decision-making system with multi-scale embeddings",
-            entities=["HoloLoom", "neural", "embeddings"],
+            entities=["hololoom", "neural", "embeddings"],
             motifs=["architecture"]
         ),
         MemoryShard(
@@ -223,7 +223,7 @@ async def demo_alignment_framework():
     print(f"✅ Audit trail initialized")
 
     # Test 1: Safe query
-    from HoloLoom.alignment.safety_guardrails import ActionCategory
+    from hololoom.alignment.safety_guardrails import ActionCategory
     safe_request = ActionRequest(
         action="text_query",
         category=ActionCategory.QUERY,
@@ -240,7 +240,7 @@ async def demo_alignment_framework():
         print(f"  💯 Safety score: {gate_result.metadata['safety_score']:.2f}")
 
     # Log to audit trail
-    from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+    from hololoom.alignment.audit_trail import DecisionType, OutcomeType
     audit_trail.log_decision(
         decision_type=DecisionType.SAFETY_GATE,
         outcome=OutcomeType.APPROVED,

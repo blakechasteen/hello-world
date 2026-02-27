@@ -1,11 +1,11 @@
-# HoloLoom Quick Reference Card
+# hololoom Quick Reference Card
 # Source file - edit this YAML, regenerate markdown
 #
 # Regenerate: python scripts/generate_quick_ref.py
 # Created: 2025-12-15
 
 metadata:
-  title: "HoloLoom Quick Reference"
+  title: "hololoom Quick Reference"
   version: "1.0"
   tagline: "Kubernetes for AI Agents"
   last_updated: "2025-12-15"
@@ -81,13 +81,13 @@ weaving_vocabulary:
 
 key_files:
   architecture:
-    - path: "HoloLoom/weaving_orchestrator.py"
+    - path: "hololoom/weaving_orchestrator.py"
       desc: "Main orchestrator (3,476 lines)"
-    - path: "HoloLoom/policy/unified.py"
+    - path: "hololoom/policy/unified.py"
       desc: "Neural policy + Thompson Sampling"
-    - path: "HoloLoom/memory/unified.py"
+    - path: "hololoom/memory/unified.py"
       desc: "Unified memory interface"
-    - path: "HoloLoom/config.py"
+    - path: "hololoom/config.py"
       desc: "Configuration modes"
 
   documentation:
@@ -133,17 +133,17 @@ setup_commands:
     desc: "Start backends (optional)"
 
 server_commands:
-  - cmd: "uvicorn HoloLoom.server.agentic_api:app --port 8000"
+  - cmd: "uvicorn hololoom.apps.server.agentic_api:app --port 8000"
     desc: "Start Agentic API (queries, monitoring)"
-  - cmd: "uvicorn HoloLoom.server.agent_manager_api:app --port 8002"
+  - cmd: "uvicorn hololoom.apps.server.agent_manager_api:app --port 8002"
     desc: "Start Agent Manager (threads, swarms)"
 
 testing_commands:
-  - cmd: "pytest HoloLoom/tests/unit/ -v"
+  - cmd: "pytest hololoom/tests/unit/ -v"
     desc: "Unit tests (<5s)"
-  - cmd: "pytest HoloLoom/tests/integration/ -v"
+  - cmd: "pytest hololoom/tests/integration/ -v"
     desc: "Integration tests (<30s)"
-  - cmd: "pytest HoloLoom/tests/e2e/ -v"
+  - cmd: "pytest hololoom/tests/e2e/ -v"
     desc: "End-to-end tests (<2min)"
 
 demo_commands:

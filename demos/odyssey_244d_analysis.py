@@ -43,14 +43,14 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 # Import semantic calculus with 244D support
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     SemanticFlowCalculus,
     SemanticSpectrum,
     EXTENDED_244_DIMENSIONS,
 )
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.embedding.spectral import create_embedder
 
 
 # Key Odyssey passages for analysis

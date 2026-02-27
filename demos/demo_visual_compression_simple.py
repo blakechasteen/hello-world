@@ -24,7 +24,7 @@ except ImportError:
     print("Install: pip install matplotlib networkx")
     sys.exit(1)
 
-from HoloLoom.memory.visual_compression import (
+from hololoom.memory.visual_compression import (
     compress_to_visual,
     CompressionType,
     CompressionMetrics

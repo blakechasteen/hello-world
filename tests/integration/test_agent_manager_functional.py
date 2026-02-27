@@ -34,7 +34,7 @@ async def test_integration():
     # 1. Test imports
     print("\n1. Testing imports...")
     try:
-        from HoloLoom.server.agent_manager_hub import (
+        from hololoom.apps.server.agent_manager_hub import (
             AgentManagerHub,
             ThreadConfig,
             ReasoningMode,
@@ -42,14 +42,14 @@ async def test_integration():
         )
         print("   ✓ Hub imports successful")
 
-        from HoloLoom.chatops.handlers.agent_manager_ws import (
+        from hololoom.apps.chatops.handlers.agent_manager_ws import (
             AgentManagerWSManager,
             AgentManagerMessage,
             AgentManagerMessageType,
         )
         print("   ✓ WebSocket imports successful")
 
-        from HoloLoom.server.agent_manager_integration import (
+        from hololoom.apps.server.agent_manager_integration import (
             AgentManagerIntegration,
             create_integration,
         )

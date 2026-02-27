@@ -59,7 +59,7 @@ Copy-Item "c:\Users\blake\Documents\mythRL\mcp_server\claude_desktop_config.json
   "mcpServers": {
     "HoloLoom-memory": {
       "command": "python",
-      "args": ["-m", "HoloLoom.memory.mcp_server"],
+      "args": ["-m", "hololoom.memory.mcp_server"],
       "env": {
         "PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"
       }
@@ -172,7 +172,7 @@ Expected:
 **What STDIO means:**
 ```
 Claude Desktop starts:
-  python -m HoloLoom.memory.mcp_server
+  python -m hololoom.memory.mcp_server
 
 Claude Desktop communicates via:
   stdin/stdout (like piping commands)
@@ -279,13 +279,13 @@ You see answer with citations
 **Solution:**
 ```bash
 # Test server manually
-python -m HoloLoom.memory.mcp_server
+python -m hololoom.memory.mcp_server
 
 # Check PYTHONPATH
 echo $PYTHONPATH  # Should include c:\Users\blake\Documents\mythRL
 
 # Verify imports work
-python -c "from HoloLoom.memory import protocol"
+python -c "from hololoom.memory import protocol"
 ```
 
 ### Issue: "Memory backend unavailable"

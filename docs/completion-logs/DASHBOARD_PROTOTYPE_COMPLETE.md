@@ -10,7 +10,7 @@
 
 ### Phase C: HTML Renderer Architecture ✓
 
-**Deliverable:** [HoloLoom/visualization/HTML_RENDERER_ARCHITECTURE.md](HoloLoom/visualization/HTML_RENDERER_ARCHITECTURE.md)
+**Deliverable:** [hololoom/visualization/HTML_RENDERER_ARCHITECTURE.md](hololoom/visualization/HTML_RENDERER_ARCHITECTURE.md)
 
 **Key Decisions:**
 - **Templating:** Jinja2 (Python-native, fast)
@@ -63,7 +63,7 @@
 ## Project Structure
 
 ```
-HoloLoom/visualization/
+hololoom/visualization/
 ├── __init__.py               # Package exports
 ├── dashboard.py              # Data structures (Panel, Dashboard, PanelSpec)
 ├── html_renderer.py          # HTMLRenderer implementation (stub)
@@ -218,7 +218,7 @@ Like Wolfram Alpha, the system:
 ### WeavingOrchestrator Integration
 
 ```python
-# File: HoloLoom/weaving_orchestrator.py
+# File: hololoom/weaving_orchestrator.py
 
 class WeavingOrchestrator:
     async def weave(self, query: Query) -> Spacetime:
@@ -228,7 +228,7 @@ class WeavingOrchestrator:
 
         # AUTO-GENERATE DASHBOARD
         if self.config.auto_dashboard:
-            from HoloLoom.visualization import DashboardConstructor
+            from hololoom.visualization import DashboardConstructor
 
             constructor = DashboardConstructor()
             dashboard = constructor.construct(spacetime)
@@ -261,7 +261,7 @@ async def handle_query(self, query: str):
 ### Matrix ChatOps Integration
 
 ```python
-# File: HoloLoom/chatops/core/chatops_bridge.py
+# File: hololoom/chatops/core/chatops_bridge.py
 
 async def handle_weave_command(self, query: str):
     spacetime = await self.shuttle.weave(Query(text=query))

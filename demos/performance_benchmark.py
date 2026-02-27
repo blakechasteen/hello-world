@@ -10,9 +10,9 @@ import time
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
+from hololoom.Documentation.types import Query, MemoryShard
 
 
 def create_test_shards():
@@ -151,7 +151,7 @@ async def benchmark_embedder_cache():
     print("BENCHMARK: Embedder Caching")
     print("=" * 80)
 
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     import time
 
     embedder = MatryoshkaEmbeddings(sizes=[96])

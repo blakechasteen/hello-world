@@ -31,7 +31,7 @@ Successfully completed comprehensive review and fixes for the SpinningWheel modu
 
 ## Changes Made
 
-### 1. Spinner Exports (`HoloLoom/spinningWheel/__init__.py`)
+### 1. Spinner Exports (`hololoom/spinningWheel/__init__.py`)
 
 **Problem:** WebsiteSpinner, RecursiveCrawler, BrowserHistoryReader, and ImageExtractor were fully implemented but not exported.
 
@@ -94,7 +94,7 @@ spinners = {
 
 **Usage:**
 ```python
-from HoloLoom.spinningWheel import create_spinner, WebsiteSpinnerConfig
+from hololoom.spinningWheel import create_spinner, WebsiteSpinnerConfig
 
 # Simple usage
 spinner = create_spinner('website')
@@ -106,7 +106,7 @@ spinner = create_spinner('website', config)
 
 ---
 
-### 3. Enricher Exports (`HoloLoom/spinningWheel/enrichment/___init___.py`)
+### 3. Enricher Exports (`hololoom/spinningWheel/enrichment/___init___.py`)
 
 **Problem:** OllamaEnricher was used internally but not exported.
 
@@ -206,11 +206,11 @@ Failing Tests (1):
 **Standard Integration Pattern:**
 ```python
 # 1. Spin raw data
-from HoloLoom.spinningWheel import spin_text
+from hololoom.spinningWheel import spin_text
 shards = await spin_text(text=content, source='document.txt')
 
 # 2. Convert to Memory objects
-from HoloLoom.memory.protocol import shards_to_memories
+from hololoom.memory.protocol import shards_to_memories
 memories = shards_to_memories(shards)
 
 # 3. Store in backend
@@ -225,7 +225,7 @@ results = await memory_backend.recall(
 )
 
 # 5. Use with orchestrator
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 weaver = WeavingOrchestrator()
 result = await weaver.weave(Query(text="Answer based on memories"))
 ```
@@ -236,7 +236,7 @@ result = await weaver.weave(Query(text="Answer based on memories"))
 
 **Status:** ✅ Already Complete
 
-**Location:** `HoloLoom/memory/mcp_server.py`
+**Location:** `hololoom/memory/mcp_server.py`
 
 **Tools Implemented:**
 1. `process_text` - Ingests text via TextSpinner
@@ -312,10 +312,10 @@ Response:
 
 ```python
 # BEFORE: ImportError
-from HoloLoom.spinningWheel import WebsiteSpinner  # ✗ Failed
+from hololoom.spinningWheel import WebsiteSpinner  # ✗ Failed
 
 # AFTER: Works!
-from HoloLoom.spinningWheel import (
+from hololoom.spinningWheel import (
     WebsiteSpinner,  # ✓
     WebsiteSpinnerConfig,  # ✓
     spin_webpage,  # ✓
@@ -330,11 +330,11 @@ from HoloLoom.spinningWheel import (
 shards = await spin_webpage('https://example.com/article')
 
 # Browser history auto-ingest
-from HoloLoom.spinningWheel import get_recent_history
+from hololoom.spinningWheel import get_recent_history
 visits = get_recent_history(days_back=7, browser='chrome')
 
 # Recursive crawling
-from HoloLoom.spinningWheel import crawl_recursive, CrawlConfig
+from hololoom.spinningWheel import crawl_recursive, CrawlConfig
 config = CrawlConfig(max_depth=2, max_pages=50)
 shards = await crawl_recursive('https://docs.example.com', config)
 ```
@@ -357,10 +357,10 @@ spinner = create_spinner('website')  # ✓ NOW WORKS!
 
 ```python
 # BEFORE: Had to import from internal module
-from HoloLoom.spinningWheel.enrichment.ollama import OllamaEnricher  # ✗ Not public API
+from hololoom.spinningWheel.enrichment.ollama import OllamaEnricher  # ✗ Not public API
 
 # AFTER: Public API
-from HoloLoom.spinningWheel.enrichment import OllamaEnricher  # ✓
+from hololoom.spinningWheel.enrichment import OllamaEnricher  # ✓
 
 enricher = OllamaEnricher(model="llama3.2:3b")
 result = await enricher.extract_context("Text to analyze")
@@ -405,12 +405,12 @@ result = await enricher.extract_context("Text to analyze")
 
 **Before:**
 ```python
-from HoloLoom.spinningWheel.website import WebsiteSpinner  # Works but not recommended
+from hololoom.spinningWheel.website import WebsiteSpinner  # Works but not recommended
 ```
 
 **After (Recommended):**
 ```python
-from HoloLoom.spinningWheel import WebsiteSpinner  # Public API
+from hololoom.spinningWheel import WebsiteSpinner  # Public API
 ```
 
 ### If You Were Using Factory
@@ -429,7 +429,7 @@ spinner = create_spinner('website')  # Now works!
 ```bash
 # From repository root
 export PYTHONPATH=.
-python HoloLoom/spinningWheel/tests/run_tests.py
+python hololoom/spinningWheel/tests/run_tests.py
 
 # Expected output:
 # Tests: 17 total, 16 passed, 1 failed
@@ -440,10 +440,10 @@ python HoloLoom/spinningWheel/tests/run_tests.py
 
 ```bash
 # With pytest
-pytest HoloLoom/spinningWheel/tests/test_spinners.py::TestWebsiteSpinner -v
+pytest hololoom/spinningWheel/tests/test_spinners.py::TestWebsiteSpinner -v
 
 # Individual test
-pytest HoloLoom/spinningWheel/tests/test_spinners.py::TestWebsiteSpinner::test_website_with_tags -v
+pytest hololoom/spinningWheel/tests/test_spinners.py::TestWebsiteSpinner::test_website_with_tags -v
 ```
 
 ---
@@ -501,7 +501,7 @@ pytest HoloLoom/spinningWheel/tests/test_spinners.py::TestWebsiteSpinner::test_w
 
 1. **Update imports** to use public API (recommended but not required):
    ```python
-   from HoloLoom.spinningWheel import WebsiteSpinner, RecursiveCrawler
+   from hololoom.spinningWheel import WebsiteSpinner, RecursiveCrawler
    ```
 
 2. **Try new features**:

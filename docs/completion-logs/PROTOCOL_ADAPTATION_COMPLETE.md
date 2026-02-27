@@ -7,7 +7,7 @@ Successfully implemented the MemoryStore protocol for KG and Neo4jKG backends, e
 
 ## Changes Made
 
-### 1. KG Protocol Implementation (HoloLoom/memory/graph.py)
+### 1. KG Protocol Implementation (hololoom/memory/graph.py)
 Added ~150 lines implementing MemoryStore protocol:
 
 **`async def store(memory, user_id) -> str`** (lines 468-539)
@@ -27,7 +27,7 @@ Added ~150 lines implementing MemoryStore protocol:
 - Scores by entity overlap ratio
 - Returns RetrievalResult with memories, scores, and metadata
 
-### 2. Neo4jKG Protocol Implementation (HoloLoom/memory/neo4j_graph.py)
+### 2. Neo4jKG Protocol Implementation (hololoom/memory/neo4j_graph.py)
 Added ~240 lines implementing MemoryStore protocol with Cypher queries:
 
 **`async def store(memory, user_id) -> str`** (lines 690-773)
@@ -54,12 +54,12 @@ Added ~240 lines implementing MemoryStore protocol with Cypher queries:
 - Handles JSON deserialization of context/metadata
 - Returns scored memories with full metadata
 
-### 3. Weaving Shuttle Integration (HoloLoom/weaving_shuttle.py)
+### 3. Weaving Shuttle Integration (hololoom/weaving_shuttle.py)
 **Line 293**: Fixed backend_type from "unified" to "factory"
 - Routes raw memory backends through correct adapter path
 - Uses `_select_via_factory()` instead of `_select_via_unified()`
 
-### 4. Protocol Enhancements (HoloLoom/memory/protocol.py)
+### 4. Protocol Enhancements (hololoom/memory/protocol.py)
 
 **Strategy Enum** (line 130):
 ```python
@@ -71,7 +71,7 @@ BALANCED = "balanced"  # Balanced retrieval (default)
 strategy: Optional['Strategy'] = None  # Optional retrieval strategy hint
 ```
 
-### 5. Weaving Adapter Fixes (HoloLoom/memory/weaving_adapter.py)
+### 5. Weaving Adapter Fixes (hololoom/memory/weaving_adapter.py)
 
 **Async Event Loop Handling** (lines 329-335):
 ```python
@@ -208,11 +208,11 @@ None! All demos passing. 🎉
 
 ## Files Modified
 
-1. `HoloLoom/memory/graph.py` - Added protocol methods to KG
-2. `HoloLoom/memory/neo4j_graph.py` - Added protocol methods to Neo4jKG
-3. `HoloLoom/weaving_shuttle.py` - Fixed backend_type routing
-4. `HoloLoom/memory/protocol.py` - Added Strategy.BALANCED and strategy field
-5. `HoloLoom/memory/weaving_adapter.py` - Fixed async handling and conversion
+1. `hololoom/memory/graph.py` - Added protocol methods to KG
+2. `hololoom/memory/neo4j_graph.py` - Added protocol methods to Neo4jKG
+3. `hololoom/weaving_shuttle.py` - Fixed backend_type routing
+4. `hololoom/memory/protocol.py` - Added Strategy.BALANCED and strategy field
+5. `hololoom/memory/weaving_adapter.py` - Fixed async handling and conversion
 
 ## Documentation
 

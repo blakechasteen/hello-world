@@ -13,10 +13,10 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import asyncio
-from HoloLoom.Documentation.types import Query, MemoryShard
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
-from HoloLoom.loom.command import PatternCard
+from hololoom.Documentation.types import Query, MemoryShard
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
+from hololoom.loom.command import PatternCard
 
 
 def create_test_shards():
@@ -107,7 +107,7 @@ async def test_pattern_card_selection():
     print("TEST: Pattern Card Selection")
     print("=" * 70)
 
-    from HoloLoom.loom.command import LoomCommand, SEMANTIC_FLOW_PATTERN
+    from hololoom.loom.command import LoomCommand, SEMANTIC_FLOW_PATTERN
 
     loom = LoomCommand()
 

@@ -27,7 +27,7 @@ Week 2, Day 1 successfully created **comprehensive integration test suites** cov
 
 ### 1. test_performance_regression.py (466 lines, 15 tests)
 
-**Location**: `HoloLoom/tests/integration/test_performance_regression.py`
+**Location**: `hololoom/tests/integration/test_performance_regression.py`
 
 **Purpose**: Systematic performance regression detection across releases.
 
@@ -107,7 +107,7 @@ Regression Analysis:
 
 ### 2. test_memory_backend_integration.py (678 lines, 18 tests)
 
-**Location**: `HoloLoom/tests/integration/test_memory_backend_integration.py`
+**Location**: `hololoom/tests/integration/test_memory_backend_integration.py`
 
 **Purpose**: Comprehensive testing for all 3 memory backends (INMEMORY/HYBRID/HYPERSPACE).
 
@@ -186,7 +186,7 @@ for backend in backends:
 
 ### 3. test_alignment_workflows.py (581 lines, 13 tests)
 
-**Location**: `HoloLoom/tests/integration/test_alignment_workflows.py`
+**Location**: `hololoom/tests/integration/test_alignment_workflows.py`
 
 **Purpose**: Real-world multi-step workflows with alignment framework.
 
@@ -277,7 +277,7 @@ Full Alignment Stack:
 
 ### 4. test_recursive_learning_workflows.py (644 lines, 15 tests)
 
-**Location**: `HoloLoom/tests/integration/test_recursive_learning_workflows.py`
+**Location**: `hololoom/tests/integration/test_recursive_learning_workflows.py`
 
 **Purpose**: Complete recursive learning workflows across all 5 phases.
 
@@ -390,10 +390,10 @@ stats = engine.get_learning_statistics()
 **Example Use**:
 ```bash
 # Run performance tests
-pytest HoloLoom/tests/integration/test_performance_regression.py -v
+pytest hololoom/tests/integration/test_performance_regression.py -v
 
 # Update baselines after optimization
-pytest HoloLoom/tests/integration/test_performance_regression.py::TestRegressionDetection::test_update_baselines -v
+pytest hololoom/tests/integration/test_performance_regression.py::TestRegressionDetection::test_update_baselines -v
 ```
 
 ### 2. Backend Parity Testing
@@ -458,7 +458,7 @@ After 20 queries: confidence=0.91 (expert)
 ### Integration Test Structure
 
 ```
-HoloLoom/tests/integration/
+hololoom/tests/integration/
 ├── test_full_9_layer_cycle.py              # Existing (9-layer validation)
 ├── test_performance_regression.py          # NEW (performance tracking)
 ├── test_memory_backend_integration.py      # NEW (backend testing)
@@ -619,22 +619,22 @@ Week 2, Day 1 is complete. Recommended next actions:
 
 ```bash
 # Performance regression tests
-pytest HoloLoom/tests/integration/test_performance_regression.py -v
+pytest hololoom/tests/integration/test_performance_regression.py -v
 
 # Memory backend tests
-pytest HoloLoom/tests/integration/test_memory_backend_integration.py -v
+pytest hololoom/tests/integration/test_memory_backend_integration.py -v
 
 # Alignment workflow tests
-pytest HoloLoom/tests/integration/test_alignment_workflows.py -v
+pytest hololoom/tests/integration/test_alignment_workflows.py -v
 
 # Recursive learning tests
-pytest HoloLoom/tests/integration/test_recursive_learning_workflows.py -v
+pytest hololoom/tests/integration/test_recursive_learning_workflows.py -v
 
 # All new integration tests
-pytest HoloLoom/tests/integration/test_performance_regression.py \
-       HoloLoom/tests/integration/test_memory_backend_integration.py \
-       HoloLoom/tests/integration/test_alignment_workflows.py \
-       HoloLoom/tests/integration/test_recursive_learning_workflows.py -v
+pytest hololoom/tests/integration/test_performance_regression.py \
+       hololoom/tests/integration/test_memory_backend_integration.py \
+       hololoom/tests/integration/test_alignment_workflows.py \
+       hololoom/tests/integration/test_recursive_learning_workflows.py -v
 ```
 
 ### Option 2: Week 2 Day 2 Tasks

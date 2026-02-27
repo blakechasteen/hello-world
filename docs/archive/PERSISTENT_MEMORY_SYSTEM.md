@@ -22,7 +22,7 @@ We've built a **complete persistent memory system** that transforms HoloLoom fro
 ## 📊 What We Built
 
 ### **1. Unified Memory Protocol** (400 lines)
-**File:** `HoloLoom/memory/protocol.py`
+**File:** `hololoom/memory/protocol.py`
 
 Protocol-based architecture enabling any backend to work seamlessly:
 
@@ -42,7 +42,7 @@ class MemoryStore(Protocol):
 ### **2. Four Storage Backends**
 
 #### **Neo4j - "The Relationship Master"** (450 lines)
-**File:** `HoloLoom/memory/stores/neo4j_store.py`
+**File:** `hololoom/memory/stores/neo4j_store.py`
 
 Thread-model storage with KNOT crossings:
 - Place threads (where)
@@ -53,7 +53,7 @@ Thread-model storage with KNOT crossings:
 **Best for:** "Who did what where when" queries, relationship discovery
 
 #### **Qdrant - "The Similarity Engine"** (446 lines)
-**File:** `HoloLoom/memory/stores/qdrant_store.py`
+**File:** `hololoom/memory/stores/qdrant_store.py`
 
 Multi-scale vector search:
 - 96d embeddings (fast, rough)
@@ -64,7 +64,7 @@ Multi-scale vector search:
 **Best for:** "Find similar content" queries, semantic similarity
 
 #### **Mem0 - "The Context Understander"** (350 lines)
-**File:** `HoloLoom/memory/stores/mem0_store.py`
+**File:** `hololoom/memory/stores/mem0_store.py`
 
 LLM-powered intelligent extraction:
 - User-specific memories
@@ -75,7 +75,7 @@ LLM-powered intelligent extraction:
 **Best for:** "My preferences" queries, personalization
 
 #### **InMemory - "The Speed Demon"** (200 lines)
-**File:** `HoloLoom/memory/stores/in_memory_store.py`
+**File:** `hololoom/memory/stores/in_memory_store.py`
 
 Fast cache for hot data:
 - Zero-latency access
@@ -88,7 +88,7 @@ Fast cache for hot data:
 ### **3. Intelligent Routing System** (1200+ lines)
 
 #### **Routing Strategies** (550 lines)
-**Files:** `HoloLoom/memory/routing/protocol.py`, `rule_based.py`, `learned.py`
+**Files:** `hololoom/memory/routing/protocol.py`, `rule_based.py`, `learned.py`
 
 **Rule-Based Router:**
 - Pattern matching (who/when → Neo4j, find/similar → Qdrant)
@@ -103,7 +103,7 @@ Fast cache for hot data:
 - Converges to optimal over time
 
 #### **Execution Patterns** (580 lines)
-**File:** `HoloLoom/memory/routing/execution_patterns.py`
+**File:** `hololoom/memory/routing/execution_patterns.py`
 
 **5 execution strategies:**
 
@@ -133,7 +133,7 @@ Fast cache for hot data:
    ```
 
 #### **Orchestrator** (400 lines)
-**File:** `HoloLoom/memory/routing/orchestrator.py`
+**File:** `hololoom/memory/routing/orchestrator.py`
 
 Combines routing + execution:
 - Composable (mix any routing with any pattern)
@@ -142,7 +142,7 @@ Combines routing + execution:
 - Production-ready
 
 ### **4. A/B Testing Framework** (340 lines)
-**File:** `HoloLoom/memory/routing/ab_test.py`
+**File:** `hololoom/memory/routing/ab_test.py`
 
 Statistical validation of strategies:
 - Weighted variant selection
@@ -152,7 +152,7 @@ Statistical validation of strategies:
 - Comprehensive reporting
 
 ### **5. ChatOps Integration** (300 lines)
-**File:** `HoloLoom/chatops/routing_commands.py`
+**File:** `hololoom/chatops/routing_commands.py`
 
 **New Commands:**
 ```bash
@@ -170,7 +170,7 @@ Statistical validation of strategies:
 - Automatically feeds into routing learning!
 
 ### **6. Docker Deployment** (200 lines)
-**File:** `HoloLoom/docker-compose.yml`
+**File:** `hololoom/docker-compose.yml`
 
 Production containers:
 - Neo4j 5.x (graph database)
@@ -288,8 +288,8 @@ Test routing strategies, execution patterns, or complete orchestrators
 
 ### **Quick Start (In-Memory)**
 ```python
-from HoloLoom.memory.routing.orchestrator import create_test_orchestrator
-from HoloLoom.memory.protocol import MemoryQuery
+from hololoom.memory.routing.orchestrator import create_test_orchestrator
+from hololoom.memory.protocol import MemoryQuery
 
 # Create orchestrator
 orchestrator = create_test_orchestrator("rule_based")
@@ -311,8 +311,8 @@ docker-compose up -d
 docker ps  # All healthy
 
 # 3. Use in Python
-from HoloLoom.memory.routing.orchestrator import RoutingOrchestrator
-from HoloLoom.memory.routing import LearnedRouter
+from hololoom.memory.routing.orchestrator import RoutingOrchestrator
+from hololoom.memory.routing import LearnedRouter
 
 orchestrator = RoutingOrchestrator(
     routing_strategy=LearnedRouter()
@@ -324,7 +324,7 @@ result = await orchestrator.execute(query, backends)
 
 ### **ChatOps Integration**
 ```python
-from HoloLoom.chatops.routing_commands import setup_routing_handlers
+from hololoom.chatops.routing_commands import setup_routing_handlers
 
 # Setup
 routing_cmds, reaction_handler = setup_routing_handlers(orchestrator)
@@ -344,7 +344,7 @@ if event.type == "m.reaction":
 
 ### **Core System (2400+ lines)**
 ```
-HoloLoom/memory/
+hololoom/memory/
 ├── protocol.py                          (400 lines)
 ├── stores/
 │   ├── neo4j_store.py                   (450 lines)
@@ -363,7 +363,7 @@ HoloLoom/memory/
 
 ### **Integration (600 lines)**
 ```
-HoloLoom/chatops/
+hololoom/chatops/
 └── routing_commands.py                  (300 lines)
 
 demos/
@@ -373,7 +373,7 @@ demos/
 
 ### **Infrastructure**
 ```
-HoloLoom/
+hololoom/
 ├── docker-compose.yml                   (200 lines)
 └── config.py                            (updated)
 ```

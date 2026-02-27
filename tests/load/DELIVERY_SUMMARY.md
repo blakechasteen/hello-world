@@ -321,7 +321,7 @@ pip install locust==2.15.1
 
 # 2. Start HoloLoom VoiceAgent server (separate terminal)
 cd /home/user/hello-world
-PYTHONPATH=. python -m HoloLoom.server.agentic_api
+PYTHONPATH=. python -m hololoom.server.agentic_api
 # Expected: Uvicorn running on http://0.0.0.0:8000
 
 # 3. Verify server is running

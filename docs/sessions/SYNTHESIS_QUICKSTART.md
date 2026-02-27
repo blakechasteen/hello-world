@@ -37,7 +37,7 @@ synthesis_output/
 Use the conversational system (automatic signal filtering):
 
 ```python
-from HoloLoom.conversational import conversational_loom
+from hololoom.conversational import conversational_loom
 
 # Create conversational system
 loom = await conversational_loom("Your knowledge base...")
@@ -57,7 +57,7 @@ print(f"Signal rate: {stats['remember_rate']:.1%}")
 Extract patterns and synthesize:
 
 ```python
-from HoloLoom.synthesis import MemoryEnricher, PatternExtractor, DataSynthesizer
+from hololoom.synthesis import MemoryEnricher, PatternExtractor, DataSynthesizer
 
 # Get filtered signal (important conversations only)
 important_turns = loom.get_history(min_importance=0.4)
@@ -242,7 +242,7 @@ patterns = extractor.extract_patterns(enriched)
 Customize training data format:
 
 ```python
-from HoloLoom.synthesis import SynthesisConfig
+from hololoom.synthesis import SynthesisConfig
 
 config = SynthesisConfig(
     include_reasoning=True,      # Include chain-of-thought
@@ -377,7 +377,7 @@ Run them to see the system in action!
    - Create specialized datasets
 
 4. **Read the full documentation:**
-   - `HoloLoom/synthesis/README.md` - Synthesis pipeline guide
+   - `hololoom/synthesis/README.md` - Synthesis pipeline guide
    - `SYNTHESIS_VISION.md` - Complete vision and architecture
    - `CONVERSATIONAL_README.md` - Conversational filtering guide
 

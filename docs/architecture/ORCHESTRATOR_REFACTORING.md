@@ -24,7 +24,7 @@ weaving_orchestrator.py (2,114 lines)
 
 ### After (Modular)
 ```
-HoloLoom/
+hololoom/
 ├── weaving/                          # New modular architecture
 │   ├── protocols.py                  # Protocol definitions (100 lines)
 │   ├── stages/                       # Individual stages
@@ -110,9 +110,9 @@ HoloLoom/
 ### Using the Refactored Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator_refactored import WeavingOrchestratorRefactored
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom.weaving_orchestrator_refactored import WeavingOrchestratorRefactored
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 # Create orchestrator
 config = Config.fast()
@@ -130,8 +130,8 @@ spacetime = await orchestrator.weave(
 ### Testing Individual Stages
 
 ```python
-from HoloLoom.weaving.stages import PatternSelectionStage
-from HoloLoom.loom.command import LoomCommand
+from hololoom.orchestrator.stages import PatternSelectionStage
+from hololoom.loom.command import LoomCommand
 
 # Create and test a stage independently
 stage = PatternSelectionStage(
@@ -152,8 +152,8 @@ assert "pattern_card" in result.data
 ### Creating Custom Strategies
 
 ```python
-from HoloLoom.weaving.strategies.base import BaseStrategy
-from HoloLoom.protocols import ComplexityLevel
+from hololoom.orchestrator.strategies.base import BaseStrategy
+from hololoom.protocols import ComplexityLevel
 
 class CustomStrategy(BaseStrategy):
     def get_complexity_level(self) -> ComplexityLevel:
@@ -175,10 +175,10 @@ The refactored orchestrator maintains **100% backward compatibility**. No code c
 
 ```python
 # This still works exactly as before
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Or use the refactored version directly
-from HoloLoom.weaving_orchestrator_refactored import WeavingOrchestratorRefactored
+from hololoom.weaving_orchestrator_refactored import WeavingOrchestratorRefactored
 ```
 
 ### For Developers

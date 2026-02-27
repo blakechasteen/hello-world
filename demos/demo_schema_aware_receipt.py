@@ -94,7 +94,7 @@ Thank you!"""
     print("STEP 2: Setting up schema registry...")
     print("-" * 70)
 
-    from HoloLoom.spinningWheel.schema_registry import (
+    from hololoom.spinningWheel.schema_registry import (
         SchemaRegistry,
         create_expense_schema
     )
@@ -114,8 +114,8 @@ Thank you!"""
     print("STEP 3: Creating schema-aware spinner...")
     print("-" * 70)
 
-    from HoloLoom.spinningWheel.schema_aware_receipt_spinner import SchemaAwareReceiptSpinner
-    from HoloLoom.memory.graph import KG
+    from hololoom.spinningWheel.schema_aware_receipt_spinner import SchemaAwareReceiptSpinner
+    from hololoom.memory.graph import KG
 
     # Create Yarn Graph
     yarn_graph = KG()

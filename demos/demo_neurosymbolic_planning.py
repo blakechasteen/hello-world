@@ -13,8 +13,8 @@ Key Innovation: Planning uses causal knowledge to find HOW to achieve goals!
 import sys
 sys.path.insert(0, '.')
 
-from HoloLoom.causal import CausalDAG, CausalNode, CausalEdge, NodeType
-from HoloLoom.planning import HierarchicalPlanner, Goal
+from hololoom.causal import CausalDAG, CausalNode, CausalEdge, NodeType
+from hololoom.planning import HierarchicalPlanner, Goal
 
 
 def print_section(title):
@@ -171,7 +171,7 @@ def main():
 
     print_section("UNDER THE HOOD: Causal Chain Finding")
 
-    from HoloLoom.planning import CausalChainFinder
+    from hololoom.planning import CausalChainFinder
 
     finder = CausalChainFinder(dag)
 

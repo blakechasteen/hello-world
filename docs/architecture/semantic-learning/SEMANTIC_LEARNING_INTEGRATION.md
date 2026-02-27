@@ -101,8 +101,8 @@ L_total = w_policy * L_policy
 ### Step 1: Augment Reflection Buffer
 
 ```python
-from HoloLoom.reflection.buffer import ReflectionBuffer
-from HoloLoom.reflection.semantic_learning import (
+from hololoom.reflection.buffer import ReflectionBuffer
+from hololoom.reflection.semantic_learning import (
     SemanticExperience,
     SemanticTrajectoryAnalyzer
 )
@@ -185,8 +185,8 @@ class SemanticReflectionBuffer(ReflectionBuffer):
 ### Step 2: Enhance PPO Trainer
 
 ```python
-from HoloLoom.reflection.ppo_trainer import PPOTrainer
-from HoloLoom.reflection.semantic_learning import SemanticMultiTaskLearner
+from hololoom.reflection.ppo_trainer import PPOTrainer
+from hololoom.reflection.semantic_learning import SemanticMultiTaskLearner
 
 class SemanticPPOTrainer(PPOTrainer):
     """PPO trainer with multi-task semantic learning."""
@@ -287,7 +287,7 @@ class SemanticPPOTrainer(PPOTrainer):
 ### Step 3: Add Curriculum Learning
 
 ```python
-from HoloLoom.reflection.semantic_learning import SemanticCurriculumDesigner
+from hololoom.reflection.semantic_learning import SemanticCurriculumDesigner
 
 class CurriculumLearningManager:
     """Manages semantic curriculum across training."""

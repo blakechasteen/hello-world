@@ -21,8 +21,8 @@ import os
 from pathlib import Path
 
 # DATAPIG imports
-from HoloLoom.datapig.detector import DataPigDetector
-from HoloLoom.datapig.dashboard import QualityReport, render_quality_dashboard
+from hololoom.datapig.detector import DataPigDetector
+from hololoom.datapig.dashboard import QualityReport, render_quality_dashboard
 
 
 def main():

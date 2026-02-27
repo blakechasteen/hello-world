@@ -15,10 +15,10 @@ import logging
 from datetime import datetime
 from typing import List
 
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.alignment.audit_trail import OutcomeType
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.alignment.audit_trail import OutcomeType
 
 # Setup logging
 logging.basicConfig(

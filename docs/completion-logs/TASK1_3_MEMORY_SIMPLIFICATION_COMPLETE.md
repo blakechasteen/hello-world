@@ -21,7 +21,7 @@ Simplify the memory backend system from 10+ backends to 3 core backends, impleme
 
 **Legacy Support:** Legacy backend names still exist but auto-migrate with deprecation warnings.
 
-**File:** [HoloLoom/config.py](HoloLoom/config.py#L32-L139)
+**File:** [hololoom/config.py](hololoom/config.py#L32-L139)
 
 ### 2. Simplified HybridMemoryStore
 
@@ -34,7 +34,7 @@ Simplify the memory backend system from 10+ backends to 3 core backends, impleme
 - Simple equal-weight fusion (no complex routing)
 - Clear fallback mode detection
 
-**File:** [HoloLoom/memory/backend_factory.py](HoloLoom/memory/backend_factory.py#L82-L231)
+**File:** [hololoom/memory/backend_factory.py](hololoom/memory/backend_factory.py#L82-L231)
 
 ### 3. Auto-Fallback Logic
 
@@ -43,7 +43,7 @@ Implemented robust auto-fallback system:
 2. If neither available → Use NetworkX (in-memory)
 3. Emit helpful warnings about missing dependencies
 
-**Function:** `_create_hybrid_with_fallback()` in [backend_factory.py](HoloLoom/memory/backend_factory.py#L310-L379)
+**Function:** `_create_hybrid_with_fallback()` in [backend_factory.py](hololoom/memory/backend_factory.py#L310-L379)
 
 ### 4. Updated Config Defaults
 
@@ -54,7 +54,7 @@ Implemented robust auto-fallback system:
 
 **Auto-Migration:** Config automatically migrates legacy backends via `MemoryBackend.migrate_legacy()`
 
-**File:** [HoloLoom/config.py](HoloLoom/config.py#L282-L307)
+**File:** [hololoom/config.py](hololoom/config.py#L282-L307)
 
 ### 5. Simplified Factory Function
 
@@ -64,7 +64,7 @@ The `create_memory_backend()` factory now:
 - Provides auto-fallback for HYBRID and HYPERSPACE
 - Emits clear error messages for missing dependencies
 
-**File:** [HoloLoom/memory/backend_factory.py](HoloLoom/memory/backend_factory.py#L386-L498)
+**File:** [hololoom/memory/backend_factory.py](hololoom/memory/backend_factory.py#L386-L498)
 
 ## Test Results
 
@@ -97,7 +97,7 @@ All tests passed successfully:
 
 **Old Code:**
 ```python
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 config = Config.fused()
 config.memory_backend = MemoryBackend.NEO4J_QDRANT  # Deprecated
@@ -105,7 +105,7 @@ config.memory_backend = MemoryBackend.NEO4J_QDRANT  # Deprecated
 
 **New Code:**
 ```python
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 config = Config.fused()
 # HYBRID is now the default, no need to set explicitly
@@ -167,8 +167,8 @@ Following the SCOPE_AND_SEQUENCE.md plan:
 
 ## Files Changed
 
-1. `HoloLoom/config.py` - Simplified MemoryBackend enum, updated defaults
-2. `HoloLoom/memory/backend_factory.py` - Simplified HybridMemoryStore, added auto-fallback
+1. `hololoom/config.py` - Simplified MemoryBackend enum, updated defaults
+2. `hololoom/memory/backend_factory.py` - Simplified HybridMemoryStore, added auto-fallback
 3. `test_memory_backend_simplification.py` - Comprehensive test suite
 
 ## Verification

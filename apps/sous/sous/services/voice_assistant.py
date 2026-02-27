@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
 
-# Try to import HoloLoom voice capabilities
+# Try to import hololoom voice capabilities
 try:
     from .hololoom_bridge import SousHoloLoomBridge, HOLOLOOM_AVAILABLE
 except ImportError:

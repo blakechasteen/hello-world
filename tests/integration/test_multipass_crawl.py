@@ -22,10 +22,10 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from HoloLoom.config import Config, ExecutionMode, MemoryBackend
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator, Query
-from HoloLoom.protocols import ComplexityLevel
-from HoloLoom.memory.protocol import Memory, MemoryQuery, RetrievalResult
+from hololoom.config import Config, ExecutionMode, MemoryBackend
+from hololoom.weaving_orchestrator import WeavingOrchestrator, Query
+from hololoom.protocols import ComplexityLevel
+from hololoom.memory.protocol import Memory, MemoryQuery, RetrievalResult
 
 
 class MockMemoryBackend:
@@ -238,7 +238,7 @@ async def test_provenance_tracking():
     complexity = ComplexityLevel.FAST
     
     # Create a trace object
-    from HoloLoom.protocols import ProvenceTrace
+    from hololoom.protocols import ProvenceTrace
     trace = ProvenceTrace(
         operation_id="test_crawl",
         complexity_level=complexity,

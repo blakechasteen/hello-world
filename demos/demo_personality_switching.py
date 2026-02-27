@@ -23,7 +23,7 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.voice.personality import PersonalityManager
+from hololoom.voice.personality import PersonalityManager
 
 
 # ============================================================================

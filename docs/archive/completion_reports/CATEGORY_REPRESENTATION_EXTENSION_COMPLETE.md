@@ -68,7 +68,7 @@ Representation theory bridges abstract algebra and linear algebra. It provides:
 
 ## Deliverables
 
-### 1. Category Theory Module ([HoloLoom/warp/category.py](HoloLoom/warp/category.py))
+### 1. Category Theory Module ([hololoom/warp/category.py](hololoom/warp/category.py))
 
 **729 lines of categorical abstraction**
 
@@ -131,7 +131,7 @@ class MonoidalCategory(Category):
 
 ---
 
-### 2. Representation Theory Module ([HoloLoom/warp/representation.py](HoloLoom/warp/representation.py))
+### 2. Representation Theory Module ([hololoom/warp/representation.py](hololoom/warp/representation.py))
 
 **637 lines of symmetry mathematics**
 
@@ -298,7 +298,7 @@ All Tests Passed!
 
 ---
 
-### 5. Updated Exports ([HoloLoom/warp/__init__.py](HoloLoom/warp/__init__.py))
+### 5. Updated Exports ([hololoom/warp/__init__.py](hololoom/warp/__init__.py))
 
 Added category theory and representation theory exports:
 
@@ -320,7 +320,7 @@ from .representation import (
 
 **Usage:**
 ```python
-from HoloLoom.warp import Category, Functor, Group, Representation
+from hololoom.warp import Category, Functor, Group, Representation
 ```
 
 ---
@@ -618,14 +618,14 @@ eq_map.verify_equivariance()
 
 ### New Files (3)
 
-1. **[HoloLoom/warp/category.py](HoloLoom/warp/category.py)** - Category theory (729 lines)
-2. **[HoloLoom/warp/representation.py](HoloLoom/warp/representation.py)** - Representation theory (637 lines)
+1. **[hololoom/warp/category.py](hololoom/warp/category.py)** - Category theory (729 lines)
+2. **[hololoom/warp/representation.py](hololoom/warp/representation.py)** - Representation theory (637 lines)
 3. **[demos/category_representation_integration.py](demos/category_representation_integration.py)** - Integration demos (330 lines)
 4. **[test_category_representation.py](test_category_representation.py)** - Test suite (180 lines)
 
 ### Modified Files (1)
 
-5. **[HoloLoom/warp/__init__.py](HoloLoom/warp/__init__.py)** - Added category and representation exports
+5. **[hololoom/warp/__init__.py](hololoom/warp/__init__.py)** - Added category and representation exports
 
 **Total**: 1,900+ lines of new code + documentation
 
@@ -689,13 +689,13 @@ All integrated with:
 
 ```python
 # Category theory
-from HoloLoom.warp import Category, Functor, Yoneda Embedding
+from hololoom.warp import Category, Functor, Yoneda Embedding
 
 KG = Category("KnowledgeGraph")
 embedding = Functor(source=KG, target=VectorSpace, ...)
 
 # Representation theory
-from HoloLoom.warp import symmetric_group, Representation, EquivariantMap
+from hololoom.warp import symmetric_group, Representation, EquivariantMap
 
 S3 = symmetric_group(3)
 rep = regular_representation(S3)

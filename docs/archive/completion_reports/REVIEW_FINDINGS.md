@@ -104,7 +104,7 @@ Document serves:
 **Recommendation:** Clarify this is "core production files" or update to actual count with breakdown
 
 ### 2. Math Module Count (Very Minor)
-**Issue:** Document says "38 modules" but found **42 .py files** in `HoloLoom/warp/math/`
+**Issue:** Document says "38 modules" but found **42 .py files** in `hololoom/warp/math/`
 **Reason:** Likely counting functional modules vs. all files (includes __init__.py, helpers)
 **Impact:** Negligible
 **Recommendation:** Update to "42 modules" or specify "38 functional modules"
@@ -189,9 +189,9 @@ python demos/01_quickstart.py
 - Terminal UI: `python Promptly/promptly/ui/terminal_app_wired.py`
 
 **Key Files:**
-- Main API: HoloLoom/unified_api.py
-- Configuration: HoloLoom/config.py
-- Tests: HoloLoom/test_unified_policy.py
+- Main API: hololoom/unified_api.py
+- Configuration: hololoom/config.py
+- Tests: hololoom/test_unified_policy.py
 ```
 
 ### 2. Add Performance Tuning Section (Optional)

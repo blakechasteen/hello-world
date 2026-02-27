@@ -1011,7 +1011,7 @@ class InjectionCircuitBreaker:
 
         if attempts >= self.LOCKOUT_THRESHOLD * 2:
             # Severe repeated attempts - escalate to system-wide alert
-            from HoloLoom.alignment import kill_switch, KillSwitchLevel
+            from hololoom.alignment import kill_switch, KillSwitchLevel
             kill_switch.activate(
                 level=KillSwitchLevel.FREEZE_AGENT,
                 reason=f"Repeated injection attempts from {source_id}",
@@ -1213,7 +1213,7 @@ return {"response": llm_response}
 
 ```python
 # Set up injection monitoring
-from HoloLoom.monitoring import AlertManager
+from hololoom.monitoring import AlertManager
 
 alert_manager = AlertManager()
 
@@ -1259,8 +1259,8 @@ if sanitization_result.threat_level.value >= ThreatLevel.HIGH.value:
 ### Secure Agent Creation
 
 ```python
-from HoloLoom.prompting import SecureMetapromptConfig, SecureMRFPipeline
-from HoloLoom.agents import VerifiedAgent
+from hololoom.prompting import SecureMetapromptConfig, SecureMRFPipeline
+from hololoom.agents import VerifiedAgent
 
 class MySecureAgent(VerifiedAgent):
     id = "my_secure_agent"

@@ -1,4 +1,4 @@
-# HoloLoom Lite - Single docker-compose that just works
+# hololoom Lite - Single docker-compose that just works
 #
 # Usage:
 #   docker-compose -f docker-compose.lite.yml up -d
@@ -6,7 +6,7 @@
 # Services:
 #   - Neo4j (Graph Database): http://localhost:7474 (neo4j/hololoom)
 #   - Qdrant (Vector Database): http://localhost:6333
-#   - HoloLoom API: http://localhost:8000
+#   - hololoom API: http://localhost:8000
 #
 # Stop:
 #   docker-compose -f docker-compose.lite.yml down
@@ -61,7 +61,7 @@ services:
     networks:
       - hololoom-lite
 
-  # HoloLoom API Server
+  # hololoom API Server
   hololoom-api:
     image: python:3.11-slim
     container_name: hololoom-lite-api
@@ -82,7 +82,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     volumes:
-      - ./HoloLoom:/app/HoloLoom:ro
+      - ./hololoom:/app/hololoom:ro
       - ./demos:/app/demos:ro
       - ./requirements.txt:/app/requirements.txt:ro
       - hololoom_lite_cache:/app/.cache
@@ -105,7 +105,7 @@ services:
         pip install --no-cache-dir torch numpy gymnasium fastapi uvicorn httpx aiohttp &&
         pip install --no-cache-dir networkx qdrant-client neo4j sentence-transformers &&
         pip install --no-cache-dir anthropic openai ollama 2>/dev/null || true &&
-        uvicorn HoloLoom.server.agentic_api:app --host 0.0.0.0 --port 8000
+        uvicorn hololoom.apps.server.agentic_api:app --host 0.0.0.0 --port 8000
       "
 
 volumes:

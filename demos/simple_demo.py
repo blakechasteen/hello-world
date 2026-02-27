@@ -12,9 +12,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.autospin import AutoSpinOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from hololoom.autospin import AutoSpinOrchestrator
+from hololoom.config import Config
+from hololoom.Documentation.types import Query
 
 
 async def main():

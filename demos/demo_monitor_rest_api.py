@@ -9,7 +9,7 @@ Tests the 5 new REST endpoints:
 - GET /api/monitor/metrics - Performance metrics
 
 Usage:
-    1. Start server: uvicorn HoloLoom.server.agentic_api:app --port 8000
+    1. Start server: uvicorn HoloLoom.apps.server.agentic_api:app --port 8000
     2. Run this demo: python demos/demo_monitor_rest_api.py
 
 Status: Production Ready (November 2025)
@@ -46,7 +46,7 @@ async def test_rest_endpoints():
                 print(f"❌ Error {response.status_code}: {response.text}")
         except Exception as e:
             print(f"❌ Connection failed: {e}")
-            print("   Make sure server is running: uvicorn HoloLoom.server.agentic_api:app --port 8000")
+            print("   Make sure server is running: uvicorn HoloLoom.apps.server.agentic_api:app --port 8000")
             return
 
         print()

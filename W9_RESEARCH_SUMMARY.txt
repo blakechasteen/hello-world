@@ -34,25 +34,25 @@ IDENTIFIED STUBS: 3 Total
 ================================================================================
 
 1. OLLAMA PROVIDER - ✅ WORKING
-   Location: HoloLoom/llm/providers/ollama_provider.py
+   Location: hololoom/llm/providers/ollama_provider.py
    Status: Production-ready, fully implemented (~120 lines)
    Features: Async, health checks, error handling, multiple models
    Impact: PRIMARY LOCAL LLM - DEFAULT FALLBACK
 
 2. ANTHROPIC PROVIDER - ✅ WORKING
-   Location: HoloLoom/llm/providers/anthropic_provider.py
+   Location: hololoom/llm/providers/anthropic_provider.py
    Status: Production-ready, fully implemented (~150 lines)
    Features: Async Claude, API key validation, system prompts
    Impact: PRIMARY CLOUD LLM - HIGHEST QUALITY
 
 3. OPENAI PROVIDER - ✅ WORKING
-   Location: HoloLoom/llm/providers/openai_provider.py
+   Location: hololoom/llm/providers/openai_provider.py
    Status: Production-ready, fully implemented (~150 lines)
    Features: Async GPT, function calling, multimodal support
    Impact: SECONDARY CLOUD LLM - GOOD ALTERNATIVE
 
 4. GEMINI PROVIDER - ⚠️ STUB (~20% complete)
-   Location: HoloLoom/llm/providers/gemini_provider.py
+   Location: hololoom/llm/providers/gemini_provider.py
    Status: Incomplete (~50 lines)
    Missing: generate() method, streaming, error handling
    Fix Time: ~1 hour (copy pattern from Anthropic)
@@ -60,37 +60,37 @@ IDENTIFIED STUBS: 3 Total
    Recommendation: Complete if time permits
 
 5. QDRANT VECTOR STORE - ✅ WORKING
-   Location: HoloLoom/memory/stores/qdrant_store.py
+   Location: hololoom/memory/stores/qdrant_store.py
    Status: Production-grade (869 lines)
    Features: Connection pooling, multi-scale embeddings, gRPC, health checks
    Impact: PRIMARY VECTOR STORE - DEFAULT IN CONFIG
 
 6. NEO4J GRAPH STORE - ✅ WORKING
-   Location: HoloLoom/memory/stores/neo4j_store.py
+   Location: hololoom/memory/stores/neo4j_store.py
    Status: Production-ready (352 lines)
    Features: Graph traversal, relationships, transactions
    Impact: SECONDARY STORE - RELATIONSHIP MANAGEMENT
 
 7. HYBRID STORE - ✅ WORKING
-   Location: HoloLoom/memory/stores/hybrid_neo4j_qdrant.py
+   Location: hololoom/memory/stores/hybrid_neo4j_qdrant.py
    Status: Production-ready (528 lines)
    Features: Coordinated queries, fallback, result fusion
    Impact: DEFAULT BACKEND - COMBINES BOTH STORES
 
 8. LANGCHAIN INTEGRATION - ✅ WORKING
-   Location: HoloLoom/integrations/langchain/
+   Location: hololoom/integrations/langchain/
    Status: Complete (500+ lines)
    Features: 20+ LLM providers, 100+ document loaders, 8+ vector stores
    Impact: BREADTH INTEGRATION - MANY OPTIONS
 
 9. AGENTIC API - ✅ WORKING
-   Location: HoloLoom/server/agentic_api.py
+   Location: hololoom/server/agentic_api.py
    Status: Production-ready (61 KB - very comprehensive)
    Features: Full orchestrator exposure, 4 reasoning modes, WebSocket
    Impact: PRIMARY SERVER API
 
 10. AR API - ✅ WORKING
-    Location: HoloLoom/server/ar_api.py
+    Location: hololoom/server/ar_api.py
     Status: Production-ready (52 KB)
     Features: Vision endpoints (8 total), WebXR, rate limiting
     Impact: ADVANCED FEATURES - MULTIMODAL
@@ -101,7 +101,7 @@ IDENTIFIED STUBS: 3 Total
     Total Code: 250+ KB
 
 12. WAF MIDDLEWARE - ❌ STUB (~40% complete)
-    Location: HoloLoom/server/waf_middleware.py
+    Location: hololoom/server/waf_middleware.py
     Status: Incomplete (~100 lines)
     Missing: Path traversal detection, command injection detection, FastAPI registration
     Fix Time: ~2-3 hours
@@ -109,19 +109,19 @@ IDENTIFIED STUBS: 3 Total
     Recommendation: Complete for production hardening
 
 13. CHATOPS INTEGRATION - ✅ WORKING
-    Location: HoloLoom/chatops/
+    Location: hololoom/chatops/
     Status: Complete (38 handler files + support modules)
     Features: 38 specialized handlers, WebSocket, scratchpad, metrics
     Impact: CHATBOT INTERFACE - PRODUCTION-READY
 
 14. MCP INTEGRATION - ✅ WORKING (PRIMARY)
-    Location: HoloLoom/integrations/mcp_server.py
+    Location: hololoom/integrations/mcp_server.py
     Status: Production-ready (715 lines)
     Features: 13 skill tools, recursive reasoning, Claude Desktop integration
     Impact: CLAUDE DESKTOP INTEGRATION
 
 15. JIRA MCP SERVER - ❌ STUB (Optional)
-    Location: HoloLoom/integrations/mcp/jira_server.py
+    Location: hololoom/integrations/mcp/jira_server.py
     Status: Minimal skeleton
     Missing: Jira API integration, issue tracking
     Fix Time: ~4 hours
@@ -129,7 +129,7 @@ IDENTIFIED STUBS: 3 Total
     Recommendation: Skip (not core functionality)
 
 16. DARK TRACE - ✅ WORKING (ALL 10 PHASES)
-    Location: HoloLoom/integrations/dark_trace_integration.py
+    Location: hololoom/integrations/dark_trace_integration.py
     Status: Production-ready (48 KB, 50,000+ lines of interpretability code)
     Features: SAE, multi-model support, fingerprinting, orchestrator integration
     Impact: HIGH - Interpretability & Safety
@@ -188,7 +188,7 @@ TOTAL                    25     18        5        2      92%
 
 STUB #1: GEMINI LLM PROVIDER (Priority: Medium)
 ──────────────────────────────────────────────
-Location: HoloLoom/llm/providers/gemini_provider.py
+Location: hololoom/llm/providers/gemini_provider.py
 Current Status: ~50 lines, ~20% complete
 Missing Implementation:
   - __init__(): Client initialization
@@ -211,7 +211,7 @@ Impact if Not Fixed: LOW (Anthropic+OpenAI sufficient)
 
 STUB #2: WAF MIDDLEWARE (Priority: Medium)
 ───────────────────────────────────────────
-Location: HoloLoom/server/waf_middleware.py
+Location: hololoom/server/waf_middleware.py
 Current Status: ~100 lines, ~40% complete
 Missing Implementation:
   - Path traversal detection (20 lines)
@@ -230,7 +230,7 @@ Impact if Not Fixed: MEDIUM (defense in depth, not critical)
 
 STUB #3: JIRA MCP SERVER (Priority: Low - Optional)
 ─────────────────────────────────────────────────────
-Location: HoloLoom/integrations/mcp/jira_server.py
+Location: hololoom/integrations/mcp/jira_server.py
 Current Status: Minimal skeleton
 Missing Implementation:
   - Jira API integration (200+ lines)

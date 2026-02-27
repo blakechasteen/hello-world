@@ -6,33 +6,33 @@ Ruthlessly simplified HoloLoom project structure in 30 minutes.
 ## Changes Made
 
 ### Root Directory Cleanup
-**Before:** 17 Python files in `HoloLoom/`
-**After:** 6 Python files in `HoloLoom/`
+**Before:** 17 Python files in `hololoom/`
+**After:** 6 Python files in `hololoom/`
 **Reduction:** -65% 🎯
 
 **Moved Files:**
 ```bash
 # Utility scripts → tools/
-HoloLoom/bootstrap_system.py      → HoloLoom/tools/
-HoloLoom/visualize_bootstrap.py   → HoloLoom/tools/
-HoloLoom/validate_pipeline.py     → HoloLoom/tools/
-HoloLoom/check_holoLoom.py        → HoloLoom/tools/
+hololoom/bootstrap_system.py      → hololoom/tools/
+hololoom/visualize_bootstrap.py   → hololoom/tools/
+hololoom/validate_pipeline.py     → hololoom/tools/
+hololoom/check_holoLoom.py        → hololoom/tools/
 
 # Test files → tests/
-HoloLoom/test_backends.py         → HoloLoom/tests/
-HoloLoom/test_smart_integration.py → HoloLoom/tests/
-HoloLoom/test_unified_policy.py   → HoloLoom/tests/
+hololoom/test_backends.py         → hololoom/tests/
+hololoom/test_smart_integration.py → hololoom/tests/
+hololoom/test_unified_policy.py   → hololoom/tests/
 
 # Feature-specific files → feature dirs
-HoloLoom/autospin.py              → HoloLoom/spinningWheel/
-HoloLoom/matryoshka_interpreter.py → HoloLoom/embedding/
-HoloLoom/synthesis_bridge.py      → HoloLoom/synthesis/
-HoloLoom/conversational.py        → HoloLoom/chatops/
+hololoom/autospin.py              → hololoom/spinningWheel/
+hololoom/matryoshka_interpreter.py → hololoom/embedding/
+hololoom/synthesis_bridge.py      → hololoom/synthesis/
+hololoom/conversational.py        → hololoom/chatops/
 ```
 
 ### Final Root Structure
 ```
-HoloLoom/
+hololoom/
 ├── __init__.py                ✓ Package entry
 ├── config.py                  ✓ Configuration
 ├── protocols.py               ✓ Protocol definitions
@@ -46,7 +46,7 @@ HoloLoom/
 ## New Directory Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── tools/                # Developer utilities
 │   ├── bootstrap_system.py
 │   ├── check_holoLoom.py
@@ -134,7 +134,7 @@ Organize `tests/` into:
 ### Phase 3: Remove Dead Code (30 min)
 Check if `bootstrap_results/` directory is still needed:
 ```bash
-grep -r "bootstrap_results" HoloLoom/
+grep -r "bootstrap_results" hololoom/
 # If empty → delete
 ```
 

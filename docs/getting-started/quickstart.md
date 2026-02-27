@@ -29,7 +29,7 @@ pip install torch numpy networkx
 ### Option 1: Simple API (Recommended for beginners)
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 import asyncio
 
 async def main():
@@ -58,7 +58,7 @@ Confidence: 0.92
 ### Option 2: Department API (More control)
 
 ```python
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 import asyncio
 
 async def main():
@@ -88,9 +88,9 @@ asyncio.run(main())
 ### Option 3: Full Weaving Cycle (Advanced)
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
 import asyncio
 
 async def main():
@@ -132,7 +132,7 @@ HoloLoom has 3 execution modes:
 | **FUSED** | ~300ms | Best | Complex queries, research |
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 config_bare = Config.bare()   # Fastest
 config_fast = Config.fast()   # Balanced (recommended)
@@ -151,7 +151,7 @@ docker-compose up -d
 
 # Configure backend
 python -c "
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 config = Config.fast()
 config.memory_backend = MemoryBackend.HYBRID  # Uses Neo4j + Qdrant
 "

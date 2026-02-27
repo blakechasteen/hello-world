@@ -2,7 +2,7 @@
 
 **Date**: December 2025
 **Status**: ✅ Production Ready (v1.0.0)
-**Location**: `HoloLoom/federation/`
+**Location**: `hololoom/federation/`
 **Total Code**: 4,357 lines across 9 core modules
 
 ## System Overview
@@ -513,8 +513,8 @@ Lower-trusted nodes excluded from critical queries.
 Federation works alongside HoloLoom's core systems:
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.federation import Federation, VerificationLevel
+from hololoom import hololoom
+from hololoom.federation import Federation, VerificationLevel
 
 # Local HoloLoom instance
 async with HoloLoom() as loom:
@@ -617,7 +617,7 @@ Single HoloLoom instance + FastAPI
 
 ## Complete API Reference
 
-See `/c/Users/blake/OneDrive/Documents/mythRL/HoloLoom/federation/README.md` for:
+See `/c/Users/blake/OneDrive/Documents/mythRL/hololoom/federation/README.md` for:
 - 40+ Federation methods
 - FederationConfig parameters
 - Types and enums
@@ -630,7 +630,7 @@ See `/c/Users/blake/OneDrive/Documents/mythRL/HoloLoom/federation/README.md` for
 Comprehensive test suite in `federation/tests/`:
 
 ```python
-pytest HoloLoom/federation/tests/test_core.py -v
+pytest hololoom/federation/tests/test_core.py -v
 
 # Tests cover:
 - Federation lifecycle (join, leave, cleanup)

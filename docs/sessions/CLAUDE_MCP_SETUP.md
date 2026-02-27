@@ -134,7 +134,7 @@ Read memory://[paste ID here]
 2. **Verify config:** Should be in `%APPDATA%\Claude\claude_desktop_config.json`
 3. **Test manually:**
    ```powershell
-   C:/Users/blake/Documents/mythRL/.venv/Scripts/python.exe -m HoloLoom.memory.mcp_server
+   C:/Users/blake/Documents/mythRL/.venv/Scripts/python.exe -m hololoom.memory.mcp_server
    ```
    Should output: `Initializing HoloLoom Memory MCP Server...`
 
@@ -183,7 +183,7 @@ Text: Met with Jodi to discuss hive placement for spring expansion...
 
 ### Configure Backend Weights
 
-Edit `HoloLoom/memory/mcp_server.py` → `init_memory()`:
+Edit `hololoom/memory/mcp_server.py` → `init_memory()`:
 
 ```python
 memory = await create_unified_memory(
@@ -196,7 +196,7 @@ memory = await create_unified_memory(
 
 ### Adjust Fusion Strategy
 
-In `HoloLoom/memory/stores/hybrid_store.py`:
+In `hololoom/memory/stores/hybrid_store.py`:
 
 ```python
 HybridMemoryStore(
@@ -219,19 +219,19 @@ Tool(
 
 ## Files Reference
 
-- **Server:** `HoloLoom/memory/mcp_server.py`
-- **Protocol:** `HoloLoom/memory/protocol.py`
+- **Server:** `hololoom/memory/mcp_server.py`
+- **Protocol:** `hololoom/memory/protocol.py`
 - **Config:** `C:\Users\blake\AppData\Roaming\Claude\claude_desktop_config.json`
 - **Docs:** 
-  - `HoloLoom/memory/MCP_SETUP.md` - Detailed setup
-  - `HoloLoom/memory/QUICKSTART.md` - Memory basics
-  - `HoloLoom/memory/REFERENCE.md` - API reference
+  - `hololoom/memory/MCP_SETUP.md` - Detailed setup
+  - `hololoom/memory/QUICKSTART.md` - Memory basics
+  - `hololoom/memory/REFERENCE.md` - API reference
 
 ## Support
 
 If you see errors:
 1. Check Claude logs: `%APPDATA%\Claude\logs\mcp*.log`
-2. Test server: `python -m HoloLoom.memory.mcp_server`
+2. Test server: `python -m hololoom.memory.mcp_server`
 3. Verify Python path in config matches your venv
 
 ---

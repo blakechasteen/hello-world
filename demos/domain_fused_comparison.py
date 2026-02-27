@@ -25,11 +25,11 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Dict, List, Set
 
-from HoloLoom.semantic_calculus.dimension_selector import (
+from hololoom.semantic_calculus.dimension_selector import (
     SmartDimensionSelector,
     SelectionStrategy,
 )
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 
 def compare_domain_selections(output_dir: Path):

@@ -3,10 +3,10 @@ import sys
 import os
 from pathlib import Path
 
-# Fix: Ensure we can import HoloLoom from the parent directory
+# Fix: Ensure we can import hololoom from the parent directory
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 import logging
 
 # Configure logging to show the "weaving" process

@@ -1,7 +1,7 @@
 {
   "name": "@hololoom/components",
   "version": "0.1.0",
-  "description": "HoloLoom React component library for streaming AI interfaces",
+  "description": "hololoom React component library for streaming AI interfaces",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

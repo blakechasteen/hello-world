@@ -107,7 +107,7 @@
 
 ### weave() Enhancement
 
-**Location**: `HoloLoom/weaving_orchestrator.py`
+**Location**: `hololoom/weaving_orchestrator.py`
 
 **Before**: ~10 lines (basic description)
 
@@ -128,21 +128,21 @@
 
 ### Verified Comprehensive
 
-**experience()** - `HoloLoom/hololoom.py:150-204` ✅
+**experience()** - `hololoom/hololoom.py:150-204` ✅
 - 54 lines
 - Modality support (text, audio, multi-modal)
 - 3 usage examples
 - Performance characteristics
 - Already comprehensive, no changes needed
 
-**recall()** - `HoloLoom/hololoom.py:206-248` ✅
+**recall()** - `hololoom/hololoom.py:206-248` ✅
 - 42 lines
 - Strategy options (semantic, temporal, hybrid)
 - 3 usage examples
 - Hybrid formula documented
 - Already comprehensive, no changes needed
 
-**reflect()** - `HoloLoom/hololoom.py:250-277` ✅
+**reflect()** - `hololoom/hololoom.py:250-277` ✅
 - 27 lines
 - Feedback dictionary structure
 - 3 usage examples (positive, negative, selective)
@@ -183,13 +183,13 @@ All errors caught and fixed before user awareness:
 ### Created Files (4)
 
 1. **test_fast_mode_e2e.py**
-   - Location: `HoloLoom/tests/e2e/test_fast_mode_e2e.py`
+   - Location: `hololoom/tests/e2e/test_fast_mode_e2e.py`
    - Size: 318 lines
    - Tests: 15
    - Status: ✅ All passing
 
 2. **test_fused_mode_e2e.py**
-   - Location: `HoloLoom/tests/e2e/test_fused_mode_e2e.py`
+   - Location: `hololoom/tests/e2e/test_fused_mode_e2e.py`
    - Size: 350 lines
    - Tests: 18
    - Status: ✅ All passing
@@ -206,14 +206,14 @@ All errors caught and fixed before user awareness:
 ### Modified Files (1)
 
 1. **weaving_orchestrator.py**
-   - Location: `HoloLoom/weaving_orchestrator.py`
+   - Location: `hololoom/weaving_orchestrator.py`
    - Change: Enhanced `weave()` docstring
    - Addition: +118 lines of comprehensive documentation
 
 ### Verified Files (1)
 
 1. **hololoom.py**
-   - Location: `HoloLoom/hololoom.py`
+   - Location: `hololoom/hololoom.py`
    - Verified: `experience()`, `recall()`, `reflect()` docstrings
    - Status: Already comprehensive, no changes needed
 
@@ -276,7 +276,7 @@ All errors caught and fixed before user awareness:
 
 **Method**:
 ```bash
-python -c "from HoloLoom.config import Config; import inspect; print(inspect.signature(Config.bare))"
+python -c "from hololoom.config import Config; import inspect; print(inspect.signature(Config.bare))"
 ```
 
 **Impact**: Prevented 3 API compatibility errors in FAST/FUSED tests.

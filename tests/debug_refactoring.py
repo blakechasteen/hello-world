@@ -7,9 +7,9 @@ sys.path.insert(0, str(Path.cwd()))
 async def main():
     try:
         print("Importing WeavingOrchestratorRefactored...")
-        from HoloLoom.weaving_orchestrator_refactored import WeavingOrchestratorRefactored
-        from HoloLoom.config import Config
-        from HoloLoom.protocols.types import MemoryShard
+        from hololoom.weaving_orchestrator_refactored import WeavingOrchestratorRefactored
+        from hololoom.config import Config
+        from hololoom.protocols.types import MemoryShard
 
         print("Creating dependencies...")
         config = Config.fast()

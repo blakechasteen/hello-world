@@ -59,7 +59,7 @@ def analyze_file(file_path):
     return methods, len(lines)
 
 def main():
-    file_path = Path('HoloLoom/weaving_orchestrator.py')
+    file_path = Path('hololoom/weaving_orchestrator.py')
     methods, total_lines = analyze_file(file_path)
 
     print(f"Total lines: {total_lines}")

@@ -16,7 +16,7 @@
 
 ### Zero-Config Pattern Works
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 loom = HoloLoom()  # Just works
 ```
 
@@ -98,8 +98,8 @@ services:
 ### 2. Add Entry Points to `setup.py`
 ```python
 [project.scripts]
-hololoom-lite = "HoloLoom.lite:main"
-hololoom-query = "HoloLoom.cli:query"
+hololoom-lite = "hololoom.lite:main"
+hololoom-query = "hololoom.cli:query"
 ```
 **Impact**: No more `PYTHONPATH=.`, feels like real package
 
@@ -123,7 +123,7 @@ QDRANT_PORT=6333
 
 ### 5. Add Installation Verification Script
 ```bash
-python -c "from HoloLoom.verify import check_setup; check_setup()"
+python -c "from hololoom.verify import check_setup; check_setup()"
 # Output: ✅ Python 3.11 | ✅ torch | ✅ networkx | ⚠️ spacy not installed
 ```
 **Impact**: Users know immediately what's working
@@ -157,7 +157,7 @@ from tqdm import tqdm
 
 ### 9. Create Setup Wizard
 ```bash
-python -m HoloLoom.install  # Interactive
+python -m hololoom.install  # Interactive
 # What platform? > Linux
 # Lite or Full? > Lite
 # Enable Docker? > No

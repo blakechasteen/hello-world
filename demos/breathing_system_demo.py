@@ -24,14 +24,14 @@ from datetime import datetime
 from typing import List, Dict, Any
 
 # Import breathing-enabled components
-from HoloLoom.chrono.trigger import ChronoTrigger, BreathingRhythm
-from HoloLoom.warp.space import WarpSpace
-from HoloLoom.resonance.shed import ResonanceShed
-from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy
-from HoloLoom.reflection.buffer import ReflectionBuffer
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.config import Config
+from hololoom.chrono.trigger import ChronoTrigger, BreathingRhythm
+from hololoom.warp.space import WarpSpace
+from hololoom.resonance.shed import ResonanceShed
+from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
+from hololoom.reflection.buffer import ReflectionBuffer
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.config import Config
 
 
 # ============================================================================
@@ -108,7 +108,7 @@ async def demo_resonance_pressure():
     # Mock extractors
     class MockMotifDetector:
         async def detect(self, text):
-            from HoloLoom.documentation.types import Motif
+            from hololoom.documentation.types import Motif
             return [Motif(pattern="TEST", span=(0, 4), score=0.9)]
 
     class MockEmbedder:

@@ -22,7 +22,7 @@ import time
 from typing import Dict, Any, List
 from collections import defaultdict
 
-from HoloLoom.tuning import (
+from hololoom.tuning import (
     MasterTuningCoordinator,
     TimeoutTuner,
     CacheTuner,
@@ -32,14 +32,14 @@ from HoloLoom.tuning import (
     PolicyTuner,
     PhysicsTuner,
 )
-from HoloLoom.tuning.cache_tuner import CacheMetrics
-from HoloLoom.tuning.threshold_tuner import QualityMetrics
-from HoloLoom.tuning.memory_tuner import RetrievalMetrics
-from HoloLoom.tuning.memory_tuner import QueryComplexity as MemoryQueryComplexity
-from HoloLoom.tuning.complexity_tuner import ComplexityMetrics, ExecutionMode
-from HoloLoom.tuning.complexity_tuner import QueryComplexity as ComplexityQueryComplexity
-from HoloLoom.tuning.policy_tuner import PolicyMetrics
-from HoloLoom.tuning.physics_tuner import PhysicsMetrics
+from hololoom.tuning.cache_tuner import CacheMetrics
+from hololoom.tuning.threshold_tuner import QualityMetrics
+from hololoom.tuning.memory_tuner import RetrievalMetrics
+from hololoom.tuning.memory_tuner import QueryComplexity as MemoryQueryComplexity
+from hololoom.tuning.complexity_tuner import ComplexityMetrics, ExecutionMode
+from hololoom.tuning.complexity_tuner import QueryComplexity as ComplexityQueryComplexity
+from hololoom.tuning.policy_tuner import PolicyMetrics
+from hololoom.tuning.physics_tuner import PhysicsMetrics
 
 # ANSI colors
 class Colors:

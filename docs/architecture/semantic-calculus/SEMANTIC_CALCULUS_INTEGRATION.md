@@ -7,7 +7,7 @@ Successfully integrated semantic calculus into HoloLoom pipeline with full MCP s
 ## What Was Accomplished
 
 ### 1. Pattern Card Integration ✓
-**File**: [HoloLoom/loom/command.py](HoloLoom/loom/command.py:174-199)
+**File**: [hololoom/loom/command.py](hololoom/loom/command.py:174-199)
 
 Added `SEMANTIC_FLOW` pattern card with semantic-specific configuration:
 ```python
@@ -24,7 +24,7 @@ SEMANTIC_FLOW_PATTERN = PatternSpec(
 ```
 
 ### 2. ResonanceShed Integration ✓
-**File**: [HoloLoom/resonance/shed.py](HoloLoom/resonance/shed.py:213-245)
+**File**: [hololoom/resonance/shed.py](hololoom/resonance/shed.py:213-245)
 
 Added semantic flow as **4th feature thread** alongside motif, embedding, and spectral:
 
@@ -47,14 +47,14 @@ if self.semantic_calculus:
 **Result**: Semantic flow features now flow into DotPlasma and through complete weaving cycle.
 
 ### 3. WeavingShuttle Integration ✓
-**File**: [HoloLoom/weaving_shuttle.py](HoloLoom/weaving_shuttle.py)
+**File**: [hololoom/weaving_shuttle.py](hololoom/weaving_shuttle.py)
 
 Conditional initialization based on pattern card:
 ```python
 # STEP 4: Resonance Shed lifts feature threads
 semantic_calculus = None
 if pattern_spec.enable_semantic_flow:
-    from HoloLoom.semantic_calculus import SemanticFlowCalculus
+    from hololoom.semantic_calculus import SemanticFlowCalculus
     embed_fn = lambda words: pattern_embedder.encode(words)
     semantic_calculus = SemanticFlowCalculus(
         embed_fn,
@@ -64,7 +64,7 @@ if pattern_spec.enable_semantic_flow:
 ```
 
 ### 4. Performance Optimization ✓
-**File**: [HoloLoom/semantic_calculus/performance.py](HoloLoom/semantic_calculus/performance.py)
+**File**: [hololoom/semantic_calculus/performance.py](hololoom/semantic_calculus/performance.py)
 
 Created comprehensive performance module with:
 - **EmbeddingCache**: LRU cache with batch operations (521,782x speedup)
@@ -82,7 +82,7 @@ Overall real-world:           ~3,000x faster
 ```
 
 ### 5. MCP Server Implementation ✓
-**File**: [HoloLoom/semantic_calculus/mcp_server.py](HoloLoom/semantic_calculus/mcp_server.py)
+**File**: [hololoom/semantic_calculus/mcp_server.py](hololoom/semantic_calculus/mcp_server.py)
 
 Complete MCP server exposing semantic calculus to Claude Desktop with **3 tools**:
 
@@ -202,7 +202,7 @@ Recommendations:
 - Victim playing
 
 ### 6. Protocol Migration ✓
-**File**: [HoloLoom/protocols.py](HoloLoom/protocols.py)
+**File**: [hololoom/protocols.py](hololoom/protocols.py)
 
 Created canonical location for all HoloLoom protocols:
 - `MemoryStore`: Storage backend protocol
@@ -222,8 +222,8 @@ Fixed multiple blocking import issues:
 
 **Files Fixed**:
 - [demos/narrative_depth_production.py](demos/narrative_depth_production.py:17-28)
-- [HoloLoom/unified_api.py](HoloLoom/unified_api.py:590-606)
-- [HoloLoom/semantic_calculus/mcp_server.py](HoloLoom/semantic_calculus/mcp_server.py:21)
+- [hololoom/unified_api.py](hololoom/unified_api.py:590-606)
+- [hololoom/semantic_calculus/mcp_server.py](hololoom/semantic_calculus/mcp_server.py:21)
 - [tests/test_semantic_calculus_mcp.py](tests/test_semantic_calculus_mcp.py:17-20)
 
 ### 8. Test Suite Created ✓
@@ -304,10 +304,10 @@ Spacetime Fabric (response + trace)
 ### From HoloLoom Unified API
 
 ```python
-from HoloLoom.unified_api import HoloLoom
+from hololoom.unified_api import hololoom
 
 # Create with narrative depth (includes semantic calculus)
-loom = await HoloLoom.create(
+loom = await hololoom.create(
     pattern="fast",
     enable_narrative_depth=True  # Enables semantic analysis
 )
@@ -324,8 +324,8 @@ print(f"Cosmic truth: {depth['cosmic_truth']}")
 ### From WeavingShuttle (Direct)
 
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
 
 # Use SEMANTIC_FLOW pattern
 config = Config.fast()
@@ -386,7 +386,7 @@ Add to `claude_desktop_config.json`:
       "command": "python",
       "args": [
         "-m",
-        "HoloLoom.semantic_calculus.mcp_server"
+        "hololoom.semantic_calculus.mcp_server"
       ],
       "cwd": "C:\\Users\\blake\\Documents\\mythRL",
       "env": {
@@ -457,20 +457,20 @@ PYTHONPATH=. python demos/narrative_depth_production.py
 ## Files Modified/Created
 
 ### Created Files (NEW)
-- `HoloLoom/protocols.py` (350 lines) - Canonical protocol definitions
-- `HoloLoom/semantic_calculus/performance.py` (550 lines) - Performance optimizations
-- `HoloLoom/semantic_calculus/mcp_server.py` (700+ lines) - MCP server implementation
+- `hololoom/protocols.py` (350 lines) - Canonical protocol definitions
+- `hololoom/semantic_calculus/performance.py` (550 lines) - Performance optimizations
+- `hololoom/semantic_calculus/mcp_server.py` (700+ lines) - MCP server implementation
 - `tests/test_semantic_calculus_mcp.py` (450 lines) - Comprehensive test suite
 - `demos/semantic_calculus_benchmark.py` (200 lines) - Performance benchmarks
 - `SEMANTIC_CALCULUS_INTEGRATION.md` (THIS FILE) - Complete documentation
 
 ### Modified Files
-- `HoloLoom/loom/command.py` - Added SEMANTIC_FLOW pattern card
-- `HoloLoom/resonance/shed.py` - Added semantic flow as 4th thread
-- `HoloLoom/weaving_shuttle.py` - Conditional semantic calculus initialization
-- `HoloLoom/memory/protocol.py` - Fixed circular imports, added QueryMode
-- `HoloLoom/memory/hyperspace_backend.py` - Added QueryMode import
-- `HoloLoom/unified_api.py` - Fixed async cache stats retrieval
+- `hololoom/loom/command.py` - Added SEMANTIC_FLOW pattern card
+- `hololoom/resonance/shed.py` - Added semantic flow as 4th thread
+- `hololoom/weaving_shuttle.py` - Conditional semantic calculus initialization
+- `hololoom/memory/protocol.py` - Fixed circular imports, added QueryMode
+- `hololoom/memory/hyperspace_backend.py` - Added QueryMode import
+- `hololoom/unified_api.py` - Fixed async cache stats retrieval
 - `demos/narrative_depth_production.py` - Fixed Unicode encoding
 
 ## Verification Status

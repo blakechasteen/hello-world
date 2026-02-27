@@ -117,24 +117,24 @@ mv archive/old_tests archive/root_tests_nov7_2025 archive/tests/
 **Problem**: Tests scattered across repository
 ```
 tests/                  ← Root-level tests (integration?)
-HoloLoom/tests/        ← Main test suite
+hololoom/tests/        ← Main test suite
 archive/old_tests/     ← Archived tests
 archive/root_tests_nov7_2025/  ← More archived tests
 ```
 
 **Action**:
 1. Review `tests/` at root - are these still needed?
-2. If integration tests, move to `HoloLoom/tests/integration/`
+2. If integration tests, move to `hololoom/tests/integration/`
 3. If duplicates of archived tests, delete
-4. Keep all tests under `HoloLoom/tests/`
+4. Keep all tests under `hololoom/tests/`
 
 **Investigation**:
 ```bash
 ls tests/
-diff -r tests/ HoloLoom/tests/
+diff -r tests/ hololoom/tests/
 ```
 
-**Commit**: `chore: Consolidate all tests under HoloLoom/tests/`
+**Commit**: `chore: Consolidate all tests under hololoom/tests/`
 
 ---
 
@@ -390,7 +390,7 @@ find . -name "README*.md" | wc -l
 # HoloLoom Subprojects
 
 ## Core System
-- **HoloLoom/** - Main neural decision-making system
+- **hololoom/** - Main neural decision-making system
 
 ## Tools & Utilities
 - **trough/** - AI slop/ML logic detector
@@ -426,7 +426,7 @@ find . -name "README*.md" | wc -l
 - Root markdown files: 9 (essential only)
 - Top-level directories: ~15 (organized)
 - Logs: 1 directory (`logs/`)
-- Tests: 1 location (`HoloLoom/tests/`)
+- Tests: 1 location (`hololoom/tests/`)
 - Archive structure: 6 type-based dirs
 
 ### **Estimated Commits**: 14 commits across 6 phases

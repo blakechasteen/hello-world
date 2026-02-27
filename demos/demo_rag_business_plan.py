@@ -14,7 +14,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.memory.mcp_rag_server import (
+from hololoom.memory.mcp_rag_server import (
     rag_query,
     init_memory,
     semantic_chunk,
@@ -256,7 +256,7 @@ async def main():
         print("  3. Ingest your business docs with ingest_document tool")
         print("  4. Query with rag_query tool")
         print()
-        print("See: HoloLoom/memory/RAG_README.md for full documentation")
+        print("See: hololoom/memory/RAG_README.md for full documentation")
         print()
 
     except Exception as e:

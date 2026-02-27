@@ -24,7 +24,7 @@ Semantic State (244D) --------→ Semantic Nudge
 ### 1. Define Semantic Goals
 
 ```python
-from HoloLoom.policy.semantic_nudging import define_semantic_goals
+from hololoom.policy.semantic_nudging import define_semantic_goals
 
 # Use predefined goal sets
 professional_goals = define_semantic_goals('professional')
@@ -45,7 +45,7 @@ custom_goals = {
 ### 2. Create Semantic Reward Shaper
 
 ```python
-from HoloLoom.policy.semantic_nudging import SemanticRewardShaper
+from hololoom.policy.semantic_nudging import SemanticRewardShaper
 
 # Create shaper with your semantic goals
 shaper = SemanticRewardShaper(
@@ -65,7 +65,7 @@ shaped_reward = shaper.shape_reward(
 ### 3. Apply Semantic Nudges to Policy
 
 ```python
-from HoloLoom.policy.semantic_nudging import SemanticNudgePolicy
+from hololoom.policy.semantic_nudging import SemanticNudgePolicy
 
 # Wrap your existing policy
 nudge_policy = SemanticNudgePolicy(
@@ -105,7 +105,7 @@ This demo shows:
    - Theoretical foundation
    - Use cases and research questions
 
-2. **[HoloLoom/policy/semantic_nudging.py](./HoloLoom/policy/semantic_nudging.py)**
+2. **[hololoom/policy/semantic_nudging.py](./hololoom/policy/semantic_nudging.py)**
    - `SemanticStateEncoder`: Compress 244D state for policy input
    - `SemanticRewardShaper`: Shape rewards using semantic trajectories
    - `SemanticNudgePolicy`: Policy wrapper applying semantic guidance
@@ -322,8 +322,8 @@ achievement = count(distance_to_goal < threshold) / total
 ### With Policy Engine
 
 ```python
-from HoloLoom.policy.unified import create_policy
-from HoloLoom.policy.semantic_nudging import SemanticNudgePolicy
+from hololoom.policy.unified import create_policy
+from hololoom.policy.semantic_nudging import SemanticNudgePolicy
 
 # Create base policy
 base_policy = create_policy(mem_dim=384, emb=embedder, scales=[96, 192, 384])
@@ -339,8 +339,8 @@ semantic_policy = SemanticNudgePolicy(
 ### With Reflection/PPO Training
 
 ```python
-from HoloLoom.reflection.rewards import RewardExtractor
-from HoloLoom.policy.semantic_nudging import SemanticRewardShaper
+from hololoom.reflection.rewards import RewardExtractor
+from hololoom.policy.semantic_nudging import SemanticRewardShaper
 
 # Combine base reward with semantic shaping
 base_reward = reward_extractor.compute_reward(spacetime)
@@ -375,7 +375,7 @@ async with WeavingShuttle(cfg=config, memory=memory) as shuttle:
 ### Immediate
 1. ✅ Run the demo: `python demos/semantic_micropolicy_nudge_demo.py`
 2. ✅ Review design doc: [SEMANTIC_MICROPOLICY_NUDGES.md](./SEMANTIC_MICROPOLICY_NUDGES.md)
-3. ✅ Explore implementation: [HoloLoom/policy/semantic_nudging.py](./HoloLoom/policy/semantic_nudging.py)
+3. ✅ Explore implementation: [hololoom/policy/semantic_nudging.py](./hololoom/policy/semantic_nudging.py)
 
 ### Integration
 1. Add semantic state computation to feature extraction pipeline
@@ -430,7 +430,7 @@ Running the demo produces:
    - Architecture diagrams
    - Use cases and research questions
 
-2. **Implementation**: `HoloLoom/policy/semantic_nudging.py` (15KB)
+2. **Implementation**: `hololoom/policy/semantic_nudging.py` (15KB)
    - Production-ready code
    - Fully documented
    - Optimized for performance
@@ -470,7 +470,7 @@ The 244D semantic calculus provides the vocabulary for AI to understand what it 
 ## Questions?
 
 - 📖 Read the [full design doc](./SEMANTIC_MICROPOLICY_NUDGES.md)
-- 💻 Check the [implementation](./HoloLoom/policy/semantic_nudging.py)
+- 💻 Check the [implementation](./hololoom/policy/semantic_nudging.py)
 - 🎮 Run the [demo](./demos/semantic_micropolicy_nudge_demo.py)
 - 📊 See the [244D Odyssey analysis](./demos/odyssey_244d_analysis.py) for semantic calculus in action
 

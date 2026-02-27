@@ -367,7 +367,7 @@ npm run lint
 
 ```python
 # Python
-from hololoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     mem = await loom.experience("content")
