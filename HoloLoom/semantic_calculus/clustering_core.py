@@ -317,7 +317,7 @@ def _find_optimal_k_thompson(
     Returns:
         (optimal_k, silhouette_score)
     """
-    from .thompson import ThompsonClusterSampler
+    from .clustering_thompson import ThompsonClusterSampler
 
     n_samples = len(embeddings)
     max_k = min(max_k, n_samples - 1)
@@ -457,7 +457,7 @@ def _label_clusters(
 ) -> List[ClusterResult]:
     """Generate semantic labels for clusters."""
     try:
-        from .labeler import label_clusters as semantic_label
+        from .clustering_labeler import label_clusters as semantic_label
         return semantic_label(clusters, embeddings, texts)
     except ImportError:
         # Fallback: use most common words

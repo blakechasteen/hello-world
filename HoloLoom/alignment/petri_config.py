@@ -144,7 +144,7 @@ class PetriEvaluationConfig:
             self.judge_dimensions = HoloLoomJudgeDimensions()
 
         if self.special_instructions is None:
-            from HoloLoom.safety import HOLOLOOM_SAFETY_INSTRUCTIONS
+            from HoloLoom.alignment.petri_seed_instructions import HOLOLOOM_SAFETY_INSTRUCTIONS
 
             self.special_instructions = HOLOLOOM_SAFETY_INSTRUCTIONS
 

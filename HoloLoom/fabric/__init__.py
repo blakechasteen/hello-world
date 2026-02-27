@@ -31,6 +31,12 @@ from .fabric import (
     MultiFabricCollection,
 )
 
+# Synthesis (merged from HoloLoom.synthesis, 2026-02-27)
+from .enriched_memory import EnrichedMemory, ReasoningType, MemoryEnricher
+from .pattern_extractor import PatternExtractor, Pattern, PatternType
+from .data_synthesizer import DataSynthesizer, TrainingExample, SynthesisConfig
+from .synthesis_bridge import SynthesisBridge, SynthesisResult, create_synthesis_bridge
+
 __all__ = [
     # ===== Core Fabric =====
     "Spacetime",
@@ -42,4 +48,18 @@ __all__ = [
     "Tension",
     "Resolution",
     "MultiFabricCollection",
+
+    # ===== Synthesis (merged from HoloLoom.synthesis) =====
+    "EnrichedMemory",
+    "ReasoningType",
+    "MemoryEnricher",
+    "PatternExtractor",
+    "Pattern",
+    "PatternType",
+    "DataSynthesizer",
+    "TrainingExample",
+    "SynthesisConfig",
+    "SynthesisBridge",
+    "SynthesisResult",
+    "create_synthesis_bridge",
 ]

@@ -1,72 +1,58 @@
 """
-HoloLoom Smart Clustering
-=========================
+HoloLoom clustering — MOVED to HoloLoom.semantic_calculus
+=========================================================
 
-One-line API for intelligent clustering with automatic optimization.
+This shim installs a ``sys.meta_path`` finder so that **any** import of
+``HoloLoom.clustering`` or ``HoloLoom.clustering.*`` is transparently
+redirected to ``HoloLoom.semantic_calculus``.
 
-WASM + EXO + HoloLoom Magic = Easy Clustering
+Files were renamed with a ``clustering_`` prefix during the move:
 
-Quick Start:
-    from HoloLoom.clustering import cluster
+    HoloLoom.clustering.core      →  HoloLoom.semantic_calculus.clustering_core
+    HoloLoom.clustering.labeler   →  HoloLoom.semantic_calculus.clustering_labeler
+    HoloLoom.clustering.thompson  →  HoloLoom.semantic_calculus.clustering_thompson
 
-    results = cluster(["AI is cool", "Python rocks", "Neural nets learn"])
-
-    for c in results:
-        print(f"{c.label}: {c.items}")
-
-Features:
-- Auto-detects optimal number of clusters (no guessing k)
-- Semantic labels (not "Cluster 0, 1, 2")
-- Matryoshka multi-scale embeddings (fast → accurate)
-- Thompson Sampling for intelligent k exploration
-- Works with texts, dicts, or pre-computed embeddings
+Relocated: 2026-02-27
 """
 
-from .core import (
-    cluster,
-    smart_cluster,
-    auto_cluster,
-    ClusterResult,
-    ClusteringOutput,
-)
+import importlib
+import sys
+import warnings
 
-from .labeler import (
-    label_clusters,
-    generate_cluster_summary,
-    LabelCandidate,
-    DOMAIN_CATEGORIES,
-)
-
-from .thompson import (
-    ThompsonClusterSampler,
-    find_optimal_k_thompson,
-    adaptive_k_search,
-    BetaPrior,
-)
-
-__all__ = [
-    # Main API
-    "cluster",
-    "smart_cluster",
-    "auto_cluster",
-
-    # Result types
-    "ClusterResult",
-    "ClusteringOutput",
-
-    # Labeling
-    "label_clusters",
-    "generate_cluster_summary",
-    "LabelCandidate",
-    "DOMAIN_CATEGORIES",
-
-    # Thompson Sampling
-    "ThompsonClusterSampler",
-    "find_optimal_k_thompson",
-    "adaptive_k_search",
-    "BetaPrior",
-]
+_RENAME_MAP = {
+    "HoloLoom.clustering.core": "HoloLoom.semantic_calculus.clustering_core",
+    "HoloLoom.clustering.labeler": "HoloLoom.semantic_calculus.clustering_labeler",
+    "HoloLoom.clustering.thompson": "HoloLoom.semantic_calculus.clustering_thompson",
+}
 
 
-# Version
-__version__ = "1.0.0"
+class _DeprecatedFinder:
+    _OLD = "HoloLoom.clustering"
+    _NEW = "HoloLoom.semantic_calculus"
+
+    def find_module(self, fullname, path=None):
+        if fullname == self._OLD or fullname.startswith(self._OLD + "."):
+            return self
+        return None
+
+    def load_module(self, fullname):
+        if fullname in sys.modules:
+            return sys.modules[fullname]
+
+        new_name = _RENAME_MAP.get(fullname)
+        if new_name is None:
+            new_name = fullname.replace(self._OLD, self._NEW, 1)
+
+        warnings.warn(
+            f"Importing from {fullname} is deprecated. "
+            f"Use {new_name} instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        real = importlib.import_module(new_name)
+        sys.modules[fullname] = real
+        return real
+
+
+if not any(isinstance(f, _DeprecatedFinder) for f in sys.meta_path):
+    sys.meta_path.insert(0, _DeprecatedFinder())

@@ -153,6 +153,29 @@ except ImportError:
     # integration.py may not exist anymore, which is fine
     pass
 
+# === Clustering (merged from HoloLoom.clustering, 2026-02-27) ===
+from .clustering_core import (
+    cluster,
+    smart_cluster,
+    auto_cluster,
+    ClusterResult,
+    ClusteringOutput,
+)
+
+from .clustering_labeler import (
+    label_clusters,
+    generate_cluster_summary,
+    LabelCandidate,
+    DOMAIN_CATEGORIES,
+)
+
+from .clustering_thompson import (
+    ThompsonClusterSampler,
+    find_optimal_k_thompson,
+    adaptive_k_search,
+    BetaPrior,
+)
+
 # === Public API ===
 __all__ = [
     # Core calculus
@@ -219,6 +242,20 @@ __all__ = [
     "get_cache_stats",
     "format_semantic_summary",
     "extract_trajectory_metrics",
+    # Clustering (merged from HoloLoom.clustering)
+    "cluster",
+    "smart_cluster",
+    "auto_cluster",
+    "ClusterResult",
+    "ClusteringOutput",
+    "label_clusters",
+    "generate_cluster_summary",
+    "LabelCandidate",
+    "DOMAIN_CATEGORIES",
+    "ThompsonClusterSampler",
+    "find_optimal_k_thompson",
+    "adaptive_k_search",
+    "BetaPrior",
 ]
 
 

@@ -44,7 +44,7 @@ import json
 
 # Petri imports - local config and seeds
 try:
-    from HoloLoom.safety.petri_config import (
+    from HoloLoom.alignment.petri_config import (
         PetriEvaluationConfig,
         HoloLoomJudgeDimensions,
         create_anthropic_config,
