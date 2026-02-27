@@ -30,7 +30,7 @@ from HoloLoom.weaving_orchestrator import (
     ToolExecutor,
 )
 # YarnGraph has been moved to memory module - use LegacyShardsAdapter for compatibility
-from HoloLoom.memory.graph import LegacyShardsAdapter as YarnGraph
+from HoloLoom.core.memory.graph import LegacyShardsAdapter as YarnGraph
 
 # Compatibility alias
 WeavingShuttle = WeavingOrchestrator

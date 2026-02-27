@@ -20,7 +20,7 @@ Installation:
 import logging
 import re
 from typing import Dict, Optional, Any
-from HoloLoom.protocols.types import Query, Context
+from HoloLoom.core.protocols.types import Query, Context
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator as BaseOrchestrator, ToolExecutor as BaseToolExecutor
 
 

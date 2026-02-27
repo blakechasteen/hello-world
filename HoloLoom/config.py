@@ -40,7 +40,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 # Import from shared types
-from HoloLoom.protocols.types import BanditStrategy
+from HoloLoom.core.protocols.types import BanditStrategy
 
 
 # =============================================================================

@@ -35,10 +35,10 @@ from typing import Dict, List, Any, Optional, Callable, Type, TYPE_CHECKING
 from datetime import datetime, timedelta
 
 # Shared types
-from HoloLoom.protocols.types import Query, Context, Features, MemoryShard
+from HoloLoom.core.protocols.types import Query, Context, Features, MemoryShard
 
 # mythRL Protocol-based architecture types
-from HoloLoom.protocols import (
+from HoloLoom.core.protocols import (
     ComplexityLevel,
     ProvenanceTrace,
     MythRLResult,
@@ -49,21 +49,21 @@ from HoloLoom.protocols import (
 )
 
 # Weaving architecture components
-from HoloLoom.loom.command import LoomCommand, PatternCard, PatternSpec
-from HoloLoom.chrono.trigger import ChronoTrigger, TemporalWindow, ExecutionLimits
-from HoloLoom.resonance.shed import ResonanceShed
-from HoloLoom.warp.space import WarpSpace
-from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy, CollapseResult
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace, Artifact
-from HoloLoom.reflection.buffer import ReflectionBuffer, LearningSignal
+from HoloLoom.core.loom.command import LoomCommand, PatternCard, PatternSpec
+from HoloLoom.core.chrono.trigger import ChronoTrigger, TemporalWindow, ExecutionLimits
+from HoloLoom.core.resonance.shed import ResonanceShed
+from HoloLoom.core.warp.space import WarpSpace
+from HoloLoom.core.convergence.engine import ConvergenceEngine, CollapseStrategy, CollapseResult
+from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace, Artifact
+from HoloLoom.core.reflection.buffer import ReflectionBuffer, LearningSignal
 
 # Core modules
 from HoloLoom.config import Config, ExecutionMode
 from HoloLoom.motif.base import create_motif_detector
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
-from HoloLoom.memory.base import create_retriever
-from HoloLoom.memory.graph import KG  # Yarn Graph for thread storage
-from HoloLoom.policy.unified import create_policy
+from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
+from HoloLoom.core.memory.base import create_retriever
+from HoloLoom.core.memory.graph import KG  # Yarn Graph for thread storage
+from HoloLoom.core.policy.unified import create_policy
 from HoloLoom.alignment.safety_guardrails import (
     create_guardrails, SafetyGuardrails, ActionRequest, ActionCategory, RiskLevel
 )
@@ -80,7 +80,7 @@ from HoloLoom.semantic_calculus import (
 # Conscience Integration (Phase 2C - December 2025)
 try:
     from HoloLoom.agentic.conscience_adapter import AgenticConscienceAdapter
-    from HoloLoom.protocols.conscience import ConscienceDecision, StepType
+    from HoloLoom.core.protocols.conscience import ConscienceDecision, StepType
     CONSCIENCE_AVAILABLE = True
 except ImportError:
     CONSCIENCE_AVAILABLE = False
@@ -95,7 +95,7 @@ except ImportError:
 from HoloLoom.tools import ToolExecutor
 
 # Initialization Functions (Elegance Pass: Extracted to orchestrator/initialization/ - November 2025 Phase 2)
-from HoloLoom.orchestrator.initialization import (
+from HoloLoom.core.orchestrator.initialization import (
     initialize_config_and_memory,
     initialize_reflection_and_caching,
     initialize_recursive_learning,
@@ -106,7 +106,7 @@ from HoloLoom.orchestrator.initialization import (
 )
 
 # Core Logic Functions (Elegance Pass: Extracted to orchestrator/core/ - November 2025 Phase 3)
-from HoloLoom.orchestrator.core import (
+from HoloLoom.core.orchestrator.core import (
     assess_complexity_level,
     create_provenance_trace,
     get_reflection_metrics,
@@ -117,23 +117,23 @@ from HoloLoom.orchestrator.core import (
 )
 
 # Retrieval Functions (Elegance Pass: Extracted to orchestrator/retrieval/ - November 2025 Phase 6)
-from HoloLoom.orchestrator.retrieval import (
+from HoloLoom.core.orchestrator.retrieval import (
     multipass_memory_crawl,
     query_memory_backend,
 )
 
 # Physics Integration (Elegance Pass: Extracted to orchestrator/physics/ - November 2025 Phase 7)
-from HoloLoom.orchestrator.physics import (
+from HoloLoom.core.orchestrator.physics import (
     weave_with_physics,
 )
 
 # Learning Integration (Elegance Pass: Extracted to orchestrator/learning/ - November 2025 Phase 8)
-from HoloLoom.orchestrator.learning import (
+from HoloLoom.core.orchestrator.learning import (
     apply_recursive_learning,
 )
 
 # Jenny Panel Detection (Elegance Pass: Extracted to orchestrator/jenny/ - December 2025)
-from HoloLoom.orchestrator.jenny import (
+from HoloLoom.core.orchestrator.jenny import (
     JENNY_CONFIDENCE_THRESHOLD,
     JENNY_THREADS_THRESHOLD,
     JENNY_STAGES_THRESHOLD,
@@ -516,7 +516,7 @@ class WeavingOrchestrator:
         if self.awareness_layer is None and hasattr(self, 'semantic_spectrum'):
             # Auto-create awareness layer with semantic calculus
             try:
-                from HoloLoom.memory.awareness_graph import AwarenessGraph
+                from HoloLoom.core.memory.awareness_graph import AwarenessGraph
                 # Use existing graph backend and semantic calculus
                 self.awareness_layer = AwarenessGraph(
                     graph_backend=self.yarn_graph._graph if hasattr(self, 'yarn_graph') else None,
@@ -843,7 +843,7 @@ class WeavingOrchestrator:
 
         Example:
             >>> from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-            >>> from HoloLoom.protocols.types import Query
+            >>> from HoloLoom.core.protocols.types import Query
             >>> from HoloLoom.config import Config
             >>>
             >>> config = Config.fast()
@@ -1219,7 +1219,7 @@ class WeavingOrchestrator:
                 )
             elif self.cfg.enable_zero_copy_embeddings:
                 # Zero-copy embeddings (1.4x speedup, 50% memory savings)
-                from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+                from HoloLoom.core.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
                 pattern_embedder = ZeroCopyMatryoshkaEmbeddings(
                     sizes=pattern_spec.scales,
                     base_model_name=self.cfg.base_model_name,
@@ -1686,7 +1686,7 @@ class WeavingOrchestrator:
             except asyncio.TimeoutError:
                 self.logger.error("Policy decision timed out after 200ms, using safe default")
                 # Create safe default action plan
-                from HoloLoom.protocols.types import ActionPlan
+                from HoloLoom.core.protocols.types import ActionPlan
                 action_plan = ActionPlan(
                     tool="answer",
                     confidence=0.5,

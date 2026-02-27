@@ -48,10 +48,10 @@ try:
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
     from HoloLoom.spinningWheel.modalities.website import WebsiteSpinnerConfig, WebsiteSpinner
     from HoloLoom.spinningWheel.modalities.youtube import YouTubeSpinnerConfig, YouTubeSpinner
-    from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
-    from HoloLoom.fabric.spacetime import Spacetime
-    from HoloLoom.convergence.engine import CollapseStrategy
-    from HoloLoom.protocols.types import Query
+    from HoloLoom.core.memory.protocol import create_unified_memory, shards_to_memories
+    from HoloLoom.core.fabric.spacetime import Spacetime
+    from HoloLoom.core.convergence.engine import CollapseStrategy
+    from HoloLoom.core.protocols.types import Query
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run from repository root with PYTHONPATH set")

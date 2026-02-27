@@ -14,7 +14,7 @@ Perfect API Surface:
     await loom.reflect(memories, feedback={...})
 
 Advanced users can still import internal components:
-    from HoloLoom.memory.awareness_graph import AwarenessGraph
+    from HoloLoom.core.memory.awareness_graph import AwarenessGraph
     from HoloLoom.input.router import InputRouter
     # Full control when needed
 """
@@ -35,7 +35,10 @@ Advanced users can still import internal components:
 # Requires Python 3.7+ for module-level __getattr__
 # ============================================================================
 
+import importlib as _importlib
 import sys as _sys
+import warnings as _warnings
+
 from .__version__ import __version__
 
 __all__ = [
@@ -51,6 +54,62 @@ __all__ = [
     'policy',
     'embedding',
 ]
+
+# ==========================================================================
+# Backward Compatibility: HoloLoom.X → HoloLoom.core.X  (Wave 3, 2026-02-27)
+# ==========================================================================
+# Core modules moved to HoloLoom/core/.  Old import paths still work via this
+# meta-path finder but emit a DeprecationWarning.
+#
+# Covers: protocols, memory, embedding, policy, convergence, orchestrator,
+#         warp, fabric, chrono, resonance, loom, recursive, reflection.
+# ==========================================================================
+
+_CORE_MODULES = frozenset({
+    "protocols", "memory", "embedding", "policy", "convergence",
+    "orchestrator", "warp", "fabric", "chrono", "resonance",
+    "loom", "recursive", "reflection",
+})
+
+
+class _CoreRedirector:
+    """Meta-path finder that redirects HoloLoom.<core> → HoloLoom.core.<core>."""
+
+    _PREFIX = "HoloLoom."
+    _NEW_PREFIX = "HoloLoom.core."
+
+    def find_module(self, fullname, path=None):
+        if not fullname.startswith(self._PREFIX):
+            return None
+        # Extract the second component: HoloLoom.<X>.rest
+        rest = fullname[len(self._PREFIX):]
+        top = rest.split(".", 1)[0]
+        if top in _CORE_MODULES:
+            return self
+        return None
+
+    def load_module(self, fullname):
+        if fullname in _sys.modules:
+            return _sys.modules[fullname]
+        new_name = self._PREFIX.join(
+            fullname.split(self._PREFIX, 1)
+        )  # identity — rebuild below
+        rest = fullname[len(self._PREFIX):]
+        top = rest.split(".", 1)[0]
+        new_name = self._NEW_PREFIX + rest
+        _warnings.warn(
+            f"Importing from {fullname} is deprecated. "
+            f"Use {new_name} instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        real = _importlib.import_module(new_name)
+        _sys.modules[fullname] = real
+        return real
+
+
+if not any(isinstance(f, _CoreRedirector) for f in _sys.meta_path):
+    _sys.meta_path.insert(0, _CoreRedirector())
 
 # Track what's been loaded to avoid reimport
 _lazy_imports = {}
@@ -72,12 +131,12 @@ def __getattr__(name):
         return HoloLoom
 
     elif name == 'Memory':
-        from .memory.protocol import Memory
+        from .core.memory.protocol import Memory
         _lazy_imports[name] = Memory
         return Memory
 
     elif name == 'ActivationStrategy':
-        from .memory.awareness_types import ActivationStrategy
+        from .core.memory.awareness_types import ActivationStrategy
         _lazy_imports[name] = ActivationStrategy
         return ActivationStrategy
 
@@ -99,14 +158,14 @@ def __getattr__(name):
         _lazy_imports['HoloLoomLite'] = HoloLoomLite
         return HoloLoomLite
 
-    # Legacy/Advanced
+    # Legacy/Advanced — redirect to core subpackages
     elif name == 'policy':
-        from . import policy
+        from .core import policy
         _lazy_imports[name] = policy
         return policy
 
     elif name == 'embedding':
-        from . import embedding
+        from .core import embedding
         _lazy_imports[name] = embedding
         return embedding
 
@@ -141,26 +200,26 @@ def __getattr__(name):
     # Backward Compatibility Shims (December 2025 Consolidation)
     # ==========================================================================
     # These directories were consolidated into memory/:
-    #   - HoloLoom.awareness → HoloLoom.memory.awareness
-    #   - HoloLoom.memory_symphony → HoloLoom.memory.symphony
-    #   - HoloLoom.yarn → HoloLoom.memory.yarn
+    #   - HoloLoom.awareness → HoloLoom.core.memory.awareness
+    #   - HoloLoom.memory_symphony → HoloLoom.core.memory.symphony
+    #   - HoloLoom.yarn → HoloLoom.core.memory.yarn
     # Old import paths redirect to new locations.
     # ==========================================================================
 
     elif name == 'awareness':
-        from .memory import awareness
+        from .core.memory import awareness
         _lazy_imports[name] = awareness
         _sys.modules.setdefault(__name__ + '.awareness', awareness)
         return awareness
 
     elif name == 'memory_symphony':
-        from .memory import symphony
+        from .core.memory import symphony
         _lazy_imports[name] = symphony
         _sys.modules.setdefault(__name__ + '.memory_symphony', symphony)
         return symphony
 
     elif name == 'yarn':
-        from .memory import yarn
+        from .core.memory import yarn
         _lazy_imports[name] = yarn
         _sys.modules.setdefault(__name__ + '.yarn', yarn)
         return yarn

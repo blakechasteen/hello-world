@@ -43,15 +43,15 @@ if TYPE_CHECKING:
     from HoloLoom.handoff.identity import UnifiedIdentity
     from HoloLoom.handoff.orchestrator import HardenedHandoffOrchestrator
     from HoloLoom.handoff.synced_memory import SyncedMemory
-    from HoloLoom.loom.weave_house import WeaveHouse, WeaveResult
-    from HoloLoom.loom.dreaming import DreamOrchestrator
-    from HoloLoom.fabric.fabric import Fabric
+    from HoloLoom.core.loom.weave_house import WeaveHouse, WeaveResult
+    from HoloLoom.core.loom.dreaming import DreamOrchestrator
+    from HoloLoom.core.fabric.fabric import Fabric
 
-from HoloLoom.memory.protocol import Memory
-from HoloLoom.memory.awareness_graph import AwarenessGraph
-from HoloLoom.memory.awareness_types import ActivationStrategy, AwarenessMetrics
+from HoloLoom.core.memory.protocol import Memory
+from HoloLoom.core.memory.awareness_graph import AwarenessGraph
+from HoloLoom.core.memory.awareness_types import ActivationStrategy, AwarenessMetrics
 from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 
 # Input processing (graceful degradation)
 try:
@@ -678,8 +678,8 @@ Shift detected: {metrics['shift_detected']}
     def _ensure_photo_memory(self):
         """Lazy-initialize photo memory storage."""
         if not hasattr(self, '_photo_memory'):
-            from HoloLoom.memory.photo_tokens import PhotoTokenMemory
-            from HoloLoom.memory.graph import KG
+            from HoloLoom.core.memory.photo_tokens import PhotoTokenMemory
+            from HoloLoom.core.memory.graph import KG
 
             # Create photo memory storage
             storage_path = self.config.data_dir if hasattr(self.config, 'data_dir') else "./photo_memory"
@@ -908,7 +908,7 @@ Shift detected: {metrics['shift_detected']}
             >>> results = await loom.recall("architecture", include_photos=True)
             >>> # Vision model can read diagram directly
         """
-        from HoloLoom.memory.visual_compression import compress_to_visual, CompressionMetrics
+        from HoloLoom.core.memory.visual_compression import compress_to_visual, CompressionMetrics
 
         # Compress data to visual representation
         image, metrics = compress_to_visual(
@@ -1104,7 +1104,7 @@ Shift detected: {metrics['shift_detected']}
         if self._weave_house_initialized:
             return
 
-        from HoloLoom.loom.initialization import create_weave_house_system
+        from HoloLoom.core.loom.initialization import create_weave_house_system
 
         self._weave_house, self._dream_orchestrator = await create_weave_house_system(
             config=self.config,

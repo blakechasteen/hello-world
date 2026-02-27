@@ -39,8 +39,8 @@ from rich import box
 from rich.text import Text
 
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator, Query
-from HoloLoom.loom.command import PatternCard
-from HoloLoom.protocols import ComplexityLevel, ProvenanceTrace
+from HoloLoom.core.loom.command import PatternCard
+from HoloLoom.core.protocols import ComplexityLevel, ProvenanceTrace
 
 # Awareness layer imports (graceful degradation if not available)
 try:
