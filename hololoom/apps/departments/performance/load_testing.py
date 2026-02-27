@@ -93,7 +93,7 @@ class LoadTester:
         Returns:
             LoadTestResult with all metrics
         """
-        from HoloLoom.departments import get_department
+        from hololoom.departments import get_department
 
         dept = get_department(self.config.department_id)
 

@@ -34,24 +34,24 @@ from datetime import datetime
 import asyncio
 import logging
 
-from HoloLoom.core.protocols.types import MemoryShard
-from HoloLoom.core.memory.lifecycle_manager import (
+from hololoom.core.protocols.types import MemoryShard
+from hololoom.core.memory.lifecycle_manager import (
     ContextStreamManager,
     MemoryScope,
     LifeCycle
 )
-from HoloLoom.agentic.memory_tools import AgentMemoryTools, MemorySearchResult
-from HoloLoom.core.memory.consolidation import (
+from hololoom.agentic.memory_tools import AgentMemoryTools, MemorySearchResult
+from hololoom.core.memory.consolidation import (
     MemoryConsolidator,
     ConsolidationStrategy,
     ConsolidationResult
 )
-from HoloLoom.core.memory.hybrid_retrieval import (
+from hololoom.core.memory.hybrid_retrieval import (
     HybridRetriever,
     create_hybrid_retriever,
     RetrievalResult
 )
-from HoloLoom.core.memory.graph import KG
+from hololoom.core.memory.graph import KG
 
 logger = logging.getLogger(__name__)
 
@@ -367,7 +367,7 @@ class IntegratedMemorySystem:
             ```
         """
         try:
-            from HoloLoom.core.memory.spring_graph_retriever import (
+            from hololoom.core.memory.spring_graph_retriever import (
                 enable_spring_physics as _enable_spring
             )
             _enable_spring(self, config=config)

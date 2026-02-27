@@ -38,7 +38,7 @@ from enum import Enum
 import time
 import numpy as np
 
-from HoloLoom.agents.agent_orchestration import (
+from hololoom.agents.agent_orchestration import (
     PersistentAgent,
     AgentOrchestrationSystem,
     TaskPriority,

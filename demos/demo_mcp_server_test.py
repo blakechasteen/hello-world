@@ -18,7 +18,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 # Import MCP server components
-from HoloLoom.mcp_server_promptly import (
+from hololoom.mcp_server_promptly import (
     initialize_hololoom,
     handle_experience,
     handle_recall,

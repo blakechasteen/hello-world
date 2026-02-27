@@ -11,7 +11,7 @@ def test_phase1_imports():
     """Test Phase 1: Scratchpad Integration imports"""
     print("[TEST] Phase 1: Scratchpad Integration")
     try:
-        from HoloLoom.recursive import (
+        from hololoom.recursive import (
             ScratchpadOrchestrator,
             ScratchpadConfig,
             ProvenanceTracker,
@@ -29,7 +29,7 @@ def test_phase2_imports():
     """Test Phase 2: Loop Engine Integration imports"""
     print("[TEST] Phase 2: Loop Engine Integration")
     try:
-        from HoloLoom.recursive import (
+        from hololoom.recursive import (
             LearningLoopEngine,
             LearningLoopConfig,
             PatternExtractor,
@@ -48,7 +48,7 @@ def test_phase3_imports():
     """Test Phase 3: Hot Pattern Feedback imports"""
     print("[TEST] Phase 3: Hot Pattern Feedback")
     try:
-        from HoloLoom.recursive import (
+        from hololoom.recursive import (
             HotPatternFeedbackEngine,
             HotPatternConfig,
             HotPatternTracker,
@@ -66,7 +66,7 @@ def test_phase4_imports():
     """Test Phase 4: Advanced Refinement imports"""
     print("[TEST] Phase 4: Advanced Refinement")
     try:
-        from HoloLoom.recursive import (
+        from hololoom.recursive import (
             AdvancedRefiner,
             RefinementStrategy,
             RefinementResult,
@@ -91,7 +91,7 @@ def test_phase5_imports():
     """Test Phase 5: Full Learning Loop imports"""
     print("[TEST] Phase 5: Full Learning Loop")
     try:
-        from HoloLoom.recursive import (
+        from hololoom.recursive import (
             FullLearningEngine,
             ThompsonPriors,
             PolicyWeights,
@@ -110,7 +110,7 @@ def test_data_structures():
     """Test that data structures can be instantiated"""
     print("[TEST] Data Structures")
     try:
-        from HoloLoom.recursive import (
+        from hololoom.recursive import (
             ThompsonPriors,
             PolicyWeights,
             LearningMetrics,
@@ -172,7 +172,7 @@ def test_refinement_strategies():
     """Test refinement strategy enum"""
     print("[TEST] Refinement Strategies")
     try:
-        from HoloLoom.recursive import RefinementStrategy
+        from hololoom.recursive import RefinementStrategy
 
         strategies = {
             RefinementStrategy.REFINE: "Context expansion",

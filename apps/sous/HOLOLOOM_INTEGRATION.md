@@ -17,7 +17,7 @@ This integration brings enterprise-grade AI intelligence to home cooking:
 SOUS Kitchen Management
     ↓
 HoloLoom Bridge (sous/services/hololoom_bridge.py)
-    ├── Memory Integration → HoloLoom.experience()
+    ├── Memory Integration → hololoom.experience()
     ├── RAG System → SimpleRAG.query()
     ├── Agentic Reasoning → AgenticOrchestrator.reason()
     └── Voice Assistant (sous/services/voice_assistant.py)
@@ -346,7 +346,7 @@ await bridge.loom.experience(
 The bridge uses `Config.fast()` by default (good balance of speed and quality):
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # Fast mode (default) - 150ms queries
 config = Config.fast()
@@ -486,4 +486,4 @@ Same as SOUS and HoloLoom parent projects.
 For issues or questions:
 1. Check this README
 2. Run the demo: `python Sous/demo_hololoom_integration.py`
-3. Check HoloLoom documentation: `HoloLoom/CLAUDE.md`
+3. Check HoloLoom documentation: `hololoom/CLAUDE.md`

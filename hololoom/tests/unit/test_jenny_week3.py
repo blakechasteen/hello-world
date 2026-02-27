@@ -22,7 +22,7 @@ from datetime import datetime
 from uuid import uuid4
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from HoloLoom.visualization.jenny_spec import (
+from hololoom.visualization.jenny_spec import (
     JennySpec,
     LifecycleStage,
     BindingMode,
@@ -37,19 +37,19 @@ from HoloLoom.visualization.jenny_spec import (
     ACTION_EXPORT,
     create_action,
 )
-from HoloLoom.visualization.jenny_lifecycle import (
+from hololoom.visualization.jenny_lifecycle import (
     InMemoryLifecycleManager,
     PanelState,
     PanelNotFoundError,
     InvalidTransitionError,
 )
-from HoloLoom.visualization.jenny_actions import (
+from hololoom.visualization.jenny_actions import (
     ActionStatus,
     ActionResult,
     JennyActionHandler,
     create_action_handler,
 )
-from HoloLoom.visualization.jenny_streaming import (
+from hololoom.visualization.jenny_streaming import (
     StreamStatus,
     UpdateType,
     StreamUpdate,
@@ -58,7 +58,7 @@ from HoloLoom.visualization.jenny_streaming import (
     MockDataSource,
     create_streaming_manager,
 )
-from HoloLoom.visualization.spec_ledger import SpecLedger
+from hololoom.visualization.spec_ledger import SpecLedger
 
 
 # ============================================================================

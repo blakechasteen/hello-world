@@ -21,11 +21,11 @@ import numpy as np
 from dataclasses import dataclass
 import copy
 
-from HoloLoom.agents.working_memory import AgentWorkingMemory
-from HoloLoom.agents.mcts_core import MCTSStateSpace, MCTSEngine, MCTSNode
-from HoloLoom.agents.types import WorkingMemoryState, AgentProfile
-from HoloLoom.memory.graph import KG
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.agents.working_memory import AgentWorkingMemory
+from hololoom.agents.mcts_core import MCTSStateSpace, MCTSEngine, MCTSNode
+from hololoom.agents.types import WorkingMemoryState, AgentProfile
+from hololoom.memory.graph import KG
+from hololoom.protocols.types import Query, MemoryShard
 
 
 # ============================================================================

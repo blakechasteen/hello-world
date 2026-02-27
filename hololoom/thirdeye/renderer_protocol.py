@@ -13,9 +13,9 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Dict, Any, List, Optional, Protocol, runtime_checkable
 
-from HoloLoom.thirdeye.concept import Concept, ConceptWorld
-from HoloLoom.thirdeye.transition import Transition
-from HoloLoom.thirdeye.thoughtspace import ThoughtspaceState
+from hololoom.thirdeye.concept import Concept, ConceptWorld
+from hololoom.thirdeye.transition import Transition
+from hololoom.thirdeye.thoughtspace import ThoughtspaceState
 
 
 class RenderDimension(Enum):

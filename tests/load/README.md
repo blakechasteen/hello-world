@@ -16,7 +16,7 @@ pip install locust==2.15.1
 
 # 2. Start HoloLoom server (in separate terminal)
 cd /home/user/hello-world
-PYTHONPATH=. python -m HoloLoom.server.agentic_api
+PYTHONPATH=. python -m hololoom.server.agentic_api
 
 # 3. Run baseline test (10 users, 5 minutes)
 cd /home/user/hello-world/tests/load
@@ -376,10 +376,10 @@ curl http://localhost:8000/health
 
 # If failing, start server
 cd /home/user/hello-world
-PYTHONPATH=. python -m HoloLoom.server.agentic_api
+PYTHONPATH=. python -m hololoom.server.agentic_api
 
 # If port 8000 in use
-PYTHONPATH=. python -m HoloLoom.server.agentic_api --port 8001
+PYTHONPATH=. python -m hololoom.server.agentic_api --port 8001
 # Then use: --host=http://localhost:8001
 ```
 

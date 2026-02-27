@@ -9,7 +9,7 @@ Uses Bayesian Beta(α, β) priors to balance exploration and exploitation
 when selecting which phase agents to invoke. Learns from historical
 success rates to improve phase selection over time.
 
-Mirrors HoloLoom/agentic/expert_router.py pattern.
+Mirrors hololoom/agentic/expert_router.py pattern.
 """
 
 from dataclasses import dataclass, field

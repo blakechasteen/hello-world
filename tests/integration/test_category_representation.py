@@ -9,7 +9,7 @@ print("\n=== Testing Category Theory + Representation Theory ===\n")
 # Test 1: Category Theory
 print("Test 1: Category Theory - Basic Operations")
 
-from HoloLoom.warp.category import Category, Morphism, Functor
+from hololoom.warp.category import Category, Morphism, Functor
 
 C = Category(name="Test")
 C.add_object("A")
@@ -56,7 +56,7 @@ print("  PASS\n")
 # Test 3: Natural Transformations
 print("Test 3: Natural Transformations")
 
-from HoloLoom.warp.category import NaturalTransformation
+from hololoom.warp.category import NaturalTransformation
 
 # Create second functor G
 G = Functor(source=C, target=D,
@@ -87,7 +87,7 @@ print("  PASS\n")
 # Test 4: Yoneda Embedding
 print("Test 4: Yoneda Embedding")
 
-from HoloLoom.warp.category import YonedaEmbedding
+from hololoom.warp.category import YonedaEmbedding
 
 yoneda = YonedaEmbedding(C)
 hom_B = yoneda.embed_object("B")
@@ -99,7 +99,7 @@ print("  PASS\n")
 # Test 5: Monoidal Category
 print("Test 5: Monoidal Categories")
 
-from HoloLoom.warp.category import MonoidalCategory
+from hololoom.warp.category import MonoidalCategory
 
 M = MonoidalCategory(name="Tensor", unit_object="I")
 M.add_object("X")
@@ -123,7 +123,7 @@ print("  PASS\n")
 # Test 6: Representation Theory - Groups
 print("Test 6: Group Theory")
 
-from HoloLoom.warp.representation import Group, cyclic_group, symmetric_group
+from hololoom.warp.representation import Group, cyclic_group, symmetric_group
 
 C3 = cyclic_group(3)
 print(f"  C3 order: {C3.order()}")
@@ -137,7 +137,7 @@ print("  PASS\n")
 # Test 7: Representations
 print("Test 7: Representations")
 
-from HoloLoom.warp.representation import (
+from hololoom.warp.representation import (
     Representation, trivial_representation, regular_representation
 )
 
@@ -166,7 +166,7 @@ print("  PASS\n")
 # Test 9: Character Table
 print("Test 9: Character Tables")
 
-from HoloLoom.warp.representation import CharacterTable
+from hololoom.warp.representation import CharacterTable
 
 char_table = CharacterTable(C3)
 print(f"  Conjugacy classes: {len(char_table.conjugacy_classes)}")
@@ -179,7 +179,7 @@ print("  PASS\n")
 # Test 10: Equivariant Maps
 print("Test 10: Equivariant Maps")
 
-from HoloLoom.warp.representation import EquivariantMap
+from hololoom.warp.representation import EquivariantMap
 
 # Identity map triv -> triv
 eq_map = EquivariantMap(

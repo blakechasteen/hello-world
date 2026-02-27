@@ -37,8 +37,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from HoloLoom.core.protocols.types import Features, Context, ActionPlan
-from HoloLoom.semantic_calculus.dimensions import (
+from hololoom.core.protocols.types import Features, Context, ActionPlan
+from hololoom.semantic_calculus.dimensions import (
     EXTENDED_244_DIMENSIONS,
     SemanticSpectrum
 )

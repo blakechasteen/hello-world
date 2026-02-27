@@ -23,20 +23,20 @@ import statistics
 from typing import List, Dict, Any
 from dataclasses import dataclass
 
-from HoloLoom.memory.routing import (
+from hololoom.memory.routing import (
     RuleBasedRouter,
     LearnedRouter,
     BackendType
 )
-from HoloLoom.memory.routing.execution_patterns import (
+from hololoom.memory.routing.execution_patterns import (
     ExecutionPattern,
     FeedForwardEngine
 )
-from HoloLoom.memory.routing.orchestrator import (
+from hololoom.memory.routing.orchestrator import (
     RoutingOrchestrator,
     create_test_orchestrator
 )
-from HoloLoom.memory.protocol import MemoryQuery
+from hololoom.memory.protocol import MemoryQuery
 
 
 @dataclass
@@ -233,7 +233,7 @@ class RoutingBenchmark:
         class MockBackend:
             async def retrieve(self, query, strategy):
                 await asyncio.sleep(0.01)  # 10ms mock latency
-                from HoloLoom.memory.protocol import RetrievalResult
+                from hololoom.memory.protocol import RetrievalResult
                 return RetrievalResult(
                     memories=[],
                     scores=[],
@@ -247,7 +247,7 @@ class RoutingBenchmark:
         results = {}
 
         # Test feed-forward
-        from HoloLoom.memory.routing.execution_patterns import (
+        from hololoom.memory.routing.execution_patterns import (
             FeedForwardEngine,
             RecursiveEngine,
             ParallelEngine,

@@ -335,7 +335,7 @@ Once connected:
 If you prefer to interact with HoloLoom directly (not via Claude Desktop):
 
 ```python
-from HoloLoom.memory.stores.hybrid_neo4j_qdrant import (
+from hololoom.memory.stores.hybrid_neo4j_qdrant import (
     HybridNeo4jQdrant, Memory, MemoryQuery, Strategy
 )
 

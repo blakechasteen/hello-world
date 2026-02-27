@@ -1,7 +1,7 @@
 # Jenny Generative UI System - Capabilities Summary
 
 **Status**: Production Ready (December 2025)
-**Location**: `HoloLoom/visualization/jenny_*.py`
+**Location**: `hololoom/visualization/jenny_*.py`
 **Total Code**: ~5,200 lines across 9 modules
 **Tests**: 257 tests (239 unit + 18 integration)
 
@@ -138,7 +138,7 @@ Complete audit trail of all panels and transitions:
 ### 7. MRF-Enhanced Intelligence (Phase 2)
 
 **Status**: ✅ Implemented (December 2025)
-**Location**: `HoloLoom/visualization/jenny_mrf.py`
+**Location**: `hololoom/visualization/jenny_mrf.py`
 
 Jenny integrates with the Metaprompt Refinement Framework for intelligent panel generation:
 
@@ -147,7 +147,7 @@ Jenny integrates with the Metaprompt Refinement Framework for intelligent panel 
 Learns which panel types work best for different query types using Bayesian learning:
 
 ```python
-from HoloLoom.visualization.jenny_mrf import JennyMRFCompiler
+from hololoom.visualization.jenny_mrf import JennyMRFCompiler
 
 # Create MRF-enhanced compiler with learning
 compiler = JennyMRFCompiler(enable_learning=True)
@@ -176,7 +176,7 @@ print(f"Best for factual: {stats['best_panel_types'].get('factual')}")
 Uses ELEGANCE strategy for clear, beautiful explanations:
 
 ```python
-from HoloLoom.visualization.jenny_mrf import generate_why_panel_mrf
+from hololoom.visualization.jenny_mrf import generate_why_panel_mrf
 
 # Generate enhanced WHY panel content
 content = await generate_why_panel_mrf(
@@ -198,7 +198,7 @@ content = await generate_why_panel_mrf(
 Learning state persists to disk for continuous improvement:
 
 ```python
-from HoloLoom.visualization.jenny_mrf import PanelTypeLearner
+from hololoom.visualization.jenny_mrf import PanelTypeLearner
 
 # Create learner with persistence
 learner = PanelTypeLearner(persist_path="./jenny_learning.json")
@@ -216,7 +216,7 @@ learner2 = PanelTypeLearner(persist_path="./jenny_learning.json")
 ### Basic Usage
 
 ```python
-from HoloLoom.visualization import JennyRuntime
+from hololoom.visualization import JennyRuntime
 
 async with JennyRuntime() as jenny:
     # Generate panel from query
@@ -233,8 +233,8 @@ async with JennyRuntime() as jenny:
 ### Integration with WeavingOrchestrator
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 config = Config.fused()
 config.enable_jenny = True
@@ -331,13 +331,13 @@ The `_detect_jenny_panel_type()` method uses these thresholds:
 
 ## Key Files
 
-- **Entry Point**: `HoloLoom/visualization/jenny_runtime.py`
-- **MRF Integration**: `HoloLoom/visualization/jenny_mrf.py`
-- **Orchestrator Integration**: `HoloLoom/weaving_orchestrator.py` (lines 478-620, 1791-1820)
-- **Config**: `HoloLoom/config.py` (line 310)
-- **Unit Tests**: `HoloLoom/tests/unit/test_jenny*.py` (239 tests)
-- **MRF Tests**: `HoloLoom/tests/unit/test_jenny_mrf.py` (41 tests)
-- **Integration Tests**: `HoloLoom/tests/integration/test_jenny_orchestrator.py` (18 tests)
+- **Entry Point**: `hololoom/visualization/jenny_runtime.py`
+- **MRF Integration**: `hololoom/visualization/jenny_mrf.py`
+- **Orchestrator Integration**: `hololoom/weaving_orchestrator.py` (lines 478-620, 1791-1820)
+- **Config**: `hololoom/config.py` (line 310)
+- **Unit Tests**: `hololoom/tests/unit/test_jenny*.py` (239 tests)
+- **MRF Tests**: `hololoom/tests/unit/test_jenny_mrf.py` (41 tests)
+- **Integration Tests**: `hololoom/tests/integration/test_jenny_orchestrator.py` (18 tests)
 
 ---
 

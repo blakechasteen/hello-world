@@ -75,7 +75,7 @@ Complexity:    avg(distance between scale states)
 ### Basic Streaming Analysis
 
 ```python
-from HoloLoom.semantic_calculus.streaming_multi_scale import StreamingSemanticCalculus
+from hololoom.semantic_calculus.streaming_multi_scale import StreamingSemanticCalculus
 from sentence_transformers import SentenceTransformer
 
 # Initialize embedding function
@@ -110,7 +110,7 @@ async for snapshot in analyzer.stream_analyze(word_stream()):
 ### With Live Visualization
 
 ```python
-from HoloLoom.semantic_calculus.visualize_streaming import RealtimeSemanticVisualizer
+from hololoom.semantic_calculus.visualize_streaming import RealtimeSemanticVisualizer
 
 # Create visualizer
 visualizer = RealtimeSemanticVisualizer(
@@ -139,7 +139,7 @@ visualizer.save_snapshot('narrative_analysis.png')
 ### Fractal Signature Analysis
 
 ```python
-from HoloLoom.semantic_calculus.demo_fractal_analysis import FractalSignature
+from hololoom.semantic_calculus.demo_fractal_analysis import FractalSignature
 
 # Analyze text sample
 snapshots = []
@@ -242,7 +242,7 @@ if distance(character_signature, new_dialogue_sig) > threshold:
 ### Run Fractal Analysis Demo
 
 ```bash
-cd HoloLoom/semantic_calculus
+cd hololoom/semantic_calculus
 python demo_fractal_analysis.py
 ```
 

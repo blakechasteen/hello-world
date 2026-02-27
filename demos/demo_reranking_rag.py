@@ -59,8 +59,8 @@ DOCUMENTS = [
 
 async def demo_reranking():
     """Run reranking demo with before/after comparison."""
-    from HoloLoom.rag.simple_rag import SimpleRAG
-    from HoloLoom.config import Config
+    from hololoom.rag.simple_rag import SimpleRAG
+    from hololoom.config import Config
 
     print("\n" + "=" * 70)
     print("Advanced Reranking Demo - HoloLoom RAG")
@@ -158,7 +158,7 @@ async def demo_reranking():
     print("-" * 70)
 
     try:
-        from HoloLoom.rag.reranking import (
+        from hololoom.rag.reranking import (
             NoOpReranker,
             CrossEncoderReranker,
             create_reranker

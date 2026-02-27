@@ -1,4 +1,4 @@
-# Docker Compose for HoloLoom SQL Backend
+# Docker Compose for hololoom SQL Backend
 # Part 2: Foundation Infrastructure (Days 1-5)
 
 version: '3.8'
@@ -18,7 +18,7 @@ services:
       - "5432:5432"
     volumes:
       - hololoom-postgres-data:/var/lib/postgresql/data
-      - ./HoloLoom/infrastructure/sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./hololoom/infrastructure/sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U hololoom"]
       interval: 10s

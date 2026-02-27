@@ -25,7 +25,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Import protocol types
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -35,7 +35,7 @@ from HoloLoom.apps.departments.protocol import (
 )
 
 # Import Infrastructure Department
-from HoloLoom.apps.departments.infrastructure_department import (
+from hololoom.apps.departments.infrastructure_department import (
     InfrastructureDepartment,
     ResourceMetrics,
     ServiceHealth,

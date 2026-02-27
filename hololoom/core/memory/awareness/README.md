@@ -45,7 +45,7 @@ This is not just logging or debugging - this is **AI examining its own reasoning
 ## Quick Start
 
 ```python
-from HoloLoom.awareness import (
+from hololoom.awareness import (
     CompositionalAwarenessLayer,
     DualStreamGenerator,
     MetaAwarenessLayer
@@ -239,7 +239,7 @@ await awareness.update_from_generation(
 ### Terminal UI Integration
 
 ```python
-from HoloLoom.terminal_ui import TerminalUI
+from hololoom.terminal_ui import TerminalUI
 
 # Awareness enabled by default
 ui = TerminalUI(enable_awareness=True)
@@ -257,8 +257,8 @@ See [AWARENESS\_TERMINAL\_UI\_COMPLETE.md](../../AWARENESS_TERMINAL_UI_COMPLETE.
 ### Weaving Orchestrator Integration
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.awareness import CompositionalAwarenessLayer
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.awareness import CompositionalAwarenessLayer
 
 # Create awareness-enhanced orchestrator
 awareness = CompositionalAwarenessLayer()

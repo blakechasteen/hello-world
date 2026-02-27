@@ -13,7 +13,7 @@ from datetime import datetime
 from threading import local
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
-from HoloLoom.telemetry.protocol import (
+from hololoom.telemetry.protocol import (
     SpanContext,
     SpanData,
     SpanKind,
@@ -23,7 +23,7 @@ from HoloLoom.telemetry.protocol import (
     create_span_context,
     generate_span_id,
 )
-from HoloLoom.telemetry.config import TracingConfig, SamplingStrategy
+from hololoom.telemetry.config import TracingConfig, SamplingStrategy
 
 logger = logging.getLogger(__name__)
 

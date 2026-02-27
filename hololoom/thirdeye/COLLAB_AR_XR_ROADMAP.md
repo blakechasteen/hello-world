@@ -48,10 +48,10 @@ This roadmap outlines the integration of ThirdEye's scene visualization system w
 Create bridge between ThirdEye scenes and Collaboration sync:
 
 ```python
-# New file: HoloLoom/thirdeye/collab/scene_sync.py
+# New file: hololoom/thirdeye/collab/scene_sync.py
 
-from HoloLoom.collaboration import StateSynchronizer, Operation
-from HoloLoom.thirdeye.visualizers import VisualScene, VisualElement
+from hololoom.collaboration import StateSynchronizer, Operation
+from hololoom.thirdeye.visualizers import VisualScene, VisualElement
 
 class CollaborativeScene:
     """
@@ -165,10 +165,10 @@ class SharedStyleLibrary:
 Bridge ThirdEye's 2D/3D scenes to Spatial's AR overlay system:
 
 ```python
-# New file: HoloLoom/thirdeye/spatial/overlay_bridge.py
+# New file: hololoom/thirdeye/spatial/overlay_bridge.py
 
-from HoloLoom.thirdeye.visualizers import VisualScene, VisualElement
-from HoloLoom.spatial.knowledge_overlay import KnowledgeNodeOverlay, OverlayStyle
+from hololoom.thirdeye.visualizers import VisualScene, VisualElement
+from hololoom.spatial.knowledge_overlay import KnowledgeNodeOverlay, OverlayStyle
 
 class SceneToOverlay:
     """
@@ -256,7 +256,7 @@ GESTURE_ACTIONS = {
 ### 4.1 Shared AR Session
 
 ```python
-# New file: HoloLoom/thirdeye/spatial/collab_ar_session.py
+# New file: hololoom/thirdeye/spatial/collab_ar_session.py
 
 class CollaborativeARScene:
     """
@@ -683,9 +683,9 @@ User Conversation
 - **ARCore/ARKit** - Mobile AR
 
 ### HoloLoom Modules (Already Built)
-- `HoloLoom.collaboration` - Full session/sync/presence
-- `HoloLoom.spatial` - Full WebXR/hand/gaze/avatar
-- `HoloLoom.thirdeye` - Visualization engine
+- `hololoom.collaboration` - Full session/sync/presence
+- `hololoom.spatial` - Full WebXR/hand/gaze/avatar
+- `hololoom.thirdeye` - Visualization engine
 
 ---
 
@@ -712,14 +712,14 @@ PYTHONPATH=. python demos/demo_thirdeye_enhanced.py
 PYTHONPATH=. python demos/demo_thirdeye_image_gen.py
 
 # Check collaboration module
-python -c "from HoloLoom.collaboration import SessionManager; print('OK')"
+python -c "from hololoom.collaboration import SessionManager; print('OK')"
 
 # Check spatial module
-python -c "from HoloLoom.spatial import WebXRKnowledgeGraph; print('OK')"
+python -c "from hololoom.spatial import WebXRKnowledgeGraph; print('OK')"
 ```
 
 ### Phase 1 First Steps
-1. Create `HoloLoom/thirdeye/collab/` directory
+1. Create `hololoom/thirdeye/collab/` directory
 2. Implement `CollaborativeScene` class
 3. Add scene sync to existing session infrastructure
 4. Create demo showing 2 users viewing same scene
@@ -729,7 +729,7 @@ python -c "from HoloLoom.spatial import WebXRKnowledgeGraph; print('OK')"
 ## Appendix: File Structure
 
 ```
-HoloLoom/thirdeye/
+hololoom/thirdeye/
 ├── collab/                      # Phase 1-2
 │   ├── __init__.py
 │   ├── scene_sync.py           # CollaborativeScene

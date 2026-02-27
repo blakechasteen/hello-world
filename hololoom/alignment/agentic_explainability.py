@@ -370,6 +370,6 @@ if __name__ == "__main__":
     print("  - Critical path analysis")
     print("  - Bottleneck detection")
     print("\nUsage:")
-    print("  from HoloLoom.alignment.agentic_explainability import explain_agentic_result")
+    print("  from hololoom.alignment.agentic_explainability import explain_agentic_result")
     print("  result = await agent.reason(query, mode=ReasoningMode.VERIFY)")
     print("  explanation = await explain_agentic_result(result)")

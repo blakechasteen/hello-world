@@ -6,7 +6,7 @@ Reasoning functions that operate on Memory.
 They don't store anything. They think.
 
 Usage:
-    from HoloLoom.lite import Memory, ask, research
+    from hololoom.lite import Memory, ask, research
 
     async with Memory() as mem:
         await mem.store("Thompson Sampling balances exploration")
@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.lite.memory import Memory, MemoryItem
+    from hololoom.lite.memory import Memory, MemoryItem
 
 
 @dataclass
@@ -92,7 +92,7 @@ async def ask(
 
     # Try to use LLM for generation (graceful fallback)
     try:
-        from HoloLoom.weaving_orchestrator_llm import call_llm
+        from hololoom.weaving_orchestrator_llm import call_llm
 
         if mode == "verify":
             # Two-pass: generate then verify
@@ -228,7 +228,7 @@ async def research(
 
     # Synthesize findings
     try:
-        from HoloLoom.weaving_orchestrator_llm import call_llm
+        from hololoom.weaving_orchestrator_llm import call_llm
 
         context = "\n\n".join([
             f"[{i+1}] {s.text}"

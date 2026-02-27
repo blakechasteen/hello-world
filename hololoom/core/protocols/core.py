@@ -7,8 +7,8 @@ HoloLoom Core Protocols - DEPRECATED
 - `memory_protocols.py` - Memory protocol definitions
 
 Please import from:
-    from HoloLoom.core.protocols import MemoryStore, MemoryNavigator, PatternDetector
-    from HoloLoom.core.protocols import Memory, MemoryQuery, MemoryRetrievalResult
+    from hololoom.core.protocols import MemoryStore, MemoryNavigator, PatternDetector
+    from hololoom.core.protocols import Memory, MemoryQuery, MemoryRetrievalResult
 
 This file is kept for backward compatibility but will be removed in v2.0.
 
@@ -19,10 +19,10 @@ Date: 2025-01-12 (Phase 0, Task 7: Protocol Consolidation)
 import warnings
 
 warnings.warn(
-    "HoloLoom.core.protocols.core is deprecated. "
-    "Import from HoloLoom.core.protocols instead:\n"
-    "  from HoloLoom.core.protocols import MemoryStore, MemoryNavigator, PatternDetector\n"
-    "  from HoloLoom.core.protocols import Memory, MemoryQuery, MemoryRetrievalResult",
+    "hololoom.core.protocols.core is deprecated. "
+    "Import from hololoom.core.protocols instead:\n"
+    "  from hololoom.core.protocols import MemoryStore, MemoryNavigator, PatternDetector\n"
+    "  from hololoom.core.protocols import Memory, MemoryQuery, MemoryRetrievalResult",
     DeprecationWarning,
     stacklevel=2
 )

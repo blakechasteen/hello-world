@@ -16,8 +16,8 @@
 ## Step 2: Simple A/B Test
 
 ```python
-from HoloLoom.prompting.validation import ABTestRunner, ABTestConfig
-from HoloLoom.prompting.unified_mrf import MetapromptConfig
+from hololoom.prompting.validation import ABTestRunner, ABTestConfig
+from hololoom.prompting.unified_mrf import MetapromptConfig
 from pathlib import Path
 
 # Configuration
@@ -107,7 +107,7 @@ Statistical Significance:
 If you want to track production queries over time:
 
 ```python
-from HoloLoom.prompting.validation import ProductionDataCollector, QuerySource
+from hololoom.prompting.validation import ProductionDataCollector, QuerySource
 
 # Create collector
 collector = ProductionDataCollector("production_data.db")
@@ -140,7 +140,7 @@ queries = await collector.get_queries(
 For rigorous statistical comparison:
 
 ```python
-from HoloLoom.prompting.validation import StatisticalAnalyzer
+from hololoom.prompting.validation import StatisticalAnalyzer
 
 analyzer = StatisticalAnalyzer()
 
@@ -163,7 +163,7 @@ print(f"Effect size: {result.effect_size:.2f}")
 For blind side-by-side comparisons:
 
 ```python
-from HoloLoom.prompting.validation import HumanEvaluationCollector, Preference
+from hololoom.prompting.validation import HumanEvaluationCollector, Preference
 
 collector = HumanEvaluationCollector("human_eval.db")
 

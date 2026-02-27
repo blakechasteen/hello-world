@@ -19,18 +19,18 @@ Before testing, ensure:
 1. **Server Running**:
    ```bash
    cd c:\Users\blake\OneDrive\Documents\mythRL
-   PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+   PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
    ```
 
 2. **Test Data Available**:
    ```bash
-   python HoloLoom/web_dashboard/test_phase3_4.py
+   python hololoom/web_dashboard/test_phase3_4.py
    ```
    This creates 20 diverse queries for testing filters.
 
 3. **Browser Console Open**: Press F12 → Console tab to monitor for errors
 
-4. **Dashboard Loaded**: Navigate to `HoloLoom/web_dashboard/control_panel.html`
+4. **Dashboard Loaded**: Navigate to `hololoom/web_dashboard/control_panel.html`
 
 ---
 
@@ -761,7 +761,7 @@ For faster regression testing, create `test_phase3_6_7.py`:
 ```python
 """
 Automated tests for Phase 3.6 & 3.7
-Run with: python HoloLoom/web_dashboard/test_phase3_6_7.py
+Run with: python hololoom/web_dashboard/test_phase3_6_7.py
 """
 
 import asyncio

@@ -24,7 +24,7 @@ import torch
 import numpy as np
 from typing import List
 
-from HoloLoom.policy.unified import (
+from hololoom.policy.unified import (
     NeuralCore,
     TSBandit,
     BanditStrategy,

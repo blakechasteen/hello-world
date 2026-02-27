@@ -17,11 +17,11 @@ Scenarios:
 """
 
 import asyncio
-from HoloLoom.agents.collaborative_agents import (
+from hololoom.agents.collaborative_agents import (
     CollaborativeAgentManager,
     Budget
 )
-from HoloLoom.agents.multi_agent_communication import MessageType
+from hololoom.agents.multi_agent_communication import MessageType
 
 
 async def demo_question_answer():

@@ -2,7 +2,7 @@
 
 **Created**: 2025-12-09
 **Status**: Scoping Document
-**Target File**: `HoloLoom/weaving_orchestrator.py` (2,561 lines)
+**Target File**: `hololoom/weaving_orchestrator.py` (2,561 lines)
 
 ## Executive Summary
 
@@ -453,7 +453,7 @@ Week 2:
 ## File Structure After Refactoring
 
 ```
-HoloLoom/orchestrator/
+hololoom/orchestrator/
 ├── __init__.py                    # Package exports
 ├── context.py                     # WeavingContext dataclass (~150 lines)
 ├── protocols.py                   # Stage protocols (~100 lines)

@@ -24,8 +24,8 @@ import logging
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 
-from HoloLoom.tapestry.protocol import Thread, SignalResult
-from HoloLoom.tapestry.signals.registry import SignalRegistry
+from hololoom.tapestry.protocol import Thread, SignalResult
+from hololoom.tapestry.signals.registry import SignalRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -273,7 +273,7 @@ class AlignmentSignal:
 
         try:
             # Try to use alignment framework
-            from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+            from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
             guardrails = SafetyGuardrails()
 

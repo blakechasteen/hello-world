@@ -53,7 +53,7 @@ except ImportError:
 
 # Try to import DreamSpinner
 try:
-    from HoloLoom.spinningWheel.dream_spinner import DreamSpinner
+    from hololoom.spinningWheel.dream_spinner import DreamSpinner
     DREAM_SPINNER_AVAILABLE = True
 except ImportError:
     DREAM_SPINNER_AVAILABLE = False
@@ -536,7 +536,7 @@ class DreamDepartment(DepartmentProtocol):
 
         # Initialize DreamSpinner if enabled
         if self.enable_spinner and DREAM_SPINNER_AVAILABLE:
-            from HoloLoom.spinningWheel.dream_spinner import DreamSpinner, DreamSpinnerConfig
+            from hololoom.spinningWheel.dream_spinner import DreamSpinner, DreamSpinnerConfig
             self.spinner = DreamSpinner(DreamSpinnerConfig())
             logger.info("DreamSpinner initialized")
 

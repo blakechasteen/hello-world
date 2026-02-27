@@ -35,7 +35,7 @@ from enum import Enum
 try:
     from .game_theory import NormalFormGame, Strategy
 except ImportError:
-    from HoloLoom.core.warp.math.decision.game_theory import NormalFormGame, Strategy
+    from hololoom.core.warp.math.decision.game_theory import NormalFormGame, Strategy
 
 
 class EquilibriumType(Enum):

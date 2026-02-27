@@ -22,8 +22,8 @@ from enum import Enum
 import numpy as np
 import torch
 
-from HoloLoom.dark_trace.protocol import TraceLens, FeatureActivation, LensType
-from HoloLoom.dark_trace.bridge.mapper import (
+from hololoom.dark_trace.protocol import TraceLens, FeatureActivation, LensType
+from hololoom.dark_trace.bridge.mapper import (
     FeatureSemanticMapper,
     FeatureMapping,
     SemanticMeaning,
@@ -31,7 +31,7 @@ from HoloLoom.dark_trace.bridge.mapper import (
 
 # Optional: FeatureRegistry for autolabel integration
 try:
-    from HoloLoom.dark_trace.registry import FeatureRegistry
+    from hololoom.dark_trace.registry import FeatureRegistry
     HAS_REGISTRY = True
 except ImportError:
     HAS_REGISTRY = False

@@ -133,7 +133,7 @@ class ContextWindow:
 #### Core Algorithm
 
 ```python
-# HoloLoom/voice_first/thread/thread_branching.py
+# hololoom/voice_first/thread/thread_branching.py
 
 class ThreadBrancher:
     """
@@ -437,7 +437,7 @@ async def _handle_thread_command(self, intent: CommandIntent, context: Dict) -> 
 
 ### Testing Strategy
 
-**Test File**: `HoloLoom/voice_first/tests/test_thread_branching.py`
+**Test File**: `hololoom/voice_first/tests/test_thread_branching.py`
 
 **Test Cases** (15 total):
 
@@ -596,7 +596,7 @@ class MergeResult:
 #### Core Algorithm
 
 ```python
-# HoloLoom/voice_first/thread/thread_merging.py
+# hololoom/voice_first/thread/thread_merging.py
 
 class ThreadMerger:
     """
@@ -779,8 +779,8 @@ class ThreadMerger:
 
         Uses metaprompt enhancement for quality.
         """
-        from HoloLoom.prompting import create_metaprompt
-        from HoloLoom.config import Config
+        from hololoom.prompting import create_metaprompt
+        from hololoom.config import Config
 
         # Collect thread summaries
         thread_summaries = []
@@ -893,7 +893,7 @@ THREAD_MERGING_PATTERNS = [
 
 ### Testing Strategy
 
-**Test File**: `HoloLoom/voice_first/tests/test_thread_merging.py`
+**Test File**: `hololoom/voice_first/tests/test_thread_merging.py`
 
 **Test Cases** (12 total):
 
@@ -1029,7 +1029,7 @@ class ThreadSummary:
 #### Core Algorithm
 
 ```python
-# HoloLoom/voice_first/thread/thread_summarizer.py
+# hololoom/voice_first/thread/thread_summarizer.py
 
 class ThreadSummarizer:
     """
@@ -1150,8 +1150,8 @@ class ThreadSummarizer:
 
         Uses metaprompt enhancement for quality.
         """
-        from HoloLoom.prompting import create_metaprompt
-        from HoloLoom.config import Config
+        from hololoom.prompting import create_metaprompt
+        from hololoom.config import Config
 
         # Collect recent messages (last 10 or all if fewer)
         recent_messages = thread.messages[-10:]
@@ -1289,7 +1289,7 @@ THREAD_SUMMARIZATION_PATTERNS = [
 
 ### Testing Strategy
 
-**Test File**: `HoloLoom/voice_first/tests/test_thread_summarizer.py`
+**Test File**: `hololoom/voice_first/tests/test_thread_summarizer.py`
 
 **Test Cases** (10 total):
 
@@ -1363,7 +1363,7 @@ class TestThreadSummarizer:
 
 ### 1. VoiceRouter Integration
 
-**File**: `HoloLoom/voice_first/core/voice_router.py`
+**File**: `hololoom/voice_first/core/voice_router.py`
 
 **Changes Needed**:
 ```python
@@ -1422,7 +1422,7 @@ class ThreadManager:
 
 ### 3. YarnGraph Integration
 
-**File**: `HoloLoom/memory/graph.py`
+**File**: `hololoom/memory/graph.py`
 
 **New Edge Types**:
 ```python
@@ -1464,11 +1464,11 @@ def get_merge_history(self, thread_id: str) -> List[str]:
 
 ### 4. LLM Client Integration
 
-**File**: `HoloLoom/llm/unified_client.py`
+**File**: `hololoom/llm/unified_client.py`
 
 **Usage**:
 ```python
-from HoloLoom.llm import UnifiedLLMClient
+from hololoom.llm import UnifiedLLMClient
 
 # For synthesis and summarization
 llm_client = UnifiedLLMClient(
@@ -1482,12 +1482,12 @@ synthesis = await llm_client.generate(prompt)
 
 ### 5. Metaprompt Integration
 
-**File**: `HoloLoom/prompting/metaprompt.py`
+**File**: `hololoom/prompting/metaprompt.py`
 
 **Usage**:
 ```python
-from HoloLoom.prompting import create_metaprompt
-from HoloLoom.config import Config
+from hololoom.prompting import create_metaprompt
+from hololoom.config import Config
 
 # Enhance summarization prompt
 config = Config.fast()
@@ -1503,7 +1503,7 @@ enhanced = create_metaprompt(casual_request, config=config)
 ### Test Organization
 
 ```
-HoloLoom/voice_first/tests/
+hololoom/voice_first/tests/
 ├── test_thread_branching.py      # 15 tests
 ├── test_thread_merging.py        # 12 tests
 ├── test_thread_summarizer.py     # 10 tests
@@ -1936,16 +1936,16 @@ Elle: "Switched to 'orchard planning'. Last message: 'how many pollinators do i 
    - File: `elle/voice/threads.py`
    - Status: ✅ Exists (Milestone 2 complete)
 
-2. **HoloLoom.memory.graph.KG** - YarnGraph for relationships
-   - File: `HoloLoom/memory/graph.py`
+2. **hololoom.memory.graph.KG** - YarnGraph for relationships
+   - File: `hololoom/memory/graph.py`
    - Status: ✅ Exists (production ready)
 
 3. **LLM Client** - For synthesis and summarization
-   - File: `HoloLoom/llm/unified_client.py`
+   - File: `hololoom/llm/unified_client.py`
    - Status: ✅ Exists (supports Anthropic, OpenAI, Ollama)
 
 4. **Metaprompt System** - For quality enhancement
-   - File: `HoloLoom/prompting/metaprompt.py`
+   - File: `hololoom/prompting/metaprompt.py`
    - Status: ✅ Exists (November 2025 implementation)
 
 ### Optional

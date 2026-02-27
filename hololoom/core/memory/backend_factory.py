@@ -26,9 +26,9 @@ import warnings
 import logging
 import os
 
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 from .protocol import MemoryStore, Memory, MemoryQuery, RetrievalResult
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     ActionCategory,
     ActionRequest,
     SafetyDecision,
@@ -124,20 +124,20 @@ def sanitize_error_message(error: str) -> str:
 
 # Backend availability flags
 try:
-    from HoloLoom.core.memory.graph import KG as NetworkXKG
+    from hololoom.core.memory.graph import KG as NetworkXKG
     NETWORKX_AVAILABLE = True
 except ImportError:
     NETWORKX_AVAILABLE = False
     warnings.warn("NetworkX unavailable")
 
 try:
-    from HoloLoom.core.memory.neo4j_graph import Neo4jKG, Neo4jConfig
+    from hololoom.core.memory.neo4j_graph import Neo4jKG, Neo4jConfig
     NEO4J_AVAILABLE = True
 except ImportError:
     NEO4J_AVAILABLE = False
 
 try:
-    from HoloLoom.core.memory.stores.qdrant_store import QdrantMemoryStore
+    from hololoom.core.memory.stores.qdrant_store import QdrantMemoryStore
     QDRANT_AVAILABLE = True
 except ImportError:
     QDRANT_AVAILABLE = False
@@ -568,7 +568,7 @@ async def create_memory_backend(
     # ============================================================
     elif backend == MemoryBackend.HYPERSPACE:
         try:
-            from HoloLoom.core.memory.hyperspace_backend import create_hyperspace_backend
+            from hololoom.core.memory.hyperspace_backend import create_hyperspace_backend
             print("[OK] [HYPERSPACE] Initializing research backend")
             backend_instance = create_hyperspace_backend(config)
             return GuardrailedMemoryStore(backend=backend_instance, guardrails=guardrails)

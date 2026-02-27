@@ -26,7 +26,7 @@ import redis.asyncio as redis
 from fastapi import HTTPException, Request
 from prometheus_client import Counter, Histogram, Gauge
 
-from HoloLoom.utils.security import sanitize_uri
+from hololoom.utils.security import sanitize_uri
 
 logger = logging.getLogger(__name__)
 

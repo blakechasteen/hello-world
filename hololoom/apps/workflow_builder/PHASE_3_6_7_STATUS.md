@@ -82,7 +82,7 @@
 
 ## Files Modified
 
-### HoloLoom/web_dashboard/js/analytics_monitor.js
+### hololoom/web_dashboard/js/analytics_monitor.js
 - **Lines Added**: ~500 lines
 - **Version**: Updated from 3.5.0 → 3.7.0
 - **New Methods**: 23 total (10 filtering + 13 customization)
@@ -125,7 +125,7 @@
 
 ---
 
-### HoloLoom/web_dashboard/control_panel.html
+### hololoom/web_dashboard/control_panel.html
 - **Lines Added**: ~300 lines
 - **Status**: ✅ Complete
 
@@ -309,12 +309,12 @@ Run comprehensive testing to verify all features work as expected:
 
 1. **Start Server**:
    ```bash
-   PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --port 8000
+   PYTHONPATH=. uvicorn hololoom.server.unified_server:app --port 8000
    ```
 
 2. **Generate Test Data**:
    ```bash
-   python HoloLoom/web_dashboard/test_phase3_4.py
+   python hololoom/web_dashboard/test_phase3_4.py
    ```
 
 3. **Manual Testing**:
@@ -324,7 +324,7 @@ Run comprehensive testing to verify all features work as expected:
 
 4. **Automated Testing**:
    ```bash
-   python HoloLoom/web_dashboard/test_phase3_6_7.py
+   python hololoom/web_dashboard/test_phase3_6_7.py
    ```
 
 5. **Browser Compatibility**:
@@ -471,7 +471,7 @@ Deploy to production environment:
 
 **Project**: HoloLoom Analytics Dashboard
 **Repository**: mythRL/HoloLoom
-**Documentation**: HoloLoom/web_dashboard/
+**Documentation**: hololoom/web_dashboard/
 **Last Updated**: November 13, 2025
 
 ---

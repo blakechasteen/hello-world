@@ -40,10 +40,10 @@ pip install matrix-nio  # For Shuttle bot
 
 ```bash
 # From repository root
-PYTHONPATH=. python -m HoloLoom.portal.portal_server.main
+PYTHONPATH=. python -m hololoom.portal.portal_server.main
 
 # Or with custom config
-PYTHONPATH=. python -m HoloLoom.portal.portal_server.main --config HoloLoom/portal/configs/portal.yaml
+PYTHONPATH=. python -m hololoom.portal.portal_server.main --config hololoom/portal/configs/portal.yaml
 ```
 
 Portal will start on `http://localhost:8080`
@@ -52,10 +52,10 @@ Portal will start on `http://localhost:8080`
 
 ```bash
 # On each compute node
-PYTHONPATH=. python -m HoloLoom.portal.node_daemon.main
+PYTHONPATH=. python -m hololoom.portal.node_daemon.main
 
 # With custom node ID
-PYTHONPATH=. python -m HoloLoom.portal.node_daemon.main --node-id laptop-1 --port 9091
+PYTHONPATH=. python -m hololoom.portal.node_daemon.main --node-id laptop-1 --port 9091
 ```
 
 Node will register with Portal and start sending heartbeats.
@@ -74,7 +74,7 @@ room_id: "!your-room-id:example.com"
 Then start the bot:
 
 ```bash
-PYTHONPATH=. python -m HoloLoom.portal.shuttle_bot.main --config HoloLoom/portal/configs/shuttle.yaml
+PYTHONPATH=. python -m hololoom.portal.shuttle_bot.main --config hololoom/portal/configs/shuttle.yaml
 ```
 
 ## Matrix Commands
@@ -175,7 +175,7 @@ If `wasmtime` is not installed, the node runs in mock mode with built-in modules
 ### Running Tests
 
 ```bash
-pytest HoloLoom/portal/tests/ -v
+pytest hololoom/portal/tests/ -v
 ```
 
 ### Project Structure
@@ -211,7 +211,7 @@ The easiest way to run Portal is with Docker Compose:
 ### 1. Start All Services
 
 ```bash
-cd HoloLoom/portal
+cd hololoom/portal
 docker-compose up -d
 ```
 
@@ -260,8 +260,8 @@ docker-compose down
 
 ```bash
 # From repository root
-docker build --target portal-server -t portal-server:latest -f HoloLoom/portal/Dockerfile .
-docker build --target node-daemon -t node-daemon:latest -f HoloLoom/portal/Dockerfile .
+docker build --target portal-server -t portal-server:latest -f hololoom/portal/Dockerfile .
+docker build --target node-daemon -t node-daemon:latest -f hololoom/portal/Dockerfile .
 ```
 
 ### View Logs
@@ -300,7 +300,7 @@ Configure via `PORTAL_LB_STRATEGY`:
 WASM modules are stored by SHA256 hash for deduplication:
 
 ```python
-from HoloLoom.portal.shared.cas_storage import CASStorage
+from hololoom.portal.shared.cas_storage import CASStorage
 
 storage = CASStorage(Path("./cas"))
 content_hash = storage.store(wasm_bytes, "my-module", "v1.0.0")

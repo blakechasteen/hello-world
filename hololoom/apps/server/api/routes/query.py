@@ -14,10 +14,10 @@ from time import time
 
 from fastapi import APIRouter, HTTPException
 
-from HoloLoom.agentic import ReasoningMode, AgenticResult
-from HoloLoom.alignment.safety_guardrails import ActionRequest, ActionCategory
-from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
-from HoloLoom.protocols.types import Query
+from hololoom.agentic import ReasoningMode, AgenticResult
+from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+from hololoom.alignment.audit_trail import DecisionType, OutcomeType
+from hololoom.protocols.types import Query
 
 from ..models import QueryRequest, AgenticResponse
 from ..state import state

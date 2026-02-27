@@ -126,7 +126,7 @@ class CodeExecutionAbility(BaseAbility):
             name="code_execution",
             version="1.0.0",
             description="Safe Python code execution with sandboxing, timeouts, and output limits",
-            author="HoloLoom",
+            author="hololoom",
             tier=AbilityTier.PLUGIN,
             trust_level=AbilityTrustLevel.VERIFIED,
             permissions=[

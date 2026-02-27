@@ -7,12 +7,12 @@ Factory for creating complexity-based strategies.
 import logging
 from typing import Dict, Optional
 
-from HoloLoom.core.protocols import ComplexityLevel
-from HoloLoom.core.orchestrator.protocols import WeavingStageProtocol, ComplexityStrategyProtocol
-from HoloLoom.core.orchestrator.strategies.lite_strategy import LiteStrategy
-from HoloLoom.core.orchestrator.strategies.fast_strategy import FastStrategy
-from HoloLoom.core.orchestrator.strategies.full_strategy import FullStrategy
-from HoloLoom.core.orchestrator.strategies.research_strategy import ResearchStrategy
+from hololoom.core.protocols import ComplexityLevel
+from hololoom.core.orchestrator.protocols import WeavingStageProtocol, ComplexityStrategyProtocol
+from hololoom.core.orchestrator.strategies.lite_strategy import LiteStrategy
+from hololoom.core.orchestrator.strategies.fast_strategy import FastStrategy
+from hololoom.core.orchestrator.strategies.full_strategy import FullStrategy
+from hololoom.core.orchestrator.strategies.research_strategy import ResearchStrategy
 
 
 def create_strategy(

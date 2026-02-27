@@ -27,7 +27,7 @@ import uuid
 import logging
 
 # ThirdEye imports
-from HoloLoom.thirdeye.visualizers import VisualScene, VisualElement
+from hololoom.thirdeye.visualizers import VisualScene, VisualElement
 
 # Role enforcement imports (graceful fallback if not available)
 try:
@@ -44,7 +44,7 @@ except ImportError:
 
 # Collaboration imports (graceful fallback if not available)
 try:
-    from HoloLoom.collaboration.sync import (
+    from hololoom.collaboration.sync import (
         StateSynchronizer,
         Operation,
         OperationType,
@@ -53,7 +53,7 @@ try:
         ConflictResolution,
         create_state_synchronizer,
     )
-    from HoloLoom.collaboration.attribution import (
+    from hololoom.collaboration.attribution import (
         AttributionManager,
         Contribution,
         ContributionType,

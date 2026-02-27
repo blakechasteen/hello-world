@@ -14,7 +14,7 @@ API Differences Addressed:
 3. InstrumentalConvergenceGuard: Unified ResourceBounds constructor
 
 Usage:
-    from HoloLoom.alignment.api_compatibility import patch_alignment_api
+    from hololoom.alignment.api_compatibility import patch_alignment_api
     patch_alignment_api()  # Apply compatibility patches
 
     # Now both APIs work:

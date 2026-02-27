@@ -24,7 +24,7 @@ import uuid
 
 # Try to import collaboration presence (graceful fallback)
 try:
-    from HoloLoom.collaboration.presence import (
+    from hololoom.collaboration.presence import (
         UserPresence,
         PresenceManager,
         ActivityStatus,

@@ -364,8 +364,8 @@ class VectorStoreFactory:
     def _get_hololoom_embeddings(self) -> Any:
         """Get HoloLoom's embedding function wrapped for LangChain."""
         try:
-            from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-            from HoloLoom.config import Config
+            from hololoom.embedding.spectral import MatryoshkaEmbeddings
+            from hololoom.config import Config
 
             # Create HoloLoom embeddings
             config = Config.fast()

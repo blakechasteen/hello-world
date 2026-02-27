@@ -16,7 +16,7 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 from datetime import datetime
 
-from HoloLoom.agentic.skills.templates import get_all_templates, get_template
+from hololoom.agentic.skills.templates import get_all_templates, get_template
 
 
 logger = logging.getLogger(__name__)

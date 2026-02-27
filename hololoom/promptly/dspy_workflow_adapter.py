@@ -9,7 +9,7 @@ Integrates DSPy programs into Promptly's workflow system, enabling:
 - Prompt A/B testing with DSPy
 
 Usage:
-    from HoloLoom.promptly.dspy_workflow_adapter import DSPyWorkflowAdapter
+    from hololoom.promptly.dspy_workflow_adapter import DSPyWorkflowAdapter
 
     adapter = DSPyWorkflowAdapter(bridge)
 
@@ -34,8 +34,8 @@ from pathlib import Path
 import json
 import yaml
 
-from HoloLoom.promptly.dspy_bridge import DSPyHoloLoom, DSPySignature, DSPyProgram, create_signature
-from HoloLoom.promptly.workflow_store import WorkflowStore
+from hololoom.promptly.dspy_bridge import DSPyHoloLoom, DSPySignature, DSPyProgram, create_signature
+from hololoom.promptly.workflow_store import WorkflowStore
 
 
 @dataclass
@@ -584,7 +584,7 @@ async def demo_workflow_adapter():
 
     print("🎯 DSPy Workflow Adapter Demo\n")
 
-    from HoloLoom.config import Config
+    from hololoom.config import Config
 
     # Initialize
     bridge = DSPyHoloLoom(config=Config.fused(), lm_model="openai/gpt-4o-mini")

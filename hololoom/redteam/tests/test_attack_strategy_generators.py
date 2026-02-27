@@ -25,9 +25,9 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from HoloLoom.redteam.strategies.cot_exploit import CoTExploitGenerator, CoTPayload
-from HoloLoom.redteam.strategies.tool_abuse import ToolAbuseGenerator, ToolAbusePayload
-from HoloLoom.redteam.strategies.prompt_extraction import (
+from hololoom.redteam.strategies.cot_exploit import CoTExploitGenerator, CoTPayload
+from hololoom.redteam.strategies.tool_abuse import ToolAbuseGenerator, ToolAbusePayload
+from hololoom.redteam.strategies.prompt_extraction import (
     PromptExtractionGenerator,
     PromptExtractionPayload
 )

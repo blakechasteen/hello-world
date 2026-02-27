@@ -475,7 +475,7 @@ PANEL_SIZE_CLASSES = {
 ## Python Implementation Structure
 
 ```python
-# File: HoloLoom/visualization/html_renderer.py
+# File: hololoom/visualization/html_renderer.py
 
 from typing import Dict, List, Any
 from pathlib import Path
@@ -792,7 +792,7 @@ html = minify(html, remove_comments=True, remove_empty_space=True)
 ## Testing Strategy
 
 ```python
-# File: HoloLoom/tests/unit/test_html_renderer.py
+# File: hololoom/tests/unit/test_html_renderer.py
 
 def test_render_basic_dashboard():
     """Test rendering a minimal dashboard."""

@@ -11,8 +11,8 @@ Tests for Layer 6 code-level safety locks to ensure:
 
 import os
 import pytest
-from HoloLoom.config import Config
-from HoloLoom.safety import (
+from hololoom.config import Config
+from hololoom.safety import (
     SafetyLock,
     Layer6Capability,
     Layer6BlockedException,
@@ -355,14 +355,14 @@ class TestConvenienceFunctions:
 
     def test_is_layer6_enabled_function(self):
         """is_layer6_enabled() function should work."""
-        from HoloLoom.safety.locks import is_layer6_enabled
+        from hololoom.safety.locks import is_layer6_enabled
 
         config = Config.fast()
         assert not is_layer6_enabled(config)
 
     def test_require_layer6_function(self):
         """require_layer6() function should work."""
-        from HoloLoom.safety.locks import require_layer6
+        from hololoom.safety.locks import require_layer6
 
         config = Config.fast()
         with pytest.raises(Layer6BlockedException):
@@ -370,7 +370,7 @@ class TestConvenienceFunctions:
 
     def test_check_layer6_function(self):
         """check_layer6() function should work."""
-        from HoloLoom.safety.locks import check_layer6
+        from hololoom.safety.locks import check_layer6
 
         config = Config.fast()
         assert not check_layer6(Layer6Capability.CODE_MODIFICATION, config)

@@ -22,7 +22,7 @@ Architecture:
       +- FreeEnergyMinimizer (F = E - T*S)
 
 Usage:
-    from HoloLoom.physics.statistical_mechanics import StatisticalMechanicsEngine
+    from hololoom.physics.statistical_mechanics import StatisticalMechanicsEngine
 
     # Create statistical mechanics engine
     engine = StatisticalMechanicsEngine(temperature=1.0)

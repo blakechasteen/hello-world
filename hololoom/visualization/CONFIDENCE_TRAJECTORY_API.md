@@ -4,7 +4,7 @@
 
 Version: 1.0.0
 Date: October 29, 2025
-Module: `HoloLoom.visualization.confidence_trajectory`
+Module: `hololoom.visualization.confidence_trajectory`
 Author: Claude Code
 
 ---
@@ -29,7 +29,7 @@ Author: Claude Code
 ### Minimal Example
 
 ```python
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
 # Simplest usage - just confidence scores
 confidences = [0.92, 0.88, 0.65, 0.87, 0.91]
@@ -43,7 +43,7 @@ with open('trajectory.html', 'w') as f:
 ### Complete Example
 
 ```python
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
 confidences = [0.92, 0.88, 0.65, 0.87, 0.91]
 cached = [True, True, False, False, True]
@@ -191,7 +191,7 @@ comparison_html = f"""
 **Pattern 4: Alert System Integration**
 
 ```python
-from HoloLoom.visualization.confidence_trajectory import (
+from hololoom.visualization.confidence_trajectory import (
     render_confidence_trajectory,
     detect_confidence_anomalies,
     ConfidencePoint
@@ -258,7 +258,7 @@ point = ConfidencePoint(
 #### Usage Pattern
 
 ```python
-from HoloLoom.visualization.confidence_trajectory import ConfidenceTrajectoryRenderer, ConfidencePoint
+from hololoom.visualization.confidence_trajectory import ConfidenceTrajectoryRenderer, ConfidencePoint
 
 # Create points from raw data
 points = []
@@ -447,7 +447,7 @@ for window in rolling_windows(points, window_size):
 #### Usage Pattern: Custom Alerting
 
 ```python
-from HoloLoom.visualization.confidence_trajectory import (
+from hololoom.visualization.confidence_trajectory import (
     detect_confidence_anomalies,
     ConfidencePoint,
     AnomalyType
@@ -550,7 +550,7 @@ reliability = mean * (1.0 - min(std, 0.5)) * 0.9
 #### Usage Pattern: Reporting
 
 ```python
-from HoloLoom.visualization.confidence_trajectory import (
+from hololoom.visualization.confidence_trajectory import (
     calculate_trajectory_metrics,
     ConfidencePoint
 )
@@ -591,8 +591,8 @@ print(report)
 **Direct integration with weaving cycle.**
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
 # Process multiple queries
 confidences = []
@@ -626,8 +626,8 @@ with open('session_dashboard.html', 'w') as f:
 **Integration with dashboard panels.**
 
 ```python
-from HoloLoom.visualization.constructor import DashboardConstructor, Panel, PanelType
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.visualization.constructor import DashboardConstructor, Panel, PanelType
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
 # Create trajectory panel
 trajectory_html = render_confidence_trajectory(confidences, cached=cached)
@@ -650,7 +650,7 @@ dashboard = constructor.construct(spacetime)
 ```python
 import asyncio
 from collections import deque
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
 class ConfidenceStreamer:
     def __init__(self, max_points=100):
@@ -694,7 +694,7 @@ async def process_query_stream():
 ```python
 import schedule
 from datetime import datetime, timedelta
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
 def generate_daily_report():
     # Load last 24 hours of data
@@ -879,7 +879,7 @@ cached = cached + [False] * (len(confidences) - len(cached))
 ### Error Handling Best Practices
 
 ```python
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 import logging
 
 def safe_render_trajectory(confidences, cached=None, query_texts=None, **kwargs):
@@ -937,7 +937,7 @@ Each renderer instance is independent with no shared mutable state.
 
 ```python
 from concurrent.futures import ThreadPoolExecutor
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
 def render_session(session_id):
     data = load_session(session_id)
@@ -980,7 +980,7 @@ html = await render_trajectory_async(confidences, cached=cached)
 
 ```python
 import pytest
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory, ConfidencePoint, detect_confidence_anomalies, AnomalyType
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory, ConfidencePoint, detect_confidence_anomalies, AnomalyType
 
 def test_basic_rendering():
     confidences = [0.92, 0.88, 0.85, 0.90, 0.87]
@@ -1020,8 +1020,8 @@ def test_error_handling_mismatched_lengths():
 
 ```python
 import pytest
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
 @pytest.mark.asyncio
 async def test_full_pipeline():
@@ -1088,7 +1088,7 @@ async def test_full_pipeline():
 
 **Issues**: Report bugs or request features at [GitHub Issues](https://github.com/anthropics/hololoom/issues)
 
-**Documentation**: Full docs at `HoloLoom/visualization/confidence_trajectory.py` docstrings
+**Documentation**: Full docs at `hololoom/visualization/confidence_trajectory.py` docstrings
 
 **Tests**: Comprehensive test suite at `test_confidence_trajectory.py` (9/9 passing)
 
@@ -1100,4 +1100,4 @@ async def test_full_pipeline():
 
 Version: 1.0.0
 Last Updated: October 29, 2025
-Module: `HoloLoom.visualization.confidence_trajectory`
+Module: `hololoom.visualization.confidence_trajectory`

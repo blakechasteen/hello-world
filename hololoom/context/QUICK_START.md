@@ -6,9 +6,9 @@ Get started with learning-enabled routing in 3 simple steps.
 
 ```python
 import asyncio
-from HoloLoom.infrastructure.sql import SQLConfig, create_sql_backend, load_mock_data
-from HoloLoom.infrastructure.mcp import create_mcp_server, generate_session_id
-from HoloLoom.context import create_query_router
+from hololoom.infrastructure.sql import SQLConfig, create_sql_backend, load_mock_data
+from hololoom.infrastructure.mcp import create_mcp_server, generate_session_id
+from hololoom.context import create_query_router
 
 
 async def main():
@@ -106,15 +106,15 @@ print(f"Rollbacks: {router.strategy_updater.rollback_count}")
 
 ```bash
 # From context directory
-cd HoloLoom/context
+cd hololoom/context
 python demo_learning.py
 
 # Or from repository root
 cd c:/Users/blake/OneDrive/Documents/mythRL
-python HoloLoom/context/demo_learning.py
+python hololoom/context/demo_learning.py
 
 # Or from anywhere
-python path/to/HoloLoom/context/demo_learning.py
+python path/to/hololoom/context/demo_learning.py
 ```
 
 This runs 5 queries and shows learning statistics. **No PYTHONPATH setup required!**
@@ -126,7 +126,7 @@ This runs 5 queries and shows learning statistics. **No PYTHONPATH setup require
 ### Calibration Settings
 
 ```python
-from HoloLoom.context import ConfidenceCalibrator
+from hololoom.context import ConfidenceCalibrator
 
 calibrator = ConfidenceCalibrator(
     min_observations=100  # Min data before adjustments (default: 100)
@@ -136,7 +136,7 @@ calibrator = ConfidenceCalibrator(
 ### Strategy Update Settings
 
 ```python
-from HoloLoom.context import StrategyUpdater
+from hololoom.context import StrategyUpdater
 
 updater = StrategyUpdater(
     query_router=router,
@@ -167,9 +167,9 @@ router = await create_query_router(
 
 ```python
 import asyncio
-from HoloLoom.infrastructure.sql import SQLConfig
-from HoloLoom.infrastructure.mcp import create_mcp_server, generate_session_id
-from HoloLoom.context import create_query_router
+from hololoom.infrastructure.sql import SQLConfig
+from hololoom.infrastructure.mcp import create_mcp_server, generate_session_id
+from hololoom.context import create_query_router
 
 
 async def production_router():

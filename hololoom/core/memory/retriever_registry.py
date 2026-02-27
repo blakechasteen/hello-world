@@ -21,9 +21,9 @@ import logging
 import asyncio
 
 if TYPE_CHECKING:
-    from HoloLoom.core.protocols.types import MemoryShard
+    from hololoom.core.protocols.types import MemoryShard
 
-from HoloLoom.core.memory.retrieval_result import (
+from hololoom.core.memory.retrieval_result import (
     RetrievalResultEnhanced,
     RetrievalStatus,
     ensure_retrieval_result

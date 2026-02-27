@@ -7,8 +7,8 @@ AutoSpin automatically converts your text into MemoryShards without manual spinn
 ## Quick Start
 
 ```python
-from HoloLoom.autospin import auto_loom_from_text
-from HoloLoom.Documentation.types import Query
+from hololoom.autospin import auto_loom_from_text
+from hololoom.Documentation.types import Query
 
 # Create orchestrator from text (auto-spins in the background)
 orch = await auto_loom_from_text("Your knowledge base here...")
@@ -26,8 +26,8 @@ That's it! No manual shard creation, no complex setup.
 Create an orchestrator directly from a string:
 
 ```python
-from HoloLoom.autospin import AutoSpinOrchestrator
-from HoloLoom.config import Config
+from hololoom.autospin import AutoSpinOrchestrator
+from hololoom.config import Config
 
 knowledge = """
 HoloLoom is a neural decision-making system...
@@ -150,7 +150,7 @@ orch = await auto_loom_from_text(
 ### Execution Modes
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # BARE: Fastest, minimal features
 orch = await auto_loom_from_text(content, config=Config.bare())
@@ -165,7 +165,7 @@ orch = await auto_loom_from_text(content, config=Config.fused())
 ### Advanced Config
 
 ```python
-from HoloLoom.spinningWheel import TextSpinnerConfig
+from hololoom.spinningWheel import TextSpinnerConfig
 
 spinner_config = TextSpinnerConfig(
     chunk_by='paragraph',
@@ -276,8 +276,8 @@ AutoSpin uses the TextSpinner under the hood:
 ## Next Steps
 
 Want more control? Use the SpinningWheel directly:
-- `HoloLoom.spinningWheel.TextSpinner` - For text
-- `HoloLoom.spinningWheel.AudioSpinner` - For audio transcripts
-- `HoloLoom.spinningWheel.YouTubeSpinner` - For video captions
+- `hololoom.spinningWheel.TextSpinner` - For text
+- `hololoom.spinningWheel.AudioSpinner` - For audio transcripts
+- `hololoom.spinningWheel.YouTubeSpinner` - For video captions
 
-See `HoloLoom/spinningWheel/README.md` for details.
+See `hololoom/spinningWheel/README.md` for details.

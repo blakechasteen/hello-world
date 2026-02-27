@@ -27,11 +27,11 @@ This guide shows how to integrate the Shuttle (MCTS-powered Warp↔Yarn intersec
 
 ### Step 1: Import ShuttleStage
 
-Add to `HoloLoom/weaving_orchestrator.py`:
+Add to `hololoom/weaving_orchestrator.py`:
 
 ```python
 # Shuttle Integration (MCTS-powered Warp↔Yarn intersection)
-from HoloLoom.shuttle.weaving_integration import (
+from hololoom.shuttle.weaving_integration import (
     ShuttleStage,
     create_shuttle_stage,
 )
@@ -131,7 +131,7 @@ thread_texts = [s.text for s in threads]
 
 ### Step 4: Add Configuration Option
 
-In `HoloLoom/config.py`, add Shuttle control flag:
+In `hololoom/config.py`, add Shuttle control flag:
 
 ```python
 @dataclass
@@ -174,9 +174,9 @@ ShuttleConfig(
 ### Example 1: Auto Mode (Recommended)
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 config = Config.fast()
 config.enable_shuttle = True  # Default
@@ -205,7 +205,7 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### Example 3: Custom Shuttle Config
 
 ```python
-from HoloLoom.shuttle import ShuttleConfig, ShuttleMode
+from hololoom.shuttle import ShuttleConfig, ShuttleMode
 
 config = Config.fused()
 shuttle_config = ShuttleConfig(
@@ -328,11 +328,11 @@ shuttle_config = ShuttleConfig(
 
 ```python
 import pytest
-from HoloLoom.shuttle.weaving_integration import create_shuttle_stage
-from HoloLoom.config import Config
-from HoloLoom.memory.graph import KG
-from HoloLoom.memory.base import create_retriever
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.shuttle.weaving_integration import create_shuttle_stage
+from hololoom.config import Config
+from hololoom.memory.graph import KG
+from hololoom.memory.base import create_retriever
+from hololoom.protocols.types import Query, MemoryShard
 
 @pytest.mark.asyncio
 async def test_shuttle_stage_integration():
@@ -348,7 +348,7 @@ async def test_shuttle_stage_integration():
     shuttle_stage = create_shuttle_stage(config, kg, retriever)
 
     # Test thread selection
-    from HoloLoom.chrono.trigger import TemporalWindow
+    from hololoom.chrono.trigger import TemporalWindow
     from datetime import datetime, timedelta
 
     temporal_window = TemporalWindow(

@@ -341,8 +341,8 @@ Optional future enhancements (not blocking production):
 
 **All P0+P1 criteria met**:
 
-1. ✅ No import errors (`from HoloLoom.agentic.skills import execute_skill` works)
-2. ✅ Top-level access (`from HoloLoom.agentic import execute_skill` works)
+1. ✅ No import errors (`from hololoom.agentic.skills import execute_skill` works)
+2. ✅ Top-level access (`from hololoom.agentic import execute_skill` works)
 3. ✅ All 13 YAMLs load without errors
 4. ✅ Demo executes successfully (demo_skills.py from P0)
 5. ✅ At least one skill executable (all 13 skills are executable)
@@ -359,8 +359,8 @@ Optional future enhancements (not blocking production):
 ### Execute a Skill
 
 ```python
-from HoloLoom.agentic import execute_skill
-from HoloLoom.config import Config
+from hololoom.agentic import execute_skill
+from hololoom.config import Config
 
 result = await execute_skill(
     skill_name="code-reviewer",
@@ -380,7 +380,7 @@ print(result.execution_time_ms) # Latency
 ### List Available Skills
 
 ```python
-from HoloLoom.agentic import list_available_skills
+from hololoom.agentic import list_available_skills
 
 skills = await list_available_skills()
 for category, skill_list in skills.items():
@@ -389,7 +389,7 @@ for category, skill_list in skills.items():
 
 ### Create Custom Skill
 
-1. Create `HoloLoom/agentic/skills/my-skill.yaml`
+1. Create `hololoom/agentic/skills/my-skill.yaml`
 2. Follow template in SKILLS_USAGE.md Appendix
 3. Use via `execute_skill("my-skill", parameters)`
 

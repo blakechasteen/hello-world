@@ -46,7 +46,7 @@ async def _terminal_main(**kwargs) -> None:
         print("Install with: pip install rich")
         return
 
-    from HoloLoom.lite import HoloLoomLite
+    from hololoom.lite import HoloLoomLite
 
     console = Console()
     history: List[Tuple[str, str, float]] = []

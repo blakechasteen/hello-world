@@ -20,9 +20,9 @@ import logging
 from typing import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
-from HoloLoom.rag.streaming import StreamToken, StreamingError, stream_from_orchestrator
-from HoloLoom.protocols.types import Query
+from hololoom.rag.simple_rag import SimpleRAG, RAGResult
+from hololoom.rag.streaming import StreamToken, StreamingError, stream_from_orchestrator
+from hololoom.protocols.types import Query
 
 logger = logging.getLogger(__name__)
 

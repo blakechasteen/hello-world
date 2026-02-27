@@ -187,8 +187,8 @@ from typing import List, Optional, Dict, Any, Union
 import numpy as np
 
 # Local imports
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from hololoom.config import Config
+from hololoom.documentation.types import Query
 ```
 
 **Impact:** +1 elegance point
@@ -314,7 +314,7 @@ def to_dict(self) -> Dict[str, Any]:
 
 **After: Extracted to shared utility**
 ```python
-# HoloLoom/rag/utils.py
+# hololoom/rag/utils.py
 def result_to_dict_base(result: RAGResult) -> Dict[str, Any]:
     """Base serialization for all RAGResult subclasses."""
     return {
@@ -364,7 +364,7 @@ logger.error(
 
 **After: Utility function**
 ```python
-# HoloLoom/rag/utils.py
+# hololoom/rag/utils.py
 def format_import_error(package: str, feature: str) -> str:
     """Format standard import error message."""
     return (
@@ -410,7 +410,7 @@ if not sql_query or len(sql_query.strip()) < 10:
 
 **After: Validation utilities**
 ```python
-# HoloLoom/rag/utils.py
+# hololoom/rag/utils.py
 def validate_array_shape(
     array: np.ndarray,
     expected_shape: tuple,
@@ -466,7 +466,7 @@ def _update_stats(self, success: bool, latency_ms: float) -> None:
 
 **After: Statistics utility class**
 ```python
-# HoloLoom/rag/utils.py
+# hololoom/rag/utils.py
 @dataclass
 class QueryStats:
     """Track query statistics."""
@@ -516,7 +516,7 @@ responses = await asyncio.gather(*tasks, return_exceptions=False)
 
 **After: Utility function**
 ```python
-# HoloLoom/rag/utils.py
+# hololoom/rag/utils.py
 async def run_parallel_with_timeout(
     tasks: List[Coroutine],
     timeout: float,
@@ -651,7 +651,7 @@ rag = MultiAgentRAG(n_agents=5, consensus_method="...")
 
 **After:** Unified configuration pattern
 ```python
-# HoloLoom/rag/feature_config.py
+# hololoom/rag/feature_config.py
 @dataclass
 class FeatureConfig:
     """Base configuration for RAG features."""
@@ -1506,7 +1506,7 @@ Phase 4 (12 months): Feature Marketplace
 
 ## Appendix A: Shared Utilities Module
 
-Created: `HoloLoom/rag/utils.py`
+Created: `hololoom/rag/utils.py`
 
 **Contents:**
 
@@ -1971,11 +1971,11 @@ __all__ = [
 ================================ test session starts =================================
 collected 129 items
 
-HoloLoom/rag/tests/test_streaming.py::test_stream_token_creation PASSED        [ 0%]
-HoloLoom/rag/tests/test_streaming.py::test_streaming_error PASSED              [ 1%]
+hololoom/rag/tests/test_streaming.py::test_stream_token_creation PASSED        [ 0%]
+hololoom/rag/tests/test_streaming.py::test_streaming_error PASSED              [ 1%]
 ...
-HoloLoom/rag/tests/test_multiagent.py::test_multiagent_init PASSED            [99%]
-HoloLoom/rag/tests/test_multiagent.py::test_consensus_methods PASSED          [100%]
+hololoom/rag/tests/test_multiagent.py::test_multiagent_init PASSED            [99%]
+hololoom/rag/tests/test_multiagent.py::test_consensus_methods PASSED          [100%]
 
 ============================== 129 passed in 45.2s ================================
 ```
@@ -1985,15 +1985,15 @@ HoloLoom/rag/tests/test_multiagent.py::test_consensus_methods PASSED          [1
 ================================ test session starts =================================
 collected 175 items (46 new)
 
-HoloLoom/rag/tests/test_streaming.py::test_stream_token_creation PASSED        [ 0%]
-HoloLoom/rag/tests/test_streaming.py::test_streaming_error PASSED              [ 0%]
-HoloLoom/rag/tests/test_streaming.py::test_fallback_mode PASSED               [ 1%] ← NEW
+hololoom/rag/tests/test_streaming.py::test_stream_token_creation PASSED        [ 0%]
+hololoom/rag/tests/test_streaming.py::test_streaming_error PASSED              [ 0%]
+hololoom/rag/tests/test_streaming.py::test_fallback_mode PASSED               [ 1%] ← NEW
 ...
-HoloLoom/rag/tests/test_utils.py::test_query_stats PASSED                     [97%] ← NEW
-HoloLoom/rag/tests/test_utils.py::test_validate_array_shape PASSED            [98%] ← NEW
-HoloLoom/rag/tests/test_utils.py::test_run_parallel_with_timeout PASSED       [99%] ← NEW
+hololoom/rag/tests/test_utils.py::test_query_stats PASSED                     [97%] ← NEW
+hololoom/rag/tests/test_utils.py::test_validate_array_shape PASSED            [98%] ← NEW
+hololoom/rag/tests/test_utils.py::test_run_parallel_with_timeout PASSED       [99%] ← NEW
 ...
-HoloLoom/rag/tests/test_multiagent.py::test_consensus_methods PASSED          [100%]
+hololoom/rag/tests/test_multiagent.py::test_consensus_methods PASSED          [100%]
 
 ============================== 175 passed in 52.1s =================================
 ```

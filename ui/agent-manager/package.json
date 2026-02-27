@@ -1,7 +1,7 @@
 {
   "name": "@hololoom/agent-manager",
   "version": "1.0.0",
-  "description": "Agent Manager UI for HoloLoom - Real-time multi-agent orchestration dashboard",
+  "description": "Agent Manager UI for hololoom - Real-time multi-agent orchestration dashboard",
   "type": "module",
   "scripts": {
     "dev": "vite",

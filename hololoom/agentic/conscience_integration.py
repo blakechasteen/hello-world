@@ -24,14 +24,14 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List, Callable, Awaitable
 from collections import deque
 
-from HoloLoom.protocols.conscience import (
+from hololoom.protocols.conscience import (
     ConscienceProtocol,
     ConscienceDecision,
     RiskLevel,
     StepType,
 )
 
-logger = logging.getLogger("HoloLoom.agentic.conscience_integration")
+logger = logging.getLogger("hololoom.agentic.conscience_integration")
 
 
 # =============================================================================
@@ -142,9 +142,9 @@ class ConscienceReflectionBridge:
     4. Background learning task for continuous improvement
 
     Usage:
-        from HoloLoom.agentic.conscience_integration import ConscienceReflectionBridge
-        from HoloLoom.conscience import Conscience
-        from HoloLoom.reflection.buffer import ReflectionBuffer
+        from hololoom.agentic.conscience_integration import ConscienceReflectionBridge
+        from hololoom.conscience import Conscience
+        from hololoom.reflection.buffer import ReflectionBuffer
 
         conscience = Conscience()
         buffer = ReflectionBuffer()

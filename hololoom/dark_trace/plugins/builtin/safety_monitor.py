@@ -25,22 +25,22 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.engine import DarkTraceEngine
-    from HoloLoom.dark_trace.plugins.safety_gate import PluginSafetyGate
-    from HoloLoom.dark_trace.result import TraceResult
+    from hololoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.dark_trace.plugins.safety_gate import PluginSafetyGate
+    from hololoom.dark_trace.result import TraceResult
 
-from HoloLoom.dark_trace.plugins.interface import (
+from hololoom.dark_trace.plugins.interface import (
     DarkTracePlugin,
     PluginMetadata,
     PluginType,
     MonitorPlugin,
 )
-from HoloLoom.dark_trace.plugins.safety_gate import (
+from hololoom.dark_trace.plugins.safety_gate import (
     PluginCapability,
     TrustLevel,
 )
 
-logger = logging.getLogger("HoloLoom.dark_trace.plugins.builtin.safety_monitor")
+logger = logging.getLogger("hololoom.dark_trace.plugins.builtin.safety_monitor")
 
 
 # =============================================================================

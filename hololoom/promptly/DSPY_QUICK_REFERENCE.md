@@ -12,7 +12,7 @@ export OPENAI_API_KEY="your-key"
 ## 📝 Basic Signature
 
 ```python
-from HoloLoom.promptly.dspy_bridge import create_signature
+from hololoom.promptly.dspy_bridge import create_signature
 
 sig = create_signature(
     "Answer questions accurately",
@@ -24,8 +24,8 @@ sig = create_signature(
 ## 🔧 Initialize Bridge
 
 ```python
-from HoloLoom.promptly.dspy_bridge import DSPyHoloLoom
-from HoloLoom.config import Config
+from hololoom.promptly.dspy_bridge import DSPyHoloLoom
+from hololoom.config import Config
 
 bridge = DSPyHoloLoom(
     config=Config.fused(),
@@ -49,7 +49,7 @@ result = await bridge.execute(
 ## 🎯 Optimize from Memory
 
 ```python
-from HoloLoom.promptly.dspy_bridge import DSPyOptimizationConfig
+from hololoom.promptly.dspy_bridge import DSPyOptimizationConfig
 
 optimized = await bridge.optimize_from_memory(
     signature=sig,
@@ -64,7 +64,7 @@ optimized = await bridge.optimize_from_memory(
 ## 🔗 Create Workflow
 
 ```python
-from HoloLoom.promptly.dspy_workflow_adapter import DSPyWorkflowAdapter
+from hololoom.promptly.dspy_workflow_adapter import DSPyWorkflowAdapter
 
 adapter = DSPyWorkflowAdapter(bridge)
 
@@ -138,7 +138,7 @@ for step in result["trace"]:
 ## 📋 Built-in Signatures
 
 ```python
-from HoloLoom.promptly.dspy_bridge import (
+from hololoom.promptly.dspy_bridge import (
     QuestionAnswering,
     MemorySynthesis,
     ReasoningChain
@@ -164,7 +164,7 @@ config = DSPyOptimizationConfig(metric=my_metric)
 ## 🔐 With Safety Guardrails
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.alignment import SafetyGuardrails
 
 guardrails = SafetyGuardrails()
 gate = await guardrails.gate_action("dspy_execute", context)
@@ -232,5 +232,5 @@ for step in result["trace"]:
 
 - Full docs: `README_DSPY_INTEGRATION.md`
 - Examples: `demos/demo_dspy_promptly_integration.py`
-- Workflows: `HoloLoom/promptly/examples/*.yaml`
-- Tests: `HoloLoom/tests/integration/test_dspy_integration.py`
+- Workflows: `hololoom/promptly/examples/*.yaml`
+- Tests: `hololoom/tests/integration/test_dspy_integration.py`

@@ -13,7 +13,7 @@ Sandbox isolation enables safe, contained execution of attack payloads with conf
 ### 1. Create Configuration
 
 ```python
-from HoloLoom.redteam.sandbox import SandboxMode, SandboxConfig
+from hololoom.redteam.sandbox import SandboxMode, SandboxConfig
 
 # Minimal configuration (uses sensible defaults)
 config = SandboxConfig()
@@ -32,7 +32,7 @@ config = SandboxConfig(
 ### 2. Monitor Execution
 
 ```python
-from HoloLoom.redteam.sandbox import ResourceMonitor
+from hololoom.redteam.sandbox import ResourceMonitor
 
 # Create monitor with 100ms sampling
 monitor = ResourceMonitor(sample_interval_ms=100)
@@ -209,7 +209,7 @@ config = SandboxConfig(
 ### Check Mode Availability
 
 ```python
-from HoloLoom.redteam.sandbox.protocols import (
+from hololoom.redteam.sandbox.protocols import (
     get_sandbox_mode_availability,
     select_best_sandbox_mode
 )
@@ -226,7 +226,7 @@ print(f"Best available: {best_mode.value}")
 ### Validate Configuration
 
 ```python
-from HoloLoom.redteam.sandbox.protocols import validate_sandbox_config
+from hololoom.redteam.sandbox.protocols import validate_sandbox_config
 
 config = SandboxConfig(...)
 warnings = validate_sandbox_config(config)
@@ -242,8 +242,8 @@ if warnings:
 ### Attack Execution with Sandbox
 
 ```python
-from HoloLoom.redteam import AttackExecutor
-from HoloLoom.redteam.sandbox import SandboxConfig
+from hololoom.redteam import AttackExecutor
+from hololoom.redteam.sandbox import SandboxConfig
 
 executor = AttackExecutor(
     safety_adapter=adapter,
@@ -264,8 +264,8 @@ print(f"Violations: {result.metadata.get('sandbox_violations', [])}")
 ### Red Team Orchestration
 
 ```python
-from HoloLoom.redteam import RedTeamOrchestrator
-from HoloLoom.redteam.sandbox import SandboxConfig, ResourceMonitor
+from hololoom.redteam import RedTeamOrchestrator
+from hololoom.redteam.sandbox import SandboxConfig, ResourceMonitor
 
 orchestrator = RedTeamOrchestrator(
     executor=executor,
@@ -466,7 +466,7 @@ async def test_attacks_with_limits(attacks):
 
 ```python
 # Check what's available
-from HoloLoom.redteam.sandbox.protocols import get_sandbox_mode_availability
+from hololoom.redteam.sandbox.protocols import get_sandbox_mode_availability
 
 available = get_sandbox_mode_availability()
 if not available[SandboxMode.CGROUPS]:

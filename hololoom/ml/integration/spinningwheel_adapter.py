@@ -15,8 +15,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-from HoloLoom.ml.config import DataConfig, MissingValueStrategy, NormalizationMethod
-from HoloLoom.ml.protocol import DataSplit, FeatureNames
+from hololoom.ml.config import DataConfig, MissingValueStrategy, NormalizationMethod
+from hololoom.ml.protocol import DataSplit, FeatureNames
 
 logger = logging.getLogger(__name__)
 
@@ -318,7 +318,7 @@ class SpinningWheelMLAdapter:
         feature_columns: Optional[List[str]] = None,
     ) -> Tuple[np.ndarray, np.ndarray, FeatureNames]:
         """
-        Ingest tabular data from HoloLoom MemoryShards.
+        Ingest tabular data from hololoom MemoryShards.
 
         Args:
             shards: List of MemoryShard objects with tabular content

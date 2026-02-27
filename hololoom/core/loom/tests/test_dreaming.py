@@ -15,13 +15,13 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 # Import test targets
-from HoloLoom.core.loom.dreaming import (
+from hololoom.core.loom.dreaming import (
     DreamOrchestrator,
     DreamCycleStats,
     DreamOrchestratorMetrics,
     create_dream_orchestrator,
 )
-from HoloLoom.core.loom.protocol import (
+from hololoom.core.loom.protocol import (
     Loom,
     DreamInsight,
     InsightType,
@@ -30,8 +30,8 @@ from HoloLoom.core.loom.protocol import (
     CorrectionInsight,
     DiscoveryInsight,
 )
-from HoloLoom.core.loom.base_loom import BaseLoom
-from HoloLoom.core.fabric.fabric import Fabric
+from hololoom.core.loom.base_loom import BaseLoom
+from hololoom.core.fabric.fabric import Fabric
 
 
 # =============================================================================

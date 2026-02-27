@@ -74,7 +74,7 @@ pip install google-generativeai  # For Gemini
 ### Step 1: Basic MRF Usage (1 minute)
 
 ```python
-from HoloLoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategy
+from hololoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategy
 
 # Create MRF engine
 mrf = UnifiedMRF(model_provider="claude")
@@ -133,7 +133,7 @@ Quality score: 0.92
 ### Step 2: Analytics Dashboard (2 minutes)
 
 ```python
-from HoloLoom.prompting.analytics import create_dashboard
+from hololoom.prompting.analytics import create_dashboard
 
 # Create dashboard with learning enabled
 dashboard = create_dashboard(enable_learning=True)
@@ -232,8 +232,8 @@ mrf_ollama = UnifiedMRF(model_provider="ollama")
 ### Agentic Reasoning Integration
 
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
-from HoloLoom.prompting.unified_mrf import enable_mrf_for_agentic
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.prompting.unified_mrf import enable_mrf_for_agentic
 
 # Create orchestrator
 orchestrator = await create_agentic_orchestrator(config, shards)
@@ -256,8 +256,8 @@ print(f"Quality: {result.confidence:.2f}")
 ### RAG Integration
 
 ```python
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.prompting.unified_mrf import enable_mrf_for_rag
+from hololoom.rag import SimpleRAG
+from hololoom.prompting.unified_mrf import enable_mrf_for_rag
 
 # Create RAG system
 rag = SimpleRAG()
@@ -276,7 +276,7 @@ print(f"Quality: {result.confidence:.2f}")
 ### Alignment Framework Integration
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.alignment import SafetyGuardrails
 
 # Create guardrails with MRF enhancement
 guardrails = SafetyGuardrails(
@@ -532,9 +532,9 @@ mrf_ollama = UnifiedMRF(model_provider="ollama")  # Local, faster
 
 ### 1. Explore Integration Examples
 
-- **Agentic Reasoning**: `HoloLoom/agentic/mrf_integration.py`
-- **RAG System**: `HoloLoom/rag/mrf_integration.py`
-- **Alignment Framework**: `HoloLoom/alignment/mrf_integration.py`
+- **Agentic Reasoning**: `hololoom/agentic/mrf_integration.py`
+- **RAG System**: `hololoom/rag/mrf_integration.py`
+- **Alignment Framework**: `hololoom/alignment/mrf_integration.py`
 
 ### 2. Run Complete Demo
 

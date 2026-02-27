@@ -11,24 +11,24 @@ Tests the complete integration of advanced reasoning capabilities:
 - Registry integration
 
 Run with:
-    pytest HoloLoom/tests/integration/test_reasoning_department.py -v
+    pytest hololoom/tests/integration/test_reasoning_department.py -v
 """
 
 import pytest
 import asyncio
 from typing import List
 
-from HoloLoom.departments import (
+from hololoom.departments import (
     DepartmentRegistry,
     DepartmentRequest
 )
-from HoloLoom.apps.departments.reasoning import (
+from hololoom.apps.departments.reasoning import (
     ReasoningDepartment,
     MultiHopReasoner,
     CausalInferenceEngine,
     CounterfactualAnalyzer
 )
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.graph import KG, KGEdge
 
 
 # ============================================================================

@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 # Import server module
 try:
-    from HoloLoom.mcp_tools import server
+    from hololoom.mcp_tools import server
     MCP_TOOLS_AVAILABLE = True
 except ImportError:
     MCP_TOOLS_AVAILABLE = False

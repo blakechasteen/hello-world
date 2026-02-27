@@ -19,7 +19,7 @@ os.chdir(repo_root)
 
 # Try to import, but don't fail if not available
 try:
-    from HoloLoom.integrations.langchain import (
+    from hololoom.integrations.langchain import (
         MultiProviderLLM,
         create_llm,
         list_llm_providers,
@@ -102,7 +102,7 @@ def demo_auto_fallback():
 
     print("[Automatic Provider Selection]")
     print("""
-    from HoloLoom.integrations.langchain import create_best_available_llm
+    from hololoom.integrations.langchain import create_best_available_llm
 
     llm = create_best_available_llm()
     # Tries in order:
@@ -179,8 +179,8 @@ def demo_integration_with_hololoom():
 
     print("[HoloLoom Recall + LLM Generation]")
     print("""
-    from HoloLoom import HoloLoom
-    from HoloLoom.integrations.langchain import MultiProviderLLM
+    from hololoom import hololoom
+    from hololoom.integrations.langchain import MultiProviderLLM
 
     async def main():
         async with HoloLoom() as loom:

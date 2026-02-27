@@ -42,7 +42,7 @@ Server starts at `http://localhost:8002`
 
 ### 3. Open Web UI
 
-Open `HoloLoom/web_dashboard/live_scratchpad.html` in your browser.
+Open `hololoom/web_dashboard/live_scratchpad.html` in your browser.
 
 ### 4. Use It!
 
@@ -188,7 +188,7 @@ Get current state
 ## Programmatic Usage
 
 ```python
-from HoloLoom.spinningWheel.live_scratchpad import LiveScratchpad
+from hololoom.spinningWheel.live_scratchpad import LiveScratchpad
 
 scratchpad = LiveScratchpad()
 
@@ -216,7 +216,7 @@ shard = await scratchpad.finalize()
 ### Adding Custom Templates
 
 ```python
-from HoloLoom.spinningWheel.live_scratchpad import (
+from hololoom.spinningWheel.live_scratchpad import (
     DomainTemplate,
     TemplateField
 )
@@ -257,7 +257,7 @@ template.validate(data)
 Auto-detects domain from keyword patterns:
 
 ```python
-from HoloLoom.spinningWheel.domain_router import DomainRouter
+from hololoom.spinningWheel.domain_router import DomainRouter
 
 router = DomainRouter()
 scores = router.detect_domain(transcription_text)
@@ -278,7 +278,7 @@ All finalized entries are saved as `MemoryShard` objects and ingested into HoloL
 shard = await scratchpad.finalize()
 
 # Ingested into HoloLoom
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     await loom.experience([shard])
@@ -355,7 +355,7 @@ pip install openai-whisper
 - Use HTTPS or localhost
 
 ### "API not available"
-- Ensure server is running: `python HoloLoom/server/scratchpad_api.py`
+- Ensure server is running: `python hololoom/server/scratchpad_api.py`
 - Check port 8002 is not in use
 
 ## Future Enhancements

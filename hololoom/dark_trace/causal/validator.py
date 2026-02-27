@@ -43,17 +43,17 @@ from enum import Enum
 from datetime import datetime
 import numpy as np
 
-from HoloLoom.dark_trace.causal.ablation import (
+from hololoom.dark_trace.causal.ablation import (
     FeatureAblator,
     AblationResult,
     AblationConfig,
 )
-from HoloLoom.dark_trace.causal.injection import (
+from hololoom.dark_trace.causal.injection import (
     FeatureInjector,
     InjectionResult,
     InjectionConfig,
 )
-from HoloLoom.dark_trace.causal.patching import (
+from hololoom.dark_trace.causal.patching import (
     ActivationPatcher,
     PatchResult,
     CausalTrace,

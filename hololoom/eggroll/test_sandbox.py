@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.append(os.getcwd())
 os.environ["PYTHONPATH"] = os.getcwd()
-from HoloLoom.eggroll.sandbox import SecureExecutor, SecurityViolation, NeuralFirewall
+from hololoom.eggroll.sandbox import SecureExecutor, SecurityViolation, NeuralFirewall
 
 class TestSandbox(unittest.TestCase):
     

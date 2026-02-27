@@ -37,7 +37,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import logging
 
-from HoloLoom.scratchpad import (
+from hololoom.scratchpad import (
     RecursiveScratchpad,
     Thought,
     ThoughtType,

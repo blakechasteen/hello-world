@@ -9,7 +9,7 @@ Scans workspace directories and extracts:
 Respects .gitignore patterns for intelligent filtering.
 
 Usage:
-    from HoloLoom.spinningWheel import WorkspaceSpinner
+    from hololoom.spinningWheel import WorkspaceSpinner
 
     spinner = WorkspaceSpinner()
     shards = await spinner.spin_workspace("/path/to/workspace")
@@ -24,7 +24,7 @@ from typing import List, Dict, Set, Optional, Tuple
 from dataclasses import dataclass
 import logging
 
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 

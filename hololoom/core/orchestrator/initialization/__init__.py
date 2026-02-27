@@ -24,13 +24,13 @@ Public API:
 Created: 2025-11-22 (Elegance Pass Refactoring - Phase 2)
 """
 
-from HoloLoom.core.orchestrator.initialization.config_init import initialize_config_and_memory
-from HoloLoom.core.orchestrator.initialization.reflection_init import initialize_reflection_and_caching
-from HoloLoom.core.orchestrator.initialization.recursive_init import initialize_recursive_learning
-from HoloLoom.core.orchestrator.initialization.component_init import initialize_components
-from HoloLoom.core.orchestrator.initialization.production_init import initialize_production_hardening
-from HoloLoom.core.orchestrator.initialization.cache_init import initialize_semantic_cache
-from HoloLoom.core.orchestrator.initialization.linguistic_init import initialize_linguistic_gate
+from hololoom.core.orchestrator.initialization.config_init import initialize_config_and_memory
+from hololoom.core.orchestrator.initialization.reflection_init import initialize_reflection_and_caching
+from hololoom.core.orchestrator.initialization.recursive_init import initialize_recursive_learning
+from hololoom.core.orchestrator.initialization.component_init import initialize_components
+from hololoom.core.orchestrator.initialization.production_init import initialize_production_hardening
+from hololoom.core.orchestrator.initialization.cache_init import initialize_semantic_cache
+from hololoom.core.orchestrator.initialization.linguistic_init import initialize_linguistic_gate
 
 __all__ = [
     'initialize_config_and_memory',

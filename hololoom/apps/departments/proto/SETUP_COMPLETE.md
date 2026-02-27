@@ -2,13 +2,13 @@
 
 **Status**: ✅ Package skeleton v1.0.0 created
 **Date**: December 2025
-**Location**: `HoloLoom/departments/proto/`
+**Location**: `hololoom/departments/proto/`
 **Entry Point**: `proto.py` (at repository root)
 
 ## Files Created
 
 ### 1. Main Package Init
-**File**: `HoloLoom/departments/proto/__init__.py`
+**File**: `hololoom/departments/proto/__init__.py`
 **Size**: ~2.8 KB
 **Status**: ✅ Complete with graceful degradation
 
@@ -40,7 +40,7 @@ AgenticBridge, ProtoReasoningMode, AgenticBridgeResult, ProtoDepartment
 ```
 
 ### 2. Documentation
-**File**: `HoloLoom/departments/proto/README.md`
+**File**: `hololoom/departments/proto/README.md`
 **Size**: ~9.2 KB
 **Status**: ✅ Comprehensive documentation
 
@@ -101,7 +101,7 @@ python proto.py review path/to/file.py
 ## Package Structure
 
 ```
-HoloLoom/departments/proto/
+hololoom/departments/proto/
 ├── __init__.py                    # Main package exports (2.8 KB)
 ├── README.md                      # Full documentation (9.2 KB)
 ├── SETUP_COMPLETE.md             # This file
@@ -157,7 +157,7 @@ All imports wrapped in try/except blocks so package can be imported even if subm
 
 ```python
 try:
-    from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+    from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
 except ImportError:
     ProtoEngine = None
     ProtoConfig = None
@@ -208,7 +208,7 @@ Understands entity relationships and concepts:
 
 ### Default Config
 ```python
-from HoloLoom.apps.departments.proto import ProtoConfig
+from hololoom.apps.departments.proto import ProtoConfig
 
 config = ProtoConfig.default()
 # Balanced configuration with all features enabled
@@ -242,7 +242,7 @@ python proto.py review myfile.py
 
 ### Programmatic
 ```python
-from HoloLoom.apps.departments.proto import ProtoEngine, ProtoConfig
+from hololoom.apps.departments.proto import ProtoEngine, ProtoConfig
 
 async with ProtoEngine(ProtoConfig.default()) as proto:
     response = await proto.process("explain this code")
@@ -262,13 +262,13 @@ response = await proto.process(
 
 ```bash
 # Run all Proto tests
-pytest HoloLoom/departments/proto/tests/ -v
+pytest hololoom/departments/proto/tests/ -v
 
 # Run specific test
-pytest HoloLoom/departments/proto/tests/test_engine.py -v
+pytest hololoom/departments/proto/tests/test_engine.py -v
 
 # With coverage
-pytest HoloLoom/departments/proto/ --cov
+pytest hololoom/departments/proto/ --cov
 ```
 
 ## Next Steps

@@ -22,8 +22,8 @@ import threading
 import numpy as np
 import torch
 
-from HoloLoom.dark_trace.protocol import LensType, TraceLens
-from HoloLoom.dark_trace.registry import CorrelationMatrix, FeatureCorrelation
+from hololoom.dark_trace.protocol import LensType, TraceLens
+from hololoom.dark_trace.registry import CorrelationMatrix, FeatureCorrelation
 
 
 @dataclass

@@ -137,10 +137,10 @@ Query → [Step 1-2: Pattern + Temporal] →
 
 ### Step 1: Import ShuttleStage
 
-Add to `HoloLoom/weaving_orchestrator.py`:
+Add to `hololoom/weaving_orchestrator.py`:
 
 ```python
-from HoloLoom.shuttle.weaving_integration import (
+from hololoom.shuttle.weaving_integration import (
     ShuttleStage,
     create_shuttle_stage,
 )
@@ -181,7 +181,7 @@ else:
 
 ### Step 4: Add Config Flag
 
-In `HoloLoom/config.py`:
+In `hololoom/config.py`:
 
 ```python
 @dataclass
@@ -219,14 +219,14 @@ class Config:
 
 ```python
 # Test ShuttleStage integration
-pytest HoloLoom/shuttle/tests/test_weaving_integration.py
+pytest hololoom/shuttle/tests/test_weaving_integration.py
 ```
 
 ### Integration Tests
 
 ```python
 # Test full weaving cycle with Shuttle
-pytest HoloLoom/tests/integration/test_shuttle_weaving.py
+pytest hololoom/tests/integration/test_shuttle_weaving.py
 ```
 
 ### A/B Testing
@@ -367,7 +367,7 @@ System never fails catastrophically - always has a fallback.
 - [x] Implement HoloLoomWarpAdapter (Qdrant)
 - [x] Implement HoloLoomYarnAdapter (Neo4j/NetworkX)
 - [x] Implement ShuttleStage (drop-in Step 3 replacement)
-- [x] Wire ShuttleConfig to HoloLoom.config
+- [x] Wire ShuttleConfig to hololoom.config
 - [x] Create WEAVING_ORCHESTRATOR_INTEGRATION.md
 - [x] Update __init__.py with integration exports
 
@@ -390,7 +390,7 @@ System never fails catastrophically - always has a fallback.
 
 To complete the integration, the developer needs to:
 
-1. **Open `HoloLoom/weaving_orchestrator.py`**
+1. **Open `hololoom/weaving_orchestrator.py`**
 2. **Follow** [WEAVING_ORCHESTRATOR_INTEGRATION.md](WEAVING_ORCHESTRATOR_INTEGRATION.md:1) steps 1-4
 3. **Add tests** (see testing section)
 4. **Run benchmarks** (before/after comparison)

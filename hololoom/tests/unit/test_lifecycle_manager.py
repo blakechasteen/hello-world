@@ -18,14 +18,14 @@ import pytest
 import asyncio
 from datetime import datetime, timedelta
 
-from HoloLoom.memory.lifecycle_manager import (
+from hololoom.memory.lifecycle_manager import (
     ContextStreamManager,
     ContextStream,
     LifeCycle,
     MemoryScope,
     SCOPE_LIFECYCLE_MAP
 )
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

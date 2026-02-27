@@ -13,7 +13,7 @@ Metrics exposed:
 - phase5_speedup_factor (gauge) - Real-time speedup measurement
 
 Usage in production:
-    from HoloLoom.performance.cache_metrics import CacheMetricsCollector
+    from hololoom.performance.cache_metrics import CacheMetricsCollector
 
     metrics = CacheMetricsCollector(cache)
 

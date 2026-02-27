@@ -13,8 +13,8 @@ Date: December 2025 (Math Module Upgrade)
 
 import numpy as np
 import pytest
-from HoloLoom.policy.thompson_sampling import TSBandit
-from HoloLoom.protocols.types import BanditStrategy
+from hololoom.policy.thompson_sampling import TSBandit
+from hololoom.protocols.types import BanditStrategy
 
 
 class TestDivisionByZeroGuards:

@@ -18,7 +18,7 @@ Layer naming convention (HuggingFace):
 
 Usage:
     from transformers import AutoModel
-    from HoloLoom.dark_trace.models import TransformerAdapter
+    from hololoom.dark_trace.models import TransformerAdapter
 
     model = AutoModel.from_pretrained("gpt2")
     adapter = TransformerAdapter(model)
@@ -51,7 +51,7 @@ except ImportError:
     torch = None
     nn = None
 
-from HoloLoom.dark_trace.models.adapter import (
+from hololoom.dark_trace.models.adapter import (
     ModelAdapter,
     LayerInfo,
     LayerType,

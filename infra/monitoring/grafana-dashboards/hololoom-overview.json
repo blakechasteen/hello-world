@@ -1,6 +1,6 @@
 {
   "dashboard": {
-    "title": "HoloLoom Production Overview",
+    "title": "hololoom Production Overview",
     "tags": ["hololoom", "production"],
     "timezone": "browser",
     "refresh": "10s",
@@ -72,7 +72,7 @@
         "targets": [
           {
             "expr": "process_resident_memory_bytes{job=\"hololoom\"}",
-            "legendFormat": "HoloLoom Memory"
+            "legendFormat": "hololoom Memory"
           }
         ],
         "yaxes": [

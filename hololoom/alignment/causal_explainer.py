@@ -609,6 +609,6 @@ if __name__ == "__main__":
     print("  - Counterfactual reasoning")
     print("  - Mediation analysis")
     print("\nUsage:")
-    print("  from HoloLoom.alignment.causal_explainer import CausalExplainer")
+    print("  from hololoom.alignment.causal_explainer import CausalExplainer")
     print("  explainer = CausalExplainer(predict_fn, feature_names)")
     print("  explanation = await explainer.explain(query_id, text, features, tool, conf)")

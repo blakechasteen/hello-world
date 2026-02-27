@@ -15,7 +15,7 @@ Commands:
 - !context help - Show context help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.context_handlers import register_context_handlers
+    from hololoom.apps.chatops.handlers.context_handlers import register_context_handlers
 
     # In run_chatops.py:
     register_context_handlers(bot, context_packer)
@@ -28,9 +28,9 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.context_packing import ContextPacker
-    from HoloLoom.context_packing.activation_spreader import ActivationSpreader
-    from HoloLoom.context_packing.importance_scorer import ImportanceScorer
+    from hololoom.context_packing import ContextPacker
+    from hololoom.context_packing.activation_spreader import ActivationSpreader
+    from hololoom.context_packing.importance_scorer import ImportanceScorer
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -42,7 +42,7 @@ except ImportError:
 
 # Context packing imports with graceful degradation
 try:
-    from HoloLoom.context_packing import (
+    from hololoom.context_packing import (
         ContextPacker,
         ContextPackerConfig,
         pack_context,
@@ -57,8 +57,8 @@ except ImportError:
     information_budget_pack = None
 
 try:
-    from HoloLoom.context_packing.activation_spreader import ActivationSpreader
-    from HoloLoom.context_packing.config import BetaWaveConfig
+    from hololoom.context_packing.activation_spreader import ActivationSpreader
+    from hololoom.context_packing.config import BetaWaveConfig
     SPREADER_AVAILABLE = True
 except ImportError:
     SPREADER_AVAILABLE = False
@@ -66,8 +66,8 @@ except ImportError:
     BetaWaveConfig = None
 
 try:
-    from HoloLoom.context_packing.importance_scorer import ImportanceScorer
-    from HoloLoom.context_packing.protocol import ImportanceSignal
+    from hololoom.context_packing.importance_scorer import ImportanceScorer
+    from hololoom.context_packing.protocol import ImportanceSignal
     SCORER_AVAILABLE = True
 except ImportError:
     SCORER_AVAILABLE = False
@@ -76,7 +76,7 @@ except ImportError:
 
 # Adaptive expansion imports
 try:
-    from HoloLoom.memory.adaptive_expansion import (
+    from hololoom.memory.adaptive_expansion import (
         AdaptiveExpander,
         expand_context_adaptive
     )
@@ -88,7 +88,7 @@ except ImportError:
 
 # Streaming expansion imports
 try:
-    from HoloLoom.memory.streaming_expansion import (
+    from hololoom.memory.streaming_expansion import (
         StreamingContextBuilder,
         stream_context_expansion,
         ChunkYieldStrategy
@@ -102,7 +102,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -940,8 +940,8 @@ def register_context_handlers(
         ContextHandlers instance for grouped access
 
     Example:
-        from HoloLoom.apps.chatops.handlers.context_handlers import register_context_handlers
-        from HoloLoom.context_packing import ContextPacker
+        from hololoom.apps.chatops.handlers.context_handlers import register_context_handlers
+        from hololoom.context_packing import ContextPacker
 
         packer = ContextPacker()
         handlers = register_context_handlers(bot, packer)

@@ -11,7 +11,7 @@ import pytest
 import asyncio
 from typing import Dict, Any
 
-from HoloLoom.apps.departments.examples.workflow_examples import (
+from hololoom.apps.departments.examples.workflow_examples import (
     research_workflow_example,
     deployment_workflow_example,
     intelligent_routing_workflow_example,

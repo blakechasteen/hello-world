@@ -14,13 +14,13 @@ import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
-from HoloLoom.redteam.swarm.coordinator import (
+from hololoom.redteam.swarm.coordinator import (
     SwarmCoordinator,
     CampaignPhase,
     SwarmMetrics,
     SwarmCampaignResult,
 )
-from HoloLoom.redteam.swarm.protocols import (
+from hololoom.redteam.swarm.protocols import (
     AgentTask,
     AgentResult,
     AgentRole,
@@ -28,7 +28,7 @@ from HoloLoom.redteam.swarm.protocols import (
     AgentMessage,
     MessagePriority,
 )
-from HoloLoom.redteam.swarm.communication import MessageBus
+from hololoom.redteam.swarm.communication import MessageBus
 
 
 # ============================================================================

@@ -131,8 +131,8 @@ async def add_memory(memory: MemoryAddRequest, state=Depends(get_server_state)):
                 "memory_id": None
             }
 
-        from HoloLoom.memory.protocol import Memory
-        from HoloLoom.protocols.types import MemoryShard
+        from hololoom.memory.protocol import Memory
+        from hololoom.protocols.types import MemoryShard
 
         # Create Memory object - fields already validated by Pydantic
         new_memory = Memory(
@@ -209,7 +209,7 @@ async def api_remember(request: Dict[str, Any], state=Depends(get_server_state))
         context = request.get("context", {})
 
         # Import HoloLoom unified API
-        from HoloLoom import HoloLoom
+        from hololoom import hololoom
 
         # Create HoloLoom instance with current config
         async with HoloLoom(config=state.config) as loom:
@@ -273,7 +273,7 @@ async def api_recall(request: Dict[str, Any], state=Depends(get_server_state)):
         k = request.get("k", 5)
 
         # Import HoloLoom unified API
-        from HoloLoom import HoloLoom
+        from hololoom import hololoom
 
         # Create HoloLoom instance with current config
         async with HoloLoom(config=state.config) as loom:
@@ -340,7 +340,7 @@ async def get_todos(
         }
     """
     try:
-        from HoloLoom import HoloLoom
+        from hololoom import hololoom
 
         # Create HoloLoom instance
         async with HoloLoom(config=state.config) as loom:

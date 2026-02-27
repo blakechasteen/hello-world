@@ -1,16 +1,16 @@
 #!/bin/bash
-# HoloLoom ChatOps - Test Environment Deployment
+# hololoom ChatOps - Test Environment Deployment
 # ==============================================
 
 set -e  # Exit on error
 
 echo "========================================"
-echo "HoloLoom ChatOps Test Deployment"
+echo "hololoom ChatOps Test Deployment"
 echo "========================================"
 echo ""
 
 # Check if running from repo root
-if [ ! -f "HoloLoom/chatops/run_chatops.py" ]; then
+if [ ! -f "hololoom/chatops/run_chatops.py" ]; then
     echo "ERROR: Please run from repository root"
     exit 1
 fi
@@ -46,7 +46,7 @@ fi
 if [ ! -f "chatops_test_config.yaml" ]; then
     echo "Creating chatops_test_config.yaml..."
     cat > chatops_test_config.yaml <<EOF
-# Test Configuration for HoloLoom ChatOps
+# Test Configuration for hololoom ChatOps
 matrix:
   homeserver_url: "https://matrix.org"
   user_id: "${MATRIX_USER_ID:-@bot:matrix.org}"
@@ -130,7 +130,7 @@ cat > run_test_bot.sh <<'EOF'
 #!/bin/bash
 # Quick test bot runner
 export PYTHONPATH=.
-python3 HoloLoom/chatops/run_chatops.py --config chatops_test_config.yaml --debug
+python3 hololoom/chatops/run_chatops.py --config chatops_test_config.yaml --debug
 EOF
 chmod +x run_test_bot.sh
 echo "✓ Created run_test_bot.sh"

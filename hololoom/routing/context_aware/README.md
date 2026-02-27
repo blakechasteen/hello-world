@@ -27,7 +27,7 @@ Context-Aware Routing uses conversation history, user preferences, and session c
 ### Simple Usage
 
 ```python
-from HoloLoom.routing.context_aware import ContextAwareRouter, UserContext
+from hololoom.routing.context_aware import ContextAwareRouter, UserContext
 
 # Create router
 router = ContextAwareRouter(strategy=RoutingStrategy.PERSONALIZED)
@@ -168,7 +168,7 @@ Automatically tracks:
 - Success rate
 
 ```python
-from HoloLoom.routing.context_aware import PersonalizationEngine
+from hololoom.routing.context_aware import PersonalizationEngine
 
 engine = PersonalizationEngine(enable_collaborative_filtering=True)
 
@@ -211,7 +211,7 @@ for dept, score in recommendations:
 Test different routing strategies with real traffic:
 
 ```python
-from HoloLoom.routing.context_aware import (
+from hololoom.routing.context_aware import (
     ABTestRouter,
     ABTestConfig,
     RoutingVariant
@@ -270,7 +270,7 @@ When `auto_promote_winner=True`:
 ### With ContextDepartment
 
 ```python
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 
 context_dept = get_department("context")
 router = ContextAwareRouter(
@@ -284,8 +284,8 @@ decision = await router.route(query, user_context, enrich_context=True)
 ### Complete Workflow
 
 ```python
-from HoloLoom.routing.context_aware import ContextAwareRouter, UserContext
-from HoloLoom.departments import get_department
+from hololoom.routing.context_aware import ContextAwareRouter, UserContext
+from hololoom.departments import get_department
 
 # Initialize
 router = ContextAwareRouter(strategy=RoutingStrategy.PERSONALIZED)
@@ -324,7 +324,7 @@ await router.learn_from_feedback(
 ## Configuration
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 config = Config.fused()
 
@@ -364,7 +364,7 @@ config.ab_test_confidence = 0.95
 
 ```bash
 # Run tests
-pytest HoloLoom/routing/context_aware/test_context_router.py -v
+pytest hololoom/routing/context_aware/test_context_router.py -v
 
 # Results: 9/9 passing
 # - Rule-based routing

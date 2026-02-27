@@ -17,7 +17,7 @@ import pytest
 import random
 from typing import List
 
-from HoloLoom.model_extension.eval.calibration_metrics import (
+from hololoom.model_extension.eval.calibration_metrics import (
     Prediction,
     CalibrationBin,
     CalibrationMetrics,

@@ -9,10 +9,10 @@ import time
 from typing import Dict, List, Any, Optional
 from abc import ABC, abstractmethod
 
-from HoloLoom.core.protocols.types import Query
-from HoloLoom.core.protocols import ComplexityLevel, ProvenanceTrace
-from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.core.orchestrator.protocols import WeavingStageProtocol, StageResult
+from hololoom.core.protocols.types import Query
+from hololoom.core.protocols import ComplexityLevel, ProvenanceTrace
+from hololoom.core.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.core.orchestrator.protocols import WeavingStageProtocol, StageResult
 
 
 class BaseStrategy(ABC):

@@ -25,7 +25,7 @@ from enum import Enum
 from abc import ABC, abstractmethod
 import time
 
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

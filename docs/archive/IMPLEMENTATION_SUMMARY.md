@@ -11,11 +11,11 @@ A complete, enterprise-grade visualization foundation for red team attack tracki
 
 ### What Was Implemented
 
-✅ **HoloLoom/redteam/visualization/__init__.py** (39 lines)
+✅ **hololoom/redteam/visualization/__init__.py** (39 lines)
 - Clean package interface with lazy loading
 - Exports: AttackPoint, StrategyMetrics, AttackTrajectoryRenderer, render_attack_trajectory, AnomalyType
 
-✅ **HoloLoom/redteam/visualization/attack_trajectory.py** (1,034 lines)
+✅ **hololoom/redteam/visualization/attack_trajectory.py** (1,034 lines)
 - Core visualization engine with complete implementation
 - Dataclasses for AttackPoint and StrategyMetrics
 - AttackTrajectoryRenderer with 17 methods
@@ -147,7 +147,7 @@ html = renderer.render(points, title="Test Trajectory")
 ## File Structure
 
 ```
-HoloLoom/redteam/visualization/
+hololoom/redteam/visualization/
 ├── __init__.py                    (39 lines)    ✅
 ├── attack_trajectory.py           (1,034 lines) ✅
 ├── demo_attack_trajectory.py      (370 lines)   ✅ (existing)
@@ -169,7 +169,7 @@ Documentation Created:
 ### Convenience Function (Fastest)
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 html = render_attack_trajectory(
     strategies=["prompt_injection", "jailbreak", "overflow"],
@@ -186,7 +186,7 @@ with open("report.html", "w") as f:
 ### Advanced Usage (Full Control)
 
 ```python
-from HoloLoom.redteam.visualization import AttackTrajectoryRenderer, AttackPoint
+from hololoom.redteam.visualization import AttackTrajectoryRenderer, AttackPoint
 
 points = [
     AttackPoint(
@@ -319,8 +319,8 @@ Enterprise-grade implementation with error handling, validation, and comprehensi
 
 ### With CARTS System
 ```python
-from HoloLoom.redteam.visualization import AttackTrajectoryRenderer
-from HoloLoom.redteam.tracker import AttackTracker
+from hololoom.redteam.visualization import AttackTrajectoryRenderer
+from hololoom.redteam.tracker import AttackTracker
 
 tracker = AttackTracker()
 attacks = tracker.get_campaign("carts_2025_final")
@@ -332,7 +332,7 @@ html = renderer.render(points, title="Campaign Report")
 
 ### With Reporting Systems
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 # Generate report section
 html = render_attack_trajectory(...)
@@ -377,7 +377,7 @@ send_report(html)
 
 ### Quickest Start (30 seconds)
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 html = render_attack_trajectory(
     strategies=["a", "b"],
@@ -392,7 +392,7 @@ with open("report.html", "w") as f:
 
 ### Run Demo (1 minute)
 ```bash
-cd HoloLoom/redteam/visualization
+cd hololoom/redteam/visualization
 PYTHONPATH=../.. python demo_attack_trajectory.py
 # Opens demo_output_production.html
 ```

@@ -1,4 +1,4 @@
-from HoloLoom.eggroll.architectures import get_model
+from hololoom.eggroll.architectures import get_model
 import torch
 import time
 import os

@@ -11,7 +11,7 @@ description: "Review code for best practices, potential bugs, and quality improv
 metadata:
   category: "development"
   tags: ["code-review", "quality", "best-practices", "static-analysis"]
-  author: "HoloLoom Agent System"
+  author: "hololoom Agent System"
   created: "2025-11-16"
   updated: "2025-11-22"  # Metaprompt enhancement
 

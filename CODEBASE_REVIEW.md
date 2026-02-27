@@ -34,16 +34,16 @@ its professional appearance and developer experience.
 
 **Severity**: CRITICAL
 
-Both `HoloLoom/` (2,020 files, 49MB) and `holoLoom/` (30 files, 849KB) exist at the
+Both `hololoom/` (2,020 files, 49MB) and `holoLoom/` (30 files, 849KB) exist at the
 repository root.
 
-- `HoloLoom/` is the primary, complete package with proper `__init__.py`
+- `hololoom/` is the primary, complete package with proper `__init__.py`
 - `holoLoom/` contains red-team, verification, and semantic calculus modules but
   **lacks `__init__.py`**, making it non-importable as a Python package
 - Creates import confusion and maintenance burden
 - Case-sensitivity causes cross-platform issues (macOS/Windows treat these as the same)
 
-**Action**: Merge unique `holoLoom/` content into `HoloLoom/` and delete the duplicate,
+**Action**: Merge unique `holoLoom/` content into `hololoom/` and delete the duplicate,
 or add proper `__init__.py` and document the relationship.
 
 ### 1.2 Hardcoded Database Credentials in Version Control
@@ -55,8 +55,8 @@ Plaintext credentials found in tracked files:
 | File | Credential |
 |------|-----------|
 | `docker-compose.quickstart.yml:28` | `NEO4J_AUTH=neo4j/hololoom` |
-| `HoloLoom/docker-compose.yml:12,64` | `NEO4J_AUTH=neo4j/hololoom123`, `POSTGRES_PASSWORD=hololoom123` |
-| `HoloLoom/infrastructure/sql/backend.py:50-57` | `password: str = "hololoom"` |
+| `hololoom/docker-compose.yml:12,64` | `NEO4J_AUTH=neo4j/hololoom123`, `POSTGRES_PASSWORD=hololoom123` |
+| `hololoom/infrastructure/sql/backend.py:50-57` | `password: str = "hololoom"` |
 
 **Action**: Replace all hardcoded credentials with environment variables. Add
 `.env.example` template. Add `detect-secrets` pre-commit hook.
@@ -83,7 +83,7 @@ The root should have at most: README.md, LICENSE, CONTRIBUTING.md, CHANGELOG.md.
 
 ### 2.1 Six Competing Orchestrator Files
 
-Six variants of the weaving orchestrator exist at `HoloLoom/` root:
+Six variants of the weaving orchestrator exist at `hololoom/` root:
 
 ```
 weaving_orchestrator.py          (2,728 lines) - Main
@@ -98,16 +98,16 @@ This creates maintenance burden (bug fixes in 5+ places) and confusion about whi
 canonical.
 
 **Action**: Consolidate into one orchestrator with a strategy pattern. Move variants to
-`HoloLoom/orchestrator/strategies/`.
+`hololoom/orchestrator/strategies/`.
 
 ### 2.2 Multiple Competing Entry Points
 
 Users can access the system via 4 different paths:
 
-1. `from HoloLoom import HoloLoom` (lazy-loads from unified_api.py)
-2. `from HoloLoom.unified_api import HoloLoom` (direct import)
-3. `from HoloLoom.hololoom import HoloLoom` (alternate API, 1,424 lines)
-4. `HoloLoom.cli:main` (CLI entry point)
+1. `from hololoom import hololoom` (lazy-loads from unified_api.py)
+2. `from hololoom.unified_api import hololoom` (direct import)
+3. `from hololoom.hololoom import hololoom` (alternate API, 1,424 lines)
+4. `hololoom.cli:main` (CLI entry point)
 
 Both `hololoom.py` (1,424 LOC) and `unified_api.py` (733 LOC) claim to be the unified
 API with unclear differentiation.
@@ -130,7 +130,7 @@ critical ones, mark others with `@pytest.mark.xfail`.
 
 ### 2.4 Server Error Information Leakage
 
-`HoloLoom/server/agentic_api.py` exposes internal error details to clients:
+`hololoom/server/agentic_api.py` exposes internal error details to clients:
 
 ```python
 except Exception as e:
@@ -142,7 +142,7 @@ messages to clients.
 
 ### 2.5 WebSocket Input Size Not Validated
 
-`HoloLoom/server/agentic_api.py` accepts WebSocket messages without size limits,
+`hololoom/server/agentic_api.py` accepts WebSocket messages without size limits,
 creating a potential denial-of-service vector.
 
 **Action**: Add `max_receive_size` parameter to WebSocket connections.
@@ -189,19 +189,19 @@ Notable gaps:
 
 ### 3.4 Root-Level File Bloat
 
-17 Python files (10,379 LOC) at `HoloLoom/` root. Should be <2,000 LOC at root.
+17 Python files (10,379 LOC) at `hololoom/` root. Should be <2,000 LOC at root.
 
 Files to relocate:
-- `cli.py`, `cli_client.py` → `HoloLoom/cli/`
-- `dashboard_server.py`, `studio_server.py` → `HoloLoom/server/`
-- `memory_llm.py` → `HoloLoom/memory/`
+- `cli.py`, `cli_client.py` → `hololoom/cli/`
+- `dashboard_server.py`, `studio_server.py` → `hololoom/server/`
+- `memory_llm.py` → `hololoom/memory/`
 
 ### 3.5 Fragmented Archive Structure
 
 Three separate archive locations exist:
 - `.archive/` (root)
 - `docs/archive/`
-- `HoloLoom/tools/archive/`
+- `hololoom/tools/archive/`
 
 **Action**: Consolidate to a single `.archive/` location with clear subdirectories.
 
@@ -254,7 +254,7 @@ non-critical optional features (Gemini LLM provider, WAF middleware, Jira MCP se
 
 ### 4.4 Memory Module: Best-in-Class
 
-The `HoloLoom/memory/` subsystem is exceptionally well-organized:
+The `hololoom/memory/` subsystem is exceptionally well-organized:
 - 44 Python files with clear separation of concerns
 - 5 submodules (awareness, stores, symphony, yarn, tests)
 - Proper protocol-based design
@@ -287,7 +287,7 @@ Color-coded output, proper error handling, clear help text.
 - [ ] Remove hardcoded credentials from docker-compose files
 - [ ] Add `.env.example` with placeholder values
 - [ ] Update `SQLConfig` to require environment variables
-- [ ] Resolve `holoLoom/` vs `HoloLoom/` duplicate (merge or document)
+- [ ] Resolve `holoLoom/` vs `hololoom/` duplicate (merge or document)
 - [ ] Sanitize HTTP error responses in server code
 
 ### Phase 2: Organization Cleanup (1 week)

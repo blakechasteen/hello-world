@@ -17,7 +17,7 @@ Features:
 - Worker metrics tracking
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.cluster_handlers import (
+    from hololoom.apps.chatops.handlers.cluster_handlers import (
         register_cluster_handlers,
         ClusterHandlers
     )
@@ -55,7 +55,7 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -70,7 +70,7 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.eggroll.distributed_backend import (
+    from hololoom.eggroll.distributed_backend import (
         DistributedBackend,
         LocalBackend,
         RayBackend
@@ -83,7 +83,7 @@ except ImportError:
     RayBackend = None
 
 try:
-    from HoloLoom.eggroll import EggrollIntegration
+    from hololoom.eggroll import EggrollIntegration
     INTEGRATION_AVAILABLE = True
 except ImportError:
     INTEGRATION_AVAILABLE = False
@@ -533,8 +533,8 @@ async def handle_cluster_help(
 
 **Integration:**
 ```python
-from HoloLoom.eggroll.distributed_backend import LocalBackend
-from HoloLoom.apps.chatops.handlers.cluster_handlers import set_cluster_manager
+from hololoom.eggroll.distributed_backend import LocalBackend
+from hololoom.apps.chatops.handlers.cluster_handlers import set_cluster_manager
 
 # Initialize backend
 backend = LocalBackend()
@@ -596,7 +596,7 @@ class ClusterHandlers:
     Decorator-based ChatOps handlers for cluster management.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.cluster_handlers import ClusterHandlers
+        from hololoom.apps.chatops.handlers.cluster_handlers import ClusterHandlers
 
         handlers = ClusterHandlers(backend=distributed_backend)
         registry.register_instance(handlers)

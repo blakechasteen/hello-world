@@ -8,7 +8,7 @@ This module adds the "Wolfram Alpha" capability to HoloLoom:
   Query -> Weave -> Auto-Dashboard -> HTML/Browser
 
 Usage:
-    from HoloLoom.visualization import DashboardOrchestrator
+    from hololoom.visualization import DashboardOrchestrator
 
     orchestrator = DashboardOrchestrator(cfg, shards)
     result = await orchestrator.weave_with_dashboard(query, save_path="dashboard.html")
@@ -260,8 +260,8 @@ async def weave_and_visualize(
         DashboardResult
 
     Example:
-        from HoloLoom.config import Config
-        from HoloLoom.visualization import weave_and_visualize
+        from hololoom.config import Config
+        from hololoom.visualization import weave_and_visualize
 
         result = await weave_and_visualize(
             "How does the weaving orchestrator work?",

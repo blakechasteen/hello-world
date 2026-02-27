@@ -1,7 +1,7 @@
 # HoloLoom Skill Agent System
 
 **Status**: ✅ Complete (Phase 3 - November 2025)
-**Location**: `HoloLoom/agentic/`
+**Location**: `hololoom/agentic/`
 **Skills**: 13 professional templates
 **Integration**: Promptly → HoloLoom Recursive Reasoning
 
@@ -109,8 +109,8 @@ SkillExecutionResult (output + metadata)
 ### Basic Usage
 
 ```python
-from HoloLoom.agentic.skill_agents import execute_skill
-from HoloLoom.config import Config
+from hololoom.agentic.skill_agents import execute_skill
+from hololoom.config import Config
 
 # Execute a skill
 result = await execute_skill(
@@ -131,7 +131,7 @@ print(result.iterations)   # Number of refinement passes
 ### List Available Skills
 
 ```python
-from HoloLoom.agentic.skill_agents import list_available_skills
+from hololoom.agentic.skill_agents import list_available_skills
 
 skills = await list_available_skills()
 
@@ -327,7 +327,7 @@ result = await execute_skill(
 
 ## Creating Custom Skills
 
-Create a new YAML file in `HoloLoom/agentic/skills/`:
+Create a new YAML file in `hololoom/agentic/skills/`:
 
 ```yaml
 # my_custom_skill.yaml
@@ -392,8 +392,8 @@ result = await execute_skill(
 ### Using SkillRegistry Directly
 
 ```python
-from HoloLoom.agentic.skill_agents import SkillRegistry, SkillExecutor
-from HoloLoom.config import Config
+from hololoom.agentic.skill_agents import SkillRegistry, SkillExecutor
+from hololoom.config import Config
 
 # Load registry
 registry = SkillRegistry()
@@ -421,7 +421,7 @@ result = await executor.execute(
 ### With Memory Context
 
 ```python
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.documentation.types import MemoryShard
 
 # Provide memory shards for context
 shards = [
@@ -477,7 +477,7 @@ Demonstrates:
 ## File Structure
 
 ```
-HoloLoom/agentic/
+hololoom/agentic/
 ├── skill_agents.py           # Main skill system (820 lines)
 ├── skills/                   # Skill templates (13 files)
 │   ├── code_reviewer.yaml

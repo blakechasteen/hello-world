@@ -39,7 +39,7 @@ try:
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
 
-from HoloLoom.vision.protocol import (
+from hololoom.vision.protocol import (
     VisionProcessor,
     SegmentationMask,
 )

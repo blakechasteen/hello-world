@@ -11,10 +11,10 @@ Features:
 
 Usage:
     # Simple usage
-    python HoloLoom/alignment/prometheus_server.py
+    python hololoom/alignment/prometheus_server.py
 
     # Or programmatically
-    from HoloLoom.alignment.prometheus_server import start_metrics_server
+    from hololoom.alignment.prometheus_server import start_metrics_server
 
     start_metrics_server(port=9090, host='0.0.0.0')
 
@@ -32,7 +32,7 @@ from typing import Optional
 from functools import wraps
 from flask import Flask, Response, request, jsonify
 
-from HoloLoom.alignment.monitoring import get_global_monitor, AlignmentMonitor
+from hololoom.alignment.monitoring import get_global_monitor, AlignmentMonitor
 
 # Setup logging
 logging.basicConfig(
@@ -197,7 +197,7 @@ def start_metrics_server(
 
     # Set global monitor if provided
     if monitor:
-        from HoloLoom.alignment.monitoring import set_global_monitor
+        from hololoom.alignment.monitoring import set_global_monitor
         set_global_monitor(monitor)
 
     # Log startup
@@ -215,16 +215,16 @@ if __name__ == '__main__':
     Run standalone metrics server.
 
     Usage:
-        python HoloLoom/alignment/prometheus_server.py
+        python hololoom/alignment/prometheus_server.py
 
     With authentication:
         export PROMETHEUS_AUTH_USER=admin
         export PROMETHEUS_AUTH_PASS=secret
-        python HoloLoom/alignment/prometheus_server.py
+        python hololoom/alignment/prometheus_server.py
 
     Custom port:
         export PROMETHEUS_PORT=8080
-        python HoloLoom/alignment/prometheus_server.py
+        python hololoom/alignment/prometheus_server.py
     """
     import sys
 

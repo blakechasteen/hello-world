@@ -36,7 +36,7 @@ Both pipelines provide identical functionality with platform-specific optimizati
 **Commands**:
 ```bash
 # Run locally
-PYTHONPATH=. pytest HoloLoom/voice/tests/test_voice_agent.py -v --cov=HoloLoom.voice
+PYTHONPATH=. pytest hololoom/voice/tests/test_voice_agent.py -v --cov=hololoom.voice
 ```
 
 ### 2. Lint
@@ -51,9 +51,9 @@ PYTHONPATH=. pytest HoloLoom/voice/tests/test_voice_agent.py -v --cov=HoloLoom.v
 **Commands**:
 ```bash
 # Run locally
-flake8 HoloLoom/voice --count --max-line-length=127 --statistics
-black --check HoloLoom/voice
-mypy HoloLoom/voice --ignore-missing-imports
+flake8 hololoom/voice --count --max-line-length=127 --statistics
+black --check hololoom/voice
+mypy hololoom/voice --ignore-missing-imports
 ```
 
 ### 3. Security
@@ -275,14 +275,14 @@ stages:
 
 ```bash
 # Install dependencies
-pip install -r HoloLoom/voice/requirements.txt
+pip install -r hololoom/voice/requirements.txt
 pip install pytest pytest-asyncio pytest-cov
 
 # Run tests
-PYTHONPATH=. pytest HoloLoom/voice/tests/test_voice_agent.py -v
+PYTHONPATH=. pytest hololoom/voice/tests/test_voice_agent.py -v
 
 # With coverage
-PYTHONPATH=. pytest HoloLoom/voice/tests/test_voice_agent.py -v --cov=HoloLoom.voice --cov-report=html
+PYTHONPATH=. pytest hololoom/voice/tests/test_voice_agent.py -v --cov=hololoom.voice --cov-report=html
 
 # Open coverage report
 open htmlcov/index.html
@@ -383,19 +383,19 @@ kubectl logs -n hololoom-voice-local -l app=voice-agent -f
 **Tests failing**:
 ```bash
 # Run tests locally to reproduce
-PYTHONPATH=. pytest HoloLoom/voice/tests/test_voice_agent.py -v
+PYTHONPATH=. pytest hololoom/voice/tests/test_voice_agent.py -v
 
 # Check coverage
-pytest --cov=HoloLoom.voice --cov-report=term-missing
+pytest --cov=hololoom.voice --cov-report=term-missing
 ```
 
 **Linting errors**:
 ```bash
 # Auto-fix with black
-black HoloLoom/voice
+black hololoom/voice
 
 # Check flake8 errors
-flake8 HoloLoom/voice --show-source
+flake8 hololoom/voice --show-source
 ```
 
 **Security vulnerabilities**:
@@ -580,7 +580,7 @@ git push origin v1.2.0
 
 ```bash
 # Run full test suite
-pytest HoloLoom/voice/tests/ -v
+pytest hololoom/voice/tests/ -v
 
 # Build Docker image
 docker build -f Dockerfile.voice -t test:latest .

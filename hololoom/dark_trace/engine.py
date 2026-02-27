@@ -33,7 +33,7 @@ import logging
 
 import torch
 
-from HoloLoom.dark_trace.protocol import (
+from hololoom.dark_trace.protocol import (
     TraceLens,
     BaseLens,
     Feature,
@@ -43,7 +43,7 @@ from HoloLoom.dark_trace.protocol import (
     FeatureSource,
     SafetyFlag,
 )
-from HoloLoom.dark_trace.result import (
+from hololoom.dark_trace.result import (
     TraceResult,
     LensResult,
     SteeringResult,
@@ -54,25 +54,25 @@ from HoloLoom.dark_trace.result import (
     AnalysisStatus,
     SteeringOutcome,
 )
-from HoloLoom.dark_trace.registry import FeatureRegistry, create_sae_features
-from HoloLoom.dark_trace.trace_config import TraceConfig, TraceMode
+from hololoom.dark_trace.registry import FeatureRegistry, create_sae_features
+from hololoom.dark_trace.trace_config import TraceConfig, TraceMode
 
 # Plugin system imports (Phase 11)
-from HoloLoom.dark_trace.plugins.safety_gate import (
+from hololoom.dark_trace.plugins.safety_gate import (
     PluginSafetyGate,
     TrustLevel,
     PluginCapability,
 )
-from HoloLoom.dark_trace.plugins.alignment_bridge import (
+from hololoom.dark_trace.plugins.alignment_bridge import (
     PluginAlignmentBridge,
 )
-from HoloLoom.dark_trace.plugins.registry import PluginRegistry
-from HoloLoom.dark_trace.plugins.loader import (
+from hololoom.dark_trace.plugins.registry import PluginRegistry
+from hololoom.dark_trace.plugins.loader import (
     PluginLoader,
     LoaderConfig,
     BulkLoadResult,
 )
-from HoloLoom.dark_trace.plugins.interface import (
+from hololoom.dark_trace.plugins.interface import (
     DarkTracePlugin,
     PluginMetadata,
     MonitorPlugin,
@@ -182,7 +182,7 @@ class DarkTraceEngine:
 
     def _load_builtin_plugins(self) -> None:
         """Load built-in CORE and TRUSTED plugins."""
-        from HoloLoom.dark_trace.plugins.builtin import (
+        from hololoom.dark_trace.plugins.builtin import (
             SafetyMonitorPlugin,
             AlignmentValidatorPlugin,
             MetricsExporterPlugin,

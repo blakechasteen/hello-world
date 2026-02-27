@@ -1,7 +1,7 @@
 # Multimodal RAG - Visual Q&A and Photo Retrieval
 
 **Status**: ✅ Production Ready (January 2025)
-**Location**: `HoloLoom/rag/multimodal_rag.py`
+**Location**: `hololoom/rag/multimodal_rag.py`
 **Author**: Agent D (Claude Code)
 
 Multimodal RAG extends SimpleRAG with visual capabilities:
@@ -44,7 +44,7 @@ pip install pytesseract
 ### Basic Usage
 
 ```python
-from HoloLoom.rag.multimodal_rag import MultimodalRAG
+from hololoom.rag.multimodal_rag import MultimodalRAG
 
 async with MultimodalRAG() as rag:
     # Text-only (backward compatible with SimpleRAG)
@@ -706,7 +706,7 @@ Found a bug or have a feature request? Please file an issue or submit a pull req
 
 **Testing**:
 ```bash
-pytest HoloLoom/rag/tests/test_multimodal_rag.py -v
+pytest hololoom/rag/tests/test_multimodal_rag.py -v
 ```
 
 **Demo**:

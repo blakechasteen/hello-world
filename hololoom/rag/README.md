@@ -35,14 +35,14 @@ async with SimpleRAG() as rag:
 SimpleRAG is included in HoloLoom. Just import:
 
 ```python
-from HoloLoom.rag import SimpleRAG
+from hololoom.rag import SimpleRAG
 ```
 
 ### Basic Usage
 
 ```python
 import asyncio
-from HoloLoom.rag import SimpleRAG
+from hololoom.rag import SimpleRAG
 
 async def main():
     async with SimpleRAG() as rag:
@@ -292,8 +292,8 @@ print(result)  # Formatted output
 ### Execution Modes
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.rag import SimpleRAG
+from hololoom.config import Config
+from hololoom.rag import SimpleRAG
 
 # Speed-optimized (fastest)
 rag = SimpleRAG(config=Config.bare())
@@ -420,8 +420,8 @@ async def monitor_rag():
 ### Using WeavingOrchestrator Directly
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import Query, MemoryShard
 
 async def direct_usage():
     config = Config.fast()
@@ -439,7 +439,7 @@ async def direct_usage():
 ### Using SimpleRAG
 
 ```python
-from HoloLoom.rag import SimpleRAG
+from hololoom.rag import SimpleRAG
 
 async def rag_usage():
     async with SimpleRAG() as rag:
@@ -535,13 +535,13 @@ Run tests:
 
 ```bash
 # Unit tests (with mocks)
-pytest HoloLoom/rag/tests/test_simple_rag.py::TestSimpleRAGInit -v
+pytest hololoom/rag/tests/test_simple_rag.py::TestSimpleRAGInit -v
 
 # Integration tests (real components)
-pytest HoloLoom/rag/tests/test_simple_rag.py::test_full_ingest_and_query -v
+pytest hololoom/rag/tests/test_simple_rag.py::test_full_ingest_and_query -v
 
 # All tests
-pytest HoloLoom/rag/tests/ -v
+pytest hololoom/rag/tests/ -v
 ```
 
 ## Troubleshooting
@@ -596,7 +596,7 @@ For advanced use cases requiring consensus from multiple agents with diverse str
 ### Basic Usage
 
 ```python
-from HoloLoom.rag import MultiAgentRAG
+from hololoom.rag import MultiAgentRAG
 
 async def multi_agent_example():
     async with MultiAgentRAG(

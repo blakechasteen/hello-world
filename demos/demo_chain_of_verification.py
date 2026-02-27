@@ -20,7 +20,7 @@ import asyncio
 import sys
 sys.path.insert(0, '.')
 
-from HoloLoom.verification import (
+from hololoom.verification import (
     # Main chain
     VerificationChain,
     verify_response,
@@ -256,7 +256,7 @@ async def main():
     print("  6. Complete provenance tracking")
     print()
     print("For more details, see:")
-    print("  - HoloLoom/verification/README.md")
+    print("  - hololoom/verification/README.md")
     print("  - CLAUDE.md (Chain of Verification section)")
     print()
 

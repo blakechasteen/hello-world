@@ -10,7 +10,7 @@ Provides observability metrics for the async job execution system:
 - Error rates
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.prometheus_metrics import (
+    from hololoom.apps.chatops.handlers.prometheus_metrics import (
         JobMetricsCollector,
         create_metrics_router
     )

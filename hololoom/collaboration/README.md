@@ -1,7 +1,7 @@
 # HoloLoom Collaboration System - Multi-User Knowledge Workspace
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/collaboration/`
+**Location**: `hololoom/collaboration/`
 **Total Lines**: ~6,492 lines across 12 Python files
 **Performance**: <100ms latency for sync, real-time voice via WebRTC
 **Test Coverage**: 46+ functional tests, 13 performance benchmarks
@@ -31,7 +31,7 @@ The HoloLoom Collaboration System transforms HoloLoom from a single-user memory 
 ### Basic Multi-User Session
 
 ```python
-from HoloLoom.collaboration import (
+from hololoom.collaboration import (
     create_session_manager,
     UserManager,
     create_presence_manager,
@@ -39,7 +39,7 @@ from HoloLoom.collaboration import (
     create_attribution_manager,
     create_voice_manager
 )
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 # Step 1: User management
 user_manager = UserManager(storage_path="./users.json")
@@ -119,7 +119,7 @@ await room.add_participant(
 )
 
 # Step 8: Knowledge sharing & export
-from HoloLoom.collaboration import KnowledgeSharing
+from hololoom.collaboration import KnowledgeSharing
 knowledge_sharing = KnowledgeSharing()
 export = await knowledge_sharing.export_session(
     session_id=session.session_id,
@@ -203,7 +203,7 @@ weighted_quality = sum(
 ### Usage Example
 
 ```python
-from HoloLoom.collaboration import create_attribution_manager, ContributionType
+from hololoom.collaboration import create_attribution_manager, ContributionType
 
 attribution = await create_attribution_manager()
 
@@ -286,7 +286,7 @@ class AccessRule:
 ### Usage
 
 ```python
-from HoloLoom.collaboration import AccessController, Permission, AccessLevel
+from hololoom.collaboration import AccessController, Permission, AccessLevel
 
 controller = AccessController()
 
@@ -358,7 +358,7 @@ class ConflictResolution(Enum):
 ### Usage
 
 ```python
-from HoloLoom.collaboration import create_state_synchronizer, OperationType
+from hololoom.collaboration import create_state_synchronizer, OperationType
 
 state_sync = await create_state_synchronizer()
 
@@ -434,7 +434,7 @@ class SignalingType(Enum):
 ### Usage
 
 ```python
-from HoloLoom.collaboration import create_voice_manager, MediaType, StreamQuality
+from hololoom.collaboration import create_voice_manager, MediaType, StreamQuality
 
 voice_manager = await create_voice_manager()
 
@@ -535,7 +535,7 @@ class TypingIndicator:
 ### Usage
 
 ```python
-from HoloLoom.collaboration import create_presence_manager
+from hololoom.collaboration import create_presence_manager
 
 presence = await create_presence_manager()
 
@@ -617,7 +617,7 @@ Uses Beta(α, β) priors that update based on user actions:
 ### Usage
 
 ```python
-from HoloLoom.collaboration import create_ux_learner, UXFeature, LearningContext
+from hololoom.collaboration import create_ux_learner, UXFeature, LearningContext
 
 ux_learner = create_ux_learner(exploration_rate=0.1)
 
@@ -700,7 +700,7 @@ class ParticipantRole(Enum):
 ### Usage
 
 ```python
-from HoloLoom.collaboration import KnowledgeSharing
+from hololoom.collaboration import KnowledgeSharing
 
 sharing = KnowledgeSharing()
 
@@ -775,7 +775,7 @@ await sharing.share_knowledge(
 └──────────────────────────────────────────────────────────────┘
                               ↓
 ┌──────────────────────────────────────────────────────────────┐
-│            Collaboration Layer (HoloLoom/collaboration/)      │
+│            Collaboration Layer (hololoom/collaboration/)      │
 ├──────────────────────────────────────────────────────────────┤
 │                                                                │
 │  ┌─────────────────────────────────────────────────────────┐ │
@@ -836,16 +836,16 @@ await sharing.share_knowledge(
 
 ```bash
 # Run all collaboration tests
-pytest HoloLoom/collaboration/tests/ -v
+pytest hololoom/collaboration/tests/ -v
 
 # Run specific test suites
-pytest HoloLoom/collaboration/tests/test_sync.py -v          # Synchronization
-pytest HoloLoom/collaboration/tests/test_attribution.py -v  # Attribution
-pytest HoloLoom/collaboration/tests/test_voice.py -v         # Voice/video
-pytest HoloLoom/collaboration/tests/test_ux_learning.py -v   # UX learning
+pytest hololoom/collaboration/tests/test_sync.py -v          # Synchronization
+pytest hololoom/collaboration/tests/test_attribution.py -v  # Attribution
+pytest hololoom/collaboration/tests/test_voice.py -v         # Voice/video
+pytest hololoom/collaboration/tests/test_ux_learning.py -v   # UX learning
 
 # Performance benchmarks
-pytest HoloLoom/collaboration/tests/test_performance.py -v
+pytest hololoom/collaboration/tests/test_performance.py -v
 ```
 
 ---

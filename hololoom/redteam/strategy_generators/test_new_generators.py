@@ -9,8 +9,8 @@ Date: 2025-12-05
 """
 
 import pytest
-from HoloLoom.redteam.strategy_generators.context_overflow import ContextOverflowGenerator, ContextOverflowPayload
-from HoloLoom.redteam.strategy_generators.hierarchy_bypass import HierarchyBypassGenerator, HierarchyBypassPayload
+from hololoom.redteam.strategy_generators.context_overflow import ContextOverflowGenerator, ContextOverflowPayload
+from hololoom.redteam.strategy_generators.hierarchy_bypass import HierarchyBypassGenerator, HierarchyBypassPayload
 
 
 class TestContextOverflowGenerator:

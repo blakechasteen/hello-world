@@ -524,7 +524,7 @@ if __name__ == "__main__":
     dashboard.print_summary()
 
     # Save state
-    output_path = Path("HoloLoom/bootstrap_results/dashboard_state.json")
+    output_path = Path("hololoom/bootstrap_results/dashboard_state.json")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     dashboard.save_state(output_path)
 

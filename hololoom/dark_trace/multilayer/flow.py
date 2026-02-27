@@ -28,7 +28,7 @@ except ImportError:
     nn = None
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.multilayer.causal_metrics import (
+    from hololoom.dark_trace.multilayer.causal_metrics import (
         CausalStrengthEstimator,
         TransferEntropyEstimator,
         CausalStrengthResult,
@@ -872,7 +872,7 @@ class InformationFlowAnalyzer:
             - intervention_results: Per-feature intervention outcomes
             - significant_features: Features with significant causal effects
         """
-        from HoloLoom.dark_trace.multilayer.causal_metrics import (
+        from hololoom.dark_trace.multilayer.causal_metrics import (
             CausalStrengthEstimator,
             CausalStrengthResult,
         )
@@ -968,7 +968,7 @@ class InformationFlowAnalyzer:
             - direction_ratio: T(source→target) / T(target→source)
             - is_significant: Whether TE is statistically significant
         """
-        from HoloLoom.dark_trace.multilayer.causal_metrics import (
+        from hololoom.dark_trace.multilayer.causal_metrics import (
             TransferEntropyEstimator,
             TransferEntropyResult,
         )

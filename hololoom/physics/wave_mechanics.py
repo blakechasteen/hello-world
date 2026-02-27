@@ -24,7 +24,7 @@ Architecture:
       +- WaveEquationSolver (propagation)
 
 Usage:
-    from HoloLoom.physics.wave_mechanics import WaveMechanicsEngine
+    from hololoom.physics.wave_mechanics import WaveMechanicsEngine
 
     # Create wave engine
     wave = WaveMechanicsEngine(wave_speed=1.0, damping=0.01)

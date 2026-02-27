@@ -19,7 +19,7 @@ pip install mcp
 
 ```bash
 # From the mythRL directory
-python -m HoloLoom.memory.mcp_server
+python -m hololoom.memory.mcp_server
 ```
 
 You should see:
@@ -46,7 +46,7 @@ Press `Ctrl+C` to stop.
   "mcpServers": {
     "HoloLoom-memory": {
       "command": "python",
-      "args": ["-m", "HoloLoom.memory.mcp_server"],
+      "args": ["-m", "hololoom.memory.mcp_server"],
       "env": {
         "PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"
       }
@@ -202,10 +202,10 @@ set PYTHONPATH=c:\Users\blake\Documents\mythRL
 
 ```bash
 # Start server
-python -m HoloLoom.memory.mcp_server
+python -m hololoom.memory.mcp_server
 
 # In another terminal, send MCP request:
-echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | python -m HoloLoom.memory.mcp_server
+echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | python -m hololoom.memory.mcp_server
 ```
 
 ### Test Memory Operations
@@ -213,7 +213,7 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | python -m HoloLoom.memor
 ```python
 # test_mcp_memory.py
 import asyncio
-from HoloLoom.memory.mcp_server import init_memory, memory
+from hololoom.memory.mcp_server import init_memory, memory
 
 async def test():
     await init_memory(user_id="test")

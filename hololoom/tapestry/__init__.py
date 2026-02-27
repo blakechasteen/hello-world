@@ -14,7 +14,7 @@ Core Components:
 - FabricInspector: Holistic verification (6 signals)
 
 Usage:
-    from HoloLoom.tapestry import LoomKeeper
+    from hololoom.tapestry import LoomKeeper
 
     async with LoomKeeper() as keeper:
         async with keeper.session("Implement feature X") as ctx:
@@ -24,7 +24,7 @@ Usage:
 Created: December 2025
 """
 
-from HoloLoom.tapestry.protocol import (
+from hololoom.tapestry.protocol import (
     ThreadStatus,
     Thread,
     Tapestry,
@@ -50,21 +50,21 @@ __all__ = [
 # Lazy imports to avoid circular dependencies
 def __getattr__(name):
     if name == "LoomKeeper":
-        from HoloLoom.tapestry.keeper import LoomKeeper
+        from hololoom.tapestry.keeper import LoomKeeper
         return LoomKeeper
     elif name == "Warper":
-        from HoloLoom.tapestry.warper import Warper
+        from hololoom.tapestry.warper import Warper
         return Warper
     elif name == "FabricInspector":
-        from HoloLoom.tapestry.inspector import FabricInspector
+        from hololoom.tapestry.inspector import FabricInspector
         return FabricInspector
     elif name == "SignalRegistry":
-        from HoloLoom.tapestry.signals.registry import SignalRegistry
+        from hololoom.tapestry.signals.registry import SignalRegistry
         return SignalRegistry
     elif name == "create_tapestry_backend":
-        from HoloLoom.tapestry.factory import create_tapestry_backend
+        from hololoom.tapestry.factory import create_tapestry_backend
         return create_tapestry_backend
     elif name == "JsonTapestryBackend":
-        from HoloLoom.tapestry.backends.json_backend import JsonTapestryBackend
+        from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
         return JsonTapestryBackend
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

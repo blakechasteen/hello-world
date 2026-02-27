@@ -170,14 +170,14 @@ async def test_query_basic(self, mock_hololoom):
 
 ```bash
 # Run all RAG tests
-pytest HoloLoom/rag/tests/test_simple_rag.py -v
-pytest HoloLoom/rag/tests/test_simple_rag_enhanced.py -v
+pytest hololoom/rag/tests/test_simple_rag.py -v
+pytest hololoom/rag/tests/test_simple_rag_enhanced.py -v
 
 # Run with coverage
-pytest HoloLoom/rag/tests/test_simple_rag*.py --cov=HoloLoom.rag.simple_rag
+pytest hololoom/rag/tests/test_simple_rag*.py --cov=hololoom.rag.simple_rag
 
 # Run specific test class
-pytest HoloLoom/rag/tests/test_simple_rag_enhanced.py::TestEpistemicConfidence -v
+pytest hololoom/rag/tests/test_simple_rag_enhanced.py::TestEpistemicConfidence -v
 ```
 
 ## Key Testing Insights
@@ -222,7 +222,7 @@ pytest HoloLoom/rag/tests/test_simple_rag_enhanced.py::TestEpistemicConfidence -
 ### For CI/CD
 ```bash
 # Add to CI pipeline
-pytest HoloLoom/rag/tests/test_simple_rag*.py --cov=HoloLoom.rag.simple_rag --cov-report=html
+pytest hololoom/rag/tests/test_simple_rag*.py --cov=hololoom.rag.simple_rag --cov-report=html
 ```
 
 ### Future Enhancements

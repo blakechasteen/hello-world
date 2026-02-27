@@ -25,23 +25,23 @@ from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconn
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
-# from HoloLoom.agentic.codebase_ingestion import CodebaseIndexer, Language as CodeLanguage
-# from HoloLoom.agentic.hallucination_detector import HallucinationDetector
-# from HoloLoom.agentic.code_verification import CodeVerifier
-# from HoloLoom.agentic.ai_slop_detector import AISlopDetector
-from HoloLoom.agentic.ml_logic_detector import MLLogicDetector, Language as CodeLanguage
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.alignment.audit_trail import AuditTrail
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest, RiskLevel
-from HoloLoom.alignment.deception_detection import DeceptionDetector
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
+# from hololoom.agentic.codebase_ingestion import CodebaseIndexer, Language as CodeLanguage
+# from hololoom.agentic.hallucination_detector import HallucinationDetector
+# from hololoom.agentic.code_verification import CodeVerifier
+# from hololoom.agentic.ai_slop_detector import AISlopDetector
+from hololoom.agentic.ml_logic_detector import MLLogicDetector, Language as CodeLanguage
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.alignment.audit_trail import AuditTrail
+from hololoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest, RiskLevel
+from hololoom.alignment.deception_detection import DeceptionDetector
 
 # SaaS API Components (Dec 2025)
 try:
-    from HoloLoom.saas import create_saas_backend, SaaSBackend
-    from HoloLoom.saas.routes import customers_router, api_keys_router
-    from HoloLoom.saas.auth import add_rate_limit_headers
+    from hololoom.saas import create_saas_backend, SaaSBackend
+    from hololoom.saas.routes import customers_router, api_keys_router
+    from hololoom.saas.auth import add_rate_limit_headers
     SAAS_AVAILABLE = True
 except ImportError as e:
     SAAS_AVAILABLE = False
@@ -50,7 +50,7 @@ except ImportError as e:
 
 # Agent Monitoring (Nov 2025)
 try:
-    from HoloLoom.agentic.monitoring import get_monitor, start_monitoring, stop_monitoring
+    from hololoom.agentic.monitoring import get_monitor, start_monitoring, stop_monitoring
     MONITORING_AVAILABLE = True
 except ImportError:
     MONITORING_AVAILABLE = False
@@ -361,7 +361,7 @@ app.add_middleware(
 
 # ChatOps Observability Routers (Prometheus metrics + WebSocket progress)
 try:
-    from HoloLoom.apps.chatops.handlers.prometheus_metrics import (
+    from hololoom.apps.chatops.handlers.prometheus_metrics import (
         create_metrics_router, get_metrics_collector
     )
     _metrics_router = create_metrics_router(get_metrics_collector())
@@ -372,7 +372,7 @@ except ImportError:
     logger.debug("Prometheus metrics not available (missing dependencies)")
 
 try:
-    from HoloLoom.apps.chatops.handlers.websocket_progress import (
+    from hololoom.apps.chatops.handlers.websocket_progress import (
         create_progress_router, get_global_manager
     )
     _progress_router = create_progress_router(get_global_manager())
@@ -395,7 +395,7 @@ if SAAS_AVAILABLE:
 
 # Extracted Modular Routers (Dec 2025 - W2 SWOT Remediation)
 try:
-    from HoloLoom.apps.server.routers import (
+    from hololoom.apps.server.routers import (
         health_router,
         memory_router,
         detection_router,
@@ -654,8 +654,8 @@ async def startup():
 
     # ✅ Create persistent memory backend
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
-        from HoloLoom.config import MemoryBackend
+        from hololoom.memory.backend_factory import create_memory_backend
+        from hololoom.config import MemoryBackend
 
         state.config.memory_backend = MemoryBackend.HYBRID  # Use persistent storage
         state.memory_backend = await create_memory_backend(state.config)
@@ -753,7 +753,7 @@ def _load_memory_shards() -> List[MemoryShard]:
             id="example_1",
             text="HoloLoom is a neural decision-making system with multi-scale embeddings.",
             episode="hololoom_basics",
-            entities=["HoloLoom", "embeddings"],
+            entities=["hololoom", "embeddings"],
             motifs=["definition"]
         )
     ]
@@ -772,7 +772,7 @@ async def _load_from_persistent_backend() -> List[MemoryShard]:
     try:
         # For HYBRID backend, retrieve all stored memories
         # Note: HYBRID backend (Neo4j + Qdrant) uses unified memory protocol
-        from HoloLoom.memory.protocol import MemoryQuery
+        from hololoom.memory.protocol import MemoryQuery
 
         query = MemoryQuery(
             text="",  # Empty query = retrieve all
@@ -919,7 +919,7 @@ async def query_endpoint(request: QueryRequest):
         # ========================================================================
         if state.safety_guardrails:
             # Import ActionCategory for safety evaluation
-            from HoloLoom.alignment.safety_guardrails import ActionCategory
+            from hololoom.alignment.safety_guardrails import ActionCategory
 
             # Create action request for safety evaluation
             action_request = ActionRequest(
@@ -1004,7 +1004,7 @@ async def query_endpoint(request: QueryRequest):
         if state.audit_trail:
             try:
                 # Import required enums
-                from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+                from hololoom.alignment.audit_trail import DecisionType, OutcomeType
 
                 # Log decision (synchronous method with correct signature)
                 state.audit_trail.log_decision(
@@ -1106,8 +1106,8 @@ async def ingest_workspace(
     """
     try:
         from pathlib import Path
-        from HoloLoom.spinningWheel.workspace import WorkspaceSpinner
-        from HoloLoom import HoloLoom
+        from hololoom.spinningWheel.workspace import WorkspaceSpinner
+        from hololoom import hololoom
 
         # SECURITY: Path traversal validation
         # Get allowed base directories from environment (comma-separated)
@@ -1244,7 +1244,7 @@ async def ingest_workspace_legacy(
 
         # If persistent backend available, store shards
         if state.memory_backend:
-            from HoloLoom.memory.protocol import Memory
+            from hololoom.memory.protocol import Memory
             memories = []
             for shard in code_shards:
                 memory = Memory(
@@ -1513,7 +1513,7 @@ async def search_codebase(
 
         entity_type_enum = None
         if entity_type:
-            from HoloLoom.agentic.codebase_ingestion import EntityType
+            from hololoom.agentic.codebase_ingestion import EntityType
             mapped_type = type_map.get(entity_type.lower())
             if mapped_type:
                 entity_type_enum = EntityType(mapped_type)
@@ -1570,11 +1570,11 @@ async def get_graph_html(
         webview.html = html;
     """
     from fastapi.responses import HTMLResponse
-    from HoloLoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
-    from HoloLoom import HoloLoom
+    from hololoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
+    from hololoom import hololoom
 
     try:
-        # Get knowledge graph from HoloLoom
+        # Get knowledge graph from hololoom
         async with HoloLoom(config=state.config) as loom:
             # Access the knowledge graph
             kg = loom.memory_manager.knowledge_graph
@@ -1640,7 +1640,7 @@ async def get_graph_data(
           }
         }
     """
-    from HoloLoom import HoloLoom
+    from hololoom import hololoom
 
     try:
         async with HoloLoom(config=state.config) as loom:
@@ -1711,7 +1711,7 @@ if __name__ == "__main__":
 
     logger.info("Starting HoloLoom Agentic API server (development mode)...")
     uvicorn.run(
-        "HoloLoom.apps.server.agentic_api:app",
+        "hololoom.apps.server.agentic_api:app",
         host="0.0.0.0",
         port=8000,
         reload=True,

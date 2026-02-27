@@ -18,7 +18,7 @@ Research Basis:
 - "Certified Robustness to Adversarial Word Substitutions" (Jia et al., 2019)
 
 Usage:
-    from HoloLoom.dark_trace.research import (
+    from hololoom.dark_trace.research import (
         AdversarialProber,
         ProbeConfig,
         VulnerabilityReport,
@@ -47,8 +47,8 @@ import time
 import numpy as np
 
 if TYPE_CHECKING:
-    from HoloLoom.alignment import SafetyGuardrails
-    from HoloLoom.dark_trace.models import ModelAdapter
+    from hololoom.alignment import SafetyGuardrails
+    from hololoom.dark_trace.models import ModelAdapter
 
 
 class ProbeMethod(Enum):
@@ -466,7 +466,7 @@ class AdversarialProber:
     def genetic_prober(self):
         """Lazy initialization of genetic prober."""
         if self._genetic_prober is None:
-            from HoloLoom.dark_trace.research.genetic_prober import GeneticAdversarialSearch
+            from hololoom.dark_trace.research.genetic_prober import GeneticAdversarialSearch
             self._genetic_prober = GeneticAdversarialSearch(self.config)
         return self._genetic_prober
 
@@ -634,7 +634,7 @@ class AdversarialProber:
             return True
 
         try:
-            from HoloLoom.alignment import ActionRequest, RiskLevel
+            from hololoom.alignment import ActionRequest, RiskLevel
 
             request = ActionRequest(
                 action="adversarial_probe",

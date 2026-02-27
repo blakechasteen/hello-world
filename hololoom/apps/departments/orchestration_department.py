@@ -26,7 +26,7 @@ from datetime import datetime
 from enum import Enum
 from dataclasses import dataclass, field
 
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -35,7 +35,7 @@ from HoloLoom.apps.departments.protocol import (
     DSStarCheck,
     DepartmentConfig,
 )
-from HoloLoom.apps.departments.base import BaseDepartment
+from hololoom.apps.departments.base import BaseDepartment
 
 logger = logging.getLogger(__name__)
 

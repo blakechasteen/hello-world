@@ -136,8 +136,8 @@ After execution:
 2. Get executable Python code:
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config
+from hololoom import hololoom
+from hololoom.config import Config
 
 async def run_workflow(query: str):
     config = Config.fast()

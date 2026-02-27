@@ -14,15 +14,15 @@ import asyncio
 import numpy as np
 import networkx as nx
 
-from HoloLoom.memory.awareness_graph import AwarenessGraph
-from HoloLoom.memory.awareness_types import ActivationStrategy
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from hololoom.memory.awareness_graph import AwarenessGraph
+from hololoom.memory.awareness_types import ActivationStrategy
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
-from HoloLoom.input.protocol import ModalityType, ProcessedInput, TextFeatures, StructuredFeatures
-from HoloLoom.input.text_processor import TextProcessor
-from HoloLoom.input.structured_processor import StructuredDataProcessor
-from HoloLoom.input.fusion import MultiModalFusion
+from hololoom.input.protocol import ModalityType, ProcessedInput, TextFeatures, StructuredFeatures
+from hololoom.input.text_processor import TextProcessor
+from hololoom.input.structured_processor import StructuredDataProcessor
+from hololoom.input.fusion import MultiModalFusion
 
 
 async def test_text_to_awareness():

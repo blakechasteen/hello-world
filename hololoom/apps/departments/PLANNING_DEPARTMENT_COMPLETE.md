@@ -26,7 +26,7 @@ The **Planning Department** is the second of 5 core departments for the HoloLoom
 
 ### 1. Planning Department Implementation ✅
 
-**File**: [`HoloLoom/departments/planning_department.py`](./planning_department.py)
+**File**: [`hololoom/departments/planning_department.py`](./planning_department.py)
 **Lines**: 650 lines
 **Status**: ✅ Complete
 
@@ -53,7 +53,7 @@ The **Planning Department** is the second of 5 core departments for the HoloLoom
 
 ### 2. Integration Test Suite ✅
 
-**File**: [`HoloLoom/departments/tests/test_planning_integration.py`](./tests/test_planning_integration.py)
+**File**: [`hololoom/departments/tests/test_planning_integration.py`](./tests/test_planning_integration.py)
 **Lines**: 377 lines
 **Status**: ✅ Complete (15/15 tests passing)
 
@@ -170,8 +170,8 @@ update_strategy() ← Feedback (duration, bottlenecks)
 ### Basic Goal Decomposition
 
 ```python
-from HoloLoom.apps.departments.planning_department import PlanningDepartment
-from HoloLoom.apps.departments.protocol import DepartmentRequest
+from hololoom.apps.departments.planning_department import PlanningDepartment
+from hololoom.apps.departments.protocol import DepartmentRequest
 
 # Initialize department
 dept = PlanningDepartment()
@@ -408,7 +408,7 @@ async def _optimize_parallelization(
 
 ```bash
 # Integration tests (15 tests)
-cd HoloLoom/departments/tests
+cd hololoom/departments/tests
 PYTHONPATH=../../.. python -m pytest test_planning_integration.py -v -o addopts=""
 
 # All tests
@@ -432,9 +432,9 @@ PYTHONPATH=../../.. python -m pytest test_planning_integration.py --collect-only
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `HoloLoom/departments/planning_department.py` | 650 | Main Planning Department implementation |
-| `HoloLoom/departments/tests/test_planning_integration.py` | 377 | Integration tests (15 tests) |
-| `HoloLoom/departments/PLANNING_DEPARTMENT_COMPLETE.md` | ~500 | This document |
+| `hololoom/departments/planning_department.py` | 650 | Main Planning Department implementation |
+| `hololoom/departments/tests/test_planning_integration.py` | 377 | Integration tests (15 tests) |
+| `hololoom/departments/PLANNING_DEPARTMENT_COMPLETE.md` | ~500 | This document |
 
 **Total**: 3 new files, **1,527 lines of code and documentation**
 
@@ -442,7 +442,7 @@ PYTHONPATH=../../.. python -m pytest test_planning_integration.py --collect-only
 
 | File | Change | Reason |
 |------|--------|--------|
-| `HoloLoom/departments/protocol.py` | Added DSStarCheck to __all__ exports | Enable DS-STAR checks for Planning Department |
+| `hololoom/departments/protocol.py` | Added DSStarCheck to __all__ exports | Enable DS-STAR checks for Planning Department |
 
 ---
 
@@ -559,7 +559,7 @@ PYTHONPATH=../../.. python -m pytest test_planning_integration.py --collect-only
 ## Documentation Structure
 
 ```
-HoloLoom/departments/
+hololoom/departments/
 ├── planning_department.py              # Main implementation (650 lines)
 ├── PLANNING_DEPARTMENT_COMPLETE.md     # This document (~500 lines)
 ├── protocol.py                         # Department protocol (750 lines, Week 1-2)

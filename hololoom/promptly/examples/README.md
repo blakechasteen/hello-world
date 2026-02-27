@@ -9,13 +9,13 @@ This directory contains example DSPy workflows for HoloLoom integration.
 **Purpose**: Answer questions with retrieval and verification
 
 **Steps**:
-1. **Retrieve** - Get relevant context from HoloLoom memory
+1. **Retrieve** - Get relevant context from hololoom memory
 2. **Answer** - Generate answer using context
 3. **Verify** - Verify answer accuracy
 
 **Usage**:
 ```python
-from HoloLoom.promptly import DSPyWorkflowAdapter, DSPyHoloLoom
+from hololoom.promptly import DSPyWorkflowAdapter, DSPyHoloLoom
 from pathlib import Path
 
 bridge = DSPyHoloLoom(config=Config.fused(), lm_model="openai/gpt-4o-mini")
@@ -250,4 +250,4 @@ for step in result["trace"]:
 - Full documentation: `../README_DSPY_INTEGRATION.md`
 - Quick reference: `../DSPY_QUICK_REFERENCE.md`
 - Demo: `../../../demos/demo_dspy_promptly_integration.py`
-- Tests: `../../../HoloLoom/tests/integration/test_dspy_integration.py`
+- Tests: `../../../hololoom/tests/integration/test_dspy_integration.py`

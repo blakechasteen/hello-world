@@ -1,7 +1,7 @@
 {
   "name": "@hololoom/design-system",
   "version": "1.0.0",
-  "description": "HoloLoom Design System - Cosmic-infused design tokens, themes, and primitive components",
+  "description": "hololoom Design System - Cosmic-infused design tokens, themes, and primitive components",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

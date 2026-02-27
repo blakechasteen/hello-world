@@ -20,9 +20,9 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.causal import CausalDAG, CausalNode, CausalEdge
-from HoloLoom.planning.planner import HierarchicalPlanner, Goal, Plan, Action, ActionType
-from HoloLoom.planning.replanning import (
+from hololoom.causal import CausalDAG, CausalNode, CausalEdge
+from hololoom.planning.planner import HierarchicalPlanner, Goal, Plan, Action, ActionType
+from hololoom.planning.replanning import (
     ExecutionStatus, AdaptivePlanner
 )
 import random

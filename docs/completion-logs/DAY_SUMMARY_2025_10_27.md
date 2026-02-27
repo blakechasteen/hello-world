@@ -9,13 +9,13 @@
 **Goal**: Add async context managers for proper resource cleanup
 
 #### Implementation
-1. **ReflectionBuffer Lifecycle** ([reflection/buffer.py:629-690](HoloLoom/reflection/buffer.py#L629-L690))
+1. **ReflectionBuffer Lifecycle** ([reflection/buffer.py:629-690](hololoom/reflection/buffer.py#L629-L690))
    - Added `__aenter__` and `__aexit__` for async context manager
    - Implemented `flush()` to persist metrics to disk
    - Implemented `close()` for graceful cleanup
    - All reflection data now properly persisted on shutdown
 
-2. **WeavingShuttle Lifecycle** ([weaving_shuttle.py](HoloLoom/weaving_shuttle.py))
+2. **WeavingShuttle Lifecycle** ([weaving_shuttle.py](hololoom/weaving_shuttle.py))
    - Added `_background_tasks` tracking list
    - Added `_closed` flag for idempotent cleanup
    - Implemented `spawn_background_task()` for tracked async work
@@ -67,7 +67,7 @@
 #### Phase 2: Protocol Adaptation (3 hours)
 **Problem**: Backends didn't implement MemoryStore protocol methods
 
-1. **KG Protocol Implementation** ([memory/graph.py:468-618](HoloLoom/memory/graph.py#L468-L618))
+1. **KG Protocol Implementation** ([memory/graph.py:468-618](hololoom/memory/graph.py#L468-L618))
    - Added `async def store(memory, user_id) -> str` (~50 lines)
      - Creates Memory node in NetworkX graph
      - Connects to entities via MENTIONS edges
@@ -78,7 +78,7 @@
      - Entity overlap scoring strategy
      - Returns scored memories with metadata
 
-2. **Neo4jKG Protocol Implementation** ([memory/neo4j_graph.py:690-930](HoloLoom/memory/neo4j_graph.py#L690-L930))
+2. **Neo4jKG Protocol Implementation** ([memory/neo4j_graph.py:690-930](hololoom/memory/neo4j_graph.py#L690-L930))
    - Added `async def store(memory, user_id) -> str` (~85 lines)
      - Creates Memory node using CREATE Cypher statement
      - MERGE for entities, CREATE for MENTIONS edges
@@ -93,7 +93,7 @@
      - JSON deserialization with error handling
 
 3. **Integration Fixes**
-   - Fixed [weaving_shuttle.py:293](HoloLoom/weaving_shuttle.py#L293) backend_type routing
+   - Fixed [weaving_shuttle.py:293](hololoom/weaving_shuttle.py#L293) backend_type routing
    - Added `Strategy.BALANCED` to protocol enum
    - Added `strategy` field to MemoryQuery
    - Fixed async event loop with ThreadPoolExecutor
@@ -116,13 +116,13 @@
 
 ### Code Changes
 - **Files Modified**: 8
-  - `HoloLoom/reflection/buffer.py` (+60 lines)
-  - `HoloLoom/weaving_shuttle.py` (+150 lines)
-  - `HoloLoom/memory/graph.py` (+150 lines)
-  - `HoloLoom/memory/neo4j_graph.py` (+240 lines)
-  - `HoloLoom/memory/protocol.py` (+2 lines)
-  - `HoloLoom/memory/weaving_adapter.py` (+20 lines fixes)
-  - `HoloLoom/memory/backend_factory.py` (+2 lines)
+  - `hololoom/reflection/buffer.py` (+60 lines)
+  - `hololoom/weaving_shuttle.py` (+150 lines)
+  - `hololoom/memory/graph.py` (+150 lines)
+  - `hololoom/memory/neo4j_graph.py` (+240 lines)
+  - `hololoom/memory/protocol.py` (+2 lines)
+  - `hololoom/memory/weaving_adapter.py` (+20 lines fixes)
+  - `hololoom/memory/backend_factory.py` (+2 lines)
   - `demos/lifecycle_demo.py` (new, 290 lines)
 
 - **Files Created**: 7
@@ -482,13 +482,13 @@ Turns out: **This was mathematically profound.**
 
 #### Implementation - The Seven Pillars
 
-1. **Semantic Flow Calculus** ([semantic_flow_calculus.py](HoloLoom/semantic_flow_calculus.py), 562 lines)
+1. **Semantic Flow Calculus** ([semantic_flow_calculus.py](hololoom/semantic_flow_calculus.py), 562 lines)
    - Differential geometry for semantic trajectories
    - Computes q(t), v(t), a(t), jerk, curvature κ
    - Hamiltonian dynamics: H = T + V
    - Tracks energy conservation in semantic space
 
-2. **Semantic Dimensions** ([semantic_dimensions.py](HoloLoom/semantic_dimensions.py), 392 lines)
+2. **Semantic Dimensions** ([semantic_dimensions.py](hololoom/semantic_dimensions.py), 392 lines)
    - **16 interpretable conjugate dimension pairs**:
      - Affective: Warmth↔Cold, Positive↔Negative, Excited↔Calm, Intense↔Mild
      - Social: Formal↔Casual, Direct↔Indirect, Powerful↔Submissive, Generous↔Selfish
@@ -498,7 +498,7 @@ Turns out: **This was mathematically profound.**
    - **Key projection: q_semantic = P @ q_full** (384D → 16D)
    - Now see "Warmth +0.3, Formality -0.5" instead of opaque vectors!
 
-3. **Ethical Policy Engine** ([ethical_policy.py](HoloLoom/ethical_policy.py), 377 lines)
+3. **Ethical Policy Engine** ([ethical_policy.py](hololoom/ethical_policy.py), 377 lines)
    - Multi-objective optimization with moral constraints
    - Virtue scoring (what makes communication "good")
    - **Manipulation detection** (4 patterns):
@@ -509,25 +509,25 @@ Turns out: **This was mathematically profound.**
    - Constrained geodesics (find ethical paths)
    - Pareto frontiers (optimal trade-offs)
 
-4. **Geometric Integration** ([geometric_integrator.py](HoloLoom/geometric_integrator.py), 384 lines)
+4. **Geometric Integration** ([geometric_integrator.py](hololoom/geometric_integrator.py), 384 lines)
    - Symplectic integrators (Störmer-Verlet)
    - Preserves Hamiltonian structure
    - Phase space dynamics (q, p)
    - Multi-scale resonance (Matryoshka harmonics)
 
-5. **Integral Geometry** ([integral_geometry.py](HoloLoom/integral_geometry.py), 460 lines)
+5. **Integral Geometry** ([integral_geometry.py](hololoom/integral_geometry.py), 460 lines)
    - **Radon transform** (CT scan of semantic space!)
    - Inverse Radon (tomographic reconstruction)
    - Crofton formulas (measure by line intersections)
    - Reconstructs full V(q) from multiple contexts
 
-6. **Hyperbolic Semantics** ([hyperbolic_semantics.py](HoloLoom/hyperbolic_semantics.py), 388 lines)
+6. **Hyperbolic Semantics** ([hyperbolic_semantics.py](hololoom/hyperbolic_semantics.py), 388 lines)
    - Poincaré ball model (hierarchical structure)
    - Complex coordinates z = x + iy (magnitude = intensity, phase = orientation)
    - Möbius transformations (group actions)
    - Natural hierarchy: general (center) → specific (boundary)
 
-7. **System Identification** ([system_identification.py](HoloLoom/system_identification.py), 440 lines)
+7. **System Identification** ([system_identification.py](hololoom/system_identification.py), 440 lines)
    - **DE + Linear + Regression** = Complete learning framework
    - Learns ∇V via polynomial regression
    - Learns dimensions P via ICA
@@ -611,7 +611,7 @@ ETHICAL ANALYSIS:
 
 **As Warp Thread** (`semantic_calculus/`):
 ```
-HoloLoom/
+hololoom/
 ├── semantic_calculus/          # NEW WARP THREAD MODULE
 │   ├── __init__.py
 │   ├── flow.py                # SemanticFlowCalculus
@@ -686,13 +686,13 @@ This isn't just theory - it's **practical and learnable from data**:
 #### Files Created
 
 **Core Modules:**
-- `HoloLoom/semantic_flow_calculus.py` (562 lines)
-- `HoloLoom/semantic_dimensions.py` (392 lines)
-- `HoloLoom/ethical_policy.py` (377 lines)
-- `HoloLoom/geometric_integrator.py` (384 lines)
-- `HoloLoom/integral_geometry.py` (460 lines)
-- `HoloLoom/hyperbolic_semantics.py` (388 lines)
-- `HoloLoom/system_identification.py` (440 lines)
+- `hololoom/semantic_flow_calculus.py` (562 lines)
+- `hololoom/semantic_dimensions.py` (392 lines)
+- `hololoom/ethical_policy.py` (377 lines)
+- `hololoom/geometric_integrator.py` (384 lines)
+- `hololoom/integral_geometry.py` (460 lines)
+- `hololoom/hyperbolic_semantics.py` (388 lines)
+- `hololoom/system_identification.py` (440 lines)
 
 **Demonstrations:**
 - `demos/semantic_flow_demo.py` (315 lines)

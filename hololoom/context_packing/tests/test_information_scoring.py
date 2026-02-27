@@ -24,7 +24,7 @@ try:
 except ImportError:
     NETWORKX_AVAILABLE = False
 
-from HoloLoom.context_packing import (
+from hololoom.context_packing import (
     ImportanceSignal,
     CompressionResult,
     ImportanceScorerConfig,

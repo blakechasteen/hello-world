@@ -23,7 +23,7 @@ export MATRIX_PASSWORD="your_password"
 ### 3. Run Bot
 
 ```bash
-python HoloLoom/chatops/run_bot.py
+python hololoom/chatops/run_bot.py
 ```
 
 ---
@@ -46,7 +46,7 @@ WorkingDirectory=/opt/hololoom
 Environment="MATRIX_HOMESERVER=https://matrix.example.com"
 Environment="MATRIX_USER=@bot:example.com"
 Environment="MATRIX_ACCESS_TOKEN=your_token_here"
-ExecStart=/opt/hololoom/.venv/bin/python HoloLoom/chatops/run_bot.py \
+ExecStart=/opt/hololoom/.venv/bin/python hololoom/chatops/run_bot.py \
   --hololoom-mode fast \
   --mcts-sims 50 \
   --log-level INFO \
@@ -92,7 +92,7 @@ COPY . .
 RUN pip install -e .
 
 # Run bot
-CMD ["python", "HoloLoom/chatops/run_bot.py"]
+CMD ["python", "hololoom/chatops/run_bot.py"]
 ```
 
 **2. Build and run:**
@@ -137,7 +137,7 @@ services:
       - ./memory_data:/app/memory_data
       - ./matrix_store:/app/matrix_store
     command: >
-      python HoloLoom/chatops/run_bot.py
+      python hololoom/chatops/run_bot.py
       --hololoom-mode fast
       --mcts-sims 50
       --log-level INFO
@@ -317,8 +317,8 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from HoloLoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
-from HoloLoom.apps.chatops.hololoom_handlers import HoloLoomMatrixHandlers
+from hololoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
+from hololoom.apps.chatops.hololoom_handlers import HoloLoomMatrixHandlers
 
 
 async def test_bot():
@@ -347,7 +347,7 @@ async def test_bot():
 
     print("\n[SUCCESS] All tests passed!")
     print("\nTo run live bot:")
-    print("  python HoloLoom/chatops/run_bot.py --user @bot:matrix.org --password secret")
+    print("  python hololoom/chatops/run_bot.py --user @bot:matrix.org --password secret")
 
 
 if __name__ == "__main__":
@@ -357,7 +357,7 @@ if __name__ == "__main__":
 **Run test:**
 
 ```bash
-python HoloLoom/chatops/test_bot.py
+python hololoom/chatops/test_bot.py
 ```
 
 ### Live Testing
@@ -365,7 +365,7 @@ python HoloLoom/chatops/test_bot.py
 1. **Start bot:**
 
 ```bash
-python HoloLoom/chatops/run_bot.py \
+python hololoom/chatops/run_bot.py \
   --user @testbot:matrix.org \
   --password test \
   --hololoom-mode bare \

@@ -18,7 +18,7 @@ Philosophy:
 > "Make LLM calls as reliable as database queries."
 
 Usage:
-    from HoloLoom.visualization.jenny_llm_client import (
+    from hololoom.visualization.jenny_llm_client import (
         AsyncLLMClient,
         create_llm_client,
     )

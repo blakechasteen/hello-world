@@ -96,15 +96,15 @@ results = m.search("query", user_id="blake")
 
 ### Setup
 
-See: `HoloLoom/examples/hybrid_memory_example.py`
+See: `hololoom/examples/hybrid_memory_example.py`
 
 ### Code Example
 
 ```python
-from HoloLoom.memory.cache import create_memory_manager
-from HoloLoom.memory.mem0_adapter import create_hybrid_memory, Mem0Config
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Query, MemoryShard, Features
+from hololoom.memory.cache import create_memory_manager
+from hololoom.memory.mem0_adapter import create_hybrid_memory, Mem0Config
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Query, MemoryShard, Features
 
 # 1. Create your memory shards
 shards = [
@@ -159,7 +159,7 @@ for shard in context.shards:
 pip install torch numpy
 
 # Run the hybrid demo
-python HoloLoom/examples/hybrid_memory_example.py
+python hololoom/examples/hybrid_memory_example.py
 ```
 
 ## Configuration Options
@@ -220,14 +220,14 @@ mem0_config = Mem0Config(
 2. Set `OPENAI_API_KEY` environment variable
 3. Disable mem0: `Mem0Config(enabled=False)`
 
-### "Cannot import HoloLoom modules"
+### "Cannot import hololoom modules"
 
 **Problem:** Python path issue
 
 **Solution:** Run from repository root:
 ```bash
 cd c:\Users\blake\Documents\mythRL
-python HoloLoom/examples/hybrid_memory_example.py
+python hololoom/examples/hybrid_memory_example.py
 ```
 
 ### "Ollama connection failed"
@@ -255,14 +255,14 @@ python your_script.py  # In another terminal
 
 ## Next Steps
 
-1. **Run the demo**: `python HoloLoom/examples/hybrid_memory_example.py`
-2. **Read the docs**: See `HoloLoom/Documentation/MEM0_QUICKSTART.md`
+1. **Run the demo**: `python hololoom/examples/hybrid_memory_example.py`
+2. **Read the docs**: See `hololoom/Documentation/MEM0_QUICKSTART.md`
 3. **Customize**: Tune fusion weights for your use case
 4. **Integrate**: Add to your orchestrator workflow
 
 ## Resources
 
 - **Mem0 Docs**: https://docs.mem0.ai/
-- **HoloLoom Integration**: `HoloLoom/memory/mem0_adapter.py`
-- **Example**: `HoloLoom/examples/hybrid_memory_example.py`
-- **Quickstart**: `HoloLoom/Documentation/MEM0_QUICKSTART.md`
+- **HoloLoom Integration**: `hololoom/memory/mem0_adapter.py`
+- **Example**: `hololoom/examples/hybrid_memory_example.py`
+- **Quickstart**: `hololoom/Documentation/MEM0_QUICKSTART.md`

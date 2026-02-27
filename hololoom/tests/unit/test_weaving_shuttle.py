@@ -23,7 +23,7 @@ class TestDeprecationWarning:
             warnings.simplefilter("always")
 
             # Import and reload to force warning emission
-            import HoloLoom.weaving_shuttle
+            import hololoom.weaving_shuttle
             importlib.reload(HoloLoom.weaving_shuttle)
 
             # Should have at least one warning
@@ -45,7 +45,7 @@ class TestDeprecationWarning:
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
 
-            import HoloLoom.weaving_shuttle
+            import hololoom.weaving_shuttle
             importlib.reload(HoloLoom.weaving_shuttle)
 
             # Ensure warning was captured
@@ -58,7 +58,7 @@ class TestDeprecationWarning:
                 "Warning doesn't mention version 2.0 removal"
 
             # Should mention import path
-            assert "HoloLoom.weaving_orchestrator" in warning_message, \
+            assert "hololoom.weaving_orchestrator" in warning_message, \
                 "Warning doesn't provide correct import path"
 
 
@@ -70,8 +70,8 @@ class TestCompatibilityAlias:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            from HoloLoom.weaving_shuttle import WeavingShuttle
-            from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.weaving_shuttle import WeavingShuttle
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
 
             # Should be the same class
             assert WeavingShuttle is WeavingOrchestrator, \
@@ -82,7 +82,7 @@ class TestCompatibilityAlias:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            from HoloLoom.weaving_shuttle import WeavingOrchestrator
+            from hololoom.weaving_shuttle import WeavingOrchestrator
 
             # Should be importable
             assert WeavingOrchestrator is not None
@@ -92,7 +92,7 @@ class TestCompatibilityAlias:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            from HoloLoom.weaving_shuttle import ToolExecutor
+            from hololoom.weaving_shuttle import ToolExecutor
 
             # Should be importable
             assert ToolExecutor is not None
@@ -102,7 +102,7 @@ class TestCompatibilityAlias:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            from HoloLoom.weaving_shuttle import YarnGraph
+            from hololoom.weaving_shuttle import YarnGraph
 
             # Should be importable
             assert YarnGraph is not None
@@ -116,7 +116,7 @@ class TestExports:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            import HoloLoom.weaving_shuttle as shuttle_module
+            import hololoom.weaving_shuttle as shuttle_module
 
             # Should have __all__
             assert hasattr(shuttle_module, '__all__'), \
@@ -134,7 +134,7 @@ class TestExports:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            import HoloLoom.weaving_shuttle as shuttle_module
+            import hololoom.weaving_shuttle as shuttle_module
 
             for name in shuttle_module.__all__:
                 assert hasattr(shuttle_module, name), \
@@ -158,7 +158,7 @@ class TestBackwardCompatibility:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            from HoloLoom.weaving_shuttle import WeavingShuttle
+            from hololoom.weaving_shuttle import WeavingShuttle
 
             # Should be able to create instance
             shuttle = WeavingShuttle(cfg=bare_config, shards=test_shards)
@@ -179,8 +179,8 @@ class TestBackwardCompatibility:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            from HoloLoom.weaving_shuttle import WeavingShuttle
-            from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.weaving_shuttle import WeavingShuttle
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
 
             instance = WeavingShuttle(cfg=bare_config, shards=test_shards)
 
@@ -195,8 +195,8 @@ class TestBackwardCompatibility:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            from HoloLoom.weaving_shuttle import WeavingShuttle
-            from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.weaving_shuttle import WeavingShuttle
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
 
             # Types should be identical
             assert type(WeavingShuttle) == type(WeavingOrchestrator), \
@@ -211,7 +211,7 @@ class TestDocumentation:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            import HoloLoom.weaving_shuttle as shuttle_module
+            import hololoom.weaving_shuttle as shuttle_module
 
             # Should have docstring
             assert shuttle_module.__doc__ is not None, \
@@ -224,7 +224,7 @@ class TestDocumentation:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            import HoloLoom.weaving_shuttle as shuttle_module
+            import hololoom.weaving_shuttle as shuttle_module
 
             docstring = shuttle_module.__doc__.lower()
 
@@ -241,7 +241,7 @@ class TestDocumentation:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            import HoloLoom.weaving_shuttle as shuttle_module
+            import hololoom.weaving_shuttle as shuttle_module
 
             docstring = shuttle_module.__doc__
 
@@ -260,7 +260,7 @@ class TestFutureRemoval:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
 
-            import HoloLoom.weaving_shuttle as shuttle_module
+            import hololoom.weaving_shuttle as shuttle_module
 
             docstring = shuttle_module.__doc__
 
@@ -273,7 +273,7 @@ class TestFutureRemoval:
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
 
-            import HoloLoom.weaving_shuttle
+            import hololoom.weaving_shuttle
             importlib.reload(HoloLoom.weaving_shuttle)
 
             # Ensure warning was captured

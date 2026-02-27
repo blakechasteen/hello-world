@@ -9,8 +9,8 @@ Tests the simplified HoloLoom configuration:
 """
 
 import sys
-from HoloLoom.config import Config
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.config import Config
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 
 def test_config_defaults():

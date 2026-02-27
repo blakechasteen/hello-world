@@ -171,7 +171,7 @@ class HealthCheck:
             (success, message) tuple
         """
         try:
-            from HoloLoom.prompting import refine_prompt
+            from hololoom.prompting import refine_prompt
             return True, "HoloLoom refinement available"
         except ImportError:
             return False, "HoloLoom not available (refinement disabled)"

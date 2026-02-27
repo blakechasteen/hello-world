@@ -18,13 +18,13 @@ from demos.jenny import register_demo, demo_phase
 
 # Jenny imports
 try:
-    from HoloLoom.visualization.jenny_spec import (
+    from hololoom.visualization.jenny_spec import (
         JennySpec,
         PanelTypeJenny,
         PanelSizeJenny,
     )
-    from HoloLoom.visualization.jenny_renderer import ARRenderer
-    from HoloLoom.visualization.jenny_renderer_registry import RenderTarget
+    from hololoom.visualization.jenny_renderer import ARRenderer
+    from hololoom.visualization.jenny_renderer_registry import RenderTarget
     AR_AVAILABLE = True
 except ImportError:
     AR_AVAILABLE = False

@@ -5,7 +5,7 @@ Demonstrates how to use the hybrid memory system with both HoloLoom
 and mem0 working together.
 
 Run from repository root:
-    python HoloLoom/examples/hybrid_memory_example.py
+    python hololoom/examples/hybrid_memory_example.py
 
 Prerequisites:
     pip install mem0ai
@@ -19,19 +19,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from HoloLoom.protocols.types import Query, MemoryShard, Features
-    from HoloLoom.memory.cache import create_memory_manager
-    from HoloLoom.memory.graph import KG
-    from HoloLoom.memory.mem0_adapter import (
+    from hololoom.protocols.types import Query, MemoryShard, Features
+    from hololoom.memory.cache import create_memory_manager
+    from hololoom.memory.graph import KG
+    from hololoom.memory.mem0_adapter import (
         HybridMemoryManager,
         Mem0Config,
         create_hybrid_memory
     )
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
 except ImportError as e:
     print(f"Error importing HoloLoom modules: {e}")
     print("\nMake sure you're running from the repository root:")
-    print("  python HoloLoom/examples/hybrid_memory_example.py")
+    print("  python hololoom/examples/hybrid_memory_example.py")
     sys.exit(1)
 
 

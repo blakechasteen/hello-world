@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Any, Callable
 import time
 import math
 
-from HoloLoom.dark_trace.sae.core import ResearchSAE
+from hololoom.dark_trace.sae.core import ResearchSAE
 
 
 @dataclass

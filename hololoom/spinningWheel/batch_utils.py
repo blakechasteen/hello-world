@@ -15,7 +15,7 @@ Features:
 - Result aggregation
 
 Usage:
-    from HoloLoom.spinningWheel.batch_utils import (
+    from hololoom.spinningWheel.batch_utils import (
         batch_ingest_urls,
         batch_ingest_files,
         BatchConfig
@@ -159,7 +159,7 @@ async def batch_ingest_urls(
     from .website import spin_webpage
 
     if store_in_memory:
-        from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
+        from hololoom.memory.protocol import create_unified_memory, shards_to_memories
         memory = await create_unified_memory(user_id=user_id or "batch")
 
     # Initialize result tracking
@@ -291,7 +291,7 @@ async def batch_ingest_files(
     from .code import spin_code_file
 
     if store_in_memory:
-        from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
+        from hololoom.memory.protocol import create_unified_memory, shards_to_memories
         memory = await create_unified_memory(user_id=user_id or "batch")
 
     # Initialize tracking

@@ -33,7 +33,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import numpy as np
 
-from HoloLoom.core.reflection.buffer import ReflectionBuffer
+from hololoom.core.reflection.buffer import ReflectionBuffer
 
 logger = logging.getLogger(__name__)
 
@@ -449,8 +449,8 @@ class PPOTrainer:
 
 if __name__ == "__main__":
     import asyncio
-    from HoloLoom.core.reflection.buffer import ReflectionBuffer
-    from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.core.reflection.buffer import ReflectionBuffer
+    from hololoom.core.fabric.spacetime import Spacetime, WeavingTrace
     from datetime import datetime
 
     async def demo():

@@ -374,7 +374,7 @@ If critical issues found post-deployment:
 ## File Locations
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── workflow_builder.html
 │   └── CSS added: 609 lines (Lines 740-1348)
 │

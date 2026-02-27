@@ -19,7 +19,7 @@ Added production hardening imports with graceful fallback:
 ```python
 # Production Hardening (Part 5: Days 21-25)
 try:
-    from HoloLoom.context import (
+    from hololoom.context import (
         # Configuration
         ProductionConfig,
         # Monitoring
@@ -219,9 +219,9 @@ for backend, state in status['breakers'].items():
 ### Basic Usage (Production Disabled)
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import Query
 
 # Default behavior - no production features
 config = Config.fast()
@@ -235,9 +235,9 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orch:
 ### Production Enabled (Recommended)
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import Query
 
 # Enable production hardening
 config = Config.fast()
@@ -276,7 +276,7 @@ async with WeavingOrchestrator(
 ### Production with Custom Config
 
 ```python
-from HoloLoom.context import ProductionConfig
+from hololoom.context import ProductionConfig
 
 # Create production configuration
 prod_config = ProductionConfig.production()
@@ -298,8 +298,8 @@ async with WeavingOrchestrator(
 
 ```python
 from fastapi import FastAPI, HTTPException, Response
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.context import ProductionConfig, RateLimitExceededError
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.context import ProductionConfig, RateLimitExceededError
 
 app = FastAPI()
 
@@ -348,7 +348,7 @@ async def prometheus_metrics():
 async def process_query(query: str):
     """Production query endpoint"""
     try:
-        from HoloLoom.documentation.types import Query
+        from hololoom.documentation.types import Query
         spacetime = await orchestrator.weave(Query(text=query))
         return {
             "response": spacetime.response,
@@ -404,8 +404,8 @@ All existing tests continue to pass. New production features can be tested:
 
 ```python
 import pytest
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.context import RateLimitExceededError
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.context import RateLimitExceededError
 
 @pytest.mark.asyncio
 async def test_production_enabled():
@@ -442,7 +442,7 @@ async def test_production_enabled():
 
 ## Files Modified
 
-1. `HoloLoom/weaving_orchestrator.py` (+221 lines, modifications):
+1. `hololoom/weaving_orchestrator.py` (+221 lines, modifications):
    - Added imports (33 lines)
    - Added constructor parameters (7 lines)
    - Added component initialization (86 lines)

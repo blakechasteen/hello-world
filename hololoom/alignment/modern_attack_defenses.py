@@ -30,7 +30,7 @@ from datetime import datetime, timedelta
 from collections import deque
 import hashlib
 
-logger = logging.getLogger("HoloLoom.alignment.modern_attack_defenses")
+logger = logging.getLogger("hololoom.alignment.modern_attack_defenses")
 
 
 class AttackType(str, Enum):

@@ -14,8 +14,8 @@ This module provides:
 Quick Start:
 -----------
 ```python
-from HoloLoom.agentic.skills import execute_skill, list_available_skills
-from HoloLoom.config import Config
+from hololoom.agentic.skills import execute_skill, list_available_skills
+from hololoom.config import Config
 
 # List available skills
 skills = await list_available_skills()

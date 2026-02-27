@@ -1,7 +1,7 @@
 # Recursive Reasoner - Self-Improving Refinement Loops
 
 **Status**: ✅ Complete (2025-11-20)
-**Location**: `HoloLoom/convergence/`
+**Location**: `hololoom/convergence/`
 **Total Code**: ~3,700 lines across 6 modules + tests + demos
 
 **Quick Start**: See [Quick Start](#quick-start) | [Examples](#examples) | [Demos](#demos)
@@ -25,8 +25,8 @@ The **Recursive Reasoner** is a complete self-improving system that automaticall
 ### Basic Usage
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.apps.departments.rag_department import RAGDepartment
+from hololoom.config import Config
+from hololoom.apps.departments.rag_department import RAGDepartment
 
 # Initialize RAG Department
 async with RAGDepartment(config=Config.fast()) as rag:
@@ -56,7 +56,7 @@ That's it! The system automatically:
 ### 6 Core Modules
 
 ```
-HoloLoom/convergence/
+hololoom/convergence/
 ├── protocols/recursive_reasoning.py      # Types (350 lines)
 ├── query_decomposition.py                # Query breaking (450 lines)
 ├── refinement_strategies.py              # Strategy selection (400 lines)
@@ -67,7 +67,7 @@ HoloLoom/convergence/
 demos/
 └── demo_recursive_reasoner.py            # 8 scenarios (500 lines)
 
-HoloLoom/departments/
+hololoom/departments/
 └── rag_department.py                     # Integration (updates)
 ```
 
@@ -200,7 +200,7 @@ result = await rag.recursive_reason(
 ### RecursiveConfig
 
 ```python
-from HoloLoom.protocols.recursive_reasoning import RecursiveConfig
+from hololoom.protocols.recursive_reasoning import RecursiveConfig
 
 config = RecursiveConfig(
     max_iterations=5,              # Max refinement iterations
@@ -226,7 +226,7 @@ config = RecursiveConfig(
 
 **Custom Detector**:
 ```python
-from HoloLoom.convergence.detectors import create_multi_criteria_detector
+from hololoom.convergence.detectors import create_multi_criteria_detector
 
 detector = create_multi_criteria_detector(
     confidence_threshold=0.90,  # Higher threshold
@@ -244,7 +244,7 @@ detector = create_multi_criteria_detector(
 ### Direct Reasoner Usage
 
 ```python
-from HoloLoom.convergence.recursive_reasoner_enhanced import create_recursive_reasoner
+from hololoom.convergence.recursive_reasoner_enhanced import create_recursive_reasoner
 
 reasoner = create_recursive_reasoner(
     department=rag_department,
@@ -258,7 +258,7 @@ result = await reasoner.reason(query, context={})
 ### Custom Strategy Selector
 
 ```python
-from HoloLoom.convergence.refinement_strategies import StrategySelector
+from hololoom.convergence.refinement_strategies import StrategySelector
 
 selector = StrategySelector(enable_learning=True)
 
@@ -302,13 +302,13 @@ PYTHONPATH=. python demos/demo_recursive_reasoner.py
 
 ```bash
 # Query decomposition
-PYTHONPATH=. python HoloLoom/convergence/query_decomposition.py
+PYTHONPATH=. python hololoom/convergence/query_decomposition.py
 
 # Strategy selection
-PYTHONPATH=. python HoloLoom/convergence/refinement_strategies.py
+PYTHONPATH=. python hololoom/convergence/refinement_strategies.py
 
 # Convergence detection
-PYTHONPATH=. python HoloLoom/convergence/detectors.py
+PYTHONPATH=. python hololoom/convergence/detectors.py
 ```
 
 ---
@@ -319,12 +319,12 @@ PYTHONPATH=. python HoloLoom/convergence/detectors.py
 
 ```bash
 # All tests (25+ test cases)
-pytest HoloLoom/convergence/tests/test_recursive_reasoner.py -v
+pytest hololoom/convergence/tests/test_recursive_reasoner.py -v
 
 # Specific categories
-pytest HoloLoom/convergence/tests/ -k "complexity" -v
-pytest HoloLoom/convergence/tests/ -k "strategy" -v
-pytest HoloLoom/convergence/tests/ -k "convergence" -v
+pytest hololoom/convergence/tests/ -k "complexity" -v
+pytest hololoom/convergence/tests/ -k "strategy" -v
+pytest hololoom/convergence/tests/ -k "convergence" -v
 ```
 
 ### Test Coverage
@@ -367,7 +367,7 @@ pytest HoloLoom/convergence/tests/ -k "convergence" -v
 ### With Recursive Learning (Phases 1-5)
 
 ```python
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.recursive import FullLearningEngine
 
 async with FullLearningEngine(cfg=config, shards=shards) as engine:
     result = await rag.recursive_reason(query)
@@ -381,7 +381,7 @@ async with FullLearningEngine(cfg=config, shards=shards) as engine:
 
 ```python
 # Old: Manual strategy selection
-from HoloLoom.recursive.advanced_refinement import AdvancedRefiner
+from hololoom.recursive.advanced_refinement import AdvancedRefiner
 
 refiner = AdvancedRefiner(orchestrator)
 result = await refiner.refine(query, spacetime, strategy=RefinementStrategy.ELEGANCE)
@@ -420,7 +420,7 @@ config = RecursiveConfig(
 
 ```python
 # Check complexity score
-from HoloLoom.convergence.query_decomposition import QueryDecomposer
+from hololoom.convergence.query_decomposition import QueryDecomposer
 
 decomposer = QueryDecomposer()
 complexity = decomposer.detect_complexity(query)
@@ -519,4 +519,4 @@ The Recursive Reasoner provides:
 
 **Quick Start**: `await rag.recursive_reason(query)` - That's it!
 
-For more details, see demos in `demos/demo_recursive_reasoner.py` or tests in `HoloLoom/convergence/tests/`.
+For more details, see demos in `demos/demo_recursive_reasoner.py` or tests in `hololoom/convergence/tests/`.

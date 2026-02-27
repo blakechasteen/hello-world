@@ -12,7 +12,7 @@ Coverage:
 - Error handling and edge cases (2 tests)
 
 Usage:
-    pytest HoloLoom/alignment/tests/test_audit_and_monitoring.py -v
+    pytest hololoom/alignment/tests/test_audit_and_monitoring.py -v
 """
 
 import pytest
@@ -23,7 +23,7 @@ import shutil
 import time
 from unittest.mock import Mock, patch, MagicMock
 
-from HoloLoom.alignment.audit_trail import (
+from hololoom.alignment.audit_trail import (
     AuditTrail,
     DecisionType,
     OutcomeType,
@@ -32,7 +32,7 @@ from HoloLoom.alignment.audit_trail import (
     ProvenanceNode,
     create_audit_trail,
 )
-from HoloLoom.alignment.human_in_loop import (
+from hololoom.alignment.human_in_loop import (
     HumanInLoopSystem,
     FeedbackCollector,
     OverrideSystem,
@@ -41,7 +41,7 @@ from HoloLoom.alignment.human_in_loop import (
     Feedback,
     Intervention,
 )
-from HoloLoom.alignment.monitoring import (
+from hololoom.alignment.monitoring import (
     AlignmentMonitor,
     LatencyMetrics,
     Alert,
@@ -49,7 +49,7 @@ from HoloLoom.alignment.monitoring import (
     get_global_monitor,
     set_global_monitor,
 )
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     ActionRequest,
     ActionCategory,

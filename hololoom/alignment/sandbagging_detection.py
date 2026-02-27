@@ -44,7 +44,7 @@ from collections import defaultdict
 import statistics
 import asyncio
 
-logger = logging.getLogger("HoloLoom.alignment.sandbagging_detection")
+logger = logging.getLogger("hololoom.alignment.sandbagging_detection")
 
 
 # =============================================================================

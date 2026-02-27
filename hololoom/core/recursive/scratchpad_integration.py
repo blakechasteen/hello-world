@@ -26,13 +26,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 # HoloLoom components
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.core.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.core.protocols.types import Query, MemoryShard
+from hololoom.config import Config
 
 # Scratchpad components (standalone, was from Promptly)
-from HoloLoom.core.recursive.scratchpad import (
+from hololoom.core.recursive.scratchpad import (
     Scratchpad,
     ScratchpadEntry,
     RecursiveEngine,
@@ -657,9 +657,9 @@ async def weave_with_scratchpad(
         Tuple of (Spacetime, Scratchpad)
 
     Usage:
-        from HoloLoom.core.recursive import weave_with_scratchpad
-        from HoloLoom.config import Config
-        from HoloLoom.core.protocols.types import Query
+        from hololoom.core.recursive import weave_with_scratchpad
+        from hololoom.config import Config
+        from hololoom.core.protocols.types import Query
 
         spacetime, scratchpad = await weave_with_scratchpad(
             Query(text="How does Thompson Sampling work?"),
@@ -689,9 +689,9 @@ if __name__ == "__main__":
     print()
     print("Usage:")
     print("""
-from HoloLoom.core.recursive import ScratchpadOrchestrator, ScratchpadConfig
-from HoloLoom.config import Config
-from HoloLoom.core.protocols.types import Query
+from hololoom.core.recursive import ScratchpadOrchestrator, ScratchpadConfig
+from hololoom.config import Config
+from hololoom.core.protocols.types import Query
 
 config = Config.fast()
 scratchpad_config = ScratchpadConfig(

@@ -18,7 +18,7 @@ import asyncio
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from HoloLoom.memory.llm_consolidator import (
+from hololoom.memory.llm_consolidator import (
     ProductionLLMConsolidator,
     LLMConfig,
     LLMClient,
@@ -27,7 +27,7 @@ from HoloLoom.memory.llm_consolidator import (
     create_llm_config,
     create_production_consolidator
 )
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

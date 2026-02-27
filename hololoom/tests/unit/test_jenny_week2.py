@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 # Import Jenny Week 1 components (specs, etc.)
-from HoloLoom.visualization.jenny_spec import (
+from hololoom.visualization.jenny_spec import (
     JennySpec,
     LifecycleStage,
     BindingMode,
@@ -34,7 +34,7 @@ from HoloLoom.visualization.jenny_spec import (
 )
 
 # Import Jenny Week 2 components - Renderers
-from HoloLoom.visualization.jenny_renderer import (
+from hololoom.visualization.jenny_renderer import (
     JennyRendererBase,
     HTMLRenderer,
     TerminalRenderer,
@@ -45,7 +45,7 @@ from HoloLoom.visualization.jenny_renderer import (
 )
 
 # Import Jenny Week 2 components - Lifecycle Manager
-from HoloLoom.visualization.jenny_lifecycle import (
+from hololoom.visualization.jenny_lifecycle import (
     JennyLifecycleManagerBase,
     InMemoryLifecycleManager,
     PanelState,
@@ -56,7 +56,7 @@ from HoloLoom.visualization.jenny_lifecycle import (
 )
 
 # Import SpecLedger for lifecycle integration testing
-from HoloLoom.visualization.spec_ledger import SpecLedger
+from hololoom.visualization.spec_ledger import SpecLedger
 
 
 # ============================================================================

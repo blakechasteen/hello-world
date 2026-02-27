@@ -32,7 +32,7 @@
 
 ### The Broken Code (v1.0)
 ```python
-# In HoloLoom/memory/unified.py (v1.0)
+# In hololoom/memory/unified.py (v1.0)
 
 def _recall_semantic(self, query, limit) -> List[Memory]:
     """Semantic strategy: Qdrant similarity."""
@@ -52,7 +52,7 @@ def navigate(...) -> List[Memory]:
 
 ### Modified Files
 
-**HoloLoom/memory/unified.py** - 4 methods changed:
+**hololoom/memory/unified.py** - 4 methods changed:
 
 #### 1. `_init_subsystems()` (lines 121-136)
 **Before**:
@@ -448,7 +448,7 @@ cd HoloLoom && docker-compose up -d neo4j qdrant
 
 **Git**:
 ```bash
-git add HoloLoom/memory/unified.py Promptly/v1.0.1_RELEASE_NOTES.md
+git add hololoom/memory/unified.py Promptly/v1.0.1_RELEASE_NOTES.md
 git commit -m "v1.0.1 - Fix HoloLoom unified memory integration"
 git tag -a v1.0.1 -m "Promptly v1.0.1 - HoloLoom Integration Fix"
 git push origin main --tags

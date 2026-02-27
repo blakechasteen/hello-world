@@ -12,7 +12,7 @@ Unit tests for reranking functionality:
 
 import pytest
 from typing import List, Tuple
-from HoloLoom.rag.reranking import (
+from hololoom.rag.reranking import (
     Reranker,
     CrossEncoderReranker,
     NoOpReranker,

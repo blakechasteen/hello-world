@@ -13,7 +13,7 @@ Features:
 
 Usage:
     # Simple webhook mode
-    from HoloLoom.alignment.matrix_chatops import send_matrix_webhook
+    from hololoom.alignment.matrix_chatops import send_matrix_webhook
 
     send_matrix_webhook(
         alert,
@@ -21,7 +21,7 @@ Usage:
     )
 
     # Bot mode (requires matrix-nio)
-    from HoloLoom.alignment.matrix_chatops import MatrixBot
+    from hololoom.alignment.matrix_chatops import MatrixBot
 
     bot = MatrixBot(
         homeserver="https://matrix.org",
@@ -59,7 +59,7 @@ except ImportError:
     MATRIX_SDK_AVAILABLE = False
     logging.warning("matrix-nio not installed - bot mode unavailable")
 
-from HoloLoom.alignment.monitoring import Alert, AlertLevel
+from hololoom.alignment.monitoring import Alert, AlertLevel
 
 logger = logging.getLogger(__name__)
 
@@ -443,10 +443,10 @@ if __name__ == '__main__':
         export MATRIX_ACCESS_TOKEN=syt_...
         export MATRIX_ROOM_ID=!room:matrix.org
 
-        python HoloLoom/alignment/matrix_chatops.py
+        python hololoom/alignment/matrix_chatops.py
     """
     import asyncio
-    from HoloLoom.alignment.monitoring import Alert, AlertLevel
+    from hololoom.alignment.monitoring import Alert, AlertLevel
     from datetime import datetime
 
     # Create test alert

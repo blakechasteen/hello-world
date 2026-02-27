@@ -17,8 +17,8 @@ import numpy as np
 import networkx as nx
 import uuid
 
-from HoloLoom.core.memory.protocol import Memory
-from HoloLoom.core.memory.awareness_types import (
+from hololoom.core.memory.protocol import Memory
+from hololoom.core.memory.awareness_types import (
     SemanticPerception,
     ActivationStrategy,
     ActivationBudget,
@@ -26,11 +26,11 @@ from HoloLoom.core.memory.awareness_types import (
     EdgeType,
     EdgeMetadata
 )
-from HoloLoom.core.memory.activation_field import ActivationField
+from hololoom.core.memory.activation_field import ActivationField
 
 # Multi-modal input support (graceful degradation if not available)
 try:
-    from HoloLoom.input.protocol import ProcessedInput
+    from hololoom.input.protocol import ProcessedInput
     MULTIMODAL_AVAILABLE = True
 except ImportError:
     ProcessedInput = None  # type: ignore
@@ -137,7 +137,7 @@ class AwarenessGraph:
             perception = await awareness.perceive("Thompson Sampling")
 
             # Multimodal (pre-computed embedding)
-            from HoloLoom.input import InputRouter
+            from hololoom.input import InputRouter
             router = InputRouter()
             processed = await router.process({"data": "structured"})
             perception = await awareness.perceive(processed)

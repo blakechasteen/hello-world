@@ -17,7 +17,7 @@ Successfully reorganized semantic calculus with **clean separation between pure 
 ## New File Structure
 
 ```
-HoloLoom/semantic_calculus/
+hololoom/semantic_calculus/
 ├── math/                              # ✨ NEW - Pure mathematics
 │   ├── __init__.py                   # Clean exports (SemanticFlow, etc.)
 │   └── (imports from parent modules)
@@ -46,8 +46,8 @@ HoloLoom/semantic_calculus/
 
 ```python
 # Main interface - simple and clean
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 # Create analyzer
 config = SemanticCalculusConfig.balanced()
@@ -61,7 +61,7 @@ result = analyzer.analyze_text("Your text...")
 
 ```python
 # Access pure mathematics directly
-from HoloLoom.semantic_calculus.math import SemanticFlow, SemanticSpectrum
+from hololoom.semantic_calculus.math import SemanticFlow, SemanticSpectrum
 
 # Use standalone (no HoloLoom dependencies)
 flow = SemanticFlow(embed_fn)
@@ -75,7 +75,7 @@ analysis = spectrum.analyze_semantic_forces(trajectory.positions)
 
 ```python
 # Convenience imports from main module
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     create_semantic_analyzer,      # Main factory
     SemanticCalculusConfig,         # Configuration
     quick_analysis,                 # One-shot helper
@@ -87,7 +87,7 @@ from HoloLoom.semantic_calculus import (
 
 ```python
 # Old imports still work!
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     SemanticFlowCalculus,          # ✅ Still works
     SemanticSpectrum,              # ✅ Still works
     GeometricIntegrator,           # ✅ Still works
@@ -104,7 +104,7 @@ trajectory = calculus.compute_trajectory(words)
 ### `config.py` - Configuration
 
 ```python
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 # Three presets
 config = SemanticCalculusConfig.fast()          # 8D, no ethics, fast
@@ -128,7 +128,7 @@ config = SemanticCalculusConfig.from_pattern_spec(pattern_spec)
 ### `analyzer.py` - Main Interface
 
 ```python
-from HoloLoom.semantic_calculus.analyzer import (
+from hololoom.semantic_calculus.analyzer import (
     create_semantic_analyzer,
     SemanticAnalyzer,
     get_cache_stats,
@@ -153,7 +153,7 @@ stats = get_cache_stats(analyzer)
 ### `adapter.py` - HoloLoom Helpers
 
 ```python
-from HoloLoom.semantic_calculus.adapter import (
+from hololoom.semantic_calculus.adapter import (
     create_semantic_thread,
     quick_analysis,
     extract_trajectory_metrics,
@@ -175,7 +175,7 @@ print(summary)
 ### `math/__init__.py` - Pure Mathematics
 
 ```python
-from HoloLoom.semantic_calculus.math import (
+from hololoom.semantic_calculus.math import (
     SemanticFlow,           # Renamed from SemanticFlowCalculus
     SemanticSpectrum,       # 16D projection
     HamiltonianDynamics,    # Renamed from GeometricIntegrator
@@ -193,8 +193,8 @@ trajectory = flow.compute_trajectory(words)
 
 ```python
 # Uses clean organized imports
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 sem_config = SemanticCalculusConfig.from_pattern_spec(pattern_spec)
 semantic_calculus = create_semantic_analyzer(embed_fn, config=sem_config)
@@ -204,7 +204,7 @@ semantic_calculus = create_semantic_analyzer(embed_fn, config=sem_config)
 
 ```python
 # Accepts both new and legacy interfaces (backward compatible)
-from HoloLoom.semantic_calculus.analyzer import SemanticAnalyzer
+from hololoom.semantic_calculus.analyzer import SemanticAnalyzer
 
 if isinstance(self.semantic_calculus, SemanticAnalyzer):
     # New clean interface
@@ -218,7 +218,7 @@ else:
 ### Config Class
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 config = Config.fast()
 config.enable_semantic_calculus = True  # Enable semantic analysis
@@ -242,17 +242,17 @@ After:  3 focused files (150 lines each, single responsibility)
 ### 3. **Better Imports** ✅
 ```python
 # Clean and explicit
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 # Instead of ambiguous
-from HoloLoom.semantic_calculus.integration import ...
+from hololoom.semantic_calculus.integration import ...
 ```
 
 ### 4. **Reusable Math** ✅
 ```python
 # Math can be used independently
-from HoloLoom.semantic_calculus.math import SemanticFlow
+from hololoom.semantic_calculus.math import SemanticFlow
 
 # No HoloLoom dependencies needed
 flow = SemanticFlow(embed_fn)
@@ -261,7 +261,7 @@ flow = SemanticFlow(embed_fn)
 ### 5. **Backward Compatible** ✅
 ```python
 # All old code still works
-from HoloLoom.semantic_calculus import SemanticFlowCalculus  # ✅
+from hololoom.semantic_calculus import SemanticFlowCalculus  # ✅
 calculus = SemanticFlowCalculus(embed_fn)  # ✅
 ```
 
@@ -273,7 +273,7 @@ Your existing code works without modification:
 
 ```python
 # Old code - still works
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     SemanticFlowCalculus,
     create_semantic_analyzer,
     SemanticCalculusConfig,
@@ -286,8 +286,8 @@ Use the cleaner imports:
 
 ```python
 # New style - more explicit
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 ```
 
 ## Testing

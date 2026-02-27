@@ -25,11 +25,11 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.thirdeye.visualizers.enhanced_composer import (
+from hololoom.thirdeye.visualizers.enhanced_composer import (
     EnhancedSceneComposer,
     ComposerConfig,
 )
-from HoloLoom.thirdeye.generators import (
+from hololoom.thirdeye.generators import (
     ImageGenerator,
     GenerationConfig,
     SceneToPrompt,
@@ -193,7 +193,7 @@ async def demo_style_variations():
     print("DEMO 4: Style Variations")
     print("=" * 60)
 
-    from HoloLoom.thirdeye.visualizers.visual_styles import StyleName, get_style
+    from hololoom.thirdeye.visualizers.visual_styles import StyleName, get_style
 
     base_text = "A futuristic city skyline at sunset"
 

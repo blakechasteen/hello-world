@@ -11,7 +11,7 @@ Endpoints:
 - GET /api/thread/{id} - Get specific thread
 
 Usage:
-    python HoloLoom/web_dashboard/server.py
+    python hololoom/web_dashboard/server.py
 
 Then open: http://localhost:8000
 """
@@ -29,7 +29,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from HoloLoom.awareness import (
+    from hololoom.awareness import (
         CompositionalAwarenessLayer,
         DualStreamGenerator,
         MetaAwarenessLayer,
@@ -57,13 +57,13 @@ async def startup_event():
     global thread_manager
 
     # Import here to avoid circular dependency
-    from HoloLoom.apps.workflow_builder.thread_manager import ThreadManager
+    from hololoom.apps.workflow_builder.thread_manager import ThreadManager
 
     # Initialize persistent memory backend (optional)
     memory_backend = None
     try:
-        from HoloLoom.config import Config, MemoryBackend
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.config import Config, MemoryBackend
+        from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.fast()
         config.memory_backend = MemoryBackend.HYBRID  # Neo4j + Qdrant with fallback
@@ -77,7 +77,7 @@ async def startup_event():
     # Initialize vector embeddings (optional)
     embedder = None
     try:
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[384, 768])  # Multi-scale embeddings
         print("✓ Vector embeddings initialized (MatryoshkaEmbeddings)")

@@ -10,17 +10,17 @@
 
 ### Task 2: Performance Testing Suite ✅
 **Status**: Complete
-**Location**: `HoloLoom/departments/performance/`
+**Location**: `hololoom/departments/performance/`
 **Code**: ~800 lines
 
 ### Task 5: ML-Based Routing ✅
 **Status**: Complete
-**Location**: `HoloLoom/routing/ml/`
+**Location**: `hololoom/routing/ml/`
 **Code**: ~1,400 lines
 
 ### Task 7: Context-Aware Routing ✅
 **Status**: Complete
-**Location**: `HoloLoom/routing/context_aware/`
+**Location**: `hololoom/routing/context_aware/`
 **Code**: ~1,550 lines
 
 ---
@@ -66,7 +66,7 @@ Comprehensive benchmarking and performance testing for all HoloLoom departments.
 ### Usage Example
 
 ```python
-from HoloLoom.apps.departments.performance import (
+from hololoom.apps.departments.performance import (
     DepartmentBenchmark,
     LoadTester,
     LoadTestConfig,
@@ -174,7 +174,7 @@ Machine learning models that learn optimal department routing from usage pattern
 ### Usage Example
 
 ```python
-from HoloLoom.routing.ml import (
+from hololoom.routing.ml import (
     MLRouter,
     RoutingFeatureExtractor,
     OnlineTrainingPipeline,
@@ -291,7 +291,7 @@ Uses conversation history, user preferences, and session context for intelligent
 ### Usage Example
 
 ```python
-from HoloLoom.routing.context_aware import (
+from hololoom.routing.context_aware import (
     ContextAwareRouter,
     UserContext,
     RoutingStrategy,
@@ -376,7 +376,7 @@ Context-aware routing can use ML router for predictions:
 
 ```python
 # In context_router.py
-from HoloLoom.routing.ml import MLRouter
+from hololoom.routing.ml import MLRouter
 
 class ContextAwareRouter:
     async def _route_ml_based(self, query, user_context):
@@ -412,7 +412,7 @@ if validator.is_compliant(result.__dict__):
 
 ```bash
 # Run Task 7 tests
-pytest HoloLoom/routing/context_aware/test_context_router.py -v
+pytest hololoom/routing/context_aware/test_context_router.py -v
 
 # Results:
 # - Rule-based routing ✓

@@ -19,12 +19,12 @@ Created: December 2025
 import logging
 from typing import Optional, List, Dict, Any
 
-from HoloLoom.tapestry.protocol import (
+from hololoom.tapestry.protocol import (
     Tapestry,
     TapestryBackend,
     TapestryError
 )
-from HoloLoom.tapestry.git import GitIntegration
+from hololoom.tapestry.git import GitIntegration
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class Warper:
             return self._planning_available
 
         try:
-            from HoloLoom.apps.departments.planning_department import PlanningDepartment
+            from hololoom.apps.departments.planning_department import PlanningDepartment
             self._planning_available = True
         except ImportError:
             self._planning_available = False
@@ -167,7 +167,7 @@ class Warper:
 
     async def _llm_decompose(self, goal: str) -> List[str]:
         """Use PlanningDepartment for goal decomposition."""
-        from HoloLoom.apps.departments.planning_department import PlanningDepartment
+        from hololoom.apps.departments.planning_department import PlanningDepartment
 
         planning = PlanningDepartment()
         result = await planning.request({
@@ -285,7 +285,7 @@ async def quick_setup(
     Returns:
         Created Tapestry
     """
-    from HoloLoom.tapestry.backends.json_backend import JsonTapestryBackend
+    from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
 
     backend = JsonTapestryBackend(path)
     warper = Warper(backend)

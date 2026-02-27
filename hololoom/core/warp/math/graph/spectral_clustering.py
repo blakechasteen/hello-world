@@ -516,7 +516,7 @@ class KnowledgeGraphClusterer:
         Cluster a NetworkX graph.
 
         Args:
-            G: NetworkX graph (from HoloLoom.core.memory.graph.KG)
+            G: NetworkX graph (from hololoom.core.memory.graph.KG)
 
         Returns:
             Dict with clusters, node assignments, and metrics

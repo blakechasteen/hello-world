@@ -24,7 +24,7 @@ import logging
 
 # Layer 2 imports (Planning)
 try:
-    from HoloLoom.planning.core import (
+    from hololoom.planning.core import (
         Goal, State, Action, Plan, HierarchicalPlanner
     )
 except ImportError:

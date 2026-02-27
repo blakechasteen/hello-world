@@ -1,7 +1,7 @@
 {
   "name": "hololoom-agent-monitor",
   "version": "1.0.0",
-  "description": "Production React dashboard for HoloLoom agent monitoring",
+  "description": "Production React dashboard for hololoom agent monitoring",
   "private": true,
   "type": "module",
   "scripts": {

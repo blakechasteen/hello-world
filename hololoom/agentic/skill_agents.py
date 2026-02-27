@@ -21,7 +21,7 @@ Integration: Promptly Skills → HoloLoom Agents
 Enhanced: 2025-11-22 (UnifiedMRF integration)
 
 Usage:
-    from HoloLoom.agentic.skill_agents import SkillRegistry, execute_skill
+    from hololoom.agentic.skill_agents import SkillRegistry, execute_skill
 
     # Load all skills
     registry = SkillRegistry()
@@ -46,11 +46,11 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
-from HoloLoom.protocols.recursive_reasoning import ReasoningStrategy
-from HoloLoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
+from hololoom.protocols.recursive_reasoning import ReasoningStrategy
+from hololoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
 
 logger = logging.getLogger(__name__)
 
@@ -164,7 +164,7 @@ class SkillRegistry:
     """
     Central registry for all skill templates.
 
-    Loads YAML files from HoloLoom/agentic/skills/ and provides
+    Loads YAML files from hololoom/agentic/skills/ and provides
     access to skill definitions.
     """
 
@@ -174,7 +174,7 @@ class SkillRegistry:
 
         Args:
             skills_dir: Directory containing skill YAML files
-                       (default: HoloLoom/agentic/skills/)
+                       (default: hololoom/agentic/skills/)
         """
         if skills_dir is None:
             # Default to skills/ directory relative to this file

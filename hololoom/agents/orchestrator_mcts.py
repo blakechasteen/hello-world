@@ -14,14 +14,14 @@ from typing import Optional, Dict, List
 from pathlib import Path
 import time
 
-from HoloLoom.agents.orchestrator import AgentOrchestrator
-from HoloLoom.agents.working_memory_mcts import MCTSWorkingMemory
-from HoloLoom.agents.learner_mcts import MCTSLearner
-from HoloLoom.agents.types import AgentProfile, AgentStats
-from HoloLoom.memory.graph import KG
-from HoloLoom.protocols.types import Query
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.config import Config
+from hololoom.agents.orchestrator import AgentOrchestrator
+from hololoom.agents.working_memory_mcts import MCTSWorkingMemory
+from hololoom.agents.learner_mcts import MCTSLearner
+from hololoom.agents.types import AgentProfile, AgentStats
+from hololoom.memory.graph import KG
+from hololoom.protocols.types import Query
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.config import Config
 
 
 class MCTSAgentOrchestrator(AgentOrchestrator):
@@ -66,7 +66,7 @@ class MCTSAgentOrchestrator(AgentOrchestrator):
             )
         else:
             # Standard working memory
-            from HoloLoom.agents.working_memory import AgentWorkingMemory
+            from hololoom.agents.working_memory import AgentWorkingMemory
             self.working_memory = AgentWorkingMemory(
                 profile=profile,
                 yarn_graph=shared_knowledge,
@@ -82,7 +82,7 @@ class MCTSAgentOrchestrator(AgentOrchestrator):
             )
         elif profile.enable_learning:
             # Standard learner
-            from HoloLoom.agents.learner import WorkingMemoryLearner
+            from hololoom.agents.learner import WorkingMemoryLearner
             self.learner = WorkingMemoryLearner(
                 profile=profile,
                 persist_dir=persist_dir
@@ -256,7 +256,7 @@ class MCTSAgentOrchestrator(AgentOrchestrator):
     def _simple_response(self, query: Query, context: List):
         """Simple baseline response (inherited from parent)"""
         from datetime import datetime
-        from HoloLoom.fabric.spacetime import WeavingTrace
+        from hololoom.fabric.spacetime import WeavingTrace
 
         # Concatenate top context
         context_text = "\n\n".join([shard.text for shard in context[:3]])
@@ -316,7 +316,7 @@ def create_mcts_agent(
     Returns:
         MCTSAgentOrchestrator instance
     """
-    from HoloLoom.agents.profiles import get_profile
+    from hololoom.agents.profiles import get_profile
 
     profile = get_profile(profile_name)
 

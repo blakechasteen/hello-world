@@ -21,15 +21,15 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-# Try to import HoloLoom alignment - graceful degradation
+# Try to import hololoom alignment - graceful degradation
 HOLOLOOM_ALIGNMENT_AVAILABLE = False
 try:
     hololoom_path = Path(__file__).parent.parent.parent.parent.parent.parent
     if str(hololoom_path) not in sys.path:
         sys.path.insert(0, str(hololoom_path))
 
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-    from HoloLoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.alignment.audit_trail import AuditTrail
     HOLOLOOM_ALIGNMENT_AVAILABLE = True
 except ImportError:
     pass

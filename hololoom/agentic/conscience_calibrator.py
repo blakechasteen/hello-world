@@ -34,13 +34,13 @@ from datetime import datetime
 from pathlib import Path
 import numpy as np
 
-from HoloLoom.protocols.conscience import (
+from hololoom.protocols.conscience import (
     ConscienceDecision,
     StepType,
     RiskLevel,
 )
 
-logger = logging.getLogger("HoloLoom.agentic.conscience_calibrator")
+logger = logging.getLogger("hololoom.agentic.conscience_calibrator")
 
 
 # =============================================================================

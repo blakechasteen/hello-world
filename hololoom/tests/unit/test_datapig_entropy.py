@@ -9,7 +9,7 @@ Date: 2025-11-22
 
 import pytest
 import math
-from HoloLoom.datapig.entropy_detection import (
+from hololoom.datapig.entropy_detection import (
     shannon_entropy,
     normalized_entropy,
     detect_pii_by_entropy,

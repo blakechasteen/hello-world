@@ -27,7 +27,7 @@ All endpoints feature:
 ## Implementation Details
 
 ### File Modified
-- **`HoloLoom/web_dashboard/workflow_executor.py`**
+- **`hololoom/web_dashboard/workflow_executor.py`**
   - Original: 763 lines
   - Modified: 896 lines (+133 lines)
   - Added: 95 lines of endpoint code
@@ -156,7 +156,7 @@ class URLIngestRequest(BaseModel):
 All endpoints handle missing SpinningWheel gracefully:
 ```python
 try:
-    from HoloLoom.spinningWheel import spin
+    from hololoom.spinningWheel import spin
     shards = await spin(...)
 except ImportError:
     # Return metadata-only response with warning
@@ -289,7 +289,7 @@ Executive summary and quick reference
 
 ### Start Server
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 ```
 

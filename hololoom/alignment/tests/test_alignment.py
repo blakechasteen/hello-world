@@ -5,7 +5,7 @@ Core tests for the 4 implemented modules (46 tests total).
 Organized by module for clarity.
 
 Usage:
-    pytest HoloLoom/alignment/tests/test_alignment.py -v
+    pytest hololoom/alignment/tests/test_alignment.py -v
 """
 
 import pytest
@@ -14,28 +14,28 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     ActionRequest,
     ActionCategory,
     RiskLevel,
     create_guardrails,
 )
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     DeceptionDetector,
     BehavioralProbe,
     ProbeType,
     GoalStatement,
     create_detector,
 )
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
     ResourceBounds,
     ResourceType,
     ViolationType,
     create_guard,
 )
-from HoloLoom.alignment.audit_trail import (
+from hololoom.alignment.audit_trail import (
     AuditTrail,
     DecisionType,
     OutcomeType,
@@ -94,7 +94,7 @@ class TestSafetyGuardrails:
         assert dec.requires_approval
 
     def test_05_policy_override(self, guardrails):
-        from HoloLoom.alignment.safety_guardrails import OutcomeType as SafetyOutcome
+        from hololoom.alignment.safety_guardrails import OutcomeType as SafetyOutcome
         guardrails.policy_overrides[ActionCategory.DELETION] = SafetyOutcome.ALLOW
         req = ActionRequest("t5", ActionCategory.DELETION, "Delete temp")
         dec = guardrails.evaluate(req)
@@ -160,7 +160,7 @@ class TestDeceptionDetector:
         assert passed and score <= 0.3
 
     def test_04_goal_alignment(self, detector):
-        from HoloLoom.alignment.deception_detection import ActionObservation
+        from hololoom.alignment.deception_detection import ActionObservation
         goal = GoalStatement("g1", "Be helpful")
         detector.goal_tracker.declare_goal(goal)
         action = ActionObservation("a1", "Helped user", goal_id="g1")
@@ -168,7 +168,7 @@ class TestDeceptionDetector:
         assert len(detector.goal_tracker.observed_actions) > 0
 
     def test_05_hidden_goal_detect(self, detector):
-        from HoloLoom.alignment.deception_detection import ActionObservation
+        from hololoom.alignment.deception_detection import ActionObservation
         goal = GoalStatement("g1", "Be helpful")
         detector.goal_tracker.declare_goal(goal)
         action = ActionObservation("a1", "Collected data", goal_id=None)
@@ -196,7 +196,7 @@ class TestDeceptionDetector:
         assert passed
 
     def test_09_goal_action_tracking(self, detector):
-        from HoloLoom.alignment.deception_detection import ActionObservation
+        from hololoom.alignment.deception_detection import ActionObservation
         goal = GoalStatement("g1", "Be helpful")
         detector.goal_tracker.declare_goal(goal)
         initial = len(detector.goal_tracker.observed_actions)
@@ -343,18 +343,18 @@ class TestAuditTrail:
 # API Compatibility Tests (5)
 class TestAPICompatibility:
     def test_01_import(self):
-        from HoloLoom.alignment.api_compatibility import patch_alignment_api
+        from hololoom.alignment.api_compatibility import patch_alignment_api
         assert callable(patch_alignment_api)
 
     def test_02_patch_unpatch(self):
-        from HoloLoom.alignment.api_compatibility import patch_alignment_api, unpatch_alignment_api
+        from hololoom.alignment.api_compatibility import patch_alignment_api, unpatch_alignment_api
         patch_alignment_api()
         assert hasattr(SafetyGuardrails, "evaluate_action")
         unpatch_alignment_api()
         assert not hasattr(SafetyGuardrails, "evaluate_action")
 
     def test_03_guardrails_spec_api(self):
-        from HoloLoom.alignment.api_compatibility import patch_alignment_api, unpatch_alignment_api
+        from hololoom.alignment.api_compatibility import patch_alignment_api, unpatch_alignment_api
         patch_alignment_api()
         try:
             g = create_guardrails()
@@ -364,7 +364,7 @@ class TestAPICompatibility:
             unpatch_alignment_api()
 
     def test_04_detector_spec_api(self):
-        from HoloLoom.alignment.api_compatibility import patch_alignment_api, unpatch_alignment_api
+        from hololoom.alignment.api_compatibility import patch_alignment_api, unpatch_alignment_api
         patch_alignment_api()
         try:
             d = create_detector()
@@ -377,7 +377,7 @@ class TestAPICompatibility:
             unpatch_alignment_api()
 
     def test_05_guard_spec_api(self):
-        from HoloLoom.alignment.api_compatibility import patch_alignment_api, unpatch_alignment_api
+        from hololoom.alignment.api_compatibility import patch_alignment_api, unpatch_alignment_api
         patch_alignment_api()
         try:
             g = create_guard()

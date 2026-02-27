@@ -16,7 +16,7 @@ Successfully integrated the **110/100 JavaScript Emotional Intelligence System**
 
 ### 1. **emotion_bridge.py** (750 lines)
 
-**Location**: `HoloLoom/voice/emotion_bridge.py`
+**Location**: `hololoom/voice/emotion_bridge.py`
 
 **Core Components**:
 - `EmotionBridge`: High-level Python API for emotion analysis
@@ -35,7 +35,7 @@ Successfully integrated the **110/100 JavaScript Emotional Intelligence System**
 
 **Example Usage**:
 ```python
-from HoloLoom.voice.emotion_bridge import EmotionBridge, EmotionBridgeConfig
+from hololoom.voice.emotion_bridge import EmotionBridge, EmotionBridgeConfig
 
 async with EmotionBridge(EmotionBridgeConfig.standard()) as bridge:
     result = await bridge.analyze_emotion(
@@ -50,7 +50,7 @@ async with EmotionBridge(EmotionBridgeConfig.standard()) as bridge:
 
 ### 2. **test_emotion_bridge.py** (410 lines)
 
-**Location**: `HoloLoom/voice/tests/test_emotion_bridge.py`
+**Location**: `hololoom/voice/tests/test_emotion_bridge.py`
 
 **Test Coverage**:
 - ✅ 15 test cases covering all core functionality
@@ -63,7 +63,7 @@ async with EmotionBridge(EmotionBridgeConfig.standard()) as bridge:
 
 **Run Tests**:
 ```bash
-pytest HoloLoom/voice/tests/test_emotion_bridge.py -v
+pytest hololoom/voice/tests/test_emotion_bridge.py -v
 ```
 
 ---
@@ -88,7 +88,7 @@ python demos/demo_emotion_bridge.py
 
 ### 4. **EMOTION_BRIDGE_QUICK_START.md** (500 lines)
 
-**Location**: `HoloLoom/voice_ux/EMOTION_BRIDGE_QUICK_START.md`
+**Location**: `hololoom/voice_ux/EMOTION_BRIDGE_QUICK_START.md`
 
 **Complete Documentation**:
 - 5-minute setup guide
@@ -103,11 +103,11 @@ python demos/demo_emotion_bridge.py
 
 ### 5. **Voice Package Integration**
 
-**Location**: `HoloLoom/voice/__init__.py`
+**Location**: `hololoom/voice/__init__.py`
 
 **Exports Added**:
 ```python
-from HoloLoom.voice import (
+from hololoom.voice import (
     EmotionBridge,
     EmotionBridgeConfig,
     EmotionResult,
@@ -115,7 +115,7 @@ from HoloLoom.voice import (
 )
 ```
 
-Now users can import emotion bridge directly from `HoloLoom.voice`.
+Now users can import emotion bridge directly from `hololoom.voice`.
 
 ---
 
@@ -160,8 +160,8 @@ Clean, standardized communication between Python and Node.js:
 ### 2. **One-Line VoiceAgent Enhancement**
 
 ```python
-from HoloLoom.voice import VoiceAgent
-from HoloLoom.voice.emotion_bridge import enhance_voice_agent_with_emotions
+from hololoom.voice import VoiceAgent
+from hololoom.voice.emotion_bridge import enhance_voice_agent_with_emotions
 
 agent = VoiceAgent(orchestrator=orchestrator)
 
@@ -246,12 +246,12 @@ except Exception:
 
 ### Current Integrations
 
-1. **VoiceAgent** (`HoloLoom/voice/voice_agent.py`)
+1. **VoiceAgent** (`hololoom/voice/voice_agent.py`)
    - `enhance_voice_agent_with_emotions()` wrapper
    - Automatic emotion detection on `process_voice_input()`
    - Emotional metadata in conversation memory
 
-2. **ConversationMemory** (`HoloLoom/voice/voice_agent.py`)
+2. **ConversationMemory** (`hololoom/voice/voice_agent.py`)
    - Stores emotion, valence, arousal per turn
    - Suggested actions available in metadata
    - Full emotional context for reflection
@@ -321,7 +321,7 @@ All within expected ranges ✅
    - Use cases
    - Troubleshooting
 
-2. **[emotion_bridge.py](../HoloLoom/voice/emotion_bridge.py)** (750 lines)
+2. **[emotion_bridge.py](../hololoom/voice/emotion_bridge.py)** (750 lines)
    - Inline docstrings
    - Usage examples
    - Type hints
@@ -330,7 +330,7 @@ All within expected ranges ✅
    - 5 complete demos
    - Real-world examples
 
-4. **[test_emotion_bridge.py](../HoloLoom/voice/tests/test_emotion_bridge.py)** (410 lines)
+4. **[test_emotion_bridge.py](../hololoom/voice/tests/test_emotion_bridge.py)** (410 lines)
    - Comprehensive test suite
    - Usage examples in tests
 

@@ -57,7 +57,7 @@ class ShuttleConfig:
 
 **Example Usage**:
 ```python
-from HoloLoom.shuttle import ShuttleConfig, production_config
+from hololoom.shuttle import ShuttleConfig, production_config
 
 # Use preset
 config = production_config()
@@ -103,7 +103,7 @@ ShuttleError (base)
 
 **Example Usage**:
 ```python
-from HoloLoom.shuttle.exceptions import TimeoutError
+from hololoom.shuttle.exceptions import TimeoutError
 
 raise TimeoutError(
     operation="MCTS search",
@@ -166,7 +166,7 @@ class Anchor:
 
 **Example Usage**:
 ```python
-from HoloLoom.shuttle.entity_extraction import EntityExtractionFactory
+from hololoom.shuttle.entity_extraction import EntityExtractionFactory
 
 # Auto-detect best method with fallback
 extractor = EntityExtractionFactory.create(method="auto")
@@ -236,7 +236,7 @@ result.degraded = True  # Indicates graceful degradation occurred
 
 **Example Execution**:
 ```python
-from HoloLoom.shuttle import Shuttle, ShuttleConfig, production_config
+from hololoom.shuttle import Shuttle, ShuttleConfig, production_config
 
 config = production_config()
 shuttle = Shuttle(warp, yarn, config)
@@ -266,7 +266,7 @@ except ShuttleError as e:
 
 New files created:
 ```
-HoloLoom/shuttle/
+hololoom/shuttle/
 ├── config.py                    # ✅ NEW (400 lines)
 ├── exceptions.py                # ✅ NEW (180 lines)
 ├── entity_extraction.py         # ✅ NEW (450 lines)
@@ -276,7 +276,7 @@ HoloLoom/shuttle/
 
 Existing files (to be updated):
 ```
-HoloLoom/shuttle/
+hololoom/shuttle/
 ├── __init__.py                  # ⏳ Update imports
 ├── policies.py                  # ⏳ Rename to trajectories.py
 ├── bandits.py                   # ⏳ Rename to trajectory_bandit.py
@@ -456,7 +456,7 @@ def test_degradation_chain():
 
 5. **Integrate with WeavingOrchestrator** (4 hours)
    - Add Shuttle as Step 3 (Yarn Graph replacement)
-   - Wire up config to HoloLoom.config
+   - Wire up config to hololoom.config
    - Test with BARE/FAST/FUSED modes
 
 6. **Create Real Warp/Yarn Adapters** (6 hours)

@@ -22,7 +22,7 @@ INSTALLATION PATHS
 │   Disk: 1.2GB                                                               │
 │                                                                              │
 │ First Run:                                                                  │
-│   $ python -m HoloLoom.lite repl                                           │
+│   $ python -m hololoom.lite repl                                           │
 │   Time: 30-60 seconds (model download)                                     │
 │                                                                              │
 │ Features (5 methods):                                                       │
@@ -217,7 +217,7 @@ FIRST-RUN EXPERIENCE
 
 Cold Start (no model cache):
 
-  $ python -c "from HoloLoom import HoloLoom; loom = HoloLoom()"
+  $ python -c "from hololoom import hololoom; loom = HoloLoom()"
 
   1. Import: <1 sec (lazy loading via __getattr__)
   2. Initialize: <1 sec (check backends)
@@ -229,7 +229,7 @@ Cold Start (no model cache):
 
 Warm Start (model cached):
 
-  $ python -c "from HoloLoom import HoloLoom; loom = HoloLoom()"
+  $ python -c "from hololoom import hololoom; loom = HoloLoom()"
 
   1. Import: <1 sec
   2. Initialize: <1 sec

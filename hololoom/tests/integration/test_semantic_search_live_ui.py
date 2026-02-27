@@ -18,9 +18,9 @@ import asyncio
 import json
 import websockets
 from datetime import datetime
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.memory.protocol import MemoryQuery
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.protocol import MemoryQuery
 
 
 async def send_chat_message(websocket, message: str, user: str = "test-user"):
@@ -117,7 +117,7 @@ async def test_semantic_search_live():
 
     except Exception as e:
         print(f"\n⚠ WebSocket connection failed: {e}")
-        print("Make sure the web server is running: python HoloLoom/web_dashboard/server.py")
+        print("Make sure the web server is running: python hololoom/web_dashboard/server.py")
         return
 
     print("="*80)
@@ -287,7 +287,7 @@ if __name__ == "__main__":
     print("\nThis test sends messages to the live chat server and demonstrates")
     print("semantic search finding conceptually related content.\n")
     print("Prerequisites:")
-    print("  ✓ Web server running (python HoloLoom/web_dashboard/server.py)")
+    print("  ✓ Web server running (python hololoom/web_dashboard/server.py)")
     print("  ✓ Qdrant running (docker-compose up qdrant)")
     print("  ✓ Neo4j running (docker-compose up neo4j)")
     print("\nStarting test...\n")

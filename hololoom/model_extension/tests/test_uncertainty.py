@@ -7,7 +7,7 @@ confidence calculation.
 
 import pytest
 import math
-from HoloLoom.model_extension.uncertainty import (
+from hololoom.model_extension.uncertainty import (
     UncertaintyEnvelope,
     UncertaintySource,
     ConfidenceTier,

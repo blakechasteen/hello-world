@@ -12,7 +12,7 @@ Commands:
 - !temporal help - Temporal command help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.temporal_handlers import register_temporal_handlers
+    from hololoom.apps.chatops.handlers.temporal_handlers import register_temporal_handlers
 
     # In run_chatops.py:
     register_temporal_handlers(bot, memory)
@@ -25,7 +25,7 @@ from datetime import datetime, timedelta
 from typing import Optional, TYPE_CHECKING, List, Dict, Any
 
 if TYPE_CHECKING:
-    from HoloLoom.memory.unified import UnifiedMemory
+    from hololoom.memory.unified import UnifiedMemory
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -35,7 +35,7 @@ except ImportError:
 
 # UnifiedMemory imports
 try:
-    from HoloLoom.memory.unified import UnifiedMemory, Memory
+    from hololoom.memory.unified import UnifiedMemory, Memory
     UNIFIED_MEMORY_AVAILABLE = True
 except ImportError:
     UNIFIED_MEMORY_AVAILABLE = False
@@ -44,7 +44,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -529,7 +529,7 @@ class TemporalHandlers:
     Decorator-based ChatOps handlers for Temporal queries.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.temporal_handlers import TemporalHandlers
+        from hololoom.apps.chatops.handlers.temporal_handlers import TemporalHandlers
 
         handlers = TemporalHandlers(memory=unified_memory)
         registry.register_instance(handlers)

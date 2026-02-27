@@ -13,7 +13,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from HoloLoom.prompting.testing.protocol import (
+from hololoom.prompting.testing.protocol import (
     PromptTestResult,
     PromptTestConfig,
 )
@@ -322,7 +322,7 @@ class RegressionDetector:
         results = []
         for item in baseline_data.get("results", []):
             # Create minimal test result for comparison
-            from HoloLoom.prompting.testing.protocol import (
+            from hololoom.prompting.testing.protocol import (
                 PromptTestCase,
                 TestType,
             )

@@ -17,7 +17,7 @@ The HoloLoom Physics Engine applies **real physics principles** to solve optimiz
 Natural downhill routing to least-cost destinations.
 
 ```python
-from HoloLoom.physics import GradientFlowEngine
+from hololoom.physics import GradientFlowEngine
 
 # Define loss function (e.g., server load)
 def server_load_loss(metrics):
@@ -52,8 +52,8 @@ print(f"Final loss: {decision.final_loss:.3f}")
 Optimal context window packing via Navier-Stokes.
 
 ```python
-from HoloLoom.physics import AdaptivePacker
-from HoloLoom.memory.graph import KG
+from hololoom.physics import AdaptivePacker
+from hololoom.memory.graph import KG
 
 # Create knowledge graph
 kg = KG()
@@ -88,7 +88,7 @@ print(f"Sparse regions: {result.sparse_regions}")
 Free energy minimization for intelligent action selection.
 
 ```python
-from HoloLoom.physics import ThermodynamicOptimizer
+from hololoom.physics import ThermodynamicOptimizer
 
 # Create thermodynamic optimizer
 thermo = ThermodynamicOptimizer(
@@ -125,7 +125,7 @@ print(f"Free energy: {stats['free_energy']:.3f}")
 Detect patterns via wave interference.
 
 ```python
-from HoloLoom.physics import WaveMechanicsEngine
+from hololoom.physics import WaveMechanicsEngine
 
 # Create wave mechanics engine
 wave = WaveMechanicsEngine(
@@ -165,7 +165,7 @@ for resonance in resonances:
 Emergent memory clustering via Gibbs distribution.
 
 ```python
-from HoloLoom.physics import StatisticalMechanicsEngine, Microstate
+from hololoom.physics import StatisticalMechanicsEngine, Microstate
 import numpy as np
 
 # Create statistical mechanics engine
@@ -205,8 +205,8 @@ if transition:
 Integrate all phases for complete optimization.
 
 ```python
-from HoloLoom.physics import UnifiedPhysicsEngine
-from HoloLoom.memory.graph import KG
+from hololoom.physics import UnifiedPhysicsEngine
+from hololoom.memory.graph import KG
 
 # Create unified engine
 engine = UnifiedPhysicsEngine(
@@ -292,7 +292,7 @@ UnifiedPhysicsEngine
 
 ### Phase 0: Spring Physics (Graph Retrieval)
 
-**Status**: Complete (implemented in `HoloLoom/memory/spring_dynamics.py`)
+**Status**: Complete (implemented in `hololoom/memory/spring_dynamics.py`)
 
 **Physics Model**: Hooke's Law (F = -kx)
 
@@ -304,7 +304,7 @@ UnifiedPhysicsEngine
 - System reaches equilibrium naturally
 - Retrieved memories are those with highest activation
 
-**Files**: See `HoloLoom/memory/spring_dynamics.py`
+**Files**: See `hololoom/memory/spring_dynamics.py`
 
 ---
 
@@ -400,7 +400,7 @@ decision = engine.route(
 - Converges in 10-30 steps typically
 - Noise helps escape local minima
 
-**Files**: `HoloLoom/physics/gradient_flow.py` (365 lines)
+**Files**: `hololoom/physics/gradient_flow.py` (365 lines)
 
 ---
 
@@ -564,7 +564,7 @@ class MultiPhysicsPacker:
 **Example**:
 
 ```python
-from HoloLoom.physics import MultiPhysicsPacker
+from hololoom.physics import MultiPhysicsPacker
 
 packer = MultiPhysicsPacker(max_tokens=8000)
 
@@ -592,11 +592,11 @@ result = await packer.pack(
 - Sparse region detection: ~1ms
 
 **Files**:
-- `HoloLoom/physics/fluid_dynamics.py` (349 lines)
-- `HoloLoom/physics/pressure_field.py` (referenced)
-- `HoloLoom/physics/velocity_field.py` (referenced)
-- `HoloLoom/physics/adaptive_packer.py` (referenced)
-- `HoloLoom/physics/multi_physics_packer.py` (376 lines)
+- `hololoom/physics/fluid_dynamics.py` (349 lines)
+- `hololoom/physics/pressure_field.py` (referenced)
+- `hololoom/physics/velocity_field.py` (referenced)
+- `hololoom/physics/adaptive_packer.py` (referenced)
+- `hololoom/physics/multi_physics_packer.py` (376 lines)
 
 ---
 
@@ -780,7 +780,7 @@ for i in range(100):
 - Update: <0.1ms
 - Typical annealing: 50-200 steps
 
-**Files**: `HoloLoom/physics/thermodynamics.py` (503 lines)
+**Files**: `hololoom/physics/thermodynamics.py` (503 lines)
 
 ---
 
@@ -963,7 +963,7 @@ for r in resonances:
 - Interference detection: ~1ms
 - Resonance detection (FFT): ~2-5ms
 
-**Files**: `HoloLoom/physics/wave_mechanics.py` (533 lines)
+**Files**: `hololoom/physics/wave_mechanics.py` (533 lines)
 
 ---
 
@@ -1125,7 +1125,7 @@ class StatisticalMechanicsEngine:
 **Example**:
 
 ```python
-from HoloLoom.physics import StatisticalMechanicsEngine, Microstate
+from hololoom.physics import StatisticalMechanicsEngine, Microstate
 import numpy as np
 
 # Create engine with initial temperature
@@ -1169,7 +1169,7 @@ for step in range(10):
 - Phase transition detection: ~2-5ms
 - Partition function: ~0.5ms
 
-**Files**: `HoloLoom/physics/statistical_mechanics.py` (667 lines)
+**Files**: `hololoom/physics/statistical_mechanics.py` (667 lines)
 
 ---
 
@@ -1242,8 +1242,8 @@ class UnifiedPhysicsEngine:
 **Example**:
 
 ```python
-from HoloLoom.physics import UnifiedPhysicsEngine
-from HoloLoom.memory.graph import KG
+from hololoom.physics import UnifiedPhysicsEngine
+from hololoom.memory.graph import KG
 
 # Create unified engine
 engine = UnifiedPhysicsEngine(
@@ -1268,7 +1268,7 @@ print("Phase 4 (Patterns):", len(result.constructive_patterns))
 print("Phase 5 (Consolidation):", len(result.macrostates))
 ```
 
-**Files**: `HoloLoom/physics/unified_physics.py` (referenced)
+**Files**: `hololoom/physics/unified_physics.py` (referenced)
 
 ---
 
@@ -1307,10 +1307,10 @@ The Physics Engine integrates at multiple points in the 9-step weaving cycle:
 ### Example: Full Pipeline
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.physics import UnifiedPhysicsEngine
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.physics import UnifiedPhysicsEngine
+from hololoom.config import Config
+from hololoom.documentation.types import Query
 
 # Create config with physics enabled
 config = Config.fused()
@@ -1362,7 +1362,7 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### Phase 1 Exports
 
 ```python
-from HoloLoom.physics import (
+from hololoom.physics import (
     GradientFlowEngine,
     RouteDecision,
     GradientState
@@ -1372,7 +1372,7 @@ from HoloLoom.physics import (
 ### Phase 2 Exports
 
 ```python
-from HoloLoom.physics import (
+from hololoom.physics import (
     PressureField,
     VelocityField,
     ContextFlowEngine,
@@ -1387,7 +1387,7 @@ from HoloLoom.physics import (
 ### Phase 3 Exports
 
 ```python
-from HoloLoom.physics import (
+from hololoom.physics import (
     CoolingSchedule,
     TemperatureScheduler,
     TemperatureState,
@@ -1401,7 +1401,7 @@ from HoloLoom.physics import (
 ### Phase 4 Exports
 
 ```python
-from HoloLoom.physics import (
+from hololoom.physics import (
     WaveState,
     WaveField,
     InterferencePattern,
@@ -1415,7 +1415,7 @@ from HoloLoom.physics import (
 ### Phase 5 Exports
 
 ```python
-from HoloLoom.physics import (
+from hololoom.physics import (
     Microstate,
     Macrostate,
     CanonicalEnsemble,
@@ -1430,7 +1430,7 @@ from HoloLoom.physics import (
 ### Unified Physics Exports
 
 ```python
-from HoloLoom.physics import (
+from hololoom.physics import (
     UnifiedPhysicsEngine,
     UnifiedPhysicsResult
 )
@@ -1443,7 +1443,7 @@ from HoloLoom.physics import (
 ### Example 1: Query Routing (Phase 1)
 
 ```python
-from HoloLoom.physics import GradientFlowEngine
+from hololoom.physics import GradientFlowEngine
 
 def server_loss(metrics):
     load = metrics.get("load", 0.5)
@@ -1467,8 +1467,8 @@ decision = engine.route(
 ### Example 2: Context Packing (Phase 2)
 
 ```python
-from HoloLoom.physics import AdaptivePacker
-from HoloLoom.memory.graph import KG
+from hololoom.physics import AdaptivePacker
+from hololoom.memory.graph import KG
 
 kg = KG()
 kg.add_edge("A", "B", "RELATED", 0.8)
@@ -1488,7 +1488,7 @@ print(f"Sparse: {result.sparse_regions}")
 ### Example 3: Exploration/Exploitation (Phase 3)
 
 ```python
-from HoloLoom.physics import ThermodynamicOptimizer
+from hololoom.physics import ThermodynamicOptimizer
 
 thermo = ThermodynamicOptimizer(initial_temperature=1.5, cooling_rate=0.95)
 
@@ -1507,7 +1507,7 @@ for i in range(50):
 ### Example 4: Pattern Detection (Phase 4)
 
 ```python
-from HoloLoom.physics import WaveMechanicsEngine
+from hololoom.physics import WaveMechanicsEngine
 
 wave = WaveMechanicsEngine(wave_speed=1.0, damping=0.02)
 
@@ -1526,7 +1526,7 @@ print(f"Patterns: {len(constructive)} constructive, {len(destructive)} destructi
 ### Example 5: Memory Consolidation (Phase 5)
 
 ```python
-from HoloLoom.physics import StatisticalMechanicsEngine, Microstate
+from hololoom.physics import StatisticalMechanicsEngine, Microstate
 import numpy as np
 
 engine = StatisticalMechanicsEngine(temperature=1.0)
@@ -1565,17 +1565,17 @@ for macro in macrostates:
 
 ```bash
 # Test individual phases
-pytest HoloLoom/physics/tests/test_gradient_flow.py -v
-pytest HoloLoom/physics/tests/test_fluid_dynamics.py -v
-pytest HoloLoom/physics/tests/test_thermodynamics.py -v
-pytest HoloLoom/physics/tests/test_wave_mechanics.py -v
-pytest HoloLoom/physics/tests/test_statistical_mechanics.py -v
+pytest hololoom/physics/tests/test_gradient_flow.py -v
+pytest hololoom/physics/tests/test_fluid_dynamics.py -v
+pytest hololoom/physics/tests/test_thermodynamics.py -v
+pytest hololoom/physics/tests/test_wave_mechanics.py -v
+pytest hololoom/physics/tests/test_statistical_mechanics.py -v
 
 # Test unified engine
-pytest HoloLoom/physics/tests/test_unified_physics.py -v
+pytest hololoom/physics/tests/test_unified_physics.py -v
 
 # Test all physics
-pytest HoloLoom/physics/tests/ -v
+pytest hololoom/physics/tests/ -v
 ```
 
 ---
@@ -1584,11 +1584,11 @@ pytest HoloLoom/physics/tests/ -v
 
 To add a new physics phase:
 
-1. Create new file `HoloLoom/physics/phase_N.py`
+1. Create new file `hololoom/physics/phase_N.py`
 2. Implement physics model following existing patterns
-3. Add exports to `HoloLoom/physics/__init__.py`
+3. Add exports to `hololoom/physics/__init__.py`
 4. Integrate into `UnifiedPhysicsEngine`
-5. Add tests to `HoloLoom/physics/tests/test_phase_N.py`
+5. Add tests to `hololoom/physics/tests/test_phase_N.py`
 6. Update this README with phase documentation
 
 ---

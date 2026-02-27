@@ -371,7 +371,7 @@ examples/starter_templates/
    - Compare to traditional DSPy (30-60 min)
 
 2. **Task 3: Add training examples** (2 hours)
-   - Extract 20-30 Q&A from HoloLoom docs
+   - Extract 20-30 Q&A from hololoom docs
    - Create training_data_loader.py
    - Test optimization with real data
 

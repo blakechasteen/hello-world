@@ -253,24 +253,24 @@ def awareness_handlers(mock_awareness_graph, mock_spring_dynamics, mock_wave_eng
     """Import and configure awareness handlers."""
     # Patch the imports
     with patch.dict('sys.modules', {
-        'HoloLoom.memory.awareness_graph': Mock(
+        'hololoom.memory.awareness_graph': Mock(
             AwarenessGraph=MockAwarenessGraph
         ),
-        'HoloLoom.memory.awareness_types': Mock(
+        'hololoom.memory.awareness_types': Mock(
             AwarenessMetrics=MockAwarenessMetrics,
             ActivationStrategy=Mock(),
             ActivationBudget=Mock()
         ),
-        'HoloLoom.memory.spring_dynamics': Mock(
+        'hololoom.memory.spring_dynamics': Mock(
             SpringDynamics=MockSpringDynamics,
             SpringConfig=Mock()
         ),
-        'HoloLoom.memory.multi_wave_engine': Mock(
+        'hololoom.memory.multi_wave_engine': Mock(
             MultiWaveMemoryEngine=MockMultiWaveEngine,
             BrainWaveMode=MockBrainWaveMode,
             ThetaWaveConsolidator=MockThetaConsolidator
         ),
-        'HoloLoom.awareness.meta_awareness': Mock(
+        'hololoom.awareness.meta_awareness': Mock(
             MetaConfidence=Mock(),
             KnowledgeGapHypothesis=Mock()
         ),
@@ -280,7 +280,7 @@ def awareness_handlers(mock_awareness_graph, mock_spring_dynamics, mock_wave_eng
         ),
     }):
         # Import handlers
-        from HoloLoom.apps.chatops.handlers import awareness_handlers as ah
+        from hololoom.apps.chatops.handlers import awareness_handlers as ah
 
         # Set global instances
         ah.set_awareness_graph(mock_awareness_graph)
@@ -730,7 +730,7 @@ class TestHandlerRegistration:
 
     def test_awareness_handlers_class(self, mock_awareness_graph, mock_spring_dynamics, mock_wave_engine):
         """Test AwarenessHandlers class initialization."""
-        from HoloLoom.apps.chatops.handlers.awareness_handlers import AwarenessHandlers
+        from hololoom.apps.chatops.handlers.awareness_handlers import AwarenessHandlers
 
         handlers = AwarenessHandlers(
             mock_awareness_graph,

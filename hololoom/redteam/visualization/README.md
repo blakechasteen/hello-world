@@ -3,7 +3,7 @@
 **Production-Grade Tufte-Style Attack Trajectory Visualization for Red Team Analytics**
 
 - **Status**: ✅ Production Ready (November 2025)
-- **Location**: `HoloLoom/redteam/visualization/`
+- **Location**: `hololoom/redteam/visualization/`
 - **Total Code**: 1,072 lines (core + utilities)
 - **Dependencies**: Zero external (pure HTML/CSS/SVG)
 - **Documentation**: 2,500+ lines (comprehensive)
@@ -40,13 +40,13 @@ No installation needed! The module is pure Python with no external dependencies.
 
 ```bash
 # Already included in HoloLoom
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 ```
 
 ### Simplest Usage (2 minutes)
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 # Your attack data
 strategies = ["prompt_injection", "jailbreak", "overflow"]
@@ -72,7 +72,7 @@ webbrowser.open("attack_trajectory.html")
 ### Running the Demo
 
 ```bash
-cd HoloLoom/redteam/visualization
+cd hololoom/redteam/visualization
 PYTHONPATH=../.. python demo_attack_trajectory.py
 
 # Generates demo_output_*.html files
@@ -274,7 +274,7 @@ Color-coded borders match metric type.
 ### Basic (Convenience Function)
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 html = render_attack_trajectory(
     strategies=["prompt_injection", "jailbreak"],
@@ -291,7 +291,7 @@ with open("output.html", "w") as f:
 ### Detailed (Full Control)
 
 ```python
-from HoloLoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
+from hololoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
 
 points = [
     AttackPoint(
@@ -324,7 +324,7 @@ html = renderer.render(
 
 ```python
 import json
-from HoloLoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
+from hololoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
 
 # Load from CARTS results
 with open("attack_results.json") as f:
@@ -364,7 +364,7 @@ html = renderer.render(points, title="Real Campaign")
 Run the demo script to see all features:
 
 ```bash
-PYTHONPATH=HoloLoom python HoloLoom/redteam/visualization/demo_attack_trajectory.py
+PYTHONPATH=HoloLoom python hololoom/redteam/visualization/demo_attack_trajectory.py
 ```
 
 Generates 5 demo outputs:
@@ -377,7 +377,7 @@ Generates 5 demo outputs:
 ## File Structure
 
 ```
-HoloLoom/redteam/visualization/
+hololoom/redteam/visualization/
 ├── __init__.py                      (38 lines)     - Public API
 ├── attack_trajectory.py             (1034 lines)   - Core implementation
 ├── USAGE_EXAMPLES.md                (600+ lines)   - Detailed usage guide
@@ -494,7 +494,7 @@ point = AttackPoint(
 ### With CARTS Pipeline
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 from carts import run_attack_campaign
 
 # Run attacks
@@ -517,7 +517,7 @@ html = render_attack_trajectory(
 
 ```python
 from flask import Flask
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 @app.route("/dashboard")
 def dashboard():
@@ -529,7 +529,7 @@ def dashboard():
 ### With Monitoring System
 
 ```python
-from HoloLoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
+from hololoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
 import json
 from datetime import datetime
 

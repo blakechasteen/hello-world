@@ -21,9 +21,9 @@ class TestHoloLoomCreation:
     @pytest.mark.asyncio
     async def test_create_with_defaults(self, mock_all_external_deps):
         """create() should work with default parameters."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
-        with patch('HoloLoom.unified_api.WeavingOrchestrator'):
+        with patch('hololoom.unified_api.WeavingOrchestrator'):
             loom = await HoloLoom.create()
 
             # Should return HoloLoom instance
@@ -33,9 +33,9 @@ class TestHoloLoomCreation:
     @pytest.mark.asyncio
     async def test_create_with_bare_pattern(self, mock_all_external_deps):
         """create() should accept BARE pattern."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
-        with patch('HoloLoom.unified_api.WeavingOrchestrator'):
+        with patch('hololoom.unified_api.WeavingOrchestrator'):
             loom = await HoloLoom.create(pattern="bare")
 
             assert loom is not None
@@ -43,9 +43,9 @@ class TestHoloLoomCreation:
     @pytest.mark.asyncio
     async def test_create_with_fast_pattern(self, mock_all_external_deps):
         """create() should accept FAST pattern."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
-        with patch('HoloLoom.unified_api.WeavingOrchestrator'):
+        with patch('hololoom.unified_api.WeavingOrchestrator'):
             loom = await HoloLoom.create(pattern="fast")
 
             assert loom is not None
@@ -53,9 +53,9 @@ class TestHoloLoomCreation:
     @pytest.mark.asyncio
     async def test_create_with_fused_pattern(self, mock_all_external_deps):
         """create() should accept FUSED pattern."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
-        with patch('HoloLoom.unified_api.WeavingOrchestrator'):
+        with patch('hololoom.unified_api.WeavingOrchestrator'):
             loom = await HoloLoom.create(pattern="fused")
 
             assert loom is not None
@@ -63,9 +63,9 @@ class TestHoloLoomCreation:
     @pytest.mark.asyncio
     async def test_create_with_memory_backend(self, mock_all_external_deps):
         """create() should accept memory_backend parameter."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
-        with patch('HoloLoom.unified_api.WeavingOrchestrator'):
+        with patch('hololoom.unified_api.WeavingOrchestrator'):
             loom = await HoloLoom.create(memory_backend="simple")
 
             assert loom is not None
@@ -73,9 +73,9 @@ class TestHoloLoomCreation:
     @pytest.mark.asyncio
     async def test_create_with_synthesis_enabled(self, mock_all_external_deps):
         """create() should accept enable_synthesis parameter."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
-        with patch('HoloLoom.unified_api.WeavingOrchestrator'):
+        with patch('hololoom.unified_api.WeavingOrchestrator'):
             loom = await HoloLoom.create(enable_synthesis=True)
 
             assert loom is not None
@@ -90,8 +90,8 @@ class TestQueryMethod:
     @pytest.mark.asyncio
     async def test_query_returns_result(self, mock_all_external_deps):
         """query() should return a result."""
-        from HoloLoom.unified_api import HoloLoom
-        from HoloLoom.fabric.spacetime import Spacetime
+        from hololoom.unified_api import hololoom
+        from hololoom.fabric.spacetime import Spacetime
 
         # Mock weaver
         mock_weaver = AsyncMock()
@@ -115,8 +115,8 @@ class TestQueryMethod:
     @pytest.mark.asyncio
     async def test_query_calls_weaver(self, mock_all_external_deps):
         """query() should call weaver.weave()."""
-        from HoloLoom.unified_api import HoloLoom
-        from HoloLoom.fabric.spacetime import Spacetime
+        from hololoom.unified_api import hololoom
+        from hololoom.fabric.spacetime import Spacetime
 
         mock_weaver = AsyncMock()
         mock_weaver.weave = AsyncMock(return_value=Spacetime(
@@ -136,8 +136,8 @@ class TestQueryMethod:
     @pytest.mark.asyncio
     async def test_query_with_empty_string(self, mock_all_external_deps):
         """query() should handle empty string."""
-        from HoloLoom.unified_api import HoloLoom
-        from HoloLoom.fabric.spacetime import Spacetime
+        from hololoom.unified_api import hololoom
+        from hololoom.fabric.spacetime import Spacetime
 
         mock_weaver = AsyncMock()
         mock_weaver.weave = AsyncMock(return_value=Spacetime(
@@ -161,8 +161,8 @@ class TestChatMethod:
     @pytest.mark.asyncio
     async def test_chat_returns_result(self, mock_all_external_deps):
         """chat() should return a result."""
-        from HoloLoom.unified_api import HoloLoom
-        from HoloLoom.fabric.spacetime import Spacetime
+        from hololoom.unified_api import hololoom
+        from hololoom.fabric.spacetime import Spacetime
 
         mock_weaver = AsyncMock()
         mock_weaver.weave = AsyncMock(return_value=Spacetime(
@@ -183,8 +183,8 @@ class TestChatMethod:
     @pytest.mark.asyncio
     async def test_chat_maintains_conversation(self, mock_all_external_deps):
         """chat() should maintain conversation context."""
-        from HoloLoom.unified_api import HoloLoom
-        from HoloLoom.fabric.spacetime import Spacetime
+        from hololoom.unified_api import hololoom
+        from hololoom.fabric.spacetime import Spacetime
 
         mock_weaver = AsyncMock()
         mock_weaver.weave = AsyncMock(return_value=Spacetime(
@@ -211,7 +211,7 @@ class TestIngestionMethods:
     @pytest.mark.asyncio
     async def test_ingest_text(self, mock_all_external_deps):
         """ingest_text() should accept text content."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         mock_weaver = AsyncMock()
         loom = HoloLoom(weaver=mock_weaver, enable_synthesis=False)
@@ -225,7 +225,7 @@ class TestIngestionMethods:
     @pytest.mark.asyncio
     async def test_ingest_text_with_empty_string(self, mock_all_external_deps):
         """ingest_text() should handle empty string."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         mock_weaver = AsyncMock()
         loom = HoloLoom(weaver=mock_weaver, enable_synthesis=False)
@@ -237,7 +237,7 @@ class TestIngestionMethods:
     @pytest.mark.asyncio
     async def test_ingest_text_with_metadata(self, mock_all_external_deps):
         """ingest_text() should accept metadata parameter."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         mock_weaver = AsyncMock()
         loom = HoloLoom(weaver=mock_weaver, enable_synthesis=False)
@@ -250,12 +250,12 @@ class TestIngestionMethods:
     @pytest.mark.asyncio
     async def test_ingest_web(self, mock_all_external_deps):
         """ingest_web() should accept URL."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         mock_weaver = AsyncMock()
         loom = HoloLoom(weaver=mock_weaver, enable_synthesis=False)
 
-        with patch('HoloLoom.unified_api.WebsiteSpinner'):
+        with patch('hololoom.unified_api.WebsiteSpinner'):
             result = await loom.ingest_web("https://example.com")
 
             assert result is not None
@@ -263,12 +263,12 @@ class TestIngestionMethods:
     @pytest.mark.asyncio
     async def test_ingest_youtube(self, mock_all_external_deps):
         """ingest_youtube() should accept video ID."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         mock_weaver = AsyncMock()
         loom = HoloLoom(weaver=mock_weaver, enable_synthesis=False)
 
-        with patch('HoloLoom.unified_api.YouTubeSpinner'):
+        with patch('hololoom.unified_api.YouTubeSpinner'):
             result = await loom.ingest_youtube("VIDEO_ID")
 
             assert result is not None
@@ -279,7 +279,7 @@ class TestStatistics:
 
     def test_get_stats_returns_dict(self, mock_all_external_deps):
         """get_stats() should return dictionary."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         mock_weaver = Mock()
         loom = HoloLoom(weaver=mock_weaver, enable_synthesis=False)
@@ -291,7 +291,7 @@ class TestStatistics:
 
     def test_get_stats_includes_query_count(self, mock_all_external_deps):
         """get_stats() should include query count."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         mock_weaver = Mock()
         loom = HoloLoom(weaver=mock_weaver, enable_synthesis=False)
@@ -308,7 +308,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_handles_weaver_error_gracefully(self, mock_all_external_deps):
         """query() should handle weaver errors gracefully."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         mock_weaver = AsyncMock()
         mock_weaver.weave = AsyncMock(side_effect=Exception("Weaver error"))
@@ -324,7 +324,7 @@ class TestErrorHandling:
         """System should work without optional dependencies."""
         # This tests that imports don't fail when optional deps missing
         # Already tested by module import in other tests
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         # Should import successfully even if mythy not installed
         assert HoloLoom is not None
@@ -336,9 +336,9 @@ class TestConfiguration:
     @pytest.mark.asyncio
     async def test_create_accepts_config_object(self, bare_config, mock_all_external_deps):
         """create() should accept pattern corresponding to config mode."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
-        with patch('HoloLoom.unified_api.WeavingOrchestrator'):
+        with patch('hololoom.unified_api.WeavingOrchestrator'):
             # Create with pattern matching bare_config mode
             loom = await HoloLoom.create(pattern="bare")
 
@@ -346,7 +346,7 @@ class TestConfiguration:
 
     def test_init_stores_config(self, bare_config):
         """__init__() should store config parameter."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         mock_weaver = Mock()
         loom = HoloLoom(weaver=mock_weaver, config=bare_config, enable_synthesis=False)
@@ -361,11 +361,11 @@ class TestAsyncContextManager:
     @pytest.mark.asyncio
     async def test_context_manager_if_implemented(self, mock_all_external_deps):
         """If HoloLoom supports async context manager, test it."""
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
 
         # Check if context manager is implemented
         if hasattr(HoloLoom, '__aenter__'):
-            with patch('HoloLoom.unified_api.WeavingOrchestrator'):
+            with patch('hololoom.unified_api.WeavingOrchestrator'):
                 async with await HoloLoom.create() as loom:
                     assert loom is not None
         else:

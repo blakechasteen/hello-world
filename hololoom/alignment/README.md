@@ -75,7 +75,7 @@ Every decision is gated by safety checks, monitored for deception, bound by reso
 ### Installation
 
 ```python
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     create_guardrails,
     create_detector,
     create_guard,
@@ -88,7 +88,7 @@ from HoloLoom.alignment import (
 ```python
 import asyncio
 from pathlib import Path
-from HoloLoom.alignment import *
+from hololoom.alignment import *
 
 async def safe_query_processing(query_text: str):
     # Initialize alignment modules
@@ -160,7 +160,7 @@ asyncio.run(safe_query_processing("What is Thompson Sampling?"))
 #### API
 
 ```python
-from HoloLoom.alignment.safety_guardrails import create_guardrails
+from hololoom.alignment.safety_guardrails import create_guardrails
 
 guardrails = create_guardrails()
 
@@ -201,7 +201,7 @@ guardrails.policies[ActionCategory.DELETION] = SafetyPolicy(
 #### API
 
 ```python
-from HoloLoom.alignment.deception_detection import create_detector
+from hololoom.alignment.deception_detection import create_detector
 
 detector = create_detector()
 
@@ -260,7 +260,7 @@ probe = BehavioralProbe(
 #### API
 
 ```python
-from HoloLoom.alignment.instrumental_convergence import create_guard
+from hololoom.alignment.instrumental_convergence import create_guard
 
 guard = create_guard()
 
@@ -312,7 +312,7 @@ allowed, reason = guard.check_autonomy_limits()
 #### API
 
 ```python
-from HoloLoom.alignment.audit_trail import create_audit_trail
+from hololoom.alignment.audit_trail import create_audit_trail
 
 audit = create_audit_trail(persist_path=Path("./logs"), auto_flush=True)
 
@@ -375,7 +375,7 @@ tool_selections = audit.query_by_metadata({"tool": "search"})
 The alignment framework provides both implementation API (above) and specification-compliant API:
 
 ```python
-from HoloLoom.alignment.api_compatibility import patch_alignment_api
+from hololoom.alignment.api_compatibility import patch_alignment_api
 
 # Apply compatibility patches
 patch_alignment_api()
@@ -402,7 +402,7 @@ guard.configure_from_unified_bounds(
 ### Unpatch (if needed)
 
 ```python
-from HoloLoom.alignment.api_compatibility import unpatch_alignment_api
+from hololoom.alignment.api_compatibility import unpatch_alignment_api
 
 unpatch_alignment_api()  # Restore original API
 ```
@@ -414,9 +414,9 @@ unpatch_alignment_api()  # Restore original API
 ### Weaving Orchestrator Integration
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.alignment import create_guardrails, create_audit_trail
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.alignment import create_guardrails, create_audit_trail
+from hololoom.config import Config
 
 # Create orchestrator with alignment
 config = Config.fast()
@@ -478,8 +478,8 @@ The Alignment Framework integrates with HoloLoom's **Metaprompting Refinement Fr
 Generate structured prompts for evaluating action risk:
 
 ```python
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-from HoloLoom.alignment import ActionRequest, ActionCategory
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.alignment import ActionRequest, ActionCategory
 
 # Create guardrails with MRF enhancement
 guardrails = SafetyGuardrails(
@@ -708,7 +708,7 @@ Verify:
 MRF integration includes quality assessment for generated prompts:
 
 ```python
-from HoloLoom.alignment.mrf_integration import assess_mrf_prompt_quality
+from hololoom.alignment.mrf_integration import assess_mrf_prompt_quality
 
 # Assess prompt quality
 quality_score = assess_mrf_prompt_quality(
@@ -733,7 +733,7 @@ print(f"Quality score: {quality_score:.2f}")  # 0.0-1.0
 ```python
 import asyncio
 from pathlib import Path
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     SafetyGuardrails,
     create_audit_trail,
     ActionRequest,
@@ -758,7 +758,7 @@ async def mrf_enhanced_safety_pipeline(query_text: str):
         category=ActionCategory.QUERY
     )
 
-    # Step 2: Get epistemic confidence (from HoloLoom awareness)
+    # Step 2: Get epistemic confidence (from hololoom awareness)
     # In production, this comes from awareness graph
     epistemic_confidence = 0.75
 
@@ -863,12 +863,12 @@ guardrails = SafetyGuardrails(
 
 ```bash
 # Run all MRF integration tests
-pytest HoloLoom/alignment/tests/test_mrf_integration.py -v
+pytest hololoom/alignment/tests/test_mrf_integration.py -v
 
 # Specific test groups
-pytest HoloLoom/alignment/tests/test_mrf_integration.py::TestMRFPromptGeneration -v
-pytest HoloLoom/alignment/tests/test_mrf_integration.py::TestQualityAssessment -v
-pytest HoloLoom/alignment/tests/test_mrf_integration.py::TestIntegration -v
+pytest hololoom/alignment/tests/test_mrf_integration.py::TestMRFPromptGeneration -v
+pytest hololoom/alignment/tests/test_mrf_integration.py::TestQualityAssessment -v
+pytest hololoom/alignment/tests/test_mrf_integration.py::TestIntegration -v
 ```
 
 **Test Coverage** (18 tests):
@@ -922,8 +922,8 @@ else:
 
 ### Related Documentation
 
-- **MRF Core**: [HoloLoom/prompting/unified_mrf.py](../prompting/unified_mrf.py) (915 lines)
-- **MRF Quick Start**: [HoloLoom/prompting/MRF_QUICK_START.md](../prompting/MRF_QUICK_START.md)
+- **MRF Core**: [hololoom/prompting/unified_mrf.py](../prompting/unified_mrf.py) (915 lines)
+- **MRF Quick Start**: [hololoom/prompting/MRF_QUICK_START.md](../prompting/MRF_QUICK_START.md)
 - **MRF in CLAUDE.md**: [CLAUDE.md](../../CLAUDE.md) (Metaprompting section)
 - **Integration Module**: [mrf_integration.py](./mrf_integration.py) (450 lines)
 
@@ -952,10 +952,10 @@ else:
 
 ```bash
 # Standalone script (recommended)
-python HoloLoom/alignment/tests/run_benchmarks.py
+python hololoom/alignment/tests/run_benchmarks.py
 
 # Or via pytest
-pytest HoloLoom/alignment/tests/test_performance.py -v
+pytest hololoom/alignment/tests/test_performance.py -v
 ```
 
 ---
@@ -980,13 +980,13 @@ pytest HoloLoom/alignment/tests/test_performance.py -v
 
 ```bash
 # All functional tests
-pytest HoloLoom/alignment/tests/test_alignment.py -v
+pytest hololoom/alignment/tests/test_alignment.py -v
 
 # All performance tests
-pytest HoloLoom/alignment/tests/test_performance.py -v
+pytest hololoom/alignment/tests/test_performance.py -v
 
 # Specific test
-pytest HoloLoom/alignment/tests/test_alignment.py::TestSafetyGuardrails::test_01_safe_query -v
+pytest hololoom/alignment/tests/test_alignment.py::TestSafetyGuardrails::test_01_safe_query -v
 ```
 
 ---
@@ -1050,7 +1050,7 @@ Processing Query: What is Thompson Sampling?
 ## File Structure
 
 ```
-HoloLoom/alignment/
+hololoom/alignment/
 ├── README.md                       # This file
 ├── PERFORMANCE_REPORT.md           # Detailed performance analysis
 │
@@ -1203,10 +1203,10 @@ See main [CLAUDE.md](../../CLAUDE.md) for development guidelines.
 
 ```bash
 # Functional tests
-pytest HoloLoom/alignment/tests/test_alignment.py -v
+pytest hololoom/alignment/tests/test_alignment.py -v
 
 # Performance tests
-python HoloLoom/alignment/tests/run_benchmarks.py
+python hololoom/alignment/tests/run_benchmarks.py
 
 # Integration demo
 python demos/demo_alignment_integration.py

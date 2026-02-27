@@ -22,7 +22,7 @@ from collections import defaultdict
 import numpy as np
 import torch
 
-from HoloLoom.dark_trace.protocol import (
+from hololoom.dark_trace.protocol import (
     TraceLens,
     Feature,
     FeatureSource,

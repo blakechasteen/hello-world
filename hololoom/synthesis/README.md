@@ -18,7 +18,7 @@ This means training on YOUR brain's reasoning patterns, not random internet nois
 ## Quick Start
 
 ```python
-from HoloLoom.synthesis import (
+from hololoom.synthesis import (
     MemoryEnricher, PatternExtractor, DataSynthesizer, SynthesisConfig
 )
 
@@ -262,7 +262,7 @@ Pattern Diversity: 2 types (qa_pair, definition)
 The synthesis pipeline integrates seamlessly with the conversational memory system:
 
 ```python
-from HoloLoom.conversational import conversational_loom
+from hololoom.conversational import conversational_loom
 
 # Create conversational system
 loom = await conversational_loom("Initial knowledge...")
@@ -273,7 +273,7 @@ await loom.chat("thanks")                       # importance: 0.18 → FORGOTTEN
 await loom.chat("How does the policy work?")   # importance: 0.75 → REMEMBERED
 
 # Later: Mine patterns from accumulated signal
-from HoloLoom.synthesis import MemoryEnricher, PatternExtractor, DataSynthesizer
+from hololoom.synthesis import MemoryEnricher, PatternExtractor, DataSynthesizer
 
 # Get only important memories (filtered signal)
 important_memories = loom.get_history(min_importance=0.4)

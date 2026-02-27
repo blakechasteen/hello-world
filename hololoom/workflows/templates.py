@@ -16,7 +16,7 @@ Author: HoloLoom Team
 Date: November 2025
 """
 
-from HoloLoom.workflows.schema import (
+from hololoom.workflows.schema import (
     WorkflowDefinition,
     WorkflowNode,
     NodeType,

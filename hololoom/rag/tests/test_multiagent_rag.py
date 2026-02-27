@@ -23,9 +23,9 @@ import time
 from unittest.mock import Mock, patch, AsyncMock
 from typing import List
 
-from HoloLoom.config import Config
-from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
-from HoloLoom.rag.multiagent_rag import (
+from hololoom.config import Config
+from hololoom.rag.simple_rag import SimpleRAG, RAGResult
+from hololoom.rag.multiagent_rag import (
     MultiAgentRAG,
     AgentResponse,
     MultiAgentRAGResult,

@@ -50,7 +50,7 @@ def run_test_file(test_file: str) -> Tuple[int, int, int, str]:
 
 
 def main():
-    test_dir = Path("/c/Users/blake/OneDrive/Documents/mythRL/HoloLoom/rag/tests")
+    test_dir = Path("/c/Users/blake/OneDrive/Documents/mythRL/hololoom/rag/tests")
 
     # Test files for each feature
     test_files = {

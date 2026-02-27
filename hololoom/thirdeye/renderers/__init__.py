@@ -13,7 +13,7 @@ Created: 2025-11-30
 Author: HoloLoom Team
 """
 
-from HoloLoom.thirdeye.renderers.webgl import (
+from hololoom.thirdeye.renderers.webgl import (
     WebGLRenderer,
     create_webgl_renderer,
 )

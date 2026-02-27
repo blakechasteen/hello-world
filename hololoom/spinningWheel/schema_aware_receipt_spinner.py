@@ -17,8 +17,8 @@ Pipeline:
 Result: Queryable knowledge graph instead of raw text!
 
 Usage:
-    from HoloLoom.spinningWheel import SchemaAwareReceiptSpinner
-    from HoloLoom.memory.graph import KG
+    from hololoom.spinningWheel import SchemaAwareReceiptSpinner
+    from hololoom.memory.graph import KG
 
     # Create spinner with Yarn Graph
     yarn_graph = KG()
@@ -42,11 +42,11 @@ from pathlib import Path
 from dataclasses import dataclass, field
 import hashlib
 
-from HoloLoom.spinningWheel.receipt_spinner import ReceiptSpinner, ReceiptData
-from HoloLoom.spinningWheel.schema_registry import SchemaRegistry, SchemaDefinition, FieldMapping
-from HoloLoom.spinningWheel.protocol import SpinResult
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.spinningWheel.receipt_spinner import ReceiptSpinner, ReceiptData
+from hololoom.spinningWheel.schema_registry import SchemaRegistry, SchemaDefinition, FieldMapping
+from hololoom.spinningWheel.protocol import SpinResult
+from hololoom.protocols.types import MemoryShard
+from hololoom.memory.graph import KG, KGEdge
 
 
 # ============================================================================

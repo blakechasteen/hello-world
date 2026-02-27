@@ -5,7 +5,7 @@ Tests for resource bounds and autonomy limits.
 """
 
 import pytest
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
     ResourceViolation,
     ResourceBounds,

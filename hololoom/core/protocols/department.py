@@ -679,7 +679,7 @@ class DepartmentManifest:
             config=config,
             capabilities=["retrieve", "reason", "synthesize"],
             dependencies=["memory_store", "embeddings"],
-            metadata={"author": "HoloLoom", "license": "MIT"}
+            metadata={"author": "hololoom", "license": "MIT"}
         )
     """
     config: DepartmentConfig

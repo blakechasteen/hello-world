@@ -106,7 +106,7 @@ User Request
     │
     └─► optimize_from_memory(sig, query)
             │
-            ├─► HoloLoom.weave(query)
+            ├─► hololoom.weave(query)
             │       │
             │       └─► Memory Search
             │               │

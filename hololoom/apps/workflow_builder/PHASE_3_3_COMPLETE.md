@@ -270,7 +270,7 @@ polarToCartesian(cx, cy, radius, angleDegrees) {
 
 ## File Modifications
 
-### HoloLoom/web_dashboard/js/policy_monitor.js
+### hololoom/web_dashboard/js/policy_monitor.js
 - **Lines added**: ~150
 - **Changes**:
   - Enhanced `renderThompsonChart()` with win rates (lines 132-253)
@@ -397,7 +397,7 @@ Legend:
 
 1. **Start server**:
    ```bash
-   PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+   PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
    ```
 
 2. **Open dashboard**:

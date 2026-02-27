@@ -45,21 +45,21 @@ import time
 from typing import Optional
 from dataclasses import dataclass
 
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.convergence.recursive_engine import (
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.convergence.recursive_engine import (
     RecursiveConvergenceEngine,
     RecursiveConvergenceResult,
     create_recursive_engine
 )
-from HoloLoom.protocols.recursive_reasoning import (
+from hololoom.protocols.recursive_reasoning import (
     RecursiveConfig,
     ReasoningStrategy,
     ReasoningJournal
 )
-from HoloLoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
+from hololoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
 
 logger = logging.getLogger(__name__)
 
@@ -88,9 +88,9 @@ class RecursiveWeavingOrchestrator(WeavingOrchestrator):
 
     Usage:
     ```python
-    from HoloLoom.config import Config
-    from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
-    from HoloLoom.protocols.recursive_reasoning import RecursiveConfig, ReasoningStrategy
+    from hololoom.config import Config
+    from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
+    from hololoom.protocols.recursive_reasoning import RecursiveConfig, ReasoningStrategy
 
     # Create with recursive reasoning enabled
     config = Config.fused()

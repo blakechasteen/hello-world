@@ -30,10 +30,10 @@ import logging
 import os
 import json
 
-from HoloLoom.core.protocols.types import MemoryShard
+from hololoom.core.protocols.types import MemoryShard
 
 # UnifiedMRF for enhanced prompting (Phase 2.2 - Nov 2025)
-from HoloLoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+from hololoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
 
 logger = logging.getLogger(__name__)
 

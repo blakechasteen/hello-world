@@ -21,7 +21,7 @@ from typing import Any, Dict
 from unittest.mock import AsyncMock, MagicMock, patch
 from dataclasses import dataclass
 
-from HoloLoom.chaining import (
+from hololoom.chaining import (
     Chain,
     ChainStep,
     StepType,
@@ -30,7 +30,7 @@ from HoloLoom.chaining import (
     Conditions,
     CommonConditions,
 )
-from HoloLoom.protocols.department import DepartmentRequest, DepartmentResponse, ConfidenceMetadata
+from hololoom.protocols.department import DepartmentRequest, DepartmentResponse, ConfidenceMetadata
 
 
 # ============================================================================

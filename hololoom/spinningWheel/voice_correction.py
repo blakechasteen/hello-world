@@ -16,7 +16,7 @@ Features:
 - Automatic propagation to similar transformations
 
 Usage:
-    from HoloLoom.spinningWheel import VoiceCorrector
+    from hololoom.spinningWheel import VoiceCorrector
 
     corrector = VoiceCorrector()
 

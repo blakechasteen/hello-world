@@ -79,7 +79,7 @@ class SaaSConfig:
     fallback_to_sqlite: bool = True
 
     # Schema
-    schema_path: str = "HoloLoom/saas/schema.sql"
+    schema_path: str = "hololoom/saas/schema.sql"
 
     # API Key settings
     key_prefix: str = "holo"

@@ -2,7 +2,7 @@
 
 CARTS Phase 4: Multi-Agent Swarm System
 Status: Foundation Implementation (December 2025)
-Location: HoloLoom/redteam/swarm/
+Location: hololoom/redteam/swarm/
 Performance Target: <10ms message latency
 
 FIRST PRINCIPLE: "Safety is not a constraint on effectiveness;

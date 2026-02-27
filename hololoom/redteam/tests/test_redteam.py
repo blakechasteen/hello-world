@@ -11,7 +11,7 @@ Tests all CARTS components:
 - Report generation
 - Orchestration
 
-Run with: pytest HoloLoom/redteam/tests/test_redteam.py -v
+Run with: pytest hololoom/redteam/tests/test_redteam.py -v
 """
 
 import pytest
@@ -20,7 +20,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta
 
-from HoloLoom.redteam import (
+from hololoom.redteam import (
     # Strategies
     AttackStrategy,
     AttackPayload,

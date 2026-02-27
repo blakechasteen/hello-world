@@ -9,7 +9,7 @@ departments that compose through confidence negotiation.
 Quick Start:
 
     # Import core types
-    from HoloLoom.departments import (
+    from hololoom.departments import (
         Department,
         BaseDepartment,
         DepartmentRegistry,
@@ -68,7 +68,7 @@ Quick Start:
 
 # Import from canonical location (protocols/) directly to avoid
 # triggering the deprecation warning in the .protocol shim.
-from HoloLoom.protocols.department import (
+from hololoom.protocols.department import (
     # Confidence System
     ConfidenceLevel,
     ConfidenceMetadata,

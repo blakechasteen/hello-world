@@ -76,7 +76,7 @@ Memory Backend (INMEMORY/HYBRID/HYPERSPACE)
 ### Basic Usage
 
 ```python
-from HoloLoom.spinningWheel.git_spinner import GitSpinner
+from hololoom.spinningWheel.git_spinner import GitSpinner
 
 # Create spinner
 spinner = GitSpinner(importance_threshold=0.3)
@@ -112,7 +112,7 @@ async for shard in spinner.spin_stream("/path/to/large/repo"):
 ### Convenience Functions
 
 ```python
-from HoloLoom.spinningWheel.git_spinner import (
+from hololoom.spinningWheel.git_spinner import (
     spin_repository,
     spin_repository_incremental
 )
@@ -358,13 +358,13 @@ async for shard in spinner.spin_stream(repo_path):
 
 ```bash
 # All GitSpinner tests
-pytest HoloLoom/tests/unit/test_git_spinner.py -v
+pytest hololoom/tests/unit/test_git_spinner.py -v
 
 # Specific test
-pytest HoloLoom/tests/unit/test_git_spinner.py::test_git_spinner_spin -v
+pytest hololoom/tests/unit/test_git_spinner.py::test_git_spinner_spin -v
 
 # With coverage
-pytest HoloLoom/tests/unit/test_git_spinner.py --cov=HoloLoom.spinningWheel.git_spinner
+pytest hololoom/tests/unit/test_git_spinner.py --cov=hololoom.spinningWheel.git_spinner
 ```
 
 ---
@@ -401,9 +401,9 @@ python /path/to/demos/git_spinner_example.py
 ### With HoloLoom Memory
 
 ```python
-from HoloLoom.spinningWheel.git_spinner import GitSpinner
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.config import Config
+from hololoom.spinningWheel.git_spinner import GitSpinner
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config
 
 # Create memory backend
 config = Config.fast()
@@ -425,8 +425,8 @@ await memory.add_shards(result.shards)
 ### With WeavingOrchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import Query
 
 # Shards are in memory
 async with WeavingOrchestrator(cfg=config, shards=result.shards) as orchestrator:
@@ -443,7 +443,7 @@ async with WeavingOrchestrator(cfg=config, shards=result.shards) as orchestrator
 ## File Structure
 
 ```
-HoloLoom/spinningWheel/
+hololoom/spinningWheel/
 ├── git_spinner.py                   # GitSpinner implementation (640 lines)
 │   ├── GitParser (250 lines)
 │   ├── GitCommit (dataclass)

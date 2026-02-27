@@ -1,21 +1,21 @@
-# HoloLoom SaaS Docker Compose
+# hololoom SaaS Docker Compose
 #
 # Includes:
 # - PostgreSQL database
-# - HoloLoom SaaS API
+# - hololoom SaaS API
 #
 # Usage:
 #   # Start services
-#   docker-compose -f HoloLoom/saas/docker-compose.yml up -d
+#   docker-compose -f hololoom/saas/docker-compose.yml up -d
 #
 #   # View logs
-#   docker-compose -f HoloLoom/saas/docker-compose.yml logs -f
+#   docker-compose -f hololoom/saas/docker-compose.yml logs -f
 #
 #   # Stop services
-#   docker-compose -f HoloLoom/saas/docker-compose.yml down
+#   docker-compose -f hololoom/saas/docker-compose.yml down
 #
 #   # Clean up (removes data)
-#   docker-compose -f HoloLoom/saas/docker-compose.yml down -v
+#   docker-compose -f hololoom/saas/docker-compose.yml down -v
 
 version: '3.8'
 
@@ -44,12 +44,12 @@ services:
       - hololoom-saas
 
   # =========================================================================
-  # HoloLoom SaaS API
+  # hololoom SaaS API
   # =========================================================================
   api:
     build:
       context: ../..
-      dockerfile: HoloLoom/saas/Dockerfile
+      dockerfile: hololoom/saas/Dockerfile
     container_name: hololoom-saas-api
     ports:
       - "8000:8000"

@@ -11,7 +11,7 @@ Date: December 2025
 Phase: 11 - Plugin Ecosystem
 """
 
-from HoloLoom.dark_trace.plugins.examples.hello_plugin import (
+from hololoom.dark_trace.plugins.examples.hello_plugin import (
     HelloWorldPlugin,
     HelloAnalysisResult,
     create_test_template,

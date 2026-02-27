@@ -28,15 +28,15 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Any, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.config import Config
-    from HoloLoom.core.loom.command import LoomCommand
-    from HoloLoom.core.memory.graph import KG
-    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
-    from HoloLoom.tools.executor import ToolExecutor
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-    from HoloLoom.alignment.audit_trail import AuditTrail
+    from hololoom.config import Config
+    from hololoom.core.loom.command import LoomCommand
+    from hololoom.core.memory.graph import KG
+    from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.tools.executor import ToolExecutor
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.alignment.audit_trail import AuditTrail
 
-from HoloLoom.core.orchestrator.protocols import (
+from hololoom.core.orchestrator.protocols import (
     PatternSelectorProtocol,
     ThreadSelectorProtocol,
     FeatureExtractorProtocol,
@@ -50,7 +50,7 @@ from HoloLoom.core.orchestrator.protocols import (
     DefaultToolExecutor,
     DefaultSpacetimeAssembler,
 )
-from HoloLoom.core.orchestrator.pipeline import ExecutorPipeline
+from hololoom.core.orchestrator.pipeline import ExecutorPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +201,7 @@ def create_component_defaults(
     convergence_engine = None
     if policy is not None:
         try:
-            from HoloLoom.core.convergence.engine import ConvergenceEngine
+            from hololoom.core.convergence.engine import ConvergenceEngine
             convergence_engine = ConvergenceEngine(policy=policy, cfg=cfg)
         except (ImportError, Exception) as e:
             log.debug(f"Could not create ConvergenceEngine: {e}")
@@ -486,7 +486,7 @@ def create_pipeline_with_protocols(
     components.validate()
     log = logger or logging.getLogger(__name__)
 
-    from HoloLoom.core.orchestrator.stages.executors import (
+    from hololoom.core.orchestrator.stages.executors import (
         MetaPromptExecutor,
         PatternSelectionExecutor,
         ChronoTriggerExecutor,

@@ -16,7 +16,7 @@ Requires: ast (stdlib for Python)
 Optional: tree-sitter (multi-language parsing), gitpython (git integration)
 
 Usage:
-    from HoloLoom.spinningWheel.codebase_spinner import CodebaseSpinner, CodebaseProject
+    from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner, CodebaseProject
 
     # Single file
     spinner = CodebaseSpinner()
@@ -43,8 +43,8 @@ import json
 import time
 import subprocess
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
@@ -52,7 +52,7 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceScore,
     ImportanceSignals
 )
-from HoloLoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass

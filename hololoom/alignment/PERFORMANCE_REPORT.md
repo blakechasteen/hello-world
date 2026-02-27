@@ -191,7 +191,7 @@ Per-query memory allocation:
 
 ### Benchmark Test Suite
 
-**File**: `HoloLoom/alignment/tests/test_performance.py`
+**File**: `hololoom/alignment/tests/test_performance.py`
 **Lines**: 549 (comprehensive)
 **Tests**: 13 benchmark tests
 
@@ -206,10 +206,10 @@ Per-query memory allocation:
 **Invocation**:
 ```bash
 # Run all benchmarks
-python HoloLoom/alignment/tests/run_benchmarks.py
+python hololoom/alignment/tests/run_benchmarks.py
 
 # Or via pytest
-pytest HoloLoom/alignment/tests/test_performance.py -v
+pytest hololoom/alignment/tests/test_performance.py -v
 ```
 
 ---
@@ -321,4 +321,4 @@ AuditTrail:
 
 **Generated**: November 1, 2025
 **Test Environment**: Windows 10, Python 3.12, Standard Development Machine
-**Benchmark Tool**: `HoloLoom/alignment/tests/run_benchmarks.py`
+**Benchmark Tool**: `hololoom/alignment/tests/run_benchmarks.py`

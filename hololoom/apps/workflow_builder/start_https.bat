@@ -1,6 +1,6 @@
 @echo off
 echo ============================================================
-echo   Starting HoloLoom Dashboard with HTTPS
+echo   Starting hololoom Dashboard with HTTPS
 echo ============================================================
 echo.
 echo   Server will start at: https://localhost:8002

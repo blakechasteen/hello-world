@@ -96,7 +96,7 @@ app.add_middleware(
 
 **Client-Side Usage**:
 ```python
-from HoloLoom.server.request_signing import RequestSigningClient
+from hololoom.server.request_signing import RequestSigningClient
 
 client = RequestSigningClient(key_id="your_key_id", secret="your_secret")
 headers = client.sign_request(
@@ -354,7 +354,7 @@ ENV ENABLE_SIGNING=true
 ENV ENABLE_MONITORING=true
 
 # Run server
-CMD ["uvicorn", "HoloLoom.server.ar_api_secured:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "hololoom.server.ar_api_secured:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ### Kubernetes Deployment

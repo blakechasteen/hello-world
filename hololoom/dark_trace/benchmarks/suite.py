@@ -257,7 +257,7 @@ class BenchmarkSuite:
 
     def benchmark_fingerprinting(self, adapter, inputs) -> List[BenchmarkResult]:
         """Benchmark fingerprinting operations."""
-        from HoloLoom.dark_trace.models import ModelFingerprinter
+        from hololoom.dark_trace.models import ModelFingerprinter
 
         fingerprinter = ModelFingerprinter(adapter, model_id="benchmark")
         layers = adapter.get_layer_names()
@@ -379,7 +379,7 @@ class BenchmarkSuite:
 
         # Create dummy inputs if no adapter provided
         if adapter is None:
-            from HoloLoom.dark_trace.models import DummyAdapter
+            from hololoom.dark_trace.models import DummyAdapter
             adapter = DummyAdapter(
                 n_layers=self.config.n_layers,
                 hidden_dim=self.config.hidden_dim

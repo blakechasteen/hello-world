@@ -11,7 +11,7 @@
 python start_agentic_dashboard.py
 
 # Option 2: Direct server
-python HoloLoom/web_dashboard/agentic_server.py
+python hololoom/web_dashboard/agentic_server.py
 ```
 
 Then open your browser to: **http://localhost:8001**

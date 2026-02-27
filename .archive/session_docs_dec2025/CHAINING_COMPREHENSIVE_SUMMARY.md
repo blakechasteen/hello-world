@@ -2,7 +2,7 @@
 
 **Date**: December 11, 2025
 **Status**: ✅ Production Ready (Complete - November 2025)
-**Location**: `HoloLoom/chaining/`
+**Location**: `hololoom/chaining/`
 **Total Code**: ~3,945 lines (core + tests + documentation)
 
 ---
@@ -22,7 +22,7 @@
 
 ### Directory Structure
 ```
-HoloLoom/chaining/
+hololoom/chaining/
 ├── __init__.py                 (137 lines) - Public API exports
 ├── chain.py                    (301 lines) - Core chain definitions
 ├── orchestrator.py             (528 lines) - Execution engine
@@ -67,8 +67,8 @@ The HoloLoom Chaining System provides a **declarative, pattern-based framework f
 ### 30 Seconds: Simple Verified Query
 
 ```python
-from HoloLoom.chaining import ChainPatterns, ChainOrchestrator
-from HoloLoom.departments.rag_department import RAGDepartment
+from hololoom.chaining import ChainPatterns, ChainOrchestrator
+from hololoom.departments.rag_department import RAGDepartment
 
 # Use a pre-built pattern (execute → verify → output)
 chain = ChainPatterns.verified_query()
@@ -401,8 +401,8 @@ safety_gated        ██████████████ ~150ms + safety
 Works seamlessly with any department implementing `DepartmentProtocol`:
 
 ```python
-from HoloLoom.departments.rag_department import RAGDepartment
-from HoloLoom.departments.quality_assurance import QADepartment
+from hololoom.departments.rag_department import RAGDepartment
+from hololoom.departments.quality_assurance import QADepartment
 
 # With RAG department
 async with RAGDepartment() as rag_dept:
@@ -419,7 +419,7 @@ async with QADepartment() as qa_dept:
 
 **Weaving Orchestrator Integration**:
 ```python
-from HoloLoom.chaining import ChainPatterns
+from hololoom.chaining import ChainPatterns
 
 chain = ChainPatterns.verified_query()
 # Use within WeavingOrchestrator context
@@ -433,7 +433,7 @@ condition = Conditions.memory_fresh()  # From MemoryConditions
 
 **Evaluation Integration**:
 ```python
-from HoloLoom.chaining.evaluation import ChainEvaluator, LLMJudge
+from hololoom.chaining.evaluation import ChainEvaluator, LLMJudge
 
 judge = LLMJudge(provider="ollama")
 evaluator = ChainEvaluator(judge=judge)
@@ -508,7 +508,7 @@ evaluator = ChainEvaluator(judge=judge)
 ## Additional Resources
 
 ### Complete Documentation
-- **Main README**: `/HoloLoom/chaining/README.md` (1,110 lines)
+- **Main README**: `/hololoom/chaining/README.md` (1,110 lines)
   - Quick start guides
   - Detailed component documentation
   - Pattern reference
@@ -518,9 +518,9 @@ evaluator = ChainEvaluator(judge=judge)
   - FAQ section
 
 ### Test Coverage
-- **Orchestrator Tests**: `/HoloLoom/chaining/tests/test_chain_orchestrator.py` (605 lines)
+- **Orchestrator Tests**: `/hololoom/chaining/tests/test_chain_orchestrator.py` (605 lines)
   - 20+ comprehensive test cases
-- **Pattern Tests**: `/HoloLoom/chaining/tests/test_new_patterns.py` (694 lines)
+- **Pattern Tests**: `/hololoom/chaining/tests/test_new_patterns.py` (694 lines)
   - 18+ test cases validating all patterns
 
 ### Demos

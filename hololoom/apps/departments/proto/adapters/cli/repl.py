@@ -68,8 +68,8 @@ def clear_screen():
 
 async def start_repl():
     """Start the interactive REPL."""
-    from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
-    from HoloLoom.apps.departments.proto.domain import CodeContext, ProtoSession
+    from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+    from hololoom.apps.departments.proto.domain import CodeContext, ProtoSession
 
     # Initialize
     config = ProtoConfig.default()

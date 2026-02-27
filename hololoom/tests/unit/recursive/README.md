@@ -139,19 +139,19 @@ Tests Thompson Sampling, policy weights, and background learning.
 
 ```bash
 # Run all recursive learning tests
-pytest HoloLoom/tests/unit/recursive/ -v
+pytest hololoom/tests/unit/recursive/ -v
 
 # Run specific test file
-pytest HoloLoom/tests/unit/recursive/test_scratchpad.py -v
+pytest hololoom/tests/unit/recursive/test_scratchpad.py -v
 
 # Run specific test class
-pytest HoloLoom/tests/unit/recursive/test_hot_patterns.py::TestHotPatternTracker -v
+pytest hololoom/tests/unit/recursive/test_hot_patterns.py::TestHotPatternTracker -v
 
 # Run specific test function
-pytest HoloLoom/tests/unit/recursive/test_action_items.py::TestActionItem::test_is_overdue -v
+pytest hololoom/tests/unit/recursive/test_action_items.py::TestActionItem::test_is_overdue -v
 
 # Run with coverage
-pytest HoloLoom/tests/unit/recursive/ --cov=HoloLoom.recursive --cov-report=html
+pytest hololoom/tests/unit/recursive/ --cov=hololoom.recursive --cov-report=html
 ```
 
 ## Test Statistics

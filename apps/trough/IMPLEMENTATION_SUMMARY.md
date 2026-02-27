@@ -81,8 +81,8 @@ scales=[768]  # Compatible with nomic-embed-text-v1.5
 
 **Verified**:
 ```
-INFO:HoloLoom.loom.command:Selected pattern: bare
-INFO:HoloLoom.warp.space:WarpSpace initialized (scales=[768])
+INFO:hololoom.loom.command:Selected pattern: bare
+INFO:hololoom.warp.space:WarpSpace initialized (scales=[768])
 ✅ No more KeyError!
 ```
 

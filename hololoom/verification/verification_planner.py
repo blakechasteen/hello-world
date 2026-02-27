@@ -15,7 +15,7 @@ import re
 import logging
 from typing import Any, Dict, List, Optional
 
-from HoloLoom.verification.protocol import (
+from hololoom.verification.protocol import (
     ClaimType,
     DegradationLevel,
     VerifiableClaim,

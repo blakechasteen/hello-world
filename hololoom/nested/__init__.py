@@ -16,18 +16,18 @@ import sys
 
 
 _RENAME_MAP = {
-    "HoloLoom.nested.ultra_fast": "HoloLoom.memory.nested_ultra_fast",
-    "HoloLoom.nested.hierarchy": "HoloLoom.memory.nested_hierarchy",
+    "hololoom.nested.ultra_fast": "hololoom.memory.nested_ultra_fast",
+    "hololoom.nested.hierarchy": "hololoom.memory.nested_hierarchy",
 }
 
 
 class _DeprecatedFinder:
     """Meta-path finder that redirects HoloLoom.nested.* imports."""
 
-    _PREFIX = "HoloLoom.nested."
+    _PREFIX = "hololoom.nested."
 
     def find_module(self, fullname, path=None):
-        if fullname == "HoloLoom.nested" or fullname.startswith(
+        if fullname == "hololoom.nested" or fullname.startswith(
             self._PREFIX
         ):
             return self
@@ -39,7 +39,7 @@ class _DeprecatedFinder:
         new_name = _RENAME_MAP.get(fullname)
         if new_name is None:
             # For the package itself, re-export from memory
-            new_name = "HoloLoom.memory"
+            new_name = "hololoom.memory"
         warnings.warn(
             f"Importing from {fullname} is deprecated. "
             f"Use {new_name} instead.",

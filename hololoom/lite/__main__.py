@@ -8,7 +8,7 @@ Usage:
     python -m HoloLoom.lite desktop    # Gradio desktop app
 """
 
-from HoloLoom.lite import main
+from hololoom.lite import main
 
 if __name__ == "__main__":
     main()

@@ -21,7 +21,7 @@ Claude Desktop config:
         "mcpServers": {
             "hololoom-lite": {
                 "command": "python",
-                "args": ["-m", "HoloLoom.lite.mcp_server"],
+                "args": ["-m", "hololoom.lite.mcp_server"],
                 "cwd": "C:/path/to/mythRL"
             }
         }
@@ -55,7 +55,7 @@ async def get_loom():
     """Get or create HoloLoom Lite instance."""
     global _loom
     if _loom is None:
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
         _loom = HoloLoomLite()
         await _loom._initialize()
         logger.info("HoloLoom Lite initialized")

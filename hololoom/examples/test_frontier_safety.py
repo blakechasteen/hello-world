@@ -9,8 +9,8 @@ from pathlib import Path
 # Ensure project root is in path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from HoloLoom.fabric.materializer import Materializer
-from HoloLoom.fabric.spacetime import Spacetime, Artifact, ArtifactType
+from hololoom.fabric.materializer import Materializer
+from hololoom.fabric.spacetime import Spacetime, Artifact, ArtifactType
 
 async def main():
     print("==========================================")

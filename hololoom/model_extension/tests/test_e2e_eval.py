@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from HoloLoom.model_extension.wrapper import (
+from hololoom.model_extension.wrapper import (
     MemoryAugmentedLLM,
     LLMConfig,
     RetrievalStrategy,
@@ -30,17 +30,17 @@ from HoloLoom.model_extension.wrapper import (
     MemoryAugmentedResponse,
     InMemoryBackend,
 )
-from HoloLoom.model_extension.uncertainty import (
+from hololoom.model_extension.uncertainty import (
     UncertaintyEnvelope,
     ConfidenceTier,
 )
-from HoloLoom.model_extension.verification import (
+from hololoom.model_extension.verification import (
     VerificationStatus,
     VerificationTier,
     ClaimType,
     VerificationResult,
 )
-from HoloLoom.model_extension.providers import (
+from hololoom.model_extension.providers import (
     GenerationResult,
     GenerationConfig,
 )
@@ -288,8 +288,8 @@ class TestDomainAdaptation:
     @pytest.mark.asyncio
     async def test_learn_and_query_domain_knowledge(self):
         """Ingest domain docs → Query → Verify domain-relevant answer."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -313,8 +313,8 @@ class TestDomainAdaptation:
     @pytest.mark.asyncio
     async def test_domain_switch_preserves_old_knowledge(self):
         """Learn domain A → Learn domain B → Query domain A still works."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -343,8 +343,8 @@ class TestDomainAdaptation:
     @pytest.mark.asyncio
     async def test_domain_adaptation_metrics(self):
         """Measure domain adaptation effectiveness."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -395,8 +395,8 @@ class TestMultiTurnLearning:
     @pytest.mark.asyncio
     async def test_feedback_improves_pattern_weights(self):
         """Query → Feedback → Query again → Verify weight update."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -433,8 +433,8 @@ class TestMultiTurnLearning:
     @pytest.mark.asyncio
     async def test_negative_feedback_decreases_weights(self):
         """Negative feedback should decrease pattern weights."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -469,8 +469,8 @@ class TestMultiTurnLearning:
     @pytest.mark.asyncio
     async def test_learning_disabled_mode(self):
         """Disabled learning mode should not update weights."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -499,8 +499,8 @@ class TestMultiTurnLearning:
     @pytest.mark.asyncio
     async def test_multi_turn_improvement_tracking(self):
         """Track improvement over multiple turns."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -556,8 +556,8 @@ class TestCrossProviderConsistency:
         results = []
 
         for provider in providers:
-            with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-                 patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+            with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+                 patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
                 mock_provider.return_value = MagicMock(is_available=lambda: False)
                 mock_backend.return_value = TestMemoryBackend()
@@ -590,8 +590,8 @@ class TestCrossProviderConsistency:
         providers = ["anthropic", "openai"]
 
         for provider in providers:
-            with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-                 patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+            with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+                 patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
                 mock_provider.return_value = MagicMock(is_available=lambda: False)
                 mock_backend.return_value = TestMemoryBackend()
@@ -638,8 +638,8 @@ class TestVerificationPipeline:
     @pytest.mark.asyncio
     async def test_verification_tier_1_internal(self):
         """Tier 1: Internal consistency verification."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -703,8 +703,8 @@ class TestVerificationPipeline:
     @pytest.mark.asyncio
     async def test_verification_with_multiple_samples(self):
         """Multi-sample verification for higher confidence."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -836,8 +836,8 @@ class TestInfrastructureIntegration:
     @pytest.mark.asyncio
     async def test_inmemory_backend_fallback(self):
         """InMemoryBackend should work as fallback."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -854,8 +854,8 @@ class TestInfrastructureIntegration:
     @pytest.mark.asyncio
     async def test_session_id_generation(self):
         """Each session should have unique ID."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -872,8 +872,8 @@ class TestInfrastructureIntegration:
     @pytest.mark.asyncio
     async def test_pattern_weights_persistence(self):
         """Pattern weights should persist within session."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -900,8 +900,8 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_learn_content(self):
         """Learning empty content should be handled gracefully."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()
@@ -914,8 +914,8 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_recall_query(self):
         """Recalling with empty query should return empty results."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
 
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = TestMemoryBackend()

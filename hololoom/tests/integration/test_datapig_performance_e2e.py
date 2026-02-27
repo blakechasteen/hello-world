@@ -12,7 +12,7 @@ import time
 import tempfile
 import os
 import json
-from HoloLoom.datapig import DataPigDetector
+from hololoom.datapig import DataPigDetector
 
 
 # ============================================================================

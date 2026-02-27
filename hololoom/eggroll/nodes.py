@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 from typing import Any, List, Dict, Tuple, Optional
-from HoloLoom.eggroll.mirror_core import MirrorCoreAgent
-from HoloLoom.warp.eggroll_warp import SpectralScorer
+from hololoom.eggroll.mirror_core import MirrorCoreAgent
+from hololoom.warp.eggroll_warp import SpectralScorer
 
 class PerturbedModelWrapper:
     """

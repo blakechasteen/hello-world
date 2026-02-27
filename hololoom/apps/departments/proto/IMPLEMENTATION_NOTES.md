@@ -12,7 +12,7 @@ Three core files implementing the thin waist orchestrator pattern for Proto, Hol
 ### File Structure
 
 ```
-HoloLoom/departments/proto/core/
+hololoom/departments/proto/core/
 ├── __init__.py           (18 lines)  - Package exports
 ├── config.py             (216 lines) - Configuration system
 ├── engine.py             (529 lines) - Main orchestrator
@@ -182,8 +182,8 @@ async with ProtoEngine(config) as engine:
 ### With HoloLoom Agentic System
 
 ```python
-from HoloLoom.agentic import AgenticOrchestrator
-from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+from hololoom.agentic import AgenticOrchestrator
+from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
 
 # Create agentic orchestrator
 agentic = await AgenticOrchestrator.create(config, shards)
@@ -200,8 +200,8 @@ async with ProtoEngine(config, agentic_orchestrator=agentic) as engine:
 ### With Custom Abilities
 
 ```python
-from HoloLoom.apps.departments.proto.abilities import AbilityRegistry
-from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+from hololoom.apps.departments.proto.abilities import AbilityRegistry
+from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
 
 # Create ability registry
 abilities = AbilityRegistry()
@@ -218,10 +218,10 @@ response = await engine.process("review my code")
 ### Complete Integration
 
 ```python
-from HoloLoom.agentic import AgenticOrchestrator
-from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
-from HoloLoom.apps.departments.proto.abilities import AbilityRegistry
-from HoloLoom.apps.departments.proto.domain import CodeContext
+from hololoom.agentic import AgenticOrchestrator
+from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+from hololoom.apps.departments.proto.abilities import AbilityRegistry
+from hololoom.apps.departments.proto.domain import CodeContext
 
 # Setup
 config = ProtoConfig.full()

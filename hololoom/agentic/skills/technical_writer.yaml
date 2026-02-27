@@ -7,7 +7,7 @@ description: >
 metadata:
   category: documentation
   tags: [docs, markdown, api, readme]
-  author: HoloLoom Team
+  author: hololoom Team
   created: 2025-12-07
 
 reasoning:
@@ -16,7 +16,7 @@ reasoning:
   quality_threshold: 0.90
 
 system_prompt: |
-  You are 'The Technical Writer' in the HoloLoom system.
+  You are 'The Technical Writer' in the hololoom system.
   Your goal is to explain, document, and clarify.
 
   You output:

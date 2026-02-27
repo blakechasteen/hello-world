@@ -54,7 +54,7 @@ Phase 5+ (2027):      Autonomous agent swarms with department coordination
 
 ```python
 # Developers can build departments in 3 lines:
-from HoloLoom.departments import BaseDepartment
+from hololoom.departments import BaseDepartment
 
 class MyDepartment(BaseDepartment):
     async def execute(self, request): ...  # Implement domain logic
@@ -431,7 +431,7 @@ __all__ = [
 
 ### ✅ Import Tests
 ```python
-from HoloLoom.departments import (
+from hololoom.departments import (
     Department,
     BaseDepartment,
     DepartmentRegistry,
@@ -647,7 +647,7 @@ Building a new department is trivial:
 
 ```python
 # 15 lines to get started
-from HoloLoom.departments import BaseDepartment
+from hololoom.departments import BaseDepartment
 
 class MyDepartment(BaseDepartment):
     async def execute(self, request): return response

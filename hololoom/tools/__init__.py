@@ -12,6 +12,6 @@ Public API:
 Created: 2025-11-22 (Elegance Pass Refactoring)
 """
 
-from HoloLoom.tools.executor import ToolExecutor
+from hololoom.tools.executor import ToolExecutor
 
 __all__ = ['ToolExecutor']

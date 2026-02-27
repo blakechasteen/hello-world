@@ -9,7 +9,7 @@ Provides 4 consensus algorithms for different network scales:
 
 Quick Start:
     # Auto-select based on network size
-    from HoloLoom.federation.consensus import select_consensus
+    from hololoom.federation.consensus import select_consensus
 
     consensus = select_consensus(500, byzantine_tolerant=True)
     proposal_id = await consensus.propose(my_value)

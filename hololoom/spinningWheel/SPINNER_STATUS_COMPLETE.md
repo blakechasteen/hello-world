@@ -31,7 +31,7 @@ pip install torch  # Optional GPU acceleration
 
 **Usage**:
 ```python
-from HoloLoom.spinningWheel.whisper_spinner import transcribe_audio
+from hololoom.spinningWheel.whisper_spinner import transcribe_audio
 
 result = await transcribe_audio('interview.wav', model_size='base')
 ```
@@ -66,7 +66,7 @@ pip install pytube  # Optional metadata
 
 **Usage**:
 ```python
-from HoloLoom.spinningWheel.youtube_spinner import transcribe_youtube
+from hololoom.spinningWheel.youtube_spinner import transcribe_youtube
 
 result = await transcribe_youtube('https://youtu.be/dQw4w9WgXcQ')
 ```
@@ -97,7 +97,7 @@ pip install odfpy   # Optional .ods support
 
 **Usage**:
 ```python
-from HoloLoom.spinningWheel.spreadsheet_spinner import ingest_spreadsheet
+from hololoom.spinningWheel.spreadsheet_spinner import ingest_spreadsheet
 
 result = await ingest_spreadsheet('sales_data.xlsx', chunk_mode='sheet')
 ```
@@ -129,7 +129,7 @@ pip install pytesseract    # Optional OCR
 
 **Usage**:
 ```python
-from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
+from hololoom.spinningWheel.pdf_spinner import PDFSpinner
 
 spinner = PDFSpinner(chunk_by_page=True, enable_ocr=True)
 result = await spinner.spin('research_paper.pdf')
@@ -161,7 +161,7 @@ pip install beautifulsoup4  # Optional better HTML parsing
 
 **Usage**:
 ```python
-from HoloLoom.spinningWheel.email_spinner import EmailSpinner
+from hololoom.spinningWheel.email_spinner import EmailSpinner
 
 # IMAP
 spinner = EmailSpinner(
@@ -201,7 +201,7 @@ pip install spacy  # Optional better entity extraction
 
 **Usage**:
 ```python
-from HoloLoom.spinningWheel.codebase_spinner import CodebaseSpinner
+from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
 
 spinner = CodebaseSpinner(languages=['python'], include_tests=False)
 result = await spinner.spin_directory('./src/', recursive=True)
@@ -234,7 +234,7 @@ pip install GitPython
 
 **Usage**:
 ```python
-from HoloLoom.spinningWheel.git_spinner import GitSpinner
+from hololoom.spinningWheel.git_spinner import GitSpinner
 
 spinner = GitSpinner(checkpoint_dir='./checkpoints')
 result = await spinner.spin('./my_repo')
@@ -265,7 +265,7 @@ pip install matrix-nio
 
 **Usage**:
 ```python
-from HoloLoom.spinningWheel.matrix_spinner import MatrixSpinner
+from hololoom.spinningWheel.matrix_spinner import MatrixSpinner
 
 spinner = MatrixSpinner(homeserver_url='https://matrix.org')
 await spinner.login('user', 'password')
@@ -297,7 +297,7 @@ pip install beautifulsoup4 requests
 
 **Usage**:
 ```python
-from HoloLoom.spinningWheel.url_spinner import URLSpinner
+from hololoom.spinningWheel.url_spinner import URLSpinner
 
 spinner = URLSpinner(max_depth=2, max_pages=100, delay_seconds=1.0)
 result = await spinner.spin_website('https://example.com')

@@ -10,7 +10,7 @@ Tests the simplified 5-method API:
 6. Context manager support
 
 Run with:
-    pytest HoloLoom/tests/unit/test_lite.py -v
+    pytest hololoom/tests/unit/test_lite.py -v
 
 Date: December 2025
 """
@@ -31,49 +31,49 @@ class TestConfigLitePreset:
 
     def test_config_lite_exists(self):
         """Config.lite() factory method exists."""
-        from HoloLoom.config import Config
+        from hololoom.config import Config
         config = Config.lite()
         assert config is not None
 
     def test_config_lite_mode(self):
         """Config.lite() uses LITE execution mode."""
-        from HoloLoom.config import Config, ExecutionMode
+        from hololoom.config import Config, ExecutionMode
         config = Config.lite()
         assert config.mode == ExecutionMode.LITE
 
     def test_config_lite_memory_backend(self):
         """Config.lite() uses INMEMORY backend."""
-        from HoloLoom.config import Config, MemoryBackend
+        from hololoom.config import Config, MemoryBackend
         config = Config.lite()
         assert config.memory_backend == MemoryBackend.INMEMORY
 
     def test_config_lite_fast_mode(self):
         """Config.lite() enables fast_mode."""
-        from HoloLoom.config import Config
+        from hololoom.config import Config
         config = Config.lite()
         assert config.fast_mode is True
 
     def test_config_lite_scales(self):
         """Config.lite() uses single scale [768]."""
-        from HoloLoom.config import Config
+        from hololoom.config import Config
         config = Config.lite()
         assert config.scales == [768]
 
     def test_config_lite_working_memory_size(self):
         """Config.lite() has smaller working memory."""
-        from HoloLoom.config import Config
+        from hololoom.config import Config
         config = Config.lite()
         assert config.working_memory_size == 50
 
     def test_config_lite_safety_guardrails(self):
         """Config.lite() enables safety guardrails by default."""
-        from HoloLoom.config import Config
+        from hololoom.config import Config
         config = Config.lite()
         assert config.enable_safety_guardrails is True
 
     def test_config_lite_minimal_layers(self):
         """Config.lite() uses minimal transformer layers."""
-        from HoloLoom.config import Config
+        from hololoom.config import Config
         config = Config.lite()
         assert config.n_transformer_layers == 1
         assert config.n_attention_heads == 2
@@ -88,7 +88,7 @@ class TestLiteResult:
 
     def test_lite_result_creation(self):
         """LiteResult can be created with text only."""
-        from HoloLoom.lite.core import LiteResult
+        from hololoom.lite.core import LiteResult
         result = LiteResult(text="Hello, world!")
         assert result.text == "Hello, world!"
         assert result.confidence == 0.0
@@ -97,7 +97,7 @@ class TestLiteResult:
 
     def test_lite_result_full_creation(self):
         """LiteResult can be created with all fields."""
-        from HoloLoom.lite.core import LiteResult
+        from hololoom.lite.core import LiteResult
         result = LiteResult(
             text="Answer here",
             confidence=0.95,
@@ -111,13 +111,13 @@ class TestLiteResult:
 
     def test_lite_result_str(self):
         """LiteResult __str__ returns text."""
-        from HoloLoom.lite.core import LiteResult
+        from hololoom.lite.core import LiteResult
         result = LiteResult(text="Test response")
         assert str(result) == "Test response"
 
     def test_lite_result_default_none_handling(self):
         """LiteResult handles None sources/metadata correctly."""
-        from HoloLoom.lite.core import LiteResult
+        from hololoom.lite.core import LiteResult
         result = LiteResult(text="Test", sources=None, metadata=None)
         assert result.sources == []
         assert result.metadata == {}
@@ -132,7 +132,7 @@ class TestHoloLoomLiteInit:
 
     def test_hololoom_lite_init_default(self):
         """HoloLoomLite initializes with default config."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
         loom = HoloLoomLite()
         assert loom.config is not None
         assert loom._enable_safety is True
@@ -140,8 +140,8 @@ class TestHoloLoomLiteInit:
 
     def test_hololoom_lite_init_custom_config(self):
         """HoloLoomLite accepts custom config."""
-        from HoloLoom.lite.core import HoloLoomLite
-        from HoloLoom.config import Config
+        from hololoom.lite.core import HoloLoomLite
+        from hololoom.config import Config
 
         config = Config.lite()
         config.working_memory_size = 100
@@ -151,13 +151,13 @@ class TestHoloLoomLiteInit:
 
     def test_hololoom_lite_init_safety_disabled(self):
         """HoloLoomLite can disable safety."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
         loom = HoloLoomLite(enable_safety=False)
         assert loom._enable_safety is False
 
     def test_hololoom_lite_lazy_components(self):
         """HoloLoomLite lazy components are None initially."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
         loom = HoloLoomLite()
         assert loom._memory is None
         assert loom._embedder is None
@@ -185,13 +185,13 @@ class TestHoloLoomLiteBasicOps:
         mock_embedder = MagicMock()
         mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
 
-        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+        with patch('hololoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
             yield mock_embedder
 
     @pytest.mark.asyncio
     async def test_experience_stores_memory(self, mock_embeddings_class):
         """experience() stores content in memory."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             mem = await loom.experience("Thompson Sampling balances exploration")
@@ -203,7 +203,7 @@ class TestHoloLoomLiteBasicOps:
     @pytest.mark.asyncio
     async def test_experience_with_context(self, mock_embeddings_class):
         """experience() accepts context metadata."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             mem = await loom.experience(
@@ -217,7 +217,7 @@ class TestHoloLoomLiteBasicOps:
     @pytest.mark.asyncio
     async def test_recall_retrieves_memories(self, mock_embeddings_class):
         """recall() retrieves related memories."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store something first
@@ -230,7 +230,7 @@ class TestHoloLoomLiteBasicOps:
     @pytest.mark.asyncio
     async def test_recall_respects_limit(self, mock_embeddings_class):
         """recall() respects limit parameter."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store some memories
@@ -247,7 +247,7 @@ class TestHoloLoomLiteBasicOps:
     @pytest.mark.asyncio
     async def test_reflect_accepts_feedback(self, mock_embeddings_class):
         """reflect() accepts feedback on memories."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store a memory
@@ -262,7 +262,7 @@ class TestHoloLoomLiteBasicOps:
     @pytest.mark.asyncio
     async def test_reflect_handles_empty_memories(self, mock_embeddings_class):
         """reflect() handles empty memories list."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Should not raise with empty list
@@ -288,13 +288,13 @@ class TestLazyLoading:
         mock_embedder = MagicMock()
         mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
 
-        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+        with patch('hololoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
             yield mock_embedder
 
     @pytest.mark.asyncio
     async def test_agentic_lazy_loaded(self, mock_embeddings_class):
         """Agentic module lazy loading and fallback behavior."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Initially None (before reason call)
@@ -310,7 +310,7 @@ class TestLazyLoading:
     @pytest.mark.asyncio
     async def test_rag_lazy_loaded(self, mock_embeddings_class):
         """RAG module lazy loading and fallback behavior."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Initially None (before query call)
@@ -326,7 +326,7 @@ class TestLazyLoading:
     @pytest.mark.asyncio
     async def test_guardrails_lazy_loaded(self, mock_embeddings_class):
         """Guardrails lazy loading and fallback behavior."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite(enable_safety=False) as loom:
             # Initially None (safety disabled in init)
@@ -358,13 +358,13 @@ class TestGracefulDegradation:
         mock_embedder = MagicMock()
         mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
 
-        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+        with patch('hololoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
             yield mock_embedder
 
     @pytest.mark.asyncio
     async def test_reason_fallback_to_recall(self, mock_embeddings_class):
         """reason() falls back to recall-based answer when agentic unavailable."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store some content first
@@ -381,7 +381,7 @@ class TestGracefulDegradation:
     @pytest.mark.asyncio
     async def test_query_fallback_to_reason(self, mock_embeddings_class):
         """query() falls back to reason() when RAG unavailable."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store some content first
@@ -399,7 +399,7 @@ class TestGracefulDegradation:
     @pytest.mark.asyncio
     async def test_check_safety_fallback(self, mock_embeddings_class):
         """check_safety() returns fallback when guardrails unavailable."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite(enable_safety=False) as loom:
             # Mock _ensure_guardrails to return None (force fallback)
@@ -429,13 +429,13 @@ class TestContextManager:
         mock_embedder = MagicMock()
         mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
 
-        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+        with patch('hololoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
             yield mock_embedder
 
     @pytest.mark.asyncio
     async def test_async_context_manager(self, mock_embeddings_class):
         """HoloLoomLite works as async context manager."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             assert loom._initialized is True
@@ -443,7 +443,7 @@ class TestContextManager:
     @pytest.mark.asyncio
     async def test_context_manager_initializes(self, mock_embeddings_class):
         """Context manager initializes components."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         loom = HoloLoomLite()
         assert loom._initialized is False
@@ -456,7 +456,7 @@ class TestContextManager:
     @pytest.mark.asyncio
     async def test_context_manager_cleanup(self, mock_embeddings_class):
         """Context manager cleans up on exit."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         loom = HoloLoomLite()
 
@@ -469,7 +469,7 @@ class TestContextManager:
     @pytest.mark.asyncio
     async def test_manual_initialization(self, mock_embeddings_class):
         """HoloLoomLite can be initialized manually."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         loom = HoloLoomLite()
         await loom._initialize()
@@ -480,7 +480,7 @@ class TestContextManager:
     @pytest.mark.asyncio
     async def test_double_initialization_safe(self, mock_embeddings_class):
         """Double initialization is safe (no-op)."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         loom = HoloLoomLite()
         await loom._initialize()
@@ -507,12 +507,12 @@ class TestMetricsAndSummary:
         mock_embedder = MagicMock()
         mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
 
-        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+        with patch('hololoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
             yield mock_embedder
 
     def test_metrics_before_init(self):
         """get_metrics() works before initialization."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         loom = HoloLoomLite()
         metrics = loom.get_metrics()
@@ -523,7 +523,7 @@ class TestMetricsAndSummary:
     @pytest.mark.asyncio
     async def test_metrics_after_init(self, mock_embeddings_class):
         """get_metrics() returns correct values after initialization."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             metrics = loom.get_metrics()
@@ -532,7 +532,7 @@ class TestMetricsAndSummary:
     @pytest.mark.asyncio
     async def test_metrics_after_experience(self, mock_embeddings_class):
         """get_metrics() reflects stored memories."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store a memory using actual backend
@@ -544,7 +544,7 @@ class TestMetricsAndSummary:
 
     def test_summary_before_init(self):
         """summary() works before initialization."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         loom = HoloLoomLite()
         summary = loom.summary()
@@ -555,7 +555,7 @@ class TestMetricsAndSummary:
     @pytest.mark.asyncio
     async def test_summary_after_init(self, mock_embeddings_class):
         """summary() shows initialized state."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             summary = loom.summary()
@@ -582,13 +582,13 @@ class TestReasoningModes:
         mock_embedder = MagicMock()
         mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
 
-        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+        with patch('hololoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
             yield mock_embedder
 
     @pytest.mark.asyncio
     async def test_reason_direct_mode(self, mock_embeddings_class):
         """reason() works with direct mode."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store content using actual backend
@@ -601,7 +601,7 @@ class TestReasoningModes:
     @pytest.mark.asyncio
     async def test_reason_verify_mode(self, mock_embeddings_class):
         """reason() works with verify mode."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store content using actual backend
@@ -613,7 +613,7 @@ class TestReasoningModes:
     @pytest.mark.asyncio
     async def test_reason_invalid_mode_fallback(self, mock_embeddings_class):
         """reason() falls back to direct for invalid mode."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store content using actual backend
@@ -635,7 +635,7 @@ class TestSimpleLoomAlias:
 
     def test_simple_loom_alias_exists(self):
         """SimpleLoom is an alias for HoloLoomLite."""
-        from HoloLoom.lite.core import HoloLoomLite, SimpleLoom
+        from hololoom.lite.core import HoloLoomLite, SimpleLoom
         assert SimpleLoom is HoloLoomLite
 
     @pytest.fixture
@@ -646,13 +646,13 @@ class TestSimpleLoomAlias:
         mock_embedder = MagicMock()
         mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
 
-        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+        with patch('hololoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
             yield mock_embedder
 
     @pytest.mark.asyncio
     async def test_simple_loom_works(self, mock_embeddings_class):
         """SimpleLoom alias works identically."""
-        from HoloLoom.lite.core import SimpleLoom
+        from hololoom.lite.core import SimpleLoom
 
         async with SimpleLoom() as loom:
             # Use actual backend to store content
@@ -679,13 +679,13 @@ class TestIntegration:
         mock_embedder = MagicMock()
         mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
 
-        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+        with patch('hololoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
             yield mock_embedder
 
     @pytest.mark.asyncio
     async def test_full_workflow(self, mock_embeddings_class):
         """Test complete experience -> recall -> reflect workflow."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # 1. Store memories using actual backend
@@ -708,7 +708,7 @@ class TestIntegration:
     @pytest.mark.asyncio
     async def test_reason_with_stored_knowledge(self, mock_embeddings_class):
         """Test reasoning uses stored knowledge via fallback."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store knowledge using actual backend
@@ -727,7 +727,7 @@ class TestIntegration:
     @pytest.mark.asyncio
     async def test_safety_check_workflow(self, mock_embeddings_class):
         """Test safety check workflow with fallback."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite(enable_safety=True) as loom:
             # Mock _ensure_guardrails to return None (force fallback behavior)
@@ -767,13 +767,13 @@ class TestGraphExpansion:
         mock_embedder = MagicMock()
         mock_embedder.encode = MagicMock(return_value=np.random.rand(768))
 
-        with patch('HoloLoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
+        with patch('hololoom.embedding.spectral.MatryoshkaEmbeddings', return_value=mock_embedder):
             yield mock_embedder
 
     @pytest.mark.asyncio
     async def test_related_returns_empty_for_invalid_id(self, mock_embeddings_class):
         """related() returns empty list for non-existent memory ID."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             related = await loom.related("non_existent_id", hops=1)
@@ -782,7 +782,7 @@ class TestGraphExpansion:
     @pytest.mark.asyncio
     async def test_related_returns_empty_for_no_edges(self, mock_embeddings_class):
         """related() returns empty list when memory has no edges."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store a single memory (no edges yet)
@@ -796,7 +796,7 @@ class TestGraphExpansion:
     @pytest.mark.asyncio
     async def test_related_with_manual_edges(self, mock_embeddings_class):
         """related() returns neighbors when edges exist."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             # Store memories
@@ -817,7 +817,7 @@ class TestGraphExpansion:
     @pytest.mark.asyncio
     async def test_related_with_direction_out(self, mock_embeddings_class):
         """related() respects direction='out' (successors only)."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             mem1 = await loom.experience("Start")
@@ -839,7 +839,7 @@ class TestGraphExpansion:
     @pytest.mark.asyncio
     async def test_related_with_direction_in(self, mock_embeddings_class):
         """related() respects direction='in' (predecessors only)."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             mem1 = await loom.experience("Cause")
@@ -856,7 +856,7 @@ class TestGraphExpansion:
     @pytest.mark.asyncio
     async def test_related_with_multiple_hops(self, mock_embeddings_class):
         """related() with hops=2 finds neighbors of neighbors."""
-        from HoloLoom.lite.core import HoloLoomLite
+        from hololoom.lite.core import HoloLoomLite
 
         async with HoloLoomLite() as loom:
             mem1 = await loom.experience("Level 0")

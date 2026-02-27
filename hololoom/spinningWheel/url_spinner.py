@@ -17,7 +17,7 @@ Requires: requests, beautifulsoup4
 Optional: selenium (JavaScript-heavy sites)
 
 Usage:
-    from HoloLoom.spinningWheel.url_spinner import URLSpinner
+    from hololoom.spinningWheel.url_spinner import URLSpinner
 
     # Single page
     spinner = URLSpinner()
@@ -44,8 +44,8 @@ try:
 except ImportError:
     WEB_AVAILABLE = False
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
@@ -53,7 +53,7 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceScore,
     ImportanceSignals
 )
-from HoloLoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass

@@ -3,7 +3,7 @@
   "name": "Batch Evaluation & Benchmarking Framework",
   "description": "A comprehensive workflow for testing AI responses against golden datasets, computing quality metrics across multiple dimensions (semantic similarity, factual accuracy, completeness), and generating detailed benchmark reports with statistical analysis and improvement recommendations.",
   "tags": ["testing", "evaluation", "benchmarking", "quality", "metrics", "golden-dataset", "statistical-analysis"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-28",
   "nodes": [
     {

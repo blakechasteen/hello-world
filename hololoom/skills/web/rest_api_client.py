@@ -4,7 +4,7 @@ import asyncio
 import json
 import time
 from typing import Dict, Any, Optional
-from HoloLoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
+from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
                                    SkillCategory, SkillStatus)
 
 try:
@@ -163,5 +163,5 @@ class RESTAPIClientSkill(BaseSkill):
         raise last_exception or Exception("Request failed")
 
 
-from HoloLoom.skills.base import register_skill
+from hololoom.skills.base import register_skill
 register_skill(RESTAPIClientSkill())

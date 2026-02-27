@@ -10,7 +10,7 @@ import tempfile
 import shutil
 import ast
 
-from HoloLoom.spinningWheel.codebase_spinner import (
+from hololoom.spinningWheel.codebase_spinner import (
     CodebaseSpinner,
     PythonParser,
     CodeFunction,

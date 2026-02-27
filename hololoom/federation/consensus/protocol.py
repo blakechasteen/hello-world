@@ -16,7 +16,7 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import Any, Dict, FrozenSet, Generic, List, Literal, Optional, TypeVar
 
-from HoloLoom.federation.types import Response
+from hololoom.federation.types import Response
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

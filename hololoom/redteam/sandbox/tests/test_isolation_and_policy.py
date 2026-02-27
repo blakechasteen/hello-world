@@ -13,12 +13,12 @@ from unittest import mock
 
 import pytest
 
-from HoloLoom.redteam.sandbox.process_isolation import (
+from hololoom.redteam.sandbox.process_isolation import (
     ProcessIsolator,
     ProcessIsolationConfig,
     ProcessIsolationError,
 )
-from HoloLoom.redteam.sandbox.network_policy import (
+from hololoom.redteam.sandbox.network_policy import (
     NetworkPolicy,
     NetworkPolicyConfig,
     NetworkEndpoint,

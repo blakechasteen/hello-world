@@ -17,8 +17,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from HoloLoom.ml.config import RegistryConfig
-from HoloLoom.ml.protocol import (
+from hololoom.ml.config import RegistryConfig
+from hololoom.ml.protocol import (
     EvaluationResult,
     ModelStatus,
     ModelType,

@@ -18,8 +18,8 @@ from datetime import datetime, timedelta
 import tempfile
 import shutil
 
-from HoloLoom.core.reflection.feedback_store import FeedbackStore, FeedbackRecord, LearningSignals
-from HoloLoom.core.policy.thompson_sampling import TSBandit
+from hololoom.core.reflection.feedback_store import FeedbackStore, FeedbackRecord, LearningSignals
+from hololoom.core.policy.thompson_sampling import TSBandit
 
 
 @pytest.fixture

@@ -17,7 +17,7 @@ Trust Level Assignment:
 - Built-in only can be CORE
 
 Usage:
-    from HoloLoom.dark_trace.plugins import PluginRegistry, TrustLevel
+    from hololoom.dark_trace.plugins import PluginRegistry, TrustLevel
 
     registry = PluginRegistry(safety_gate, alignment_bridge)
 
@@ -39,18 +39,18 @@ import logging
 import asyncio
 from collections import defaultdict
 
-from HoloLoom.dark_trace.plugins.safety_gate import (
+from hololoom.dark_trace.plugins.safety_gate import (
     TrustLevel,
     PluginCapability,
     PluginSafetyGate,
     SafetyCheckResult,
     TRUST_CAPABILITIES,
 )
-from HoloLoom.dark_trace.plugins.alignment_bridge import (
+from hololoom.dark_trace.plugins.alignment_bridge import (
     PluginAlignmentBridge,
     PluginAuditEventType,
 )
-from HoloLoom.dark_trace.plugins.interface import (
+from hololoom.dark_trace.plugins.interface import (
     DarkTracePlugin,
     PluginType,
     PluginState,
@@ -887,11 +887,11 @@ def create_registry(
         Configured PluginRegistry
     """
     if safety_gate is None:
-        from HoloLoom.dark_trace.plugins.safety_gate import create_safety_gate
+        from hololoom.dark_trace.plugins.safety_gate import create_safety_gate
         safety_gate = create_safety_gate()
 
     if alignment_bridge is None:
-        from HoloLoom.dark_trace.plugins.alignment_bridge import create_alignment_bridge
+        from hololoom.dark_trace.plugins.alignment_bridge import create_alignment_bridge
         alignment_bridge = create_alignment_bridge()
 
     return PluginRegistry(

@@ -38,14 +38,14 @@ import json
 
 import numpy as np
 
-from HoloLoom.motif.xbar_chunker import XBarNode, UniversalGrammarChunker
-from HoloLoom.warp.merge import MergeOperator, MergedObject, MergeType
+from hololoom.motif.xbar_chunker import XBarNode, UniversalGrammarChunker
+from hololoom.warp.merge import MergeOperator, MergedObject, MergeType
 
 logger = logging.getLogger(__name__)
 
 # Try to import existing semantic cache
 try:
-    from HoloLoom.performance.semantic_cache import AdaptiveSemanticCache
+    from hololoom.performance.semantic_cache import AdaptiveSemanticCache
     SEMANTIC_CACHE_AVAILABLE = True
 except ImportError:
     logger.warning("Semantic cache not available - Tier 3 will be disabled")
@@ -583,8 +583,8 @@ if __name__ == "__main__":
     print()
 
     # Setup components
-    from HoloLoom.motif.xbar_chunker import UniversalGrammarChunker
-    from HoloLoom.warp.merge import MergeOperator
+    from hololoom.motif.xbar_chunker import UniversalGrammarChunker
+    from hololoom.warp.merge import MergeOperator
 
     # Mock embedder
     class MockEmbedder:

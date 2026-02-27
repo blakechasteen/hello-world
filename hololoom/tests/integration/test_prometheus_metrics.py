@@ -7,7 +7,7 @@ histogram bucket management, and Prometheus format export.
 
 import pytest
 import time
-from HoloLoom.apps.chatops.handlers.prometheus_metrics import (
+from hololoom.apps.chatops.handlers.prometheus_metrics import (
     JobMetricsCollector,
     LatencyHistogram,
     MetricType,

@@ -2,7 +2,7 @@
 
 **Status**: ✅ Complete (November 2025)
 **Total Code**: 730 lines workflow examples + 250 lines tests + 800 lines documentation = 1,780 lines
-**Location**: `HoloLoom/departments/examples/`
+**Location**: `hololoom/departments/examples/`
 **Test Coverage**: Structural validation complete, integration testing in progress
 
 ## Summary
@@ -304,7 +304,7 @@ All workflows integrate with:
 
 ```python
 import asyncio
-from HoloLoom.apps.departments.examples import research_workflow_example
+from hololoom.apps.departments.examples import research_workflow_example
 
 async def main():
     result = await research_workflow_example()
@@ -317,7 +317,7 @@ asyncio.run(main())
 ### Running All Workflows
 
 ```python
-from HoloLoom.apps.departments.examples import run_all_workflows
+from hololoom.apps.departments.examples import run_all_workflows
 
 async def main():
     results = await run_all_workflows()
@@ -331,7 +331,7 @@ asyncio.run(main())
 
 ```bash
 # Run all workflows
-PYTHONPATH=. python HoloLoom/departments/examples/workflow_examples.py
+PYTHONPATH=. python hololoom/departments/examples/workflow_examples.py
 ```
 
 ## Extension Guide
@@ -353,7 +353,7 @@ async def my_workflow_example():
 
 2. **Add to __init__.py**:
 ```python
-from HoloLoom.apps.departments.examples.workflow_examples import my_workflow_example
+from hololoom.apps.departments.examples.workflow_examples import my_workflow_example
 
 __all__ = [..., "my_workflow_example"]
 ```

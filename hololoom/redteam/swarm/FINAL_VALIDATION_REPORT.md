@@ -310,9 +310,9 @@ self._bandit.update(
 
 ### Syntax Validation
 ```bash
-python -m py_compile HoloLoom/redteam/swarm/scout_agent.py
-python -m py_compile HoloLoom/redteam/swarm/attack_agent.py
-python -m py_compile HoloLoom/redteam/swarm/exploit_agent.py
+python -m py_compile hololoom/redteam/swarm/scout_agent.py
+python -m py_compile hololoom/redteam/swarm/attack_agent.py
+python -m py_compile hololoom/redteam/swarm/exploit_agent.py
 
 Result: ✅ All 3 agents compiled successfully
 ```

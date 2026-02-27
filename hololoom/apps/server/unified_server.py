@@ -88,38 +88,38 @@ from pydantic import BaseModel, Field, validator
 from sse_starlette.sse import EventSourceResponse
 
 # Safety WebSocket Manager (E2.2 - December 2025)
-from HoloLoom.apps.server.safety_websocket import get_safety_ws_manager, SafetyWebSocketManager
+from hololoom.apps.server.safety_websocket import get_safety_ws_manager, SafetyWebSocketManager
 
 # HoloLoom Core
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config, MemoryBackend
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Agentic Reasoning
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
 
 # Recursive Learning
-from HoloLoom.recursive import FullLearningEngine, AdvancedRefiner, RefinementStrategy
+from hololoom.recursive import FullLearningEngine, AdvancedRefiner, RefinementStrategy
 
 # Alignment Framework
-from HoloLoom.alignment.audit_trail import AuditTrail
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-from HoloLoom.alignment.deception_detection import DeceptionDetector
+from hololoom.alignment.audit_trail import AuditTrail
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.alignment.deception_detection import DeceptionDetector
 
 # Memory Systems
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.memory.graph import KG
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.graph import KG
 
 # SpinningWheel (Input Adapters)
 try:
-    from HoloLoom.spinningWheel.youtube_spinner import transcribe_youtube
+    from hololoom.spinningWheel.youtube_spinner import transcribe_youtube
 except ImportError:
     # Graceful degradation if youtube_spinner not available
     transcribe_youtube = None
 
 # Visualization (optional - graceful degradation)
 try:
-    from HoloLoom.visualization.stage_waterfall import WaterfallStage, StageStatus
+    from hololoom.visualization.stage_waterfall import WaterfallStage, StageStatus
 except ImportError:
     WaterfallStage = None
     StageStatus = None
@@ -673,7 +673,7 @@ async def alignment_metrics():
     - Resource utilization ratios
     """
     try:
-        from HoloLoom.alignment import get_global_monitor
+        from hololoom.alignment import get_global_monitor
         monitor = get_global_monitor()
         if monitor:
             return monitor.get_alignment_summary()

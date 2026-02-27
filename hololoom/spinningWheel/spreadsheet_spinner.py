@@ -35,13 +35,13 @@ from dataclasses import dataclass, field
 import warnings
 import re
 
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities
 )
-from HoloLoom.spinningWheel.importance import ImportanceScorer
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
+from hololoom.protocols.types import MemoryShard
 
 # Try to import pandas (required)
 try:

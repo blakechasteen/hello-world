@@ -24,9 +24,9 @@ if sys.platform == 'win32':
 sys.path.insert(0, '.')
 
 from datetime import datetime, timedelta
-from HoloLoom.memory.weaving_adapter import WeavingMemoryAdapter
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.chrono.trigger import TemporalWindow
+from hololoom.memory.weaving_adapter import WeavingMemoryAdapter
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.chrono.trigger import TemporalWindow
 
 
 def test_weaving_memory_adapter_in_memory():

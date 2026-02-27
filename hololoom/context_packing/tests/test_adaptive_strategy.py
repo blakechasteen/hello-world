@@ -14,7 +14,7 @@ Date: 2025-12-09
 """
 
 import pytest
-from HoloLoom.context_packing.adaptive_strategy import (
+from hololoom.context_packing.adaptive_strategy import (
     AdaptiveComplexity,
     AdaptiveCompressionStrategy,
     StrategySelection,
@@ -24,7 +24,7 @@ from HoloLoom.context_packing.adaptive_strategy import (
     get_adaptive_mi_budget,
     get_adaptive_config,
 )
-from HoloLoom.context_packing.config import ContextPackerConfig
+from hololoom.context_packing.config import ContextPackerConfig
 
 
 class TestAdaptiveComplexity:

@@ -6,7 +6,7 @@ Verifies that orchestrator stage events flow through to the monitoring endpoint.
 
 Usage:
     # Start server first: PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
-    python HoloLoom/web_dashboard/test_stage_tracking.py
+    python hololoom/web_dashboard/test_stage_tracking.py
 """
 
 import asyncio

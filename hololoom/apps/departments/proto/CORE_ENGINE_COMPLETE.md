@@ -132,8 +132,8 @@ Query → Intent Detection → Action Selection → Execution → Response
 
 ### With HoloLoom Agentic System
 ```python
-from HoloLoom.agentic import AgenticOrchestrator
-from HoloLoom.apps.departments.proto.core import ProtoEngine
+from hololoom.agentic import AgenticOrchestrator
+from hololoom.apps.departments.proto.core import ProtoEngine
 
 agentic = AgenticOrchestrator(...)
 engine = ProtoEngine(config, agentic_orchestrator=agentic)
@@ -144,7 +144,7 @@ response = await engine.process("explain this code", context)
 
 ### With HoloLoom Memory
 ```python
-from HoloLoom.apps.departments.proto.core import ProtoConfig
+from hololoom.apps.departments.proto.core import ProtoConfig
 
 config = ProtoConfig.full()
 config.enable_memory = True
@@ -156,7 +156,7 @@ async with ProtoEngine(config) as engine:
 
 ### With Ability Registry
 ```python
-from HoloLoom.apps.departments.proto.abilities import AbilityRegistry
+from hololoom.apps.departments.proto.abilities import AbilityRegistry
 
 abilities = AbilityRegistry()
 abilities.register("explain", ExplainAbility())
@@ -196,7 +196,7 @@ sandbox = ProtoConfig.sandbox()  # Maximum restrictions
 
 ### Basic Usage
 ```python
-from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
 
 config = ProtoConfig.default()
 
@@ -207,8 +207,8 @@ async with ProtoEngine(config) as engine:
 
 ### With Code Context
 ```python
-from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
-from HoloLoom.apps.departments.proto.domain import CodeContext
+from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+from hololoom.apps.departments.proto.domain import CodeContext
 
 config = ProtoConfig.full()
 context = CodeContext(
@@ -224,8 +224,8 @@ async with ProtoEngine(config) as engine:
 
 ### With Agentic Reasoning
 ```python
-from HoloLoom.agentic import AgenticOrchestrator
-from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+from hololoom.agentic import AgenticOrchestrator
+from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
 
 config = ProtoConfig.full()
 config.enable_agentic_reasoning = True
@@ -356,7 +356,7 @@ All core functionality tested and passing:
 ## Files Location
 
 ```
-HoloLoom/departments/proto/core/
+hololoom/departments/proto/core/
 ├── __init__.py          (18 lines) - Package exports
 ├── config.py            (216 lines) - Configuration
 ├── engine.py            (529 lines) - Main orchestrator
@@ -375,9 +375,9 @@ HoloLoom/departments/proto/core/
 
 ## References
 
-**Pattern Source**: HoloLoom Agentic Orchestrator (`HoloLoom/agentic/core.py`)
-**Domain Source**: Proto Domain Entities (`HoloLoom/departments/proto/domain/`)
-**Department Protocol**: `HoloLoom/departments/protocol.py`
+**Pattern Source**: HoloLoom Agentic Orchestrator (`hololoom/agentic/core.py`)
+**Domain Source**: Proto Domain Entities (`hololoom/departments/proto/domain/`)
+**Department Protocol**: `hololoom/departments/protocol.py`
 
 ## Conclusion
 

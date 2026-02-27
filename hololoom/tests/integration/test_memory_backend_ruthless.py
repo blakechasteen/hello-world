@@ -17,9 +17,9 @@ import time
 from typing import List
 from datetime import datetime
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend, HybridMemoryStore
-from HoloLoom.memory.protocol import Memory, MemoryQuery, RetrievalResult
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend, HybridMemoryStore
+from hololoom.memory.protocol import Memory, MemoryQuery, RetrievalResult
 
 
 class TestStats:
@@ -256,7 +256,7 @@ async def test_memory_creation():
 @test("Protocol overhead minimal")
 async def test_protocol_overhead():
     """Verify protocol checking is fast."""
-    from HoloLoom.memory.protocol import MemoryStore
+    from hololoom.memory.protocol import MemoryStore
 
     config = Config.fast()
     memory = await create_memory_backend(config)
@@ -379,9 +379,9 @@ async def test_token_savings():
     import os
 
     files = {
-        'HoloLoom/config.py': 400,  # Expected max lines
-        'HoloLoom/memory/backend_factory.py': 250,
-        'HoloLoom/memory/protocol.py': 130,
+        'hololoom/config.py': 400,  # Expected max lines
+        'hololoom/memory/backend_factory.py': 250,
+        'hololoom/memory/protocol.py': 130,
     }
 
     base = "c:\\Users\\blake\\Documents\\mythRL"

@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from HoloLoom.telemetry.metrics.prometheus import (
+from hololoom.telemetry.metrics.prometheus import (
     PrometheusRegistry,
     Counter,
     Gauge,

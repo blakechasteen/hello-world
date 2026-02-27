@@ -10,8 +10,8 @@ Features:
 - Skill result verification
 
 Usage:
-    from HoloLoom.agentic.skills import SkillLoader, execute_skill
-    from HoloLoom.agentic import AgenticOrchestrator
+    from hololoom.agentic.skills import SkillLoader, execute_skill
+    from hololoom.agentic import AgenticOrchestrator
 
     skill = SkillLoader().load('code_reviewer')
     result = await execute_skill(skill, context, orchestrator)
@@ -23,9 +23,9 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from HoloLoom.protocols.types import Query, Context
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.agentic.skills.skill_loader import Skill, SkillLoader
+from hololoom.protocols.types import Query, Context
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.agentic.skills.skill_loader import Skill, SkillLoader
 
 
 logger = logging.getLogger(__name__)
@@ -213,7 +213,7 @@ Please execute this skill and provide a structured response.
         # Check if orchestrator supports reasoning modes
         if hasattr(self.orchestrator, 'reason'):
             # AgenticOrchestrator with reasoning modes
-            from HoloLoom.agentic.core import ReasoningMode
+            from hololoom.agentic.core import ReasoningMode
 
             mode_map = {
                 "direct": ReasoningMode.DIRECT,
@@ -404,8 +404,8 @@ if __name__ == "__main__":
 
     print("Example - Single Skill Execution:")
     print("""
-from HoloLoom.agentic.skills import execute_skill
-from HoloLoom.protocols.types import Query
+from hololoom.agentic.skills import execute_skill
+from hololoom.protocols.types import Query
 
 # Execute code review skill
 result = await execute_skill(
@@ -420,7 +420,7 @@ print(f"Confidence: {result.confidence}")
 
     print("\nExample - Multi-Skill Workflow:")
     print("""
-from HoloLoom.agentic.skills import execute_workflow
+from hololoom.agentic.skills import execute_workflow
 
 # Execute code review → test generation workflow
 results = await execute_workflow(

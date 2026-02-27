@@ -1,7 +1,7 @@
 # Spring Dynamics - Physics-Based Spreading Activation
 
 **Status**: Production Ready (November 2025)
-**Location**: `HoloLoom/memory/spring_dynamics.py` (699 lines)
+**Location**: `hololoom/memory/spring_dynamics.py` (699 lines)
 **Performance**: <50ms per propagation cycle
 **Integrators**: Velocity Verlet, RK4, RK45 (adaptive)
 
@@ -46,8 +46,8 @@ Query activation creates a high-energy state. The system relaxes toward equilibr
 ## Quick Start
 
 ```python
-from HoloLoom.memory.spring_dynamics import SpringDynamics, SpringConfig
-from HoloLoom.memory.graph import KG
+from hololoom.memory.spring_dynamics import SpringDynamics, SpringConfig
+from hololoom.memory.graph import KG
 
 # Create knowledge graph
 kg = KG()
@@ -286,7 +286,7 @@ Spring Dynamics is used internally by:
 Typically, you don't call SpringDynamics directly - it's wrapped by higher-level APIs:
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     # Spring dynamics runs internally during recall
@@ -306,7 +306,7 @@ async with HoloLoom() as loom:
 For research, you can create custom force functions:
 
 ```python
-from HoloLoom.memory.integrators import ForceFunction, DynamicalState
+from hololoom.memory.integrators import ForceFunction, DynamicalState
 
 class CustomForce(ForceFunction):
     def __call__(self, state: DynamicalState) -> Tuple[np.ndarray, np.ndarray]:
@@ -316,7 +316,7 @@ class CustomForce(ForceFunction):
         return dq_dt, dp_dt
 
 # Use with custom integrator
-from HoloLoom.memory.integrators import create_integrator, IntegratorType
+from hololoom.memory.integrators import create_integrator, IntegratorType
 integrator = create_integrator(IntegratorType.VERLET, custom_force, mass=mass_array)
 ```
 

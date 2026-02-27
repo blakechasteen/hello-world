@@ -25,7 +25,7 @@ Philosophy:
     The main WeavingOrchestrator chains these stages together.
 
 Example:
-    >>> from HoloLoom.core.orchestrator import (
+    >>> from hololoom.core.orchestrator import (
     ...     WeavingContext,
     ...     create_weaving_context,
     ...     execute_step1_pattern_selection,
@@ -134,14 +134,14 @@ from .protocol_factory import (
     ProtocolOrchestrator,
 )
 
-# Merged from HoloLoom.weaving (Wave 2 consolidation, 2026-02-27)
+# Merged from hololoom.weaving (Wave 2 consolidation, 2026-02-27)
 from .weaving_protocols import (
     WeavingStageProtocol,
     ComplexityStrategyProtocol,
     StageResult,
 )
 
-# Weaving stage classes (merged from HoloLoom.weaving.stages)
+# Weaving stage classes (merged from hololoom.weaving.stages)
 from .stages import (
     PatternSelectionStage,
     TemporalControlStage,
@@ -228,7 +228,7 @@ __all__ = [
     'create_pipeline_with_protocols',
     'ProtocolOrchestrator',
 
-    # Merged from HoloLoom.weaving (Wave 2)
+    # Merged from hololoom.weaving (Wave 2)
     'WeavingStageProtocol',
     'ComplexityStrategyProtocol',
     'StageResult',

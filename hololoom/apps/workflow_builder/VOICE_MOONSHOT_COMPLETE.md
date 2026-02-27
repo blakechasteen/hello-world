@@ -167,12 +167,12 @@ sudo apt-get install ffmpeg  # Linux
 
 ### Step 2: Integrate Voice into Server
 
-Add to `HoloLoom/web_dashboard/agentic_server.py`:
+Add to `hololoom/web_dashboard/agentic_server.py`:
 
 ```python
 # Add imports (line ~70)
-from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
-from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
+from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # Add global (line ~106)
 voice_integration = None
@@ -575,7 +575,7 @@ winget install Gyan.FFmpeg
 # Copy CSS/HTML/JS from voice_ui_snippet.html
 
 # Test (1 minute)
-python HoloLoom/web_dashboard/agentic_server.py
+python hololoom/web_dashboard/agentic_server.py
 # Open http://localhost:8002
 # Click mic, speak, hear response
 

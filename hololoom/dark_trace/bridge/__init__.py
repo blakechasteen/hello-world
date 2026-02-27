@@ -2,7 +2,7 @@
 Dark Trace Bridge: SAE ↔ Semantic Connection
 
 This module provides the bridge between learned SAE features and interpretable
-semantic axes from HoloLoom's semantic_calculus module.
+semantic axes from hololoom's semantic_calculus module.
 
 Key Features:
 - Correlation matrix learning between SAE features and 244 semantic axes
@@ -15,7 +15,7 @@ Research Foundation:
 - Semantic Axes: Conjugate exemplar projection (HoloLoom)
 
 Usage:
-    from HoloLoom.dark_trace.bridge import (
+    from hololoom.dark_trace.bridge import (
         SAESemanticCorrelator,
         SemanticLens,
         FeatureSemanticMapper,
@@ -38,26 +38,26 @@ Usage:
 """
 
 # SAE ↔ Semantic Correlation Learning
-from HoloLoom.dark_trace.bridge.correlator import (
+from hololoom.dark_trace.bridge.correlator import (
     SAESemanticCorrelator,
     CorrelationConfig,
     CorrelationResult,
 )
 
 # Semantic Lens (TraceLens implementation)
-from HoloLoom.dark_trace.bridge.semantic_lens import (
+from hololoom.dark_trace.bridge.semantic_lens import (
     SemanticLens,
 )
 
 # Bidirectional Feature ↔ Semantic Mapping
-from HoloLoom.dark_trace.bridge.mapper import (
+from hololoom.dark_trace.bridge.mapper import (
     FeatureSemanticMapper,
     SemanticMeaning,
     FeatureMapping,
 )
 
 # Bridged Explanations
-from HoloLoom.dark_trace.bridge.explainer import (
+from hololoom.dark_trace.bridge.explainer import (
     BridgedExplainer,
     BridgedExplanation,
 )

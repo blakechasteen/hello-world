@@ -192,7 +192,7 @@ from typing import Any, Dict, List
 from datetime import datetime
 
 # HoloLoom Department Protocol
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     DepartmentRequest,
     DepartmentResponse,
     ConfidenceMetadata,
@@ -200,9 +200,9 @@ from HoloLoom.apps.departments.protocol import (
     create_simple_request,
     create_simple_response,
 )
-from HoloLoom.apps.departments.planning_department import PlanningDepartment
-from HoloLoom.apps.departments.rag_department import RAGDepartment
-from HoloLoom.config import Config
+from hololoom.apps.departments.planning_department import PlanningDepartment
+from hololoom.apps.departments.rag_department import RAGDepartment
+from hololoom.config import Config
 
 # xTerminator Protocol
 from xterminator.department_protocol import (

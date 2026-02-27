@@ -52,7 +52,7 @@ class ProtoCLI:
     async def init_engine(self):
         """Initialize Proto engine lazily."""
         if self.engine is None:
-            from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+            from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
 
             config = ProtoConfig.default()
             self.engine = ProtoEngine(config)
@@ -71,7 +71,7 @@ class ProtoCLI:
         Returns:
             Response text from Proto
         """
-        from HoloLoom.apps.departments.proto.domain import CodeContext
+        from hololoom.apps.departments.proto.domain import CodeContext
 
         engine = await self.init_engine()
 

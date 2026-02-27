@@ -16,10 +16,10 @@ import sys
 class _DeprecatedFinder:
     """Meta-path finder that redirects HoloLoom.ts_core.* imports."""
 
-    _PREFIX = "HoloLoom.ts_core."
+    _PREFIX = "hololoom.ts_core."
 
     def find_module(self, fullname, path=None):
-        if fullname == "HoloLoom.ts_core" or fullname.startswith(
+        if fullname == "hololoom.ts_core" or fullname.startswith(
             self._PREFIX
         ):
             return self
@@ -29,7 +29,7 @@ class _DeprecatedFinder:
         if fullname in sys.modules:
             return sys.modules[fullname]
         new_name = fullname.replace(
-            "HoloLoom.ts_core", "HoloLoom.bandits", 1
+            "hololoom.ts_core", "hololoom.bandits", 1
         )
         warnings.warn(
             f"Importing from {fullname} is deprecated. "

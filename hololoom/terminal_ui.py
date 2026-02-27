@@ -12,7 +12,7 @@ Features:
 - Syntax-highlighted output
 
 Usage:
-    from HoloLoom.terminal_ui import TerminalUI
+    from hololoom.terminal_ui import TerminalUI
     
     ui = TerminalUI()
     result = await ui.weave_with_display(query)
@@ -38,22 +38,22 @@ from rich.prompt import Prompt, Confirm
 from rich import box
 from rich.text import Text
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator, Query
-from HoloLoom.core.loom.command import PatternCard
-from HoloLoom.core.protocols import ComplexityLevel, ProvenanceTrace
+from hololoom.weaving_orchestrator import WeavingOrchestrator, Query
+from hololoom.core.loom.command import PatternCard
+from hololoom.core.protocols import ComplexityLevel, ProvenanceTrace
 
 # Awareness layer imports (graceful degradation if not available)
 try:
-    from HoloLoom.awareness.compositional_awareness import (
+    from hololoom.awareness.compositional_awareness import (
         CompositionalAwarenessLayer,
         UnifiedAwarenessContext,
         format_awareness_for_prompt
     )
-    from HoloLoom.awareness.dual_stream import (
+    from hololoom.awareness.dual_stream import (
         DualStreamGenerator,
         DualStreamResponse
     )
-    from HoloLoom.awareness.meta_awareness import (
+    from hololoom.awareness.meta_awareness import (
         MetaAwarenessLayer,
         SelfReflectionResult
     )
@@ -741,7 +741,7 @@ Average Confidence: [{'green' if avg_confidence > 0.7 else 'yellow'}]{'✓ HIGH'
 
 async def main():
     """Demo of terminal UI"""
-    from HoloLoom.config import Config
+    from hololoom.config import Config
     
     # Create orchestrator
     config = Config.fast()

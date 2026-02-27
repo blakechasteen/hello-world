@@ -60,8 +60,8 @@ pip install sentence-transformers matplotlib numpy scipy
 ### Basic Streaming Analysis
 
 ```python
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Initialize embedder
 embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
@@ -86,7 +86,7 @@ async for snapshot in calculator.stream_analyze(word_stream()):
 ### With Recursive Composition
 
 ```python
-from HoloLoom.semantic_calculus.recursive_matryoshka import (
+from hololoom.semantic_calculus.recursive_matryoshka import (
     RecursiveMatryoshkaCalculus,
     FusionStrategy
 )
@@ -106,7 +106,7 @@ async for snapshot in calculator.stream_analyze(word_stream()):
 ### With Multiple Projections
 
 ```python
-from HoloLoom.semantic_calculus.multi_projection import (
+from hololoom.semantic_calculus.multi_projection import (
     MultiProjectionCalculus,
     SemanticProjection,
     EmotionProjection,
@@ -136,7 +136,7 @@ async for snapshot in calculator.stream_analyze(word_stream()):
 ## Run Demos
 
 ```bash
-cd HoloLoom/semantic_calculus
+cd hololoom/semantic_calculus
 
 # True Matryoshka nesting demo
 python matryoshka_streaming.py

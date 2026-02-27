@@ -69,7 +69,7 @@ Get your Matrix access token from Element:
 ### 2. Basic Usage
 
 ```python
-from HoloLoom.spinningWheel.matrix_spinner import MatrixSpinner
+from hololoom.spinningWheel.matrix_spinner import MatrixSpinner
 
 # Initialize spinner
 spinner = MatrixSpinner(
@@ -450,10 +450,10 @@ Matrix is federated - one room can span multiple homeservers:
 
 ```bash
 # All MatrixSpinner tests
-pytest HoloLoom/tests/unit/test_matrix_spinner.py -v
+pytest hololoom/tests/unit/test_matrix_spinner.py -v
 
 # Specific test
-pytest HoloLoom/tests/unit/test_matrix_spinner.py::test_matrix_parser_text_event -v
+pytest hololoom/tests/unit/test_matrix_spinner.py::test_matrix_parser_text_event -v
 ```
 
 ### Test Coverage
@@ -602,7 +602,7 @@ Part of HoloLoom project. See root LICENSE.
 
 ## Contact
 
-- **Issues**: [GitHub Issues](https://github.com/anthropics/HoloLoom/issues)
+- **Issues**: [GitHub Issues](https://github.com/anthropics/hololoom/issues)
 - **Documentation**: [PROTOCOL_GUIDE.md](PROTOCOL_GUIDE.md)
 - **Examples**: [matrix_spinner_example.py](../../demos/matrix_spinner_example.py)
 - **Tests**: [test_matrix_spinner.py](../tests/unit/test_matrix_spinner.py)

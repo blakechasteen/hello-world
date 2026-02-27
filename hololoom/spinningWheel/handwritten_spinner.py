@@ -20,7 +20,7 @@ Supports:
 - Signatures and annotations
 
 Usage:
-    from HoloLoom.spinningWheel import HandwrittenSpinner
+    from hololoom.spinningWheel import HandwrittenSpinner
 
     spinner = HandwrittenSpinner()
     result = await spinner.spin("handwritten_note.jpg")
@@ -38,16 +38,16 @@ from typing import List, Dict, Any, Optional
 import time
 import re
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
     ImportanceScore,
     ImportanceSignals
 )
-from HoloLoom.spinningWheel.ocr_protocol import OCROutputFormat
-from HoloLoom.spinningWheel.ocr_backends import get_all_available_backends
+from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
+from hololoom.spinningWheel.ocr_backends import get_all_available_backends
 
 
 @dataclass

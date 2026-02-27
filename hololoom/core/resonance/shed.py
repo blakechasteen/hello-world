@@ -24,7 +24,7 @@ import numpy as np
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     ActionCategory,
     ActionRequest,
     SafetyDecision,
@@ -321,7 +321,7 @@ class ResonanceShed:
             try:
                 # Check if semantic_calculus is a SemanticAnalyzer (new organized structure)
                 # or legacy SemanticFlowCalculus (backward compatible)
-                from HoloLoom.semantic_calculus.analyzer import SemanticAnalyzer
+                from hololoom.semantic_calculus.analyzer import SemanticAnalyzer
 
                 if isinstance(self.semantic_calculus, SemanticAnalyzer):
                     # New integration layer - clean interface
@@ -834,7 +834,7 @@ if __name__ == "__main__":
         # Mock extractors
         class MockMotifDetector:
             async def detect(self, text):
-                from HoloLoom.core.protocols.types import Motif
+                from hololoom.core.protocols.types import Motif
                 return [
                     Motif(pattern="ALGORITHM", span=(0, 10), score=0.9),
                     Motif(pattern="OPTIMIZATION", span=(10, 20), score=0.8)

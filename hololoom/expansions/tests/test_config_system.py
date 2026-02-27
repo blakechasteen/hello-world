@@ -11,7 +11,7 @@ import os
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
-from HoloLoom.config import Config, ExecutionMode, Environment
+from hololoom.config import Config, ExecutionMode, Environment
 
 
 class TestConfigPresets:
@@ -83,7 +83,7 @@ class TestExpansionBundles:
 
     def test_physics_expansion_loads(self):
         """Physics expansion should load correctly."""
-        from HoloLoom.expansions.physics import PhysicsConfig, gp_thompson
+        from hololoom.expansions.physics import PhysicsConfig, gp_thompson
 
         config = Config.research()
         config.load_expansion(gp_thompson())
@@ -94,7 +94,7 @@ class TestExpansionBundles:
 
     def test_bayesian_expansion_loads(self):
         """Bayesian expansion should load correctly."""
-        from HoloLoom.expansions.bayesian import bayesian_default
+        from hololoom.expansions.bayesian import bayesian_default
 
         config = Config.research()
         config.load_expansion(bayesian_default())
@@ -104,7 +104,7 @@ class TestExpansionBundles:
 
     def test_geometry_expansion_loads(self):
         """Geometry expansion should load correctly."""
-        from HoloLoom.expansions.geometry import product_manifold
+        from hololoom.expansions.geometry import product_manifold
 
         config = Config.research()
         config.load_expansion(product_manifold())
@@ -115,7 +115,7 @@ class TestExpansionBundles:
 
     def test_spectral_expansion_loads(self):
         """Advanced spectral expansion should load correctly."""
-        from HoloLoom.expansions.advanced_spectral import full_spectral
+        from hololoom.expansions.advanced_spectral import full_spectral
 
         config = Config.research()
         config.load_expansion(full_spectral())
@@ -126,9 +126,9 @@ class TestExpansionBundles:
 
     def test_multiple_expansions(self):
         """Multiple expansions should load without conflict."""
-        from HoloLoom.expansions.physics import gp_thompson
-        from HoloLoom.expansions.geometry import product_manifold
-        from HoloLoom.expansions.bayesian import bayesian_default
+        from hololoom.expansions.physics import gp_thompson
+        from hololoom.expansions.geometry import product_manifold
+        from hololoom.expansions.bayesian import bayesian_default
 
         config = Config.research()
         config.load_expansion(gp_thompson())
@@ -142,8 +142,8 @@ class TestExpansionBundles:
 
     def test_expansion_chaining(self):
         """Expansions should be chainable."""
-        from HoloLoom.expansions.physics import gp_thompson
-        from HoloLoom.expansions.bayesian import bayesian_default
+        from hololoom.expansions.physics import gp_thompson
+        from hololoom.expansions.bayesian import bayesian_default
 
         config = (Config.research()
             .load_expansion(gp_thompson())
@@ -158,7 +158,7 @@ class TestExpansionRegistry:
 
     def test_list_expansions(self):
         """Should list all available expansions."""
-        from HoloLoom.expansions import list_expansions
+        from hololoom.expansions import list_expansions
 
         expansions = list_expansions()
         assert "physics" in expansions
@@ -168,7 +168,7 @@ class TestExpansionRegistry:
 
     def test_get_expansion(self):
         """Should get expansion class by name."""
-        from HoloLoom.expansions import get_expansion
+        from hololoom.expansions import get_expansion
 
         PhysicsConfig = get_expansion("physics")
         assert PhysicsConfig is not None
@@ -240,7 +240,7 @@ class TestExpansionPresets:
 
     def test_physics_presets(self):
         """Physics presets should return valid configs."""
-        from HoloLoom.expansions.physics import (
+        from hololoom.expansions.physics import (
             gp_thompson,
             gp_ucb,
             semantic_heat_diffusion,
@@ -263,7 +263,7 @@ class TestExpansionPresets:
 
     def test_bayesian_presets(self):
         """Bayesian presets should return valid configs."""
-        from HoloLoom.expansions.bayesian import (
+        from hololoom.expansions.bayesian import (
             bayesian_default,
             bayesian_high_confidence,
             bayesian_regularized,
@@ -284,7 +284,7 @@ class TestExpansionPresets:
 
     def test_geometry_presets(self):
         """Geometry presets should return valid configs."""
-        from HoloLoom.expansions.geometry import (
+        from hololoom.expansions.geometry import (
             hyperbolic_only,
             spherical_only,
             product_manifold,
@@ -309,7 +309,7 @@ class TestExpansionPresets:
 
     def test_spectral_presets(self):
         """Spectral presets should return valid configs."""
-        from HoloLoom.expansions.advanced_spectral import (
+        from hololoom.expansions.advanced_spectral import (
             wavelets_only,
             diffusion_maps_only,
             full_spectral,

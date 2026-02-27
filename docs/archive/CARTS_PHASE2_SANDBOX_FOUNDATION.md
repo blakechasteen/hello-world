@@ -1,7 +1,7 @@
 # CARTS Phase 2: Sandbox Foundation Files
 
 **Status**: ✅ Complete (December 5, 2025)
-**Location**: `HoloLoom/redteam/sandbox/`
+**Location**: `hololoom/redteam/sandbox/`
 **Total Code**: 869 lines (3 files)
 **Test Status**: Imports verified working
 
@@ -11,7 +11,7 @@ Successfully created sandbox isolation foundation for CARTS Phase 2. Provides pr
 
 ## Files Created
 
-### 1. `HoloLoom/redteam/sandbox/__init__.py` (67 lines)
+### 1. `hololoom/redteam/sandbox/__init__.py` (67 lines)
 
 **Purpose**: Package entry point with public API exports.
 
@@ -28,7 +28,7 @@ Successfully created sandbox isolation foundation for CARTS Phase 2. Provides pr
 
 **Philosophy**: "Isolate attacks, understand constraints, learn safely."
 
-### 2. `HoloLoom/redteam/sandbox/protocols.py` (287 lines)
+### 2. `hololoom/redteam/sandbox/protocols.py` (287 lines)
 
 **Purpose**: Define protocols and configuration for sandbox execution.
 
@@ -146,7 +146,7 @@ Implementations planned:
 - Auto-select best available mode
 - Preference: DOCKER > CGROUPS > SUBPROCESS > NONE
 
-### 3. `HoloLoom/redteam/sandbox/monitor.py` (515 lines)
+### 3. `hololoom/redteam/sandbox/monitor.py` (515 lines)
 
 **Purpose**: Monitor resource usage with <5% overhead target.
 
@@ -397,7 +397,7 @@ These foundation protocols enable:
 
 **Imports**: ✅ All modules import successfully
 ```python
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     SandboxMode, SandboxConfig, SandboxResult,
     ProcessIsolationProtocol, NetworkPolicyProtocol, FilesystemSandboxProtocol,
     ResourceSample, ResourceSummary, ResourceMonitor

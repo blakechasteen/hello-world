@@ -26,7 +26,7 @@ except ImportError:
     TRANSFORMERS_AVAILABLE = False
     torch = None
 
-from HoloLoom.dark_trace.models import (
+from hololoom.dark_trace.models import (
     TransformerAdapter,
     ModelFingerprinter,
     compare_fingerprints,
@@ -34,7 +34,7 @@ from HoloLoom.dark_trace.models import (
     find_model_specific_features,
     DummyAdapter,
 )
-from HoloLoom.dark_trace.models.fingerprint import SimilarityMetric
+from hololoom.dark_trace.models.fingerprint import SimilarityMetric
 
 
 @dataclass
@@ -452,7 +452,7 @@ class TestCrossModelComparison(unittest.TestCase):
         }
 
         # Use FingerprintConfig for threshold
-        from HoloLoom.dark_trace.models.fingerprint import FingerprintConfig
+        from hololoom.dark_trace.models.fingerprint import FingerprintConfig
         config = FingerprintConfig(universal_threshold=0.5)
         universal = find_universal_features(fingerprints_by_model, config=config)
 
@@ -483,7 +483,7 @@ class TestCrossModelComparison(unittest.TestCase):
         }
 
         # Use FingerprintConfig for threshold
-        from HoloLoom.dark_trace.models.fingerprint import FingerprintConfig
+        from hololoom.dark_trace.models.fingerprint import FingerprintConfig
         config = FingerprintConfig(specific_threshold=0.3)
         model_specific = find_model_specific_features(fingerprints_by_model, config=config)
 

@@ -2,7 +2,7 @@
 Test Agentic API Server
 ========================
 
-Tests for HoloLoom/server/agentic_api.py - FastAPI server endpoints.
+Tests for hololoom/server/agentic_api.py - FastAPI server endpoints.
 
 Coverage:
 - /query endpoint with all modes
@@ -27,7 +27,7 @@ from unittest.mock import Mock, AsyncMock, patch
 def client():
     """Create test client for FastAPI app."""
     try:
-        from HoloLoom.apps.server.agentic_api import app
+        from hololoom.apps.server.agentic_api import app
         return TestClient(app)
     except ImportError:
         pytest.skip("FastAPI server not available")

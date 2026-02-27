@@ -12,8 +12,8 @@ if repo_root not in sys.path:
     sys.path.insert(0, repo_root)
 
 import asyncio
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
 async def compare_configs():
     """Compare different semantic dimension configurations."""

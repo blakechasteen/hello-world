@@ -17,7 +17,7 @@ Your HoloLoom hybrid memory system is **fully operational** with dual-backend pe
                ▼
 ┌──────────────────────────────────────┐
 │  HoloLoom Memory MCP Server          │
-│  (HoloLoom.memory.mcp_server)        │
+│  (hololoom.memory.mcp_server)        │
 └──────────┬───────────┬───────────────┘
            │           │
     ┌──────▼─────┐  ┌─▼──────────┐
@@ -171,7 +171,7 @@ Expected tools:
 
 ### ✅ Fixed: Wrong MCP Server Path
 **Problem:** Config pointed to archived `mcp_hololoom_memory_server.py`  
-**Solution:** Updated to `HoloLoom.memory.mcp_server` module  
+**Solution:** Updated to `hololoom.memory.mcp_server` module  
 **Status:** RESOLVED
 
 ### ✅ Fixed: Import Errors
@@ -189,7 +189,7 @@ Expected tools:
   "mcpServers": {
     "hololoom-memory": {
       "command": "C:/Users/blake/Documents/mythRL/.venv/Scripts/python.exe",
-      "args": ["-m", "HoloLoom.memory.mcp_server"],
+      "args": ["-m", "hololoom.memory.mcp_server"],
       "env": {"PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"}
     }
   }

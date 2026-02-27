@@ -21,9 +21,9 @@ from pathlib import Path
 import numpy as np
 
 # Import classes to test
-from HoloLoom.rag.multimodal_rag import MultimodalRAG, MultimodalRAGResult
-from HoloLoom.rag.simple_rag import RAGResult
-from HoloLoom.config import Config
+from hololoom.rag.multimodal_rag import MultimodalRAG, MultimodalRAGResult
+from hololoom.rag.simple_rag import RAGResult
+from hololoom.config import Config
 
 
 # ============================================================================
@@ -245,7 +245,7 @@ async def test_query_with_image_visual_compression(mock_loom, mock_orchestrator,
     })
 
     # Mock visual compression
-    with patch('HoloLoom.rag.multimodal_rag.compress_to_visual') as mock_compress:
+    with patch('hololoom.rag.multimodal_rag.compress_to_visual') as mock_compress:
         mock_metrics = Mock()
         mock_metrics.compression_ratio = 12.5
         mock_metrics.original_tokens = 5000
@@ -488,7 +488,7 @@ async def test_visual_compression_failure(mock_loom, mock_orchestrator, mock_vis
     })
 
     # Mock compression failure
-    with patch('HoloLoom.rag.multimodal_rag.compress_to_visual', side_effect=Exception("Compression error")):
+    with patch('hololoom.rag.multimodal_rag.compress_to_visual', side_effect=Exception("Compression error")):
         result = await rag.query_with_image("Complex question", "test.png")
 
         # Should still succeed (compression is optional)

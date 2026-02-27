@@ -11,7 +11,7 @@ This module:
 5. Triggers alerts on concerning behavior
 
 Usage:
-    from HoloLoom.alignment.petri_integration import PetriAlignmentRunner
+    from hololoom.alignment.petri_integration import PetriAlignmentRunner
 
     runner = PetriAlignmentRunner(
         petri_config=create_anthropic_config(),
@@ -31,7 +31,7 @@ Usage:
 
 References:
 - Petri: https://alignment.anthropic.com/2025/petri
-- HoloLoom Alignment: HoloLoom/alignment/
+- HoloLoom Alignment: hololoom/alignment/
 """
 
 import asyncio
@@ -44,12 +44,12 @@ import json
 
 # Petri imports - local config and seeds
 try:
-    from HoloLoom.alignment.petri_config import (
+    from hololoom.alignment.petri_config import (
         PetriEvaluationConfig,
         HoloLoomJudgeDimensions,
         create_anthropic_config,
     )
-    from HoloLoom.alignment.petri_seeds import (
+    from hololoom.alignment.petri_seeds import (
         HOLOLOOM_ALIGNMENT_SEEDS,
         SEED_METADATA,
     )
@@ -73,7 +73,7 @@ except ImportError:
 PETRI_AVAILABLE = PETRI_CONFIG_AVAILABLE and PETRI_EXTERNAL_AVAILABLE
 
 # Alignment framework imports
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     SafetyGuardrails,
     DeceptionDetector,
     InstrumentalConvergenceGuard,
@@ -85,13 +85,13 @@ from HoloLoom.alignment import (
 )
 # HumanInLoopSystem is not exported from __init__.py, import directly
 try:
-    from HoloLoom.alignment.human_in_loop import HumanInLoopSystem
+    from hololoom.alignment.human_in_loop import HumanInLoopSystem
     HITL_AVAILABLE = True
 except ImportError:
     HumanInLoopSystem = None
     HITL_AVAILABLE = False
 
-logger = logging.getLogger("HoloLoom.alignment.petri_integration")
+logger = logging.getLogger("hololoom.alignment.petri_integration")
 
 
 @dataclass

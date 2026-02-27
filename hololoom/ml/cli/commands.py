@@ -159,7 +159,7 @@ def print_warning(message: str) -> None:
 
 async def cmd_train(args: argparse.Namespace) -> int:
     """Execute train command."""
-    from HoloLoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
 
     skill = MLTrainerSkill()
 
@@ -235,7 +235,7 @@ async def cmd_train(args: argparse.Namespace) -> int:
 
 async def cmd_evaluate(args: argparse.Namespace) -> int:
     """Execute evaluate command."""
-    from HoloLoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
 
     skill = MLTrainerSkill()
 
@@ -282,7 +282,7 @@ async def cmd_evaluate(args: argparse.Namespace) -> int:
 
 async def cmd_predict(args: argparse.Namespace) -> int:
     """Execute predict command."""
-    from HoloLoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
 
     skill = MLTrainerSkill()
 
@@ -339,7 +339,7 @@ async def cmd_predict(args: argparse.Namespace) -> int:
 
 async def cmd_list(args: argparse.Namespace) -> int:
     """Execute list command."""
-    from HoloLoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
 
     skill = MLTrainerSkill()
 
@@ -398,7 +398,7 @@ async def cmd_list(args: argparse.Namespace) -> int:
 
 async def cmd_describe(args: argparse.Namespace) -> int:
     """Execute describe command."""
-    from HoloLoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
 
     skill = MLTrainerSkill()
 
@@ -453,7 +453,7 @@ async def cmd_describe(args: argparse.Namespace) -> int:
 
 async def cmd_delete(args: argparse.Namespace) -> int:
     """Execute delete command."""
-    from HoloLoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
 
     if not args.force:
         confirm = input(f"Delete model {args.model_id}? [y/N]: ")
@@ -478,7 +478,7 @@ async def cmd_delete(args: argparse.Namespace) -> int:
 
 async def cmd_validate(args: argparse.Namespace) -> int:
     """Execute validate command."""
-    from HoloLoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
 
     skill = MLTrainerSkill()
 
@@ -538,7 +538,7 @@ async def cmd_validate(args: argparse.Namespace) -> int:
 
 async def cmd_compare(args: argparse.Namespace) -> int:
     """Execute compare command."""
-    from HoloLoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
+    from hololoom.ml.skills.ml_trainer_skill import MLTrainerSkill, SkillInput, MLOperation
 
     skill = MLTrainerSkill()
 

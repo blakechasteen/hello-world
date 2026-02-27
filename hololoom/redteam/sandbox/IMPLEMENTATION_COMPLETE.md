@@ -23,7 +23,7 @@ Completed implementation of comprehensive filesystem and container isolation sys
 ## Files Delivered
 
 ### 1. filesystem.py (~400 lines)
-**Location**: `HoloLoom/redteam/sandbox/filesystem.py`
+**Location**: `hololoom/redteam/sandbox/filesystem.py`
 
 **Modules**:
 - `SandboxBackend` enum: OVERLAYFS, TEMP_COPY, NONE
@@ -70,7 +70,7 @@ class FilesystemSandbox:
 - Unmount: <5ms
 
 ### 2. container.py (~350 lines)
-**Location**: `HoloLoom/redteam/sandbox/container.py`
+**Location**: `hololoom/redteam/sandbox/container.py`
 
 **Modules**:
 - `ContainerBackend` enum: DOCKER, PROCESS, NONE
@@ -121,7 +121,7 @@ class ContainerExecutor:
 - Process execute: <100ms per command
 
 ### 3. Updated __init__.py
-**Location**: `HoloLoom/redteam/sandbox/__init__.py`
+**Location**: `hololoom/redteam/sandbox/__init__.py`
 
 **Changes**:
 - Added imports for filesystem and container modules
@@ -139,7 +139,7 @@ create_container_executor, execute_in_container
 ```
 
 ### 4. Integration Tests
-**Location**: `HoloLoom/redteam/sandbox/tests/test_filesystem_container_integration.py`
+**Location**: `hololoom/redteam/sandbox/tests/test_filesystem_container_integration.py`
 
 **Test Coverage** (12 tests):
 - Filesystem mount/unmount cycle
@@ -157,7 +157,7 @@ create_container_executor, execute_in_container
 **Results**: 12/12 passing ✅
 
 ### 5. Documentation
-**Location**: `HoloLoom/redteam/sandbox/FILESYSTEM_CONTAINER_SANDBOX.md`
+**Location**: `hololoom/redteam/sandbox/FILESYSTEM_CONTAINER_SANDBOX.md`
 
 **Contents**:
 - Complete architecture overview
@@ -299,7 +299,7 @@ Seamless integration with red team attack execution:
 
 ```python
 # In attack orchestrator
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     FilesystemSandbox, ContainerExecutor,
     FilesystemSandboxConfig, ContainerSandboxConfig
 )

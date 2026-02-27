@@ -8,7 +8,7 @@ Implemented a complete **Pattern Cards as Modules** system for HoloLoom. Pattern
 
 ## What Was Built
 
-### 1. Core System ([HoloLoom/loom/card_loader.py](../HoloLoom/loom/card_loader.py))
+### 1. Core System ([hololoom/loom/card_loader.py](../hololoom/loom/card_loader.py))
 
 **Key Classes**:
 - `PatternCard` - Main card class with full lifecycle
@@ -26,7 +26,7 @@ Implemented a complete **Pattern Cards as Modules** system for HoloLoom. Pattern
 - ✅ Save/load functionality
 - ✅ Logging and error handling
 
-### 2. Built-in Cards ([HoloLoom/cards/](../HoloLoom/cards/))
+### 2. Built-in Cards ([hololoom/cards/](../hololoom/cards/))
 
 #### Core Cards
 1. **bare.yaml** - ⚡ Bare Mode
@@ -85,7 +85,7 @@ Implemented a complete **Pattern Cards as Modules** system for HoloLoom. Pattern
 
 ### 5. Documentation
 
-- ✅ [HoloLoom/cards/README.md](../HoloLoom/cards/README.md) - Complete usage guide
+- ✅ [hololoom/cards/README.md](../hololoom/cards/README.md) - Complete usage guide
 - ✅ [docs/PATTERN_CARDS_AS_MODULES.md](./PATTERN_CARDS_AS_MODULES.md) - Design document
 - ✅ [docs/SEMANTIC_CALCULUS_EXPOSURE.md](./SEMANTIC_CALCULUS_EXPOSURE.md) - Architecture explanation
 
@@ -110,7 +110,7 @@ Implemented a complete **Pattern Cards as Modules** system for HoloLoom. Pattern
 
 ### Basic Loading
 ```python
-from HoloLoom.loom.card_loader import PatternCard
+from hololoom.loom.card_loader import PatternCard
 
 # Load built-in card
 card = PatternCard.load("fast")
@@ -212,7 +212,7 @@ math:
 ## File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── loom/
 │   └── card_loader.py          # PatternCard system (380 lines)
 │

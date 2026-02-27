@@ -5,7 +5,7 @@ Voice Endpoints for Agentic Dashboard
 Add these endpoints to agentic_server.py for voice capabilities.
 
 To integrate:
-    from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+    from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
     add_voice_endpoints(app, voice_integration)
 """
 

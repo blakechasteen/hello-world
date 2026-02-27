@@ -19,8 +19,8 @@ Features:
 - Graceful degradation if components unavailable
 
 Example:
-    >>> from HoloLoom.voice.threads import UnifiedVoiceAgent
-    >>> from HoloLoom.config import Config
+    >>> from hololoom.voice.threads import UnifiedVoiceAgent
+    >>> from hololoom.config import Config
     >>>
     >>> agent = UnifiedVoiceAgent(config=Config.fast())
     >>> await agent.initialize()
@@ -43,10 +43,10 @@ from .voice_modes import VoiceMode
 
 # HoloLoom imports (graceful degradation)
 try:
-    from HoloLoom.voice.voice_agent import VoiceAgent
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.config import Config
-    from HoloLoom.protocols.types import Query
+    from hololoom.voice.voice_agent import VoiceAgent
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.config import Config
+    from hololoom.protocols.types import Query
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False
@@ -154,7 +154,7 @@ class UnifiedVoiceAgent:
         # Create orchestrator
         # Note: This requires memory shards - in production, load from persistent storage
         try:
-            from HoloLoom.memory.graph import KG
+            from hololoom.memory.graph import KG
             kg = KG()  # Empty graph for demo - would load from storage in production
 
             self.orchestrator = WeavingOrchestrator(
@@ -165,7 +165,7 @@ class UnifiedVoiceAgent:
             # Create voice agent
             self.hololoom_agent = VoiceAgent(
                 orchestrator=self.orchestrator,
-                agent_name="HoloLoom",
+                agent_name="hololoom",
                 voice="nova",
                 turn_mode="hybrid"
             )

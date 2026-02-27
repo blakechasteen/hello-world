@@ -6,8 +6,8 @@ import unittest
 from pathlib import Path
 from datetime import datetime
 
-from HoloLoom.fabric.spacetime import Spacetime, Artifact, ArtifactType, WeavingTrace
-from HoloLoom.fabric.materializer import Materializer
+from hololoom.fabric.spacetime import Spacetime, Artifact, ArtifactType, WeavingTrace
+from hololoom.fabric.materializer import Materializer
 
 class TestMaterializer(unittest.TestCase):
     def setUp(self):

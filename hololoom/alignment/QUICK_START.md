@@ -11,7 +11,7 @@
 pip install flask
 
 # Or install all optional dependencies
-pip install -r HoloLoom/alignment/requirements-optional.txt
+pip install -r hololoom/alignment/requirements-optional.txt
 ```
 
 ---
@@ -29,10 +29,10 @@ python run_prometheus_server.py
 ```bash
 # Windows PowerShell
 $env:PYTHONPATH = "."
-python HoloLoom/alignment/prometheus_server.py
+python hololoom/alignment/prometheus_server.py
 
 # Linux/Mac
-PYTHONPATH=. python HoloLoom/alignment/prometheus_server.py
+PYTHONPATH=. python hololoom/alignment/prometheus_server.py
 ```
 
 ---
@@ -92,8 +92,8 @@ rate(alignment_samples_total[1m])
 ### Webhook Mode (Simple)
 
 ```python
-from HoloLoom.alignment.matrix_chatops import send_matrix_webhook
-from HoloLoom.alignment.monitoring import Alert, AlertLevel
+from hololoom.alignment.matrix_chatops import send_matrix_webhook
+from hololoom.alignment.monitoring import Alert, AlertLevel
 
 alert = Alert(
     level=AlertLevel.WARNING,
@@ -124,7 +124,7 @@ export MATRIX_ROOM_ID=!alignment:matrix.org
 ```
 
 ```python
-from HoloLoom.alignment.matrix_chatops import MatrixBot
+from hololoom.alignment.matrix_chatops import MatrixBot
 
 bot = MatrixBot(
     homeserver="https://matrix.org",
@@ -142,10 +142,10 @@ await bot.close()
 
 ```bash
 # Run all integration tests
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py -v
 
 # Run specific test
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py::test_alignment_basic_integration -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py::test_alignment_basic_integration -v
 
 # Run standalone demo
 python demos/demo_alignment_orchestrator.py
@@ -186,7 +186,7 @@ pip install flask
 python run_prometheus_server.py
 
 # Or set PYTHONPATH manually
-PYTHONPATH=. python HoloLoom/alignment/prometheus_server.py
+PYTHONPATH=. python hololoom/alignment/prometheus_server.py
 ```
 
 ### Port 9090 already in use

@@ -12,7 +12,7 @@ Components:
 - ABTest: Statistical validation framework
 
 Usage:
-    from HoloLoom.prompting.analytics import (
+    from hololoom.prompting.analytics import (
         MRFDashboard,
         ThompsonLearner,
         ABTest,
@@ -36,7 +36,7 @@ Usage:
 """
 
 # Dashboard
-from HoloLoom.prompting.analytics.dashboard import (
+from hololoom.prompting.analytics.dashboard import (
     MRFDashboard,
     MRFEnhancementLog,
     SystemStatistics,
@@ -45,7 +45,7 @@ from HoloLoom.prompting.analytics.dashboard import (
 
 # Thompson Sampling Learning (optional)
 try:
-    from HoloLoom.prompting.analytics.learning import (
+    from hololoom.prompting.analytics.learning import (
         ThompsonLearner,
         StrategyStats,
         QueryTypeProfile,
@@ -61,7 +61,7 @@ except ImportError:
 
 # A/B Testing (optional)
 try:
-    from HoloLoom.prompting.analytics.ab_testing import (
+    from hololoom.prompting.analytics.ab_testing import (
         ABTest,
         ABGroup,
         ABResult,

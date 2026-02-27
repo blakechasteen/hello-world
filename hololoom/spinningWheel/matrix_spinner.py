@@ -15,7 +15,7 @@ Requires: matrix-nio (pip install matrix-nio)
 Optional: E2EE support (pip install "matrix-nio[e2e]")
 
 Usage:
-    from HoloLoom.spinningWheel.matrix_spinner import MatrixSpinner
+    from hololoom.spinningWheel.matrix_spinner import MatrixSpinner
 
     spinner = MatrixSpinner(
         homeserver="https://matrix.org",
@@ -46,8 +46,8 @@ try:
 except ImportError:
     MATRIX_AVAILABLE = False
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
@@ -55,7 +55,7 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceScore,
     ImportanceSignals
 )
-from HoloLoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass

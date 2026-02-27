@@ -49,9 +49,9 @@ from typing import List, Optional, Union, Dict, Any, Tuple
 from pathlib import Path
 import logging
 
-from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom.rag.simple_rag import SimpleRAG, RAGResult
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 # Optional dependencies (graceful degradation)
 try:
@@ -62,14 +62,14 @@ except ImportError:
     Image = None
 
 try:
-    from HoloLoom.memory.photo_tokens import PhotoToken
+    from hololoom.memory.photo_tokens import PhotoToken
     PHOTO_TOKENS_AVAILABLE = True
 except ImportError:
     PHOTO_TOKENS_AVAILABLE = False
     PhotoToken = None
 
 try:
-    from HoloLoom.memory.visual_compression import compress_to_visual, CompressionMetrics
+    from hololoom.memory.visual_compression import compress_to_visual, CompressionMetrics
     VISUAL_COMPRESSION_AVAILABLE = True
 except ImportError:
     VISUAL_COMPRESSION_AVAILABLE = False
@@ -174,7 +174,7 @@ class MultimodalRAG(SimpleRAG):
         # Initialize visual Q&A engine (OCR + CLIP)
         if PHOTO_TOKENS_AVAILABLE:
             try:
-                from HoloLoom.rag.visual_qa import VisualQAEngine
+                from hololoom.rag.visual_qa import VisualQAEngine
                 self.visual_qa_engine = VisualQAEngine(
                     loom=self.loom,
                     config=self.config
@@ -417,7 +417,7 @@ class MultimodalRAG(SimpleRAG):
             logger.debug(f"Compressing {len(text_sources)} sources to visual representation...")
             try:
                 # Build knowledge graph from sources
-                from HoloLoom.memory.graph import KG
+                from hololoom.memory.graph import KG
                 kg = self._build_graph_from_sources(text_sources)
 
                 # Compress to visual
@@ -585,7 +585,7 @@ class MultimodalRAG(SimpleRAG):
         Returns:
             KG (knowledge graph) object
         """
-        from HoloLoom.memory.graph import KG, KGEdge
+        from hololoom.memory.graph import KG, KGEdge
 
         kg = KG()
 

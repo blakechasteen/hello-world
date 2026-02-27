@@ -50,7 +50,7 @@ def start_desktop(share: bool = False, **kwargs) -> None:
 async def _init_loom():
     """Initialize the global loom instance."""
     global _loom
-    from HoloLoom.lite import HoloLoomLite
+    from hololoom.lite import HoloLoomLite
     _loom = HoloLoomLite()
     await _loom._initialize()
 

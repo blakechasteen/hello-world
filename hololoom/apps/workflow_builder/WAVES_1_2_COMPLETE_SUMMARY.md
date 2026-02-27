@@ -101,7 +101,7 @@ HoloLoom Core
 
 ### Core Files
 ```
-HoloLoom/
+hololoom/
 ├── server/
 │   └── unified_server.py              # 650 lines, 30+ endpoints
 ├── web_dashboard/
@@ -118,7 +118,7 @@ HoloLoom/
 
 ### Documentation
 ```
-HoloLoom/
+hololoom/
 ├── server/
 │   └── API_SCHEMA.md                  # Complete API reference
 └── web_dashboard/
@@ -304,13 +304,13 @@ These are **intentional** for rapid delivery (Phase 3 will address):
 ```bash
 # 1. Start server
 cd mythRL
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 
 # 2. Open dashboard
 # (Choose your OS)
-start HoloLoom/web_dashboard/control_panel.html      # Windows
-open HoloLoom/web_dashboard/control_panel.html       # macOS
-xdg-open HoloLoom/web_dashboard/control_panel.html  # Linux
+start hololoom/web_dashboard/control_panel.html      # Windows
+open hololoom/web_dashboard/control_panel.html       # macOS
+xdg-open hololoom/web_dashboard/control_panel.html  # Linux
 
 # 3. Test API
 curl http://localhost:8000/health

@@ -380,8 +380,8 @@ projection = np.dot(query_embedding, axis_direction)
 ### Basic Projection
 
 ```python
-from HoloLoom.semantic_calculus.dimensions import STANDARD_DIMENSIONS
-from HoloLoom.semantic_calculus.integrator import GeometricIntegrator
+from hololoom.semantic_calculus.dimensions import STANDARD_DIMENSIONS
+from hololoom.semantic_calculus.integrator import GeometricIntegrator
 
 # Load dimensions and learn axes
 embed_fn = lambda text: model.encode(text)
@@ -481,7 +481,7 @@ passed, reason = filter_by_axes(query2)
 ### Semantic Trajectory Analysis
 
 ```python
-from HoloLoom.semantic_calculus.integrator import GeometricIntegrator
+from hololoom.semantic_calculus.integrator import GeometricIntegrator
 
 # Track semantic changes over time
 queries = [
@@ -696,7 +696,7 @@ class SemanticDimension:
 ### Predefined Dimensions
 
 ```python
-from HoloLoom.semantic_calculus.dimensions import STANDARD_DIMENSIONS
+from hololoom.semantic_calculus.dimensions import STANDARD_DIMENSIONS
 
 # 16 interpretable axes
 axes = STANDARD_DIMENSIONS
@@ -760,7 +760,7 @@ def project_onto_axes(query_text: str) -> Dict[str, float]:
 
 3. **Sparse Projection**: Skip near-zero dimensions
    ```python
-   from HoloLoom.semantic_calculus.performance import SparseSemanticVector
+   from hololoom.semantic_calculus.performance import SparseSemanticVector
 
    sparse_proj = SparseSemanticVector(projections, threshold=0.1)
    # Only stores non-zero values

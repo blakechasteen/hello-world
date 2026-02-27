@@ -28,7 +28,7 @@ Jenny Week 1-4 MVP delivered:
 ### 2.1 MRF-Enhanced Panel Generation ✅ IMPLEMENTED
 
 **Status**: ✅ Complete (December 2025)
-**Location**: `HoloLoom/visualization/jenny_mrf.py`
+**Location**: `hololoom/visualization/jenny_mrf.py`
 
 **Goal**: Use Metaprompt Refinement Framework to generate higher-quality panel content.
 
@@ -50,7 +50,7 @@ Jenny Week 1-4 MVP delivered:
 **Usage**:
 
 ```python
-from HoloLoom.visualization.jenny_mrf import JennyMRFCompiler
+from hololoom.visualization.jenny_mrf import JennyMRFCompiler
 
 # Create MRF-enhanced compiler
 compiler = JennyMRFCompiler(enable_learning=True)
@@ -68,7 +68,7 @@ stats = compiler.get_learning_statistics()
 ### 2.2 Thompson Sampling for Panel Type Selection ✅ IMPLEMENTED
 
 **Status**: ✅ Complete (December 2025)
-**Location**: `HoloLoom/visualization/jenny_mrf.py`
+**Location**: `hololoom/visualization/jenny_mrf.py`
 
 **Goal**: Learn which panel types work best for different query types.
 
@@ -89,7 +89,7 @@ stats = compiler.get_learning_statistics()
 **Usage**:
 
 ```python
-from HoloLoom.visualization.jenny_mrf import PanelTypeLearner, PanelTypeJenny
+from hololoom.visualization.jenny_mrf import PanelTypeLearner, PanelTypeJenny
 
 # Create learner with persistence
 learner = PanelTypeLearner(persist_path="./jenny_learning.json")
@@ -331,7 +331,7 @@ class PanelTemplate:
 async def _generate_why_panel_mrf(self, spec: JennySpec, spacetime: Spacetime) -> Dict[str, Any]:
     """Generate WHY panel content using MRF for better explanations."""
 
-    from HoloLoom.prompting import UnifiedMRF
+    from hololoom.prompting import UnifiedMRF
 
     mrf = UnifiedMRF()
 

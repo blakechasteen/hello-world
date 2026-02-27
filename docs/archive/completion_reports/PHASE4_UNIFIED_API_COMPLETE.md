@@ -20,14 +20,14 @@
 ## What We Built
 
 ### HoloLoom Unified API Class
-**Location:** [HoloLoom/unified_api.py](HoloLoom/unified_api.py)
+**Location:** [hololoom/unified_api.py](hololoom/unified_api.py)
 
 **Single Entry Point for Everything:**
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 # Create instance
-loom = await HoloLoom.create(
+loom = await hololoom.create(
     pattern="fast",              # BARE, FAST, or FUSED
     memory_backend="simple",     # simple, neo4j, qdrant, neo4j+qdrant
     enable_synthesis=True        # Enable pattern extraction
@@ -210,10 +210,10 @@ Conversation turns: 3
 
 ### Basic Usage
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 # Create HoloLoom
-loom = await HoloLoom.create()
+loom = await hololoom.create()
 
 # Ask a question
 result = await loom.query("What is Thompson Sampling?")
@@ -225,7 +225,7 @@ print(f"Entities: {result.trace.synthesis_result['entities']}")
 ### Chat Mode
 ```python
 # Start conversation
-loom = await HoloLoom.create()
+loom = await hololoom.create()
 
 response1 = await loom.chat("What is HoloLoom?")
 response2 = await loom.chat("Tell me more")  # Has context from previous
@@ -279,14 +279,14 @@ print(f"Duration: {spacetime.trace.duration_ms}ms")
 ## Files Created/Modified
 
 ### Created
-1. **HoloLoom/unified_api.py** (~600 lines)
+1. **hololoom/unified_api.py** (~600 lines)
    - HoloLoom class
    - Complete API implementation
    - Convenience functions
    - Working demo
 
 ### Modified
-1. **HoloLoom/__init__.py**
+1. **hololoom/__init__.py**
    - Added HoloLoom exports
    - Graceful import handling
    - Updated __all__
@@ -403,7 +403,7 @@ print(f"Duration: {spacetime.trace.duration_ms}ms")
 ### Run Unified API Demo
 ```bash
 export PYTHONPATH=.
-python HoloLoom/unified_api.py
+python hololoom/unified_api.py
 ```
 
 Output shows:
@@ -415,9 +415,9 @@ Output shows:
 
 ### Quick Usage
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
-loom = await HoloLoom.create()
+loom = await hololoom.create()
 response = await loom.query("What is HoloLoom?")
 print(response.response)
 ```
@@ -457,7 +457,7 @@ HoloLoom Unified API
 ## What This Means
 
 ### For Users
-- **Single import:** `from HoloLoom import HoloLoom`
+- **Single import:** `from hololoom import hololoom`
 - **Simple API:** `loom.query()`, `loom.chat()`, `loom.ingest_*()`
 - **Full power:** Complete weaving cycle + synthesis in every call
 - **Complete trace:** Full provenance for debugging and analysis

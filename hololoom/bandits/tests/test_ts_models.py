@@ -10,10 +10,10 @@ Tests all TS variants:
 
 import pytest
 import numpy as np
-from HoloLoom.bandits.models.discrete_bernoulli import DiscreteBernoulliTS, create_discrete_ts
-from HoloLoom.bandits.models.bayes_linear import BayesianLinearTS, create_bayesian_linear_ts
-from HoloLoom.bandits.models.gp_ts import GaussianProcessTS, create_gp_ts
-from HoloLoom.bandits.samplers import (
+from hololoom.bandits.models.discrete_bernoulli import DiscreteBernoulliTS, create_discrete_ts
+from hololoom.bandits.models.bayes_linear import BayesianLinearTS, create_bayesian_linear_ts
+from hololoom.bandits.models.gp_ts import GaussianProcessTS, create_gp_ts
+from hololoom.bandits.samplers import (
     create_thompson_sampler,
     create_discrete_mab,
     create_contextual_bandit,
@@ -278,7 +278,7 @@ def test_unified_factory_neural():
         replay_warmup=10,
     )
     # Should create NeuralThompsonPolicy
-    from HoloLoom.bandits.neural_ts.policy import NeuralThompsonPolicy
+    from hololoom.bandits.neural_ts.policy import NeuralThompsonPolicy
     assert isinstance(sampler, NeuralThompsonPolicy)
 
 

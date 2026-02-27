@@ -60,7 +60,7 @@ def _validate_override_token(token: str, action: str = "override") -> bool:
 
     secret = os.environ.get("OVERRIDE_SECRET")
     if not secret:
-        logging.getLogger("HoloLoom.alignment.safety_guardrails").warning(
+        logging.getLogger("hololoom.alignment.safety_guardrails").warning(
             "SECURITY: Override attempted but OVERRIDE_SECRET not configured. "
             "Set OVERRIDE_SECRET environment variable to enable authenticated overrides."
         )
@@ -74,7 +74,7 @@ def _validate_override_token(token: str, action: str = "override") -> bool:
     is_valid = hmac.compare_digest(token, expected)
 
     if not is_valid:
-        logging.getLogger("HoloLoom.alignment.safety_guardrails").error(
+        logging.getLogger("hololoom.alignment.safety_guardrails").error(
             f"SECURITY: Invalid override token for action '{action}'"
         )
 
@@ -112,15 +112,15 @@ def _validate_testing_mode(testing_mode: bool) -> bool:
             f"Testing mode is only allowed in development environments: {allowed_environments}. "
             f"Set ENVIRONMENT=development to enable testing mode."
         )
-        logging.getLogger("HoloLoom.alignment.safety_guardrails").error(error_msg)
+        logging.getLogger("hololoom.alignment.safety_guardrails").error(error_msg)
         raise ValueError(error_msg)
 
-    logging.getLogger("HoloLoom.alignment.safety_guardrails").warning(
+    logging.getLogger("hololoom.alignment.safety_guardrails").warning(
         f"Testing mode enabled in {environment} environment - approval requirements bypassed"
     )
     return True
 
-logger = logging.getLogger("HoloLoom.alignment.safety_guardrails")
+logger = logging.getLogger("hololoom.alignment.safety_guardrails")
 
 
 class RiskLevel(Enum):
@@ -535,7 +535,7 @@ class SafetyGuardrails:
 
         if enable_mrf_enhancement:
             try:
-                from HoloLoom.alignment.mrf_integration import (
+                from hololoom.alignment.mrf_integration import (
                     create_risk_assessment_prompt,
                     create_adversarial_detection_prompt,
                     create_approval_request_prompt

@@ -24,13 +24,13 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from HoloLoom.rag.multihop_reasoning import (
+from hololoom.rag.multihop_reasoning import (
     MultiHopRAGMixin,
     ReasoningPath,
     MultiHopRAGResult
 )
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.config import Config
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.config import Config
 
 
 # ============================================================================
@@ -94,7 +94,7 @@ class MockHoloLoom:
 
     async def recall(self, query, limit=5):
         """Mock recall."""
-        from HoloLoom.memory.protocol import Memory
+        from hololoom.memory.protocol import Memory
         from datetime import datetime
 
         # Return mock memories
@@ -118,7 +118,7 @@ class MockRAG(MultiHopRAGMixin):
 
     async def query(self, question, mode="verify"):
         """Mock query."""
-        from HoloLoom.rag.simple_rag import RAGResult
+        from hololoom.rag.simple_rag import RAGResult
         return RAGResult(
             response=f"Answer to: {question}",
             sources=["source1", "source2"],

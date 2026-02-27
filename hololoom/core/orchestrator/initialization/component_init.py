@@ -32,13 +32,13 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.core.loom.command import LoomCommand
-from HoloLoom.core.memory.graph import KG
-from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.tools import ToolExecutor
-from HoloLoom.routing.flow_router import ToolRouter, ToolConfig
+from hololoom.core.loom.command import LoomCommand
+from hololoom.core.memory.graph import KG
+from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.tools import ToolExecutor
+from hololoom.routing.flow_router import ToolRouter, ToolConfig
 
 
 logger = logging.getLogger(__name__)
@@ -50,19 +50,19 @@ UNIFIED_PHYSICS_AVAILABLE = False
 STATISTICAL_MECHANICS_AVAILABLE = False
 
 try:
-    from HoloLoom.shuttle import create_shuttle_stage
+    from hololoom.shuttle import create_shuttle_stage
     SHUTTLE_AVAILABLE = True
 except ImportError:
     pass
 
 try:
-    from HoloLoom.physics.unified_physics import UnifiedPhysicsEngine
+    from hololoom.physics.unified_physics import UnifiedPhysicsEngine
     UNIFIED_PHYSICS_AVAILABLE = True
 except ImportError:
     pass
 
 try:
-    from HoloLoom.physics.statistical_mechanics import StatisticalMechanicsEngine
+    from hololoom.physics.statistical_mechanics import StatisticalMechanicsEngine
     STATISTICAL_MECHANICS_AVAILABLE = True
 except ImportError:
     pass
@@ -123,7 +123,7 @@ def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
     # Priority: memory > yarn_graph > shards (for backward compatibility)
     if orchestrator.memory:
         # Use persistent memory backend (UnifiedMemory, etc.)
-        from HoloLoom.core.memory.weaving_adapter import WeavingMemoryAdapter
+        from hololoom.core.memory.weaving_adapter import WeavingMemoryAdapter
         if isinstance(orchestrator.memory, WeavingMemoryAdapter):
             orchestrator.yarn_graph = orchestrator.memory
         else:
@@ -137,7 +137,7 @@ def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
     else:
         # Use LegacyShardsAdapter with shards (backward compatibility)
         # This is deprecated - use yarn_graph (KG) or memory parameter instead
-        from HoloLoom.core.memory.graph import LegacyShardsAdapter
+        from hololoom.core.memory.graph import LegacyShardsAdapter
         orchestrator.yarn_graph = LegacyShardsAdapter(orchestrator.shards)
         logger.info(f"Using LegacyShardsAdapter (deprecated) with {len(orchestrator.shards)} shards")
 
@@ -149,7 +149,7 @@ def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
     if SHUTTLE_AVAILABLE and orchestrator.enable_shuttle:
         try:
             # Create retriever for Warp adapter
-            from HoloLoom.core.memory.base import create_retriever
+            from hololoom.core.memory.base import create_retriever
             retriever = create_retriever(orchestrator.cfg)
 
             # Create ShuttleStage with auto-derived config
@@ -184,7 +184,7 @@ def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
 
     # 3a. Semantic Cache - Three-tier caching for 244D semantic projections
     if orchestrator.enable_semantic_cache:
-        from HoloLoom.core.orchestrator.initialization.cache_init import initialize_semantic_cache
+        from hololoom.core.orchestrator.initialization.cache_init import initialize_semantic_cache
         initialize_semantic_cache(orchestrator)
     else:
         orchestrator.semantic_cache = None
@@ -192,7 +192,7 @@ def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
 
     # 3b. Phase 5: Linguistic Matryoshka Gate (optional)
     if orchestrator.cfg.enable_linguistic_gate:
-        from HoloLoom.core.orchestrator.initialization.linguistic_init import initialize_linguistic_gate
+        from hololoom.core.orchestrator.initialization.linguistic_init import initialize_linguistic_gate
         initialize_linguistic_gate(orchestrator)
     else:
         orchestrator.linguistic_gate = None
@@ -269,7 +269,7 @@ def initialize_components(orchestrator: 'WeavingOrchestrator') -> None:
     # 5. Retriever (for context)
     # Only create traditional retriever if using shards (legacy path)
     if orchestrator.shards:
-        from HoloLoom.core.memory.base import create_retriever
+        from hololoom.core.memory.base import create_retriever
         # Legacy YarnGraph has .shards dict
         if hasattr(orchestrator.yarn_graph, 'shards'):
             orchestrator.retriever = create_retriever(

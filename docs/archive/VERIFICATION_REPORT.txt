@@ -8,8 +8,8 @@ Status: ✅ COMPLETE AND PRODUCTION READY
 IMPLEMENTATION VERIFICATION
 ================================================================================
 
-Module: HoloLoom/redteam/visualization/
-Location: /c/Users/blake/OneDrive/Documents/mythRL/HoloLoom/redteam/visualization/
+Module: hololoom/redteam/visualization/
+Location: /c/Users/blake/OneDrive/Documents/mythRL/hololoom/redteam/visualization/
 
 File Structure:
   ✅ __init__.py                  39 lines   - Package interface

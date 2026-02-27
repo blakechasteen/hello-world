@@ -26,7 +26,7 @@ def test_extract_word_at_position():
     line = "  HoloLoom.memory.recall("
     pos = 24  # After "recall"
     word = extract_word_at_position(line, pos)
-    assert word == "HoloLoom.memory.recall", f"Expected 'HoloLoom.memory.recall', got '{word}'"
+    assert word == "hololoom.memory.recall", f"Expected 'hololoom.memory.recall', got '{word}'"
     print(f"  ✓ Test 1: '{line}' @ {pos} → '{word}'")
 
     # Test 2: Partial word

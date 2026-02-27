@@ -29,7 +29,7 @@ class TestProbeConfig:
 
     def test_default_config(self):
         """Test default configuration values."""
-        from HoloLoom.dark_trace.research.adversarial_prober import ProbeConfig
+        from hololoom.dark_trace.research.adversarial_prober import ProbeConfig
 
         config = ProbeConfig()
 
@@ -43,7 +43,7 @@ class TestProbeConfig:
 
     def test_quick_preset(self):
         """Test quick preset for fast probing."""
-        from HoloLoom.dark_trace.research.adversarial_prober import ProbeConfig
+        from hololoom.dark_trace.research.adversarial_prober import ProbeConfig
 
         config = ProbeConfig.quick()
 
@@ -53,7 +53,7 @@ class TestProbeConfig:
 
     def test_balanced_preset(self):
         """Test balanced preset."""
-        from HoloLoom.dark_trace.research.adversarial_prober import ProbeConfig
+        from hololoom.dark_trace.research.adversarial_prober import ProbeConfig
 
         config = ProbeConfig.balanced()
 
@@ -62,7 +62,7 @@ class TestProbeConfig:
 
     def test_thorough_preset(self):
         """Test thorough preset for comprehensive probing."""
-        from HoloLoom.dark_trace.research.adversarial_prober import ProbeConfig
+        from hololoom.dark_trace.research.adversarial_prober import ProbeConfig
 
         config = ProbeConfig.thorough()
 
@@ -81,7 +81,7 @@ class TestVulnerabilityLevel:
 
     def test_level_from_score(self):
         """Test vulnerability level determination from score."""
-        from HoloLoom.dark_trace.research.adversarial_prober import VulnerabilityLevel
+        from hololoom.dark_trace.research.adversarial_prober import VulnerabilityLevel
 
         # Test all levels
         assert VulnerabilityLevel.ROBUST.value == "robust"
@@ -101,7 +101,7 @@ class TestGradientProber:
 
     def test_initialization(self):
         """Test GradientProber initialization."""
-        from HoloLoom.dark_trace.research.adversarial_prober import (
+        from hololoom.dark_trace.research.adversarial_prober import (
             GradientProber, ProbeConfig
         )
 
@@ -113,7 +113,7 @@ class TestGradientProber:
 
     def test_fgsm_probe(self):
         """Test FGSM probing."""
-        from HoloLoom.dark_trace.research.adversarial_prober import (
+        from hololoom.dark_trace.research.adversarial_prober import (
             GradientProber, ProbeConfig
         )
 
@@ -144,7 +144,7 @@ class TestGradientProber:
 
     def test_pgd_probe(self):
         """Test PGD probing."""
-        from HoloLoom.dark_trace.research.adversarial_prober import (
+        from hololoom.dark_trace.research.adversarial_prober import (
             GradientProber, ProbeConfig
         )
 
@@ -181,7 +181,7 @@ class TestAdversarialProber:
 
     def test_initialization(self):
         """Test AdversarialProber initialization."""
-        from HoloLoom.dark_trace.research.adversarial_prober import (
+        from hololoom.dark_trace.research.adversarial_prober import (
             AdversarialProber, ProbeConfig
         )
 
@@ -196,7 +196,7 @@ class TestAdversarialProber:
 
     def test_with_safety_guardrails(self):
         """Test prober with safety guardrails."""
-        from HoloLoom.dark_trace.research.adversarial_prober import (
+        from hololoom.dark_trace.research.adversarial_prober import (
             AdversarialProber, ProbeConfig
         )
 
@@ -210,7 +210,7 @@ class TestAdversarialProber:
 
     def test_probe_feature(self):
         """Test probing a single feature."""
-        from HoloLoom.dark_trace.research.adversarial_prober import (
+        from hololoom.dark_trace.research.adversarial_prober import (
             AdversarialProber, ProbeConfig, VulnerabilityLevel
         )
 
@@ -241,7 +241,7 @@ class TestAdversarialProber:
 
     def test_vulnerability_summary(self):
         """Test vulnerability summary generation."""
-        from HoloLoom.dark_trace.research.adversarial_prober import (
+        from hololoom.dark_trace.research.adversarial_prober import (
             AdversarialProber, ProbeConfig
         )
 
@@ -268,7 +268,7 @@ class TestGeneticConfig:
 
     def test_default_config(self):
         """Test default genetic config."""
-        from HoloLoom.dark_trace.research.genetic_prober import GeneticConfig
+        from hololoom.dark_trace.research.genetic_prober import GeneticConfig
 
         config = GeneticConfig()
 
@@ -280,7 +280,7 @@ class TestGeneticConfig:
 
     def test_fast_preset(self):
         """Test fast genetic config."""
-        from HoloLoom.dark_trace.research.genetic_prober import GeneticConfig
+        from hololoom.dark_trace.research.genetic_prober import GeneticConfig
 
         config = GeneticConfig.fast()
 
@@ -289,7 +289,7 @@ class TestGeneticConfig:
 
     def test_thorough_preset(self):
         """Test thorough genetic config."""
-        from HoloLoom.dark_trace.research.genetic_prober import GeneticConfig
+        from hololoom.dark_trace.research.genetic_prober import GeneticConfig
 
         config = GeneticConfig.thorough()
 
@@ -302,7 +302,7 @@ class TestGeneticOperators:
 
     def test_tournament_selection(self):
         """Test tournament selection."""
-        from HoloLoom.dark_trace.research.genetic_prober import (
+        from hololoom.dark_trace.research.genetic_prober import (
             GeneticConfig, GeneticOperators, Individual
         )
 
@@ -324,7 +324,7 @@ class TestGeneticOperators:
 
     def test_crossover(self):
         """Test crossover operations."""
-        from HoloLoom.dark_trace.research.genetic_prober import (
+        from hololoom.dark_trace.research.genetic_prober import (
             GeneticConfig, GeneticOperators, Individual, CrossoverMethod
         )
 
@@ -342,7 +342,7 @@ class TestGeneticOperators:
 
     def test_mutation(self):
         """Test mutation operations."""
-        from HoloLoom.dark_trace.research.genetic_prober import (
+        from hololoom.dark_trace.research.genetic_prober import (
             GeneticConfig, GeneticOperators, Individual
         )
 
@@ -364,7 +364,7 @@ class TestGeneticAdversarialSearch:
 
     def test_initialization(self):
         """Test search initialization."""
-        from HoloLoom.dark_trace.research.genetic_prober import (
+        from hololoom.dark_trace.research.genetic_prober import (
             GeneticAdversarialSearch, GeneticConfig
         )
 
@@ -375,7 +375,7 @@ class TestGeneticAdversarialSearch:
 
     def test_evolution(self):
         """Test basic evolution."""
-        from HoloLoom.dark_trace.research.genetic_prober import (
+        from hololoom.dark_trace.research.genetic_prober import (
             GeneticAdversarialSearch, GeneticConfig
         )
 
@@ -398,7 +398,7 @@ class TestGeneticAdversarialSearch:
 
     def test_early_stopping(self):
         """Test early stopping when fitness converges."""
-        from HoloLoom.dark_trace.research.genetic_prober import (
+        from hololoom.dark_trace.research.genetic_prober import (
             GeneticAdversarialSearch, GeneticConfig
         )
 
@@ -432,7 +432,7 @@ class TestAdversarialCatalog:
 
     def test_initialization_in_memory(self):
         """Test in-memory catalog."""
-        from HoloLoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
+        from hololoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
 
         catalog = AdversarialCatalog()
 
@@ -441,7 +441,7 @@ class TestAdversarialCatalog:
 
     def test_add_vulnerability(self):
         """Test adding vulnerability."""
-        from HoloLoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
+        from hololoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
 
         catalog = AdversarialCatalog()
 
@@ -465,7 +465,7 @@ class TestAdversarialCatalog:
 
     def test_query_by_level(self):
         """Test querying by vulnerability level."""
-        from HoloLoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
+        from hololoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
 
         catalog = AdversarialCatalog()
 
@@ -483,7 +483,7 @@ class TestAdversarialCatalog:
 
     def test_update_status(self):
         """Test updating vulnerability status."""
-        from HoloLoom.dark_trace.research.adversarial_catalog import (
+        from hololoom.dark_trace.research.adversarial_catalog import (
             AdversarialCatalog, VulnerabilityStatus
         )
 
@@ -501,7 +501,7 @@ class TestAdversarialCatalog:
 
     def test_persistence(self):
         """Test catalog persistence."""
-        from HoloLoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
+        from hololoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create and populate catalog
@@ -517,7 +517,7 @@ class TestAdversarialCatalog:
 
     def test_version_comparison(self):
         """Test comparing versions for regression."""
-        from HoloLoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
+        from hololoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
 
         catalog = AdversarialCatalog()
 
@@ -536,7 +536,7 @@ class TestAdversarialCatalog:
 
     def test_catalog_summary(self):
         """Test catalog summary generation."""
-        from HoloLoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
+        from hololoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
 
         catalog = AdversarialCatalog()
 
@@ -564,7 +564,7 @@ class TestFactoryFunctions:
 
     def test_create_prober(self):
         """Test prober factory function."""
-        from HoloLoom.dark_trace.research.adversarial_prober import create_prober
+        from hololoom.dark_trace.research.adversarial_prober import create_prober
 
         mock_adapter = Mock()
 
@@ -575,7 +575,7 @@ class TestFactoryFunctions:
 
     def test_create_genetic_search(self):
         """Test genetic search factory function."""
-        from HoloLoom.dark_trace.research.genetic_prober import create_genetic_search
+        from hololoom.dark_trace.research.genetic_prober import create_genetic_search
 
         search = create_genetic_search(preset="fast")
 
@@ -584,7 +584,7 @@ class TestFactoryFunctions:
 
     def test_create_catalog(self):
         """Test catalog factory function."""
-        from HoloLoom.dark_trace.research.adversarial_catalog import create_catalog
+        from hololoom.dark_trace.research.adversarial_catalog import create_catalog
 
         catalog = create_catalog()
 
@@ -602,10 +602,10 @@ class TestIntegration:
 
     def test_full_probing_workflow(self):
         """Test complete probing workflow."""
-        from HoloLoom.dark_trace.research.adversarial_prober import (
+        from hololoom.dark_trace.research.adversarial_prober import (
             AdversarialProber, ProbeConfig
         )
-        from HoloLoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
+        from hololoom.dark_trace.research.adversarial_catalog import AdversarialCatalog
 
         # Setup
         config = ProbeConfig.quick()

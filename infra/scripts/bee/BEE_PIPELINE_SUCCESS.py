@@ -192,7 +192,7 @@ Query: "Propolis sealing" → 54.9% match
 HOLOLOOM INTEGRATION
 --------------------
 from bee_inspection_standalone import BeeInspectionPipeline
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.documentation.types import MemoryShard
 
 # Process inspection
 pipeline = BeeInspectionPipeline(use_whisper=True)

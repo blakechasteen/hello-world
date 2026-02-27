@@ -22,7 +22,7 @@ Detects the most common issues in AI-generated code beyond simple hallucinations
 15. **Timezone Issues** - Naive datetime usage
 
 Usage:
-    from HoloLoom.agentic.ai_slop_detector import AISlop Detector
+    from hololoom.agentic.ai_slop_detector import AISlop Detector
 
     detector = AISlopDetector(indexer=codebase_indexer)
     issues = await detector.detect_all(code, language="python")
@@ -40,8 +40,8 @@ from typing import List, Dict, Optional, Any, Set
 from dataclasses import dataclass
 from enum import Enum
 
-from HoloLoom.agentic.codebase_ingestion import Language
-from HoloLoom.agentic.hallucination_detector import HallucinationDetector
+from hololoom.agentic.codebase_ingestion import Language
+from hololoom.agentic.hallucination_detector import HallucinationDetector
 
 
 logger = logging.getLogger(__name__)

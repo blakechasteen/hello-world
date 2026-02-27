@@ -70,7 +70,7 @@ except ImportError:
 
 # HoloLoom imports
 try:
-    from HoloLoom.Documentation.types import MemoryShard
+    from hololoom.Documentation.types import MemoryShard
 except ImportError:
     from dataclasses import dataclass
     from typing import Dict, Any

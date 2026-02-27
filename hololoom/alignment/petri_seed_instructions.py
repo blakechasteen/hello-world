@@ -13,7 +13,7 @@ will use to probe the target system for concerning behavior.
 
 References:
 - Petri paper: https://alignment.anthropic.com/2025/petri
-- HoloLoom Layer 6 safety: HoloLoom/demos/demo_safety_locks.py
+- HoloLoom Layer 6 safety: hololoom/demos/demo_safety_locks.py
 - Recursive learning: RECURSIVE_LEARNING_COMPLETE.md
 """
 

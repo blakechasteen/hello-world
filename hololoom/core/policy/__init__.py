@@ -5,7 +5,7 @@ from .unified import (
     create_policy
 )
 # PolicyEngine protocol is defined in HoloLoom.protocols
-from HoloLoom.core.protocols import PolicyEngine
+from hololoom.core.protocols import PolicyEngine
 
 # Import Thompson Sampling from dedicated module (backward compatibility)
 from .thompson_sampling import BanditStrategy, TSBandit

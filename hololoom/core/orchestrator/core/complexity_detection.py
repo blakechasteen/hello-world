@@ -25,11 +25,11 @@ import time
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.core.protocols.types import Query
-from HoloLoom.core.protocols import ComplexityLevel, ProvenanceTrace
-from HoloLoom.core.loom.command import PatternCard
+from hololoom.core.protocols.types import Query
+from hololoom.core.protocols import ComplexityLevel, ProvenanceTrace
+from hololoom.core.loom.command import PatternCard
 
 
 logger = logging.getLogger(__name__)

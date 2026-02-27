@@ -31,7 +31,7 @@ try:
 except ImportError:
     CV2_AVAILABLE = False
 
-from HoloLoom.vision.protocol import (
+from hololoom.vision.protocol import (
     VisionProcessor,
     Keypoint,
     BodyPose,

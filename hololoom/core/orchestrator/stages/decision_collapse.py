@@ -14,10 +14,10 @@ import time
 from typing import Dict, Any, Optional, List
 import numpy as np
 
-from HoloLoom.core.protocols.types import Query, Features, Context
-from HoloLoom.core.convergence.engine import ConvergenceEngine, CollapseStrategy
-from HoloLoom.core.loom.command import PatternSpec
-from HoloLoom.core.orchestrator.protocols import StageResult
+from hololoom.core.protocols.types import Query, Features, Context
+from hololoom.core.convergence.engine import ConvergenceEngine, CollapseStrategy
+from hololoom.core.loom.command import PatternSpec
+from hololoom.core.orchestrator.protocols import StageResult
 
 
 class DecisionCollapseStage:

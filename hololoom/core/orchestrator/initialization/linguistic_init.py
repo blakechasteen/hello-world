@@ -30,7 +30,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 
 logger = logging.getLogger(__name__)
@@ -69,7 +69,7 @@ def initialize_linguistic_gate(orchestrator: 'WeavingOrchestrator') -> None:
         This is expected behavior when linguistic modules are unavailable.
     """
     try:
-        from HoloLoom.core.embedding.linguistic_matryoshka_gate import (
+        from hololoom.core.embedding.linguistic_matryoshka_gate import (
             LinguisticMatryoshkaGate,
             LinguisticGateConfig,
             LinguisticFilterMode

@@ -25,7 +25,7 @@ Architecture:
       +- FreeEnergyMinimizer (optimizer)
 
 Usage:
-    from HoloLoom.physics.thermodynamics import ThermodynamicOptimizer
+    from hololoom.physics.thermodynamics import ThermodynamicOptimizer
 
     # Create optimizer
     thermo = ThermodynamicOptimizer(

@@ -2,15 +2,15 @@
 
 **Last Updated**: November 2025
 **Status**: Production Ready
-**File**: `HoloLoom/redteam/swarm/agent_base.py`
+**File**: `hololoom/redteam/swarm/agent_base.py`
 
 ## Quick Start (5 minutes)
 
 ### Import
 ```python
-from HoloLoom.redteam.swarm.agent_base import BaseAgent
-from HoloLoom.redteam.swarm.communication import MessageBus
-from HoloLoom.redteam.swarm.protocols import AgentRole, AgentTask, AgentResult
+from hololoom.redteam.swarm.agent_base import BaseAgent
+from hololoom.redteam.swarm.communication import MessageBus
+from hololoom.redteam.swarm.protocols import AgentRole, AgentTask, AgentResult
 ```
 
 ### Create Agent
@@ -456,7 +456,7 @@ async def test_agent():
 
 ### Full Test Example
 ```python
-from HoloLoom.redteam.swarm.tests.test_agent_base import TestAgent
+from hololoom.redteam.swarm.tests.test_agent_base import TestAgent
 
 @pytest.mark.asyncio
 async def test_custom_agent():

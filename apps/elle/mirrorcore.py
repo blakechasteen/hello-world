@@ -21,9 +21,9 @@ import json
 
 # HoloLoom imports
 try:
-    from HoloLoom import HoloLoom
-    from HoloLoom.rag import SimpleRAG
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.rag import SimpleRAG
+    from hololoom.config import Config
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False

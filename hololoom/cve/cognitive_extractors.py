@@ -1,5 +1,5 @@
 """
-Cognitive Extractors - Extract CRP events from HoloLoom systems
+Cognitive Extractors - Extract CRP events from hololoom systems
 ================================================================
 
 Converts HoloLoom internal state to Cognitive Rendering Protocol events.
@@ -21,7 +21,7 @@ from datetime import datetime
 from dataclasses import dataclass
 import numpy as np
 
-from HoloLoom.cve.cognitive_protocol import (
+from hololoom.cve.cognitive_protocol import (
     CognitiveEvent,
     CognitiveFrame,
     CognitiveVizType,
@@ -62,7 +62,7 @@ class CognitiveExtractor:
     """
     Base class for cognitive data extractors.
 
-    Extracts CRP events from HoloLoom systems.
+    Extracts CRP events from hololoom systems.
     """
 
     def __init__(self):

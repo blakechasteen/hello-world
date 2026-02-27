@@ -181,7 +181,7 @@ is_monotone, direction = SequenceAnalyzer.is_monotone(confidence_history)
 ### Basic Usage
 
 ```python
-from HoloLoom.analytical_orchestrator import create_analytical_orchestrator
+from hololoom.analytical_orchestrator import create_analytical_orchestrator
 
 # Create with all analysis enabled
 weaver = create_analytical_orchestrator(

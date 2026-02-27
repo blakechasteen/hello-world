@@ -9,8 +9,8 @@ Compare memory-augmented LLMs against vanilla LLMs to quantify:
 - Hallucination reduction
 
 Usage:
-    from HoloLoom.model_extension import MemoryAugmentedLLM
-    from HoloLoom.model_extension.benchmark import (
+    from hololoom.model_extension import MemoryAugmentedLLM
+    from hololoom.model_extension.benchmark import (
         BenchmarkSuite,
         QualityBenchmark,
         EfficiencyBenchmark,

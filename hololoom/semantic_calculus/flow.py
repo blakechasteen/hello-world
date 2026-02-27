@@ -2,7 +2,7 @@
 Semantic Flow: PDE-Based Temporal Dynamics for Semantic Space
 ==============================================================
 
-Integrates PDE solvers from HoloLoom.warp.semantic_pde with 244D semantic space
+Integrates PDE solvers from hololoom.warp.semantic_pde with 244D semantic space
 to enable temporal evolution of meaning.
 
 PHILOSOPHY:
@@ -57,7 +57,7 @@ import warnings
 
 # Import PDE solvers
 try:
-    from HoloLoom.warp.semantic_pde import (
+    from hololoom.warp.semantic_pde import (
         PDEType,
         HeatEquationSolver,
         WaveEquationSolver,
@@ -76,7 +76,7 @@ except ImportError:
 
 # Import semantic dimensions
 try:
-    from HoloLoom.semantic_calculus.dimensions import (
+    from hololoom.semantic_calculus.dimensions import (
         SemanticSpectrum,
         STANDARD_DIMENSIONS,
         EXTENDED_244_DIMENSIONS,

@@ -25,7 +25,7 @@ This creates a reversible transformation: **Yarn Graph ↔ Warp Space**
 ### Core Components
 
 ```
-HoloLoom/warp/
+hololoom/warp/
 ├── space.py          # Core WarpSpace (standard operations)
 ├── advanced.py       # Advanced mathematical operations
 ├── optimized.py      # Performance optimizations
@@ -39,7 +39,7 @@ HoloLoom/warp/
 The fundamental tensioned tensor field with lifecycle:
 
 ```python
-from HoloLoom.warp import WarpSpace
+from hololoom.warp import WarpSpace
 
 # Initialize
 warp = WarpSpace(embedder, scales=[96, 192, 384])
@@ -74,7 +74,7 @@ Cutting-edge mathematical frameworks:
 Treat semantic space as a curved manifold with learned metric tensor:
 
 ```python
-from HoloLoom.warp.advanced import RiemannianManifold
+from hololoom.warp.advanced import RiemannianManifold
 
 # Create manifold
 manifold = RiemannianManifold(dim=384, curvature=0.5)
@@ -96,7 +96,7 @@ transported = manifold.parallel_transport(vector, from_point, to_point)
 Extract latent structure from multi-dimensional data:
 
 ```python
-from HoloLoom.warp.advanced import TensorDecomposer
+from hololoom.warp.advanced import TensorDecomposer
 
 # Tucker decomposition (higher-order SVD)
 core, factors = TensorDecomposer.tucker_decomposition(
@@ -122,7 +122,7 @@ cp_factors = TensorDecomposer.cp_decomposition(
 Superposition, entanglement, and probabilistic collapse:
 
 ```python
-from HoloLoom.warp.advanced import QuantumWarpOperations
+from hololoom.warp.advanced import QuantumWarpOperations
 
 # Create superposition
 superposed = QuantumWarpOperations.superposition(
@@ -154,7 +154,7 @@ decohered = QuantumWarpOperations.decoherence(state, noise_level=0.1)
 Information-theoretic optimization on statistical manifolds:
 
 ```python
-from HoloLoom.warp.advanced import FisherInformationGeometry
+from hololoom.warp.advanced import FisherInformationGeometry
 
 # Compute Fisher information matrix
 fim = FisherInformationGeometry.fisher_information_matrix(
@@ -184,7 +184,7 @@ High-performance variants for production:
 #### GPU Acceleration
 
 ```python
-from HoloLoom.warp.optimized import GPUWarpSpace
+from hololoom.warp.optimized import GPUWarpSpace
 
 # GPU-accelerated warp space
 gpu_warp = GPUWarpSpace(
@@ -213,7 +213,7 @@ contexts = gpu_warp.batch_attention(
 Memory-efficient representation for sparse embeddings:
 
 ```python
-from HoloLoom.warp.optimized import SparseTensorField
+from hololoom.warp.optimized import SparseTensorField
 
 # Convert dense to sparse
 sparse = SparseTensorField(dense_tensor, threshold=1e-6)
@@ -230,7 +230,7 @@ dense = sparse.to_dense()
 Deferred computation for efficiency:
 
 ```python
-from HoloLoom.warp.optimized import LazyWarpOperation
+from hololoom.warp.optimized import LazyWarpOperation
 
 # Build computation graph
 lazy_attention = LazyWarpOperation("attention", warp, query)
@@ -245,7 +245,7 @@ result = lazy_context()  # Triggers computation
 Reuse allocated tensors:
 
 ```python
-from HoloLoom.warp.optimized import TensorMemoryPool
+from hololoom.warp.optimized import TensorMemoryPool
 
 pool = TensorMemoryPool(max_pool_size=100)
 
@@ -266,7 +266,7 @@ print(f"Hit rate: {stats['hit_rate']:.1%}")
 Parallel operations for throughput:
 
 ```python
-from HoloLoom.warp.optimized import BatchedWarpProcessor
+from hololoom.warp.optimized import BatchedWarpProcessor
 
 processor = BatchedWarpProcessor(max_batch_size=32)
 
@@ -498,10 +498,10 @@ Run comprehensive tests:
 python test_warp_drive_complete.py
 
 # Advanced operations
-python HoloLoom/warp/advanced.py
+python hololoom/warp/advanced.py
 
 # Optimizations
-python HoloLoom/warp/optimized.py
+python hololoom/warp/optimized.py
 
 # Integration demos
 python demos/warp_drive_showcase.py

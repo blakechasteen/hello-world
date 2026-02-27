@@ -10,11 +10,11 @@
 ### 1. Package-Level Imports Now Work
 ```bash
 # This now works (was timing out before):
-import HoloLoom
+import hololoom
 print(HoloLoom.__version__)  # 1.0.0
 ```
 
-**Fix Applied**: Converted `HoloLoom/__init__.py` to use lazy loading with `__getattr__`
+**Fix Applied**: Converted `hololoom/__init__.py` to use lazy loading with `__getattr__`
 
 **Impact**: Fast package import (no circular dependencies at package level)
 
@@ -24,10 +24,10 @@ print(HoloLoom.__version__)  # 1.0.0
 
 | Fix | File | Impact |
 |-----|------|--------|
-| Removed numpy.typing | `HoloLoom/documentation/typed_dicts.py` | Eliminates WMI hang risk |
-| Disabled policy import | `HoloLoom/config.py` | Breaks one circular chain |
-| Lazy Config import | `HoloLoom/hololoom.py` | Breaks `__init__ → hololoom → config` cycle |
-| Disabled MemoryStore | `HoloLoom/protocols/__init__.py` | Breaks `protocols ↔ memory.protocol` cycle |
+| Removed numpy.typing | `hololoom/documentation/typed_dicts.py` | Eliminates WMI hang risk |
+| Disabled policy import | `hololoom/config.py` | Breaks one circular chain |
+| Lazy Config import | `hololoom/hololoom.py` | Breaks `__init__ → hololoom → config` cycle |
+| Disabled MemoryStore | `hololoom/protocols/__init__.py` | Breaks `protocols ↔ memory.protocol` cycle |
 
 ---
 
@@ -37,7 +37,7 @@ print(HoloLoom.__version__)  # 1.0.0
 
 ```bash
 # This still times out:
-from HoloLoom import HoloLoom  # timeout after 5 seconds
+from hololoom import hololoom  # timeout after 5 seconds
 ```
 
 **Root Cause**: `hololoom.py` has deep import dependencies that create circular chains:
@@ -45,8 +45,8 @@ from HoloLoom import HoloLoom  # timeout after 5 seconds
 ```
 HoloLoom class import
   → hololoom.py (line 38-42)
-    → from HoloLoom.memory.protocol import Memory
-      → from HoloLoom.protocols import ...
+    → from hololoom.memory.protocol import Memory
+      → from hololoom.protocols import ...
         → Still has circular dependencies despite our fixes
 ```
 
@@ -93,7 +93,7 @@ trough/
 │   ├── SlopIssue (dataclass)
 │   ├── LogicError (dataclass)
 │   └── Severity (enum)
-├── ai_slop_detector.py       # Copy from HoloLoom/agentic (remove HoloLoom imports)
+├── ai_slop_detector.py       # Copy from hololoom/agentic (remove HoloLoom imports)
 ├── ml_logic_detector.py      # Already standalone! Just move it
 ├── server.py                 # FastAPI server with both endpoints
 ├── cli.py                    # Command-line interface
@@ -107,11 +107,11 @@ trough/
 1. `IMPORT_FIX_SUMMARY.md` - Investigation notes
 2. `IMPORT_FIX_STATUS_UPDATE.md` - Mid-session status
 3. `IMPORT_FIX_FINAL_REPORT.md` - This file
-4. `HoloLoom/documentation/typed_dicts.py` - Removed numpy.typing
-5. `HoloLoom/config.py` - Disabled policy import
-6. `HoloLoom/hololoom.py` - Made Config import lazy
-7. `HoloLoom/protocols/__init__.py` - Disabled MemoryStore import
-8. `HoloLoom/__init__.py` - Converted to lazy loading with `__getattr__`
+4. `hololoom/documentation/typed_dicts.py` - Removed numpy.typing
+5. `hololoom/config.py` - Disabled policy import
+6. `hololoom/hololoom.py` - Made Config import lazy
+7. `hololoom/protocols/__init__.py` - Disabled MemoryStore import
+8. `hololoom/__init__.py` - Converted to lazy loading with `__getattr__`
 
 ---
 
@@ -169,7 +169,7 @@ We recommend the latter.
 
 ### What We Achieved Today
 
-- ✅ Package imports work (`import HoloLoom`)
+- ✅ Package imports work (`import hololoom`)
 - ✅ 4 circular dependencies identified and broken
 - ✅ Lazy loading implementation complete
 - ✅ Investigation complete with actionable recommendations

@@ -8,7 +8,7 @@ The HoloLoom Workflow Builder is a powerful visual interface for creating, editi
 
 ```bash
 # Start the backend executor
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 
 # Open workflow_builder.html in your browser
@@ -191,7 +191,7 @@ Manage workflow execution paths.
 
 - **Documentation**: This guide and linked pages
 - **Issues**: [GitHub Issues](https://github.com/anthropics/claude-code/issues)
-- **Examples**: `HoloLoom/web_dashboard/example_workflows/`
+- **Examples**: `hololoom/web_dashboard/example_workflows/`
 
 ---
 

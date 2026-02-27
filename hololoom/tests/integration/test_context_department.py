@@ -12,21 +12,21 @@ as a modular department, validating:
 - Registry integration
 
 Run with:
-    pytest HoloLoom/tests/integration/test_context_department.py -v
+    pytest hololoom/tests/integration/test_context_department.py -v
 """
 
 import pytest
 import asyncio
 from typing import List
 
-from HoloLoom.departments import (
+from hololoom.departments import (
     DepartmentRegistry,
     DepartmentRequest,
     ConfidenceLevel
 )
-from HoloLoom.apps.departments.context import ContextDepartment
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.apps.departments.context import ContextDepartment
+from hololoom.config import Config
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

@@ -11,7 +11,7 @@ Tests the core abstractions that enable modular nested learning:
 - Registry operations
 
 Run with:
-    pytest HoloLoom/tests/unit/test_department_protocol.py -v
+    pytest hololoom/tests/unit/test_department_protocol.py -v
 """
 
 import pytest
@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 from uuid import UUID
 
-from HoloLoom.protocols.department import (
+from hololoom.protocols.department import (
     ConfidenceLevel,
     ConfidenceMetadata,
     DepartmentRequest,
@@ -36,8 +36,8 @@ from HoloLoom.protocols.department import (
     create_simple_request,
     create_simple_response
 )
-from HoloLoom.apps.departments.base import BaseDepartment
-from HoloLoom.apps.departments.registry import DepartmentRegistry
+from hololoom.apps.departments.base import BaseDepartment
+from hololoom.apps.departments.registry import DepartmentRegistry
 
 
 # ============================================================================

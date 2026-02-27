@@ -207,7 +207,7 @@ class MathOperationSelector:
             level=OperationLevel.BASIC,
             description="Compute inner product (dot product) between vectors",
             use_cases=[QueryIntent.SIMILARITY, QueryIntent.ANALYSIS],
-            module_path="HoloLoom.core.warp.math.algebra",
+            module_path="hololoom.core.warp.math.algebra",
             function_name="inner_product",
             estimated_cost=1
         )
@@ -218,7 +218,7 @@ class MathOperationSelector:
             level=OperationLevel.BASIC,
             description="Compute vector norm (magnitude)",
             use_cases=[QueryIntent.ANALYSIS, QueryIntent.VERIFICATION],
-            module_path="HoloLoom.core.warp.math.analysis.functional_analysis",
+            module_path="hololoom.core.warp.math.analysis.functional_analysis",
             function_name="NormedSpace",
             estimated_cost=1
         )
@@ -229,7 +229,7 @@ class MathOperationSelector:
             level=OperationLevel.BASIC,
             description="Compute metric distance between points",
             use_cases=[QueryIntent.SIMILARITY, QueryIntent.VERIFICATION],
-            module_path="HoloLoom.core.warp.math.analysis.real_analysis",
+            module_path="hololoom.core.warp.math.analysis.real_analysis",
             function_name="MetricSpace",
             estimated_cost=1
         )
@@ -244,7 +244,7 @@ class MathOperationSelector:
             level=OperationLevel.MODERATE,
             description="Compute gradient for optimization",
             use_cases=[QueryIntent.OPTIMIZATION, QueryIntent.ANALYSIS],
-            module_path="HoloLoom.core.warp.math.analysis.real_analysis",
+            module_path="hololoom.core.warp.math.analysis.real_analysis",
             function_name="Differentiator.gradient",
             estimated_cost=5
         )
@@ -268,7 +268,7 @@ class MathOperationSelector:
             description="Gram-Schmidt orthogonalization for diverse context",
             use_cases=[QueryIntent.TRANSFORMATION, QueryIntent.OPTIMIZATION],
             prerequisites=["inner_product", "norm"],
-            module_path="HoloLoom.core.warp.math.analysis.functional_analysis",
+            module_path="hololoom.core.warp.math.analysis.functional_analysis",
             function_name="HilbertSpace.gram_schmidt",
             estimated_cost=8
         )
@@ -284,7 +284,7 @@ class MathOperationSelector:
             description="Compute eigenvalues for spectral analysis",
             use_cases=[QueryIntent.ANALYSIS, QueryIntent.VERIFICATION],
             prerequisites=["inner_product"],
-            module_path="HoloLoom.core.warp.math.analysis.functional_analysis",
+            module_path="hololoom.core.warp.math.analysis.functional_analysis",
             function_name="SpectralAnalyzer",
             estimated_cost=15
         )
@@ -296,7 +296,7 @@ class MathOperationSelector:
             description="Graph Laplacian for topological analysis",
             use_cases=[QueryIntent.ANALYSIS, QueryIntent.TRANSFORMATION],
             prerequisites=["metric_distance"],
-            module_path="HoloLoom.core.warp.math.geometry",
+            module_path="hololoom.core.warp.math.geometry",
             function_name="LaplacianOperator",
             estimated_cost=12
         )
@@ -307,7 +307,7 @@ class MathOperationSelector:
             level=OperationLevel.ADVANCED,
             description="Fourier transform for frequency analysis",
             use_cases=[QueryIntent.ANALYSIS, QueryIntent.TRANSFORMATION],
-            module_path="HoloLoom.core.warp.math.analysis.fourier_harmonic",
+            module_path="hololoom.core.warp.math.analysis.fourier_harmonic",
             function_name="FourierTransform",
             estimated_cost=10
         )
@@ -322,7 +322,7 @@ class MathOperationSelector:
             level=OperationLevel.MODERATE,
             description="Hyperbolic distance for hierarchical embeddings",
             use_cases=[QueryIntent.SIMILARITY, QueryIntent.ANALYSIS],
-            module_path="HoloLoom.core.warp.math.extensions.hyperbolic_geometry",
+            module_path="hololoom.core.warp.math.extensions.hyperbolic_geometry",
             function_name="PoincareBall.distance",
             estimated_cost=5
         )
@@ -334,7 +334,7 @@ class MathOperationSelector:
             description="Compute geodesic (shortest path on manifold)",
             use_cases=[QueryIntent.OPTIMIZATION, QueryIntent.ANALYSIS],
             prerequisites=["metric_distance"],
-            module_path="HoloLoom.core.warp.math.geometry.riemannian_geometry",
+            module_path="hololoom.core.warp.math.geometry.riemannian_geometry",
             function_name="RiemannianManifold.geodesic",
             estimated_cost=20
         )
@@ -349,7 +349,7 @@ class MathOperationSelector:
             level=OperationLevel.MODERATE,
             description="Thompson Sampling for exploration/exploitation",
             use_cases=[QueryIntent.DECISION, QueryIntent.OPTIMIZATION],
-            module_path="HoloLoom.core.convergence.engine",
+            module_path="hololoom.core.convergence.engine",
             function_name="ThompsonBandit",
             estimated_cost=3
         )
@@ -360,7 +360,7 @@ class MathOperationSelector:
             level=OperationLevel.BASIC,
             description="Compute Shannon entropy for information content",
             use_cases=[QueryIntent.ANALYSIS, QueryIntent.DECISION],
-            module_path="HoloLoom.core.warp.math.decision.information_theory",
+            module_path="hololoom.core.warp.math.decision.information_theory",
             function_name="InformationTheory.entropy",
             estimated_cost=2
         )
@@ -372,7 +372,7 @@ class MathOperationSelector:
             description="KL divergence for distribution comparison",
             use_cases=[QueryIntent.SIMILARITY, QueryIntent.ANALYSIS],
             prerequisites=["entropy"],
-            module_path="HoloLoom.core.warp.math.decision.information_theory",
+            module_path="hololoom.core.warp.math.decision.information_theory",
             function_name="InformationTheory.kl_divergence",
             estimated_cost=3
         )
@@ -388,7 +388,7 @@ class MathOperationSelector:
             description="Ricci flow for manifold smoothing",
             use_cases=[QueryIntent.TRANSFORMATION, QueryIntent.OPTIMIZATION],
             prerequisites=["geodesic", "laplacian"],
-            module_path="HoloLoom.core.warp.math.extensions.advanced_curvature",
+            module_path="hololoom.core.warp.math.extensions.advanced_curvature",
             function_name="RicciFlowAdvanced",
             estimated_cost=50
         )
@@ -400,7 +400,7 @@ class MathOperationSelector:
             description="Spectral clustering using graph Laplacian",
             use_cases=[QueryIntent.ANALYSIS, QueryIntent.TRANSFORMATION],
             prerequisites=["laplacian", "eigenvalues"],
-            module_path="HoloLoom.core.warp.math.geometry",
+            module_path="hololoom.core.warp.math.geometry",
             function_name="SpectralClustering",
             estimated_cost=30
         )
@@ -416,7 +416,7 @@ class MathOperationSelector:
             description="Verify metric space axioms (triangle inequality, etc.)",
             use_cases=[QueryIntent.VERIFICATION, QueryIntent.ANALYSIS],
             prerequisites=["metric_distance"],
-            module_path="HoloLoom.core.warp.math.analysis.real_analysis",
+            module_path="hololoom.core.warp.math.analysis.real_analysis",
             function_name="MetricSpace.is_metric",
             estimated_cost=8
         )
@@ -428,7 +428,7 @@ class MathOperationSelector:
             description="Verify function continuity (Lipschitz constant)",
             use_cases=[QueryIntent.VERIFICATION, QueryIntent.ANALYSIS],
             prerequisites=["metric_distance"],
-            module_path="HoloLoom.core.warp.math.analysis.real_analysis",
+            module_path="hololoom.core.warp.math.analysis.real_analysis",
             function_name="ContinuityChecker",
             estimated_cost=10
         )
@@ -439,7 +439,7 @@ class MathOperationSelector:
             level=OperationLevel.MODERATE,
             description="Analyze sequence convergence",
             use_cases=[QueryIntent.VERIFICATION, QueryIntent.ANALYSIS],
-            module_path="HoloLoom.core.warp.math.analysis.real_analysis",
+            module_path="hololoom.core.warp.math.analysis.real_analysis",
             function_name="SequenceAnalyzer",
             estimated_cost=5
         )

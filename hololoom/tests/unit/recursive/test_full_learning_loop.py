@@ -7,7 +7,7 @@ Tests Thompson Sampling priors, policy weights, background learning, and complet
 import pytest
 import asyncio
 from unittest.mock import Mock, AsyncMock, MagicMock, patch
-from HoloLoom.recursive.full_learning_loop import (
+from hololoom.recursive.full_learning_loop import (
     ThompsonPriors,
     PolicyWeights,
     LearningMetrics,
@@ -15,9 +15,9 @@ from HoloLoom.recursive.full_learning_loop import (
     FullLearningEngine,
     weave_with_full_learning
 )
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
 
 
 class TestThompsonPriors:

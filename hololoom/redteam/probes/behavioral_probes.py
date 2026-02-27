@@ -31,7 +31,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Any, Optional, Tuple, Callable
 
-logger = logging.getLogger("HoloLoom.redteam.probes")
+logger = logging.getLogger("hololoom.redteam.probes")
 
 
 class AttackProbeType(Enum):

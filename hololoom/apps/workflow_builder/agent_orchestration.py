@@ -41,12 +41,12 @@ import time
 import heapq
 import uuid
 
-from HoloLoom.agents.orchestrator_mcts import create_mcts_agent
-from HoloLoom.agents.mcts_breakthrough import BreakthroughDetector, FeedForwardBroadcaster
-from HoloLoom.agents.background_learner import LearningQueue, Experience
-from HoloLoom.protocols.types import Query
-from HoloLoom.memory.graph import KG
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.agents.orchestrator_mcts import create_mcts_agent
+from hololoom.agents.mcts_breakthrough import BreakthroughDetector, FeedForwardBroadcaster
+from hololoom.agents.background_learner import LearningQueue, Experience
+from hololoom.protocols.types import Query
+from hololoom.memory.graph import KG
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 
 # ============================================================================

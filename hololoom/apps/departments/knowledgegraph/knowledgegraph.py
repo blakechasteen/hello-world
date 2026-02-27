@@ -40,8 +40,8 @@ import re
 from datetime import datetime
 from collections import defaultdict
 
-from HoloLoom.apps.departments.base import BaseDepartment, DepartmentRequest, DepartmentResponse
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.apps.departments.base import BaseDepartment, DepartmentRequest, DepartmentResponse
+from hololoom.memory.graph import KG, KGEdge
 
 
 # ============================================================================

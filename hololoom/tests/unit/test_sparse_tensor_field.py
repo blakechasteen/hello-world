@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from HoloLoom.warp.optimized import SparseTensorField
+from hololoom.warp.optimized import SparseTensorField
 
 
 def _dense_to_sparse(matrix: np.ndarray, threshold: float = 0.0) -> SparseTensorField:

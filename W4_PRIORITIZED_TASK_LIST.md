@@ -22,7 +22,7 @@ IMPACT: Unblocks 32K lines of core infrastructure
 ```
 
 #### Task P0.1: orchestrator/README.md
-- **Location**: HoloLoom/orchestrator/README.md
+- **Location**: hololoom/orchestrator/README.md
 - **Content Required**:
   - Overview: "Main pipeline orchestrating 9-step weaving cycle"
   - Quick start: Import, create, weave example (10 lines)
@@ -37,7 +37,7 @@ IMPACT: Unblocks 32K lines of core infrastructure
 - **Dependencies**: None
 
 #### Task P0.2: agentic/README.md
-- **Location**: HoloLoom/agentic/README.md
+- **Location**: hololoom/agentic/README.md
 - **Content Required**:
   - Overview: "Multi-agent reasoning system with 4 reasoning modes"
   - Quick start: Create orchestrator, call reason() (15 lines)
@@ -52,7 +52,7 @@ IMPACT: Unblocks 32K lines of core infrastructure
 - **Dependencies**: orchestrator/README.md
 
 #### Task P0.3: weaving/README.md
-- **Location**: HoloLoom/weaving/README.md
+- **Location**: hololoom/weaving/README.md
 - **Content Required**:
   - Overview: "Weaving metaphor - discrete→continuous→discrete transformation"
   - Yarn Graph → DotPlasma → Warp Space → Convergence flow
@@ -66,7 +66,7 @@ IMPACT: Unblocks 32K lines of core infrastructure
 - **Dependencies**: orchestrator/README.md
 
 #### Task P0.4: conscience/README.md
-- **Location**: HoloLoom/conscience/README.md
+- **Location**: hololoom/conscience/README.md
 - **Content Required**:
   - Overview: "Epistemic calibration system for uncertainty awareness"
   - Quick start: Create, calibrate, query (15 lines)
@@ -471,7 +471,7 @@ After completing all tasks:
 # [System Name]
 
 **Status**: [Development/Stable/Deprecated]
-**Location**: HoloLoom/[directory]/
+**Location**: hololoom/[directory]/
 **Lines of Code**: ~[X]K
 **Last Updated**: YYYY-MM-DD
 

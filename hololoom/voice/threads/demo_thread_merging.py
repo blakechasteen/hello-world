@@ -7,7 +7,7 @@ Demonstrates 3 merge strategies for combining conversation threads:
 - PRESERVE_ALL: Keep everything with thread markers
 
 Run:
-    PYTHONPATH=. python HoloLoom/voice_first/demo_thread_merging.py
+    PYTHONPATH=. python hololoom/voice_first/demo_thread_merging.py
 """
 
 import asyncio
@@ -137,7 +137,7 @@ async def run_demo():
     3. Merge using 3 different strategies
     4. Show results and YarnGraph relationships
     """
-    from HoloLoom.voice.threads.thread import ThreadMerger, MergeStrategy
+    from hololoom.voice.threads.thread import ThreadMerger, MergeStrategy
 
     # Set UTF-8 encoding for Windows console
     import sys

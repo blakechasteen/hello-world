@@ -5,7 +5,7 @@ HoloLoom Skills Package
 **One-Line Skill Launching for HoloLoom**
 
 Quick Start:
-    from HoloLoom.skills import launch_skill, skill
+    from hololoom.skills import launch_skill, skill
 
     # Launch any skill with one line
     result = await launch_skill("code_reviewer", code="def foo(): pass")
@@ -33,7 +33,7 @@ Skills are automatically registered when their modules are imported.
 # Easy Launch API
 # ============================================================================
 
-from HoloLoom.skills.launcher import (
+from hololoom.skills.launcher import (
     # Primary API
     launch_skill,
     launch,
@@ -73,7 +73,7 @@ from HoloLoom.skills.launcher import (
 # Easy Skill Creation
 # ============================================================================
 
-from HoloLoom.skills.decorators import (
+from hololoom.skills.decorators import (
     # Main decorator
     skill,
 
@@ -93,7 +93,7 @@ from HoloLoom.skills.decorators import (
 # Base Classes (for advanced usage)
 # ============================================================================
 
-from HoloLoom.skills.base import (
+from hololoom.skills.base import (
     BaseSkill,
     SkillInput,
     SkillOutput,
@@ -104,7 +104,7 @@ from HoloLoom.skills.base import (
     register_skill,
 )
 
-from HoloLoom.skills.executor import (
+from hololoom.skills.executor import (
     SkillExecutor,
     ExecutionResult,
     BatchResult,

@@ -9,15 +9,15 @@ A modern, beautiful UI for discovering, previewing, and loading pre-built HoloLo
 ### Option 1: Direct File (Easiest)
 ```bash
 # Windows
-start HoloLoom/web_dashboard/template_gallery.html
+start hololoom/web_dashboard/template_gallery.html
 
 # Mac/Linux
-open HoloLoom/web_dashboard/template_gallery.html
+open hololoom/web_dashboard/template_gallery.html
 ```
 
 ### Option 2: Local Server (Recommended for Development)
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python -m http.server 8000
 # Visit: http://localhost:8000/template_gallery.html
 ```
@@ -117,7 +117,7 @@ Click **"Use Template"** in the modal:
 ## File Locations
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── template_gallery.html         ← Main UI file
 ├── template_gallery.js           ← Advanced features (optional)
 ├── TEMPLATE_GALLERY_README.md    ← Full documentation

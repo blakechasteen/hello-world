@@ -1,4 +1,4 @@
-# HoloLoom Production Dockerfile
+# hololoom Production Dockerfile
 # ==================================
 # Multi-stage build for optimized production deployment
 
@@ -39,7 +39,7 @@ COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 # Copy application code
-COPY HoloLoom/ ./HoloLoom/
+COPY hololoom/ ./hololoom/
 COPY demos/ ./demos/
 COPY *.py ./
 COPY *.md ./
@@ -54,10 +54,10 @@ ENV LOGLEVEL=INFO
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "from HoloLoom import config; print('healthy')" || exit 1
+    CMD python -c "from hololoom import config; print('healthy')" || exit 1
 
 # Expose ports
 EXPOSE 8000 8001
 
 # Default command: Run WeavingShuttle demo
-CMD ["python", "-m", "HoloLoom.examples.production_demo"]
+CMD ["python", "-m", "hololoom.examples.production_demo"]

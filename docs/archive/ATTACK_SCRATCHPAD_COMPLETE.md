@@ -1,7 +1,7 @@
 # Attack Scratchpad: Complete Provenance Tracking System
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/redteam/provenance/`
+**Location**: `hololoom/redteam/provenance/`
 **Total Code**: 511 lines (attack_scratchpad.py) + 22 tests + demo
 **Test Coverage**: 22/22 tests passing (100%)
 
@@ -15,7 +15,7 @@ The Attack Scratchpad is a comprehensive provenance tracking system for the CART
 4. **Export audit trails** for security review and compliance
 5. **Learn from failures** to improve attack strategies
 
-This system follows the exact pattern from `HoloLoom/recursive/scratchpad.py` but is specialized for adversarial attack tracking.
+This system follows the exact pattern from `hololoom/recursive/scratchpad.py` but is specialized for adversarial attack tracking.
 
 ## Architecture
 
@@ -180,7 +180,7 @@ class AttackScratchpad:
 ### Basic Attack Tracking
 
 ```python
-from HoloLoom.redteam.provenance import AttackScratchpad, AttackStrategy, DefenseLayer
+from hololoom.redteam.provenance import AttackScratchpad, AttackStrategy, DefenseLayer
 
 scratchpad = AttackScratchpad()
 
@@ -408,13 +408,13 @@ Complete test suite: **22/22 tests passing (100%)**
 
 ```bash
 # Run all tests
-pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v
+pytest hololoom/redteam/provenance/test_attack_scratchpad.py -v
 
 # Run specific test class
-pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py::TestAttackScratchpad -v
+pytest hololoom/redteam/provenance/test_attack_scratchpad.py::TestAttackScratchpad -v
 
 # Run with coverage
-pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py --cov
+pytest hololoom/redteam/provenance/test_attack_scratchpad.py --cov
 ```
 
 ## Demo
@@ -422,7 +422,7 @@ pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py --cov
 Comprehensive demo showing all features:
 
 ```bash
-python HoloLoom/redteam/provenance/demo_attack_provenance.py
+python hololoom/redteam/provenance/demo_attack_provenance.py
 ```
 
 **Demo Sections**:
@@ -435,7 +435,7 @@ python HoloLoom/redteam/provenance/demo_attack_provenance.py
 ## Files
 
 ```
-HoloLoom/redteam/provenance/
+hololoom/redteam/provenance/
 ├── __init__.py                      # Package exports
 ├── attack_scratchpad.py             # Main implementation (511 lines)
 ├── test_attack_scratchpad.py        # Test suite (22 tests)
@@ -448,8 +448,8 @@ The Attack Scratchpad integrates with other CARTS components:
 
 ### With Attack Generator
 ```python
-from HoloLoom.redteam.generation import AttackGenerator
-from HoloLoom.redteam.provenance import AttackScratchpad
+from hololoom.redteam.generation import AttackGenerator
+from hololoom.redteam.provenance import AttackScratchpad
 
 generator = AttackGenerator()
 scratchpad = AttackScratchpad()
@@ -471,7 +471,7 @@ for attack in generator.generate_attacks(n=10):
 
 ### With Defense Evaluator
 ```python
-from HoloLoom.redteam.defense import DefenseEvaluator
+from hololoom.redteam.defense import DefenseEvaluator
 
 evaluator = DefenseEvaluator()
 scratchpad = AttackScratchpad()
@@ -520,7 +520,7 @@ learner.update_weights(successful_strategies, failed_strategies)
 
 ## Design Patterns
 
-### 1. Pattern from HoloLoom/recursive/scratchpad.py
+### 1. Pattern from hololoom/recursive/scratchpad.py
 
 The Attack Scratchpad follows the exact pattern from the recursive learning system:
 - Dataclass entries for immutability

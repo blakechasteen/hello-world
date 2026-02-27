@@ -17,7 +17,7 @@ This document maps the **existing HoloLoom codebase** to the **Context Departmen
 ## Current HoloLoom Architecture
 
 ```
-HoloLoom/
+hololoom/
 ├── weaving_orchestrator.py     # Main entry point (1,963 lines)
 ├── config.py                   # BARE/FAST/FUSED modes (460 lines)
 ├── policy/unified.py           # Thompson Sampling + neural policy
@@ -64,8 +64,8 @@ HoloLoom/
 | Department Memory | HoloLoom Component | Location |
 |-------------------|-------------------|----------|
 | **Short-term** (ms) | Current query processing state | `weaving_orchestrator.py:WeavingOrchestrator` in-memory state |
-| **Medium-term** (hours) | Session artifacts, spacetime results | `HoloLoom/reflection/buffer.py:ReflectionBuffer` |
-| **Long-term** (weeks) | Learned patterns, confidence calibration | `HoloLoom/memory/graph.py` + `reflection/buffer.py` (persistence) |
+| **Medium-term** (hours) | Session artifacts, spacetime results | `hololoom/reflection/buffer.py:ReflectionBuffer` |
+| **Long-term** (weeks) | Learned patterns, confidence calibration | `hololoom/memory/graph.py` + `reflection/buffer.py` (persistence) |
 
 **Mapping Details**:
 
@@ -86,7 +86,7 @@ class ContextDepartment(Department):
 
 # Medium-term memory (hours - session artifacts)
 # Currently: ReflectionBuffer
-from HoloLoom.reflection.buffer import ReflectionBuffer
+from hololoom.reflection.buffer import ReflectionBuffer
 
 class ContextDepartment(Department):
     def __init__(self):
@@ -133,14 +133,14 @@ async def execute(self, request: DepartmentRequest) -> DepartmentResponse:
 ```python
 class ContextDepartment(Department):
     def __init__(self, config: DepartmentConfig):
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
 
         # Map confidence to mode
         self.orchestrator = WeavingOrchestrator(cfg=Config.fused())
 
     async def execute(self, request: DepartmentRequest) -> DepartmentResponse:
-        from HoloLoom.documentation.types import Query
+        from hololoom.documentation.types import Query
 
         # Extract query
         query_text = request.parameters.get("query", "")
@@ -168,7 +168,7 @@ class ContextDepartment(Department):
 
     def _get_config_for_mode(self, mode: str):
         """Get HoloLoom config for mode"""
-        from HoloLoom.config import Config
+        from hololoom.config import Config
         if mode == "FUSED":
             return Config.fused()
         elif mode == "FAST":
@@ -182,7 +182,7 @@ class ContextDepartment(Department):
         spacetime
     ) -> DepartmentResponse:
         """Convert HoloLoom Spacetime to DepartmentResponse"""
-        from HoloLoom.documentation.types import Spacetime
+        from hololoom.documentation.types import Spacetime
 
         # Extract confidence
         confidence = ConfidenceMetadata(
@@ -336,7 +336,7 @@ class ContextDepartment(Department):
         """Apply verification feedback to improve response"""
 
         # Use existing recursive refinement system
-        from HoloLoom.recursive import AdvancedRefiner, RefinementStrategy
+        from hololoom.recursive import AdvancedRefiner, RefinementStrategy
 
         # Map verification suggestions to refinement strategy
         if verification.refinement_suggestions:
@@ -385,7 +385,7 @@ class ContextDepartment(Department):
         """Update context enrichment strategy based on patterns"""
 
         # Use existing semantic learning system
-        from HoloLoom.reflection.semantic_learning import MultiTaskSemanticLearner
+        from hololoom.reflection.semantic_learning import MultiTaskSemanticLearner
 
         if not hasattr(self, "learner"):
             self.learner = MultiTaskSemanticLearner(
@@ -537,7 +537,7 @@ class ContextDepartment(Department):
 **Goal**: Create `ContextDepartment` class that wraps current HoloLoom
 
 **Tasks**:
-1. Create `HoloLoom/departments/context.py`
+1. Create `hololoom/departments/context.py`
 2. Implement `execute()` method (wraps `WeavingOrchestrator.weave()`)
 3. Implement `_spacetime_to_response()` (maps Spacetime → DepartmentResponse)
 4. Add confidence metadata extraction
@@ -600,7 +600,7 @@ class ContextDepartment(Department):
 ## File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── departments/                    # NEW: Department implementations
 │   ├── __init__.py
 │   ├── base.py                     # BaseDepartment (abstract base class)
@@ -626,7 +626,7 @@ HoloLoom/
 ## Code Example: Complete Context Department
 
 ```python
-# HoloLoom/departments/context.py
+# hololoom/departments/context.py
 
 from typing import Dict, Any, List, Optional
 import logging
@@ -663,7 +663,7 @@ class ContextDepartment(BaseDepartment):
 
         # Memory systems
         self.short_term_memory = {}  # Current requests
-        from HoloLoom.reflection.buffer import ReflectionBuffer
+        from hololoom.reflection.buffer import ReflectionBuffer
         self.medium_term_memory = ReflectionBuffer(
             capacity=1000,
             persist_path="./context_sessions"
@@ -675,8 +675,8 @@ class ContextDepartment(BaseDepartment):
         }
 
         # HoloLoom orchestrator
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
         self.orchestrator = WeavingOrchestrator(cfg=Config.fused())
 
         # Config
@@ -685,7 +685,7 @@ class ContextDepartment(BaseDepartment):
 
     async def execute(self, request: DepartmentRequest) -> DepartmentResponse:
         """Execute context enrichment using HoloLoom"""
-        from HoloLoom.documentation.types import Query
+        from hololoom.documentation.types import Query
 
         # Log to short-term memory
         self.short_term_memory[request.task_id] = {
@@ -834,7 +834,7 @@ class ContextDepartment(BaseDepartment):
 
     def _get_config_for_mode(self, mode: str):
         """Get config for mode"""
-        from HoloLoom.config import Config
+        from hololoom.config import Config
         return {"FUSED": Config.fused(), "FAST": Config.fast(), "BARE": Config.bare()}[mode]
 
     def _spacetime_to_response(self, request, spacetime) -> DepartmentResponse:
@@ -876,8 +876,8 @@ class ContextDepartment(BaseDepartment):
 # tests/departments/test_context_department.py
 
 import pytest
-from HoloLoom.apps.departments.context import ContextDepartment
-from HoloLoom.apps.departments.protocol import DepartmentRequest, DepartmentConfig
+from hololoom.apps.departments.context import ContextDepartment
+from hololoom.apps.departments.protocol import DepartmentRequest, DepartmentConfig
 
 @pytest.mark.asyncio
 async def test_execute_returns_response():
@@ -951,8 +951,8 @@ async def test_learning_loop():
 # tests/integration/test_context_department_integration.py
 
 import pytest
-from HoloLoom.apps.departments.context import ContextDepartment
-from HoloLoom.config import Config
+from hololoom.apps.departments.context import ContextDepartment
+from hololoom.config import Config
 
 @pytest.mark.asyncio
 async def test_context_department_uses_hololoom():

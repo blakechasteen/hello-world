@@ -115,7 +115,7 @@ A beautiful, modern template gallery that helps you:
 ## 🏗️ File Structure
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── template_gallery.html              ← OPEN THIS FILE
 ├── template_gallery.js                ← Advanced features (optional)
 ├── README_START_HERE.md               ← You are here

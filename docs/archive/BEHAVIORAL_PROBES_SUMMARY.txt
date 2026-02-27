@@ -4,25 +4,25 @@ BEHAVIORAL PROBES: SYSTEM IMPLEMENTATION COMPLETE
 
 Date: December 5, 2025
 Status: ✅ PRODUCTION READY
-Location: HoloLoom/redteam/probes/
+Location: hololoom/redteam/probes/
 Total Code: 430+ lines (core system) + 800+ lines (documentation)
 
 ================================================================================
 FILES CREATED
 ================================================================================
 
-1. HoloLoom/redteam/probes/__init__.py (30 lines)
+1. hololoom/redteam/probes/__init__.py (30 lines)
    - Package initialization
    - Exports: AttackProbeType, AttackProbe, ProbeResult,
              VulnerabilityProbeReport, AttackProber
 
-2. HoloLoom/redteam/probes/behavioral_probes.py (49KB / ~400 lines)
+2. hololoom/redteam/probes/behavioral_probes.py (49KB / ~400 lines)
    - Complete behavioral probe system
    - 7 attack categories with 5 probes each (35 total)
    - AttackProber main orchestrator class
    - Probe generation, execution, analysis, reporting
 
-3. HoloLoom/redteam/probes/README.md (16KB / 300+ lines)
+3. hololoom/redteam/probes/README.md (16KB / 300+ lines)
    - Complete documentation
    - Architecture and design
    - All 7 attack categories explained
@@ -168,7 +168,7 @@ USAGE EXAMPLES
 
 1. BASIC USAGE (Dry-Run Mode)
 
-   from HoloLoom.redteam.probes import AttackProber
+   from hololoom.redteam.probes import AttackProber
 
    prober = AttackProber()
    all_probes = prober.get_probe_suite()
@@ -179,7 +179,7 @@ USAGE EXAMPLES
 
 2. WITH ACTUAL EXECUTOR
 
-   from HoloLoom.redteam.executor import AttackExecutor
+   from hololoom.redteam.executor import AttackExecutor
 
    executor = AttackExecutor(system)
    prober = AttackProber(executor=executor)
@@ -187,7 +187,7 @@ USAGE EXAMPLES
 
 3. FILTERED TESTING
 
-   from HoloLoom.redteam.probes import AttackProbeType
+   from hololoom.redteam.probes import AttackProbeType
 
    report = await prober.run_probe_suite(
        "target",
@@ -284,16 +284,16 @@ INTEGRATION WITH RED TEAM SYSTEM
 ================================================================================
 
 Works seamlessly with:
-- HoloLoom.redteam.executor.AttackExecutor
-- HoloLoom.redteam.learning.UnifiedLearner
-- HoloLoom.alignment.safety_guardrails.SafetyGuardrails
-- HoloLoom.alignment.audit_trail.AuditTrail
+- hololoom.redteam.executor.AttackExecutor
+- hololoom.redteam.learning.UnifiedLearner
+- hololoom.alignment.safety_guardrails.SafetyGuardrails
+- hololoom.alignment.audit_trail.AuditTrail
 
 Example integration:
 
-   from HoloLoom.redteam.probes import AttackProber
-   from HoloLoom.redteam.executor import AttackExecutor
-   from HoloLoom.redteam.learning import UnifiedLearner
+   from hololoom.redteam.probes import AttackProber
+   from hololoom.redteam.executor import AttackExecutor
+   from hololoom.redteam.learning import UnifiedLearner
 
    executor = AttackExecutor(target_system)
    learner = UnifiedLearner()
@@ -359,7 +359,7 @@ DOCUMENTATION REFERENCE
 
 For detailed information, see:
 
-1. HoloLoom/redteam/probes/README.md
+1. hololoom/redteam/probes/README.md
    - Complete API reference
    - All attack categories explained
    - Examples and usage patterns
@@ -381,13 +381,13 @@ NEXT STEPS
 ================================================================================
 
 1. Review Documentation
-   Read HoloLoom/redteam/probes/README.md for complete guide
+   Read hololoom/redteam/probes/README.md for complete guide
 
 2. Run Demo
    PYTHONPATH=. python demos/demo_behavioral_probes.py
 
 3. Try Basic Usage
-   from HoloLoom.redteam.probes import AttackProber
+   from hololoom.redteam.probes import AttackProber
    prober = AttackProber()
    report = await prober.run_probe_suite("target")
 
@@ -424,9 +424,9 @@ COMPLETION SUMMARY
 Status: ✅ COMPLETE
 
 Files Created:
-  1. HoloLoom/redteam/probes/__init__.py (30 lines)
-  2. HoloLoom/redteam/probes/behavioral_probes.py (400 lines)
-  3. HoloLoom/redteam/probes/README.md (300+ lines)
+  1. hololoom/redteam/probes/__init__.py (30 lines)
+  2. hololoom/redteam/probes/behavioral_probes.py (400 lines)
+  3. hololoom/redteam/probes/README.md (300+ lines)
   4. demos/demo_behavioral_probes.py (350+ lines)
   5. BEHAVIORAL_PROBES_IMPLEMENTATION.md (300+ lines)
 

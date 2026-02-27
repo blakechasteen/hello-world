@@ -9,9 +9,9 @@ Specialized agent bots with working memory and learning:
 
 Quick Start:
     ```python
-    from HoloLoom.agents import create_agent
-    from HoloLoom.memory.graph import KG
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.agents import create_agent
+    from hololoom.memory.graph import KG
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     # Shared knowledge
     kg = KG()
@@ -41,7 +41,7 @@ Available Profiles:
     - general: General-purpose assistant
 """
 
-from HoloLoom.agents.types import (
+from hololoom.agents.types import (
     AgentProfile,
     AgentDomain,
     AgentStats,
@@ -50,7 +50,7 @@ from HoloLoom.agents.types import (
     LearnedPattern
 )
 
-from HoloLoom.agents.profiles import (
+from hololoom.agents.profiles import (
     BUDGET_ADVISOR,
     ARCHITECTURE_REVIEWER,
     CODE_REVIEWER,
@@ -63,9 +63,9 @@ from HoloLoom.agents.profiles import (
     list_profiles
 )
 
-from HoloLoom.agents.working_memory import AgentWorkingMemory
-from HoloLoom.agents.learner import WorkingMemoryLearner
-from HoloLoom.agents.orchestrator import AgentOrchestrator, create_agent
+from hololoom.agents.working_memory import AgentWorkingMemory
+from hololoom.agents.learner import WorkingMemoryLearner
+from hololoom.agents.orchestrator import AgentOrchestrator, create_agent
 
 
 __all__ = [

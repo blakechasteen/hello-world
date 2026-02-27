@@ -11,7 +11,7 @@
 ```json
 "HoloLoom-memory": {
   "command": "...",
-  "args": ["HoloLoom/memory/mcp_server_standalone.py"]  ← InMemoryStore
+  "args": ["hololoom/memory/mcp_server_standalone.py"]  ← InMemoryStore
 }
 ```
 **Result**: 0 memories (session-only, not persistent)
@@ -205,7 +205,7 @@ docker logs qdrant
 
 **Server**: `c:/Users/blake/Documents/mythRL/mcp_hololoom_memory_server.py`
 
-**Memory Store**: `HoloLoom/memory/stores/hybrid_neo4j_qdrant.py`
+**Memory Store**: `hololoom/memory/stores/hybrid_neo4j_qdrant.py`
 
 ---
 

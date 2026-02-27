@@ -9,8 +9,8 @@ Date: October 29, 2025
 """
 
 from pathlib import Path
-from HoloLoom.visualization.small_multiples import render_small_multiples, QueryMultiple
-from HoloLoom.visualization.density_table import render_stage_timing_table, Column, Row, ColumnType, ColumnAlign, DensityTableRenderer
+from hololoom.visualization.small_multiples import render_small_multiples, QueryMultiple
+from hololoom.visualization.density_table import render_stage_timing_table, Column, Row, ColumnType, ColumnAlign, DensityTableRenderer
 
 
 def test_small_multiples():

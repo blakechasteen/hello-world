@@ -27,8 +27,8 @@ class TestPrometheusMetricsGracefulDegradation(unittest.TestCase):
 
     def test_metrics_disabled_without_prometheus(self):
         """Verify metrics gracefully disabled if prometheus_client unavailable."""
-        with patch('HoloLoom.performance.prometheus_metrics.PROMETHEUS_AVAILABLE', False):
-            from HoloLoom.performance.prometheus_metrics import PrometheusMetrics
+        with patch('hololoom.performance.prometheus_metrics.PROMETHEUS_AVAILABLE', False):
+            from hololoom.performance.prometheus_metrics import PrometheusMetrics
 
             metrics = PrometheusMetrics()
             self.assertFalse(metrics.enabled)
@@ -44,7 +44,7 @@ class TestPrometheusMetricsGracefulDegradation(unittest.TestCase):
         if not PROMETHEUS_AVAILABLE:
             self.skipTest("prometheus_client not installed")
 
-        from HoloLoom.performance.prometheus_metrics import PrometheusMetrics
+        from hololoom.performance.prometheus_metrics import PrometheusMetrics
 
         metrics = PrometheusMetrics()
         self.assertTrue(metrics.enabled)
@@ -56,7 +56,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_track_query(self):
         """Test query tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         # Should not raise
         metrics.track_query(
@@ -69,7 +69,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_track_cache_hits_and_misses(self):
         """Test cache hit/miss tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.track_cache_hit('query_cache')
         metrics.track_cache_hit('semantic_cache')
@@ -83,7 +83,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_track_stage_batch(self):
         """Test batch stage tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         stage_timings = {
             'pattern_selection': 5.0,
@@ -97,7 +97,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_track_tool_execution(self):
         """Test tool execution tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.track_tool_execution('answer', 0.1)
         metrics.track_tool_execution('search', 0.15)
@@ -106,7 +106,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_track_parallel_execution(self):
         """Test parallel execution metrics."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.track_parallel_execution(
             stage_group='steps_4_6',
@@ -117,7 +117,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_set_confidence(self):
         """Test confidence setting."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.set_confidence('answer', 0.92)
         metrics.set_confidence('search', 0.78)
@@ -125,7 +125,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_set_active_threads(self):
         """Test active threads tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.set_active_threads('FUSED', 12)
         metrics.set_active_threads('FAST', 6)
@@ -133,14 +133,14 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_set_retrieval_context_size(self):
         """Test retrieval context size."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.set_retrieval_context_size(8)
 
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_track_motifs(self):
         """Test motif tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.track_motifs(3, 'regex')
         metrics.track_motifs(2, 'spacy')
@@ -148,7 +148,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_track_reflection_update(self):
         """Test reflection update tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.track_reflection_update('confidence')
         metrics.track_reflection_update('accuracy')
@@ -156,7 +156,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_track_error(self):
         """Test error tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.track_error('timeout', 'retrieval')
         metrics.track_error('not_found', 'tool')
@@ -164,7 +164,7 @@ class TestPrometheusMetricsOperations(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_set_backend_status(self):
         """Test backend status."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         metrics.set_backend_status('neo4j', True)
         metrics.set_backend_status('qdrant', False)
@@ -176,7 +176,7 @@ class TestPrometheusMetricsContextManagers(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_query_timer(self):
         """Test query timer context manager."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         with metrics.query_timer():
             time.sleep(0.01)  # Sleep 10ms
@@ -184,7 +184,7 @@ class TestPrometheusMetricsContextManagers(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_stage_timer(self):
         """Test stage timer context manager."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         with metrics.stage_timer('retrieval'):
             time.sleep(0.01)
@@ -192,15 +192,15 @@ class TestPrometheusMetricsContextManagers(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_tool_timer(self):
         """Test tool timer context manager."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         with metrics.tool_timer('answer'):
             time.sleep(0.01)
 
     def test_timer_without_prometheus(self):
         """Test timers work without prometheus_client."""
-        with patch('HoloLoom.performance.prometheus_metrics.PROMETHEUS_AVAILABLE', False):
-            from HoloLoom.performance.prometheus_metrics import PrometheusMetrics
+        with patch('hololoom.performance.prometheus_metrics.PROMETHEUS_AVAILABLE', False):
+            from hololoom.performance.prometheus_metrics import PrometheusMetrics
 
             metrics = PrometheusMetrics()
 
@@ -220,8 +220,8 @@ class TestPrometheusMetricsServer(unittest.TestCase):
 
     def test_start_metrics_server_without_prometheus(self):
         """Verify server startup gracefully handles missing prometheus_client."""
-        with patch('HoloLoom.performance.prometheus_metrics.PROMETHEUS_AVAILABLE', False):
-            from HoloLoom.performance.prometheus_metrics import start_metrics_server
+        with patch('hololoom.performance.prometheus_metrics.PROMETHEUS_AVAILABLE', False):
+            from hololoom.performance.prometheus_metrics import start_metrics_server
 
             # Should not raise
             start_metrics_server(8001)
@@ -229,15 +229,15 @@ class TestPrometheusMetricsServer(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_get_metrics_registry_with_prometheus(self):
         """Test registry retrieval with prometheus_client."""
-        from HoloLoom.performance.prometheus_metrics import get_metrics_registry
+        from hololoom.performance.prometheus_metrics import get_metrics_registry
 
         registry = get_metrics_registry()
         self.assertIsNotNone(registry)
 
     def test_get_metrics_registry_without_prometheus(self):
         """Test registry retrieval without prometheus_client."""
-        with patch('HoloLoom.performance.prometheus_metrics.PROMETHEUS_AVAILABLE', False):
-            from HoloLoom.performance.prometheus_metrics import get_metrics_registry
+        with patch('hololoom.performance.prometheus_metrics.PROMETHEUS_AVAILABLE', False):
+            from hololoom.performance.prometheus_metrics import get_metrics_registry
 
             registry = get_metrics_registry()
             self.assertIsNone(registry)
@@ -249,7 +249,7 @@ class TestPrometheusMetricsIntegration(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_complete_query_lifecycle(self):
         """Test full query metrics tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         # Simulate complete query lifecycle
         query_start = time.time()
@@ -277,7 +277,7 @@ class TestPrometheusMetricsIntegration(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_cache_tracking_workflow(self):
         """Test cache hit/miss workflow."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         # Simulate cache misses (cold start)
         for _ in range(10):
@@ -294,7 +294,7 @@ class TestPrometheusMetricsIntegration(unittest.TestCase):
     @unittest.skipIf(not PROMETHEUS_AVAILABLE, "prometheus_client required")
     def test_error_tracking_workflow(self):
         """Test error tracking."""
-        from HoloLoom.performance.prometheus_metrics import metrics
+        from hololoom.performance.prometheus_metrics import metrics
 
         # Track various errors
         metrics.track_error('timeout', 'retrieval')

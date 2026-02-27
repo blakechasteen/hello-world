@@ -19,7 +19,7 @@ How to use this example:
 4. Test with the provided test template
 
 Quick Start:
-    from HoloLoom.dark_trace.plugins.examples.hello_plugin import HelloWorldPlugin
+    from hololoom.dark_trace.plugins.examples.hello_plugin import HelloWorldPlugin
 
     plugin = HelloWorldPlugin()
     print(plugin.describe_behavior())
@@ -32,24 +32,24 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 # TYPE_CHECKING prevents circular imports at runtime
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.engine import DarkTraceEngine
-    from HoloLoom.dark_trace.plugins.safety_gate import PluginSafetyGate
-    from HoloLoom.dark_trace.result import TraceResult
+    from hololoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.dark_trace.plugins.safety_gate import PluginSafetyGate
+    from hololoom.dark_trace.result import TraceResult
 
 # Import from plugin interface
-from HoloLoom.dark_trace.plugins.interface import (
+from hololoom.dark_trace.plugins.interface import (
     DarkTracePlugin,
     PluginMetadata,
     PluginType,
     MonitorPlugin,  # We inherit from MonitorPlugin for this example
 )
-from HoloLoom.dark_trace.plugins.safety_gate import (
+from hololoom.dark_trace.plugins.safety_gate import (
     PluginCapability,
     TrustLevel,
 )
 
 # Set up logging for your plugin
-logger = logging.getLogger("HoloLoom.dark_trace.plugins.examples.hello_world")
+logger = logging.getLogger("hololoom.dark_trace.plugins.examples.hello_world")
 
 
 # =============================================================================
@@ -368,7 +368,7 @@ def create_test_template():
 import pytest
 from unittest.mock import MagicMock, AsyncMock
 
-from HoloLoom.dark_trace.plugins.examples.hello_plugin import (
+from hololoom.dark_trace.plugins.examples.hello_plugin import (
     HelloWorldPlugin,
     HelloAnalysisResult,
 )

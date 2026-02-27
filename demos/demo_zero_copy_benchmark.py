@@ -115,9 +115,9 @@ def test_real_hololoom_embeddings():
     print("\n[REAL] Testing with actual HoloLoom embeddings...")
 
     try:
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-        from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
-        from HoloLoom.config import Config
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+        from hololoom.config import Config
 
         # Test queries
         queries = [
@@ -221,7 +221,7 @@ def main():
     print_section("How to Enable in Your Code")
 
     print("Option 1: Use Config.fast() or Config.fused() (zero-copy enabled by default):")
-    print("  from HoloLoom.config import Config")
+    print("  from hololoom.config import Config")
     print("  config = Config.fast()  # Zero-copy already enabled!")
     print()
     print("Option 2: Enable explicitly:")
@@ -231,7 +231,7 @@ def main():
     print("  config.zero_copy_cache_size = 10000")
     print()
     print("Option 3: Use ZeroCopyMatryoshkaEmbeddings directly:")
-    print("  from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings")
+    print("  from hololoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings")
     print("  embedder = ZeroCopyMatryoshkaEmbeddings(config=config)")
 
     print_section("Benchmark Complete!")

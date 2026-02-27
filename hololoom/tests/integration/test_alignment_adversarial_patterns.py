@@ -29,13 +29,13 @@ import asyncio
 from unittest.mock import Mock, patch
 from typing import Dict, Any
 
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel, SafetyDecision
-from HoloLoom.alignment.deception_detection import DeceptionDetector
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel, SafetyDecision
+from hololoom.alignment.deception_detection import DeceptionDetector
+from hololoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
     PowerSeekingIndicators,
 )
-from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
+from hololoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 
 
 # ============================================================================

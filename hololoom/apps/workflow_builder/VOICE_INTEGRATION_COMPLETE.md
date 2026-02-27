@@ -16,13 +16,13 @@
 - ✅ **SciPy** - Audio processing
 
 ### 2. Backend Integration Complete
-**File**: `HoloLoom/web_dashboard/agentic_server.py`
+**File**: `hololoom/web_dashboard/agentic_server.py`
 
 **Changes Made**:
 ```python
 # Added imports (lines 81-83)
-from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
-from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
+from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # Added global variable (line 113)
 voice_integration = None
@@ -100,7 +100,7 @@ Dashboard: [Text + Auto-speak response]
 
 ### What's Left: Add Voice UI to Dashboard HTML
 
-**File to Edit**: `HoloLoom/web_dashboard/agentic_dashboard.html`
+**File to Edit**: `hololoom/web_dashboard/agentic_dashboard.html`
 
 **Steps** (from voice_ui_snippet.html):
 

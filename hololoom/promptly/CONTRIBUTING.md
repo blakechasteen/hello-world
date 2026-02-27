@@ -131,7 +131,7 @@ export OPENAI_API_KEY="your-key-here"
 python verify_dspy_installation.py
 
 # Run tests
-pytest HoloLoom/tests/integration/test_dspy_integration.py -v
+pytest hololoom/tests/integration/test_dspy_integration.py -v
 ```
 
 ### 6. Create Feature Branch
@@ -272,12 +272,12 @@ git checkout -b feature/your-feature
 # ... edit files ...
 
 # Run tests
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 
 # Run linters
-black HoloLoom/promptly/
-flake8 HoloLoom/promptly/
-mypy HoloLoom/promptly/
+black hololoom/promptly/
+flake8 hololoom/promptly/
+mypy hololoom/promptly/
 
 # Commit changes
 git add .
@@ -399,8 +399,8 @@ import dspy
 import numpy as np
 
 # Local
-from HoloLoom.promptly import DSPyHoloLoom
-from HoloLoom.config import Config
+from hololoom.promptly import DSPyHoloLoom
+from hololoom.config import Config
 ```
 
 **Type Hints**:
@@ -476,7 +476,7 @@ logger.critical("Critical error")
 
 **File structure**:
 ```
-HoloLoom/promptly/
+hololoom/promptly/
 ├── solvers/              # Problem solvers (core logic)
 │   ├── schema/
 │   ├── surgical/
@@ -519,7 +519,7 @@ def _private_helper():
 ### Test Organization
 
 ```
-HoloLoom/promptly/tests/
+hololoom/promptly/tests/
 ├── unit/               # Fast isolated tests (<5s)
 ├── integration/        # Multi-component tests (<30s)
 └── e2e/                # Full pipeline tests (<2min)
@@ -530,7 +530,7 @@ HoloLoom/promptly/tests/
 **Use pytest**:
 ```python
 import pytest
-from HoloLoom.promptly import create_signature
+from hololoom.promptly import create_signature
 
 def test_create_signature_basic():
     """Test basic signature creation."""
@@ -574,7 +574,7 @@ async def test_optimize_from_memory():
 **Fixtures**:
 ```python
 import pytest
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 @pytest.fixture
 def config():
@@ -599,19 +599,19 @@ def test_with_fixtures(config, sample_shards):
 
 ```bash
 # All tests
-pytest HoloLoom/promptly/tests/ -v
+pytest hololoom/promptly/tests/ -v
 
 # Specific test file
-pytest HoloLoom/promptly/tests/unit/test_schema.py -v
+pytest hololoom/promptly/tests/unit/test_schema.py -v
 
 # Specific test function
-pytest HoloLoom/promptly/tests/unit/test_schema.py::test_create_signature -v
+pytest hololoom/promptly/tests/unit/test_schema.py::test_create_signature -v
 
 # With coverage
-pytest HoloLoom/promptly/tests/ --cov=HoloLoom.promptly --cov-report=html
+pytest hololoom/promptly/tests/ --cov=hololoom.promptly --cov-report=html
 
 # Fast tests only (unit)
-pytest HoloLoom/promptly/tests/unit/ -v
+pytest hololoom/promptly/tests/unit/ -v
 
 # Mark slow tests
 @pytest.mark.slow

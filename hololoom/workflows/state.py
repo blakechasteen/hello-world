@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
-from HoloLoom.utils.security import sanitize_uri
+from hololoom.utils.security import sanitize_uri
 
 logger = logging.getLogger(__name__)
 

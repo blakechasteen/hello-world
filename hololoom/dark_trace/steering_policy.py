@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional
-from HoloLoom.dark_trace.auto_probe import AutoProbe
+from hololoom.dark_trace.auto_probe import AutoProbe
 import torch
 import numpy as np
 

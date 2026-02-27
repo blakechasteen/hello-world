@@ -21,7 +21,7 @@ from typing import Dict, List, Optional, TYPE_CHECKING, Any
 from datetime import datetime
 import hashlib
 
-from HoloLoom.utils.security import sanitize_uri
+from hololoom.utils.security import sanitize_uri
 from ..protocol import Memory, MemoryQuery, RetrievalResult, Strategy
 
 # Optional qdrant import

@@ -29,16 +29,16 @@ import logging
 from typing import Dict, Optional, TYPE_CHECKING
 import os
 
-from HoloLoom.protocols.types import Query, Context
-from HoloLoom.fabric.spacetime import Artifact, ArtifactType
+from hololoom.protocols.types import Query, Context
+from hololoom.fabric.spacetime import Artifact, ArtifactType
 import re
 
 if TYPE_CHECKING:
-    from HoloLoom.awareness.llm_integration import OllamaLLM
+    from hololoom.awareness.llm_integration import OllamaLLM
 
 # Skills integration (November 2025)
 try:
-    from HoloLoom.tools.skills_bridge import get_skills_bridge
+    from hololoom.tools.skills_bridge import get_skills_bridge
     SKILLS_AVAILABLE = True
 except ImportError:
     SKILLS_AVAILABLE = False
@@ -115,7 +115,7 @@ class ToolExecutor:
         self.llm = llm
         if self.llm is None:
             try:
-                from HoloLoom.awareness.llm_integration import OllamaLLM
+                from hololoom.awareness.llm_integration import OllamaLLM
                 self.llm = OllamaLLM(model=model_name)
                 self.logger.info(f"Initialized Ollama LLM ({model_name})")
             except Exception as e:

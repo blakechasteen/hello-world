@@ -9,7 +9,7 @@ Demonstrates natural conversation flow with thread branching:
 - Show YarnGraph relationships
 
 Run:
-    PYTHONPATH=. python HoloLoom/voice_first/demo_thread_branching.py
+    PYTHONPATH=. python hololoom/voice_first/demo_thread_branching.py
 """
 
 import asyncio
@@ -136,7 +136,7 @@ async def run_demo():
     5. Return to orchard thread
     6. Show YarnGraph relationships
     """
-    from HoloLoom.voice.threads.thread import ThreadBrancher
+    from hololoom.voice.threads.thread import ThreadBrancher
 
     # Set UTF-8 encoding for Windows console
     import sys

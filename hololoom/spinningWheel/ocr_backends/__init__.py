@@ -10,14 +10,14 @@ Available backends:
 - fallback: Filename extraction (last resort)
 
 Usage:
-    from HoloLoom.spinningWheel.ocr_backends import get_best_available_backend
+    from hololoom.spinningWheel.ocr_backends import get_best_available_backend
 
     backend = get_best_available_backend()
     result = await backend.extract_text("document.png")
 """
 
 from typing import Optional
-from HoloLoom.spinningWheel.ocr_protocol import OCRProtocol, OCRBackendChain
+from hololoom.spinningWheel.ocr_protocol import OCRProtocol, OCRBackendChain
 
 
 def get_best_available_backend() -> OCRProtocol:

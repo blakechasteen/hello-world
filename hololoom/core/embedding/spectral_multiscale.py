@@ -28,7 +28,7 @@ import numpy as np
 import networkx as nx
 import warnings
 
-from HoloLoom.core.protocols.types import Vector
+from hololoom.core.protocols.types import Vector
 
 try:
     from scipy.sparse import csr_matrix
@@ -149,7 +149,7 @@ class MultiScaleSpectralAnalyzer:
         features = {}
 
         try:
-            from HoloLoom.core.warp.spectral_methods import (
+            from hololoom.core.warp.spectral_methods import (
                 GraphLaplacian,
                 SpectralWavelet,
                 DiffusionMap,
@@ -360,7 +360,7 @@ class HierarchicalSpectralClusterer:
         subgraph = kg.G.subgraph(nodes).copy()
 
         try:
-            from HoloLoom.core.warp.spectral_methods import GraphLaplacian, LaplacianType
+            from hololoom.core.warp.spectral_methods import GraphLaplacian, LaplacianType
 
             # Wrap subgraph
             class _TempKG:
@@ -457,7 +457,7 @@ def create_hierarchical_clusterer(
 
 if __name__ == "__main__":
     import asyncio
-    from HoloLoom.core.memory.graph import KG, KGEdge
+    from hololoom.core.memory.graph import KG, KGEdge
 
     async def demo():
         print("=== Multi-Scale Spectral Analysis Demo ===\n")

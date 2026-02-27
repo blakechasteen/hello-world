@@ -34,7 +34,7 @@ Intelligent knowledge weaving with multi-scale memory, recursive learning, and t
 1. Start the HoloLoom server:
    ```bash
    cd mythRL
-   PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --port 8000
+   PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --port 8000
    ```
 
 2. Install the extension (from source):

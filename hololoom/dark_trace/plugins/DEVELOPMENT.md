@@ -28,12 +28,12 @@ Complete guide for developing, testing, and publishing plugins for the Dark Trac
 Create a minimal analysis plugin:
 
 ```python
-from HoloLoom.dark_trace.plugins.interface import (
+from hololoom.dark_trace.plugins.interface import (
     DarkTracePlugin,
     PluginMetadata,
     PluginType,
 )
-from HoloLoom.dark_trace.plugins.safety_gate import PluginCapability
+from hololoom.dark_trace.plugins.safety_gate import PluginCapability
 
 class MyFirstPlugin(DarkTracePlugin):
     """A simple plugin that logs activation statistics."""
@@ -69,7 +69,7 @@ class MyFirstPlugin(DarkTracePlugin):
 ### Registering Your Plugin
 
 ```python
-from HoloLoom.dark_trace.plugins.registry import PluginRegistry
+from hololoom.dark_trace.plugins.registry import PluginRegistry
 
 # Create registry and register plugin
 registry = PluginRegistry()
@@ -147,7 +147,7 @@ Dark Trace uses a 4-tier trust model inspired by browser security:
 Each trust level grants specific capabilities:
 
 ```python
-from HoloLoom.dark_trace.plugins.safety_gate import PluginCapability, TrustLevel
+from hololoom.dark_trace.plugins.safety_gate import PluginCapability, TrustLevel
 
 # SANDBOXED capabilities (read-only)
 SANDBOXED_CAPS = {
@@ -199,7 +199,7 @@ def metadata(self) -> PluginMetadata:
 Before registration, plugins are validated by the Safety Gate:
 
 ```python
-from HoloLoom.dark_trace.plugins.safety_gate import PluginSafetyGate
+from hololoom.dark_trace.plugins.safety_gate import PluginSafetyGate
 
 gate = PluginSafetyGate()
 result = await gate.validate_plugin(plugin)
@@ -228,8 +228,8 @@ else:
 ### Example: Lens Plugin
 
 ```python
-from HoloLoom.dark_trace.plugins.interface import LensPlugin, PluginMetadata, PluginType
-from HoloLoom.dark_trace.protocol import TraceLens
+from hololoom.dark_trace.plugins.interface import LensPlugin, PluginMetadata, PluginType
+from hololoom.dark_trace.protocol import TraceLens
 
 class MySafetyLens(TraceLens):
     """Custom lens that identifies safety-relevant features."""
@@ -263,7 +263,7 @@ class SafetyLensPlugin(LensPlugin):
 ### Example: Monitor Plugin
 
 ```python
-from HoloLoom.dark_trace.plugins.interface import MonitorPlugin, PluginMetadata, PluginType
+from hololoom.dark_trace.plugins.interface import MonitorPlugin, PluginMetadata, PluginType
 
 class AlertMonitorPlugin(MonitorPlugin):
     @property
@@ -291,7 +291,7 @@ class AlertMonitorPlugin(MonitorPlugin):
 ### Example: Steering Plugin (TRUSTED+ only)
 
 ```python
-from HoloLoom.dark_trace.plugins.interface import SteeringPlugin, PluginMetadata, PluginType
+from hololoom.dark_trace.plugins.interface import SteeringPlugin, PluginMetadata, PluginType
 
 class SafetySteeringPlugin(SteeringPlugin):
     @property
@@ -467,7 +467,7 @@ CREATED → VALIDATING → INITIALIZING → READY → RUNNING → SHUTTING_DOWN 
 Plugins can register callbacks at these points:
 
 ```python
-from HoloLoom.dark_trace.plugins.interface import PluginHook, HookRegistry
+from hololoom.dark_trace.plugins.interface import PluginHook, HookRegistry
 
 class PluginHook:
     PRE_ANALYSIS = "pre_analysis"        # Before analysis starts
@@ -497,7 +497,7 @@ hook_registry.emit(PluginHook.POST_ANALYSIS, {"result": trace_result})
 ### Lifecycle Callbacks
 
 ```python
-from HoloLoom.dark_trace.plugins.interface import PluginLifecycleEvent
+from hololoom.dark_trace.plugins.interface import PluginLifecycleEvent
 
 def lifecycle_callback(event: PluginLifecycleEvent):
     print(f"Plugin {event.plugin_name}: {event.event_type}")
@@ -516,7 +516,7 @@ plugin.add_lifecycle_callback(lifecycle_callback)
 ```python
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from HoloLoom.dark_trace.plugins.safety_gate import PluginSafetyGate, TrustLevel
+from hololoom.dark_trace.plugins.safety_gate import PluginSafetyGate, TrustLevel
 
 class TestMyPlugin:
     @pytest.fixture
@@ -566,8 +566,8 @@ class TestMyPlugin:
 @pytest.mark.asyncio
 async def test_plugin_registration():
     """Test full plugin registration flow."""
-    from HoloLoom.dark_trace.plugins.registry import PluginRegistry
-    from HoloLoom.dark_trace.plugins.safety_gate import PluginSafetyGate
+    from hololoom.dark_trace.plugins.registry import PluginRegistry
+    from hololoom.dark_trace.plugins.safety_gate import PluginSafetyGate
 
     registry = PluginRegistry()
     gate = PluginSafetyGate()
@@ -593,13 +593,13 @@ async def test_plugin_registration():
 
 ```bash
 # Run all plugin tests
-pytest HoloLoom/dark_trace/tests/test_plugins.py -v
+pytest hololoom/dark_trace/tests/test_plugins.py -v
 
 # Run specific test class
-pytest HoloLoom/dark_trace/tests/test_plugins.py::TestPluginRegistration -v
+pytest hololoom/dark_trace/tests/test_plugins.py::TestPluginRegistration -v
 
 # Run with coverage
-pytest HoloLoom/dark_trace/tests/test_plugins.py --cov=HoloLoom.dark_trace.plugins
+pytest hololoom/dark_trace/tests/test_plugins.py --cov=hololoom.dark_trace.plugins
 ```
 
 ---
@@ -611,7 +611,7 @@ pytest HoloLoom/dark_trace/tests/test_plugins.py --cov=HoloLoom.dark_trace.plugi
 For VERIFIED trust level, plugins must be signed:
 
 ```python
-from HoloLoom.dark_trace.plugins.plugin_signing import PluginSigner
+from hololoom.dark_trace.plugins.plugin_signing import PluginSigner
 
 signer = PluginSigner()
 
@@ -628,7 +628,7 @@ plugin.metadata.signature = signature
 ### Marketplace Submission
 
 ```python
-from HoloLoom.dark_trace.plugins.plugin_marketplace import PluginMarketplace
+from hololoom.dark_trace.plugins.plugin_marketplace import PluginMarketplace
 
 marketplace = PluginMarketplace()
 
@@ -707,8 +707,8 @@ See the following files for complete examples:
 
 ## Support
 
-- **Issues**: https://github.com/your-repo/HoloLoom/issues
-- **Discussions**: https://github.com/your-repo/HoloLoom/discussions
+- **Issues**: https://github.com/your-repo/hololoom/issues
+- **Discussions**: https://github.com/your-repo/hololoom/discussions
 - **Documentation**: See main Dark Trace README.md
 
 ---

@@ -100,7 +100,7 @@ class MatryoshkaEmbedding:
         """Initialize Matryoshka embeddings."""
         # Lazy import to avoid circular dependencies
         try:
-            from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+            from hololoom.embedding.spectral import MatryoshkaEmbeddings
             self._embedder = MatryoshkaEmbeddings(
                 scales=[96, 192, 384],
                 enable_spectral=False  # Just use Matryoshka, not spectral features

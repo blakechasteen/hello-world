@@ -45,9 +45,9 @@ except ImportError:
     NIO_AVAILABLE = False
 
 try:
-    from holoLoom.spinningWheel.image_utils import ImageExtractor
-    from holoLoom.spinningWheel.base import BaseSpinner
-    from holoLoom.documentation.types import MemoryShard
+    from hololoom.spinningWheel.image_utils import ImageExtractor
+    from hololoom.spinningWheel.base import BaseSpinner
+    from hololoom.documentation.types import MemoryShard
     IMAGE_UTILS_AVAILABLE = True
 except ImportError:
     IMAGE_UTILS_AVAILABLE = False

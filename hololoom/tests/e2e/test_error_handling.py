@@ -16,9 +16,9 @@ Scenarios:
 import pytest
 import asyncio
 from unittest.mock import patch, MagicMock
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 
 class TestGracefulDegradation:
@@ -28,7 +28,7 @@ class TestGracefulDegradation:
     async def test_missing_sentence_transformers(self, bare_config, test_shards):
         """System should work with fallback embeddings."""
         # Mock sentence-transformers as unavailable
-        with patch('HoloLoom.embedding.spectral._HAVE_SENTENCE_TRANSFORMERS', False):
+        with patch('hololoom.embedding.spectral._HAVE_SENTENCE_TRANSFORMERS', False):
             async with WeavingOrchestrator(cfg=bare_config, shards=test_shards) as orchestrator:
                 spacetime = await orchestrator.weave(Query(text="Test query"))
 
@@ -39,7 +39,7 @@ class TestGracefulDegradation:
     @pytest.mark.asyncio
     async def test_missing_bm25(self, bare_config, test_shards):
         """System should work without BM25."""
-        with patch('HoloLoom.memory.cache._HAVE_BM25', False):
+        with patch('hololoom.memory.cache._HAVE_BM25', False):
             async with WeavingOrchestrator(cfg=bare_config, shards=test_shards) as orchestrator:
                 spacetime = await orchestrator.weave(Query(text="Test query"))
 
@@ -49,7 +49,7 @@ class TestGracefulDegradation:
     @pytest.mark.asyncio
     async def test_missing_scipy(self, bare_config, test_shards):
         """System should work without scipy spectral features."""
-        with patch('HoloLoom.embedding.spectral._HAVE_SCIPY', False):
+        with patch('hololoom.embedding.spectral._HAVE_SCIPY', False):
             async with WeavingOrchestrator(cfg=bare_config, shards=test_shards) as orchestrator:
                 spacetime = await orchestrator.weave(Query(text="Test query"))
 
@@ -170,7 +170,7 @@ class TestResourceExhaustion:
     @pytest.mark.asyncio
     async def test_large_memory_graph(self, bare_config):
         """Should handle large knowledge graphs."""
-        from HoloLoom.protocols.types import MemoryShard
+        from hololoom.protocols.types import MemoryShard
 
         # Create 1000 shards
         large_shards = [

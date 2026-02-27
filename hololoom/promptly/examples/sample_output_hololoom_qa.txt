@@ -15,7 +15,7 @@ The output below is READY TO PASTE into ChatGPT or Claude.
 
 I need to create a self-optimizing prompt system for question-answering using HoloLoom's knowledge base.
 
-**My Task**: Answer technical questions accurately using retrieved context from HoloLoom memory.
+**My Task**: Answer technical questions accurately using retrieved context from hololoom memory.
 
 **My Examples**:
 
@@ -133,7 +133,7 @@ INTEGRATION WITH HOLOLOOM
 Once optimized, a developer can integrate this into HoloLoom:
 
 ```python
-from HoloLoom.promptly import DSPyHoloLoom, create_signature
+from hololoom.promptly import DSPyHoloLoom, create_signature
 
 # Create signature using optimized prompt
 qa_signature = create_signature(

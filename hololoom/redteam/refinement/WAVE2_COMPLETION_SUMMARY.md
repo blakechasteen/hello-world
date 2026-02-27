@@ -143,12 +143,12 @@ trajectory_tracker.record_quality(
 ## API Example
 
 ```python
-from HoloLoom.redteam.refinement.attack_refinement import (
+from hololoom.redteam.refinement.attack_refinement import (
     AttackRefiner,
     AttackRefinementStrategy,
 )
-from HoloLoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
-from HoloLoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
+from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
+from hololoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
 
 # Setup
 scratchpad = AttackScratchpad(capacity=10000)
@@ -288,19 +288,19 @@ Per-strategy and aggregate statistics:
 ### Local Testing
 ```bash
 # Run tests
-pytest HoloLoom/redteam/refinement/test_attack_refinement_standalone.py -v
+pytest hololoom/redteam/refinement/test_attack_refinement_standalone.py -v
 
 # Run specific test
-pytest HoloLoom/redteam/refinement/test_attack_refinement_standalone.py::TestQualityScoring -v
+pytest hololoom/redteam/refinement/test_attack_refinement_standalone.py::TestQualityScoring -v
 
 # With coverage
-pytest HoloLoom/redteam/refinement/test_attack_refinement_standalone.py --cov
+pytest hololoom/redteam/refinement/test_attack_refinement_standalone.py --cov
 ```
 
 ### Demo Execution
 ```bash
 # Run full demo
-python HoloLoom/redteam/refinement/demo_attack_refinement.py
+python hololoom/redteam/refinement/demo_attack_refinement.py
 ```
 
 ## Integration Points

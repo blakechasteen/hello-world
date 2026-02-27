@@ -45,8 +45,8 @@ from collections import deque
 from enum import Enum
 import time
 
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.dimensions import (
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.dimensions import (
     SemanticSpectrum, SemanticDimension,
     STANDARD_DIMENSIONS, NARRATIVE_DIMENSIONS,
     EMOTIONAL_DEPTH_DIMENSIONS, RELATIONAL_DIMENSIONS,
@@ -540,7 +540,7 @@ async def demonstrate_true_matryoshka():
     print("=" * 80)
     print()
 
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     # Create Matryoshka embedder
     print("🔧 Initializing Matryoshka embedder...")

@@ -16,9 +16,9 @@ os.environ.setdefault("HOLOLOOM_DISABLE_SKILLS", "1")
 os.environ.setdefault("HOLOLOOM_REQUIRE_LLM", "1")
 os.environ.setdefault("HOLOLOOM_OLLAMA_MODEL", "llama3.2:3b")
 
-from HoloLoom.config import Config, MemoryBackend, Environment
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config, MemoryBackend, Environment
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 
 def load_shards(path: Path) -> List[MemoryShard]:

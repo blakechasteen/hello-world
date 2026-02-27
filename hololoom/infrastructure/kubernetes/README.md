@@ -660,7 +660,7 @@ kubectl apply -f networkpolicy.yaml
 ## Support
 
 For issues or questions:
-- **Documentation**: See guides in `HoloLoom/context/`
+- **Documentation**: See guides in `hololoom/context/`
 - **Issues**: https://github.com/yourusername/hololoom/issues
 - **Email**: support@hololoom.ai
 

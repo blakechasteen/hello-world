@@ -108,7 +108,7 @@ Phase 3.5 adds comprehensive **data persistence** to the HoloLoom analytics dash
 
 ### Enhanced Analytics Monitor Class
 
-**File**: `HoloLoom/web_dashboard/js/analytics_monitor.js`
+**File**: `hololoom/web_dashboard/js/analytics_monitor.js`
 **Lines Added**: ~270 lines
 
 #### 1. Constructor Enhancements
@@ -486,7 +486,7 @@ getStorageUsage() {
 
 ### Enhanced Control Panel UI
 
-**File**: `HoloLoom/web_dashboard/control_panel.html`
+**File**: `hololoom/web_dashboard/control_panel.html`
 **Lines Added**: ~50 lines
 
 #### Data Management Card
@@ -671,10 +671,10 @@ setInterval(refreshStorageUsage, 10000);
 
 ```bash
 # Start server
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 
 # Run Phase 3.4 test (generates 20 queries)
-python HoloLoom/web_dashboard/test_phase3_4.py
+python hololoom/web_dashboard/test_phase3_4.py
 
 # Open dashboard
 # Navigate to Analytics tab
@@ -853,9 +853,9 @@ Phase 3.5 transforms the HoloLoom analytics dashboard from a **session-only tool
 ## Quick Reference
 
 **Files Modified**:
-- `HoloLoom/web_dashboard/js/analytics_monitor.js` (+270 lines)
-- `HoloLoom/web_dashboard/control_panel.html` (+50 lines)
-- `HoloLoom/web_dashboard/test_phase3_4.py` (header updated)
+- `hololoom/web_dashboard/js/analytics_monitor.js` (+270 lines)
+- `hololoom/web_dashboard/control_panel.html` (+50 lines)
+- `hololoom/web_dashboard/test_phase3_4.py` (header updated)
 
 **New Methods**:
 - `debouncedSave()` - Debounced auto-save
@@ -876,10 +876,10 @@ Phase 3.5 transforms the HoloLoom analytics dashboard from a **session-only tool
 **Testing**:
 ```bash
 # Start server
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 
 # Run tests
-python HoloLoom/web_dashboard/test_phase3_4.py
+python hololoom/web_dashboard/test_phase3_4.py
 
 # Manual testing
 # 1. Open control_panel.html

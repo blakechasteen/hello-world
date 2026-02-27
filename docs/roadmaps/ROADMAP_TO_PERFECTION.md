@@ -31,26 +31,26 @@
 **Tasks:**
 
 1. **Document Dreamweaving System** (CRITICAL)
-   - Location: `HoloLoom/dreamweaving/`
+   - Location: `hololoom/dreamweaving/`
    - Status: Phase 0 complete per docs, but zero documentation
-   - Create: `HoloLoom/dreamweaving/README.md` (comprehensive guide)
+   - Create: `hololoom/dreamweaving/README.md` (comprehensive guide)
    - Include: Architecture, usage examples, API reference
    - Estimated: 1,000+ lines
 
 2. **Document Writing Module**
-   - Location: `HoloLoom/writing/`
-   - Create: `HoloLoom/writing/README.md`
+   - Location: `hololoom/writing/`
+   - Create: `hololoom/writing/README.md`
    - Include: Features, capabilities, integration points
    - Estimated: 500+ lines
 
 3. **Document Physics Module**
-   - Location: `HoloLoom/physics/`
-   - Create: `HoloLoom/physics/README.md`
+   - Location: `hololoom/physics/`
+   - Create: `hololoom/physics/README.md`
    - Include: Routing physics, packing physics, thermodynamics
    - Estimated: 800+ lines
 
 4. **Document Interpretability/Explainability**
-   - Location: `HoloLoom/interpretability/`, `HoloLoom/explainability/`
+   - Location: `hololoom/interpretability/`, `hololoom/explainability/`
    - Create comprehensive guides for future features
    - Include: Planned features, research direction
    - Estimated: 600+ lines
@@ -60,13 +60,13 @@
 **Tasks:**
 
 5. **Create SpinningWheel Complete Reference**
-   - File: `HoloLoom/spinningWheel/README.md`
+   - File: `hololoom/spinningWheel/README.md`
    - Document all 47 adapters with examples
    - Estimated: 2,000+ lines
    - **Impact**: Massive improvement in usability
 
 6. **Create Semantic Calculus Axis Guide**
-   - File: `HoloLoom/semantic_calculus/AXES_GUIDE.md`
+   - File: `hololoom/semantic_calculus/AXES_GUIDE.md`
    - Document all 16 interpretable axes with examples
    - Include: Projection examples, use cases
    - Estimated: 1,000+ lines
@@ -98,22 +98,22 @@
 1. **Dreamweaving Test Suite** (CRITICAL - currently 0 tests)
    - Target: 50+ unit tests
    - Coverage: Core dreamweaving functionality
-   - Location: `HoloLoom/tests/unit/dreamweaving/`
+   - Location: `hololoom/tests/unit/dreamweaving/`
    - Estimated: 2,000+ lines of test code
 
 2. **Writing Module Tests** (currently 0 tests)
    - Target: 30+ unit tests
-   - Location: `HoloLoom/tests/unit/writing/`
+   - Location: `hololoom/tests/unit/writing/`
    - Estimated: 1,200+ lines
 
 3. **Physics Module Tests** (currently 0 tests)
    - Target: 40+ unit tests covering routing, packing, thermodynamics
-   - Location: `HoloLoom/tests/unit/physics/`
+   - Location: `hololoom/tests/unit/physics/`
    - Estimated: 1,500+ lines
 
 4. **Math Pipeline Tests** (minimal coverage)
    - Target: 35+ unit tests
-   - Location: `HoloLoom/tests/unit/math/`, `HoloLoom/tests/unit/warp/math/`
+   - Location: `hololoom/tests/unit/math/`, `hololoom/tests/unit/warp/math/`
    - Estimated: 1,400+ lines
 
 **Week 1 Target**: +156 tests, +6,100 lines test code
@@ -124,7 +124,7 @@
 
 5. **Small Multiples Tests**
    - Target: 15 tests (rendering, layouts, highlighting)
-   - Location: `HoloLoom/tests/unit/visualization/`
+   - Location: `hololoom/tests/unit/visualization/`
 
 6. **Data Density Tables Tests**
    - Target: 12 tests (sparklines, bottleneck detection)
@@ -134,7 +134,7 @@
 
 8. **RAG Dashboard Tests**
    - Target: 20 tests (5 panels, auto-construction)
-   - Location: `HoloLoom/tests/integration/visualization/`
+   - Location: `hololoom/tests/integration/visualization/`
 
 **Week 2 Target**: +55 tests for visualization
 
@@ -145,14 +145,14 @@
 9. **API Contract Tests** (50+ endpoints)
    - Target: 150+ contract tests
    - Test: Request/response schemas, error handling, authentication
-   - Location: `HoloLoom/tests/integration/server/`
+   - Location: `hololoom/tests/integration/server/`
    - Tool: Use `pytest-httpx` or similar
    - Estimated: 3,000+ lines
 
 10. **MCP Server Tests**
     - Target: 40+ tests for all MCP tools
     - Coverage: Memory, Search, RAG, Semantic Calculus servers
-    - Location: `HoloLoom/tests/integration/mcp/`
+    - Location: `hololoom/tests/integration/mcp/`
 
 11. **WebSocket Tests**
     - Target: 25+ tests for streaming endpoints
@@ -167,7 +167,7 @@
 12. **Kubernetes Deployment Tests**
     - Target: 30+ tests
     - Coverage: Deployment configs, health checks, scaling
-    - Location: `HoloLoom/tests/integration/kubernetes/`
+    - Location: `hololoom/tests/integration/kubernetes/`
 
 13. **Docker Compose Tests**
     - Target: 20+ tests
@@ -176,12 +176,12 @@
 14. **End-to-End Workflow Tests**
     - Target: 25+ comprehensive E2E tests
     - Coverage: Complete user workflows across all systems
-    - Location: `HoloLoom/tests/e2e/workflows/`
+    - Location: `hololoom/tests/e2e/workflows/`
 
 15. **Performance Regression Tests**
     - Target: 40+ benchmark tests
     - Coverage: All critical paths with performance budgets
-    - Location: `HoloLoom/tests/benchmarks/`
+    - Location: `hololoom/tests/benchmarks/`
 
 **Week 4 Target**: +115 tests for infrastructure
 
@@ -203,7 +203,7 @@
 
    **New Structure**:
    ```
-   HoloLoom/orchestrator/
+   hololoom/orchestrator/
    ├── __init__.py (exports unified interface)
    ├── core/
    │   ├── weaving_cycle.py (~1,200 lines)
@@ -226,7 +226,7 @@
    - Better code navigation
 
 2. **Backward Compatibility Shim**
-   - Maintain: `HoloLoom/weaving_orchestrator.py`
+   - Maintain: `hololoom/weaving_orchestrator.py`
    - Content: Import and re-export from new modules
    - Deprecation warning for direct imports
    - Migration guide in comments
@@ -243,7 +243,7 @@
 **Tasks:**
 
 4. **Consolidate Memory Documentation**
-   - Create: `HoloLoom/memory/ARCHITECTURE.md`
+   - Create: `hololoom/memory/ARCHITECTURE.md`
    - Document: All 11 memory systems with diagrams
    - Include: Integration matrix, use case guide
 
@@ -501,8 +501,8 @@
 Want immediate impact? Start here:
 
 ### Day 1-2: Documentation
-1. Create `HoloLoom/spinningWheel/README.md` (47 adapters)
-2. Create `HoloLoom/semantic_calculus/AXES_GUIDE.md` (16 axes)
+1. Create `hololoom/spinningWheel/README.md` (47 adapters)
+2. Create `hololoom/semantic_calculus/AXES_GUIDE.md` (16 axes)
 
 ### Day 3-4: Testing
 3. Add Dreamweaving test suite (50 tests)

@@ -20,8 +20,8 @@ import warnings
 class _DeprecatedFinder:
     """Meta-path finder that redirects HoloLoom.synthesis -> HoloLoom.fabric."""
 
-    _OLD = "HoloLoom.synthesis"
-    _NEW = "HoloLoom.fabric"
+    _OLD = "hololoom.synthesis"
+    _NEW = "hololoom.fabric"
 
     def find_module(self, fullname, path=None):
         if fullname == self._OLD or fullname.startswith(self._OLD + "."):

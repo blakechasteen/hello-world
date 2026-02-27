@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Any
 
-from HoloLoom.llm.cost_tracker import CostTracker, CostEstimate
+from hololoom.llm.cost_tracker import CostTracker, CostEstimate
 
 logger = logging.getLogger(__name__)
 
@@ -185,16 +185,16 @@ class UnifiedLLMClient:
         # Import and create provider client
         try:
             if config.provider == "ollama":
-                from HoloLoom.llm.providers.ollama_provider import OllamaProvider
+                from hololoom.llm.providers.ollama_provider import OllamaProvider
                 client = OllamaProvider(config)
             elif config.provider == "anthropic":
-                from HoloLoom.llm.providers.anthropic_provider import AnthropicProvider
+                from hololoom.llm.providers.anthropic_provider import AnthropicProvider
                 client = AnthropicProvider(config)
             elif config.provider == "openai":
-                from HoloLoom.llm.providers.openai_provider import OpenAIProvider
+                from hololoom.llm.providers.openai_provider import OpenAIProvider
                 client = OpenAIProvider(config)
             elif config.provider == "google":
-                from HoloLoom.llm.providers.gemini_provider import GeminiProvider
+                from hololoom.llm.providers.gemini_provider import GeminiProvider
                 client = GeminiProvider(config)
             else:
                 logger.error(f"Unknown provider: {config.provider}")

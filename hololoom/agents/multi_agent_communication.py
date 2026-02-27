@@ -36,7 +36,7 @@ import logging
 # Safety Integration (Dec 2025) - MRF Safe Integration Phase
 # Import alignment framework's adversarial detection for inter-agent messages
 try:
-    from HoloLoom.alignment.safety_guardrails import AdversarialDetector as AlignmentAdversarialDetector
+    from hololoom.alignment.safety_guardrails import AdversarialDetector as AlignmentAdversarialDetector
     ALIGNMENT_ADVERSARIAL_AVAILABLE = True
 except ImportError:
     ALIGNMENT_ADVERSARIAL_AVAILABLE = False

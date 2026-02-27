@@ -454,7 +454,7 @@ def create_fused_36d_selection(
         List of 36 SemanticDimension objects
 
     Example:
-        >>> from HoloLoom.embedding.spectral import create_embedder
+        >>> from hololoom.embedding.spectral import create_embedder
         >>> embed_model = create_embedder(sizes=[384])
         >>> embed_fn = lambda text: embed_model.encode([text])[0]
         >>> dims_36 = create_fused_36d_selection(embed_fn)

@@ -50,7 +50,7 @@ class AutoFixApplicator:
 
         # Find Python files
         import glob
-        pattern = "HoloLoom/**/*.py"
+        pattern = "hololoom/**/*.py"
         py_files = glob.glob(pattern, recursive=True)
         py_files = [f for f in py_files if '__pycache__' not in f]
         py_files = py_files[:max_files]

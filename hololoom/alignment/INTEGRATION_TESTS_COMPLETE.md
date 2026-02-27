@@ -28,7 +28,7 @@
 
 **Usage**:
 ```bash
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py -v
 ```
 
 **Fixtures**:
@@ -153,7 +153,7 @@ This completes the third and final quick win requested:
 ### Test Organization
 
 ```
-HoloLoom/tests/integration/test_alignment_hololoom.py
+hololoom/tests/integration/test_alignment_hololoom.py
 │
 ├── Fixtures (3)
 │   ├── test_shards           - Sample memory shards
@@ -252,13 +252,13 @@ Total: 9 comprehensive tests
 
 ```bash
 # Run all integration tests
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py -v
 
 # Run specific test
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py::test_alignment_basic_integration -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py::test_alignment_basic_integration -v
 
 # Run with coverage
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py --cov=HoloLoom.alignment -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py --cov=hololoom.alignment -v
 ```
 
 ### Running Standalone Demo

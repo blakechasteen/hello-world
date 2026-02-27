@@ -24,8 +24,8 @@ import torch
 import numpy as np
 from typing import List
 
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.config import Config
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.config import Config
 
 
 # ============================================================================

@@ -11,19 +11,19 @@ import unittest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
-from HoloLoom.prompting.testing.metrics_collector import (
+from hololoom.prompting.testing.metrics_collector import (
     MetricType,
     Metric,
     MetricsCollector,
     MetricsAggregator,
     create_metrics_collector,
 )
-from HoloLoom.prompting.testing.statistical_analysis import (
+from hololoom.prompting.testing.statistical_analysis import (
     StatisticalSummary,
     StatisticalAnalyzer,
     create_statistical_analyzer,
 )
-from HoloLoom.prompting.testing.alerting import (
+from hololoom.prompting.testing.alerting import (
     AlertSeverity,
     ThresholdRule,
     Alert,
@@ -31,7 +31,7 @@ from HoloLoom.prompting.testing.alerting import (
     get_default_rules,
     create_alerting_system,
 )
-from HoloLoom.prompting.testing.tapestry_bridge import (
+from hololoom.prompting.testing.tapestry_bridge import (
     TapestryMetricsBridge,
     create_tapestry_bridge,
 )

@@ -10,7 +10,7 @@ Mines high-quality interactions to:
 - Generate documentation from conversations
 
 Usage:
-    from HoloLoom.apps.chatops.team_learning import TeamLearningSystem
+    from hololoom.apps.chatops.team_learning import TeamLearningSystem
 
     system = TeamLearningSystem()
 

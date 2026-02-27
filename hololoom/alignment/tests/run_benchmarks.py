@@ -14,23 +14,23 @@ from typing import Dict
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     create_guardrails,
     ActionRequest,
     ActionCategory,
 )
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     create_detector,
     GoalStatement,
     BehavioralProbe,
     ProbeType,
 )
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.instrumental_convergence import (
     create_guard,
     ResourceBounds,
     ResourceType,
 )
-from HoloLoom.alignment.audit_trail import (
+from hololoom.alignment.audit_trail import (
     create_audit_trail,
     DecisionType,
     OutcomeType,

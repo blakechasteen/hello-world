@@ -5,7 +5,7 @@ import builtins
 import torch
 from typing import Any, Dict, Optional, Callable
 from concurrent.futures import ThreadPoolExecutor
-from HoloLoom.dark_trace.steering_policy import ConsistencyGuard
+from hololoom.dark_trace.steering_policy import ConsistencyGuard
 
 class SecurityViolation(Exception):
     pass

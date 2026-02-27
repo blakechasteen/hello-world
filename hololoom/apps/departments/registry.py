@@ -22,7 +22,7 @@ from dataclasses import dataclass
 import logging
 import asyncio
 
-from HoloLoom.protocols.department import Department, DepartmentManifest, DepartmentRequest, DepartmentResponse, DepartmentConfig
+from hololoom.protocols.department import Department, DepartmentManifest, DepartmentRequest, DepartmentResponse, DepartmentConfig
 from .base import BaseDepartment
 
 

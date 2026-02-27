@@ -15,7 +15,7 @@ The CARTS visualization foundation provides **Tufte-style attack trajectory visu
 ### Basic Usage (Simplest)
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 # Data from your attack runs
 strategies = ["prompt_injection", "jailbreak", "context_overflow"]
@@ -42,7 +42,7 @@ webbrowser.open("attack_trajectory.html")
 ### Advanced Usage (Full Control)
 
 ```python
-from HoloLoom.redteam.visualization import (
+from hololoom.redteam.visualization import (
     AttackPoint,
     AttackTrajectoryRenderer
 )
@@ -114,7 +114,7 @@ with open("detailed_analysis.html", "w") as f:
 Represents a single measurement in the attack trajectory.
 
 ```python
-from HoloLoom.redteam.visualization import AttackPoint
+from hololoom.redteam.visualization import AttackPoint
 
 point = AttackPoint(
     index=0,                    # Sequence position
@@ -142,7 +142,7 @@ point = AttackPoint(
 Aggregated metrics for a strategy (automatically computed).
 
 ```python
-from HoloLoom.redteam.visualization import StrategyMetrics
+from hololoom.redteam.visualization import StrategyMetrics
 
 metrics = StrategyMetrics(
     strategy="prompt_injection",
@@ -256,7 +256,7 @@ COLOR_CRITICAL = #c0392b  # Dark red: critical threat
 ### Real Attack Campaign Tracking
 
 ```python
-from HoloLoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
+from hololoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
 import json
 from datetime import datetime
 
@@ -299,7 +299,7 @@ with open("campaign_analysis.html", "w") as f:
 ### Multiple Model Comparison
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 models = ["gpt-4", "claude-3", "gemini"]
 colors_per_model = {
@@ -332,7 +332,7 @@ html = render_attack_trajectory(
 ### Monitoring Dashboard Integration
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 from flask import Flask, render_template_string
 
 app = Flask(__name__)

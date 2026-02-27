@@ -5,8 +5,8 @@ Tests the complete tension → compute → collapse cycle.
 """
 import pytest
 import numpy as np
-from HoloLoom.warp.space import WarpSpace
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.warp.space import WarpSpace
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 
 @pytest.mark.asyncio

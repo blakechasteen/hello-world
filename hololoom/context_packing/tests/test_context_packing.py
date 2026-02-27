@@ -26,7 +26,7 @@ try:
 except ImportError:
     NETWORKX_AVAILABLE = False
 
-from HoloLoom.context_packing import (
+from hololoom.context_packing import (
     # Protocols and data classes
     ImportanceSignal,
     ActivationState,
@@ -498,7 +498,7 @@ def test_packer_statistics_tracking(sample_graph, sample_nodes):
 
 def test_convenience_functions(sample_graph, sample_nodes):
     """Test convenience functions."""
-    from HoloLoom.context_packing.packer import pack_context, adaptive_pack_context
+    from hololoom.context_packing.packer import pack_context, adaptive_pack_context
 
     # pack_context
     packed = pack_context(

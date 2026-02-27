@@ -1604,7 +1604,7 @@ Brief description of what this spinner does.
 
 ### Usage
 \`\`\`python
-from HoloLoom.spinningWheel import SpinnerName
+from hololoom.spinningWheel import SpinnerName
 spinner = SpinnerName()
 result = await spinner.spin(data)
 \`\`\`
@@ -1628,7 +1628,7 @@ When implementing a new spinner:
 
 1. **Open an issue** describing the spinner and use case
 2. **Check existing spinners** for similar patterns to follow
-3. **Implement with tests** in `HoloLoom/spinningWheel/`
+3. **Implement with tests** in `hololoom/spinningWheel/`
 4. **Update this document** to move from "Future" to implemented
 5. **Submit PR** with example usage in demos/
 

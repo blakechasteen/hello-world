@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-from HoloLoom.memory.routing.protocol import (
+from hololoom.memory.routing.protocol import (
     BackendType,
     ExecutionPattern,
     RoutingDecision,

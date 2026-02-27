@@ -4,7 +4,7 @@ Smart Clustering: One-line API for intelligent clustering.
 WASM + EXO + HoloLoom Magic = Easy Clustering
 
 Usage:
-    from HoloLoom.clustering import cluster
+    from hololoom.clustering import cluster
 
     results = cluster(texts)
     # [
@@ -239,7 +239,7 @@ def _prepare_data(
 def _get_default_embedder(scale: Optional[int] = None):
     """Get default Matryoshka embedder."""
     try:
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
         sizes = [96, 192, 384, 768] if scale is None else [scale]
         return MatryoshkaEmbeddings(sizes=sizes)
     except ImportError:

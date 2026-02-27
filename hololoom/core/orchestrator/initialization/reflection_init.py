@@ -25,11 +25,11 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.core.reflection.buffer import ReflectionBuffer
-from HoloLoom.performance.cache import QueryCache
-from HoloLoom.routing.classifier_factory import create_classifier, create_fast_path_router
+from hololoom.core.reflection.buffer import ReflectionBuffer
+from hololoom.performance.cache import QueryCache
+from hololoom.routing.classifier_factory import create_classifier, create_fast_path_router
 
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ def initialize_reflection_and_caching(
 
     # Initialize dashboard constructor (Edward Tufte Machine)
     if orchestrator.enable_dashboards:
-        from HoloLoom.visualization.constructor import DashboardConstructor
+        from hololoom.visualization.constructor import DashboardConstructor
         orchestrator.dashboard_constructor = DashboardConstructor()
         logger.info("Dashboard generation enabled (Edward Tufte Machine)")
     else:

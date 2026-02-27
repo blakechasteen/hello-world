@@ -22,7 +22,7 @@ from unittest.mock import Mock, AsyncMock, patch
 from fastapi import Request, HTTPException
 from fastapi.testclient import TestClient
 
-from HoloLoom.apps.server.waf_middleware import (
+from hololoom.apps.server.waf_middleware import (
     WAFMiddleware,
     SQLInjectionRule,
     XSSRule,
@@ -31,19 +31,19 @@ from HoloLoom.apps.server.waf_middleware import (
     HeaderValidationRule,
     RequestSizeLimitRule
 )
-from HoloLoom.apps.server.request_signing import (
+from hololoom.apps.server.request_signing import (
     SignatureValidator,
     RequestSigningClient,
     APIKey,
     APIKeyStatus
 )
-from HoloLoom.apps.server.security_monitor import (
+from hololoom.apps.server.security_monitor import (
     SecurityMonitor,
     SecurityEventType,
     AlertSeverity,
     SecurityEvent
 )
-from HoloLoom.apps.server.ar_api_secured import (
+from hololoom.apps.server.ar_api_secured import (
     EnhancedRateLimiter,
     create_secured_app,
     SecurityConfig

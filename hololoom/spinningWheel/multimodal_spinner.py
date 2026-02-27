@@ -10,10 +10,10 @@ import time
 from typing import Dict, List, Optional, Any, Union
 from pathlib import Path
 
-from HoloLoom.input.protocol import ModalityType, ProcessedInput
-from HoloLoom.input.router import InputRouter
-from HoloLoom.input.fusion import MultiModalFusion
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.input.protocol import ModalityType, ProcessedInput
+from hololoom.input.router import InputRouter
+from hololoom.input.fusion import MultiModalFusion
+from hololoom.protocols.types import MemoryShard
 
 
 class MultiModalSpinner:

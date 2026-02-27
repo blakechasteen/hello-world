@@ -30,8 +30,8 @@ from datetime import datetime, timedelta
 import hashlib
 
 try:
-    from HoloLoom.memory.graph import KG, KGEdge
-    from HoloLoom.protocols.types import MemoryShard
+    from hololoom.memory.graph import KG, KGEdge
+    from hololoom.protocols.types import MemoryShard
     import networkx as nx
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:

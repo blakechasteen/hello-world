@@ -8,8 +8,8 @@ Date: November 13, 2025
 """
 
 import time
-from HoloLoom.config import Config
-from HoloLoom.routing.classifier_factory import create_classifier
+from hololoom.config import Config
+from hololoom.routing.classifier_factory import create_classifier
 
 
 def test_classifier_factory():

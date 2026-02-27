@@ -24,7 +24,7 @@ import logging
 import numpy as np
 from dataclasses import dataclass
 
-from HoloLoom.vision.protocol import MarkerDetectorProtocol, Marker
+from hololoom.vision.protocol import MarkerDetectorProtocol, Marker
 
 logger = logging.getLogger(__name__)
 

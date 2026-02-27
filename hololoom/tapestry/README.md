@@ -1,7 +1,7 @@
 # Tapestry: Session Continuity for HoloLoom
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/tapestry/`
+**Location**: `hololoom/tapestry/`
 **Total Lines**: ~2,200 lines across 9 core files
 **Date**: 2025-12-06 – 2025-12-11
 
@@ -43,7 +43,7 @@ This enables:
 ### Basic Session with Manual Threads
 
 ```python
-from HoloLoom.tapestry import LoomKeeper
+from hololoom.tapestry import LoomKeeper
 
 # Start a new session
 async with LoomKeeper() as keeper:
@@ -66,7 +66,7 @@ async with LoomKeeper() as keeper:
 ### Resume Existing Session
 
 ```python
-from HoloLoom.tapestry import LoomKeeper
+from hololoom.tapestry import LoomKeeper
 
 # Resume where you left off
 async with LoomKeeper() as keeper:
@@ -79,7 +79,7 @@ async with LoomKeeper() as keeper:
 ### With Auto Goal Decomposition
 
 ```python
-from HoloLoom.tapestry import LoomKeeper
+from hololoom.tapestry import LoomKeeper
 
 # System auto-decomposes goal into threads using heuristics
 # (or uses PlanningDepartment LLM if available)
@@ -512,7 +512,7 @@ context = {
 # Context:
 context = {
     "files": changed_files,
-    "dependencies": ["HoloLoom.memory", "HoloLoom.policy"]
+    "dependencies": ["hololoom.memory", "hololoom.policy"]
 }
 
 # Checks:
@@ -561,8 +561,8 @@ Hard blockers (is_blocker=True) fail regardless of weight.
 ### With Weaving Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.tapestry import LoomKeeper
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.tapestry import LoomKeeper
 
 # Create orchestrator once
 async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
@@ -609,7 +609,7 @@ async with LoomKeeper() as keeper:
 Safety checks automatically integrate:
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.alignment import SafetyGuardrails
 
 # Verification includes AlignmentSignal
 # which uses SafetyGuardrails internally
@@ -767,7 +767,7 @@ UNWOVEN ──weave_thread──→ WEAVING ──verification──→ [WOVEN |
 Tapestry provides specific exceptions for different failure modes:
 
 ```python
-from HoloLoom.tapestry.protocol import (
+from hololoom.tapestry.protocol import (
     TapestryError,           # Base exception
     NoTapestryError,         # No tapestry to resume
     ThreadNotFoundError,     # Thread ID not found
@@ -785,8 +785,8 @@ from HoloLoom.tapestry.protocol import (
 Register custom verification signals:
 
 ```python
-from HoloLoom.tapestry import FabricSignal, SignalRegistry, SignalResult
-from HoloLoom.tapestry.protocol import Thread
+from hololoom.tapestry import FabricSignal, SignalRegistry, SignalResult
+from hololoom.tapestry.protocol import Thread
 
 @SignalRegistry.register
 class CustomSignal:
@@ -812,7 +812,7 @@ class CustomSignal:
 Implement custom storage:
 
 ```python
-from HoloLoom.tapestry import TapestryBackend, Tapestry
+from hololoom.tapestry import TapestryBackend, Tapestry
 
 class CustomBackend:
     """Implement TapestryBackend protocol."""
@@ -948,7 +948,7 @@ Signals should fail gracefully:
 ## Files & Organization
 
 ```
-HoloLoom/tapestry/
+hololoom/tapestry/
 ├── __init__.py                    # Public API exports
 ├── protocol.py                    # Core data classes (ThreadStatus, Thread, Tapestry)
 ├── keeper.py                      # LoomKeeper, SessionContext (orchestrator)
@@ -977,7 +977,7 @@ HoloLoom/tapestry/
 ```python
 async def research_executor(thread: Thread) -> dict:
     """Execute a research thread."""
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
     async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
         spacetime = await orchestrator.weave(Query(text=thread.description))
@@ -1095,7 +1095,7 @@ async with keeper.session() as ctx:
 ### Restore from Backup
 
 ```python
-from HoloLoom.tapestry.backends.json_backend import JsonTapestryBackend
+from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
 
 backend = JsonTapestryBackend()
 success = await backend.restore_from_backup()
@@ -1177,7 +1177,7 @@ Backends and signals use protocols for extensibility:
 
 - **Weaving Metaphor**: HoloLoom core architecture (loom, shuttle, yarn)
 - **Verification Signals**: Inspired by HoloLoom's alignment framework
-- **Atomic Persistence**: Pattern from `HoloLoom/tuning/persistence.py`
+- **Atomic Persistence**: Pattern from `hololoom/tuning/persistence.py`
 - **Protocol Design**: HoloLoom's Department architecture
 - **Git Integration**: Async subprocess management patterns
 
@@ -1189,7 +1189,7 @@ For questions, issues, or contributions:
 
 1. **Documentation**: See inline docstrings and this README
 2. **Examples**: Check `demos/` directory for runnable examples
-3. **Tests**: `HoloLoom/tapestry/tests/` for test patterns
+3. **Tests**: `hololoom/tapestry/tests/` for test patterns
 4. **Issues**: File issues with tapestry-related errors
 5. **Contributions**: PRs welcome - follow HoloLoom style guide
 

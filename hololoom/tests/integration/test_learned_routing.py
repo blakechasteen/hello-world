@@ -13,10 +13,10 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
-from HoloLoom.routing.learned import ThompsonBandit, LearnedRouter
-from HoloLoom.routing.metrics import RoutingMetrics, MetricsCollector
-from HoloLoom.routing.ab_test import ABTestRouter, StrategyVariant
-from HoloLoom.routing.integration import RoutingOrchestrator, classify_query_type, rule_based_routing
+from hololoom.routing.learned import ThompsonBandit, LearnedRouter
+from hololoom.routing.metrics import RoutingMetrics, MetricsCollector
+from hololoom.routing.ab_test import ABTestRouter, StrategyVariant
+from hololoom.routing.integration import RoutingOrchestrator, classify_query_type, rule_based_routing
 
 
 def test_thompson_bandit():

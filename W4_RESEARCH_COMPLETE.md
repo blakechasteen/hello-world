@@ -401,7 +401,7 @@ BENEFIT: New developers unblocked, onboarding time reduced 50%
 ## 🔗 Related Documentation
 
 - **CLAUDE.md** - Central reference (update with 12 hidden systems)
-- **HoloLoom/README.md** - Project overview (link to new READMEs)
+- **hololoom/README.md** - Project overview (link to new READMEs)
 - **docs/CONTRIBUTING.md** - Contributor guide (add doc requirements)
 - **docs/ARCHITECTURE_VISUAL_MAP.md** - Architecture reference (expand)
 

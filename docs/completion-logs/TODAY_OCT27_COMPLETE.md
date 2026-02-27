@@ -26,7 +26,7 @@ Complete 9-step cycle with metaphor-driven design:
 - Full lifecycle management (async context managers)
 - Zero resource leaks
 
-**Files**: `HoloLoom/weaving_shuttle.py`, `HoloLoom/memory/weaving_adapter.py`
+**Files**: `hololoom/weaving_shuttle.py`, `hololoom/memory/weaving_adapter.py`
 
 #### 2. **Persistent Memory Integration** (2,800 lines)
 Three backend options with graceful fallback:
@@ -40,7 +40,7 @@ Three backend options with graceful fallback:
 - Docker compose for production deployment
 - Migration scripts ready
 
-**Files**: `HoloLoom/memory/weaving_adapter.py`, `demos/persistent_memory_demo.py`, `docker-compose.yml`
+**Files**: `hololoom/memory/weaving_adapter.py`, `demos/persistent_memory_demo.py`, `docker-compose.yml`
 
 #### 3. **Intelligent Memory Routing** (1,400 lines)
 Dynamic backend selection with learning:
@@ -49,7 +49,7 @@ Dynamic backend selection with learning:
 - **A/B Testing Framework**: Compare strategies empirically
 - 5 execution patterns: Feed-forward, Recursive, Parallel, Strange Loop, Adaptive
 
-**Files**: `HoloLoom/memory/routing/`
+**Files**: `hololoom/memory/routing/`
 
 #### 4. **ChatOps Integration** (1,200 lines)
 8 operational commands with reflection loop:
@@ -68,7 +68,7 @@ Dynamic backend selection with learning:
 - Real-time metrics display
 - Spacetime artifact inspection
 
-**Files**: `HoloLoom/chatops/handlers/`, `HoloLoom/chatops/CHATOPS_VISION.md`
+**Files**: `hololoom/chatops/handlers/`, `hololoom/chatops/CHATOPS_VISION.md`
 
 #### 5. **Promptly Terminal UI** (600 lines)
 Interactive CLI with live metrics:
@@ -99,7 +99,7 @@ Interactive CLI with live metrics:
 - Browser history SQLite parsing
 - MCP server integration for Claude Desktop
 
-**Files**: `HoloLoom/spinningWheel/`, `HoloLoom/spinningWheel/website.py`, `HoloLoom/spinningWheel/recursive_crawler.py`
+**Files**: `hololoom/spinningWheel/`, `hololoom/spinningWheel/website.py`, `hololoom/spinningWheel/recursive_crawler.py`
 
 #### 7. **Documentation Suite** (3,500 lines)
 Comprehensive guides and vision docs:
@@ -659,7 +659,7 @@ When you tell a story, you're not recounting facts. You're **selecting** which d
 - [VISION_BOARD.md](VISION_BOARD.md) - Long-term vision and philosophy
 - [PERSISTENT_MEMORY_ROADMAP.md](PERSISTENT_MEMORY_ROADMAP.md) - Deployment path
 - [FEATURE_ROADMAP.md](FEATURE_ROADMAP.md) - Strategic feature plan
-- [CHATOPS_VISION.md](HoloLoom/chatops/CHATOPS_VISION.md) - ChatOps capabilities
+- [CHATOPS_VISION.md](hololoom/chatops/CHATOPS_VISION.md) - ChatOps capabilities
 - [CLAUDE.md](CLAUDE.md) - Developer guide
 - [docker-compose.yml](docker-compose.yml) - Production deployment
 
@@ -670,10 +670,10 @@ When you tell a story, you're not recounting facts. You're **selecting** which d
 - [demo_spinningwheel.py](demos/demo_spinningwheel.py) - Data ingestion
 
 ### Core Modules
-- [weaving_shuttle.py](HoloLoom/weaving_shuttle.py) - Main orchestrator (687 lines)
-- [weaving_adapter.py](HoloLoom/memory/weaving_adapter.py) - Backend bridge (500 lines)
-- [unified.py](HoloLoom/policy/unified.py) - Neural core + Thompson Sampling
-- [recursive_crawler.py](HoloLoom/spinningWheel/recursive_crawler.py) - HYPERSPACE mode
+- [weaving_shuttle.py](hololoom/weaving_shuttle.py) - Main orchestrator (687 lines)
+- [weaving_adapter.py](hololoom/memory/weaving_adapter.py) - Backend bridge (500 lines)
+- [unified.py](hololoom/policy/unified.py) - Neural core + Thompson Sampling
+- [recursive_crawler.py](hololoom/spinningWheel/recursive_crawler.py) - HYPERSPACE mode
 
 ---
 

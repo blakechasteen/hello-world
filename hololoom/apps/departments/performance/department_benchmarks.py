@@ -70,7 +70,7 @@ class DepartmentBenchmark:
     Measures latency, throughput, quality, and resource usage.
 
     Example:
-        >>> from HoloLoom.departments import get_department
+        >>> from hololoom.departments import get_department
         >>> benchmark = DepartmentBenchmark(department_id="rag")
         >>> result = await benchmark.run(
         ...     test_queries=["What is X?", "Explain Y"],
@@ -112,7 +112,7 @@ class DepartmentBenchmark:
         Returns:
             BenchmarkResult with all metrics
         """
-        from HoloLoom.departments import get_department
+        from hololoom.departments import get_department
 
         dept = get_department(self.department_id)
 
@@ -233,7 +233,7 @@ class DepartmentBenchmark:
         Returns:
             Dict of department_id → BenchmarkResult
         """
-        from HoloLoom.departments import get_all_departments
+        from hololoom.departments import get_all_departments
 
         departments = get_all_departments()
         results = {}

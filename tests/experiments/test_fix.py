@@ -5,11 +5,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.config import Config
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.loom import command as loom_cmd
+from hololoom.config import Config
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.loom import command as loom_cmd
 
 
 async def test_single_query():

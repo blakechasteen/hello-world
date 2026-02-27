@@ -9,7 +9,7 @@ Physics-inspired context compression that combines beta wave activation spreadin
 ## Quick Start
 
 ```python
-from HoloLoom.context_packing import ContextPacker, ContextPackerConfig
+from hololoom.context_packing import ContextPacker, ContextPackerConfig
 
 # Create packer with balanced preset (40-60% savings)
 config = ContextPackerConfig.balanced()
@@ -48,7 +48,7 @@ Physics-based activation propagation across knowledge graphs using neuroscience-
 - Directional edge semantics
 
 ```python
-from HoloLoom.context_packing import ActivationSpreader
+from hololoom.context_packing import ActivationSpreader
 
 spreader = ActivationSpreader()
 activation_map = spreader.spread_activation(
@@ -77,7 +77,7 @@ Combines 7 importance signals to rank memory nodes:
 | **Information Content** | 25% | Mutual information I(Node; Query) - **Phase 5** |
 
 ```python
-from HoloLoom.context_packing import ImportanceScorer
+from hololoom.context_packing import ImportanceScorer
 
 scorer = ImportanceScorer()
 importance_scores = scorer.score_batch(
@@ -99,7 +99,7 @@ Multi-scale compression using Matryoshka embeddings:
 - **Very low** (<0.25): Dropped
 
 ```python
-from HoloLoom.context_packing import ContextCompressor
+from hololoom.context_packing import ContextCompressor
 
 compressor = ContextCompressor()
 kept_nodes, scale_assignments = compressor.matryoshka_compress(
@@ -124,7 +124,7 @@ Information-theoretic compression using Tishby's Information Bottleneck principl
 | **<0.2** (Very Low MI) | Dropped | 0 | Below information threshold |
 
 ```python
-from HoloLoom.context_packing import information_budget_pack
+from hololoom.context_packing import information_budget_pack
 
 # Pack with information budget constraint
 nodes, scales, mi_scores = information_budget_pack(
@@ -222,7 +222,7 @@ Returns both compression result and Matryoshka scale assignments.
 Convenience function for information-theoretic packing.
 
 ```python
-from HoloLoom.context_packing import information_budget_pack
+from hololoom.context_packing import information_budget_pack
 
 nodes, scales, mi_scores = information_budget_pack(
     query="What is Thompson Sampling?",
@@ -304,7 +304,7 @@ Query + Candidate Nodes
 ### Basic Usage
 
 ```python
-from HoloLoom.context_packing import ContextPacker
+from hololoom.context_packing import ContextPacker
 import networkx as nx
 
 # Create knowledge graph
@@ -364,7 +364,7 @@ for node in result.compressed_nodes:
 ### Custom Configuration
 
 ```python
-from HoloLoom.context_packing import (
+from hololoom.context_packing import (
     ContextPackerConfig,
     BetaWaveConfig,
     ImportanceScorerConfig,
@@ -402,8 +402,8 @@ packer = ContextPacker(config)
 Context packing integrates seamlessly with HoloLoom's memory system:
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.context_packing import ContextPacker
+from hololoom import hololoom
+from hololoom.context_packing import ContextPacker
 
 async with HoloLoom() as loom:
     # Retrieve initial candidates from memory
@@ -430,12 +430,12 @@ async with HoloLoom() as loom:
 
 Run tests:
 ```bash
-pytest HoloLoom/context_packing/tests/ -v
+pytest hololoom/context_packing/tests/ -v
 ```
 
 Run demo:
 ```bash
-PYTHONPATH=. python HoloLoom/context_packing/demo_context_packing.py
+PYTHONPATH=. python hololoom/context_packing/demo_context_packing.py
 ```
 
 ## Files

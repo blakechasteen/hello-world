@@ -21,26 +21,26 @@ import pytest
 import asyncio
 from typing import List
 
-from HoloLoom.agentic.mrf_integration import (
+from hololoom.agentic.mrf_integration import (
     create_agentic_mrf_prompt,
     assess_agentic_quality
 )
-from HoloLoom.agentic.core import ReasoningMode
+from hololoom.agentic.core import ReasoningMode
 
-from HoloLoom.rag.mrf_integration import (
+from hololoom.rag.mrf_integration import (
     create_rag_mrf_prompt,
     assess_rag_quality,
     RAGMode,
     enhance_rag_with_mrf
 )
 
-from HoloLoom.memory.mrf_consolidation import (
+from hololoom.memory.mrf_consolidation import (
     create_consolidation_mrf_prompt,
     assess_consolidation_quality,
     enhance_consolidation_with_mrf
 )
-from HoloLoom.memory.consolidation import ConsolidationStrategy
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.memory.consolidation import ConsolidationStrategy
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

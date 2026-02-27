@@ -7,7 +7,7 @@ Generators are automatically available when HoloLoom is installed. No additional
 ## Import
 
 ```python
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     ContextOverflowGenerator,
     HierarchyBypassGenerator,
     create_context_overflow_generator,
@@ -68,7 +68,7 @@ print(f"Meta-level: {hardest.meta_level}")
 ### Task 1: Generate comprehensive attack set
 
 ```python
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     ContextOverflowGenerator,
     HierarchyBypassGenerator,
 )
@@ -104,7 +104,7 @@ print(f"Stealthy attacks: {len(hard_to_detect)}/{len(payloads)}")
 ### Task 3: Test model robustness
 
 ```python
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     ContextOverflowGenerator,
     HierarchyBypassGenerator,
 )
@@ -238,7 +238,7 @@ gen.generate_all(target)                    # → List[HierarchyBypassPayload] (
 ## Factory Functions
 
 ```python
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     create_context_overflow_generator,
     create_hierarchy_bypass_generator,
 )
@@ -276,10 +276,10 @@ for payload in gen.generate_all(target):
 ### Import Error
 ```python
 # Wrong
-from HoloLoom.redteam.ContextOverflowGenerator import ContextOverflowGenerator
+from hololoom.redteam.ContextOverflowGenerator import ContextOverflowGenerator
 
 # Correct
-from HoloLoom.redteam.strategy_generators import ContextOverflowGenerator
+from hololoom.redteam.strategy_generators import ContextOverflowGenerator
 ```
 
 ### Reproducibility Issue

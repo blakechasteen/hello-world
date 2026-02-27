@@ -14,7 +14,7 @@ Created: 2025-12-05
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-from HoloLoom.verification.protocol import (
+from hololoom.verification.protocol import (
     Contradiction,
     DegradationLevel,
     ResultSynthesizerProtocol,

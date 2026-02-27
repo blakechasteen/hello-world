@@ -36,7 +36,7 @@ except ImportError:
 
 # Phase 5: Information Theory imports
 try:
-    from HoloLoom.warp.math.information import (
+    from hololoom.warp.math.information import (
         entropy, mutual_information, DistributionPair, InformationMetrics
     )
     INFORMATION_THEORY_AVAILABLE = True

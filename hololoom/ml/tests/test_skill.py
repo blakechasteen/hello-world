@@ -17,8 +17,8 @@ from typing import Dict, Any
 import numpy as np
 import pytest
 
-from HoloLoom.ml.config import RegistryConfig
-from HoloLoom.ml.protocol import (
+from hololoom.ml.config import RegistryConfig
+from hololoom.ml.protocol import (
     DataSplit,
     EvaluationResult,
     ModelType,
@@ -64,7 +64,7 @@ def temp_data_dir():
 
 def create_skill(storage_path: Path):
     """Create MLTrainerSkill with custom storage path."""
-    from HoloLoom.ml.skills import MLTrainerSkill
+    from hololoom.ml.skills import MLTrainerSkill
 
     return MLTrainerSkill(registry_path=storage_path)
 
@@ -79,12 +79,12 @@ class TestSkillCreation:
 
     def test_import_skill(self):
         """Test skill can be imported."""
-        from HoloLoom.ml.skills import MLTrainerSkill
+        from hololoom.ml.skills import MLTrainerSkill
         assert MLTrainerSkill is not None
 
     def test_import_operation(self):
         """Test MLOperation enum can be imported."""
-        from HoloLoom.ml.skills import MLOperation
+        from hololoom.ml.skills import MLOperation
         assert MLOperation is not None
         assert MLOperation.TRAIN.value == "train"
 
@@ -214,12 +214,12 @@ class TestExecuteOperations:
     @pytest.mark.asyncio
     async def test_execute_train(self, temp_storage_path, temp_data_dir):
         """Test executing train operation."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
         # Create SkillInput
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         input_data = SkillInput(
             operation=MLOperation.TRAIN,
@@ -239,8 +239,8 @@ class TestExecuteOperations:
     @pytest.mark.asyncio
     async def test_execute_list_empty(self, temp_storage_path):
         """Test executing list on empty registry."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -257,8 +257,8 @@ class TestExecuteOperations:
     @pytest.mark.asyncio
     async def test_execute_train_and_list(self, temp_storage_path, temp_data_dir):
         """Test training then listing models."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -286,8 +286,8 @@ class TestExecuteOperations:
     @pytest.mark.asyncio
     async def test_execute_train_and_evaluate(self, temp_storage_path, temp_data_dir):
         """Test training then evaluating a model."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -319,8 +319,8 @@ class TestExecuteOperations:
     @pytest.mark.asyncio
     async def test_execute_train_and_describe(self, temp_storage_path, temp_data_dir):
         """Test training then describing a model."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -349,8 +349,8 @@ class TestExecuteOperations:
     @pytest.mark.asyncio
     async def test_execute_validate_data(self, temp_storage_path, temp_data_dir):
         """Test validating data."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -371,8 +371,8 @@ class TestExecuteOperations:
     @pytest.mark.asyncio
     async def test_execute_delete_model(self, temp_storage_path, temp_data_dir):
         """Test deleting a model."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -416,7 +416,7 @@ class TestParseAndExecute:
     @pytest.mark.asyncio
     async def test_parse_and_execute_train(self, temp_storage_path, temp_data_dir):
         """Test natural language train command."""
-        from HoloLoom.ml.skills import MLTrainerSkill
+        from hololoom.ml.skills import MLTrainerSkill
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -431,7 +431,7 @@ class TestParseAndExecute:
     @pytest.mark.asyncio
     async def test_parse_and_execute_list(self, temp_storage_path):
         """Test natural language list command."""
-        from HoloLoom.ml.skills import MLTrainerSkill
+        from hololoom.ml.skills import MLTrainerSkill
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -443,7 +443,7 @@ class TestParseAndExecute:
     @pytest.mark.asyncio
     async def test_parse_and_execute_invalid(self, temp_storage_path):
         """Test invalid command returns helpful message."""
-        from HoloLoom.ml.skills import MLTrainerSkill
+        from hololoom.ml.skills import MLTrainerSkill
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -464,8 +464,8 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_train_nonexistent_file(self, temp_storage_path):
         """Test training with nonexistent file."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -485,8 +485,8 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_evaluate_nonexistent_model(self, temp_storage_path, temp_data_dir):
         """Test evaluating nonexistent model."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -506,8 +506,8 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_describe_nonexistent_model(self, temp_storage_path):
         """Test describing nonexistent model."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -532,8 +532,8 @@ class TestSuggestions:
     @pytest.mark.asyncio
     async def test_train_success_suggestions(self, temp_storage_path, temp_data_dir):
         """Test that successful train provides next step suggestions."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 
@@ -555,8 +555,8 @@ class TestSuggestions:
     @pytest.mark.asyncio
     async def test_list_empty_suggestions(self, temp_storage_path):
         """Test that empty list provides training suggestion."""
-        from HoloLoom.ml.skills import MLTrainerSkill, MLOperation
-        from HoloLoom.ml.skills.ml_trainer_skill import SkillInput
+        from hololoom.ml.skills import MLTrainerSkill, MLOperation
+        from hololoom.ml.skills.ml_trainer_skill import SkillInput
 
         skill = MLTrainerSkill(registry_path=temp_storage_path)
 

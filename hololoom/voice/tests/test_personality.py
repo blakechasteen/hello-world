@@ -14,7 +14,7 @@ import yaml
 from pathlib import Path
 from typing import Dict, Any
 
-from HoloLoom.voice.personality import (
+from hololoom.voice.personality import (
     PersonalityTraits,
     Personality,
     PersonalityManager,

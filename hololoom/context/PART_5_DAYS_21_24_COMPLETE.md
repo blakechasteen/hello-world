@@ -325,7 +325,7 @@ quick_status = checker.get_quick_status()
 **Complete Production Setup**:
 
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     ProductionConfig,
     create_system_monitor,
     create_circuit_breaker_registry,
@@ -504,7 +504,7 @@ services:
 
 ```python
 from fastapi import FastAPI
-from HoloLoom.context import create_health_checker
+from hololoom.context import create_health_checker
 
 app = FastAPI()
 
@@ -533,7 +533,7 @@ async def metrics():
 
 ### Error Handling
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     ContextError, RoutingError, BackendError,
     ErrorHandler, RetryConfig, FallbackStrategy,
     create_error_handler, retry
@@ -542,7 +542,7 @@ from HoloLoom.context import (
 
 ### Monitoring
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     PerformanceMonitor, ResourceMonitor,
     LearningMetricsMonitor, SystemMonitor,
     create_system_monitor
@@ -551,7 +551,7 @@ from HoloLoom.context import (
 
 ### Circuit Breakers
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     CircuitBreaker, CircuitBreakerRegistry,
     CircuitState, CircuitBreakerConfig,
     create_circuit_breaker, create_circuit_breaker_registry
@@ -560,7 +560,7 @@ from HoloLoom.context import (
 
 ### Rate Limiting
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     TokenBucketRateLimiter, SlidingWindowRateLimiter,
     ConcurrentLimiter, RateLimiter,
     create_rate_limiter
@@ -569,7 +569,7 @@ from HoloLoom.context import (
 
 ### Production Configuration
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     Environment, ProductionConfig,
     MonitoringConfig, ErrorHandlingConfig,
     ResourceConfig, LearningConfig,
@@ -579,7 +579,7 @@ from HoloLoom.context import (
 
 ### Health Checks
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     HealthStatus, ComponentCheck,
     HealthCheckResult, HealthChecker,
     create_health_checker

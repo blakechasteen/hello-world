@@ -8,7 +8,7 @@ Date: 2025-11-22
 """
 
 import pytest
-from HoloLoom.datapig import DataQualityIssue, IssueType, Severity
+from hololoom.datapig import DataQualityIssue, IssueType, Severity
 
 
 # ============================================================================

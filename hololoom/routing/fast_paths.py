@@ -13,8 +13,8 @@ Date: 2025-11-12
 
 import time
 from typing import Dict, Optional
-from HoloLoom.protocols.types import Query
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.protocols.types import Query
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 
 
 class FastPathCache:
@@ -228,7 +228,7 @@ class FastPathRouter:
         Returns:
             Spacetime from appropriate handler
         """
-        from HoloLoom.routing.query_classifier import QueryComplexity
+        from hololoom.routing.query_classifier import QueryComplexity
 
         if classification.complexity == QueryComplexity.TRIVIAL:
             self.trivial_count += 1

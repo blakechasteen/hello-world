@@ -6,15 +6,15 @@ from pathlib import Path
 
 # Ensure project root is in path
 # Ensure project root is in path (mythRL directory)
-# examples/demo_maker.py -> examples/ -> HoloLoom/ -> mythRL/
+# examples/demo_maker.py -> examples/ -> hololoom/ -> mythRL/
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
-from HoloLoom.fabric.materializer import Materializer
-from HoloLoom.memory.unified import UnifiedMemory
-from HoloLoom.memory.stores.in_memory_store import InMemoryStore
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.protocols.types import Query
+from hololoom.fabric.materializer import Materializer
+from hololoom.memory.unified import UnifiedMemory
+from hololoom.memory.stores.in_memory_store import InMemoryStore
 
 async def main():
     print("Initializing HoloLoom Maker Demo...")
@@ -22,7 +22,7 @@ async def main():
     # 1. Setup
     config = Config()
     # Ensure we use a safe output directory for the demo
-    demo_output_dir = Path("c:/Users/blake/OneDrive/Documents/mythRL/HoloLoom/demo_output")
+    demo_output_dir = Path("c:/Users/blake/OneDrive/Documents/mythRL/hololoom/demo_output")
     demo_output_dir.mkdir(exist_ok=True)
     
     demo_output_dir.mkdir(exist_ok=True)

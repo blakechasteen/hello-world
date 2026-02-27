@@ -1,7 +1,7 @@
 # DeepSeek OCR Integration Guide
 
 **Status**: ✅ Complete (January 2025)
-**Location**: `HoloLoom/spinningWheel/deepseek_ocr_spinner.py`
+**Location**: `hololoom/spinningWheel/deepseek_ocr_spinner.py`
 **Performance**: ~2,500 tokens/sec on A100-40G, 10x compression (1000 words → 100 tokens)
 
 ## Overview
@@ -69,7 +69,7 @@ The model will auto-download on first use from HuggingFace:
 ### Basic Usage
 
 ```python
-from HoloLoom.spinningWheel import DeepSeekOCRSpinner
+from hololoom.spinningWheel import DeepSeekOCRSpinner
 
 # Initialize spinner (uses sensible defaults)
 spinner = DeepSeekOCRSpinner()
@@ -86,7 +86,7 @@ for shard in result.shards:
 ### PDF Processing
 
 ```python
-from HoloLoom.spinningWheel import DeepSeekOCRSpinner
+from hololoom.spinningWheel import DeepSeekOCRSpinner
 
 spinner = DeepSeekOCRSpinner()
 
@@ -104,7 +104,7 @@ for shard in result.shards:
 ### Batch Processing
 
 ```python
-from HoloLoom.spinningWheel import DeepSeekOCRSpinner
+from hololoom.spinningWheel import DeepSeekOCRSpinner
 
 spinner = DeepSeekOCRSpinner()
 
@@ -120,7 +120,7 @@ print(f"Processed {result.shard_count} shards in {result.processing_time_ms:.1f}
 ### Custom Configuration
 
 ```python
-from HoloLoom.spinningWheel.deepseek_ocr_spinner import (
+from hololoom.spinningWheel.deepseek_ocr_spinner import (
     DeepSeekOCRSpinner,
     DeepSeekOCRConfig,
     OCRBackend,
@@ -176,10 +176,10 @@ result = await spinner.spin("document.pdf")
 ### Full Weaving Cycle
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.spinningWheel import DeepSeekOCRSpinner
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.spinningWheel import DeepSeekOCRSpinner
+from hololoom.config import Config
+from hololoom.documentation.types import Query
 
 # Process document into shards
 spinner = DeepSeekOCRSpinner()
@@ -199,8 +199,8 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### Memory Storage
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.spinningWheel import DeepSeekOCRSpinner
+from hololoom import hololoom
+from hololoom.spinningWheel import DeepSeekOCRSpinner
 
 async with HoloLoom() as loom:
     # Extract text from documents
@@ -223,7 +223,7 @@ async with HoloLoom() as loom:
 ### Quick Text Extraction
 
 ```python
-from HoloLoom.spinningWheel.deepseek_ocr_spinner import (
+from hololoom.spinningWheel.deepseek_ocr_spinner import (
     extract_text_from_image,
     extract_text_from_pdf
 )

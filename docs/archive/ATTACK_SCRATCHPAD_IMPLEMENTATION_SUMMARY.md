@@ -8,25 +8,25 @@
 
 The Attack Scratchpad for CARTS (Comprehensive Adversarial Red Team System) is fully implemented, tested, and ready for production deployment. This comprehensive provenance tracking system records the complete history of adversarial attacks for analysis, learning, and audit compliance.
 
-**Key Achievement**: Complete attack provenance tracking system with <10ms per operation overhead, following the exact architectural pattern from HoloLoom's recursive learning system.
+**Key Achievement**: Complete attack provenance tracking system with <10ms per operation overhead, following the exact architectural pattern from hololoom's recursive learning system.
 
 ## Files Delivered
 
 ### Production Code
 
-1. **`HoloLoom/redteam/provenance/attack_scratchpad.py`** (510 lines)
+1. **`hololoom/redteam/provenance/attack_scratchpad.py`** (510 lines)
    - Core implementation of AttackScratchpad, AttackScratchpadEntry, AttackChain
    - 16 AttackStrategy types (PROMPT_INJECTION, JAILBREAK, REASONING_EXPLOIT, etc.)
    - 9 DefenseLayer types (SAFETY_RAILS, ALIGNMENT_CHECK, DECEPTION_DETECT, etc.)
    - Complete API: add_attack_entry, filtering, summarize, export_to_json
 
-2. **`HoloLoom/redteam/provenance/__init__.py`** (18 lines)
+2. **`hololoom/redteam/provenance/__init__.py`** (18 lines)
    - Package exports for clean public API
    - Exports: AttackScratchpad, AttackScratchpadEntry, AttackChain, AttackStrategy, DefenseLayer
 
 ### Test Suite
 
-3. **`HoloLoom/redteam/provenance/test_attack_scratchpad.py`** (~500 lines)
+3. **`hololoom/redteam/provenance/test_attack_scratchpad.py`** (~500 lines)
    - **22 comprehensive tests** covering all functionality
    - Test organization:
      - TestAttackScratchpadEntry (3 tests)
@@ -36,7 +36,7 @@ The Attack Scratchpad for CARTS (Comprehensive Adversarial Red Team System) is f
 
 ### Demo & Examples
 
-4. **`HoloLoom/redteam/provenance/demo_attack_provenance.py`** (~280 lines)
+4. **`hololoom/redteam/provenance/demo_attack_provenance.py`** (~280 lines)
    - 5 comprehensive demo sections:
      1. Basic attack tracking
      2. Multi-step attack chains
@@ -105,7 +105,7 @@ AttackScratchpad
 
 ### Design Patterns
 
-1. **Follows HoloLoom/recursive/scratchpad.py Pattern**
+1. **Follows hololoom/recursive/scratchpad.py Pattern**
    - Dataclass entries for immutability
    - List-based storage with LRU trimming
    - Filter methods returning entry slices
@@ -136,12 +136,12 @@ AttackScratchpad
 
 ```
 ============================= test session starts =============================
-HoloLoom/redteam/provenance/test_attack_scratchpad.py::TestAttackScratchpadEntry
+hololoom/redteam/provenance/test_attack_scratchpad.py::TestAttackScratchpadEntry
     ✅ test_entry_creation PASSED
     ✅ test_entry_with_metadata PASSED
     ✅ test_entry_with_chain_info PASSED
 
-HoloLoom/redteam/provenance/test_attack_scratchpad.py::TestAttackScratchpad
+hololoom/redteam/provenance/test_attack_scratchpad.py::TestAttackScratchpad
     ✅ test_scratchpad_creation PASSED
     ✅ test_add_single_entry PASSED
     ✅ test_add_successful_attack PASSED
@@ -158,11 +158,11 @@ HoloLoom/redteam/provenance/test_attack_scratchpad.py::TestAttackScratchpad
     ✅ test_clear PASSED
     ✅ test_repr PASSED
 
-HoloLoom/redteam/provenance/test_attack_scratchpad.py::TestAttackChain
+hololoom/redteam/provenance/test_attack_scratchpad.py::TestAttackChain
     ✅ test_chain_creation PASSED
     ✅ test_chain_metrics PASSED
 
-HoloLoom/redteam/provenance/test_attack_scratchpad.py::TestAttackScratchpadIntegration
+hololoom/redteam/provenance/test_attack_scratchpad.py::TestAttackScratchpadIntegration
     ✅ test_progressive_attack_refinement PASSED
     ✅ test_defense_evasion_pattern PASSED
 
@@ -391,7 +391,7 @@ AttackScratchpad (history) → Learner → Updated Strategies
 ## Usage Example
 
 ```python
-from HoloLoom.redteam.provenance import (
+from hololoom.redteam.provenance import (
     AttackScratchpad,
     AttackStrategy,
     DefenseLayer
@@ -474,4 +474,4 @@ The Attack Scratchpad is **production-ready** and provides:
 
 **Questions?** See ATTACK_SCRATCHPAD_COMPLETE.md for comprehensive documentation
 **Quick ref?** See ATTACK_SCRATCHPAD_QUICK_REF.md for API summary
-**Demo?** Run `python HoloLoom/redteam/provenance/demo_attack_provenance.py`
+**Demo?** Run `python hololoom/redteam/provenance/demo_attack_provenance.py`

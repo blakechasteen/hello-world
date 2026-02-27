@@ -1,7 +1,7 @@
 # Reflection Learning from User Feedback
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/reflection/feedback_store.py`
+**Location**: `hololoom/reflection/feedback_store.py`
 **Integration**: Dashboard Server API + Thompson Sampling
 
 ## Overview
@@ -43,7 +43,7 @@ Improved Tool Selection
 ### 1. Store Feedback
 
 ```python
-from HoloLoom.reflection.feedback_store import FeedbackStore
+from hololoom.reflection.feedback_store import FeedbackStore
 
 async with FeedbackStore() as store:
     feedback_id = await store.store_feedback(
@@ -94,7 +94,7 @@ print(f"Expected reward: {alpha/(alpha+beta):.3f}")
 
 **Initialize**:
 ```python
-from HoloLoom.reflection.feedback_store import FeedbackStore
+from hololoom.reflection.feedback_store import FeedbackStore
 
 store = FeedbackStore(db_path="./data/feedback.db")
 await store.initialize()
@@ -154,7 +154,7 @@ records = await store.get_feedback_history(
 ### Updating Priors from Feedback
 
 ```python
-from HoloLoom.policy.thompson_sampling import TSBandit
+from hololoom.policy.thompson_sampling import TSBandit
 
 # Create bandit with 5 tools
 bandit = TSBandit(n_arms=5)
@@ -469,8 +469,8 @@ async function submitDetailedFeedback(event) {
 ### Example 1: Basic Feedback Loop
 
 ```python
-from HoloLoom.reflection.feedback_store import FeedbackStore
-from HoloLoom.policy.thompson_sampling import TSBandit
+from hololoom.reflection.feedback_store import FeedbackStore
+from hololoom.policy.thompson_sampling import TSBandit
 
 async def feedback_loop_example():
     # Initialize
@@ -712,13 +712,13 @@ thompson_beta = Gauge('hololoom_thompson_beta', 'Thompson beta', ['tool'])
 ### Unit Tests
 
 ```bash
-pytest HoloLoom/reflection/tests/test_feedback_store.py -v
+pytest hololoom/reflection/tests/test_feedback_store.py -v
 ```
 
 ### Integration Tests
 
 ```bash
-pytest HoloLoom/reflection/tests/test_feedback_integration.py -v
+pytest hololoom/reflection/tests/test_feedback_integration.py -v
 ```
 
 ### Manual Testing

@@ -19,12 +19,12 @@ import asyncio
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from HoloLoom.apps.departments.protocol import DepartmentRequest, DepartmentResponse
-from HoloLoom.apps.departments.rag_department import RAGDepartment
-from HoloLoom.apps.departments.planning_department import PlanningDepartment
-from HoloLoom.apps.departments.orchestration_department import OrchestrationDepartment
-from HoloLoom.apps.departments.infrastructure_department import InfrastructureDepartment
-from HoloLoom.apps.departments.context_department import ContextDepartment
+from hololoom.apps.departments.protocol import DepartmentRequest, DepartmentResponse
+from hololoom.apps.departments.rag_department import RAGDepartment
+from hololoom.apps.departments.planning_department import PlanningDepartment
+from hololoom.apps.departments.orchestration_department import OrchestrationDepartment
+from hololoom.apps.departments.infrastructure_department import InfrastructureDepartment
+from hololoom.apps.departments.context_department import ContextDepartment
 
 
 # ===== Workflow 1: Research & Analysis Pipeline =====

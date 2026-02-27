@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.reasoning.abductive import (
+from hololoom.reasoning.abductive import (
     AbductiveReasoner, CausalRule, Observation,
     create_causal_rule, create_observation
 )

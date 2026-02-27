@@ -14,7 +14,7 @@ Components:
 - RedTeamOrchestrator: Main orchestrator for continuous testing
 
 Quick Start:
-    from HoloLoom.redteam import create_orchestrator
+    from hololoom.redteam import create_orchestrator
 
     # Create orchestrator (with or without safety systems)
     orchestrator = create_orchestrator(

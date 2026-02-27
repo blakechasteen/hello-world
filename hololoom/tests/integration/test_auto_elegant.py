@@ -16,7 +16,7 @@ from typing import Dict, Any
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.visualization import auto, render, save, Dashboard
+from hololoom.visualization import auto, render, save, Dashboard
 
 
 # ============================================================================

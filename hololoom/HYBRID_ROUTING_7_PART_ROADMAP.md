@@ -199,11 +199,11 @@ touch demos/HYBRID_ROUTING_DEMOS_SUMMARY.md
 
 ### Deliverables
 
-- [ ] SQL Backend (`HoloLoom/infrastructure/sql_backend.py`) - 300 lines
-- [ ] MCP Server (`HoloLoom/infrastructure/mcp_server.py`) - 250 lines
-- [ ] Beekeeping Schema (`HoloLoom/infrastructure/schemas/beekeeping_schema.sql`) - 200 lines
-- [ ] Migration Scripts (`HoloLoom/infrastructure/migrate_schema.py`) - 150 lines
-- [ ] Unit Tests (`HoloLoom/tests/unit/test_sql_backend.py`) - 400 lines
+- [ ] SQL Backend (`hololoom/infrastructure/sql_backend.py`) - 300 lines
+- [ ] MCP Server (`hololoom/infrastructure/mcp_server.py`) - 250 lines
+- [ ] Beekeeping Schema (`hololoom/infrastructure/schemas/beekeeping_schema.sql`) - 200 lines
+- [ ] Migration Scripts (`hololoom/infrastructure/migrate_schema.py`) - 150 lines
+- [ ] Unit Tests (`hololoom/tests/unit/test_sql_backend.py`) - 400 lines
 
 ### Success Metrics
 
@@ -223,7 +223,7 @@ touch demos/HYBRID_ROUTING_DEMOS_SUMMARY.md
 
 **Day 6: SQL Backend (Core)**
 ```python
-# HoloLoom/infrastructure/sql_backend.py
+# hololoom/infrastructure/sql_backend.py
 
 import sqlite3
 import asyncio
@@ -336,11 +336,11 @@ class SQLBackend:
 
 **Day 7: MCP Server**
 ```python
-# HoloLoom/infrastructure/mcp_server.py
+# hololoom/infrastructure/mcp_server.py
 
 from mcp.server import Server
 from mcp.types import Tool, TextContent
-from HoloLoom.infrastructure.sql_backend import SQLBackend
+from hololoom.infrastructure.sql_backend import SQLBackend
 
 server = Server("infrastructure-department")
 sql_backend = SQLBackend()
@@ -392,7 +392,7 @@ if __name__ == "__main__":
 
 **Day 8: SQL Schema + Migration**
 ```sql
--- HoloLoom/infrastructure/schemas/beekeeping_schema.sql
+-- hololoom/infrastructure/schemas/beekeeping_schema.sql
 
 -- Policy Rules (ground truth)
 CREATE TABLE policy_rules (
@@ -459,11 +459,11 @@ CREATE INDEX idx_user_permissions_resource ON user_permissions(resource_type);
 
 **Day 9: Unit Tests**
 ```python
-# HoloLoom/tests/unit/test_sql_backend.py
+# hololoom/tests/unit/test_sql_backend.py
 
 import pytest
 import sqlite3
-from HoloLoom.infrastructure.sql_backend import SQLBackend, MCPResponse
+from hololoom.infrastructure.sql_backend import SQLBackend, MCPResponse
 
 @pytest.fixture
 async def backend():
@@ -540,10 +540,10 @@ async def test_syntax_error(backend):
 **Day 10: Integration Testing**
 ```bash
 # Integration tests: SQL backend + MCP server
-pytest HoloLoom/tests/integration/test_sql_mcp_integration.py -v
+pytest hololoom/tests/integration/test_sql_mcp_integration.py -v
 
 # Performance benchmarks
-python HoloLoom/infrastructure/benchmark_sql.py
+python hololoom/infrastructure/benchmark_sql.py
 
 # Expected:
 # Simple queries: p50=8ms, p95=20ms ✅
@@ -594,11 +594,11 @@ python HoloLoom/infrastructure/benchmark_sql.py
 
 ### Deliverables
 
-- [x] Query Classifier (`HoloLoom/context/classifier.py`) - 258 lines ✅
-- [x] Thompson Sampling Bandit (`HoloLoom/context/bandit.py`) - 279 lines ✅
-- [x] Query Router (`HoloLoom/context/router.py`) - 470 lines ✅
-- [x] Context Department API (`HoloLoom/context/__init__.py`) - 58 lines ✅
-- [x] Integration Tests (`HoloLoom/context/test_routing.py`) - 386 lines ✅
+- [x] Query Classifier (`hololoom/context/classifier.py`) - 258 lines ✅
+- [x] Thompson Sampling Bandit (`hololoom/context/bandit.py`) - 279 lines ✅
+- [x] Query Router (`hololoom/context/router.py`) - 470 lines ✅
+- [x] Context Department API (`hololoom/context/__init__.py`) - 58 lines ✅
+- [x] Integration Tests (`hololoom/context/test_routing.py`) - 386 lines ✅
 
 **Total:** 1,451 lines of production code + tests
 
@@ -660,14 +660,14 @@ python HoloLoom/infrastructure/benchmark_sql.py
 ### Documentation
 
 - **PART_3_COMPLETE.md**: Comprehensive completion summary
-- **HoloLoom/context/README.md**: Context Department documentation
-- **HoloLoom/context/test_routing.py**: Full test suite with expected outcomes
+- **hololoom/context/README.md**: Context Department documentation
+- **hololoom/context/test_routing.py**: Full test suite with expected outcomes
 
 ### Implementation Steps
 
 **Day 11: Query Classifier**
 ```python
-# HoloLoom/context/query_classifier.py
+# hololoom/context/query_classifier.py
 
 import re
 from dataclasses import dataclass
@@ -777,11 +777,11 @@ class QueryClassifier:
 
 **Day 12-13: Query Router**
 ```python
-# HoloLoom/context/query_router.py
+# hololoom/context/query_router.py
 
-from HoloLoom.context.query_classifier import QueryClassifier, BackendSelection
-from HoloLoom.infrastructure.sql_backend import MCPResponse
-from HoloLoom.documentation.types import Query, Spacetime
+from hololoom.context.query_classifier import QueryClassifier, BackendSelection
+from hololoom.infrastructure.sql_backend import MCPResponse
+from hololoom.documentation.types import Query, Spacetime
 
 class QueryRouter:
     """Route queries to appropriate backends"""
@@ -878,7 +878,7 @@ class QueryRouter:
 
 **Day 14: WeavingOrchestrator Integration**
 ```python
-# HoloLoom/weaving_orchestrator.py (modifications)
+# hololoom/weaving_orchestrator.py (modifications)
 
 class WeavingOrchestrator:
     """Existing orchestrator - ADD routing integration"""
@@ -891,7 +891,7 @@ class WeavingOrchestrator:
 
         # NEW: Add query router
         if cfg.enable_hybrid_routing:
-            from HoloLoom.context.query_router import QueryRouter
+            from hololoom.context.query_router import QueryRouter
             self.query_router = QueryRouter(
                 infrastructure_mcp_client=self._get_infrastructure_client()
             )
@@ -916,7 +916,7 @@ class WeavingOrchestrator:
 
 **Day 15: Integration Testing**
 ```python
-# HoloLoom/tests/integration/test_hybrid_routing.py
+# hololoom/tests/integration/test_hybrid_routing.py
 
 @pytest.mark.asyncio
 async def test_sql_query_executes_end_to_end():
@@ -991,12 +991,12 @@ async def test_fallback_when_primary_fails():
 
 ### Deliverables
 
-- [ ] Backend Bandit (`HoloLoom/context/backend_bandit.py`) - 200 lines
-- [ ] Confidence Calibrator (`HoloLoom/context/calibration.py`) - 300 lines
-- [ ] Learning Tracker (`HoloLoom/context/learning_tracker.py`) - 250 lines
-- [ ] Strategy Updater (`HoloLoom/context/strategy_updater.py`) - 300 lines
+- [ ] Backend Bandit (`hololoom/context/backend_bandit.py`) - 200 lines
+- [ ] Confidence Calibrator (`hololoom/context/calibration.py`) - 300 lines
+- [ ] Learning Tracker (`hololoom/context/learning_tracker.py`) - 250 lines
+- [ ] Strategy Updater (`hololoom/context/strategy_updater.py`) - 300 lines
 - [ ] ReflectionBuffer Integration (modifications) - 100 lines
-- [ ] Learning Tests (`HoloLoom/tests/integration/test_learning_routing.py`) - 600 lines
+- [ ] Learning Tests (`hololoom/tests/integration/test_learning_routing.py`) - 600 lines
 
 ### Success Metrics
 
@@ -1016,9 +1016,9 @@ async def test_fallback_when_primary_fails():
 
 **Day 16-17: Thompson Sampling**
 ```python
-# HoloLoom/context/backend_bandit.py
+# hololoom/context/backend_bandit.py
 
-from HoloLoom.policy.unified import ThompsonBandit
+from hololoom.policy.unified import ThompsonBandit
 
 class BackendBandit:
     """Thompson Sampling for backend selection"""
@@ -1058,7 +1058,7 @@ class BackendBandit:
 
 **Day 18-19: Calibration**
 ```python
-# HoloLoom/context/calibration.py
+# hololoom/context/calibration.py
 
 import numpy as np
 from typing import List, Dict
@@ -1145,9 +1145,9 @@ class ConfidenceCalibrator:
 
 **Day 20: Learning Tracker + ReflectionBuffer**
 ```python
-# HoloLoom/context/learning_tracker.py
+# hololoom/context/learning_tracker.py
 
-from HoloLoom.reflection.buffer import ReflectionBuffer
+from hololoom.reflection.buffer import ReflectionBuffer
 import numpy as np
 
 class LearningTracker:
@@ -1214,7 +1214,7 @@ class LearningTracker:
 
 **Day 21-22: Strategy Updater + Integration**
 ```python
-# HoloLoom/context/strategy_updater.py
+# hololoom/context/strategy_updater.py
 
 import time
 
@@ -1302,12 +1302,12 @@ class StrategyUpdater:
 
 ### Deliverables
 
-- [ ] Prometheus Metrics (`HoloLoom/context/metrics.py`) - 200 lines
+- [ ] Prometheus Metrics (`hololoom/context/metrics.py`) - 200 lines
 - [ ] Grafana Dashboard (`monitoring/dashboards/hybrid_routing.json`) - 500 lines
 - [ ] Alerting Rules (`monitoring/alerts/hybrid_routing.yml`) - 150 lines
-- [ ] Healthcare Schema (`HoloLoom/infrastructure/schemas/healthcare_schema.sql`) - 250 lines
-- [ ] Finance Schema (`HoloLoom/infrastructure/schemas/finance_schema.sql`) - 250 lines
-- [ ] Domain Registry (`HoloLoom/infrastructure/domain_registry.py`) - 200 lines
+- [ ] Healthcare Schema (`hololoom/infrastructure/schemas/healthcare_schema.sql`) - 250 lines
+- [ ] Finance Schema (`hololoom/infrastructure/schemas/finance_schema.sql`) - 250 lines
+- [ ] Domain Registry (`hololoom/infrastructure/domain_registry.py`) - 200 lines
 
 ### Success Metrics
 
@@ -1327,7 +1327,7 @@ class StrategyUpdater:
 
 **Day 23-24: Prometheus Metrics + Grafana**
 ```python
-# HoloLoom/context/metrics.py
+# hololoom/context/metrics.py
 
 from prometheus_client import Counter, Histogram, Gauge
 
@@ -1411,7 +1411,7 @@ class QueryRouter:
 
 **Day 25-26: Multi-Domain Schemas**
 ```sql
--- HoloLoom/infrastructure/schemas/healthcare_schema.sql
+-- hololoom/infrastructure/schemas/healthcare_schema.sql
 
 -- Healthcare Policy Rules
 CREATE TABLE policy_rules (
@@ -1513,7 +1513,7 @@ groups:
 
 2. **MCP Server Start**
    ```bash
-   python HoloLoom/infrastructure/mcp_server.py
+   python hololoom/infrastructure/mcp_server.py
    ```
 
 3. **Enable Routing**
@@ -1583,8 +1583,8 @@ groups:
 
 ### Deliverables
 
-- [ ] Migration Scripts (`HoloLoom/infrastructure/migrate_ground_truth.py`) - 400 lines
-- [ ] Validation Scripts (`HoloLoom/infrastructure/validate_migration.py`) - 200 lines
+- [ ] Migration Scripts (`hololoom/infrastructure/migrate_ground_truth.py`) - 400 lines
+- [ ] Validation Scripts (`hololoom/infrastructure/validate_migration.py`) - 200 lines
 - [ ] Canary Deployment Config - 100 lines
 - [ ] Rollback Plan Documentation - 50 lines
 - [ ] Post-Deployment Monitoring Dashboard
@@ -1624,7 +1624,7 @@ PYTHONPATH=. python setup.py install
 
 **Day 32: Schema Migration**
 ```python
-# HoloLoom/infrastructure/migrate_ground_truth.py
+# hololoom/infrastructure/migrate_ground_truth.py
 
 import psycopg2
 from neo4j import GraphDatabase
@@ -1706,7 +1706,7 @@ config.rollout_percentage = 100.0
 **Day 36: Post-Deployment Validation**
 ```bash
 # Run full test suite in production
-pytest HoloLoom/tests/e2e/test_production_hybrid_routing.py -v
+pytest hololoom/tests/e2e/test_production_hybrid_routing.py -v
 
 # Validate all scenarios:
 # 1. Exact ID lookups (SQL)
@@ -1867,7 +1867,7 @@ pytest HoloLoom/tests/e2e/test_production_hybrid_routing.py -v
 **Day 37-38: Comprehensive Testing**
 ```bash
 # Run full test suite
-pytest HoloLoom/tests/ -v --cov=HoloLoom/context --cov=HoloLoom/infrastructure
+pytest hololoom/tests/ -v --cov=hololoom/context --cov=hololoom/infrastructure
 
 # Expected:
 # Unit tests: 300+ passing
@@ -1876,7 +1876,7 @@ pytest HoloLoom/tests/ -v --cov=HoloLoom/context --cov=HoloLoom/infrastructure
 # Coverage: >85%
 
 # Performance benchmarks
-python HoloLoom/infrastructure/benchmark_routing.py
+python hololoom/infrastructure/benchmark_routing.py
 
 # Expected:
 # Routing overhead: 4.8ms (p50), 12.3ms (p95) ✅
@@ -1885,7 +1885,7 @@ python HoloLoom/infrastructure/benchmark_routing.py
 # Vector: 28.3ms (p50), 76.2ms (p95) ✅
 
 # Accuracy validation (1000 production queries)
-python HoloLoom/infrastructure/validate_routing_accuracy.py
+python hololoom/infrastructure/validate_routing_accuracy.py
 
 # Expected:
 # Classification accuracy: 91.3% ✅

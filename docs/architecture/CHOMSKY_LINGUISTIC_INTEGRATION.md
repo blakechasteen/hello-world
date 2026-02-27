@@ -20,7 +20,7 @@ This document explores integrating Noam Chomsky's linguistic theories into HoloL
 
 ### Current State
 
-**File:** `HoloLoom/motif/base.py`
+**File:** `hololoom/motif/base.py`
 
 Current motif detection is **keyword-based**:
 ```python
@@ -57,7 +57,7 @@ class RegexMotifDetector(MotifDetector):
 
 #### Implementation Design
 
-**File:** `HoloLoom/motif/linguistic.py` (new)
+**File:** `hololoom/motif/linguistic.py` (new)
 
 ```python
 """
@@ -80,8 +80,8 @@ from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 import re
 
-from HoloLoom.documentation.types import Motif
-from HoloLoom.motif.base import MotifDetector
+from hololoom.documentation.types import Motif
+from hololoom.motif.base import MotifDetector
 
 # Import spaCy with graceful fallback
 try:
@@ -403,7 +403,7 @@ class LinguisticMotifDetector(MotifDetector):
 
 #### Integration with ResonanceShed
 
-**File:** `HoloLoom/resonance/shed.py` (modify)
+**File:** `hololoom/resonance/shed.py` (modify)
 
 ```python
 # In ResonanceShed.__init__():
@@ -423,7 +423,7 @@ def __init__(
     """
     # If linguistic_motifs enabled, use LinguisticMotifDetector
     if linguistic_motifs and motif_detector is None:
-        from HoloLoom.motif.linguistic import LinguisticMotifDetector
+        from hololoom.motif.linguistic import LinguisticMotifDetector
         motif_detector = LinguisticMotifDetector()
 
     # ... rest of init ...
@@ -441,7 +441,7 @@ def __init__(
 
 ### Current State
 
-**File:** `HoloLoom/semantic_calculus/dimensions.py`
+**File:** `hololoom/semantic_calculus/dimensions.py`
 
 Current 244D semantic space has:
 - 16 standard dimensions (Warmth, Valence, Arousal, etc.)
@@ -453,7 +453,7 @@ Current 244D semantic space has:
 
 #### Option A: Linguistic Module (Separate)
 
-**Create:** `HoloLoom/semantic_calculus/linguistic_dimensions.py`
+**Create:** `hololoom/semantic_calculus/linguistic_dimensions.py`
 
 ```python
 """
@@ -621,7 +621,7 @@ EXTENDED_286_DIMENSIONS = EXTENDED_244_DIMENSIONS + LINGUISTIC_DIMENSIONS
 Add linguistic dimensions directly to `EXTENDED_244_DIMENSIONS`:
 
 ```python
-# In HoloLoom/semantic_calculus/dimensions.py
+# In hololoom/semantic_calculus/dimensions.py
 
 LINGUISTIC_DIMENSIONS = [
     # ... same 42 dimensions as above ...
@@ -667,7 +667,7 @@ EXTENDED_286_DIMENSIONS = (
 2. **Add config flag** to enable/disable
 
 ```python
-# HoloLoom/config.py
+# hololoom/config.py
 
 @dataclass
 class Config:
@@ -679,7 +679,7 @@ class Config:
 ```
 
 ```python
-# HoloLoom/semantic_calculus/__init__.py
+# hololoom/semantic_calculus/__init__.py
 
 def create_semantic_spectrum(mode: str = "extended", use_linguistic: bool = False):
     """
@@ -763,7 +763,7 @@ WarpSpace is the **continuous tensor field** where semantic operations occur. It
 
 ### Implementation Design
 
-**File:** `HoloLoom/warp/merge.py` (new)
+**File:** `hololoom/warp/merge.py` (new)
 
 ```python
 """
@@ -1160,7 +1160,7 @@ def visualize_merge_tree(merged_obj: MergedObject, indent: int = 0) -> str:
 
 ### Integration with WarpSpace
 
-**File:** `HoloLoom/warp/space.py` (modify)
+**File:** `hololoom/warp/space.py` (modify)
 
 ```python
 class WarpSpace:
@@ -1181,7 +1181,7 @@ class WarpSpace:
 
         # Merge operator
         if enable_merge:
-            from HoloLoom.warp.merge import MergeOperator
+            from hololoom.warp.merge import MergeOperator
             self.merge_operator = MergeOperator(fusion_method=merge_fusion_method)
         else:
             self.merge_operator = None
@@ -1281,7 +1281,7 @@ full_np = warp.merge_threads([0, -1], head_index=1, label="NP")
 
 ### 1. Enhanced Motif Detection ✅
 - **Status**: Design complete
-- **Implementation**: `HoloLoom/motif/linguistic.py`
+- **Implementation**: `hololoom/motif/linguistic.py`
 - **Impact**: Richer syntactic pattern recognition
 - **Dependency**: spaCy (with graceful fallback)
 - **Integration**: Optional parameter in ResonanceShed
@@ -1295,7 +1295,7 @@ full_np = warp.merge_threads([0, -1], head_index=1, label="NP")
 
 ### 3. Merge Operations ✅
 - **Status**: Design complete
-- **Implementation**: `HoloLoom/warp/merge.py`
+- **Implementation**: `hololoom/warp/merge.py`
 - **Impact**: Compositional semantics in WarpSpace
 - **Dependency**: None (uses NumPy)
 - **Integration**: Optional parameter in WarpSpace

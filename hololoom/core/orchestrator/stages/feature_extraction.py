@@ -14,12 +14,12 @@ import logging
 import time
 from typing import Dict, Any, Optional, List
 
-from HoloLoom.core.protocols.types import Query, Features
-from HoloLoom.core.resonance.shed import ResonanceShed
-from HoloLoom.motif.base import create_motif_detector
-from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
-from HoloLoom.core.loom.command import PatternSpec
-from HoloLoom.core.orchestrator.protocols import StageResult
+from hololoom.core.protocols.types import Query, Features
+from hololoom.core.resonance.shed import ResonanceShed
+from hololoom.motif.base import create_motif_detector
+from hololoom.core.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
+from hololoom.core.loom.command import PatternSpec
+from hololoom.core.orchestrator.protocols import StageResult
 
 
 class FeatureExtractionStage:
@@ -150,7 +150,7 @@ class FeatureExtractionStage:
 
         # Use zero-copy embeddings if enabled
         elif self.config.enable_zero_copy_embeddings:
-            from HoloLoom.core.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+            from hololoom.core.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
             self.logger.info(
                 f"  [4a] Zero-copy embeddings enabled "
                 f"(cache={self.config.zero_copy_cache_path})"
@@ -184,8 +184,8 @@ class FeatureExtractionStage:
             return None
 
         try:
-            from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-            from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+            from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+            from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
             sem_config = SemanticCalculusConfig.from_pattern_spec(pattern_spec)
             embed_fn = lambda words: embedder.encode(words)

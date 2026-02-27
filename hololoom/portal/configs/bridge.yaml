@@ -1,7 +1,7 @@
-# HoloLoom Bridge Configuration
-# Configure HoloLoom server connection, timeouts, retries, and fallback behavior
+# hololoom Bridge Configuration
+# Configure hololoom server connection, timeouts, retries, and fallback behavior
 
-# HoloLoom server URL
+# hololoom server URL
 hololoom_url: "http://localhost:8000"
 
 # Request timeout in seconds
@@ -13,7 +13,7 @@ retry_count: 3
 # Delay between retries in seconds
 retry_delay: 1.0
 
-# Use local HoloLoom if server unavailable
+# Use local hololoom if server unavailable
 enable_local_fallback: true
 
 # Default number of results for recall operations

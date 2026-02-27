@@ -3,7 +3,7 @@
   "name": "Adaptive Learning Loop",
   "description": "A self-improving workflow that uses Thompson Sampling to select optimal strategies, integrates user feedback to update Bayesian priors, and continuously learns patterns from successful outcomes. Features automatic strategy adaptation, confidence calibration, and comprehensive learning metrics.",
   "tags": ["learning", "thompson-sampling", "feedback", "adaptive", "bayesian", "self-improving", "optimization"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-28",
   "nodes": [
     {

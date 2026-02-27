@@ -5,9 +5,9 @@ import asyncio
 import sys
 sys.path.insert(0, 'c:/Users/blake/Documents/mythRL')
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.memory.protocol import Memory
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.protocol import Memory
 from datetime import datetime
 
 
@@ -45,7 +45,7 @@ async def test_archive():
         print(f"✓ Archived successfully! ID: {result}\n")
 
         # Try to retrieve it immediately
-        from HoloLoom.memory.protocol import MemoryQuery
+        from hololoom.memory.protocol import MemoryQuery
 
         query = MemoryQuery(text="TEST DIRECT ARCHIVE", user_id="chat_user", limit=5)
         print("Retrieving...")

@@ -41,7 +41,7 @@ def temp_mixed_quality_dataset():
 
 def test_qa_department_datapig_availability():
     """Test that DATAPIG is available for QA department workflows"""
-    from HoloLoom.datapig import DataPigDetector
+    from hololoom.datapig import DataPigDetector
 
     detector = DataPigDetector(enable_verbose=False)
     assert detector is not None
@@ -62,7 +62,7 @@ def test_qa_department_unified_detection():
 
 def test_qa_department_issue_classification():
     """Test QA department can classify issues by severity"""
-    from HoloLoom.datapig import DataPigDetector, Severity
+    from hololoom.datapig import DataPigDetector, Severity
 
     detector = DataPigDetector(enable_verbose=False)
 
@@ -85,7 +85,7 @@ def test_qa_department_issue_classification():
 
 def test_qa_department_batch_processing():
     """Test QA department can batch process multiple datasets"""
-    from HoloLoom.datapig import DataPigDetector
+    from hololoom.datapig import DataPigDetector
 
     detector = DataPigDetector(enable_verbose=False)
 
@@ -117,8 +117,8 @@ def test_qa_department_batch_processing():
 
 def test_qa_department_configuration_presets():
     """Test QA department can use different detector configurations"""
-    from HoloLoom.datapig import DataPigDetector
-    from HoloLoom.datapig.config import PresetConfig
+    from hololoom.datapig import DataPigDetector
+    from hololoom.datapig.config import PresetConfig
 
     # Test that different presets can be created
     configs = [

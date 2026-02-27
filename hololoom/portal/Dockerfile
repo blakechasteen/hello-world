@@ -36,7 +36,7 @@ RUN pip install --no-cache-dir --user -r requirements-portal.txt
 # =============================================================================
 FROM python:3.11-slim as portal-server
 
-LABEL maintainer="HoloLoom Team"
+LABEL maintainer="hololoom Team"
 LABEL description="Portal Server - Control plane for distributed WASM execution"
 LABEL version="0.1.0"
 
@@ -52,12 +52,12 @@ COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 # Copy Portal shared library and server code
-COPY HoloLoom/portal/shared /app/HoloLoom/portal/shared
-COPY HoloLoom/portal/portal_server /app/HoloLoom/portal/portal_server
-COPY HoloLoom/portal/__init__.py /app/HoloLoom/portal/__init__.py
+COPY hololoom/portal/shared /app/hololoom/portal/shared
+COPY hololoom/portal/portal_server /app/hololoom/portal/portal_server
+COPY hololoom/portal/__init__.py /app/hololoom/portal/__init__.py
 
-# Create empty HoloLoom package
-RUN mkdir -p /app/HoloLoom && touch /app/HoloLoom/__init__.py
+# Create empty hololoom package
+RUN mkdir -p /app/hololoom && touch /app/hololoom/__init__.py
 
 # Set Python path
 ENV PYTHONPATH=/app
@@ -71,14 +71,14 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 EXPOSE 8080
 
 # Run Portal Server
-CMD ["python", "-m", "HoloLoom.portal.portal_server.main"]
+CMD ["python", "-m", "hololoom.portal.portal_server.main"]
 
 # =============================================================================
 # Stage 3: Node Daemon Runtime
 # =============================================================================
 FROM python:3.11-slim as node-daemon
 
-LABEL maintainer="HoloLoom Team"
+LABEL maintainer="hololoom Team"
 LABEL description="Node Daemon - WASM job execution worker"
 LABEL version="0.1.0"
 
@@ -94,12 +94,12 @@ COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 # Copy Portal shared library and daemon code
-COPY HoloLoom/portal/shared /app/HoloLoom/portal/shared
-COPY HoloLoom/portal/node_daemon /app/HoloLoom/portal/node_daemon
-COPY HoloLoom/portal/__init__.py /app/HoloLoom/portal/__init__.py
+COPY hololoom/portal/shared /app/hololoom/portal/shared
+COPY hololoom/portal/node_daemon /app/hololoom/portal/node_daemon
+COPY hololoom/portal/__init__.py /app/hololoom/portal/__init__.py
 
-# Create empty HoloLoom package
-RUN mkdir -p /app/HoloLoom && touch /app/HoloLoom/__init__.py
+# Create empty hololoom package
+RUN mkdir -p /app/hololoom && touch /app/hololoom/__init__.py
 
 # Create WASM modules directory
 RUN mkdir -p /app/wasm_modules
@@ -117,4 +117,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
 EXPOSE 9090
 
 # Run Node Daemon
-CMD ["python", "-m", "HoloLoom.portal.node_daemon.main"]
+CMD ["python", "-m", "hololoom.portal.node_daemon.main"]

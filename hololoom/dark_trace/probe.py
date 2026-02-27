@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from typing import Optional, List, Dict, Callable
 from collections import deque
-from HoloLoom.dark_trace.sae import SparseAutoEncoder, DarkSaeTrainer
+from hololoom.dark_trace.sae import SparseAutoEncoder, DarkSaeTrainer
 
 class MindProbe:
     """

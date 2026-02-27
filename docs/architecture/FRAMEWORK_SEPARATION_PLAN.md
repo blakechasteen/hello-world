@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-**Discovery:** The narrative analyzer is already architecturally isolated from HoloLoom core with **ZERO hard dependencies**. This makes clean separation straightforward.
+**Discovery:** The narrative analyzer is already architecturally isolated from hololoom core with **ZERO hard dependencies**. This makes clean separation straightforward.
 
 **Philosophy:** HoloLoom is a **framework for building intelligent decision systems**. The narrative analyzer is the **first reference application** demonstrating how to build domain-specific analyzers on the framework.
 
@@ -39,7 +39,7 @@ cross_domain_adapter.py
 narrative_loop_engine.py
 ```
 
-**All imports are `from HoloLoom.narrative_*` - already namespaced!**
+**All imports are `from hololoom.narrative_*` - already namespaced!**
 
 ### Current Integration Points
 
@@ -198,8 +198,8 @@ mythRL/
 **Import changes:**
 ```python
 # OLD (current)
-from HoloLoom.narrative_intelligence import NarrativeIntelligence
-from HoloLoom.matryoshka_depth import MatryoshkaDepth
+from hololoom.narrative_intelligence import NarrativeIntelligence
+from hololoom.matryoshka_depth import MatryoshkaDepth
 
 # NEW (after separation)
 from hololoom_narrative import NarrativeIntelligence
@@ -252,12 +252,12 @@ touch hololoom_narrative/__init__.py
 **Step 1.2: Move files**
 ```bash
 # Core narrative modules
-mv HoloLoom/narrative_intelligence.py hololoom_narrative/intelligence.py
-mv HoloLoom/narrative_cache.py hololoom_narrative/cache.py
-mv HoloLoom/narrative_loop_engine.py hololoom_narrative/loop_engine.py
-mv HoloLoom/matryoshka_depth.py hololoom_narrative/matryoshka_depth.py
-mv HoloLoom/streaming_depth.py hololoom_narrative/streaming_depth.py
-mv HoloLoom/cross_domain_adapter.py hololoom_narrative/cross_domain_adapter.py
+mv hololoom/narrative_intelligence.py hololoom_narrative/intelligence.py
+mv hololoom/narrative_cache.py hololoom_narrative/cache.py
+mv hololoom/narrative_loop_engine.py hololoom_narrative/loop_engine.py
+mv hololoom/matryoshka_depth.py hololoom_narrative/matryoshka_depth.py
+mv hololoom/streaming_depth.py hololoom_narrative/streaming_depth.py
+mv hololoom/cross_domain_adapter.py hololoom_narrative/cross_domain_adapter.py
 
 # Demos and tests
 mv demos/narrative_depth_dashboard.py hololoom_narrative/demos/
@@ -267,11 +267,11 @@ mv tests/test_full_odyssey_depth.py hololoom_narrative/tests/
 
 **Step 1.3: Update imports in moved files**
 ```bash
-# Change all HoloLoom.narrative_* → hololoom_narrative
-find hololoom_narrative -name "*.py" -exec sed -i 's/from HoloLoom\.narrative_/from hololoom_narrative./g' {} \;
-find hololoom_narrative -name "*.py" -exec sed -i 's/from HoloLoom\.matryoshka/from hololoom_narrative.matryoshka/g' {} \;
-find hololoom_narrative -name "*.py" -exec sed -i 's/from HoloLoom\.streaming/from hololoom_narrative.streaming/g' {} \;
-find hololoom_narrative -name "*.py" -exec sed -i 's/from HoloLoom\.cross_domain/from hololoom_narrative.cross_domain/g' {} \;
+# Change all hololoom.narrative_* → hololoom_narrative
+find hololoom_narrative -name "*.py" -exec sed -i 's/from hololoom\.narrative_/from hololoom_narrative./g' {} \;
+find hololoom_narrative -name "*.py" -exec sed -i 's/from hololoom\.matryoshka/from hololoom_narrative.matryoshka/g' {} \;
+find hololoom_narrative -name "*.py" -exec sed -i 's/from hololoom\.streaming/from hololoom_narrative.streaming/g' {} \;
+find hololoom_narrative -name "*.py" -exec sed -i 's/from hololoom\.cross_domain/from hololoom_narrative.cross_domain/g' {} \;
 ```
 
 ### Phase 2: Update Framework Integration (30 min)
@@ -280,7 +280,7 @@ find hololoom_narrative -name "*.py" -exec sed -i 's/from HoloLoom\.cross_domain
 ```python
 # OLD
 try:
-    from HoloLoom.narrative_cache import CachedMatryoshkaDepth
+    from hololoom.narrative_cache import CachedMatryoshkaDepth
     NARRATIVE_DEPTH_AVAILABLE = True
 except ImportError:
     NARRATIVE_DEPTH_AVAILABLE = False
@@ -297,10 +297,10 @@ except ImportError:
 **Step 2.2: Update any remaining references**
 ```bash
 # Find all files that import narrative modules
-grep -r "from HoloLoom.narrative" HoloLoom/ demos/ tests/
-grep -r "from HoloLoom.matryoshka" HoloLoom/ demos/ tests/
-grep -r "from HoloLoom.streaming_depth" HoloLoom/ demos/ tests/
-grep -r "from HoloLoom.cross_domain" HoloLoom/ demos/ tests/
+grep -r "from hololoom.narrative" hololoom/ demos/ tests/
+grep -r "from hololoom.matryoshka" hololoom/ demos/ tests/
+grep -r "from hololoom.streaming_depth" hololoom/ demos/ tests/
+grep -r "from hololoom.cross_domain" hololoom/ demos/ tests/
 
 # Update each one
 ```

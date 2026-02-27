@@ -356,7 +356,7 @@ async def intelligent_qa():
 ## Running the Demo
 
 ```bash
-cd HoloLoom/portal/node_daemon
+cd hololoom/portal/node_daemon
 
 # Run all demos
 python hololoom_worker_demo.py
@@ -401,7 +401,7 @@ asyncio.run(demo_basic_operations())
 pip install -e HoloLoom
 
 # Check import
-python -c "from HoloLoom import HoloLoom; print('OK')"
+python -c "from hololoom import hololoom; print('OK')"
 ```
 
 ### Slow initial operation
@@ -432,5 +432,5 @@ python -c "from HoloLoom import HoloLoom; print('OK')"
 
 See HoloLoom documentation:
 - [CLAUDE.md](../../../CLAUDE.md) - Complete system guide
-- [HoloLoom/hololoom.py](../../hololoom.py) - Core API
-- [HoloLoom/config.py](../../config.py) - Configuration options
+- [hololoom/hololoom.py](../../hololoom.py) - Core API
+- [hololoom/config.py](../../config.py) - Configuration options

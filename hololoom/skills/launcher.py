@@ -8,7 +8,7 @@ One-line skill launching with Zero-G integration.
 **Purpose**: Make it EASY to launch apps and skills onto HoloLoom
 
 Usage:
-    from HoloLoom.skills import launch_skill, launch
+    from hololoom.skills import launch_skill, launch
 
     # Simple launch
     result = await launch_skill("code_reviewer", code="def foo(): pass")
@@ -32,7 +32,7 @@ from contextlib import asynccontextmanager
 from enum import Enum
 import sys
 
-from HoloLoom.skills.base import (
+from hololoom.skills.base import (
     BaseSkill,
     SkillInput,
     SkillOutput,
@@ -42,7 +42,7 @@ from HoloLoom.skills.base import (
     get_registry,
     register_skill
 )
-from HoloLoom.skills.executor import SkillExecutor, ExecutionResult
+from hololoom.skills.executor import SkillExecutor, ExecutionResult
 
 logger = logging.getLogger(__name__)
 

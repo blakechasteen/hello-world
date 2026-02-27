@@ -12,7 +12,7 @@ Tests the multi-provider LLM interface:
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from HoloLoom.model_extension.providers import (
+from hololoom.model_extension.providers import (
     ProviderType,
     GenerationConfig,
     Message,

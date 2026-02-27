@@ -29,19 +29,19 @@ from datetime import datetime
 
 
 # Import Jenny components
-from HoloLoom.visualization.jenny_spec import (
+from hololoom.visualization.jenny_spec import (
     JennySpec,
     PanelTypeJenny,
     LifecycleStage,
 )
-from HoloLoom.visualization.jenny_mrf import (
+from hololoom.visualization.jenny_mrf import (
     JennyMRFCompiler,
     PanelTypeLearner,
     PanelTypePrior,
     ACTION_LEARNING_MAP,
     create_mrf_compiler,
 )
-from HoloLoom.visualization.jenny_llm_compiler import (
+from hololoom.visualization.jenny_llm_compiler import (
     LLMJennyCompiler,
     SemanticProfile,
     analyze_semantic_axes,
@@ -51,7 +51,7 @@ from HoloLoom.visualization.jenny_llm_compiler import (
 
 # Try to import Spacetime for realistic benchmarks
 try:
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
     SPACETIME_AVAILABLE = True
 except ImportError:
     SPACETIME_AVAILABLE = False

@@ -82,7 +82,7 @@ export OPENAI_API_KEY="your-key"
 
 # Test installation
 PYTHONPATH=. python -c "
-from HoloLoom.promptly import DSPyHoloLoom, DSPY_AVAILABLE
+from hololoom.promptly import DSPyHoloLoom, DSPY_AVAILABLE
 print(f'DSPy available: {DSPY_AVAILABLE}')
 "
 ```
@@ -94,7 +94,7 @@ print(f'DSPy available: {DSPY_AVAILABLE}')
 pip install dspy-ai pyyaml
 
 # Copy integration files
-cp -r HoloLoom/promptly /path/to/your/project/
+cp -r hololoom/promptly /path/to/your/project/
 ```
 
 ## ✅ Verify Installation
@@ -131,7 +131,7 @@ def verify_installation():
 
     # Check HoloLoom
     try:
-        from HoloLoom.config import Config
+        from hololoom.config import Config
         print("3. ✅ HoloLoom core installed\n")
     except ImportError:
         print("3. ❌ HoloLoom not installed")
@@ -139,7 +139,7 @@ def verify_installation():
 
     # Check DSPy integration
     try:
-        from HoloLoom.promptly import (
+        from hololoom.promptly import (
             DSPyHoloLoom,
             DSPyWorkflowAdapter,
             DSPY_AVAILABLE
@@ -167,7 +167,7 @@ def verify_installation():
     print()
 
     # Check example files
-    examples_dir = Path("HoloLoom/promptly/examples")
+    examples_dir = Path("hololoom/promptly/examples")
     if examples_dir.exists():
         examples = list(examples_dir.glob("*.yaml"))
         print(f"6. ✅ Found {len(examples)} example workflows\n")
@@ -196,8 +196,8 @@ PYTHONPATH=. python verify_dspy_installation.py
 # hello_dspy.py
 
 import asyncio
-from HoloLoom.config import Config
-from HoloLoom.promptly import DSPyHoloLoom, create_signature
+from hololoom.config import Config
+from hololoom.promptly import DSPyHoloLoom, create_signature
 import dspy
 
 async def main():
@@ -236,8 +236,8 @@ PYTHONPATH=. python hello_dspy.py
 
 import asyncio
 from pathlib import Path
-from HoloLoom.config import Config
-from HoloLoom.promptly import (
+from hololoom.config import Config
+from hololoom.promptly import (
     DSPyHoloLoom,
     DSPyWorkflowAdapter,
     create_qa_workflow
@@ -287,7 +287,7 @@ PYTHONPATH=. python simple_workflow.py
 Choose execution mode:
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # BARE - Fastest (minimal processing)
 config = Config.bare()
@@ -327,7 +327,7 @@ bridge = DSPyHoloLoom(config=config)
 ### Optimization Config
 
 ```python
-from HoloLoom.promptly.dspy_bridge import DSPyOptimizationConfig
+from hololoom.promptly.dspy_bridge import DSPyOptimizationConfig
 
 # Fast optimization (for development)
 opt_config = DSPyOptimizationConfig(
@@ -386,13 +386,13 @@ my_project/
 
 ```bash
 # Run DSPy integration tests
-pytest HoloLoom/tests/integration/test_dspy_integration.py -v
+pytest hololoom/tests/integration/test_dspy_integration.py -v
 
 # Run specific test
-pytest HoloLoom/tests/integration/test_dspy_integration.py::TestDSPySignature -v
+pytest hololoom/tests/integration/test_dspy_integration.py::TestDSPySignature -v
 
 # Run with coverage
-pytest HoloLoom/tests/integration/test_dspy_integration.py --cov=HoloLoom.promptly
+pytest hololoom/tests/integration/test_dspy_integration.py --cov=hololoom.promptly
 ```
 
 ## 🎯 Running Demos
@@ -402,8 +402,8 @@ pytest HoloLoom/tests/integration/test_dspy_integration.py --cov=HoloLoom.prompt
 PYTHONPATH=. python demos/demo_dspy_promptly_integration.py
 
 # Individual DSPy components
-PYTHONPATH=. python HoloLoom/promptly/dspy_bridge.py
-PYTHONPATH=. python HoloLoom/promptly/dspy_workflow_adapter.py
+PYTHONPATH=. python hololoom/promptly/dspy_bridge.py
+PYTHONPATH=. python hololoom/promptly/dspy_workflow_adapter.py
 ```
 
 ## 🐛 Troubleshooting
@@ -459,7 +459,7 @@ This is expected if HoloLoom memory is empty. Options:
 
 2. **Add training data to HoloLoom memory** (for optimization):
    ```python
-   from HoloLoom.documentation.types import MemoryShard
+   from hololoom.documentation.types import MemoryShard
 
    shard = MemoryShard(
        content="Q: What is 2+2? A: 4",
@@ -509,7 +509,7 @@ This is expected if HoloLoom memory is empty. Options:
    - `ARCHITECTURE.md` - System architecture
 
 2. **Try the examples**:
-   - Load example workflows from `HoloLoom/promptly/examples/`
+   - Load example workflows from `hololoom/promptly/examples/`
    - Run `demos/demo_dspy_promptly_integration.py`
 
 3. **Build your first workflow**:
@@ -526,8 +526,8 @@ This is expected if HoloLoom memory is empty. Options:
 
 - **DSPy Documentation**: https://dspy-docs.vercel.app/
 - **HoloLoom Docs**: `HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md`
-- **Example Workflows**: `HoloLoom/promptly/examples/`
-- **Integration Tests**: `HoloLoom/tests/integration/test_dspy_integration.py`
+- **Example Workflows**: `hololoom/promptly/examples/`
+- **Integration Tests**: `hololoom/tests/integration/test_dspy_integration.py`
 
 ## 📞 Support
 

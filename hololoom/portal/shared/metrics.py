@@ -5,7 +5,7 @@ Provides Counter, Gauge, Histogram metric types with thread-safe updates
 and Prometheus text format export.
 
 Usage:
-    from HoloLoom.portal.shared.metrics import metrics
+    from hololoom.portal.shared.metrics import metrics
 
     # Increment counters
     metrics.jobs_submitted.inc()

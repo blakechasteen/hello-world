@@ -8,7 +8,7 @@ Provides comprehensive metrics for:
 - Cluster health (nodes, capacity)
 
 Quick Start:
-    from HoloLoom.federation.metrics import (
+    from hololoom.federation.metrics import (
         get_federation_collector,
         record_federation_query,
         record_alignment_check,
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 try:
-    from HoloLoom.telemetry import (
+    from hololoom.telemetry import (
         Counter,
         Gauge,
         Histogram,

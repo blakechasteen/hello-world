@@ -27,14 +27,14 @@ from pathlib import Path
 import time
 import logging
 
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinnerCapabilities,
     SpinResult,
     ImportanceSignals,
     ImportanceScore,
 )
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 # Graceful import of NeuroHood types
 try:

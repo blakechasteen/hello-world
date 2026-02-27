@@ -18,8 +18,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from HoloLoom.ml.config import RegistryConfig
-from HoloLoom.ml.protocol import (
+from hololoom.ml.config import RegistryConfig
+from hololoom.ml.protocol import (
     DataSplit,
     EvaluationResult,
     ModelStatus,
@@ -89,12 +89,12 @@ class TestRegistryCreation:
 
     def test_import_registry(self):
         """Test registry can be imported."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
         assert ModelRegistry is not None
 
     def test_create_registry_default_path(self, temp_registry_path):
         """Test creating registry with default config."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -104,7 +104,7 @@ class TestRegistryCreation:
 
     def test_registry_creates_directories(self, temp_registry_path):
         """Test registry creates storage directories."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -126,7 +126,7 @@ class TestSaveModel:
         self, temp_registry_path, sample_training_result, sample_evaluation_result
     ):
         """Test basic model saving."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -143,7 +143,7 @@ class TestSaveModel:
         self, temp_registry_path, sample_training_result, sample_evaluation_result
     ):
         """Test that save creates necessary files."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -166,7 +166,7 @@ class TestSaveModel:
         self, temp_registry_path, sample_training_result, sample_evaluation_result
     ):
         """Test that save updates the index file."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -187,7 +187,7 @@ class TestSaveModel:
     @pytest.mark.asyncio
     async def test_save_multiple_models(self, temp_registry_path):
         """Test saving multiple models."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -228,7 +228,7 @@ class TestLoadModel:
         self, temp_registry_path, sample_training_result, sample_evaluation_result
     ):
         """Test basic model loading."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -250,7 +250,7 @@ class TestLoadModel:
         self, temp_registry_path, sample_training_result, sample_evaluation_result
     ):
         """Test that loaded model bytes match original."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -269,7 +269,7 @@ class TestLoadModel:
     @pytest.mark.asyncio
     async def test_load_nonexistent_model(self, temp_registry_path):
         """Test loading nonexistent model returns None."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -290,7 +290,7 @@ class TestListModels:
     @pytest.mark.asyncio
     async def test_list_empty_registry(self, temp_registry_path):
         """Test listing empty registry."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -305,7 +305,7 @@ class TestListModels:
         self, temp_registry_path, sample_training_result, sample_evaluation_result
     ):
         """Test basic model listing."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -320,7 +320,7 @@ class TestListModels:
     @pytest.mark.asyncio
     async def test_list_models_by_type(self, temp_registry_path):
         """Test listing models filtered by type."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -347,7 +347,7 @@ class TestListModels:
     @pytest.mark.asyncio
     async def test_list_models_by_status(self, temp_registry_path):
         """Test listing models filtered by status."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -370,7 +370,7 @@ class TestListModels:
     @pytest.mark.asyncio
     async def test_list_models_by_min_r2(self, temp_registry_path):
         """Test listing models filtered by minimum R² score."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -406,7 +406,7 @@ class TestDeleteModel:
         self, temp_registry_path, sample_training_result, sample_evaluation_result
     ):
         """Test that delete archives model rather than hard delete."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -431,7 +431,7 @@ class TestDeleteModel:
     @pytest.mark.asyncio
     async def test_delete_nonexistent_model(self, temp_registry_path):
         """Test deleting nonexistent model returns False."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -452,7 +452,7 @@ class TestGetBestModel:
     @pytest.mark.asyncio
     async def test_get_best_model_by_r2(self, temp_registry_path):
         """Test getting best model by R² score."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -481,7 +481,7 @@ class TestGetBestModel:
     @pytest.mark.asyncio
     async def test_get_best_model_empty_registry(self, temp_registry_path):
         """Test getting best model from empty registry."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -506,7 +506,7 @@ class TestDescribeModel:
         self, temp_registry_path, sample_training_result, sample_evaluation_result
     ):
         """Test getting model description."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -526,7 +526,7 @@ class TestDescribeModel:
     @pytest.mark.asyncio
     async def test_describe_nonexistent_model(self, temp_registry_path):
         """Test describing nonexistent model."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(storage_path=temp_registry_path)
         registry = ModelRegistry(config=config)
@@ -547,7 +547,7 @@ class TestCompression:
     @pytest.mark.asyncio
     async def test_gzip_compression(self, temp_registry_path):
         """Test that models are gzip compressed."""
-        from HoloLoom.ml.registry import ModelRegistry
+        from hololoom.ml.registry import ModelRegistry
 
         config = RegistryConfig(
             storage_path=temp_registry_path,

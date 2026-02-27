@@ -158,7 +158,7 @@ The quality improvement (+18%) outweighs the latency increase. I recommend migra
 
 **User:** Can you enhance my explanation prompt with relevant context for machine learning topics?
 
-**Assistant:** I'll enhance your prompt with RAG context from HoloLoom memory.
+**Assistant:** I'll enhance your prompt with RAG context from hololoom memory.
 
 ```json
 {

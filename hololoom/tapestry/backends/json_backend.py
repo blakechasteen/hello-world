@@ -9,7 +9,7 @@ Features:
 - Human-readable JSON output
 - Graceful degradation
 
-Pattern follows HoloLoom/tuning/persistence.py
+Pattern follows hololoom/tuning/persistence.py
 
 Created: December 2025
 """
@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Optional
 import os
 
-from HoloLoom.tapestry.protocol import Tapestry, TapestryBackend
+from hololoom.tapestry.protocol import Tapestry, TapestryBackend
 
 logger = logging.getLogger(__name__)
 

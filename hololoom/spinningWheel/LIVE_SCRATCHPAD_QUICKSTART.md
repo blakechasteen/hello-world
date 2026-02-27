@@ -35,7 +35,7 @@ Server runs at `http://localhost:8002`
 
 ```bash
 # Open this file in your browser:
-HoloLoom/web_dashboard/live_scratchpad.html
+hololoom/web_dashboard/live_scratchpad.html
 ```
 
 ### 3. Record
@@ -91,7 +91,7 @@ pip install openai-whisper
 **"API server not running"**
 ```bash
 # Terminal 1: Start server
-python HoloLoom/server/scratchpad_api.py
+python hololoom/server/scratchpad_api.py
 
 # Terminal 2: Open browser
 # Navigate to live_scratchpad.html

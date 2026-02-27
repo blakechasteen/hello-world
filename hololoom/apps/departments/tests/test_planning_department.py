@@ -34,7 +34,7 @@ from typing import Dict, List, Any
 from datetime import datetime
 
 # Import Planning Department
-from HoloLoom.apps.departments.planning_department import (
+from hololoom.apps.departments.planning_department import (
     PlanningDepartment,
     Task,
     TaskPriority,
@@ -44,7 +44,7 @@ from HoloLoom.apps.departments.planning_department import (
 )
 
 # Import protocol classes
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     DepartmentRequest,
     DepartmentResponse,
     ConfidenceMetadata,

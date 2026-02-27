@@ -595,7 +595,7 @@ nginx:
 
 **Security groups (AWS)**:
 - Allow port 8000 only from ALB
-- Allow port 3000 only from HoloLoom API
+- Allow port 3000 only from hololoom API
 - Allow Neo4j/Qdrant only from application subnet
 - Deny all other inbound traffic
 

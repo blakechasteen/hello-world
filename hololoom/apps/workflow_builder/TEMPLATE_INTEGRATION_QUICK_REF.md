@@ -142,15 +142,15 @@ Templates stored as JSON in `example_workflows/` directory:
 ## File Locations
 
 **Modified**:
-- `HoloLoom/web_dashboard/workflow_builder.html` (lines 1613-1633, 1773-2109)
+- `hololoom/web_dashboard/workflow_builder.html` (lines 1613-1633, 1773-2109)
 
 **New**:
-- `HoloLoom/web_dashboard/TEMPLATE_GALLERY_INTEGRATION.md` (complete docs)
-- `HoloLoom/web_dashboard/TEMPLATE_INTEGRATION_QUICK_REF.md` (this file)
+- `hololoom/web_dashboard/TEMPLATE_GALLERY_INTEGRATION.md` (complete docs)
+- `hololoom/web_dashboard/TEMPLATE_INTEGRATION_QUICK_REF.md` (this file)
 
 **Referenced**:
-- `HoloLoom/web_dashboard/template_gallery.html` (must exist)
-- `HoloLoom/web_dashboard/example_workflows/` (template files)
+- `hololoom/web_dashboard/template_gallery.html` (must exist)
+- `hololoom/web_dashboard/example_workflows/` (template files)
 
 ## Browser Requirements
 

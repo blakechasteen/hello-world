@@ -14,7 +14,7 @@ import warnings
 
 # Try to import semantic dimensions
 try:
-    from HoloLoom.semantic_calculus.dimensions import (
+    from hololoom.semantic_calculus.dimensions import (
         SemanticDimension,
         STANDARD_DIMENSIONS
     )

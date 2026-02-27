@@ -12,7 +12,7 @@ Supported Providers:
 - Google (Gemini)
 
 Quick Start:
-    from HoloLoom.llm import UnifiedLLMClient, LLMConfig
+    from hololoom.llm import UnifiedLLMClient, LLMConfig
 
     # Simple usage with defaults
     client = UnifiedLLMClient.create_default()
@@ -32,14 +32,14 @@ Quick Start:
 Created: 2025-01-20
 """
 
-from HoloLoom.llm.unified_client import (
+from hololoom.llm.unified_client import (
     UnifiedLLMClient,
     LLMConfig,
     LLMResponse,
     LLMProvider,
 )
 
-from HoloLoom.llm.cost_tracker import CostTracker, ModelPricing
+from hololoom.llm.cost_tracker import CostTracker, ModelPricing
 
 __all__ = [
     "UnifiedLLMClient",

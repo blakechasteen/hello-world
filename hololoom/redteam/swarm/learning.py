@@ -2,7 +2,7 @@
 
 CARTS Phase 4: Learning & Adaptation System
 Status: Foundation Implementation (December 2025)
-Location: HoloLoom/redteam/swarm/learning.py
+Location: hololoom/redteam/swarm/learning.py
 
 FIRST PRINCIPLE: "Hierarchical learning at different timescales"
 

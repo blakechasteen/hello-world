@@ -51,8 +51,8 @@ A **spinner** transforms raw data into **MemoryShards** that HoloLoom can query.
 ### Minimal Spinner (3 Steps)
 
 ```python
-from HoloLoom.spinningWheel.protocol import BaseSpinner, SpinnerCapabilities
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.spinningWheel.protocol import BaseSpinner, SpinnerCapabilities
+from hololoom.documentation.types import MemoryShard
 
 class MySpinner(BaseSpinner):
     def __init__(self):
@@ -221,7 +221,7 @@ def score_importance(self, data) -> ImportanceScore:
 - Importance filtering
 
 ```python
-from HoloLoom.spinningWheel.protocol import BaseSpinner
+from hololoom.spinningWheel.protocol import BaseSpinner
 
 class MySpinner(BaseSpinner):
     def __init__(self):
@@ -237,7 +237,7 @@ class MySpinner(BaseSpinner):
 - More boilerplate code
 
 ```python
-from HoloLoom.spinningWheel.protocol import SpinnerProtocol
+from hololoom.spinningWheel.protocol import SpinnerProtocol
 
 class MySpinner:  # Implement protocol manually
     def get_name(self) -> str: ...
@@ -354,7 +354,7 @@ def _extract_motifs(self, text: str) -> List[str]:
 **Built-in Scorer**:
 
 ```python
-from HoloLoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.importance import ImportanceScorer
 
 class MySpinner(BaseSpinner):
     def __init__(self):
@@ -401,7 +401,7 @@ scorer.custom_scorers['commit_type'] = commit_importance
 ### Preset Configurations
 
 ```python
-from HoloLoom.spinningWheel.importance import (
+from hololoom.spinningWheel.importance import (
     create_chat_scorer,
     create_git_scorer,
     create_email_scorer,
@@ -426,8 +426,8 @@ For large data sources (Git repos with 10K commits, email archives with 100K mes
 ### Using CheckpointManager
 
 ```python
-from HoloLoom.spinningWheel.utils import CheckpointManager, create_source_id
-from HoloLoom.spinningWheel.protocol import SpinnerCheckpoint
+from hololoom.spinningWheel.utils import CheckpointManager, create_source_id
+from hololoom.spinningWheel.protocol import SpinnerCheckpoint
 
 class MySpinner(BaseSpinner):
     def __init__(self):
@@ -507,7 +507,7 @@ async def spin_stream(self, source, **kwargs) -> AsyncIterator[MemoryShard]:
 ### Using Streaming with Buffer
 
 ```python
-from HoloLoom.spinningWheel.utils import stream_with_buffer
+from hololoom.spinningWheel.utils import stream_with_buffer
 
 # Callback to ingest batches
 async def ingest_batch(shards: List[MemoryShard]):
@@ -529,7 +529,7 @@ async for shard in stream_with_buffer(
 ### Process Multiple Sources in Parallel
 
 ```python
-from HoloLoom.spinningWheel.utils import BatchProcessor
+from hololoom.spinningWheel.utils import BatchProcessor
 
 class MySpinner(BaseSpinner):
     async def process_multiple(self, sources: List[str]):
@@ -548,7 +548,7 @@ class MySpinner(BaseSpinner):
 ### With Progress Tracking
 
 ```python
-from HoloLoom.spinningWheel.utils import process_with_progress
+from hololoom.spinningWheel.utils import process_with_progress
 
 # Process with visual progress
 results = await process_with_progress(
@@ -578,7 +578,7 @@ if not result.success:
 ### Custom Error Handler
 
 ```python
-from HoloLoom.spinningWheel.utils import ErrorHandler
+from hololoom.spinningWheel.utils import ErrorHandler
 
 class MySpinner(BaseSpinner):
     def __init__(self):
@@ -623,7 +623,7 @@ class MySpinner(BaseSpinner):
 
 ```python
 import pytest
-from HoloLoom.spinningWheel.protocol import SpinnerStatus
+from hololoom.spinningWheel.protocol import SpinnerStatus
 
 class TestMySpinner:
     """Test suite for MySpinner."""
@@ -700,8 +700,8 @@ async def test_full_workflow():
 ### Example 1: Simple File Spinner
 
 ```python
-from HoloLoom.spinningWheel.protocol import BaseSpinner, SpinnerCapabilities
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.spinningWheel.protocol import BaseSpinner, SpinnerCapabilities
+from hololoom.documentation.types import MemoryShard
 from pathlib import Path
 
 class FileSpinner(BaseSpinner):

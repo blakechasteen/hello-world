@@ -31,14 +31,14 @@ request handling and response generation.
 Status: CLI + Matrix + TUI production ready (2025-12-05)
 """
 
-from HoloLoom.apps.departments.proto.adapters.cli import cli
-from HoloLoom.apps.departments.proto.adapters.matrix import (
+from hololoom.apps.departments.proto.adapters.cli import cli
+from hololoom.apps.departments.proto.adapters.matrix import (
     ProtoMatrixHandlers,
     MatrixMessage,
     ProtoSession,
     create_proto_handlers,
 )
-from HoloLoom.apps.departments.proto.adapters.tui import (
+from hololoom.apps.departments.proto.adapters.tui import (
     # Main app
     ProtoTUI,
     WaveHeader,

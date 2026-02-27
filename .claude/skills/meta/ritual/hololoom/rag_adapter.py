@@ -18,14 +18,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 
-# Try to import HoloLoom RAG - graceful degradation if not available
+# Try to import hololoom RAG - graceful degradation if not available
 HOLOLOOM_RAG_AVAILABLE = False
 try:
     hololoom_path = Path(__file__).parent.parent.parent.parent.parent.parent
     if str(hololoom_path) not in sys.path:
         sys.path.insert(0, str(hololoom_path))
 
-    from HoloLoom.rag import SimpleRAG
+    from hololoom.rag import SimpleRAG
     HOLOLOOM_RAG_AVAILABLE = True
 except ImportError:
     pass

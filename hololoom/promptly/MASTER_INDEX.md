@@ -466,7 +466,7 @@ result = await bridge.execute(program, question="What is X?")
 ### **Complete Directory Structure**
 
 ```
-HoloLoom/promptly/
+hololoom/promptly/
 ├── 📄 MASTER_INDEX.md                 ◄── You are here
 ├── 📄 INDEX.md                         Original DSPy integration index
 │

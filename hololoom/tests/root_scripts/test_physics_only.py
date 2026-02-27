@@ -2,7 +2,7 @@
 
 import asyncio
 import numpy as np
-from HoloLoom.physics import (
+from hololoom.physics import (
     StatisticalMechanicsEngine,
     Microstate
 )

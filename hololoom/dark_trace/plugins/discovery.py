@@ -17,7 +17,7 @@ Every discovered plugin is:
 4. Checked for required manifest fields
 
 Usage:
-    from HoloLoom.dark_trace.plugins import PluginDiscovery, DiscoverySource
+    from hololoom.dark_trace.plugins import PluginDiscovery, DiscoverySource
 
     discovery = PluginDiscovery(safety_gate)
 
@@ -215,7 +215,7 @@ class PluginDiscovery:
 
         # Built-in plugins are always CORE trust
         self._builtin_packages = builtin_packages or [
-            "HoloLoom.dark_trace.plugins.builtin"
+            "hololoom.dark_trace.plugins.builtin"
         ]
 
         # Compile malicious patterns
@@ -635,7 +635,7 @@ class PluginDiscovery:
             return False
 
         # Check for DarkTracePlugin base
-        from HoloLoom.dark_trace.plugins.interface import DarkTracePlugin
+        from hololoom.dark_trace.plugins.interface import DarkTracePlugin
         return issubclass(cls, DarkTracePlugin) and cls is not DarkTracePlugin
 
     def _determine_trust_level(self, manifest: Dict[str, Any]) -> str:
@@ -690,7 +690,7 @@ def create_discovery(
     """
     if safety_gate is None:
         try:
-            from HoloLoom.dark_trace.plugins.safety_gate import create_safety_gate
+            from hololoom.dark_trace.plugins.safety_gate import create_safety_gate
             safety_gate = create_safety_gate()
         except ImportError:
             pass

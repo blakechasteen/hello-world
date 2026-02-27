@@ -4,7 +4,7 @@
 # Hofstadter Scratchpad System
 
 **Status**: ✅ Production Ready (January 2025)
-**Location**: `HoloLoom/scratchpad/`
+**Location**: `hololoom/scratchpad/`
 **Total Code**: ~3,200 lines
 **Philosophy**: "Thinking is recursive self-exploration with strange loops"
 
@@ -30,7 +30,7 @@ The Hofstadter Scratchpad System provides **persistent internal dialogue** where
 ### Basic Usage
 
 ```python
-from HoloLoom.scratchpad import RecursiveScratchpad
+from hololoom.scratchpad import RecursiveScratchpad
 
 async with RecursiveScratchpad() as scratchpad:
     # Initial thought
@@ -195,7 +195,7 @@ Hofstadter-style recursive self-reference and level-crossing.
 **Detection**:
 
 ```python
-from HoloLoom.scratchpad import LoopDetector
+from hololoom.scratchpad import LoopDetector
 
 detector = LoopDetector()
 loops = detector.detect_loops(tree)
@@ -266,7 +266,7 @@ tree = await scratchpad.load_session("my_session")
 sessions = await scratchpad.list_sessions()
 
 # Search
-from HoloLoom.scratchpad.persistence import ThoughtPersistence
+from hololoom.scratchpad.persistence import ThoughtPersistence
 
 persistence = ThoughtPersistence(Path("scratchpad.db"))
 await persistence.initialize()
@@ -343,7 +343,7 @@ async with RecursiveScratchpad(enable_verification=True) as scratchpad:
 Meta-reasoning with strange loop detection.
 
 ```python
-from HoloLoom.scratchpad import LoopDetector, StrangeLoopAnalyzer
+from hololoom.scratchpad import LoopDetector, StrangeLoopAnalyzer
 
 async with RecursiveScratchpad() as scratchpad:
     # Meta-cognitive start
@@ -436,7 +436,7 @@ async with RecursiveScratchpad() as scratchpad:
         print(f"{session['session_name']}: {session['thought_count']} thoughts")
 
 # Search across sessions
-from HoloLoom.scratchpad.persistence import ThoughtPersistence
+from hololoom.scratchpad.persistence import ThoughtPersistence
 
 persistence = ThoughtPersistence(Path("scratchpad.db"))
 await persistence.initialize()
@@ -453,8 +453,8 @@ for thought in results:
 The scratchpad system integrates seamlessly with HoloLoom's RAG Department.
 
 ```python
-from HoloLoom.scratchpad import RecursiveScratchpad
-from HoloLoom.departments import get_department
+from hololoom.scratchpad import RecursiveScratchpad
+from hololoom.departments import get_department
 
 # Get RAG department
 rag_dept = get_department("rag")
@@ -531,10 +531,10 @@ LoopDetector(
 
 ```bash
 # All scratchpad tests
-pytest HoloLoom/scratchpad/tests/ -v
+pytest hololoom/scratchpad/tests/ -v
 
 # Specific test
-pytest HoloLoom/scratchpad/tests/test_hofstadter_scratchpad.py::test_dialogue_tree_creation -v
+pytest hololoom/scratchpad/tests/test_hofstadter_scratchpad.py::test_dialogue_tree_creation -v
 ```
 
 **Test Coverage**: 23 tests passing (100%)

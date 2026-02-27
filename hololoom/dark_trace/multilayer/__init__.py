@@ -22,7 +22,7 @@ Research Basis:
 - Pearl's do-calculus: Causal inference framework
 
 Usage:
-    from HoloLoom.dark_trace.multilayer import (
+    from hololoom.dark_trace.multilayer import (
         # Layer SAE Management
         LayerSAEManager,
         LayerSAEConfig,
@@ -94,7 +94,7 @@ Created: 2025-12-28
 """
 
 # Layer SAE management
-from HoloLoom.dark_trace.multilayer.layer_sae import (
+from hololoom.dark_trace.multilayer.layer_sae import (
     LayerSAEManager,
     LayerSAEConfig,
     LayerSAE,
@@ -103,7 +103,7 @@ from HoloLoom.dark_trace.multilayer.layer_sae import (
 )
 
 # Feature hierarchy analysis
-from HoloLoom.dark_trace.multilayer.hierarchy import (
+from hololoom.dark_trace.multilayer.hierarchy import (
     FeatureHierarchyAnalyzer,
     AbstractionLevel,
     FeatureEvolution,
@@ -113,7 +113,7 @@ from HoloLoom.dark_trace.multilayer.hierarchy import (
 )
 
 # Information flow analysis
-from HoloLoom.dark_trace.multilayer.flow import (
+from hololoom.dark_trace.multilayer.flow import (
     InformationFlowAnalyzer,
     FlowConfig,
     LayerFlow,
@@ -123,7 +123,7 @@ from HoloLoom.dark_trace.multilayer.flow import (
 )
 
 # Hierarchy visualization
-from HoloLoom.dark_trace.multilayer.visualizer import (
+from hololoom.dark_trace.multilayer.visualizer import (
     HierarchyVisualizer,
     VisualizationConfig,
     HierarchyDiagram,
@@ -132,7 +132,7 @@ from HoloLoom.dark_trace.multilayer.visualizer import (
 )
 
 # Cross-layer correlation tracking (Phase 2)
-from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+from hololoom.dark_trace.multilayer.correlation_tracker import (
     CorrelationTracker,
     CorrelationConfig,
     LayerCorrelation,
@@ -141,14 +141,14 @@ from HoloLoom.dark_trace.multilayer.correlation_tracker import (
 )
 
 # Feature propagation analysis (Phase 2)
-from HoloLoom.dark_trace.multilayer.propagation_analyzer import (
+from hololoom.dark_trace.multilayer.propagation_analyzer import (
     PropagationAnalyzer,
     PropagationPath,
     CircuitCandidate,
 )
 
 # Causal metrics (Phase 2)
-from HoloLoom.dark_trace.multilayer.causal_metrics import (
+from hololoom.dark_trace.multilayer.causal_metrics import (
     CausalStrengthEstimator,
     TransferEntropyEstimator,
     CausalStrengthResult,

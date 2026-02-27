@@ -24,7 +24,7 @@ from typing import Optional, Tuple, Callable, Awaitable, Any, List
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 
-from HoloLoom.tapestry.protocol import (
+from hololoom.tapestry.protocol import (
     Tapestry,
     Thread,
     ThreadStatus,
@@ -33,10 +33,10 @@ from HoloLoom.tapestry.protocol import (
     NoTapestryError,
     VerificationFailedError
 )
-from HoloLoom.tapestry.backends.json_backend import JsonTapestryBackend
-from HoloLoom.tapestry.inspector import FabricInspector
-from HoloLoom.tapestry.warper import Warper
-from HoloLoom.tapestry.git import GitIntegration
+from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
+from hololoom.tapestry.inspector import FabricInspector
+from hololoom.tapestry.warper import Warper
+from hololoom.tapestry.git import GitIntegration
 
 logger = logging.getLogger(__name__)
 

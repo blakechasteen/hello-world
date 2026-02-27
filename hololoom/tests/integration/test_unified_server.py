@@ -14,7 +14,7 @@ Tests:
 6. Error handling
 
 Usage:
-    pytest HoloLoom/tests/integration/test_unified_server.py -v
+    pytest hololoom/tests/integration/test_unified_server.py -v
 """
 
 import pytest
@@ -25,7 +25,7 @@ from httpx import AsyncClient
 from fastapi.testclient import TestClient
 
 # Import server app
-from HoloLoom.apps.server.unified_server import app, state
+from hololoom.apps.server.unified_server import app, state
 
 
 @pytest.fixture

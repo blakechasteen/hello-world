@@ -36,7 +36,7 @@ docker run -d -p 6379:6379 redis:7.2-alpine
 export REDIS_URL=redis://localhost:6379
 
 # Start HoloLoom
-python -m HoloLoom.server.ar_api
+python -m hololoom.server.ar_api
 ```
 
 ## Architecture
@@ -181,7 +181,7 @@ X-RateLimit-Reset: 1703123456
 
 ```bash
 # Run rate limiter tests
-pytest HoloLoom/server/tests/test_redis_rate_limiter.py -v
+pytest hololoom/server/tests/test_redis_rate_limiter.py -v
 
 # Expected output:
 # ✅ test_in_memory_basic_rate_limiting
@@ -199,7 +199,7 @@ pytest HoloLoom/server/tests/test_redis_rate_limiter.py -v
 docker run -d -p 6379:6379 redis:7.2-alpine
 
 # Run integration tests
-RUN_INTEGRATION_TESTS=1 pytest HoloLoom/server/tests/test_redis_rate_limiter.py::test_redis_integration -v
+RUN_INTEGRATION_TESTS=1 pytest hololoom/server/tests/test_redis_rate_limiter.py::test_redis_integration -v
 ```
 
 ### Load Testing
@@ -207,10 +207,10 @@ RUN_INTEGRATION_TESTS=1 pytest HoloLoom/server/tests/test_redis_rate_limiter.py:
 ```bash
 # Test distributed rate limiting across instances
 # Terminal 1: Start instance 1
-uvicorn HoloLoom.server.ar_api:app --port 8001
+uvicorn hololoom.server.ar_api:app --port 8001
 
 # Terminal 2: Start instance 2
-uvicorn HoloLoom.server.ar_api:app --port 8002
+uvicorn hololoom.server.ar_api:app --port 8002
 
 # Terminal 3: Send parallel requests
 for i in {1..20}; do

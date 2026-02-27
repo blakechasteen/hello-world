@@ -22,9 +22,9 @@ from typing import List, Dict, Any
 from datetime import datetime
 
 # HoloLoom types
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.memory.graph import KG, KGEdge
 
 
 # ============================================================================
@@ -109,7 +109,7 @@ class BenchmarkRunner:
         Returns:
             Benchmark results dict
         """
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
 
         config.enable_shuttle = enable_shuttle
 
@@ -299,7 +299,7 @@ async def main():
     print(report)
 
     # Save report
-    output_path = "HoloLoom/shuttle/benchmarks/shuttle_performance_report.md"
+    output_path = "hololoom/shuttle/benchmarks/shuttle_performance_report.md"
     with open(output_path, 'w') as f:
         f.write(report)
 

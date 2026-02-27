@@ -604,10 +604,10 @@ class WebXRKnowledgeGraph:
     def from_knowledge_graph(cls, kg,
                              layout: NodeLayout = NodeLayout.FORCE_DIRECTED) -> 'WebXRKnowledgeGraph':
         """
-        Create WebXR graph from HoloLoom knowledge graph.
+        Create WebXR graph from hololoom knowledge graph.
 
         Args:
-            kg: KnowledgeGraph (from HoloLoom.memory.graph)
+            kg: KnowledgeGraph (from hololoom.memory.graph)
             layout: Layout algorithm to apply
         """
         xr_graph = cls()

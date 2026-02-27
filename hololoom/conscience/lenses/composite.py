@@ -18,7 +18,7 @@ from ..judgment import Concern, Voice, Judgment
 from .base import BaseLens
 
 
-logger = logging.getLogger("HoloLoom.conscience.lenses.composite")
+logger = logging.getLogger("hololoom.conscience.lenses.composite")
 
 
 class CompositeLens:

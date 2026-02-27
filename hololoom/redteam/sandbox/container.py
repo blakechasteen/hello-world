@@ -4,7 +4,7 @@ Implements Docker container execution with fallback to process isolation.
 Provides complete runtime isolation for red team adversarial code execution.
 
 Status: Production Ready (November 2025)
-Location: HoloLoom/redteam/sandbox/container.py
+Location: hololoom/redteam/sandbox/container.py
 Performance: <100ms container startup, full resource isolation
 Testing: 16/16 tests passing (100%)
 """

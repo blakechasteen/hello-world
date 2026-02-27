@@ -444,7 +444,7 @@ class TestLearningDashboardRendering:
 
     def test_learning_dashboard_single_metric(self):
         """Test dashboard with single metric."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -469,7 +469,7 @@ class TestLearningDashboardRendering:
 
     def test_learning_dashboard_multiple_metrics(self):
         """Test dashboard with multiple metrics."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -508,7 +508,7 @@ class TestLearningDashboardRendering:
 
     def test_learning_dashboard_contains_summary(self):
         """Test dashboard contains summary statistics."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -528,7 +528,7 @@ class TestLearningDashboardRendering:
 
     def test_learning_dashboard_recommendations(self):
         """Test dashboard generates recommendations."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -550,7 +550,7 @@ class TestLearningDashboardRendering:
 
     def test_learning_dashboard_html_validity(self):
         """Test dashboard HTML is valid."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -572,7 +572,7 @@ class TestLearningDashboardRendering:
 
     def test_learning_dashboard_color_coding(self):
         """Test color coding for status indicators."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -618,7 +618,7 @@ class TestEmptyDataHandling:
 
     def test_empty_dashboard(self):
         """Test empty dashboard renders gracefully."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer
         )
 
@@ -661,7 +661,7 @@ class TestLargeDatasetPerformance:
 
     def test_large_dashboard(self):
         """Test rendering with many metrics."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -703,7 +703,7 @@ class TestSVGContent:
 
     def test_trajectory_has_svg(self):
         """Test trajectory contains SVG."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -724,7 +724,7 @@ class TestSVGContent:
 
     def test_dashboard_has_css(self):
         """Test dashboard contains CSS styling."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -753,7 +753,7 @@ class TestVisualizationCompleteness:
 
     def test_dashboard_has_title(self):
         """Test dashboard has title."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -773,7 +773,7 @@ class TestVisualizationCompleteness:
 
     def test_dashboard_has_metadata(self):
         """Test dashboard contains metadata."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus
@@ -794,7 +794,7 @@ class TestVisualizationCompleteness:
 
     def test_dashboard_has_status_indicators(self):
         """Test dashboard shows status indicators."""
-        from HoloLoom.redteam.visualization.learning_dashboard import (
+        from hololoom.redteam.visualization.learning_dashboard import (
             LearningDashboardRenderer,
             LearnerMetricPanel,
             MetricStatus

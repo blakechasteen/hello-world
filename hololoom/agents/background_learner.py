@@ -39,12 +39,12 @@ import time
 import json
 from collections import defaultdict
 
-from HoloLoom.agents.orchestrator_mcts import MCTSAgentOrchestrator, create_mcts_agent
-from HoloLoom.agents.types import AgentProfile
-from HoloLoom.agents import PROFILES
-from HoloLoom.memory.graph import KG
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.protocols.types import Query
+from hololoom.agents.orchestrator_mcts import MCTSAgentOrchestrator, create_mcts_agent
+from hololoom.agents.types import AgentProfile
+from hololoom.agents import PROFILES
+from hololoom.memory.graph import KG
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.protocols.types import Query
 
 
 # ============================================================================

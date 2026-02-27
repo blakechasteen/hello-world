@@ -164,10 +164,10 @@ class PersonalityManager:
 
         Args:
             personalities_dir: Directory containing personality YAML files
-                             (defaults to HoloLoom/voice/personalities/)
+                             (defaults to hololoom/voice/personalities/)
         """
         if personalities_dir is None:
-            # Default to HoloLoom/voice/personalities/
+            # Default to hololoom/voice/personalities/
             current_file = Path(__file__)
             personalities_dir = current_file.parent / "personalities"
 

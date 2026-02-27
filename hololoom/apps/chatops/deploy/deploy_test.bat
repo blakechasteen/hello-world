@@ -1,14 +1,14 @@
 @echo off
-REM HoloLoom ChatOps - Test Environment Deployment (Windows)
+REM hololoom ChatOps - Test Environment Deployment (Windows)
 REM =========================================================
 
 echo ========================================
-echo HoloLoom ChatOps Test Deployment
+echo hololoom ChatOps Test Deployment
 echo ========================================
 echo.
 
 REM Check if running from repo root
-if not exist "HoloLoom\chatops\run_chatops.py" (
+if not exist "hololoom\chatops\run_chatops.py" (
     echo ERROR: Please run from repository root
     exit /b 1
 )
@@ -32,7 +32,7 @@ echo Step 2: Creating test configuration...
 if not exist "chatops_test_config.yaml" (
     echo Creating chatops_test_config.yaml...
     (
-        echo # Test Configuration for HoloLoom ChatOps
+        echo # Test Configuration for hololoom ChatOps
         echo matrix:
         echo   homeserver_url: "https://matrix.org"
         echo   user_id: "@bot:matrix.org"  # EDIT THIS
@@ -110,7 +110,7 @@ echo Step 6: Creating test runner...
     echo @echo off
     echo REM Quick test bot runner
     echo set PYTHONPATH=.
-    echo python HoloLoom\chatops\run_chatops.py --config chatops_test_config.yaml --debug
+    echo python hololoom\chatops\run_chatops.py --config chatops_test_config.yaml --debug
 ) > run_test_bot.bat
 echo [OK] Created run_test_bot.bat
 echo.

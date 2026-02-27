@@ -16,7 +16,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run prompt tests
-        run: PYTHONPATH=. python -m HoloLoom.prompting.testing.ci_integration
+        run: PYTHONPATH=. python -m hololoom.prompting.testing.ci_integration
 
       - name: Upload artifacts
         if: always()

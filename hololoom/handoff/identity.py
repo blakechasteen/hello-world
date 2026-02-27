@@ -605,7 +605,7 @@ class UnifiedIdentity:
             if field not in data:
                 raise InvalidSignatureError(
                     f"Missing required field: {field}",
-                    suggestion="Ensure QR code is from HoloLoom app",
+                    suggestion="Ensure QR code is from hololoom app",
                 )
 
         return data

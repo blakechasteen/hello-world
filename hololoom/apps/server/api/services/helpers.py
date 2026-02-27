@@ -15,8 +15,8 @@ Functions:
 import logging
 from typing import Optional, List, Dict
 
-from HoloLoom.agentic import create_agentic_orchestrator
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.agentic import create_agentic_orchestrator
+from hololoom.protocols.types import MemoryShard
 
 from ..models import VerificationResponse, ReasoningStepResponse
 from ..state import state
@@ -36,7 +36,7 @@ def load_memory_shards() -> List[MemoryShard]:
             id="example_1",
             text="HoloLoom is a neural decision-making system with multi-scale embeddings.",
             episode="hololoom_basics",
-            entities=["HoloLoom", "embeddings"],
+            entities=["hololoom", "embeddings"],
             motifs=["definition"]
         )
     ]
@@ -53,7 +53,7 @@ async def load_from_persistent_backend() -> List[MemoryShard]:
         return []
 
     try:
-        from HoloLoom.memory.protocol import MemoryQuery
+        from hololoom.memory.protocol import MemoryQuery
 
         query = MemoryQuery(
             text="",  # Empty query = retrieve all

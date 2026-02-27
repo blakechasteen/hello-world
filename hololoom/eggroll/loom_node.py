@@ -1,13 +1,13 @@
-from HoloLoom.eggroll.mirror_core import MirrorCoreAgent
-from HoloLoom.dark_trace.auto_probe import AutoProbe
-from HoloLoom.dark_trace.steering_policy import ConsistencyGuard
+from hololoom.eggroll.mirror_core import MirrorCoreAgent
+from hololoom.dark_trace.auto_probe import AutoProbe
+from hololoom.dark_trace.steering_policy import ConsistencyGuard
 import torch
 import random
 import numpy as np
 from typing import Optional, Tuple, Dict, Any
 
 # Rust-accelerated operations (with NumPy fallback)
-from HoloLoom.eggroll.rust_ops import (
+from hololoom.eggroll.rust_ops import (
     normalize_batch,
     cosine_similarity_batch,
     RUST_AVAILABLE,

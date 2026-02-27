@@ -23,13 +23,13 @@ import wave
 import struct
 import math
 
-from HoloLoom.spinningWheel.whisper_spinner import (
+from hololoom.spinningWheel.whisper_spinner import (
     WhisperSpinner,
     TimecodeSegment,
     WHISPER_AVAILABLE,
     spin_audio
 )
-from HoloLoom.spinningWheel.protocol import SpinnerStatus
+from hololoom.spinningWheel.protocol import SpinnerStatus
 
 
 # ============================================================================

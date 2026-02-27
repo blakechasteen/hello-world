@@ -19,7 +19,7 @@ Dark Trace Mission:
 - Alignment: Safety-relevant features are identified and controlled
 
 Quick Start:
-    from HoloLoom.dark_trace import DarkTraceEngine, TraceConfig, create_engine
+    from hololoom.dark_trace import DarkTraceEngine, TraceConfig, create_engine
 
     # Create engine with standard preset
     config = TraceConfig.standard(input_dim=384)
@@ -38,7 +38,7 @@ Quick Start:
 # Protocol Layer - Unified Interpretability Interface
 # =============================================================================
 
-from HoloLoom.dark_trace.protocol import (
+from hololoom.dark_trace.protocol import (
     # Enums
     LensType,
     FeatureSource,
@@ -63,7 +63,7 @@ from HoloLoom.dark_trace.protocol import (
 # Result Layer - Analysis Output Structures
 # =============================================================================
 
-from HoloLoom.dark_trace.result import (
+from hololoom.dark_trace.result import (
     # Core results
     LensResult,
     TraceResult,
@@ -85,7 +85,7 @@ from HoloLoom.dark_trace.result import (
 # Registry Layer - Unified Feature Namespace
 # =============================================================================
 
-from HoloLoom.dark_trace.registry import (
+from hololoom.dark_trace.registry import (
     CorrelationMatrix,
     FeatureRegistry,
     # Factory functions
@@ -97,7 +97,7 @@ from HoloLoom.dark_trace.registry import (
 # Configuration Layer - Presets and Settings
 # =============================================================================
 
-from HoloLoom.dark_trace.trace_config import (
+from hololoom.dark_trace.trace_config import (
     # Mode enum
     TraceMode,
     # Component configs
@@ -116,7 +116,7 @@ from HoloLoom.dark_trace.trace_config import (
 # Engine Layer - Main API
 # =============================================================================
 
-from HoloLoom.dark_trace.engine import (
+from hololoom.dark_trace.engine import (
     DarkTraceEngine,
     create_engine,
 )
@@ -125,21 +125,21 @@ from HoloLoom.dark_trace.engine import (
 # Existing Components - SAE, Probes, Steering
 # =============================================================================
 
-from HoloLoom.dark_trace.sae import (
+from hololoom.dark_trace.sae import (
     SparseAutoEncoder,
     DarkSaeTrainer,
 )
 
-from HoloLoom.dark_trace.probe import (
+from hololoom.dark_trace.probe import (
     MindProbe,
 )
 
-from HoloLoom.dark_trace.steering_policy import (
+from hololoom.dark_trace.steering_policy import (
     PIDSteeringController,
     ConsistencyGuard,
 )
 
-from HoloLoom.dark_trace.auto_probe import (
+from hololoom.dark_trace.auto_probe import (
     AutoProbe,
 )
 
@@ -147,7 +147,7 @@ from HoloLoom.dark_trace.auto_probe import (
 # Model Adapters - Multi-Model Support
 # =============================================================================
 
-from HoloLoom.dark_trace.models import (
+from hololoom.dark_trace.models import (
     # Adapter protocol
     ModelAdapter,
     LayerInfo,
@@ -178,7 +178,7 @@ from HoloLoom.dark_trace.models import (
 # Integration Layer - HoloLoom System Integration
 # =============================================================================
 
-from HoloLoom.dark_trace.integration import (
+from hololoom.dark_trace.integration import (
     # Orchestrator integration
     DarkTraceOrchestrator,
     TracedSpacetime,

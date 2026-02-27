@@ -84,9 +84,9 @@ pip install -r requirements.txt
 ### 3. First Query
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.Documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.Documentation.types import Query, MemoryShard
 
 # Create configuration (FAST mode recommended for development)
 config = Config.fast()
@@ -150,10 +150,10 @@ docker-compose up -d  # Starts Neo4j + Qdrant
 Create `production_config.py`:
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.context import ProductionConfig
-from HoloLoom.routing import create_smart_router
+from hololoom.config import Config, MemoryBackend
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.context import ProductionConfig
+from hololoom.routing import create_smart_router
 
 # Load production config
 prod_config = ProductionConfig.production()
@@ -193,7 +193,7 @@ Create `main.py`:
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from production_config import create_production_orchestrator, router
-from HoloLoom.Documentation.types import Query
+from hololoom.Documentation.types import Query
 import asyncio
 
 app = FastAPI(title="HoloLoom API v1.1")
@@ -258,7 +258,7 @@ async def query_endpoint(request: QueryRequest):
 @app.get("/health")
 async def health():
     """Health check for load balancers"""
-    from HoloLoom.context import create_health_checker
+    from hololoom.context import create_health_checker
 
     health_checker = create_health_checker()
     status = await health_checker.check()
@@ -319,7 +319,7 @@ scrape_configs:
     scrape_interval: 15s
 ```
 
-**Grafana Dashboard**: Import `HoloLoom/grafana/overview-dashboard.json`
+**Grafana Dashboard**: Import `hololoom/grafana/overview-dashboard.json`
 
 **Alerts** (`alerts.yml`):
 ```yaml
@@ -364,7 +364,7 @@ Query → [Loom Command] → [Yarn Graph] → [Warp Space] → [Convergence] →
 HoloLoom has 3 execution modes optimized for different use cases:
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # BARE: Minimal (fastest, least accurate)
 config_bare = Config.bare()
@@ -394,7 +394,7 @@ config_fused = Config.fused()
 HoloLoom supports 3 memory backends:
 
 ```python
-from HoloLoom.config import MemoryBackend
+from hololoom.config import MemoryBackend
 
 # 1. INMEMORY: In-memory NetworkX (development)
 config.memory_backend = MemoryBackend.INMEMORY
@@ -418,7 +418,7 @@ config.memory_backend = MemoryBackend.HYPERSPACE
 ### Step 4: Creating Memory
 
 ```python
-from HoloLoom.Documentation.types import MemoryShard
+from hololoom.Documentation.types import MemoryShard
 
 # Manual memory creation
 shards = [
@@ -435,7 +435,7 @@ shards = [
 ]
 
 # Or ingest from files
-from HoloLoom.spinningWheel import AudioSpinner, YouTubeSpinner
+from hololoom.spinningWheel import AudioSpinner, YouTubeSpinner
 
 # From audio
 audio_shards = await AudioSpinner().spin({
@@ -475,7 +475,7 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### Step 6: Learning from Feedback
 
 ```python
-from HoloLoom.reflection import ReflectionBuffer
+from hololoom.reflection import ReflectionBuffer
 
 async with ReflectionBuffer(capacity=1000) as buffer:
     # Store interaction with feedback
@@ -544,8 +544,8 @@ orchestrator = WeavingOrchestrator(
 
 - **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** - Upgrade to v1.1
 - **[PERFORMANCE_BENCHMARKS.md](PERFORMANCE_BENCHMARKS.md)** - Performance analysis
-- **[HoloLoom/context/PRODUCTION_QUICK_START.md](HoloLoom/context/PRODUCTION_QUICK_START.md)** - Production setup
-- **[HoloLoom/context/TROUBLESHOOTING_GUIDE.md](HoloLoom/context/TROUBLESHOOTING_GUIDE.md)** - Common issues
+- **[hololoom/context/PRODUCTION_QUICK_START.md](hololoom/context/PRODUCTION_QUICK_START.md)** - Production setup
+- **[hololoom/context/TROUBLESHOOTING_GUIDE.md](hololoom/context/TROUBLESHOOTING_GUIDE.md)** - Common issues
 
 ---
 
@@ -591,7 +591,7 @@ orchestrator = WeavingOrchestrator(
 
 ```python
 # Get Prometheus metrics
-from HoloLoom.routing import get_telemetry
+from hololoom.routing import get_telemetry
 
 telemetry = get_telemetry()
 print(f"Classification accuracy: {telemetry.accuracy:.1%}")
@@ -744,7 +744,7 @@ docker-compose logs qdrant
 
 ### More Help
 
-- **[HoloLoom/context/TROUBLESHOOTING_GUIDE.md](HoloLoom/context/TROUBLESHOOTING_GUIDE.md)** - Comprehensive troubleshooting
+- **[hololoom/context/TROUBLESHOOTING_GUIDE.md](hololoom/context/TROUBLESHOOTING_GUIDE.md)** - Comprehensive troubleshooting
 - **[GitHub Issues](https://github.com/blakechasteen/mythRL/issues)** - Report bugs
 - **[Discussions](https://github.com/blakechasteen/mythRL/discussions)** - Ask questions
 

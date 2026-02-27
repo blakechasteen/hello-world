@@ -7,7 +7,7 @@
 No additional dependencies required! Bridge uses `httpx` and `pydantic` which Portal already has.
 
 ```python
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
+from hololoom.portal.hololoom_bridge import HoloLoomBridge
 ```
 
 ## Portal Server Integration
@@ -16,7 +16,7 @@ from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
 
 ```python
 # portal_server/main.py
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge, BridgeConfig
+from hololoom.portal.hololoom_bridge import HoloLoomBridge, BridgeConfig
 
 class PortalServer:
     def __init__(self):
@@ -56,7 +56,7 @@ class PortalServer:
 
 ```python
 # portal/node_daemon/wasm_runner.py
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
+from hololoom.portal.hololoom_bridge import HoloLoomBridge
 
 class WASMRunner:
     def __init__(self):
@@ -65,7 +65,7 @@ class WASMRunner:
     async def run_job(self, job_request):
         """Execute WASM job with HoloLoom context."""
 
-        # Get context from HoloLoom memory
+        # Get context from hololoom memory
         context = await self.bridge.recall(
             f"context for {job_request.module_id}",
             k=10
@@ -108,7 +108,7 @@ class WASMRunner:
 
 ```python
 # portal/shuttle_bot/commands.py
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
+from hololoom.portal.hololoom_bridge import HoloLoomBridge
 
 class ShuttleBot:
     def __init__(self):
@@ -353,7 +353,7 @@ Simple mock for testing without HoloLoom running:
 # tests/test_portal_with_bridge.py
 import pytest
 from unittest.mock import AsyncMock, patch
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge, LoomResult
+from hololoom.portal.hololoom_bridge import HoloLoomBridge, LoomResult
 
 @pytest.mark.asyncio
 async def test_job_allocation_with_hololoom():

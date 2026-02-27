@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from collections import defaultdict, deque
 from datetime import datetime
 
-from HoloLoom.skills.base import SkillStatus
+from hololoom.skills.base import SkillStatus
 
 
 @dataclass

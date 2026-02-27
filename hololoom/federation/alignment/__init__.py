@@ -12,7 +12,7 @@ Layered Verification:
 - L3: Consensus (100-500ms) - High-risk/disputed responses
 
 Example Usage:
-    from HoloLoom.federation.alignment import (
+    from hololoom.federation.alignment import (
         AlignmentVerifier,
         FederationAlignmentConfig,
         NodeProfileRegistry,

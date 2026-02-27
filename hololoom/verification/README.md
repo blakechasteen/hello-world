@@ -1,7 +1,7 @@
 # Chain of Verification (CoVe) System
 
 **Status**: Production Ready (2025-12-05)
-**Location**: `HoloLoom/verification/`
+**Location**: `hololoom/verification/`
 **Performance**: <50ms heuristic mode, ~500ms with LLM
 **Test Coverage**: 46/46 tests passing (100%)
 
@@ -54,7 +54,7 @@ The Chain of Verification system implements Meta AI's 4-step CoVe methodology fo
 ### Basic Verification
 
 ```python
-from HoloLoom.verification import verify_response
+from hololoom.verification import verify_response
 
 result = await verify_response(
     query="What is Thompson Sampling?",
@@ -73,7 +73,7 @@ print(result.summary())
 ### With Configuration
 
 ```python
-from HoloLoom.verification import (
+from hololoom.verification import (
     create_verification_chain,
     VerificationConfig,
     DegradationLevel
@@ -105,7 +105,7 @@ if result.contradictions_found:
 ### Component-Level Access
 
 ```python
-from HoloLoom.verification import (
+from hololoom.verification import (
     create_claim_extractor,
     create_verification_planner,
     create_independent_verifier,
@@ -159,7 +159,7 @@ The system operates at 4 levels, automatically falling back when resources unava
 | **DISABLED** | N/A | Skip verification | ~0ms |
 
 ```python
-from HoloLoom.verification import VerificationConfig, DegradationLevel
+from hololoom.verification import VerificationConfig, DegradationLevel
 
 # Force heuristic mode (no LLM required)
 config = VerificationConfig(
@@ -193,7 +193,7 @@ if result.contradictions_found:
 ## Configuration Options
 
 ```python
-from HoloLoom.verification import VerificationConfig
+from hololoom.verification import VerificationConfig
 
 config = VerificationConfig(
     # Thresholds
@@ -229,7 +229,7 @@ config = VerificationConfig(
 ### Configuration Presets
 
 ```python
-from HoloLoom.verification import (
+from hololoom.verification import (
     create_default_config,  # Balanced defaults
     create_fast_config,     # Quick heuristic verification
     create_thorough_config  # Maximum accuracy
@@ -285,7 +285,7 @@ print(f"Hit rate: {stats['hit_rate']:.1%}")
 ## Module Structure
 
 ```
-HoloLoom/verification/
+hololoom/verification/
 ├── __init__.py              # Public API exports
 ├── protocol.py              # Core protocols and data structures
 ├── chain.py                 # Main CoVe orchestrator
@@ -417,7 +417,7 @@ class ContradictionType(Enum):
 
 ```bash
 # All verification tests
-pytest HoloLoom/verification/tests/ -v
+pytest hololoom/verification/tests/ -v
 
 # Result: 46/46 passing (100%)
 ```
@@ -441,7 +441,7 @@ Demonstrates:
 The verification module integrates with HoloLoom's agentic reasoning:
 
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
 
 # VERIFY mode uses CoVe internally
 result = await orchestrator.reason(

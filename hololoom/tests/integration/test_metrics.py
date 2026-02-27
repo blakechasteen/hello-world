@@ -6,7 +6,7 @@ Starts metrics server and simulates some activity.
 
 import asyncio
 import time
-from HoloLoom.performance.prometheus_metrics import metrics, start_metrics_server
+from hololoom.performance.prometheus_metrics import metrics, start_metrics_server
 
 async def simulate_activity():
     """Simulate HoloLoom activity to generate metrics."""

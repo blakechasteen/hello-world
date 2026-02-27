@@ -19,7 +19,7 @@ from typing import Dict, Any, List, Optional
 from collections import deque
 from dataclasses import dataclass
 import numpy as np
-from HoloLoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
+from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
 
 # Cache size multipliers (relative to baseline)
 CACHE_SIZE_MULTIPLIERS = [0.5, 1.0, 2.0, 5.0, 10.0]  # 5 arms

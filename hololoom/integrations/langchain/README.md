@@ -57,7 +57,7 @@ brew install tesseract  # macOS
 ### 1. Document Loading (100+ Formats)
 
 ```python
-from HoloLoom.integrations.langchain import UniversalDocumentLoader
+from hololoom.integrations.langchain import UniversalDocumentLoader
 
 # Auto-detects format from extension
 loader = UniversalDocumentLoader()
@@ -89,7 +89,7 @@ shards = loader.load_github_repo("https://github.com/user/repo")
 ### 2. Multi-Provider LLMs
 
 ```python
-from HoloLoom.integrations.langchain import MultiProviderLLM
+from hololoom.integrations.langchain import MultiProviderLLM
 
 # OpenAI
 llm = MultiProviderLLM(provider="openai", model="gpt-4")
@@ -106,7 +106,7 @@ llm = MultiProviderLLM(provider="cohere", model="command-r-plus")
 llm = MultiProviderLLM(provider="ollama", model="llama3.2:3b")
 
 # Auto-select best available
-from HoloLoom.integrations.langchain import create_best_available_llm
+from hololoom.integrations.langchain import create_best_available_llm
 llm = create_best_available_llm()  # Tries Anthropic → OpenAI → Cohere → Ollama
 ```
 
@@ -129,8 +129,8 @@ for token in llm.stream("Write a story"):
 ### 3. Vector Store Integration
 
 ```python
-from HoloLoom.integrations.langchain import VectorStoreFactory
-from HoloLoom import HoloLoom
+from hololoom.integrations.langchain import VectorStoreFactory
+from hololoom import hololoom
 
 # Create vector store
 store = VectorStoreFactory(store_type="qdrant", host="localhost", port=6333)
@@ -162,12 +162,12 @@ results = store.hybrid_search("machine learning", k=10, alpha=0.7)
 ### 4. Interactive CLI
 
 ```bash
-python -m HoloLoom.integrations.langchain.prototyping
+python -m hololoom.integrations.langchain.prototyping
 ```
 
 Or programmatically:
 ```python
-from HoloLoom.integrations.langchain import quick_start
+from hololoom.integrations.langchain import quick_start
 
 quick_start()  # Starts interactive CLI
 ```
@@ -198,8 +198,8 @@ hololoom> query What are the main findings?
 ### Complete RAG Pipeline
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.integrations.langchain import (
+from hololoom import hololoom
+from hololoom.integrations.langchain import (
     UniversalDocumentLoader,
     MultiProviderLLM,
     VectorStoreFactory
@@ -234,7 +234,7 @@ asyncio.run(main())
 ### Programmatic Prototyping API
 
 ```python
-from HoloLoom.integrations.langchain import QuickPrototype
+from hololoom.integrations.langchain import QuickPrototype
 
 async def main():
     # Setup environment
@@ -394,8 +394,8 @@ quick_start()  # Launches interactive CLI
 ### Example 1: Research Paper Analysis
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.integrations.langchain import UniversalDocumentLoader, MultiProviderLLM
+from hololoom import hololoom
+from hololoom.integrations.langchain import UniversalDocumentLoader, MultiProviderLLM
 
 async def analyze_papers():
     # Load multiple papers
@@ -424,7 +424,7 @@ asyncio.run(analyze_papers())
 ### Example 2: Codebase Documentation
 
 ```python
-from HoloLoom.integrations.langchain import UniversalDocumentLoader, MultiProviderLLM
+from hololoom.integrations.langchain import UniversalDocumentLoader, MultiProviderLLM
 
 async def document_codebase():
     # Load entire codebase
@@ -447,8 +447,8 @@ asyncio.run(document_codebase())
 ### Example 3: Multi-Source Research
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.integrations.langchain import UniversalDocumentLoader, MultiProviderLLM
+from hololoom import hololoom
+from hololoom.integrations.langchain import UniversalDocumentLoader, MultiProviderLLM
 
 async def research_topic(topic: str):
     loader = UniversalDocumentLoader()
@@ -529,7 +529,7 @@ export WEAVIATE_API_KEY="..."
 ### HoloLoom Configuration
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # Development (fast, local)
 config = Config.fast()

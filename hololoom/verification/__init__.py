@@ -11,7 +11,7 @@ Key Innovation: Independent verification prevents self-confirmation bias.
 
 Usage:
     # Simple verification
-    from HoloLoom.verification import verify_response
+    from hololoom.verification import verify_response
 
     result = await verify_response(
         query="What is Thompson Sampling?",
@@ -20,7 +20,7 @@ Usage:
     )
 
     # With chain for repeated verifications
-    from HoloLoom.verification import create_verification_chain
+    from hololoom.verification import create_verification_chain
 
     chain = create_verification_chain(llm_client=my_llm)
     result = await chain.verify(query, response, confidence)
@@ -29,7 +29,7 @@ Created: 2025-12-05
 """
 
 # Core protocols and types
-from HoloLoom.verification.protocol import (
+from hololoom.verification.protocol import (
     # Enums
     ClaimType,
     ContradictionType,
@@ -52,7 +52,7 @@ from HoloLoom.verification.protocol import (
 )
 
 # Main chain
-from HoloLoom.verification.chain import (
+from hololoom.verification.chain import (
     VerificationChain,
     VerificationCache,
     VerificationMetrics,
@@ -63,11 +63,11 @@ from HoloLoom.verification.chain import (
 )
 
 # Component factories
-from HoloLoom.verification.claim_extractor import create_claim_extractor
-from HoloLoom.verification.verification_planner import create_verification_planner
-from HoloLoom.verification.independent_verifier import create_independent_verifier
-from HoloLoom.verification.contradiction_detector import create_contradiction_detector
-from HoloLoom.verification.result_synthesizer import create_result_synthesizer
+from hololoom.verification.claim_extractor import create_claim_extractor
+from hololoom.verification.verification_planner import create_verification_planner
+from hololoom.verification.independent_verifier import create_independent_verifier
+from hololoom.verification.contradiction_detector import create_contradiction_detector
+from hololoom.verification.result_synthesizer import create_result_synthesizer
 
 __all__ = [
     # Enums

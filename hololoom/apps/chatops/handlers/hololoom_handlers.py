@@ -32,19 +32,19 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.loom.command import PatternCard
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.loom.command import PatternCard
 
 # Handler registry (decorator-based registration)
-from HoloLoom.apps.chatops.handlers.handler_registry import (
+from hololoom.apps.chatops.handlers.handler_registry import (
     HandlerRegistry, HandlerCategory, chatops_handler
 )
 
 # WebSocket progress streaming (optional, graceful degradation)
 try:
-    from HoloLoom.apps.chatops.handlers.websocket_progress import (
+    from hololoom.apps.chatops.handlers.websocket_progress import (
         JobProgressBroadcaster, JobProgressManager, get_global_broadcaster
     )
     WEBSOCKET_AVAILABLE = True
@@ -55,7 +55,7 @@ except ImportError:
 
 # Prometheus metrics (optional, graceful degradation)
 try:
-    from HoloLoom.apps.chatops.handlers.prometheus_metrics import (
+    from hololoom.apps.chatops.handlers.prometheus_metrics import (
         JobMetricsCollector, get_metrics_collector
     )
     METRICS_AVAILABLE = True
@@ -66,9 +66,9 @@ except ImportError:
 
 # Alignment framework imports (graceful degradation if unavailable)
 try:
-    from HoloLoom.alignment import create_guardrails, create_audit_trail
-    from HoloLoom.alignment.safety_guardrails import ActionRequest, ActionCategory
-    from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+    from hololoom.alignment import create_guardrails, create_audit_trail
+    from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+    from hololoom.alignment.audit_trail import DecisionType, OutcomeType
     ALIGNMENT_AVAILABLE = True
 except ImportError:
     ALIGNMENT_AVAILABLE = False
@@ -77,7 +77,7 @@ except ImportError:
 
 # Scratchpad auto-storage (graceful degradation if unavailable)
 try:
-    from HoloLoom.apps.chatops.handlers.conversation_handlers import record_weave_result
+    from hololoom.apps.chatops.handlers.conversation_handlers import record_weave_result
     SCRATCHPAD_RECORDING_AVAILABLE = True
 except ImportError:
     SCRATCHPAD_RECORDING_AVAILABLE = False
@@ -159,7 +159,7 @@ class HoloLoomMatrixHandlers:
                     id="welcome",
                     text="HoloLoom is a neural decision-making system with a complete weaving architecture.",
                     episode="system",
-                    entities=["HoloLoom", "weaving", "architecture"],
+                    entities=["hololoom", "weaving", "architecture"],
                     motifs=["SYSTEM", "INFO"]
                 )
             ]
@@ -1501,7 +1501,7 @@ HoloLoom is operational.
 
         # Register TestHandlers (no dependencies)
         try:
-            from HoloLoom.apps.chatops.handlers.test_handlers import TestHandlers
+            from hololoom.apps.chatops.handlers.test_handlers import TestHandlers
             test_handlers = TestHandlers()
             test_count = self._registry.register_instance(test_handlers)
             count += test_count
@@ -1512,7 +1512,7 @@ HoloLoom is operational.
         # Register CodeHandlers (requires ClaudeCodeDepartment)
         if code_department is not None:
             try:
-                from HoloLoom.apps.chatops.handlers.code_handlers import CodeHandlers
+                from hololoom.apps.chatops.handlers.code_handlers import CodeHandlers
                 code_handlers = CodeHandlers(department=code_department)
                 code_count = self._registry.register_instance(code_handlers)
                 count += code_count
@@ -1584,8 +1584,8 @@ Features:
 - Multi-scale embeddings (Matryoshka)
 
 To use:
-    from HoloLoom.apps.chatops.core.matrix_bot import MatrixBot
-    from HoloLoom.apps.chatops.handlers.hololoom_handlers import HoloLoomMatrixHandlers
+    from hololoom.apps.chatops.core.matrix_bot import MatrixBot
+    from hololoom.apps.chatops.handlers.hololoom_handlers import HoloLoomMatrixHandlers
 
     bot = MatrixBot(config)
     handlers = HoloLoomMatrixHandlers(bot, config_mode="fast")

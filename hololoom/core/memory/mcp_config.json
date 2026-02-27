@@ -4,12 +4,12 @@
       "command": "python",
       "args": [
         "-m",
-        "HoloLoom.memory.mcp_server"
+        "hololoom.memory.mcp_server"
       ],
       "env": {
         "PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"
       },
-      "description": "HoloLoom unified memory system - multi-backend memory storage and retrieval",
+      "description": "hololoom unified memory system - multi-backend memory storage and retrieval",
       "capabilities": {
         "resources": {
           "enabled": true,

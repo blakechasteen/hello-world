@@ -1,5 +1,5 @@
-from HoloLoom.eggroll.architectures import get_model
-from HoloLoom.dark_trace.probe import MindProbe
+from hololoom.eggroll.architectures import get_model
+from hololoom.dark_trace.probe import MindProbe
 import torch
 import torch.nn.functional as F
 

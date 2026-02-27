@@ -9,7 +9,7 @@ Makes models smarter without retraining through:
 - Personalization (per-user memory graphs)
 
 Quick Start:
-    from HoloLoom.model_extension import MemoryAugmentedLLM
+    from hololoom.model_extension import MemoryAugmentedLLM
 
     async with MemoryAugmentedLLM(provider="anthropic") as llm:
         # Ingest domain knowledge

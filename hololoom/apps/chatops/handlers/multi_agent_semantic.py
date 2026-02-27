@@ -53,7 +53,7 @@ except ImportError:
 
 # Import semantic components
 try:
-    from HoloLoom.semantic_calculus import (
+    from hololoom.semantic_calculus import (
         PolicySemanticState as SemanticState,
         SEMANTIC_CATEGORIES,
     )
@@ -64,7 +64,7 @@ except ImportError:
     SEMANTIC_CATEGORIES = {}
 
 # Handler registry
-from HoloLoom.apps.chatops.handlers.handler_registry import (
+from hololoom.apps.chatops.handlers.handler_registry import (
     HandlerRegistry, HandlerCategory, chatops_handler
 )
 

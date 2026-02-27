@@ -24,12 +24,12 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from HoloLoom.dark_trace.plugins.interface import (
+from hololoom.dark_trace.plugins.interface import (
     DarkTracePlugin,
     PluginMetadata,
     PluginType,
 )
-from HoloLoom.dark_trace.plugins.safety_gate import (
+from hololoom.dark_trace.plugins.safety_gate import (
     PluginSafetyGate,
     TrustLevel,
     PluginCapability,
@@ -40,10 +40,10 @@ from HoloLoom.dark_trace.plugins.safety_gate import (
     BlockedPluginsRegistry,
     SignatureVerifier,
 )
-from HoloLoom.dark_trace.plugins.alignment_bridge import (
+from hololoom.dark_trace.plugins.alignment_bridge import (
     PluginAlignmentBridge,
 )
-from HoloLoom.dark_trace.plugins.builtin.alignment_validator import (
+from hololoom.dark_trace.plugins.builtin.alignment_validator import (
     AlignmentValidatorPlugin,
     AlignmentViolation,
     AlignmentViolationType,

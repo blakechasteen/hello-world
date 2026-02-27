@@ -11,7 +11,7 @@ Architecture:
 - Enables Matrix → VS Code → Matrix bidirectional communication
 
 Usage:
-    from HoloLoom.apps.departments.claude_code import ClaudeCodeDepartment
+    from hololoom.apps.departments.claude_code import ClaudeCodeDepartment
 
     dept = ClaudeCodeDepartment()
     await dept.start()

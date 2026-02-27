@@ -18,7 +18,7 @@
                             ↓ HTTP/REST
 ┌─────────────────────────────────────────────────────────────┐
 │                   FastAPI Server                             │
-│              (Python - HoloLoom/server/)                     │
+│              (Python - hololoom/server/)                     │
 │                                                               │
 │  agentic_api.py (1,825 lines)                               │
 │  ├─ GET /health                                             │
@@ -31,7 +31,7 @@
                             ↓ Python imports
 ┌─────────────────────────────────────────────────────────────┐
 │                 Agentic Orchestrator                         │
-│           (Python - HoloLoom/agentic/)                       │
+│           (Python - hololoom/agentic/)                       │
 │                                                               │
 │  create_agentic_orchestrator() → AgenticOrchestrator        │
 │  ├─ reason() - Multi-query reasoning                        │
@@ -41,7 +41,7 @@
                             ↓ Uses
 ┌─────────────────────────────────────────────────────────────┐
 │              Weaving Orchestrator Core                       │
-│        (Python - HoloLoom/weaving_orchestrator.py)          │
+│        (Python - hololoom/weaving_orchestrator.py)          │
 │                                                               │
 │  WeavingOrchestrator (3,476 lines)                          │
 │  ├─ weave() - 9-step cycle                                  │
@@ -51,7 +51,7 @@
                             ↓ Uses
 ┌─────────────────────────────────────────────────────────────┐
 │                   Memory Backends                            │
-│            (Python - HoloLoom/memory/)                       │
+│            (Python - hololoom/memory/)                       │
 │                                                               │
 │  backend_factory.create_memory_backend()                    │
 │  ├─ INMEMORY (NetworkX - always available)                  │
@@ -65,7 +65,7 @@
                             ↓ Fallback
 ┌─────────────────────────────────────────────────────────────┐
 │              Alignment & Safety                              │
-│          (Python - HoloLoom/alignment/)                      │
+│          (Python - hololoom/alignment/)                      │
 │                                                               │
 │  SafetyGuardrails - Risk-based gating                       │
 │  AuditTrail - Provenance logging                            │
@@ -77,7 +77,7 @@
 ## Discovered Integration Points (Phase 1 Complete)
 
 ### Layer 1: TypeScript ↔ FastAPI
-**Location**: `squad/src/HoloLoomBridge.ts` ↔ `HoloLoom/server/agentic_api.py`
+**Location**: `squad/src/HoloLoomBridge.ts` ↔ `hololoom/server/agentic_api.py`
 **Status**: ❌ No tests exist
 **Interface Contract**:
 - TypeScript `QueryRequest` → Python `QueryRequest` (Pydantic)
@@ -91,7 +91,7 @@
 4. Server has 17 API files but unclear which is canonical
 
 ### Layer 2: FastAPI ↔ Agentic Orchestrator
-**Location**: `HoloLoom/server/agentic_api.py` ↔ `HoloLoom/agentic/core.py`
+**Location**: `hololoom/server/agentic_api.py` ↔ `hololoom/agentic/core.py`
 **Status**: ⚠️ Code exists, untested
 **Interface Contract**:
 - `QueryRequest` → `Query` (protocols.types)
@@ -105,7 +105,7 @@
 4. Error handling untested
 
 ### Layer 3: Agentic ↔ Weaving Orchestrator
-**Location**: `HoloLoom/agentic/core.py` ↔ `HoloLoom/weaving_orchestrator.py`
+**Location**: `hololoom/agentic/core.py` ↔ `hololoom/weaving_orchestrator.py`
 **Status**: ✅ Partial tests exist (`test_full_pipeline.py`)
 **Interface Contract**:
 - `Query` → `Spacetime` via `weave()`
@@ -118,7 +118,7 @@
 - `test_reflection_loop.py` - Reflection buffer
 
 ### Layer 4: Orchestrator ↔ Memory Backend
-**Location**: `HoloLoom/weaving_orchestrator.py` ↔ `HoloLoom/memory/backend_factory.py`
+**Location**: `hololoom/weaving_orchestrator.py` ↔ `hololoom/memory/backend_factory.py`
 **Status**: ⚠️ Code exists, auto-fallback untested
 **Interface Contract**:
 - `create_memory_backend(config)` → MemoryBackend
@@ -132,7 +132,7 @@
 4. No health check integration
 
 ### Layer 5: Alignment Framework Integration
-**Location**: `HoloLoom/alignment/` ↔ All layers
+**Location**: `hololoom/alignment/` ↔ All layers
 **Status**: ✅ Tests exist, ❌ Not integrated in server
 **Interface Contract**:
 - `SafetyGuardrails.gate_action()` → GateResult
@@ -228,7 +228,7 @@
 - Run and document results
 
 ### Phase 3: API Server Integration
-**New File**: `HoloLoom/tests/integration/test_server_integration.py`
+**New File**: `hololoom/tests/integration/test_server_integration.py`
 **Test Count**: 15 tests
 **Coverage**:
 1. Health endpoint (GET /health)
@@ -261,7 +261,7 @@
 8. Request serialization/deserialization
 
 ### Phase 5: Memory Backend Integration
-**New File**: `HoloLoom/tests/integration/test_memory_backend_fallback.py`
+**New File**: `hololoom/tests/integration/test_memory_backend_fallback.py`
 **Test Count**: 12 tests
 **Coverage**:
 1. INMEMORY backend always works
@@ -278,7 +278,7 @@
 12. Docker startup time measurement
 
 ### Phase 6: Full Stack E2E
-**New File**: `HoloLoom/tests/e2e/test_full_stack_vscode.py`
+**New File**: `hololoom/tests/e2e/test_full_stack_vscode.py`
 **Test Count**: 5 tests
 **Coverage**:
 1. Simple query: TypeScript → Server → Orchestrator → Response

@@ -12,7 +12,7 @@ Usage:
     python -m HoloLoom.cve.cve_server
 
     # Or integrate with existing FastAPI app
-    from HoloLoom.cve.cve_server import create_cve_router
+    from hololoom.cve.cve_server import create_cve_router
     app.include_router(create_cve_router())
 
 WebSocket Protocol:
@@ -36,15 +36,15 @@ try:
 except ImportError:
     HAS_FASTAPI = False
 
-from HoloLoom.cve.cognitive_protocol import (
+from hololoom.cve.cognitive_protocol import (
     CognitiveEvent,
     CognitiveFrame,
     CognitiveVizType,
     create_event,
     create_frame,
 )
-from HoloLoom.cve.tufte_renderer import TufteRenderer, render_cognitive_event
-from HoloLoom.cve.cognitive_extractors import (
+from hololoom.cve.tufte_renderer import TufteRenderer, render_cognitive_event
+from hololoom.cve.cognitive_extractors import (
     UnifiedCognitiveExtractor,
     extract_from_awareness,
     extract_from_bandit,
@@ -415,7 +415,7 @@ def create_cve_app() -> 'FastAPI':
     import os
     app = FastAPI(
         title="CVE - Cognitive Visualization Engine",
-        description="Real-time streaming of cognitive events from HoloLoom",
+        description="Real-time streaming of cognitive events from hololoom",
         version="1.0.0",
     )
 
@@ -480,7 +480,7 @@ def create_cve_router():
 
     Use this to integrate CVE into an existing FastAPI application:
 
-        from HoloLoom.cve.cve_server import create_cve_router
+        from hololoom.cve.cve_server import create_cve_router
         app.include_router(create_cve_router(), prefix="/cve")
     """
     if not HAS_FASTAPI:
@@ -535,7 +535,7 @@ async def run_demo_stream(ws_manager: CVEWebSocketManager):
     Used for testing and demonstration when not connected to a live
     HoloLoom weaving cycle.
     """
-    from HoloLoom.cve.cognitive_protocol import (
+    from hololoom.cve.cognitive_protocol import (
         ActivationField,
         ProbabilityManifold,
         MemoryRetrieval,

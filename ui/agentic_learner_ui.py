@@ -187,7 +187,7 @@ def format_verification_info(info: Dict) -> str:
 def get_server_status() -> str:
     """Get server status as formatted string."""
     if not check_server_health():
-        return "❌ Server not running\n\nStart with:\n`python HoloLoom/server/agentic_api_integrated.py`"
+        return "❌ Server not running\n\nStart with:\n`python hololoom/server/agentic_api_integrated.py`"
 
     stats = get_stats()
 
@@ -365,7 +365,7 @@ if __name__ == "__main__":
     if not check_server_health():
         print("\n❌ Server not running!")
         print("\nPlease start the server first:")
-        print("  python HoloLoom/server/agentic_api_integrated.py")
+        print("  python hololoom/server/agentic_api_integrated.py")
         print("\nThen run this UI again.\n")
         import sys
         sys.exit(1)

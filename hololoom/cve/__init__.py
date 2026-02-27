@@ -14,7 +14,7 @@ Architecture:
 Key Components:
 - cognitive_protocol.py: 15 CognitiveVizTypes + CognitiveRenderer protocol
 - tufte_renderer.py: 2D SVG/CSS renderer (wraps existing Tufte visualizations)
-- cognitive_extractors.py: Extract CRP events from HoloLoom systems
+- cognitive_extractors.py: Extract CRP events from hololoom systems
 - cve_server.py: WebSocket server for real-time streaming
 - consciousness_shell.html: Unified web interface
 - webgl_renderer.py: 3D Three.js renderer (Phase 2)
@@ -30,7 +30,7 @@ Quick Start:
     # Open http://localhost:8001 in your browser
 """
 
-from HoloLoom.cve.cognitive_protocol import (
+from hololoom.cve.cognitive_protocol import (
     # Viz Types
     CognitiveVizType,
 
@@ -65,14 +65,14 @@ from HoloLoom.cve.cognitive_protocol import (
 )
 
 # Renderer
-from HoloLoom.cve.tufte_renderer import (
+from hololoom.cve.tufte_renderer import (
     TufteRenderer,
     render_cognitive_event,
     render_cognitive_frame,
 )
 
 # Extractors
-from HoloLoom.cve.cognitive_extractors import (
+from hololoom.cve.cognitive_extractors import (
     # Individual extractors
     AwarenessGraphExtractor,
     PolicyExtractor,
@@ -94,12 +94,12 @@ from HoloLoom.cve.cognitive_extractors import (
 # Server (lazy import to avoid FastAPI dependency if not needed)
 def create_cve_app():
     """Create a standalone FastAPI app for CVE streaming."""
-    from HoloLoom.cve.cve_server import create_cve_app as _create
+    from hololoom.cve.cve_server import create_cve_app as _create
     return _create()
 
 def create_cve_router():
     """Create a FastAPI router for CVE endpoints."""
-    from HoloLoom.cve.cve_server import create_cve_router as _create
+    from hololoom.cve.cve_server import create_cve_router as _create
     return _create()
 
 __all__ = [

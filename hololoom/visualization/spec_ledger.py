@@ -17,7 +17,7 @@ Features:
 - Session-based organization
 
 This module implements SpecLedgerProtocol and extends the patterns
-from HoloLoom's alignment/audit_trail.py.
+from hololoom's alignment/audit_trail.py.
 
 References:
 - jenny_spec.py (JennySpec dataclass)

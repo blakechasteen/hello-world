@@ -48,9 +48,9 @@ Week 4 implements production-grade hybrid retrieval combining semantic search, k
 ### Basic Usage - Hybrid Retrieval
 
 ```python
-from HoloLoom.memory.hybrid_retrieval import create_hybrid_retriever
-from HoloLoom.memory.graph import KG
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.memory.hybrid_retrieval import create_hybrid_retriever
+from hololoom.memory.graph import KG
+from hololoom.documentation.types import MemoryShard
 
 # Create knowledge graph
 kg = KG()
@@ -82,7 +82,7 @@ print(f"Methods used: {result.metadata['methods']}")
 ### Semantic Search Only
 
 ```python
-from HoloLoom.memory.hybrid_retrieval import SemanticRetriever
+from hololoom.memory.hybrid_retrieval import SemanticRetriever
 
 # Create semantic retriever
 retriever = SemanticRetriever(
@@ -105,7 +105,7 @@ for memory, score in results:
 ### BM25 Keyword Search
 
 ```python
-from HoloLoom.memory.hybrid_retrieval import BM25Retriever
+from hololoom.memory.hybrid_retrieval import BM25Retriever
 
 # Create BM25 retriever
 retriever = BM25Retriever(
@@ -127,7 +127,7 @@ for memory, score in results:
 ### Graph Traversal
 
 ```python
-from HoloLoom.memory.hybrid_retrieval import GraphRetriever
+from hololoom.memory.hybrid_retrieval import GraphRetriever
 
 # Create graph retriever
 retriever = GraphRetriever(
@@ -150,7 +150,7 @@ for memory, score in results:
 ### Custom Hybrid Configuration
 
 ```python
-from HoloLoom.memory.hybrid_retrieval import HybridRetriever
+from hololoom.memory.hybrid_retrieval import HybridRetriever
 
 # Create hybrid retriever with custom config
 retriever = HybridRetriever(
@@ -181,11 +181,11 @@ for memory, score_obj in zip(result.memories, result.scores):
 ### Week 1+2+3+4: Complete Memory System
 
 ```python
-from HoloLoom.memory.lifecycle_manager import ContextStreamManager, MemoryScope
-from HoloLoom.agentic.memory_tools import AgentMemoryTools
-from HoloLoom.memory.consolidation import MemoryConsolidator
-from HoloLoom.memory.hybrid_retrieval import create_hybrid_retriever
-from HoloLoom.memory.graph import KG
+from hololoom.memory.lifecycle_manager import ContextStreamManager, MemoryScope
+from hololoom.agentic.memory_tools import AgentMemoryTools
+from hololoom.memory.consolidation import MemoryConsolidator
+from hololoom.memory.hybrid_retrieval import create_hybrid_retriever
+from hololoom.memory.graph import KG
 
 # Week 1: Multi-level memory manager
 stream_manager = ContextStreamManager()
@@ -564,14 +564,14 @@ Week 4 provides production hybrid retrieval. Next:
 
 ## Files Created
 
-1. **HoloLoom/memory/hybrid_retrieval.py** (750 lines)
+1. **hololoom/memory/hybrid_retrieval.py** (750 lines)
    - SemanticRetriever (200 lines)
    - BM25Retriever (180 lines)
    - GraphRetriever (120 lines)
    - HybridRetriever (100 lines)
    - RRF fusion (40 lines)
 
-2. **HoloLoom/tests/unit/test_hybrid_retrieval.py** (450 lines)
+2. **hololoom/tests/unit/test_hybrid_retrieval.py** (450 lines)
    - 21 comprehensive unit tests
    - 100% pass rate
 

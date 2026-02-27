@@ -19,7 +19,7 @@ The RAG Dashboard automatically constructs beautiful, informative performance da
 ### Basic Usage
 
 ```python
-from HoloLoom.visualization.rag_dashboard import RAGDashboard, RAGResult
+from hololoom.visualization.rag_dashboard import RAGDashboard, RAGResult
 
 # Create RAG queries (from any RAG system)
 queries = [
@@ -43,7 +43,7 @@ dashboard.save("rag_dashboard.html")
 ### Using Convenience Function
 
 ```python
-from HoloLoom.visualization.rag_dashboard import create_rag_dashboard
+from hololoom.visualization.rag_dashboard import create_rag_dashboard
 
 # Creates and saves in one line
 html = create_rag_dashboard(
@@ -270,7 +270,7 @@ metadata={
 
 ```python
 from langchain.chains import RetrievalQA
-from HoloLoom.visualization.rag_dashboard import RAGDashboard, RAGResult
+from hololoom.visualization.rag_dashboard import RAGDashboard, RAGResult
 
 # Run LangChain RAG
 qa_chain = RetrievalQA.from_chain_type(...)
@@ -297,7 +297,7 @@ dashboard.save("rag_dashboard.html")
 
 ```python
 from anthropic import Anthropic
-from HoloLoom.visualization.rag_dashboard import RAGDashboard, RAGResult
+from hololoom.visualization.rag_dashboard import RAGDashboard, RAGResult
 import time
 
 client = Anthropic()
@@ -331,7 +331,7 @@ dashboard.save("rag_dashboard.html")
 
 ```python
 from simple_rag import SimpleRAG
-from HoloLoom.visualization.rag_dashboard import RAGDashboard
+from hololoom.visualization.rag_dashboard import RAGDashboard
 
 # Use SimpleRAG directly
 rag = SimpleRAG(documents=docs)
@@ -535,9 +535,9 @@ This generates:
 
 ## Files
 
-- `HoloLoom/visualization/rag_dashboard.py` - Main implementation (195 lines)
+- `hololoom/visualization/rag_dashboard.py` - Main implementation (195 lines)
 - `demos/demo_rag_dashboard.py` - Demo script with sample data generation (80 lines)
-- `HoloLoom/visualization/RAG_DASHBOARD_README.md` - This file
+- `hololoom/visualization/RAG_DASHBOARD_README.md` - This file
 
 ## Related Components
 

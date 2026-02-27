@@ -2,7 +2,7 @@
 
 **Created**: 2025-11-26
 **Updated**: 2025-11-26
-**Location**: `HoloLoom/server/`
+**Location**: `hololoom/server/`
 
 ## Overview
 
@@ -325,7 +325,7 @@ done
 ```python
 import pytest
 import asyncio
-from HoloLoom.server.ar_api import RateLimiter
+from hololoom.server.ar_api import RateLimiter
 
 @pytest.mark.asyncio
 async def test_rate_limiter():

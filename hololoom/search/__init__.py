@@ -14,14 +14,14 @@ Components:
 
 Quick Start:
     # Matryoshka web search
-    from HoloLoom.search import MatryoshkaWebSearch, SearchConfig
+    from hololoom.search import MatryoshkaWebSearch, SearchConfig
 
     config = SearchConfig(provider="serpapi", api_key="...")
     search = MatryoshkaWebSearch(config=config)
     results = await search.search("What is Thompson Sampling?")
 
     # Multi-agent orchestration
-    from HoloLoom.search import SearchOrchestrator
+    from hololoom.search import SearchOrchestrator
 
     orchestrator = SearchOrchestrator()
     result = await orchestrator.search("Compare bread vs brewing ROI")

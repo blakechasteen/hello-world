@@ -19,7 +19,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
 
-from HoloLoom.telemetry.metrics import (
+from hololoom.telemetry.metrics import (
     get_registry,
     counter,
     gauge,

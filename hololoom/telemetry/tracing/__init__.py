@@ -4,7 +4,7 @@ Tracing module - OpenTelemetry distributed tracing.
 Provides trace context propagation and span management.
 """
 
-from HoloLoom.telemetry.tracing.otel_tracer import (
+from hololoom.telemetry.tracing.otel_tracer import (
     OTelTracer,
     create_tracer,
     get_tracer,
@@ -12,7 +12,7 @@ from HoloLoom.telemetry.tracing.otel_tracer import (
     ConsoleSpanProcessor,
     BatchSpanProcessor,
 )
-from HoloLoom.telemetry.tracing.context import (
+from hololoom.telemetry.tracing.context import (
     TraceContextManager,
     W3CTraceContext,
     get_current_context,

@@ -301,7 +301,7 @@ class PackageManager:
             "",
             "## Installation",
             "```python",
-            "from HoloLoom.agentic.skills import PackageManager",
+            "from hololoom.agentic.skills import PackageManager",
             "",
             "pm = PackageManager()",
             f"package = pm.load_package('{package.name}.skillpack')",
@@ -392,7 +392,7 @@ if __name__ == "__main__":
     print("HoloLoom Skills Package Manager")
     print("\nExample - Export:")
     print("""
-from HoloLoom.agentic.skills import get_template, quick_export
+from hololoom.agentic.skills import get_template, quick_export
 
 # Get skills to export
 skills = {
@@ -412,7 +412,7 @@ print(f"Package saved to: {path}")
 
     print("\nExample - Import:")
     print("""
-from HoloLoom.agentic.skills import quick_import
+from hololoom.agentic.skills import quick_import
 
 # Import package
 results = quick_import("code_quality_pack.skillpack")

@@ -1513,7 +1513,7 @@ class SemanticSpectrum:
             >>> evolved = spectrum.evolve(initial_projection, steps=10)
         """
         try:
-            from HoloLoom.semantic_calculus.flow import create_semantic_flow
+            from hololoom.semantic_calculus.flow import create_semantic_flow
         except ImportError:
             import warnings
             warnings.warn(
@@ -1577,7 +1577,7 @@ class SemanticSpectrum:
         ])
 
         # Create initial state
-        from HoloLoom.semantic_calculus.flow import SemanticFlowState
+        from hololoom.semantic_calculus.flow import SemanticFlowState
         initial_state = SemanticFlowState(
             activation=activation,
             time=0.0

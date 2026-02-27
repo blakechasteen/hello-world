@@ -14,7 +14,7 @@ Open **Terminal 1** (PowerShell or Command Prompt):
 
 ```bash
 cd c:\Users\blake\OneDrive\Documents\mythRL
-python -m HoloLoom.server.agentic_api
+python -m hololoom.server.agentic_api
 ```
 
 **Expected output**:
@@ -205,7 +205,7 @@ netsh advfirewall firewall add rule name="Elle Web" dir=in action=allow protocol
 
 **Causes & Fixes**:
 
-**1. Response from HoloLoom is empty**:
+**1. Response from hololoom is empty**:
 - Check Terminal 1 for errors
 - Try different query: "What is machine learning?"
 
@@ -331,7 +331,7 @@ See: `elle_unity/QUICK_START_GUIDE.md`
 ipconfig | findstr IPv4
 
 # Start HoloLoom backend
-python -m HoloLoom.server.agentic_api
+python -m hololoom.server.agentic_api
 
 # Start web server
 python -m http.server 8080

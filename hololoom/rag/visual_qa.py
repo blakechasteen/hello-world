@@ -103,7 +103,7 @@ class VisualQAEngine:
         # Try to load DeepSeek OCR spinner (preferred)
         if self.deepseek_available:
             try:
-                from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner, DeepSeekOCRConfig
+                from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner, DeepSeekOCRConfig
 
                 # Create config for OCR
                 ocr_config = DeepSeekOCRConfig(
@@ -132,7 +132,7 @@ class VisualQAEngine:
 
         # Try to load CLIP encoder
         try:
-            from HoloLoom.memory.photo_tokens import PhotoTokenMemory
+            from hololoom.memory.photo_tokens import PhotoTokenMemory
 
             # Create temporary photo memory to access CLIP
             temp_photo_memory = PhotoTokenMemory(enable_clip=True)
@@ -358,7 +358,7 @@ class VisualQAEngine:
     def _check_deepseek_available(self) -> bool:
         """Check if DeepSeek OCR is available."""
         try:
-            from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
+            from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
             import transformers
             import torch
             return True

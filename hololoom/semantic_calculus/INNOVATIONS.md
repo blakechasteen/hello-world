@@ -95,7 +95,7 @@ phrase_result = gate * phrase_192D + (1-gate) * word_16D
 ### Code Example
 
 ```python
-from HoloLoom.semantic_calculus.recursive_matryoshka import (
+from hololoom.semantic_calculus.recursive_matryoshka import (
     RecursiveMatryoshkaCalculus,
     FusionStrategy
 )
@@ -334,7 +334,7 @@ projections = {
 ### Code Example
 
 ```python
-from HoloLoom.semantic_calculus.multi_projection import (
+from hololoom.semantic_calculus.multi_projection import (
     MultiProjectionCalculus,
     SemanticProjection,
     EmotionProjection,

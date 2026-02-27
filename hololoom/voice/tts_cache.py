@@ -87,7 +87,7 @@ class CacheConfig:
 
     # Warmup
     enable_warmup: bool = True
-    warmup_phrases_file: Optional[str] = "HoloLoom/voice/common_phrases.yaml"
+    warmup_phrases_file: Optional[str] = "hololoom/voice/common_phrases.yaml"
 
 
 # ============================================================================

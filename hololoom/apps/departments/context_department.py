@@ -3,7 +3,7 @@ Context Department - Context management and enrichment department.
 
 Provides context-aware request enrichment, session tracking, privacy enforcement,
 and cross-department state management. Integrates with HoloLoom's existing context
-system (HoloLoom/context/) for routing, learning, and monitoring.
+system (hololoom/context/) for routing, learning, and monitoring.
 
 Key Capabilities:
 - Context enrichment: Add user context, session history, preferences to requests
@@ -26,8 +26,8 @@ from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from enum import Enum
 
-from HoloLoom.config import Config
-from HoloLoom.apps.departments.protocol import (
+from hololoom.config import Config
+from hololoom.apps.departments.protocol import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -40,10 +40,10 @@ from HoloLoom.apps.departments.protocol import (
     DSStarCheck,
     DepartmentConfig,
 )
-from HoloLoom.apps.departments.base import BaseDepartment
+from hololoom.apps.departments.base import BaseDepartment
 
 # Import existing context system components
-from HoloLoom.context import (
+from hololoom.context import (
     QueryRouter,
     QueryClassifier,
     ThompsonBandit,

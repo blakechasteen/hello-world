@@ -57,7 +57,7 @@ class SemanticPerception:
             snapshot: MatryoshkaSnapshot from semantic calculus
             prev_position: Previous position for velocity/shift calculation
         """
-        from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaScale
+        from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaScale
 
         # Extract paragraph-level state (richest)
         para_state = snapshot.states_by_scale.get(MatryoshkaScale.PARAGRAPH, {})

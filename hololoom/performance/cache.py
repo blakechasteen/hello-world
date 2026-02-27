@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 # Prometheus metrics
 try:
-    from HoloLoom.performance.prometheus_metrics import metrics
+    from hololoom.performance.prometheus_metrics import metrics
     METRICS_ENABLED = True
 except ImportError:
     METRICS_ENABLED = False

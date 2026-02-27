@@ -5,9 +5,9 @@ Quick test for combinatorics integration with warp drive.
 import asyncio
 import numpy as np
 
-from HoloLoom.warp.combinatorics import ChainComplex, DiscreteMorseFunction, Sheaf
-from HoloLoom.warp.space import WarpSpace
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.warp.combinatorics import ChainComplex, DiscreteMorseFunction, Sheaf
+from hololoom.warp.space import WarpSpace
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 async def test_integration():
     print("\n=== Testing Combinatorics + Warp Integration ===\n")

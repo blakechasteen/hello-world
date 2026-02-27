@@ -10,7 +10,7 @@ import asyncio
 import logging
 from typing import List, Tuple
 
-from HoloLoom.infrastructure.sql.backend import SQLBackend, SQLConfig, create_sql_backend
+from hololoom.infrastructure.sql.backend import SQLBackend, SQLConfig, create_sql_backend
 
 
 logger = logging.getLogger(__name__)

@@ -7,7 +7,7 @@ One function. Zero configuration. Perfect dashboard.
 Philosophy: "If you need to configure it, we failed."
 
 Usage:
-    from HoloLoom.visualization import auto
+    from hololoom.visualization import auto
 
     # From Spacetime (HoloLoom query result)
     dashboard = auto(spacetime)
@@ -199,7 +199,7 @@ def auto(
 
     Args:
         source: Anything you want to visualize:
-            - Spacetime object (from HoloLoom query)
+            - Spacetime object (from hololoom query)
             - Dict of data (column_name -> values)
             - Memory backend (KG, Neo4j, NetworkX)
             - File path (CSV, JSON, etc.) - future
@@ -211,7 +211,7 @@ def auto(
         Complete Dashboard object
 
     Examples:
-        >>> from HoloLoom.visualization import auto
+        >>> from hololoom.visualization import auto
 
         # From query result
         >>> spacetime = await orchestrator.weave(query)

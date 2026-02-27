@@ -3,7 +3,7 @@
   "name": "Ensemble Decision Maker",
   "description": "Multiple parallel analysis strategies that vote on the best answer. Implements ensemble methods with weighted voting based on historical accuracy.",
   "tags": ["ensemble", "parallel", "voting", "multi-strategy"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-23",
 
   "nodes": [

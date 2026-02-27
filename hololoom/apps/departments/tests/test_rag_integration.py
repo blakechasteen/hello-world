@@ -21,7 +21,7 @@ from unittest.mock import AsyncMock, MagicMock
 from datetime import datetime
 
 # Import protocol types directly (no HoloLoom dependencies)
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -94,7 +94,7 @@ class MockRAGDepartment:
 
     async def verify(self, response: DepartmentResponse) -> VerificationResult:
         """Verify response using DS-STAR."""
-        from HoloLoom.apps.departments.protocol import VerificationCheck, VerificationStatus
+        from hololoom.apps.departments.protocol import VerificationCheck, VerificationStatus
 
         checks = []
 

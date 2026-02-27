@@ -44,8 +44,8 @@ logger = logging.getLogger(__name__)
 
 # Import from existing semantic calculus
 try:
-    from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSnapshot
-    from HoloLoom.semantic_calculus.dimensions import SemanticSpectrum
+    from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSnapshot
+    from hololoom.semantic_calculus.dimensions import SemanticSpectrum
     SEMANTIC_CALCULUS_AVAILABLE = True
 except ImportError:
     SEMANTIC_CALCULUS_AVAILABLE = False
@@ -53,7 +53,7 @@ except ImportError:
 
 # Import 16 semantic categories from semantic_nudging
 try:
-    from HoloLoom.policy.semantic_nudging import (
+    from hololoom.policy.semantic_nudging import (
         SEMANTIC_CATEGORIES,
         DIM_TO_CATEGORY,
         aggregate_by_category,
@@ -981,7 +981,7 @@ def semantic_state_from_text(
     if not SEMANTIC_CALCULUS_AVAILABLE:
         raise ImportError("Semantic calculus not available")
 
-    from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+    from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
     # Create streaming calculus
     calculus = MatryoshkaSemanticCalculus(

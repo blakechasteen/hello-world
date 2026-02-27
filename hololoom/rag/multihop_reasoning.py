@@ -278,7 +278,7 @@ class MultiHopRAGMixin:
         if not seed_entities:
             logger.warning("No entities extracted from query, falling back to standard query")
             # Fall back to standard RAG
-            from HoloLoom.rag.simple_rag import RAGResult
+            from hololoom.rag.simple_rag import RAGResult
             standard_result = await self.query(question, mode=mode)
             # Convert to MultiHopRAGResult
             return MultiHopRAGResult(
@@ -330,7 +330,7 @@ class MultiHopRAGMixin:
         if self.orchestrator and (sources or paths):
             logger.debug("Generating answer with multi-hop context...")
             try:
-                from HoloLoom.protocols.types import Query
+                from hololoom.protocols.types import Query
                 query_obj = Query(text=question)
                 spacetime = await self.orchestrator.weave(query_obj, use_llm=True)
 
@@ -553,7 +553,7 @@ class MultiHopRAGMixin:
 
     def _get_knowledge_graph(self):
         """
-        Get knowledge graph from HoloLoom.
+        Get knowledge graph from hololoom.
 
         Returns:
             KG instance or None

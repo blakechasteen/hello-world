@@ -175,7 +175,7 @@ class StreamToken:
 
 ### Integration Point
 
-**File**: `HoloLoom/rag/streaming.py` (new file)
+**File**: `hololoom/rag/streaming.py` (new file)
 **Hook**: Call from `SimpleRAG.query_stream()`
 
 ### Implementation Approach
@@ -206,8 +206,8 @@ A: Fall back to regular `query()`, return all tokens at once.
 
 ### Files to Create
 
-- `HoloLoom/rag/streaming.py` (~200 lines) - StreamToken, streaming logic
-- `HoloLoom/rag/tests/test_streaming.py` (~150 lines) - Unit tests
+- `hololoom/rag/streaming.py` (~200 lines) - StreamToken, streaming logic
+- `hololoom/rag/tests/test_streaming.py` (~150 lines) - Unit tests
 - `demos/demo_streaming_rag.py` (~80 lines) - Demo
 
 **Total**: ~430 lines
@@ -223,7 +223,7 @@ Enable users to plug in any embedding model (HuggingFace, OpenAI, Cohere, custom
 ### API Design
 
 ```python
-from HoloLoom.rag.embedding_plugins import EmbeddingProvider
+from hololoom.rag.embedding_plugins import EmbeddingProvider
 
 class SimpleRAG:
     def __init__(
@@ -294,7 +294,7 @@ class CohereEmbedding(EmbeddingProvider):
 
 ### Integration Point
 
-**File**: `HoloLoom/rag/embedding_plugins.py` (new file)
+**File**: `hololoom/rag/embedding_plugins.py` (new file)
 **Hook**: Pass to `hololoom.__init__(embedding_provider=...)`
 
 ### Implementation Approach
@@ -326,8 +326,8 @@ A: **Manual for now**. User instantiates provider and passes to `SimpleRAG(embed
 
 ### Files to Create
 
-- `HoloLoom/rag/embedding_plugins.py` (~300 lines) - Protocol + providers
-- `HoloLoom/rag/tests/test_embedding_plugins.py` (~200 lines) - Tests
+- `hololoom/rag/embedding_plugins.py` (~300 lines) - Protocol + providers
+- `hololoom/rag/tests/test_embedding_plugins.py` (~200 lines) - Tests
 - `demos/demo_custom_embeddings.py` (~100 lines) - Demo
 
 **Total**: ~600 lines
@@ -441,8 +441,8 @@ A: **Use original retrieval order**. Graceful degradation (warn user).
 
 ### Files to Create
 
-- `HoloLoom/rag/reranking.py` (~350 lines) - Reranker protocol + implementations
-- `HoloLoom/rag/tests/test_reranking.py` (~200 lines) - Tests
+- `hololoom/rag/reranking.py` (~350 lines) - Reranker protocol + implementations
+- `hololoom/rag/tests/test_reranking.py` (~200 lines) - Tests
 - `demos/demo_reranking_rag.py` (~120 lines) - Precision comparison demo
 
 **Total**: ~670 lines
@@ -513,7 +513,7 @@ class HybridRAGResult(RAGResult):
 
 ### Integration Point
 
-**File**: `HoloLoom/rag/sql_adapter.py` (new file)
+**File**: `hololoom/rag/sql_adapter.py` (new file)
 **Hook**: Routing in `SimpleRAG.query()`
 
 ### Implementation Approach
@@ -545,8 +545,8 @@ A: **SQLAlchemy-compatible**: SQLite, PostgreSQL, MySQL. Start with SQLite (simp
 
 ### Files to Create
 
-- `HoloLoom/rag/sql_adapter.py` (~550 lines) - SQL adapter + text-to-SQL
-- `HoloLoom/rag/tests/test_sql_adapter.py` (~250 lines) - Tests
+- `hololoom/rag/sql_adapter.py` (~550 lines) - SQL adapter + text-to-SQL
+- `hololoom/rag/tests/test_sql_adapter.py` (~250 lines) - Tests
 - `demos/demo_sql_rag.py` (~150 lines) - Demo with sample DB
 
 **Total**: ~950 lines
@@ -594,7 +594,7 @@ class MultiHopRAGResult(RAGResult):
 
 ### Integration Point
 
-**File**: `HoloLoom/rag/multi_hop.py` (new file)
+**File**: `hololoom/rag/multi_hop.py` (new file)
 **Hook**: Extend `recall()` logic in `SimpleRAG`
 
 ### Implementation Approach
@@ -647,13 +647,13 @@ A: Return `reasoning_path` in result. Dashboard can render as graph.
 
 ### Dependencies
 
-- `HoloLoom/memory/graph.py` (Yarn Graph)
+- `hololoom/memory/graph.py` (Yarn Graph)
 - Traversal algorithms (BFS, beam search)
 
 ### Files to Create
 
-- `HoloLoom/rag/multi_hop.py` (~500 lines) - Multi-hop traversal + reasoning
-- `HoloLoom/rag/tests/test_multi_hop.py` (~250 lines) - Tests
+- `hololoom/rag/multi_hop.py` (~500 lines) - Multi-hop traversal + reasoning
+- `hololoom/rag/tests/test_multi_hop.py` (~250 lines) - Tests
 - `demos/demo_multi_hop_rag.py` (~180 lines) - Demo with reasoning paths
 
 **Total**: ~930 lines
@@ -767,7 +767,7 @@ class MultiAgentRAGResult(RAGResult):
 
 ### Integration Point
 
-**File**: `HoloLoom/rag/multi_agent.py` (new file)
+**File**: `hololoom/rag/multi_agent.py` (new file)
 **Usage**: New class, doesn't extend SimpleRAG
 
 ### Implementation Approach
@@ -800,8 +800,8 @@ A: **New class**: `MultiAgentRAG`. Orchestrates multiple `SimpleRAG` instances.
 
 ### Files to Create
 
-- `HoloLoom/rag/multi_agent.py` (~700 lines) - Multi-agent orchestrator + consensus
-- `HoloLoom/rag/tests/test_multi_agent.py` (~300 lines) - Tests
+- `hololoom/rag/multi_agent.py` (~700 lines) - Multi-agent orchestrator + consensus
+- `hololoom/rag/tests/test_multi_agent.py` (~300 lines) - Tests
 - `demos/demo_multi_agent_rag.py` (~200 lines) - Demo with consensus comparison
 
 **Total**: ~1,200 lines
@@ -813,7 +813,7 @@ A: **New class**: `MultiAgentRAG`. Orchestrates multiple `SimpleRAG` instances.
 ### The Complete API
 
 ```python
-from HoloLoom.rag import (
+from hololoom.rag import (
     SimpleRAG,           # Level 2-4 RAG (current)
     MultimodalRAG,       # Text + images (current)
     AdvancedRAG,         # All Moonshot features (NEW)
@@ -1012,16 +1012,16 @@ if is_ambiguous(question):
 
 ```bash
 # Run all existing tests
-pytest HoloLoom/rag/tests/test_simple_rag.py -v  # Must pass
-pytest HoloLoom/rag/tests/test_multimodal_rag.py -v  # Must pass
+pytest hololoom/rag/tests/test_simple_rag.py -v  # Must pass
+pytest hololoom/rag/tests/test_multimodal_rag.py -v  # Must pass
 
 # Run new Moonshot tests
-pytest HoloLoom/rag/tests/test_streaming.py -v
-pytest HoloLoom/rag/tests/test_embedding_plugins.py -v
-pytest HoloLoom/rag/tests/test_reranking.py -v
-pytest HoloLoom/rag/tests/test_sql_adapter.py -v
-pytest HoloLoom/rag/tests/test_multi_hop.py -v
-pytest HoloLoom/rag/tests/test_multi_agent.py -v
+pytest hololoom/rag/tests/test_streaming.py -v
+pytest hololoom/rag/tests/test_embedding_plugins.py -v
+pytest hololoom/rag/tests/test_reranking.py -v
+pytest hololoom/rag/tests/test_sql_adapter.py -v
+pytest hololoom/rag/tests/test_multi_hop.py -v
+pytest hololoom/rag/tests/test_multi_agent.py -v
 ```
 
 ### Integration Test Plan
@@ -1065,7 +1065,7 @@ async def test_moonshot_integration():
 **Files**: 3 files, ~430 lines
 
 **Implementation Checklist**:
-- [ ] Create `HoloLoom/rag/streaming.py`
+- [ ] Create `hololoom/rag/streaming.py`
 - [ ] Define `StreamToken` dataclass
 - [ ] Add `query_stream()` method to SimpleRAG
 - [ ] Implement streaming for Ollama
@@ -1110,7 +1110,7 @@ async def query_stream(self, question: str, mode: str = "direct"):
 **Files**: 3 files, ~600 lines
 
 **Implementation Checklist**:
-- [ ] Create `HoloLoom/rag/embedding_plugins.py`
+- [ ] Create `hololoom/rag/embedding_plugins.py`
 - [ ] Define `EmbeddingProvider` protocol
 - [ ] Implement `MatryoshkaEmbedding` (default)
 - [ ] Implement `HuggingFaceEmbedding`
@@ -1147,7 +1147,7 @@ class SimpleRAG:
 **Files**: 3 files, ~670 lines
 
 **Implementation Checklist**:
-- [ ] Create `HoloLoom/rag/reranking.py`
+- [ ] Create `hololoom/rag/reranking.py`
 - [ ] Define `Reranker` protocol
 - [ ] Implement `CrossEncoderReranker`
 - [ ] Implement `ColBERTReranker` (optional)
@@ -1188,7 +1188,7 @@ async def query(self, question, mode, max_sources):
 **Files**: 3 files, ~950 lines
 
 **Implementation Checklist**:
-- [ ] Create `HoloLoom/rag/sql_adapter.py`
+- [ ] Create `hololoom/rag/sql_adapter.py`
 - [ ] Define `SQLAdapter` class
 - [ ] Implement SQL query detection (keywords + LLM)
 - [ ] Implement text-to-SQL translation (LLM-based)
@@ -1228,7 +1228,7 @@ class TextToSQLTranslator:
 **Files**: 3 files, ~930 lines
 
 **Implementation Checklist**:
-- [ ] Create `HoloLoom/rag/multi_hop.py`
+- [ ] Create `hololoom/rag/multi_hop.py`
 - [ ] Implement beam search graph traversal
 - [ ] Implement relevance scoring per hop
 - [ ] Implement path ranking
@@ -1269,7 +1269,7 @@ def multi_hop_search(query: str, hops: int, beam_width: int = 5):
 **Files**: 3 files, ~1,200 lines
 
 **Implementation Checklist**:
-- [ ] Create `HoloLoom/rag/multi_agent.py`
+- [ ] Create `hololoom/rag/multi_agent.py`
 - [ ] Define `MultiAgentRAG` class
 - [ ] Implement agent diversity strategies
 - [ ] Implement parallel execution (asyncio.gather)

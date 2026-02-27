@@ -20,14 +20,14 @@ import numpy as np
 # Add repo to path
 sys.path.insert(0, '.')
 
-from HoloLoom.memory.awareness_graph import AwarenessGraph
-from HoloLoom.memory.awareness_types import (
+from hololoom.memory.awareness_graph import AwarenessGraph
+from hololoom.memory.awareness_types import (
     ActivationStrategy,
     ActivationBudget,
     EdgeType
 )
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
 
 async def test_perceive_remember_activate():

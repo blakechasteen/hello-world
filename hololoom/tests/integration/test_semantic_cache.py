@@ -7,9 +7,9 @@ Demonstrates three-tier caching for 244D semantic projections.
 
 import time
 import numpy as np
-from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.performance.semantic_cache import AdaptiveSemanticCache
+from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.performance.semantic_cache import AdaptiveSemanticCache
 
 
 def main():

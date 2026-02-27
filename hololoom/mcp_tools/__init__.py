@@ -10,7 +10,7 @@ Exposes HoloLoom's memory, reasoning, and learning capabilities to Claude Deskto
 **Documentation**: See README.md
 
 Core tool categories:
-- Memory tools: Store and retrieve from HoloLoom knowledge graph
+- Memory tools: Store and retrieve from hololoom knowledge graph
 - Reasoning tools: Execute agentic reasoning modes
 - Learning tools: Access learning statistics and patterns
 - Skill tools: Execute skill templates (after skills integration)

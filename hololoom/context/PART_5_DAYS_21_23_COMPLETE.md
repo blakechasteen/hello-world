@@ -477,7 +477,7 @@ stats = limiter.get_stats()
 **Production-Ready Router with All Features**:
 
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     create_query_router,
     create_error_handler,
     create_system_monitor,
@@ -631,7 +631,7 @@ All components follow **"never crash"** principle:
 
 ### Exceptions
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     ContextError, RoutingError, BackendError,
     CalibrationError, LearningError,
     RateLimitExceededError, CircuitBreakerOpenError
@@ -640,7 +640,7 @@ from HoloLoom.context import (
 
 ### Error Handling
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     ErrorHandler, RetryConfig, FallbackStrategy,
     create_error_handler, retry
 )
@@ -648,7 +648,7 @@ from HoloLoom.context import (
 
 ### Monitoring
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     PerformanceMonitor, ResourceMonitor,
     LearningMetricsMonitor, SystemMonitor,
     create_system_monitor
@@ -657,7 +657,7 @@ from HoloLoom.context import (
 
 ### Circuit Breakers
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     CircuitBreaker, CircuitBreakerRegistry,
     CircuitState, CircuitBreakerConfig,
     create_circuit_breaker, create_circuit_breaker_registry
@@ -666,7 +666,7 @@ from HoloLoom.context import (
 
 ### Rate Limiting
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     TokenBucketRateLimiter, SlidingWindowRateLimiter,
     ConcurrentLimiter, RateLimiter,
     create_rate_limiter, create_token_bucket_limiter,

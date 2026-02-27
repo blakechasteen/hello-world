@@ -39,10 +39,10 @@ test:unit:
     paths:
       - .cache/pip
   before_script:
-    - pip install --cache-dir .cache/pip -r HoloLoom/voice/requirements.txt
+    - pip install --cache-dir .cache/pip -r hololoom/voice/requirements.txt
     - pip install pytest pytest-asyncio pytest-cov
   script:
-    - PYTHONPATH=. pytest HoloLoom/voice/tests/test_voice_agent.py -v --cov=HoloLoom.voice --cov-report=xml --cov-report=term
+    - PYTHONPATH=. pytest hololoom/voice/tests/test_voice_agent.py -v --cov=hololoom.voice --cov-report=xml --cov-report=term
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     reports:
@@ -64,8 +64,8 @@ lint:flake8:
   before_script:
     - pip install flake8
   script:
-    - flake8 HoloLoom/voice --count --select=E9,F63,F7,F82 --show-source --statistics
-    - flake8 HoloLoom/voice --count --max-line-length=127 --statistics
+    - flake8 hololoom/voice --count --select=E9,F63,F7,F82 --show-source --statistics
+    - flake8 hololoom/voice --count --max-line-length=127 --statistics
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -77,7 +77,7 @@ lint:black:
   before_script:
     - pip install black
   script:
-    - black --check HoloLoom/voice
+    - black --check hololoom/voice
   allow_failure: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -90,7 +90,7 @@ lint:mypy:
   before_script:
     - pip install mypy
   script:
-    - mypy HoloLoom/voice --ignore-missing-imports
+    - mypy hololoom/voice --ignore-missing-imports
   allow_failure: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

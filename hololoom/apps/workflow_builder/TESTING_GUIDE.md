@@ -399,7 +399,7 @@ Document actual performance on your system:
 ### Issue: Template file 404 error
 **Cause**: File path incorrect or file missing
 **Solution**:
-1. Verify file exists: `HoloLoom/web_dashboard/example_workflows/research_pipeline.json`
+1. Verify file exists: `hololoom/web_dashboard/example_workflows/research_pipeline.json`
 2. Check filename matches exactly (case-sensitive)
 3. Verify JSON is valid: `https://jsonlint.com/`
 

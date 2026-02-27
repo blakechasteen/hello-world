@@ -15,7 +15,7 @@ import pytest
 from unittest.mock import Mock, AsyncMock, MagicMock
 from dataclasses import dataclass
 
-from HoloLoom.orchestrator import (
+from hololoom.orchestrator import (
     ExecutorPipeline,
     WeavingContext,
     create_weaving_context,

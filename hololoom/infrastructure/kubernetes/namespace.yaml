@@ -1,7 +1,7 @@
-# HoloLoom Namespace
+# hololoom Namespace
 # Part 5: Production Hardening - Day 25
 #
-# Dedicated namespace for HoloLoom deployment
+# Dedicated namespace for hololoom deployment
 
 apiVersion: v1
 kind: Namespace

@@ -816,7 +816,7 @@ Output format (JSON array):
         if not self.kg:
             return
         try:
-            from HoloLoom.memory.graph import KGEdge
+            from hololoom.memory.graph import KGEdge
             self.kg.G.add_node(
                 f"dialogue:{session_id}",
                 node_type="dialogue_session",

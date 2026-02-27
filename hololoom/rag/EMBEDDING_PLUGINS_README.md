@@ -16,7 +16,7 @@ Custom Embedding Plugins enable users to swap embedding models in HoloLoom RAG u
 
 ## Files Created
 
-### 1. `HoloLoom/rag/embedding_plugins.py` (318 lines)
+### 1. `hololoom/rag/embedding_plugins.py` (318 lines)
 
 **Core Protocol**:
 ```python
@@ -37,7 +37,7 @@ class EmbeddingProvider(Protocol):
 - `validate_embedding_provider()`: Protocol compliance check
 - `create_embedding_provider()`: Factory function
 
-### 2. `HoloLoom/rag/tests/test_embedding_plugins.py` (464 lines)
+### 2. `hololoom/rag/tests/test_embedding_plugins.py` (464 lines)
 
 **Test Coverage** (41 tests):
 - Protocol tests (4): Dimension, encode, encode_query, runtime_checkable
@@ -67,8 +67,8 @@ class EmbeddingProvider(Protocol):
 ### Usage
 
 ```python
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.rag.embedding_plugins import (
+from hololoom.rag import SimpleRAG
+from hololoom.rag.embedding_plugins import (
     HuggingFaceEmbedding,
     OpenAIEmbedding,
     CohereEmbedding,
@@ -220,7 +220,7 @@ SimpleRAG(
 
 ### Run Tests
 ```bash
-pytest HoloLoom/rag/tests/test_embedding_plugins.py -v
+pytest hololoom/rag/tests/test_embedding_plugins.py -v
 # 41 passed in 13.27s
 ```
 
@@ -234,7 +234,7 @@ python demos/demo_custom_embeddings.py
 
 ### Required
 - `numpy`: Already in HoloLoom
-- `HoloLoom.embedding.spectral`: For MatryoshkaEmbedding
+- `hololoom.embedding.spectral`: For MatryoshkaEmbedding
 
 ### Optional
 - `sentence-transformers`: For HuggingFaceEmbedding
@@ -262,7 +262,7 @@ python demos/demo_custom_embeddings.py
 
 ## References
 
-- **Architecture**: `HoloLoom/rag/MOONSHOT_ARCHITECTURE.md` Feature 2
-- **Code**: `HoloLoom/rag/embedding_plugins.py`
-- **Tests**: `HoloLoom/rag/tests/test_embedding_plugins.py`
+- **Architecture**: `hololoom/rag/MOONSHOT_ARCHITECTURE.md` Feature 2
+- **Code**: `hololoom/rag/embedding_plugins.py`
+- **Tests**: `hololoom/rag/tests/test_embedding_plugins.py`
 - **Demo**: `demos/demo_custom_embeddings.py`

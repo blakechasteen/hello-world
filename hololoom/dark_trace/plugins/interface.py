@@ -28,7 +28,7 @@ Plugin Types:
     - IntegrationPlugin: External system integration
 
 Usage:
-    from HoloLoom.dark_trace.plugins.interface import (
+    from hololoom.dark_trace.plugins.interface import (
         DarkTracePlugin,
         PluginMetadata,
         PluginType,
@@ -63,11 +63,11 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.engine import DarkTraceEngine
-    from HoloLoom.dark_trace.plugins.safety_gate import PluginSafetyGate, PluginCapability
-    from HoloLoom.dark_trace.protocol import TraceLens, CausalValidator, Activations, SteeringVector
+    from hololoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.dark_trace.plugins.safety_gate import PluginSafetyGate, PluginCapability
+    from hololoom.dark_trace.protocol import TraceLens, CausalValidator, Activations, SteeringVector
 
-logger = logging.getLogger("HoloLoom.dark_trace.plugins.interface")
+logger = logging.getLogger("hololoom.dark_trace.plugins.interface")
 
 
 # =============================================================================

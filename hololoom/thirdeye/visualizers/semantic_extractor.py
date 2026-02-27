@@ -48,9 +48,9 @@ class SemanticProfile:
     """
     Semantic analysis of text mapped to visual parameters.
 
-    Each dimension is 0.0-1.0, derived from HoloLoom's 228D space.
+    Each dimension is 0.0-1.0, derived from hololoom's 228D space.
     """
-    # Core semantic dimensions (from HoloLoom's 16 interpretable axes)
+    # Core semantic dimensions (from hololoom's 16 interpretable axes)
     sentiment: float = 0.5       # negative ↔ positive
     formality: float = 0.5       # casual ↔ formal
     technicality: float = 0.5    # general ↔ technical
@@ -354,7 +354,7 @@ class SemanticExtractor:
         """
         profile = await self.analyze(text)
 
-        # Recall related memories from HoloLoom
+        # Recall related memories from hololoom
         related = []
         if self.hololoom is not None:
             try:

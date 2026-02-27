@@ -9,7 +9,7 @@ Date: October 29, 2025
 """
 
 from pathlib import Path
-from HoloLoom.visualization.cache_gauge import (
+from hololoom.visualization.cache_gauge import (
     CacheGaugeRenderer,
     CacheMetrics,
     CacheEffectiveness,
@@ -426,7 +426,7 @@ def test_combined_demo():
                 Simple API for automated tool calling and dashboard integration:
             </p>
             <div class="api-example">
-from HoloLoom.visualization.cache_gauge import render_cache_gauge
+from hololoom.visualization.cache_gauge import render_cache_gauge
 
 # Simple usage
 html = render_cache_gauge(

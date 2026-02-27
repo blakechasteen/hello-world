@@ -85,7 +85,7 @@ pip install -e ".[all]"        # Everything
 python -m spacy download en_core_web_sm
 
 # 7. Run tests to verify setup
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 ```
 
 ### Verify Installation
@@ -200,13 +200,13 @@ HoloLoom follows these principles (from [V1_SIMPLIFICATION_COMPLETE.md](V1_SIMPL
 
 ```bash
 # All tests
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 
 # Specific test file
-pytest HoloLoom/tests/unit/test_unified_policy.py -v
+pytest hololoom/tests/unit/test_unified_policy.py -v
 
 # With coverage
-pytest HoloLoom/tests/ --cov=HoloLoom --cov-report=html
+pytest hololoom/tests/ --cov=HoloLoom --cov-report=html
 
 # v1.0 simplification tests
 python test_v1_simplification.py
@@ -216,7 +216,7 @@ python test_v1_simplification.py
 
 **Test structure**:
 ```
-HoloLoom/tests/
+hololoom/tests/
 ├── unit/           # Fast (<5s), isolated component tests
 ├── integration/    # Medium (<30s), multi-component tests
 └── e2e/            # Slow (<2min), full pipeline tests
@@ -231,10 +231,10 @@ HoloLoom/tests/
 
 **Example test**:
 ```python
-# HoloLoom/tests/unit/test_embeddings.py
+# hololoom/tests/unit/test_embeddings.py
 
 import pytest
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 def test_single_scale_embeddings():
     """Test that v1.0 uses single-scale [768]."""
@@ -270,7 +270,7 @@ def test_single_scale_embeddings():
 from typing import List, Optional
 import numpy as np
 
-from HoloLoom.documentation.types import Vector
+from hololoom.documentation.types import Vector
 
 
 def encode_texts(
@@ -302,26 +302,26 @@ def encode_texts(
 **Use Black** (official HoloLoom formatter):
 ```bash
 # Format code
-black HoloLoom/
+black hololoom/
 
 # Check formatting
-black --check HoloLoom/
+black --check hololoom/
 ```
 
 **Use Ruff** (linter):
 ```bash
 # Lint code
-ruff check HoloLoom/
+ruff check hololoom/
 
 # Auto-fix
-ruff check --fix HoloLoom/
+ruff check --fix hololoom/
 ```
 
 ### Type Checking
 
 **Use mypy** (optional but recommended):
 ```bash
-mypy HoloLoom/ --ignore-missing-imports
+mypy hololoom/ --ignore-missing-imports
 ```
 
 ---
@@ -663,7 +663,7 @@ Relates to #456
 
 ## SaaS Toolkit for Ecosystem Developers
 
-HoloLoom's SaaS Toolkit (`HoloLoom/saas/`) is designed for ecosystem developers who want to build their own applications on top of HoloLoom. The toolkit is modular - use only what you need.
+HoloLoom's SaaS Toolkit (`hololoom/saas/`) is designed for ecosystem developers who want to build their own applications on top of HoloLoom. The toolkit is modular - use only what you need.
 
 ### What's Included
 
@@ -680,7 +680,7 @@ The SaaS Toolkit provides production-ready components:
 
 **1. Auth Only** (simplest):
 ```python
-from HoloLoom.saas import SaaSConfig, create_saas_backend
+from hololoom.saas import SaaSConfig, create_saas_backend
 
 config = SaaSConfig(
     sqlite_path="./data/myapp.db",
@@ -714,7 +714,7 @@ config = SaaSConfig(
 
 ### Example Applications
 
-See `HoloLoom/saas/examples/` for complete working examples:
+See `hololoom/saas/examples/` for complete working examples:
 
 1. **auth_only_app.py** - Minimal authentication (SQLite, no dependencies)
 2. **usage_tracking_app.py** - Auth + usage analytics (no billing)
@@ -722,7 +722,7 @@ See `HoloLoom/saas/examples/` for complete working examples:
 
 Run any example:
 ```bash
-PYTHONPATH=. uvicorn HoloLoom.saas.examples.auth_only_app:app --reload
+PYTHONPATH=. uvicorn hololoom.saas.examples.auth_only_app:app --reload
 ```
 
 ### Building Your Own App
@@ -730,9 +730,9 @@ PYTHONPATH=. uvicorn HoloLoom.saas.examples.auth_only_app:app --reload
 **Step 1**: Create your FastAPI app with SaaS routes:
 ```python
 from fastapi import FastAPI, Depends
-from HoloLoom.saas import SaaSConfig, create_saas_backend
-from HoloLoom.saas.auth import validate_api_key, AuthContext
-from HoloLoom.saas.routes import customers_router, api_keys_router
+from hololoom.saas import SaaSConfig, create_saas_backend
+from hololoom.saas.auth import validate_api_key, AuthContext
+from hololoom.saas.routes import customers_router, api_keys_router
 
 app = FastAPI(title="My HoloLoom App")
 
@@ -771,8 +771,8 @@ We welcome contributions to the SaaS toolkit:
 4. **Testing** - Integration tests, edge cases
 
 **Before contributing**:
-- Read the existing code in `HoloLoom/saas/`
-- Check `HoloLoom/saas/README.md` for architecture
+- Read the existing code in `hololoom/saas/`
+- Check `hololoom/saas/README.md` for architecture
 - Open an issue to discuss significant changes
 
 ---
@@ -783,7 +783,7 @@ HoloLoom's Alignment Framework is open source because **safety mechanisms must b
 
 ### What's Included
 
-The alignment framework (`HoloLoom/alignment/`) provides:
+The alignment framework (`hololoom/alignment/`) provides:
 
 | Component | Purpose | Overhead |
 |-----------|---------|----------|
@@ -798,7 +798,7 @@ The alignment framework (`HoloLoom/alignment/`) provides:
 
 **1. Use the Framework**:
 ```python
-from HoloLoom.alignment import SafetyGuardrails, AuditTrail
+from hololoom.alignment import SafetyGuardrails, AuditTrail
 
 guardrails = SafetyGuardrails(enable_human_in_loop=True)
 audit_trail = AuditTrail()
@@ -825,10 +825,10 @@ await audit_trail.log_decision(query, action, outcome)
 
 ### Key Files
 
-- `HoloLoom/alignment/safety_guardrails.py` - Risk classification and gating
-- `HoloLoom/alignment/deception_detection.py` - Goal transparency
-- `HoloLoom/alignment/audit_trail.py` - Decision provenance
-- `HoloLoom/alignment/README.md` - Complete API reference
+- `hololoom/alignment/safety_guardrails.py` - Risk classification and gating
+- `hololoom/alignment/deception_detection.py` - Goal transparency
+- `hololoom/alignment/audit_trail.py` - Decision provenance
+- `hololoom/alignment/README.md` - Complete API reference
 
 ### Our Commitment
 

@@ -23,7 +23,7 @@ Integration Points:
 - Leverages ReflectionBuffer for learning
 
 Usage:
-    from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+    from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
 
     async with create_agentic_orchestrator(config, shards) as agent:
         result = await agent.reason(

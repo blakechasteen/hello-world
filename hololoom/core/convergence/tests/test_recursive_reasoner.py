@@ -19,16 +19,16 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # Components to test
-from HoloLoom.core.convergence.query_decomposition import QueryDecomposer, ComplexityDetector
-from HoloLoom.core.convergence.refinement_strategies import StrategySelector, QueryClassifier, StrategyExecutor
-from HoloLoom.core.convergence.detectors import (
+from hololoom.core.convergence.query_decomposition import QueryDecomposer, ComplexityDetector
+from hololoom.core.convergence.refinement_strategies import StrategySelector, QueryClassifier, StrategyExecutor
+from hololoom.core.convergence.detectors import (
     ConfidenceThresholdDetector,
     ImprovementDeltaDetector,
     QualityPlateauDetector,
     MaxIterationsDetector,
     MultiCriteriaDetector
 )
-from HoloLoom.core.protocols.recursive_reasoning import (
+from hololoom.core.protocols.recursive_reasoning import (
     RefinementStep,
     RefinementStrategy,
     RecursiveConfig,
@@ -256,7 +256,7 @@ def test_max_iterations_detector(sample_refinement_history):
 
 def test_multi_criteria_detector_or_logic(sample_refinement_history):
     """Test multi-criteria detector with OR logic."""
-    from HoloLoom.core.convergence.detectors import create_multi_criteria_detector
+    from hololoom.core.convergence.detectors import create_multi_criteria_detector
 
     detector = create_multi_criteria_detector(
         confidence_threshold=0.85,
@@ -273,7 +273,7 @@ def test_multi_criteria_detector_or_logic(sample_refinement_history):
 
 def test_multi_criteria_detector_and_logic(sample_refinement_history):
     """Test multi-criteria detector with AND logic."""
-    from HoloLoom.core.convergence.detectors import create_multi_criteria_detector
+    from hololoom.core.convergence.detectors import create_multi_criteria_detector
 
     detector = create_multi_criteria_detector(
         confidence_threshold=0.85,
@@ -317,7 +317,7 @@ def test_strategy_executor_decompose():
 @pytest.mark.asyncio
 async def test_recursive_reasoner_convergence(mock_department):
     """Test recursive reasoner converges correctly."""
-    from HoloLoom.core.convergence.recursive_reasoner_enhanced import create_recursive_reasoner
+    from hololoom.core.convergence.recursive_reasoner_enhanced import create_recursive_reasoner
 
     config = RecursiveConfig(
         strategy=ReasoningStrategy.REFINE,

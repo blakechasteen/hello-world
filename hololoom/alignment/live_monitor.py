@@ -5,10 +5,10 @@ Real-time terminal-based dashboard showing latency metrics,
 alerts, and system health.
 
 Usage:
-    python HoloLoom/alignment/live_monitor.py
+    python hololoom/alignment/live_monitor.py
 
 Or programmatically:
-    from HoloLoom.alignment.live_monitor import LiveDashboard
+    from hololoom.alignment.live_monitor import LiveDashboard
 
     dashboard = LiveDashboard(monitor)
     dashboard.start()  # Runs in background
@@ -21,7 +21,7 @@ import sys
 import threading
 from typing import Optional
 from datetime import datetime, timedelta
-from HoloLoom.alignment.monitoring import AlignmentMonitor, AlertLevel
+from hololoom.alignment.monitoring import AlignmentMonitor, AlertLevel
 
 
 class LiveDashboard:
@@ -239,11 +239,11 @@ def main():
         print("✅ Production system imported")
     except ImportError:
         print("❌ Could not import production system")
-        print("   Run from repository root: python HoloLoom/alignment/live_monitor.py")
+        print("   Run from repository root: python hololoom/alignment/live_monitor.py")
         return
 
     # Create monitor
-    from HoloLoom.alignment.monitoring import AlignmentMonitor
+    from hololoom.alignment.monitoring import AlignmentMonitor
 
     monitor = AlignmentMonitor(
         persist_path=Path("./monitor_metrics.json")
@@ -266,7 +266,7 @@ def main():
     input("Press Enter to start...")
 
     # Create production system
-    from HoloLoom.alignment import create_guardrails, create_detector, create_guard, create_audit_trail
+    from hololoom.alignment import create_guardrails, create_detector, create_guard, create_audit_trail
 
     print("\n🔧 Initializing alignment framework...")
 
@@ -293,21 +293,21 @@ def main():
             with monitor.track("pipeline"):
                 # Track individual components
                 with monitor.track("guardrails"):
-                    from HoloLoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+                    from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
                     request = ActionRequest(action_id=query_text, category=ActionCategory.QUERY)
                     decision = system.guardrails.evaluate(request, text_input=query_text)
 
                 with monitor.track("detector"):
-                    from HoloLoom.alignment.deception_detection import BehavioralProbe, ProbeType
+                    from hololoom.alignment.deception_detection import BehavioralProbe, ProbeType
                     probe = BehavioralProbe(ProbeType.GOAL_ALIGNMENT, "Test", "Expected")
                     system.detector.run_probe(probe, "Response")
 
                 with monitor.track("guard"):
-                    from HoloLoom.alignment.instrumental_convergence import ResourceType
+                    from hololoom.alignment.instrumental_convergence import ResourceType
                     system.guard.check_resource_usage(ResourceType.MEMORY, 500.0)
 
                 with monitor.track("audit"):
-                    from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+                    from hololoom.alignment.audit_trail import DecisionType, OutcomeType
                     log = system.audit.log_decision(
                         DecisionType.SAFETY_GATE,
                         OutcomeType.APPROVED,

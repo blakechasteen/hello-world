@@ -17,8 +17,8 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Import existing APIs
-from HoloLoom.apps.server.agentic_api import app as agentic_app
-from HoloLoom.apps.server.agent_manager_api import app as manager_app
+from hololoom.apps.server.agentic_api import app as agentic_app
+from hololoom.apps.server.agent_manager_api import app as manager_app
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +45,7 @@ app.mount("/api/agentic", agentic_app)
 app.mount("/api/manager", manager_app)
 
 # Path to static assets
-# Assuming build output is in HoloLoom/dist/ (set in vite.config.js)
+# Assuming build output is in hololoom/dist/ (set in vite.config.js)
 BASE_DIR = Path(__file__).parent.resolve()
 STATIC_DIR = BASE_DIR / "dist"
 
@@ -67,7 +67,7 @@ if STATIC_DIR.exists():
         return JSONResponse(status_code=404, content={"message": "Not found"})
 else:
     logger.warning(f"⚠️ Static directory {STATIC_DIR} not found. Dashboard will not be available.")
-    logger.warning("Run 'cd HoloLoom/hololoom-dashboard && npm install && npm run build' to generate assets.")
+    logger.warning("Run 'cd hololoom/hololoom-dashboard && npm install && npm run build' to generate assets.")
 
     @app.get("/")
     async def root():

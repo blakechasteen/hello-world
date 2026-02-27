@@ -20,7 +20,7 @@ from datetime import datetime
 import logging
 
 if TYPE_CHECKING:
-    from HoloLoom.core.protocols.types import MemoryShard
+    from hololoom.core.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 

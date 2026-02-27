@@ -20,7 +20,7 @@ from typing import List, Optional, Dict, Any, Callable, Awaitable
 from typing_extensions import Protocol, runtime_checkable
 import logging
 
-logger = logging.getLogger("HoloLoom.redteam.sandbox.protocols")
+logger = logging.getLogger("hololoom.redteam.sandbox.protocols")
 
 
 # =============================================================================

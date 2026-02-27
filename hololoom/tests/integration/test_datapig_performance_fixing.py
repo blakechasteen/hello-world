@@ -9,7 +9,7 @@ Date: 2025-11-22
 
 import pytest
 import time
-from HoloLoom.datapig import DataPigDetector, IssueType
+from hololoom.datapig import DataPigDetector, IssueType
 
 
 # ============================================================================
@@ -89,7 +89,7 @@ def test_benchmark_fix_suggestion_generation(detector):
 def test_benchmark_issue_prioritization():
     """Benchmark: Speed of prioritizing issues by severity"""
 
-    from HoloLoom.datapig import DataQualityIssue, Severity
+    from hololoom.datapig import DataQualityIssue, Severity
 
     # Create mock issues with different severities
     issues = []
@@ -168,7 +168,7 @@ def test_benchmark_batch_issue_processing(detector):
 def test_benchmark_issue_conversion_overhead():
     """Benchmark: DATAPIG → Trough SlopIssue conversion overhead"""
 
-    from HoloLoom.datapig import DataQualityIssue, Severity
+    from hololoom.datapig import DataQualityIssue, Severity
     from trough.datapig_integration import convert_datapig_issue
 
     # Create 100 mock DATAPIG issues

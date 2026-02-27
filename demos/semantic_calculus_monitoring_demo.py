@@ -16,13 +16,13 @@ from pathlib import Path
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.semantic_calculus.mcp_server import (
+from hololoom.semantic_calculus.mcp_server import (
     initialize_semantic_calculus,
     calculus,
     spectrum,
     call_tool as mcp_call_tool
 )
-from HoloLoom.telemetry.monitoring.dashboard import MonitoringDashboard, MetricsCollector
+from hololoom.telemetry.monitoring.dashboard import MonitoringDashboard, MetricsCollector
 import time
 
 

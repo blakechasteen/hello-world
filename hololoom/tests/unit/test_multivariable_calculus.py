@@ -14,7 +14,7 @@ Date: December 2025 (Math Module Upgrade)
 
 import numpy as np
 import pytest
-from HoloLoom.warp.math.extensions.multivariable_calculus import (
+from hololoom.warp.math.extensions.multivariable_calculus import (
     ScalarField, VectorField, LineIntegral, Point3D,
     SurfaceIntegral, IntegralTheorems, GradientCurlDiv
 )

@@ -27,7 +27,7 @@ The Personality Framework provides 4 distinct agent personas, each with customiz
 ## Quick Start
 
 ```python
-from HoloLoom.voice.personality import PersonalityManager
+from hololoom.voice.personality import PersonalityManager
 
 # Initialize manager (loads all personalities)
 manager = PersonalityManager()
@@ -203,7 +203,7 @@ voice = manager.get_voice_for_personality()  # "onyx"
 
 ### Creating Custom Personalities
 
-Create a YAML file in `HoloLoom/voice/personalities/`:
+Create a YAML file in `hololoom/voice/personalities/`:
 
 ```yaml
 name: "Custom Elle"
@@ -249,7 +249,7 @@ manager = PersonalityManager()
 ## Integration with VoiceAgent
 
 ```python
-from HoloLoom.voice import VoiceAgent, PersonalityManager
+from hololoom.voice import VoiceAgent, PersonalityManager
 
 # Create personality manager
 personality_manager = PersonalityManager()
@@ -289,7 +289,7 @@ personality_manager.switch_personality('assistant_elle')
 ### Run All Tests
 
 ```bash
-PYTHONPATH=. pytest HoloLoom/voice/tests/test_personality.py -v
+PYTHONPATH=. pytest hololoom/voice/tests/test_personality.py -v
 ```
 
 ### Test Coverage
@@ -326,7 +326,7 @@ PYTHONPATH=. python demos/demo_personality_switching.py
 ## File Structure
 
 ```
-HoloLoom/voice/
+hololoom/voice/
 ├── personality.py                    # Core personality system (534 lines)
 ├── personalities/                    # Personality YAML files
 │   ├── professor_elle.yaml          # (42 lines)

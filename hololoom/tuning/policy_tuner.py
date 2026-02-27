@@ -19,7 +19,7 @@ from collections import deque, defaultdict
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
-from HoloLoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
+from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
 
 # Epsilon values (exploration rate) - 5 arms
 EPSILON_VALUES = [0.05, 0.10, 0.15, 0.20, 0.25]

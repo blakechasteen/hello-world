@@ -1,7 +1,7 @@
 # Awareness Graph
 
 **Status**: Production Ready (November 2025)
-**Location**: `HoloLoom/memory/awareness_graph.py`
+**Location**: `hololoom/memory/awareness_graph.py`
 **Lines**: ~556 lines
 
 Living memory system with semantic topology in 228-dimensional semantic space.
@@ -24,8 +24,8 @@ The Awareness Graph is HoloLoom's consciousness layer - a dynamic memory system 
 ## Quick Start
 
 ```python
-from HoloLoom.memory.awareness_graph import AwarenessGraph
-from HoloLoom.memory.awareness_types import ActivationStrategy
+from hololoom.memory.awareness_graph import AwarenessGraph
+from hololoom.memory.awareness_types import ActivationStrategy
 
 # Create awareness graph
 graph = AwarenessGraph(
@@ -93,7 +93,7 @@ Control how activation spreads through the memory graph:
 | **DEEP** | Multi-hop traversal | Complex reasoning |
 
 ```python
-from HoloLoom.memory.awareness_types import ActivationStrategy
+from hololoom.memory.awareness_types import ActivationStrategy
 
 # Precise: Only closest semantic matches
 activated = await graph.activate(query, strategy=ActivationStrategy.PRECISE)
@@ -114,7 +114,7 @@ Semantic relationships in the graph topology:
 | **REFERENCE** | Citation/mention | "A references B" |
 
 ```python
-from HoloLoom.memory.awareness_types import EdgeType, EdgeMetadata
+from hololoom.memory.awareness_types import EdgeType, EdgeMetadata
 
 # Create semantic edge
 edge = EdgeMetadata(
@@ -130,7 +130,7 @@ edge = EdgeMetadata(
 Control resource consumption during activation:
 
 ```python
-from HoloLoom.memory.awareness_types import ActivationBudget
+from hololoom.memory.awareness_types import ActivationBudget
 
 budget = ActivationBudget(
     max_nodes=100,        # Maximum nodes to activate
@@ -246,7 +246,7 @@ for mem in memories:
 Track system health and performance:
 
 ```python
-from HoloLoom.memory.awareness_types import AwarenessMetrics
+from hololoom.memory.awareness_types import AwarenessMetrics
 
 metrics = graph.get_metrics()
 
@@ -270,7 +270,7 @@ print(f"Entropy: {metrics.entropy:.2f}")
 The Awareness Graph integrates with the weaving pipeline:
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     # Experience creates memories in awareness graph
@@ -304,8 +304,8 @@ if awareness_context.shift_detected:
 ### Graph Backend Selection
 
 ```python
-from HoloLoom.memory.graph import KG
-from HoloLoom.memory.neo4j_graph import Neo4jKG
+from hololoom.memory.graph import KG
+from hololoom.memory.neo4j_graph import Neo4jKG
 
 # Development (in-memory)
 kg = KG()

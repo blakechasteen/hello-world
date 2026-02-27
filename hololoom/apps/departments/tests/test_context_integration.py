@@ -21,8 +21,8 @@ import time
 from datetime import datetime, timedelta
 from typing import Dict, Any
 
-from HoloLoom.config import Config
-from HoloLoom.apps.departments.context_department import (
+from hololoom.config import Config
+from hololoom.apps.departments.context_department import (
     ContextDepartment,
     ContextEnvelope,
     SessionState,
@@ -30,7 +30,7 @@ from HoloLoom.apps.departments.context_department import (
     DataSensitivity,
     create_context_department,
 )
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     DepartmentRequest,
     DepartmentResponse,
     ConfidenceMetadata,
@@ -576,7 +576,7 @@ async def test_refine_adds_context_on_incompleteness(context_dept, sample_user):
     response = await context_dept.execute(request)
 
     # Simulate incompleteness by creating verification with failed check
-    from HoloLoom.apps.departments.protocol import VerificationCheck, VerificationStatus
+    from hololoom.apps.departments.protocol import VerificationCheck, VerificationStatus
 
     verification = await context_dept.verify(response)
     verification.checks.append(VerificationCheck(

@@ -1,7 +1,7 @@
 # Cross-Device Handoff System
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/handoff/`
+**Location**: `hololoom/handoff/`
 **Total Code**: ~3,500 lines across 6 files
 **Date Created**: December 8, 2025
 
@@ -56,7 +56,7 @@ In traditional systems, each device maintains a separate copy of user data. The 
 ### 1. Create Identity
 
 ```python
-from HoloLoom.handoff import UnifiedIdentity
+from hololoom.handoff import UnifiedIdentity
 
 # Create new identity with first device
 identity = UnifiedIdentity.create("blake", device_name="laptop")
@@ -73,7 +73,7 @@ pairing_payload = identity.generate_pairing_payload()
 # ... encode as QR code for user to scan ...
 
 # On laptop: Scan QR code and add phone
-from HoloLoom.handoff import get_or_create_identity
+from hololoom.handoff import get_or_create_identity
 
 identity = get_or_create_identity("~/.hololoom/identity")
 phone_key = ...  # From QR code
@@ -84,8 +84,8 @@ print(f"Phone paired! Device ID: {manifest.device_id}")
 ### 3. Create Synced Memory
 
 ```python
-from HoloLoom.handoff import SyncedMemory
-from HoloLoom.handoff import UnifiedIdentity
+from hololoom.handoff import SyncedMemory
+from hololoom.handoff import UnifiedIdentity
 
 identity = UnifiedIdentity.load("~/.hololoom/identity")
 memory = SyncedMemory(identity)
@@ -104,8 +104,8 @@ print(f"Found {len(memories)} memories")
 ### 4. Handoff to Another Device
 
 ```python
-from HoloLoom.handoff import HardenedHandoffOrchestrator
-from HoloLoom.handoff import SyncedMemory, UnifiedIdentity
+from hololoom.handoff import HardenedHandoffOrchestrator
+from hololoom.handoff import SyncedMemory, UnifiedIdentity
 
 identity = UnifiedIdentity.load("~/.hololoom/identity")
 memory = SyncedMemory(identity)
@@ -248,7 +248,7 @@ orchestrator.get_security_stats()                        # Security metrics
 
 **Usage**:
 ```python
-from HoloLoom.handoff import create_default_transport
+from hololoom.handoff import create_default_transport
 
 transport = create_default_transport("my_device_id")
 await transport.connect()
@@ -645,7 +645,7 @@ new_clock = max(local_clock, remote_clock) + 1
 
 ```python
 import asyncio
-from HoloLoom.handoff import (
+from hololoom.handoff import (
     UnifiedIdentity,
     SyncedMemory,
     HardenedHandoffOrchestrator,
@@ -808,16 +808,16 @@ Total: ~25ms (overhead <5ms, 80% network)
 
 ```bash
 # Run handoff system tests
-pytest HoloLoom/handoff/tests/ -v
+pytest hololoom/handoff/tests/ -v
 
 # Test security layers
-pytest HoloLoom/handoff/tests/test_orchestrator.py -v
+pytest hololoom/handoff/tests/test_orchestrator.py -v
 
 # Test CRDT merge semantics
-pytest HoloLoom/handoff/tests/test_synced_memory.py -v
+pytest hololoom/handoff/tests/test_synced_memory.py -v
 
 # Test all transports
-pytest HoloLoom/handoff/tests/test_transport.py -v
+pytest hololoom/handoff/tests/test_transport.py -v
 ```
 
 ## Integration with HoloLoom
@@ -825,8 +825,8 @@ pytest HoloLoom/handoff/tests/test_transport.py -v
 The Handoff System integrates with HoloLoom's main memory API:
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.handoff import UnifiedIdentity, SyncedMemory
+from hololoom import hololoom
+from hololoom.handoff import UnifiedIdentity, SyncedMemory
 
 identity = UnifiedIdentity.create("blake", "laptop")
 

@@ -41,7 +41,7 @@
 
 ```bash
 # From repository root
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 ```
 
 **Output**:
@@ -58,17 +58,17 @@ INFO:     Application startup complete.
 
 ### 2. Open the Dashboard
 
-Open `HoloLoom/web_dashboard/control_panel.html` in your web browser:
+Open `hololoom/web_dashboard/control_panel.html` in your web browser:
 
 ```bash
 # Windows
-start HoloLoom/web_dashboard/control_panel.html
+start hololoom/web_dashboard/control_panel.html
 
 # macOS
-open HoloLoom/web_dashboard/control_panel.html
+open hololoom/web_dashboard/control_panel.html
 
 # Linux
-xdg-open HoloLoom/web_dashboard/control_panel.html
+xdg-open hololoom/web_dashboard/control_panel.html
 ```
 
 **Or** navigate directly to the file in your browser.
@@ -221,13 +221,13 @@ asyncio.run(query_hololoom())
 
 ```bash
 # All tests
-pytest HoloLoom/tests/integration/test_unified_server.py -v
+pytest hololoom/tests/integration/test_unified_server.py -v
 
 # Specific test
-pytest HoloLoom/tests/integration/test_unified_server.py::test_query_endpoint_direct_mode -v
+pytest hololoom/tests/integration/test_unified_server.py::test_query_endpoint_direct_mode -v
 
 # With coverage
-pytest HoloLoom/tests/integration/test_unified_server.py --cov=HoloLoom.server.unified_server -v
+pytest hololoom/tests/integration/test_unified_server.py --cov=hololoom.server.unified_server -v
 ```
 
 ### Manual API Testing
@@ -439,7 +439,7 @@ learning_update_interval=60.0  # Update every 60s
 
 **Solution**: Set PYTHONPATH:
 ```bash
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 ```
 
 ---
@@ -451,7 +451,7 @@ PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
 **Solutions**:
 1. Check server is running: `curl http://localhost:8000/health`
 2. Check firewall settings
-3. Try different port: `uvicorn HoloLoom.server.unified_server:app --port 8001`
+3. Try different port: `uvicorn hololoom.server.unified_server:app --port 8001`
 
 ---
 

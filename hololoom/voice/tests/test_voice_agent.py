@@ -23,7 +23,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
-from HoloLoom.voice import (
+from hololoom.voice import (
     VoiceAgent,
     TTSProvider,
     OpenAITTS,

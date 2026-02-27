@@ -13,9 +13,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from typing import Optional
 import inspect
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator, CONSCIENCE_AVAILABLE
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator, CONSCIENCE_AVAILABLE
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 
 # =============================================================================
@@ -81,8 +81,8 @@ class TestConscienceAvailableFlag:
         # This test verifies the imports at module level worked
         # If protocols.conscience and conscience_adapter exist, it should be True
         if CONSCIENCE_AVAILABLE:
-            from HoloLoom.agentic.conscience_adapter import AgenticConscienceAdapter
-            from HoloLoom.protocols.conscience import ConscienceDecision, StepType
+            from hololoom.agentic.conscience_adapter import AgenticConscienceAdapter
+            from hololoom.protocols.conscience import ConscienceDecision, StepType
             assert AgenticConscienceAdapter is not None
             assert ConscienceDecision is not None
             assert StepType is not None
@@ -275,14 +275,14 @@ class TestGracefulDegradation:
     def test_can_import_protocols_when_available(self):
         """Test that protocols can be imported when available."""
         if CONSCIENCE_AVAILABLE:
-            from HoloLoom.protocols.conscience import ConscienceDecision, StepType
+            from hololoom.protocols.conscience import ConscienceDecision, StepType
             assert ConscienceDecision is not None
             assert StepType is not None
 
     def test_can_import_adapter_when_available(self):
         """Test that conscience adapter can be imported when available."""
         if CONSCIENCE_AVAILABLE:
-            from HoloLoom.agentic.conscience_adapter import AgenticConscienceAdapter
+            from hololoom.agentic.conscience_adapter import AgenticConscienceAdapter
             assert AgenticConscienceAdapter is not None
 
     @pytest.mark.asyncio
@@ -313,7 +313,7 @@ class TestAutoCreationOfConscienceAdapter:
     )
     def test_adapter_class_can_be_instantiated(self):
         """Test that adapter class can be instantiated."""
-        from HoloLoom.agentic.conscience_adapter import AgenticConscienceAdapter
+        from hololoom.agentic.conscience_adapter import AgenticConscienceAdapter
 
         adapter = AgenticConscienceAdapter()
         assert adapter is not None
@@ -326,7 +326,7 @@ class TestAutoCreationOfConscienceAdapter:
     )
     def test_adapter_available_property(self):
         """Test that adapter has available property."""
-        from HoloLoom.agentic.conscience_adapter import AgenticConscienceAdapter
+        from hololoom.agentic.conscience_adapter import AgenticConscienceAdapter
 
         adapter = AgenticConscienceAdapter()
         # Should be a boolean
@@ -346,7 +346,7 @@ class TestStepTypeEnum:
     )
     def test_step_type_has_verification(self):
         """Test that StepType has VERIFICATION member."""
-        from HoloLoom.protocols.conscience import StepType
+        from hololoom.protocols.conscience import StepType
         assert hasattr(StepType, 'VERIFICATION')
 
     @pytest.mark.skipif(
@@ -355,7 +355,7 @@ class TestStepTypeEnum:
     )
     def test_step_type_has_research(self):
         """Test that StepType has RESEARCH member."""
-        from HoloLoom.protocols.conscience import StepType
+        from hololoom.protocols.conscience import StepType
         assert hasattr(StepType, 'RESEARCH')
 
     @pytest.mark.skipif(
@@ -364,7 +364,7 @@ class TestStepTypeEnum:
     )
     def test_step_type_has_plan_step(self):
         """Test that StepType has PLAN_STEP member."""
-        from HoloLoom.protocols.conscience import StepType
+        from hololoom.protocols.conscience import StepType
         assert hasattr(StepType, 'PLAN_STEP')
 
 
@@ -412,7 +412,7 @@ class TestConscienceDecisionTypes:
     )
     def test_conscience_decision_is_dataclass(self):
         """Test that ConscienceDecision is a dataclass."""
-        from HoloLoom.protocols.conscience import ConscienceDecision
+        from hololoom.protocols.conscience import ConscienceDecision
         import dataclasses
         assert dataclasses.is_dataclass(ConscienceDecision)
 
@@ -422,7 +422,7 @@ class TestConscienceDecisionTypes:
     )
     def test_conscience_decision_has_allowed_field(self):
         """Test that ConscienceDecision has allowed field."""
-        from HoloLoom.protocols.conscience import ConscienceDecision
+        from hololoom.protocols.conscience import ConscienceDecision
         import dataclasses
         field_names = [f.name for f in dataclasses.fields(ConscienceDecision)]
         assert 'allowed' in field_names
@@ -433,7 +433,7 @@ class TestConscienceDecisionTypes:
     )
     def test_conscience_decision_has_voice_field(self):
         """Test that ConscienceDecision has voice field."""
-        from HoloLoom.protocols.conscience import ConscienceDecision
+        from hololoom.protocols.conscience import ConscienceDecision
         import dataclasses
         field_names = [f.name for f in dataclasses.fields(ConscienceDecision)]
         assert 'voice' in field_names
@@ -444,7 +444,7 @@ class TestConscienceDecisionTypes:
     )
     def test_conscience_decision_has_risk_level_field(self):
         """Test that ConscienceDecision has risk_level field."""
-        from HoloLoom.protocols.conscience import ConscienceDecision
+        from hololoom.protocols.conscience import ConscienceDecision
         import dataclasses
         field_names = [f.name for f in dataclasses.fields(ConscienceDecision)]
         assert 'risk_level' in field_names

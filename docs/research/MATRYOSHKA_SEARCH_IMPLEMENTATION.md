@@ -42,7 +42,7 @@ A **production-ready Perplexity-style search system** for HoloLoom with 10-50× 
 
 ## 📁 Files Created
 
-### Core Modules (HoloLoom/search/)
+### Core Modules (hololoom/search/)
 
 ```
 protocol.py              (200 lines)  - SearchProvider protocol, data models
@@ -52,7 +52,7 @@ cache.py                 (250 lines)  - TTL-based result caching
 __init__.py              (70 lines)   - Public API exports
 ```
 
-### Providers (HoloLoom/search/providers/)
+### Providers (hololoom/search/providers/)
 
 ```
 __init__.py              (70 lines)   - Provider factory
@@ -144,7 +144,7 @@ Efficiency: 46% fewer dimensions, 6.25× faster!
 ### 1. Basic Search
 
 ```python
-from HoloLoom.search import MatryoshkaWebSearch, SearchConfig
+from hololoom.search import MatryoshkaWebSearch, SearchConfig
 
 config = SearchConfig(provider="serpapi", api_key="...")
 search = MatryoshkaWebSearch(config=config)
@@ -344,7 +344,7 @@ Performance Statistics:
 
 1. **Agentic Orchestrator** (Ready to integrate)
    ```python
-   # In HoloLoom/agentic/core.py
+   # In hololoom/agentic/core.py
    async def _research_with_web_search(self, query, intent, max_steps):
        web_search = MatryoshkaWebSearch(...)
        results, shards = await web_search.search_to_shards(query)

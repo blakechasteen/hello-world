@@ -23,9 +23,9 @@ That's it! The demo runs 5 queries and shows learning statistics.
 
 ```python
 import asyncio
-from HoloLoom.infrastructure.sql import SQLConfig
-from HoloLoom.infrastructure.mcp import create_mcp_server, generate_session_id
-from HoloLoom.context import create_query_router
+from hololoom.infrastructure.sql import SQLConfig
+from hololoom.infrastructure.mcp import create_mcp_server, generate_session_id
+from hololoom.context import create_query_router
 
 async def main():
     # Setup

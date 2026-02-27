@@ -1,7 +1,7 @@
 # Visual Compression - Graph→Image for Token Savings
 
 **Status**: Production Ready (November 2025)
-**Location**: `HoloLoom/memory/visual_compression.py` (674 lines)
+**Location**: `hololoom/memory/visual_compression.py` (674 lines)
 **Compression**: 2-5x for structured data (graphs, tables, code)
 **Dependencies**: Pillow, matplotlib, networkx (optional, graceful degradation)
 
@@ -30,7 +30,7 @@ Visual Compression solves a fundamental context window problem: text representat
 ## Quick Start
 
 ```python
-from HoloLoom.memory.visual_compression import compress_to_visual, CompressionType
+from hololoom.memory.visual_compression import compress_to_visual, CompressionType
 import networkx as nx
 
 # Create a knowledge graph
@@ -54,8 +54,8 @@ print(f"Image shape: {image.shape}")  # (600, 800, 3) RGB array
 Renders NetworkX graphs as visual diagrams with spring layout:
 
 ```python
-from HoloLoom.memory.visual_compression import compress_knowledge_graph
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.visual_compression import compress_knowledge_graph
+from hololoom.memory.graph import KG, KGEdge
 
 # Create graph
 kg = KG()
@@ -83,7 +83,7 @@ print(metrics.compression_ratio)  # ~3-5×
 Renders tables and DataFrames as visual tables:
 
 ```python
-from HoloLoom.memory.visual_compression import compress_table
+from hololoom.memory.visual_compression import compress_table
 
 # From list of lists
 data = [
@@ -115,7 +115,7 @@ image, metrics = compress_table(df)
 Renders source code with line numbers:
 
 ```python
-from HoloLoom.memory.visual_compression import compress_code
+from hololoom.memory.visual_compression import compress_code
 
 code = """
 def fibonacci(n):
@@ -140,7 +140,7 @@ print(metrics.compression_ratio)  # ~1.5-2×
 Automatically selects compression type based on data:
 
 ```python
-from HoloLoom.memory.visual_compression import compress_to_visual
+from hololoom.memory.visual_compression import compress_to_visual
 
 # Auto-detects NetworkX graph
 image, metrics = compress_to_visual(nx.karate_club_graph())  # → KNOWLEDGE_GRAPH
@@ -159,7 +159,7 @@ image, metrics = compress_to_visual("def foo():\n    pass")  # → CODE
 By default, image dimensions adapt to the data size for optimal compression:
 
 ```python
-from HoloLoom.memory.visual_compression import compress_to_visual
+from hololoom.memory.visual_compression import compress_to_visual
 
 # Default: 3× target compression
 image, metrics = compress_to_visual(data)
@@ -300,8 +300,8 @@ def estimate_vision_tokens(image: np.ndarray, patch_size: int = 14) -> int:
 Visual compression integrates with HoloLoom's multimodal RAG system:
 
 ```python
-from HoloLoom.rag import MultimodalRAG
-from HoloLoom.memory.visual_compression import compress_knowledge_graph
+from hololoom.rag import MultimodalRAG
+from hololoom.memory.visual_compression import compress_knowledge_graph
 
 async with MultimodalRAG(enable_visual_compression=True) as rag:
     # When context exceeds threshold, auto-compresses to visual
@@ -362,7 +362,7 @@ ImportError: Knowledge graph rendering requires networkx and matplotlib.
 
 ```python
 # Built-in demo
-python HoloLoom/memory/visual_compression.py
+python hololoom/memory/visual_compression.py
 
 # Output:
 # === Visual Compression Demo ===

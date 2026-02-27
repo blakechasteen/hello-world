@@ -29,7 +29,7 @@ import numpy as np
 
 # Optional: UnifiedLLMClient for multi-provider support
 try:
-    from HoloLoom.llm.unified_client import UnifiedLLMClient, LLMConfig
+    from hololoom.llm.unified_client import UnifiedLLMClient, LLMConfig
     HAS_UNIFIED_CLIENT = True
 except ImportError:
     HAS_UNIFIED_CLIENT = False

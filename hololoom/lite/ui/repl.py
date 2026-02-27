@@ -28,7 +28,7 @@ def start_repl(**kwargs) -> None:
 
 async def _repl_main(**kwargs) -> None:
     """Main REPL loop."""
-    from HoloLoom.lite import HoloLoomLite
+    from hololoom.lite import HoloLoomLite
 
     print()
     print("=" * 60)

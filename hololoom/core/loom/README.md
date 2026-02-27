@@ -1,7 +1,7 @@
 # Loom Command - Pattern Card Selector
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/loom/`
+**Location**: `hololoom/loom/`
 **Code**: 428 lines across 3 files
 
 ---
@@ -64,7 +64,7 @@ graph LR
 **Text Specifications:**
 
 ```python
-from HoloLoom.loom import PatternCard
+from hololoom.loom import PatternCard
 
 # BARE: Minimal threading
 PatternCard.BARE
@@ -98,7 +98,7 @@ PatternCard.FUSED
 ### File Structure
 
 ```
-HoloLoom/loom/
+hololoom/loom/
 ├── __init__.py          # 18 lines - Public exports
 ├── command.py           # 424 lines - LoomCommand + PatternCard
 └── card_loader.py       # 285 lines - Load pattern specs from YAML
@@ -111,8 +111,8 @@ HoloLoom/loom/
 The command that selects and configures pattern cards.
 
 ```python
-from HoloLoom.loom import LoomCommand, PatternCard
-from HoloLoom.config import Config
+from hololoom.loom import LoomCommand, PatternCard
+from hololoom.config import Config
 
 # Create loom command
 loom = LoomCommand(
@@ -196,7 +196,7 @@ class PatternSpec:
 ### Example 1: Basic Selection
 
 ```python
-from HoloLoom.loom import LoomCommand, PatternCard
+from hololoom.loom import LoomCommand, PatternCard
 
 # Create loom with default FAST pattern
 loom = LoomCommand(default_pattern=PatternCard.FAST)
@@ -240,7 +240,7 @@ assert spec.pattern == PatternCard.FUSED
 ### Example 3: With Safety Guardrails
 
 ```python
-from HoloLoom.alignment import create_guardrails
+from hololoom.alignment import create_guardrails
 
 # Create guardrails
 guardrails = create_guardrails()
@@ -283,7 +283,7 @@ patterns:
 ```
 
 ```python
-from HoloLoom.loom import load_pattern_cards
+from hololoom.loom import load_pattern_cards
 
 # Load custom patterns
 patterns = load_pattern_cards("custom_patterns.yaml")
@@ -297,8 +297,8 @@ spec = patterns["custom_research"]
 ## Integration with Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.loom import LoomCommand, PatternCard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.loom import LoomCommand, PatternCard
 
 # Loom command selects pattern
 loom = LoomCommand(default_pattern=PatternCard.FAST)
@@ -370,8 +370,8 @@ class PatternCard(Enum):
 
 **Internal**:
 ```python
-from HoloLoom.config import Config
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.config import Config
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
 ```
 
 **External**:
@@ -389,7 +389,7 @@ from typing import Dict, List, Optional
 
 **1. Basic Usage (Fixed Pattern)**
 ```python
-from HoloLoom.loom import LoomCommand, PatternCard
+from hololoom.loom import LoomCommand, PatternCard
 
 loom = LoomCommand(default_pattern=PatternCard.FAST)
 spec = loom.select_pattern(query="What is X?")
@@ -409,7 +409,7 @@ spec = loom.select_pattern(query="explain X in detail", complexity="complex")
 
 **3. Integration with Orchestrator**
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 loom = LoomCommand(default_pattern=PatternCard.FAST)
 orchestrator = WeavingOrchestrator(loom_command=loom, ...)
@@ -501,7 +501,7 @@ patterns:
 ```
 
 ```python
-from HoloLoom.loom import load_pattern_cards
+from hololoom.loom import load_pattern_cards
 
 patterns = load_pattern_cards("my_patterns.yaml")
 loom = LoomCommand(custom_patterns=patterns)

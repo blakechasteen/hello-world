@@ -1,7 +1,7 @@
 # Chrono Trigger - Temporal Control System
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/chrono/`
+**Location**: `hololoom/chrono/`
 **Code**: 548 lines across 2 files
 
 ---
@@ -61,7 +61,7 @@ The **Chrono Trigger** is HoloLoom's temporal orchestrator that manages all time
 ### File Structure
 
 ```
-HoloLoom/chrono/
+hololoom/chrono/
 ├── __init__.py       # 11 lines - Public exports
 └── trigger.py        # 537 lines - ChronoTrigger implementation
 ```
@@ -73,7 +73,7 @@ HoloLoom/chrono/
 The main temporal control system.
 
 ```python
-from HoloLoom.chrono import ChronoTrigger
+from hololoom.chrono import ChronoTrigger
 from datetime import timedelta
 
 # Create trigger with default settings
@@ -210,7 +210,7 @@ class ExecutionLimits:
 ### Example 1: Basic Temporal Window
 
 ```python
-from HoloLoom.chrono import ChronoTrigger
+from hololoom.chrono import ChronoTrigger
 from datetime import datetime, timedelta
 
 trigger = ChronoTrigger()
@@ -234,7 +234,7 @@ print(f"Max age: {window.max_age}")
 ### Example 2: Thread Filtering by Recency
 
 ```python
-from HoloLoom.memory.protocol import Memory
+from hololoom.memory.protocol import Memory
 
 # Threads from Yarn Graph
 threads = [
@@ -330,8 +330,8 @@ print(f"Decay weight: {decay_weight:.3f}")
 ## Integration with Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.chrono import ChronoTrigger
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.chrono import ChronoTrigger
 
 # Create chrono trigger
 trigger = ChronoTrigger(
@@ -446,8 +446,8 @@ async def wait_for_heartbeat(self) -> None
 
 **Internal**:
 ```python
-from HoloLoom.memory.protocol import Memory
-from HoloLoom.performance.prometheus_metrics import metrics  # Optional
+from hololoom.memory.protocol import Memory
+from hololoom.performance.prometheus_metrics import metrics  # Optional
 ```
 
 **External**:
@@ -468,7 +468,7 @@ from typing import List, Tuple, Optional
 
 **1. Basic Temporal Window Creation**
 ```python
-from HoloLoom.chrono import ChronoTrigger
+from hololoom.chrono import ChronoTrigger
 
 trigger = ChronoTrigger()
 window = trigger.fire(pattern="fast")
@@ -611,9 +611,9 @@ asyncio.create_task(background_loop())
 ### Integration Example
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.chrono import ChronoTrigger
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.chrono import ChronoTrigger
+from hololoom.config import Config
 
 # Create trigger with custom settings
 trigger = ChronoTrigger(

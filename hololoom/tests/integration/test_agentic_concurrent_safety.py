@@ -24,11 +24,11 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import List
 
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-from HoloLoom.alignment.audit_trail import AuditTrail
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.alignment.audit_trail import AuditTrail
 
 
 # ============================================================================
@@ -74,7 +74,7 @@ def audit_trail():
 @pytest.mark.asyncio
 async def test_rate_limiter_concurrent_requests():
     """Test rate limiter handles concurrent requests without corruption."""
-    from HoloLoom.apps.server.agentic_api import RateLimiter
+    from hololoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=10, window_seconds=1)
 
@@ -95,7 +95,7 @@ async def test_rate_limiter_concurrent_requests():
 @pytest.mark.asyncio
 async def test_rate_limiter_no_state_corruption():
     """Test rate limiter state remains consistent under concurrent load."""
-    from HoloLoom.apps.server.agentic_api import RateLimiter
+    from hololoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=5, window_seconds=1)
     client_id = "test_client"
@@ -113,7 +113,7 @@ async def test_rate_limiter_no_state_corruption():
 @pytest.mark.asyncio
 async def test_rate_limiter_multiple_clients_isolated():
     """Test rate limiting is isolated per client."""
-    from HoloLoom.apps.server.agentic_api import RateLimiter
+    from hololoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=3, window_seconds=1)
 
@@ -135,7 +135,7 @@ async def test_rate_limiter_multiple_clients_isolated():
 @pytest.mark.asyncio
 async def test_rate_limiter_window_sliding():
     """Test rate limiter window slides correctly under concurrent load."""
-    from HoloLoom.apps.server.agentic_api import RateLimiter
+    from hololoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=5, window_seconds=1)
     client_id = "test_client"
@@ -154,7 +154,7 @@ async def test_rate_limiter_window_sliding():
 @pytest.mark.asyncio
 async def test_rate_limiter_stress_test():
     """Stress test rate limiter with high concurrent load."""
-    from HoloLoom.apps.server.agentic_api import RateLimiter
+    from hololoom.apps.server.agentic_api import RateLimiter
 
     limiter = RateLimiter(max_requests=50, window_seconds=1)
 
@@ -392,7 +392,7 @@ async def test_safety_guardrails_escalation_handling_concurrent(safety_guardrail
 @pytest.mark.asyncio
 async def test_audit_trail_concurrent_logging(audit_trail):
     """Test audit trail handles concurrent log writes."""
-    from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+    from hololoom.alignment.audit_trail import DecisionType, OutcomeType
 
     # Fire 20 concurrent log writes
     async def log_decision(i):
@@ -413,7 +413,7 @@ async def test_audit_trail_concurrent_logging(audit_trail):
 @pytest.mark.asyncio
 async def test_audit_trail_log_ordering(audit_trail):
     """Test audit trail maintains log ordering under concurrent writes."""
-    from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+    from hololoom.alignment.audit_trail import DecisionType, OutcomeType
 
     # Fire concurrent logs with timestamps
     async def log_with_timestamp(i):
@@ -435,7 +435,7 @@ async def test_audit_trail_log_ordering(audit_trail):
 @pytest.mark.asyncio
 async def test_audit_trail_no_log_loss(audit_trail):
     """Test audit trail doesn't lose logs under concurrent load."""
-    from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+    from hololoom.alignment.audit_trail import DecisionType, OutcomeType
 
     # Fire 100 concurrent log writes
     async def log_decision(i):
@@ -464,8 +464,8 @@ async def test_audit_trail_no_log_loss(audit_trail):
 @pytest.mark.asyncio
 async def test_memory_concurrent_writes(fast_config, test_shards):
     """Test memory system handles concurrent writes safely."""
-    from HoloLoom.memory.backend_factory import create_memory_backend
-    from HoloLoom.memory.protocol import Memory
+    from hololoom.memory.backend_factory import create_memory_backend
+    from hololoom.memory.protocol import Memory
 
     backend = await create_memory_backend(fast_config)
 
@@ -493,8 +493,8 @@ async def test_memory_concurrent_writes(fast_config, test_shards):
 @pytest.mark.asyncio
 async def test_memory_concurrent_reads(fast_config, test_shards):
     """Test memory system handles concurrent reads safely."""
-    from HoloLoom.memory.backend_factory import create_memory_backend
-    from HoloLoom.memory.protocol import Memory, MemoryQuery
+    from hololoom.memory.backend_factory import create_memory_backend
+    from hololoom.memory.protocol import Memory, MemoryQuery
 
     backend = await create_memory_backend(fast_config)
 

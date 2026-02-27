@@ -20,7 +20,7 @@ Metrics Tracked:
 - Convergence rates
 
 Usage:
-    from HoloLoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
+    from hololoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
 
     analytics = RecursiveAnalytics()
 
@@ -50,7 +50,7 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 from collections import defaultdict
 
-from HoloLoom.protocols.recursive_reasoning import ReasoningStrategy
+from hololoom.protocols.recursive_reasoning import ReasoningStrategy
 
 
 @dataclass

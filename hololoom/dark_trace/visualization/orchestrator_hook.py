@@ -15,8 +15,8 @@ import logging
 import time
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.visualization.streaming_server import DarkTraceStreamingServer
-    from HoloLoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.dark_trace.visualization.streaming_server import DarkTraceStreamingServer
+    from hololoom.dark_trace.engine import DarkTraceEngine
 
 
 logger = logging.getLogger(__name__)

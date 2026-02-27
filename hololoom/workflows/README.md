@@ -27,7 +27,7 @@ Complete agentic workflow system for HoloLoom that enables visual, no-code creat
 ### 1. Basic Usage
 
 ```python
-from HoloLoom.workflows import WorkflowExecutor, WorkflowTemplates
+from hololoom.workflows import WorkflowExecutor, WorkflowTemplates
 
 # Load template
 workflow = WorkflowTemplates.simple_qa()
@@ -48,7 +48,7 @@ async with WorkflowExecutor(workflow) as executor:
 ### 2. Custom Workflow from JSON
 
 ```python
-from HoloLoom.workflows import WorkflowDefinition, WorkflowExecutor
+from hololoom.workflows import WorkflowDefinition, WorkflowExecutor
 
 # Load from JSON file
 with open("my_workflow.json") as f:
@@ -63,7 +63,7 @@ async with WorkflowExecutor(workflow) as executor:
 
 ```bash
 # Start backend executor
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 
 # Open workflow_builder.html in browser
@@ -245,7 +245,7 @@ nodes:
 ### Using Templates
 
 ```python
-from HoloLoom.workflows import WorkflowTemplates
+from hololoom.workflows import WorkflowTemplates
 
 # Get single template
 workflow = WorkflowTemplates.verified_qa()
@@ -268,8 +268,8 @@ for name, workflow in all_templates.items():
 #### InMemory (Development)
 
 ```python
-from HoloLoom.workflows import WorkflowExecutor
-from HoloLoom.workflows.state import InMemoryState
+from hololoom.workflows import WorkflowExecutor
+from hololoom.workflows.state import InMemoryState
 
 state = InMemoryState()
 executor = WorkflowExecutor(workflow, state_backend=state)
@@ -282,7 +282,7 @@ executor = WorkflowExecutor(workflow, state_backend=state)
 #### SQLite (Single-Node Production)
 
 ```python
-from HoloLoom.workflows.state import SQLiteState
+from hololoom.workflows.state import SQLiteState
 
 state = SQLiteState(db_path="./workflows.db")
 executor = WorkflowExecutor(workflow, state_backend=state)
@@ -295,7 +295,7 @@ executor = WorkflowExecutor(workflow, state_backend=state)
 #### Redis (Distributed Production)
 
 ```python
-from HoloLoom.workflows.state import RedisState
+from hololoom.workflows.state import RedisState
 
 state = RedisState(redis_url="redis://localhost:6379")
 executor = WorkflowExecutor(workflow, state_backend=state)
@@ -310,8 +310,8 @@ executor = WorkflowExecutor(workflow, state_backend=state)
 ### Save and Resume Workflows
 
 ```python
-from HoloLoom.workflows import WorkflowExecutor, CheckpointManager
-from HoloLoom.workflows.state import SQLiteState
+from hololoom.workflows import WorkflowExecutor, CheckpointManager
+from hololoom.workflows.state import SQLiteState
 
 state = SQLiteState()
 executor = WorkflowExecutor(
@@ -338,7 +338,7 @@ except Exception:
 ### Retry Policies
 
 ```python
-from HoloLoom.workflows.schema import WorkflowNode, RetryPolicy, NodeType
+from hololoom.workflows.schema import WorkflowNode, RetryPolicy, NodeType
 
 node = WorkflowNode(
     id="query",
@@ -429,8 +429,8 @@ condition_node = WorkflowNode(
 ### RAG Query Node
 
 ```python
-from HoloLoom.workflows import WorkflowExecutor
-from HoloLoom.workflows.schema import WorkflowNode, NodeType
+from hololoom.workflows import WorkflowExecutor
+from hololoom.workflows.schema import WorkflowNode, NodeType
 
 query_node = WorkflowNode(
     id="rag_query",
@@ -512,7 +512,7 @@ trace_json = json.dumps(result.to_dict(), indent=2)
 
 ```bash
 # Start server
-python HoloLoom/web_dashboard/workflow_executor.py
+python hololoom/web_dashboard/workflow_executor.py
 
 # Execute workflow
 curl -X POST http://localhost:8001/api/workflow/execute \
@@ -540,7 +540,7 @@ ws.onmessage = (event) => {
 ## Files & Structure
 
 ```
-HoloLoom/workflows/
+hololoom/workflows/
 ├── __init__.py              # Package exports
 ├── schema.py                # Workflow definitions (500 lines)
 ├── executor.py              # Workflow executor (700 lines)
@@ -685,7 +685,7 @@ See `demos/demo_agentic_workflows.py` for 10 complete examples:
 For questions, issues, or feature requests:
 - Documentation: This file + inline code docs
 - Examples: `demos/demo_agentic_workflows.py`
-- Tests: `HoloLoom/workflows/tests/test_workflows.py`
+- Tests: `hololoom/workflows/tests/test_workflows.py`
 
 ---
 

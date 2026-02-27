@@ -1,7 +1,7 @@
 ## Multi-Model LLM Support
 
 **Status**: ✅ Production Ready (January 2025)
-**Location**: `HoloLoom/llm/`
+**Location**: `hololoom/llm/`
 
 Unified interface for multiple LLM providers with automatic fallback, cost tracking, and A/B testing capabilities.
 
@@ -62,7 +62,7 @@ export GOOGLE_API_KEY="..."
 ### 3. Basic Usage
 
 ```python
-from HoloLoom.llm import UnifiedLLMClient
+from hololoom.llm import UnifiedLLMClient
 
 # Simple usage (uses defaults: Ollama first)
 client = UnifiedLLMClient.create_default()
@@ -75,7 +75,7 @@ print(f"Cost: ${response.cost_estimate.total_cost_usd:.4f}")
 ### 4. Custom Configuration
 
 ```python
-from HoloLoom.llm import UnifiedLLMClient, LLMConfig
+from hololoom.llm import UnifiedLLMClient, LLMConfig
 
 # Use Claude as primary, Ollama as fallback
 primary = LLMConfig(
@@ -140,10 +140,10 @@ for model, model_stats in stats['by_model'].items():
 
 ### Configuration
 
-Add to `HoloLoom/config.py`:
+Add to `hololoom/config.py`:
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # Create config with LLM settings
 config = Config.fast()
@@ -158,8 +158,8 @@ config.llm_max_cost_per_query = 0.10  # $0.10 limit
 ### Orchestrator Integration
 
 ```python
-from HoloLoom.weaving_orchestrator_llm import WeavingOrchestrator
-from HoloLoom.llm import UnifiedLLMClient, LLMConfig
+from hololoom.weaving_orchestrator_llm import WeavingOrchestrator
+from hololoom.llm import UnifiedLLMClient, LLMConfig
 
 # Create LLM client
 primary = LLMConfig(
@@ -190,7 +190,7 @@ cd promptly-matrix-bot
 python dashboard_server.py
 
 # Or start standalone LLM server
-cd HoloLoom/server
+cd hololoom/server
 uvicorn llm_api:router --reload --port 8000
 ```
 
@@ -412,7 +412,7 @@ UnifiedLLMClient
 # Test Ollama (free)
 PYTHONPATH=. python -c "
 import asyncio
-from HoloLoom.llm import UnifiedLLMClient
+from hololoom.llm import UnifiedLLMClient
 
 async def test():
     client = UnifiedLLMClient.create_default()
@@ -426,7 +426,7 @@ asyncio.run(test())
 # Test with API keys (set ANTHROPIC_API_KEY first)
 PYTHONPATH=. python -c "
 import asyncio
-from HoloLoom.llm import UnifiedLLMClient, LLMConfig
+from hololoom.llm import UnifiedLLMClient, LLMConfig
 
 async def test():
     primary = LLMConfig(provider='anthropic', model='claude-3-5-sonnet-20241022')

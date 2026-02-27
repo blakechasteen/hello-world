@@ -305,7 +305,7 @@ Bot:  Semantic Learning Status:
 
 **Implementation:**
 - Integrate PPO semantic learning pipeline
-- Wire HoloLoom/reflection/semantic_learning.py
+- Wire hololoom/reflection/semantic_learning.py
 - Add semantic dimension analysis to queries
 - Enable policy adaptation from chat interactions
 - Real-time semantic trajectory visualization
@@ -609,7 +609,7 @@ cp config.example.yaml config.yaml
 # Edit with your Matrix credentials
 
 # 3. Run
-python HoloLoom/chatops/run_bot.py
+python hololoom/chatops/run_bot.py
 
 # 4. Invite bot to your room
 
@@ -632,7 +632,7 @@ export QDRANT_URL=http://localhost:6333
 export ENABLE_REFLECTION=true
 
 # 4. Run with monitoring
-python HoloLoom/chatops/run_bot.py --production
+python hololoom/chatops/run_bot.py --production
 ```
 
 ---

@@ -15,7 +15,7 @@ This integration brings together three powerful systems:
 - **Systematic Optimization**: DSPy optimizes prompts using HoloLoom's memory as training data
 - **Compositional Workflows**: Chain DSPy programs into complex pipelines
 - **Knowledge Grounding**: Leverage HoloLoom's semantic understanding
-- **Performance**: Benefit from HoloLoom's Phase 5 compositional caching (10-300× speedup)
+- **Performance**: Benefit from hololoom's Phase 5 compositional caching (10-300× speedup)
 
 ## 🏗️ Architecture
 
@@ -72,9 +72,9 @@ export ANTHROPIC_API_KEY="your-key"
 ### Basic Usage
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.promptly.dspy_bridge import DSPyHoloLoom, create_signature
-from HoloLoom.promptly.dspy_workflow_adapter import DSPyWorkflowAdapter
+from hololoom.config import Config
+from hololoom.promptly.dspy_bridge import DSPyHoloLoom, create_signature
+from hololoom.promptly.dspy_workflow_adapter import DSPyWorkflowAdapter
 
 # Initialize bridge
 bridge = DSPyHoloLoom(
@@ -111,7 +111,7 @@ print(f"Confidence: {result['confidence']}")
 DSPy signatures define the input/output structure of your prompts:
 
 ```python
-from HoloLoom.promptly.dspy_bridge import create_signature
+from hololoom.promptly.dspy_bridge import create_signature
 
 # Simple signature
 qa_sig = create_signature(
@@ -163,7 +163,7 @@ result = await bridge.execute(optimized, question="...", context="...")
 Compose DSPy programs into multi-step workflows:
 
 ```python
-from HoloLoom.promptly.dspy_workflow_adapter import DSPyWorkflowAdapter
+from hololoom.promptly.dspy_workflow_adapter import DSPyWorkflowAdapter
 
 adapter = DSPyWorkflowAdapter(bridge)
 
@@ -266,7 +266,7 @@ result = await adapter.execute_workflow(workflow, {"query": "..."})
 ### DSPyOptimizationConfig
 
 ```python
-from HoloLoom.promptly.dspy_bridge import DSPyOptimizationConfig
+from hololoom.promptly.dspy_bridge import DSPyOptimizationConfig
 
 config = DSPyOptimizationConfig(
     optimizer="bootstrap",           # Optimization algorithm
@@ -382,7 +382,7 @@ print(result["context"]["security_analysis.vulnerabilities"])
 Run integration tests:
 
 ```bash
-pytest HoloLoom/tests/integration/test_dspy_integration.py -v
+pytest hololoom/tests/integration/test_dspy_integration.py -v
 ```
 
 Run demo:
@@ -454,7 +454,7 @@ print(f"Avg duration: {stats['avg_duration_ms']:.1f}ms")
 
 ```python
 from dataclasses import dataclass, field
-from HoloLoom.promptly.dspy_bridge import DSPySignature
+from hololoom.promptly.dspy_bridge import DSPySignature
 
 @dataclass
 class MyCustomSignature(DSPySignature):
@@ -523,7 +523,7 @@ steps:
 ### With Alignment Framework
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.alignment import SafetyGuardrails
 
 # Gate DSPy execution with safety checks
 guardrails = SafetyGuardrails()
@@ -537,7 +537,7 @@ if gate_result.allowed:
 ### With Recursive Learning
 
 ```python
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.recursive import FullLearningEngine
 
 # Use DSPy within recursive learning loop
 engine = FullLearningEngine(cfg=config, shards=shards)
@@ -662,7 +662,7 @@ for step in result["trace"]:
 
 - **DSPy Documentation**: https://dspy-docs.vercel.app/
 - **HoloLoom Architecture**: See `HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md`
-- **Promptly Workflows**: See `HoloLoom/promptly/README.md`
+- **Promptly Workflows**: See `hololoom/promptly/README.md`
 
 ## 🤝 Contributing
 

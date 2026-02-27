@@ -187,7 +187,7 @@ Use decompose_query: If I start bread, what equipment do I need and how much wil
 ### Option 2: Python API
 
 ```python
-from HoloLoom.search import SearchOrchestrator, SearchStrategy
+from hololoom.search import SearchOrchestrator, SearchStrategy
 
 orchestrator = SearchOrchestrator()
 
@@ -392,13 +392,13 @@ Agent Reasoning:
 Run the demo:
 
 ```bash
-python -m HoloLoom.search.agentic_search_suite
+python -m hololoom.search.agentic_search_suite
 ```
 
 Or test specific agents:
 
 ```python
-from HoloLoom.search import (
+from hololoom.search import (
     FactualAgent,
     AnalyticalAgent,
     SearchQuery
@@ -469,8 +469,8 @@ Agent: ExploratoryAgent → Design pattern discovery
 ### With RAG System
 ```python
 # Agentic Search uses RAG as backend
-from HoloLoom.search import SearchOrchestrator
-from HoloLoom.memory.mcp_rag_server import rag_query
+from hololoom.search import SearchOrchestrator
+from hololoom.memory.mcp_rag_server import rag_query
 
 orchestrator = SearchOrchestrator()
 
@@ -481,8 +481,8 @@ result = await orchestrator.search("Compare X and Y")
 ### With HoloLoom Memory
 ```python
 # Seamless integration with memory backends
-from HoloLoom.search import SearchOrchestrator
-from HoloLoom.memory import create_unified_memory
+from hololoom.search import SearchOrchestrator
+from hololoom.memory import create_unified_memory
 
 memory = await create_unified_memory()
 orchestrator = SearchOrchestrator()
@@ -506,7 +506,7 @@ const result = await search.query("Explain this code");
 ### Add Custom Agent
 
 ```python
-from HoloLoom.search import SearchAgent, SearchQuery, SearchResult
+from hololoom.search import SearchAgent, SearchQuery, SearchResult
 
 class CustomAgent(SearchAgent):
     def __init__(self):

@@ -14,7 +14,7 @@ Key Features:
 - Graceful degradation on missing dependencies
 
 Usage:
-    from HoloLoom.redteam.sandbox import SandboxedExecutor
+    from hololoom.redteam.sandbox import SandboxedExecutor
 
     # Create executor with auto-detected sandbox mode
     executor = await create_sandboxed_executor()
@@ -80,7 +80,7 @@ from ..executor import (
 )
 from ..strategies import AttackStrategy, AttackPayload
 
-logger = logging.getLogger("HoloLoom.redteam.sandbox.sandboxed_executor")
+logger = logging.getLogger("hololoom.redteam.sandbox.sandboxed_executor")
 
 
 # =============================================================================

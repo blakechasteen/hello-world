@@ -8,7 +8,7 @@ Simple decorators to create skills from functions.
 **Purpose**: Make skill creation as easy as decorating a function
 
 Usage:
-    from HoloLoom.skills import skill
+    from hololoom.skills import skill
 
     @skill(name="code_analyzer", category="code")
     async def analyze_code(code: str, language: str = "python") -> dict:
@@ -36,7 +36,7 @@ from typing import (
 from dataclasses import dataclass, field
 from functools import wraps
 
-from HoloLoom.skills.base import (
+from hololoom.skills.base import (
     BaseSkill,
     SkillInput,
     SkillOutput,
@@ -66,7 +66,7 @@ class FunctionSkill(BaseSkill):
         name: str,
         category: SkillCategory,
         version: str = "1.0.0",
-        author: str = "HoloLoom",
+        author: str = "hololoom",
         description: Optional[str] = None,
         tags: Optional[List[str]] = None,
         requires_network: bool = False,

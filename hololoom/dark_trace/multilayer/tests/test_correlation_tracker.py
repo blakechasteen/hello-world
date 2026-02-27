@@ -19,7 +19,7 @@ import numpy as np
 from typing import Dict, List
 import math
 
-from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+from hololoom.dark_trace.multilayer.correlation_tracker import (
     CorrelationConfig,
     CorrelationMethod,
     CorrelationPair,
@@ -29,7 +29,7 @@ from HoloLoom.dark_trace.multilayer.correlation_tracker import (
     CorrelationTracker,
 )
 
-from HoloLoom.dark_trace.multilayer.propagation_analyzer import (
+from hololoom.dark_trace.multilayer.propagation_analyzer import (
     PropagationType,
     CircuitType,
     PropagationEdge,
@@ -39,7 +39,7 @@ from HoloLoom.dark_trace.multilayer.propagation_analyzer import (
     PropagationAnalyzer,
 )
 
-from HoloLoom.dark_trace.multilayer.causal_metrics import (
+from hololoom.dark_trace.multilayer.causal_metrics import (
     CausalRelationType,
     CausalStrength,
     TransferEntropyResult,

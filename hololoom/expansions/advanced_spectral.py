@@ -8,8 +8,8 @@ diffusion maps for manifold geometry.
 Install: pip install hololoom[spectral]
 
 Usage:
-    from HoloLoom.config import Config
-    from HoloLoom.expansions.advanced_spectral import AdvancedSpectralConfig
+    from hololoom.config import Config
+    from hololoom.expansions.advanced_spectral import AdvancedSpectralConfig
 
     config = Config.research()
     config.load_expansion(AdvancedSpectralConfig(use_wavelets=True))
@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
 try:
-    from HoloLoom.config import ExpansionBundle
+    from hololoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:

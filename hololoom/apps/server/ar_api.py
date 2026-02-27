@@ -42,12 +42,12 @@ import time
 from collections import defaultdict, deque
 
 # HoloLoom imports
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query, MemoryShard
 
 # Vision tools imports (Phase 2)
-from HoloLoom.vision import (
+from hololoom.vision import (
     create_object_detector,
     create_scene_analyzer,
     create_hand_tracker,
@@ -75,7 +75,7 @@ from elle.adapters.ar_adapter.platform_bridge import WebXRBridge
 
 # Import the new Redis-based rate limiter
 try:
-    from HoloLoom.apps.server.redis_rate_limiter import (
+    from hololoom.apps.server.redis_rate_limiter import (
         EndpointRateLimiter,
         init_rate_limiter,
         cleanup_rate_limiter,
@@ -534,7 +534,7 @@ class ARAPI:
 
         # Initialize Phase 4 processors
         try:
-            from HoloLoom.vision import create_depth_estimator, create_marker_detector
+            from hololoom.vision import create_depth_estimator, create_marker_detector
 
             self.depth_estimator = create_depth_estimator(model="midas_small")
             await self.depth_estimator.initialize()
@@ -550,7 +550,7 @@ class ARAPI:
 
         # Initialize Phase 5 processors
         try:
-            from HoloLoom.vision import (
+            from hololoom.vision import (
                 create_semantic_segmenter,
                 create_pose_estimator,
                 create_slam_processor,
@@ -1187,7 +1187,7 @@ class ARAPI:
                 segmentation = await self.semantic_segmenter.process_frame(frame)
 
                 # Calculate class distribution
-                from HoloLoom.vision import get_class_distribution
+                from hololoom.vision import get_class_distribution
                 class_dist = get_class_distribution(segmentation)
 
                 processing_time = (time.time() - start_time) * 1000
@@ -1244,7 +1244,7 @@ class ARAPI:
 
                 # Serialize pose
                 if pose:
-                    from HoloLoom.vision import detect_gesture
+                    from hololoom.vision import detect_gesture
 
                     gesture = detect_gesture(pose)
 

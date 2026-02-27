@@ -30,7 +30,7 @@ import json
 import logging
 from pathlib import Path
 
-from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.core.fabric.spacetime import Spacetime, WeavingTrace
 
 logger = logging.getLogger(__name__)
 

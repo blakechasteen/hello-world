@@ -20,7 +20,7 @@ Endpoints:
 - GET /api/status - Server status
 
 Usage:
-    python HoloLoom/web_dashboard/agentic_server.py
+    python hololoom/web_dashboard/agentic_server.py
 
 Then open: http://localhost:8001
 """
@@ -54,33 +54,33 @@ if ffmpeg_path.exists():
             logger.info(f"Added ffmpeg to PATH: {pkg}")
             break
 
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.alignment.audit_trail import OutcomeType, AuditTrail
-from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager
-from HoloLoom.apps.workflow_builder.promptly_bridge import PromptlyBridge, PROMPTLY_AVAILABLE
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.config import Config, MemoryBackend
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.alignment.audit_trail import OutcomeType, AuditTrail
+from hololoom.apps.workflow_builder.conversation_manager import ConversationManager
+from hololoom.apps.workflow_builder.promptly_bridge import PromptlyBridge, PROMPTLY_AVAILABLE
 
 # MCTS Agent Pool for background learning
-from HoloLoom.agents.background_learner import create_agent_pool
+from hololoom.agents.background_learner import create_agent_pool
 
 # Multi-threaded conversation manager with breakthrough sharing
-from HoloLoom.apps.workflow_builder.conversation_thread_manager import create_conversation_thread_manager
+from hololoom.apps.workflow_builder.conversation_thread_manager import create_conversation_thread_manager
 
 # Spinners for content ingestion
-from HoloLoom.spinningWheel.youtube_spinner import YouTubeSpinner, TRANSCRIPT_API_AVAILABLE as YOUTUBE_AVAILABLE
-from HoloLoom.spinningWheel.whisper_spinner import WhisperSpinner, WHISPER_AVAILABLE
-from HoloLoom.spinningWheel.spreadsheet_spinner import SpreadsheetSpinner, PANDAS_AVAILABLE as SPREADSHEET_AVAILABLE
-from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner, PDF_AVAILABLE, PDFPLUMBER_AVAILABLE
-from HoloLoom.spinningWheel.email_spinner import EmailSpinner, HTML_AVAILABLE as EMAIL_AVAILABLE
-from HoloLoom.spinningWheel.codebase_spinner import CodebaseSpinner
-from HoloLoom.spinningWheel.git_spinner import GitSpinner
-from HoloLoom.spinningWheel.matrix_spinner import MatrixSpinner, MATRIX_AVAILABLE
-from HoloLoom.spinningWheel.url_spinner import URLSpinner, WEB_AVAILABLE as URL_AVAILABLE
+from hololoom.spinningWheel.youtube_spinner import YouTubeSpinner, TRANSCRIPT_API_AVAILABLE as YOUTUBE_AVAILABLE
+from hololoom.spinningWheel.whisper_spinner import WhisperSpinner, WHISPER_AVAILABLE
+from hololoom.spinningWheel.spreadsheet_spinner import SpreadsheetSpinner, PANDAS_AVAILABLE as SPREADSHEET_AVAILABLE
+from hololoom.spinningWheel.pdf_spinner import PDFSpinner, PDF_AVAILABLE, PDFPLUMBER_AVAILABLE
+from hololoom.spinningWheel.email_spinner import EmailSpinner, HTML_AVAILABLE as EMAIL_AVAILABLE
+from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
+from hololoom.spinningWheel.git_spinner import GitSpinner
+from hololoom.spinningWheel.matrix_spinner import MatrixSpinner, MATRIX_AVAILABLE
+from hololoom.spinningWheel.url_spinner import URLSpinner, WEB_AVAILABLE as URL_AVAILABLE
 
 # Voice integration for conversational dashboard
-from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
-from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
+from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # Active WebSocket connections
 active_connections: List[WebSocket] = []
@@ -291,8 +291,8 @@ async def lifespan(app: FastAPI):
     # Initialize MCTS Agent Pool for background learning
     logger.info("Initializing MCTS Agent Pool...")
     try:
-        from HoloLoom.memory.graph import KG
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.memory.graph import KG
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         # Get KG and embeddings from orchestrator
         kg = agentic_orchestrator.kg if hasattr(agentic_orchestrator, 'kg') else KG()
@@ -2646,4 +2646,4 @@ if __name__ == "__main__":
     print("="*60)
     print("\n  Open your browser to: http://localhost:8002\n")
 
-    uvicorn.run("HoloLoom.apps.workflow_builder.agentic_server:app", host="0.0.0.0", port=8002, log_level="info")
+    uvicorn.run("hololoom.apps.workflow_builder.agentic_server:app", host="0.0.0.0", port=8002, log_level="info")

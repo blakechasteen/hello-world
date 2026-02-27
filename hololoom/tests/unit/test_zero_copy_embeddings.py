@@ -21,7 +21,7 @@ import tempfile
 from pathlib import Path
 from time import time
 
-from HoloLoom.embedding.zero_copy import EmbeddingStore, ZeroCopyMatryoshkaEmbeddings
+from hololoom.embedding.zero_copy import EmbeddingStore, ZeroCopyMatryoshkaEmbeddings
 
 
 # Test 1: EmbeddingStore creation
@@ -99,7 +99,7 @@ def test_performance_multi_scale_extraction():
 
 # Test 24-30: Integration tests
 def test_integration_with_config():
-    from HoloLoom.config import Config
+    from hololoom.config import Config
     config = Config.fast()
     config.enable_zero_copy_embeddings = True
     assert config.enable_zero_copy_embeddings == True

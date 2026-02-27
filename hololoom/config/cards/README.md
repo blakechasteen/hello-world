@@ -7,7 +7,7 @@ Pattern Cards are YAML-based configuration modules that declaratively specify al
 ## Quick Start
 
 ```python
-from HoloLoom.loom.card_loader import PatternCard
+from hololoom.loom.card_loader import PatternCard
 
 # Load built-in card
 card = PatternCard.load("fast")
@@ -168,7 +168,7 @@ card = PatternCard.load("fast", overrides={
 ### 4. Version Control Friendly
 Cards are files → track with git:
 ```bash
-git add HoloLoom/cards/my_custom.yaml
+git add hololoom/cards/my_custom.yaml
 git commit -m "Add custom research configuration"
 ```
 
@@ -177,7 +177,7 @@ Share cards like code:
 ```bash
 # Clone repo, get cards for free
 git clone repo
-cd HoloLoom/cards/
+cd hololoom/cards/
 # Use shared configurations
 ```
 
@@ -185,7 +185,7 @@ cd HoloLoom/cards/
 
 ### Method 1: Extend Existing Card (YAML)
 
-Create `HoloLoom/cards/my_custom.yaml`:
+Create `hololoom/cards/my_custom.yaml`:
 ```yaml
 name: "my_custom"
 extends: "fast"  # Start from fast
@@ -203,7 +203,7 @@ performance:
 ### Method 2: Programmatic Creation
 
 ```python
-from HoloLoom.loom.card_loader import PatternCard
+from hololoom.loom.card_loader import PatternCard
 
 # Load base card
 card = PatternCard.load("fast")
@@ -384,14 +384,14 @@ card = PatternCard.load("fast", overrides={...})
 
 1. **Explore**: Run `python demos/pattern_cards_demo.py`
 2. **Test**: Run `python tests/test_pattern_cards.py`
-3. **Customize**: Create your own cards in `HoloLoom/cards/`
+3. **Customize**: Create your own cards in `hololoom/cards/`
 4. **Share**: Commit your cards to version control
 5. **Iterate**: A/B test different configurations
 
 ## Contributing
 
 To add a new built-in card:
-1. Create `HoloLoom/cards/your_card.yaml`
+1. Create `hololoom/cards/your_card.yaml`
 2. Add tests in `tests/test_pattern_cards.py`
 3. Document in this README
 4. Submit PR
@@ -399,7 +399,7 @@ To add a new built-in card:
 ## Resources
 
 - **Design Doc**: [docs/PATTERN_CARDS_AS_MODULES.md](../../docs/PATTERN_CARDS_AS_MODULES.md)
-- **Loader Code**: [HoloLoom/loom/card_loader.py](../loom/card_loader.py)
+- **Loader Code**: [hololoom/loom/card_loader.py](../loom/card_loader.py)
 - **Tests**: [tests/test_pattern_cards.py](../../tests/test_pattern_cards.py)
 - **Demo**: [demos/pattern_cards_demo.py](../../demos/pattern_cards_demo.py)
 

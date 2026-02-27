@@ -1,7 +1,7 @@
 # HoloLoom Voice Module
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/voice/`
+**Location**: `hololoom/voice/`
 **Total Code**: 6,807 lines across 10 core modules (excluding tests)
 **Performance**: <200ms voice latency, <100ms TTS synthesis, real-time turn-taking
 **Version**: 1.0.0
@@ -85,7 +85,7 @@ sudo apt-get install ffmpeg libavcodec-extra
 
 ```python
 import asyncio
-from HoloLoom.voice import VoiceAgent
+from hololoom.voice import VoiceAgent
 
 async def simple_example():
     # Create agent
@@ -109,10 +109,10 @@ asyncio.run(simple_example())
 
 ```python
 import asyncio
-from HoloLoom.voice import VoiceAgent
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.voice import VoiceAgent
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import MemoryShard
 
 async def hololoom_example():
     # Create HoloLoom config
@@ -152,7 +152,7 @@ asyncio.run(hololoom_example())
 
 ```python
 import asyncio
-from HoloLoom.voice import VoiceAgent
+from hololoom.voice import VoiceAgent
 from LIVE_AUDIO_STREAMING_IMPROVED import LiveAudioCapture
 
 async def live_conversation():
@@ -278,7 +278,7 @@ class TTSProvider:
 OpenAI TTS implementation.
 
 ```python
-from HoloLoom.voice import OpenAITTS
+from hololoom.voice import OpenAITTS
 
 tts = OpenAITTS(api_key="your-key")
 audio_bytes = await tts.synthesize("Hello world", voice="nova")
@@ -299,7 +299,7 @@ audio_bytes = await tts.synthesize("Hello world", voice="nova")
 Manages conversation history.
 
 ```python
-from HoloLoom.voice import ConversationMemory
+from hololoom.voice import ConversationMemory
 
 memory = ConversationMemory(max_turns=20, kg_store=kg)
 
@@ -327,7 +327,7 @@ session = memory.export_session()
 Manages conversation turn-taking.
 
 ```python
-from HoloLoom.voice import TurnTakingManager, TurnState
+from hololoom.voice import TurnTakingManager, TurnState
 
 manager = TurnTakingManager(mode='hybrid', silence_threshold=1.5)
 
@@ -356,7 +356,7 @@ manager.set_state(TurnState.LISTENING)
 Detects voice activity in audio.
 
 ```python
-from HoloLoom.voice import VoiceActivityDetector
+from hololoom.voice import VoiceActivityDetector
 
 vad = VoiceActivityDetector(aggressiveness=3)
 
@@ -465,16 +465,16 @@ asyncio.run(voice_cli())
 
 ```bash
 # All tests
-pytest HoloLoom/voice/tests/test_voice_agent.py -v
+pytest hololoom/voice/tests/test_voice_agent.py -v
 
 # Specific test class
-pytest HoloLoom/voice/tests/test_voice_agent.py::TestVoiceAgent -v
+pytest hololoom/voice/tests/test_voice_agent.py::TestVoiceAgent -v
 
 # With coverage
-pytest HoloLoom/voice/tests/test_voice_agent.py --cov=HoloLoom.voice
+pytest hololoom/voice/tests/test_voice_agent.py --cov=hololoom.voice
 
 # Skip slow tests
-pytest HoloLoom/voice/tests/test_voice_agent.py -v -m "not slow"
+pytest hololoom/voice/tests/test_voice_agent.py -v -m "not slow"
 ```
 
 ### Test Structure
@@ -613,7 +613,7 @@ COPY HoloLoom /app/HoloLoom
 WORKDIR /app
 
 # Run voice agent
-CMD ["python", "-m", "HoloLoom.voice.voice_agent"]
+CMD ["python", "-m", "hololoom.voice.voice_agent"]
 ```
 
 ### Kubernetes Deployment
@@ -751,7 +751,7 @@ structlog.configure(
 **Text-Only Interaction**:
 ```python
 # Simpler, faster, no dependencies
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 async with HoloLoom() as loom:
     spacetime = await loom.weave(query_text)
 ```
@@ -775,7 +775,7 @@ emotion = await emotion_bridge.detect_emotion(text)
 
 ### Custom Personalities
 
-Create custom personalities by adding YAML files to `HoloLoom/voice/personalities/`:
+Create custom personalities by adding YAML files to `hololoom/voice/personalities/`:
 
 ```yaml
 # custom_assistant.yaml

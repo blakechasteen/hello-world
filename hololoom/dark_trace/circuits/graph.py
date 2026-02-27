@@ -696,7 +696,7 @@ class CircuitGraph:
         Returns:
             CircuitGraph representation
         """
-        from HoloLoom.dark_trace.circuits.tracer import CircuitTrace, TraceNode, TraceEdge
+        from hololoom.dark_trace.circuits.tracer import CircuitTrace, TraceNode, TraceEdge
 
         if not isinstance(trace, CircuitTrace):
             raise TypeError(f"Expected CircuitTrace, got {type(trace)}")

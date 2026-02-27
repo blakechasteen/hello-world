@@ -12,7 +12,7 @@ Features:
 - Error extraction and formatting
 
 Usage:
-    from HoloLoom.agentic.code_verification import CodeVerifier
+    from hololoom.agentic.code_verification import CodeVerifier
 
     verifier = CodeVerifier()
     result = await verifier.verify_python(code, check_types=True, run_linter=True)

@@ -1,7 +1,7 @@
 # HoloLoom Routing Module
 
 **Status**: ✅ Production Ready (Phase 3 - November 2025)
-**Location**: `HoloLoom/routing/`
+**Location**: `hololoom/routing/`
 **Total Code**: 5,482 lines across 17 Python files
 **Performance**: <5ms classification, 98%+ accuracy
 
@@ -16,7 +16,7 @@ The Routing Module is HoloLoom's **intelligent query router**, automatically cla
 ### Quick Start
 
 ```python
-from HoloLoom.routing import create_classifier
+from hololoom.routing import create_classifier
 
 # Create adaptive classifier
 classifier = create_classifier(
@@ -45,7 +45,7 @@ print(f"Latency: {result.latency_ms:.2f}ms")    # 0.15ms
 ### File Structure
 
 ```
-HoloLoom/routing/
+hololoom/routing/
 ├── __init__.py                      # 52 lines - Public API
 ├── query_classifier.py              # 240 lines - Baseline (88% accuracy)
 ├── query_classifier_moonshot.py     # 649 lines - Multi-tier (98%+ accuracy)
@@ -58,7 +58,7 @@ HoloLoom/routing/
 ├── telemetry.py                     # 358 lines - JSONL logging
 └── metrics.py                       # 163 lines - Performance metrics
 
-HoloLoom/routing/learning/          # Phase 3: Adaptive Learning System
+hololoom/routing/learning/          # Phase 3: Adaptive Learning System
 ├── __init__.py                      # 59 lines - Public exports
 ├── pattern_miner.py                 # 425 lines - Pattern discovery
 ├── continuous_validator.py          # 469 lines - Hourly validation
@@ -85,7 +85,7 @@ HoloLoom/routing/learning/          # Phase 3: Adaptive Learning System
 
 **1. Baseline Classifier** (88% accuracy, <1ms)
 ```python
-from HoloLoom.routing import QueryClassifier
+from hololoom.routing import QueryClassifier
 
 classifier = QueryClassifier()
 result = classifier.classify("what is X?")
@@ -97,7 +97,7 @@ result = classifier.classify("what is X?")
 
 **2. Moonshot Classifier** (98%+ accuracy, <5ms)
 ```python
-from HoloLoom.routing import MoonshotQueryClassifier
+from hololoom.routing import MoonshotQueryClassifier
 
 classifier = MoonshotQueryClassifier(
     enable_semantic_tier=True  # Tier 3: semantic embeddings
@@ -132,7 +132,7 @@ graph TD
 
 **3. Adaptive Classifier** (improves over time)
 ```python
-from HoloLoom.routing import AdaptiveMoonshotClassifier
+from hololoom.routing import AdaptiveMoonshotClassifier
 
 classifier = AdaptiveMoonshotClassifier(
     enable_adaptive_learning=True,
@@ -211,7 +211,7 @@ graph TD
 
 **Usage**:
 ```python
-from HoloLoom.routing.learning import PatternMiner
+from hololoom.routing.learning import PatternMiner
 
 miner = PatternMiner(
     stats_path="./data/logs/classifications.jsonl",
@@ -245,7 +245,7 @@ for pattern in patterns[:5]:
 
 **Usage**:
 ```python
-from HoloLoom.routing.learning import ContinuousValidator
+from hololoom.routing.learning import ContinuousValidator
 
 validator = ContinuousValidator(
     classifier=classifier,
@@ -278,7 +278,7 @@ if result.overall_accuracy < 0.90:
 
 **Usage**:
 ```python
-from HoloLoom.routing.learning import AdaptiveUpdater, DeploymentStrategy
+from hololoom.routing.learning import AdaptiveUpdater, DeploymentStrategy
 
 updater = AdaptiveUpdater(
     classifier=classifier,
@@ -312,7 +312,7 @@ moonshot_regressions_detected 3
 
 **Usage**:
 ```python
-from HoloLoom.routing.learning import PerformanceReporter
+from hololoom.routing.learning import PerformanceReporter
 
 reporter = PerformanceReporter(
     classifier=classifier,
@@ -341,7 +341,7 @@ await reporter.start_prometheus_exporter()
 ### Example 1: Basic Classification
 
 ```python
-from HoloLoom.routing import MoonshotQueryClassifier
+from hololoom.routing import MoonshotQueryClassifier
 
 # Create classifier (no learning)
 classifier = MoonshotQueryClassifier()
@@ -358,7 +358,7 @@ print(f"Latency: {result.latency_ms:.2f}ms")        # 0.15ms
 ### Example 2: Adaptive Learning (Automatic)
 
 ```python
-from HoloLoom.routing import AdaptiveMoonshotClassifier
+from hololoom.routing import AdaptiveMoonshotClassifier
 
 # Create adaptive classifier with background learning
 classifier = AdaptiveMoonshotClassifier(
@@ -410,9 +410,9 @@ asyncio.run(main())
 ### Example 4: Integration with Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.routing import create_classifier, create_fast_path_router
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.routing import create_classifier, create_fast_path_router
+from hololoom.config import Config
 
 # Create config with routing enabled
 config = Config.fast()
@@ -440,8 +440,8 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### Example 5: Factory Pattern (Recommended)
 
 ```python
-from HoloLoom.routing import create_classifier
-from HoloLoom.config import Config
+from hololoom.routing import create_classifier
+from hololoom.config import Config
 
 config = Config.fast()
 
@@ -461,7 +461,7 @@ classifier = create_classifier(mode="baseline")   # Simple
 ### All Options
 
 ```python
-from HoloLoom.routing import AdaptiveMoonshotClassifier
+from hololoom.routing import AdaptiveMoonshotClassifier
 
 classifier = AdaptiveMoonshotClassifier(
     # Classification
@@ -551,12 +551,12 @@ classifier = AdaptiveMoonshotClassifier(
 
 **Unit Tests**:
 ```bash
-pytest HoloLoom/routing/tests/ -v
+pytest hololoom/routing/tests/ -v
 ```
 
 **Integration Tests**:
 ```bash
-pytest HoloLoom/routing/learning/tests/test_adaptive_integration.py -v
+pytest hololoom/routing/learning/tests/test_adaptive_integration.py -v
 # Result: 13/13 passing
 ```
 
@@ -750,9 +750,9 @@ await reporter.send_slack_alert(message)
 
 **Internal**:
 ```python
-from HoloLoom.documentation.types import Query, QueryComplexity
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.config import Config
+from hololoom.documentation.types import Query, QueryComplexity
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.config import Config
 ```
 
 **External**:
@@ -783,7 +783,7 @@ from typing import List, Dict, Optional
 
 **1. Basic Classification (Static)**
 ```python
-from HoloLoom.routing import MoonshotQueryClassifier
+from hololoom.routing import MoonshotQueryClassifier
 
 classifier = MoonshotQueryClassifier()
 result = classifier.classify("What is Thompson Sampling?")
@@ -792,7 +792,7 @@ result = classifier.classify("What is Thompson Sampling?")
 
 **2. Adaptive Learning (Production)**
 ```python
-from HoloLoom.routing import create_classifier
+from hololoom.routing import create_classifier
 
 # Automatic mode selection with fallback
 classifier = create_classifier(mode="adaptive")
@@ -807,7 +807,7 @@ await classifier.stop_background_learning()
 
 **3. Integration with Orchestrator**
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 config = Config.fast()
 config.enable_smart_routing = True
 config.routing_classifier = "moonshot"

@@ -24,9 +24,9 @@ import io
 # Force UTF-8 encoding for stdout
 if sys.stdout.encoding != 'utf-8':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import Query, MemoryShard
 
 def create_test_shards():
     """Create simple test shards about balls."""

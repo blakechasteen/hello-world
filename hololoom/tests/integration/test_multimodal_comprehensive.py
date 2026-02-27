@@ -14,7 +14,7 @@ import numpy as np
 repo_root = Path(__file__).parent.parent
 sys.path.insert(0, str(repo_root))
 
-from HoloLoom.input import (
+from hololoom.input import (
     TextProcessor,
     ImageProcessor,
     AudioProcessor,

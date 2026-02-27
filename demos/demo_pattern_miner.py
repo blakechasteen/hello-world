@@ -10,7 +10,7 @@ Date: November 13, 2025
 import json
 import time
 from pathlib import Path
-from HoloLoom.routing.learning import PatternMiner, ClassificationLog
+from hololoom.routing.learning import PatternMiner, ClassificationLog
 
 
 def create_sample_logs():

@@ -3,7 +3,7 @@
 import time
 import os
 from typing import Dict, Any, List, Optional
-from HoloLoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
+from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
                                    SkillCategory, SkillStatus)
 
 
@@ -394,5 +394,5 @@ class ImageProcessingSkill(BaseSkill):
         }
 
 
-from HoloLoom.skills.base import register_skill
+from hololoom.skills.base import register_skill
 register_skill(ImageProcessingSkill())

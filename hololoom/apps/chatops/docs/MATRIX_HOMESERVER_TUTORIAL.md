@@ -724,7 +724,7 @@ hololoom:
 ```bash
 # From HoloLoom repository
 cd mythRL
-python HoloLoom/chatops/run_chatops.py --config chatops_config.yaml
+python hololoom/chatops/run_chatops.py --config chatops_config.yaml
 ```
 
 ### Invite Bot to Room

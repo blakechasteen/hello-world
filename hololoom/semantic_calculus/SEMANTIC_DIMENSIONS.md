@@ -1,7 +1,7 @@
 # Semantic Dimensions - Interpretable Embedding Projections
 
 **Status**: Production Ready (November 2025)
-**Location**: `HoloLoom/semantic_calculus/dimensions.py` (1,720 lines)
+**Location**: `hololoom/semantic_calculus/dimensions.py` (1,720 lines)
 **Dimensions**: 244 total (16 standard + 228 extended)
 **Use Case**: Project opaque 384D embeddings → interpretable semantic axes
 
@@ -25,8 +25,8 @@ Each dimension is learned from exemplar word pairs (e.g., "warm, friendly, carin
 ## Quick Start
 
 ```python
-from HoloLoom.semantic_calculus import SemanticSpectrum, STANDARD_DIMENSIONS
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.semantic_calculus import SemanticSpectrum, STANDARD_DIMENSIONS
+from hololoom.embedding.spectral import create_embedder
 
 # Create embedder
 embedder = create_embedder(sizes=[384])
@@ -103,7 +103,7 @@ For deep semantic analysis, HoloLoom provides 228 extended dimensions across 15 
 ### Using Extended Dimensions
 
 ```python
-from HoloLoom.semantic_calculus import SemanticSpectrum, EXTENDED_244_DIMENSIONS
+from hololoom.semantic_calculus import SemanticSpectrum, EXTENDED_244_DIMENSIONS
 
 # Full 244-dimension projection
 spectrum = SemanticSpectrum(dimensions=EXTENDED_244_DIMENSIONS)
@@ -231,7 +231,7 @@ print(f"Warmth: {initial['Warmth']:.3f} -> {evolved['Warmth']:.3f}")
 ## Visualization
 
 ```python
-from HoloLoom.semantic_calculus import visualize_semantic_spectrum, print_spectrum_summary
+from hololoom.semantic_calculus import visualize_semantic_spectrum, print_spectrum_summary
 
 # Analyze trajectory
 analysis = spectrum.analyze_semantic_forces(positions)
@@ -264,7 +264,7 @@ print_spectrum_summary(analysis, words)
 Semantic dimensions integrate with the broader semantic calculus system:
 
 ```python
-from HoloLoom.semantic_calculus import create_semantic_analyzer
+from hololoom.semantic_calculus import create_semantic_analyzer
 
 # Create complete analysis pipeline
 analyzer = create_semantic_analyzer(embed_fn, dt=1.0)
@@ -290,7 +290,7 @@ print(result['ethics'])            # Ethical evaluation
 Create your own interpretable dimensions:
 
 ```python
-from HoloLoom.semantic_calculus import SemanticDimension, SemanticSpectrum
+from hololoom.semantic_calculus import SemanticDimension, SemanticSpectrum
 
 # Define custom dimension
 technical_dim = SemanticDimension(

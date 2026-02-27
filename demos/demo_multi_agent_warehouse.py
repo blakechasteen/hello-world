@@ -18,12 +18,12 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.causal import CausalDAG, CausalNode, CausalEdge
-from HoloLoom.planning.multi_agent import (
+from hololoom.causal import CausalDAG, CausalNode, CausalEdge
+from hololoom.planning.multi_agent import (
     Agent, AgentType, MultiAgentCoordinator,
     NegotiationProtocol, Task, Capability, create_agent
 )
-from HoloLoom.planning.planner import Goal
+from hololoom.planning.planner import Goal
 
 # ============================================================================
 # Setup

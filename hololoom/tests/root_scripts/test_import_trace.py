@@ -21,7 +21,7 @@ print("OK networkx")
 
 print("\nStep 5: Import HoloLoom.documentation.types")
 sys.stdout.flush()
-from HoloLoom.documentation.types import Vector
+from hololoom.documentation.types import Vector
 print("OK documentation.types")
 
 print("\nAll imports successful!")

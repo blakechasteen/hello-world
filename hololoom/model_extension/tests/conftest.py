@@ -18,16 +18,16 @@ from typing import List, Dict, Set, Tuple
 from dataclasses import dataclass
 
 # Import eval types
-from HoloLoom.model_extension.eval.retrieval_metrics import (
+from hololoom.model_extension.eval.retrieval_metrics import (
     RetrievalQuery,
     RetrievalResult,
     RetrievalEvaluator,
 )
-from HoloLoom.model_extension.eval.calibration_metrics import (
+from hololoom.model_extension.eval.calibration_metrics import (
     Prediction,
     CalibrationEvaluator,
 )
-from HoloLoom.model_extension.eval.learning_metrics import (
+from hololoom.model_extension.eval.learning_metrics import (
     LearningInteraction,
     ThompsonSamplingState,
     LearningEvaluator,

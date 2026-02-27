@@ -2,7 +2,7 @@
 
 **Date**: December 5, 2025
 **Status**: ✅ **Complete and Production Ready**
-**Location**: `HoloLoom/redteam/refinement/`
+**Location**: `hololoom/redteam/refinement/`
 **Files Modified**: 1 | **Files Created**: 3
 
 ## Executive Summary
@@ -205,7 +205,7 @@ __all__ = [
 ### Position in HoloLoom Stack
 
 ```
-HoloLoom/redteam/refinement/
+hololoom/redteam/refinement/
 ├── __init__.py                    # Exports (unchanged)
 ├── quality_trajectory.py          # Main class (UPDATED: +250 lines)
 ├── quality_trajectory_extensions.py  # Reference (NEW: 370 lines)
@@ -215,7 +215,7 @@ HoloLoom/redteam/refinement/
 
 ### Integration Points
 
-**With AdvancedRefiner** (HoloLoom/recursive/):
+**With AdvancedRefiner** (hololoom/recursive/):
 ```python
 # Track refinement quality over time
 for iteration in range(100):
@@ -230,7 +230,7 @@ for iteration in range(100):
         )
 ```
 
-**With Redteam Strategies** (HoloLoom/redteam/):
+**With Redteam Strategies** (hololoom/redteam/):
 ```python
 # Track multiple attack strategies
 for strategy in strategies:
@@ -242,7 +242,7 @@ best = tracker.get_best_strategy()
 allocate_resources_to(best)
 ```
 
-**With Pattern Discovery** (HoloLoom/redteam/learning/):
+**With Pattern Discovery** (hololoom/redteam/learning/):
 ```python
 # Use patterns to guide learning
 patterns = tracker.discover_patterns()
@@ -425,7 +425,7 @@ Technical summary of what was implemented:
 ## Usage Quick-Start
 
 ```python
-from HoloLoom.redteam.refinement import QualityTrajectoryTracker
+from hololoom.redteam.refinement import QualityTrajectoryTracker
 
 # Initialize
 tracker = QualityTrajectoryTracker()
@@ -490,7 +490,7 @@ for rec in analysis['recommendations']:
 
 - **Implementation Date**: December 5, 2025
 - **Status**: Production Ready
-- **Location**: `HoloLoom/redteam/refinement/`
+- **Location**: `hololoom/redteam/refinement/`
 - **Documentation**: See `QUALITY_TRAJECTORY_GUIDE.md`
 - **Reference**: See `quality_trajectory_extensions.py`
 

@@ -12,7 +12,7 @@ Features:
 - Semantic search over code entities
 
 Usage:
-    from HoloLoom.agentic.codebase_ingestion import CodebaseIndexer
+    from hololoom.agentic.codebase_ingestion import CodebaseIndexer
 
     indexer = CodebaseIndexer(kg=knowledge_graph)
     await indexer.ingest_workspace("/path/to/project", language="python")
@@ -29,8 +29,8 @@ from typing import List, Dict, Optional, Set, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.protocols.types import MemoryShard
 
 
 logger = logging.getLogger(__name__)

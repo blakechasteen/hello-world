@@ -1,7 +1,7 @@
 # HoloLoom Causal Reasoning Engine
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/causal/`
+**Location**: `hololoom/causal/`
 **Total Lines**: 3,150 lines of production code across 8 modules
 **Date Implemented**: November 2025
 
@@ -43,8 +43,8 @@ Level 3: Counterfactual (Twin Networks)
 ## Quick Start
 
 ```python
-from HoloLoom.causal import CausalDAG, CausalNode, CausalEdge, NodeType
-from HoloLoom.causal import InterventionEngine, CounterfactualEngine, CausalQuery, QueryType
+from hololoom.causal import CausalDAG, CausalNode, CausalEdge, NodeType
+from hololoom.causal import InterventionEngine, CounterfactualEngine, CausalQuery, QueryType
 
 # Build causal model
 dag = CausalDAG()
@@ -305,8 +305,8 @@ static_dag = tcdag.to_static_dag()
 ### With HoloLoom Memory
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.causal import CausalDAG, CausalNode, CausalEdge
+from hololoom import hololoom
+from hololoom.causal import CausalDAG, CausalNode, CausalEdge
 
 async with HoloLoom() as loom:
     memories = await loom.recall("causal relationships")
@@ -323,8 +323,8 @@ async with HoloLoom() as loom:
 ### With Agentic Reasoning
 
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator
-from HoloLoom.causal import InterventionEngine
+from hololoom.agentic import create_agentic_orchestrator
+from hololoom.causal import InterventionEngine
 
 async with create_agentic_orchestrator(config, shards) as orch:
     dag = await orch.get_system_causal_model()

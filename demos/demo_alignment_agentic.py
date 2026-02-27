@@ -10,16 +10,16 @@ Usage:
 
 import asyncio
 from datetime import datetime
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
 
 # Phase 1: Safety components
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, ActionCategory
-from HoloLoom.alignment.deception_detection import DeceptionDetector
-from HoloLoom.alignment.audit_trail import AuditTrail
+from hololoom.alignment.safety_guardrails import SafetyGuardrails, ActionCategory
+from hololoom.alignment.deception_detection import DeceptionDetector
+from hololoom.alignment.audit_trail import AuditTrail
 
 # Phase 2: Interpretability
-from HoloLoom.alignment.agentic_explainability import (
+from hololoom.alignment.agentic_explainability import (
     AgenticExplainer,
     ExplanationDepth
 )

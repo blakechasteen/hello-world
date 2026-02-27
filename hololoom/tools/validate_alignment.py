@@ -10,7 +10,7 @@ Usage:
 
 import sys
 import asyncio
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     # Phase 1
     SafetyGuardrails,
     ActionRequest,
@@ -78,7 +78,7 @@ def test_deception_detector():
     print("TEST 2: Deception Detection")
     print("="*70)
 
-    from HoloLoom.alignment.deception_detection import BehavioralProbe, ProbeType
+    from hololoom.alignment.deception_detection import BehavioralProbe, ProbeType
 
     detector = DeceptionDetector()
 
@@ -129,7 +129,7 @@ def test_instrumental_convergence():
     print("TEST 3: Instrumental Convergence Guard")
     print("="*70)
 
-    from HoloLoom.alignment.instrumental_convergence import ResourceType
+    from hololoom.alignment.instrumental_convergence import ResourceType
 
     guard = InstrumentalConvergenceGuard()
 

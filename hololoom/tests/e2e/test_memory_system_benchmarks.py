@@ -21,13 +21,13 @@ import time
 from datetime import datetime
 from typing import List
 
-from HoloLoom.memory.integrated_memory_system import (
+from hololoom.memory.integrated_memory_system import (
     create_integrated_memory_system,
     create_production_memory_system
 )
-from HoloLoom.memory.lifecycle_manager import MemoryScope
-from HoloLoom.memory.consolidation import ConsolidationStrategy
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.memory.lifecycle_manager import MemoryScope
+from hololoom.memory.consolidation import ConsolidationStrategy
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================
@@ -206,14 +206,14 @@ async def test_benchmark_retrieval_latency(sample_memories):
 @pytest.mark.asyncio
 async def test_benchmark_retrieval_methods_comparison():
     """Benchmark: Compare BM25 vs Semantic vs Graph vs Hybrid."""
-    from HoloLoom.memory.hybrid_retrieval import (
+    from hololoom.memory.hybrid_retrieval import (
         BM25Retriever,
         SemanticRetriever,
         GraphRetriever,
         HybridRetriever,
         create_hybrid_retriever
     )
-    from HoloLoom.memory.graph import KG
+    from hololoom.memory.graph import KG
 
     # Create sample memories
     memories = [

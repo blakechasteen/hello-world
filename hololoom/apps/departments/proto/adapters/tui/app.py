@@ -31,7 +31,7 @@ from .wave_animation import (
 )
 
 if TYPE_CHECKING:
-    from HoloLoom.apps.departments.proto.engine import ProtoEngine
+    from hololoom.apps.departments.proto.engine import ProtoEngine
 
 
 class WaveHeader(Static):
@@ -481,7 +481,7 @@ def main():
     engine = None
     if "--engine" in sys.argv:
         try:
-            from HoloLoom.apps.departments.proto.engine import ProtoEngine
+            from hololoom.apps.departments.proto.engine import ProtoEngine
             engine = ProtoEngine()
         except ImportError:
             print("Warning: Could not import ProtoEngine, running in demo mode")

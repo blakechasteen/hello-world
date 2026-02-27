@@ -38,8 +38,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Callable, Awaitable
 
-from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
-from HoloLoom.apps.departments.proto.domain import CodeContext
+from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig
+from hololoom.apps.departments.proto.domain import CodeContext
 
 logger = logging.getLogger("proto.matrix")
 
@@ -398,7 +398,7 @@ class ProtoMatrixHandlers:
         if not args:
             return "Please specify a file or directory to test. Example: `!proto test tests/`"
 
-        from HoloLoom.apps.departments.proto.abilities.core import TestRunnerAbility
+        from hololoom.apps.departments.proto.abilities.core import TestRunnerAbility
 
         runner = TestRunnerAbility()
         target = args.split()[0]
@@ -451,7 +451,7 @@ class ProtoMatrixHandlers:
         if not args:
             return "Please specify a file to scan. Example: `!proto security app.py`"
 
-        from HoloLoom.apps.departments.proto.abilities.core import SecurityScanAbility
+        from hololoom.apps.departments.proto.abilities.core import SecurityScanAbility
 
         scanner = SecurityScanAbility()
         file_path = args.split()[0]
@@ -528,7 +528,7 @@ class ProtoMatrixHandlers:
 - `!proto git blame <file>` - Show line-by-line authorship
 - `!proto git branch` - List branches"""
 
-        from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
+        from hololoom.apps.departments.proto.abilities.core import GitOperationsAbility
 
         git = GitOperationsAbility()
         parts = args.split(maxsplit=1)
@@ -575,7 +575,7 @@ class ProtoMatrixHandlers:
         if not args:
             return "Please provide Python code to run. Example: `!proto run print('Hello!')`"
 
-        from HoloLoom.apps.departments.proto.abilities.core import CodeExecutionAbility
+        from hololoom.apps.departments.proto.abilities.core import CodeExecutionAbility
 
         executor = CodeExecutionAbility()
 

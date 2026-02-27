@@ -20,7 +20,7 @@ The Voice-First UX Layer unifies HoloLoom's neural processing with Elle's thread
   - Summarize threads: "summarize this thread"
 
 - ✅ **Conversational Queries** (with thread context)
-  - Neural processing via HoloLoom.weaving_orchestrator
+  - Neural processing via hololoom.weaving_orchestrator
   - Thread-aware context (last 5 messages)
   - Automatic routing between systems
 
@@ -61,8 +61,8 @@ cd /path/to/mythRL
 
 ```python
 import asyncio
-from HoloLoom.voice.threads import UnifiedVoiceAgent
-from HoloLoom.config import Config
+from hololoom.voice.threads import UnifiedVoiceAgent
+from hololoom.config import Config
 
 async def main():
     # Initialize agent
@@ -90,10 +90,10 @@ asyncio.run(main())
 
 ```bash
 # Run comprehensive demo
-python -m HoloLoom.voice.threads.demo
+python -m hololoom.voice.threads.demo
 
 # Or
-PYTHONPATH=. python HoloLoom/voice_first/demo.py
+PYTHONPATH=. python hololoom/voice_first/demo.py
 ```
 
 ---
@@ -194,7 +194,7 @@ VoiceRouter.route()
 
 ```bash
 # Run all tests
-pytest HoloLoom/voice_first/tests/test_basic.py -v
+pytest hololoom/voice_first/tests/test_basic.py -v
 
 # Results: 22/24 passing (92%)
 # - Grammar classification: 7/9 (78%)
@@ -219,7 +219,7 @@ pytest HoloLoom/voice_first/tests/test_basic.py -v
 ## File Structure
 
 ```
-HoloLoom/voice_first/
+hololoom/voice_first/
 ├── __init__.py                 # Package exports
 ├── README.md                   # This file
 ├── demo.py                     # Demonstration script
@@ -249,9 +249,9 @@ HoloLoom/voice_first/
 
 ```python
 # Uses existing components:
-from HoloLoom.voice.voice_agent import VoiceAgent
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.voice.voice_agent import VoiceAgent
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 ```
 
 ### With Elle

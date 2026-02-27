@@ -17,14 +17,14 @@ import asyncio
 import logging
 from datetime import datetime
 
-from HoloLoom.apps.server.agent_manager_hub import AgentManagerHub, ThreadStatus
-from HoloLoom.apps.chatops.handlers.agent_manager_ws import (
+from hololoom.apps.server.agent_manager_hub import AgentManagerHub, ThreadStatus
+from hololoom.apps.chatops.handlers.agent_manager_ws import (
     AgentManagerWSManager,
     AgentManagerMessageType,
     AgentManagerMessage,
     create_agent_manager_router as create_ws_router,
 )
-from HoloLoom.agentic.monitoring import (
+from hololoom.agentic.monitoring import (
     AgentMonitor,
     AgentStatus,
     get_monitor,
@@ -594,7 +594,7 @@ def create_integrated_app():
         FastAPI application with REST API, WebSocket, and integration layer
     """
     # Import the existing app which has all REST endpoints
-    from HoloLoom.apps.server.agent_manager_api import app, get_hub
+    from hololoom.apps.server.agent_manager_api import app, get_hub
 
     # Get the hub from the API module
     hub = get_hub()

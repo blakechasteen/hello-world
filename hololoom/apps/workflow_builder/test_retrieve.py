@@ -9,8 +9,8 @@ import asyncio
 import sys
 sys.path.insert(0, 'c:/Users/blake/Documents/mythRL')
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
 
 
 async def test_retrieval():
@@ -36,7 +36,7 @@ async def test_retrieval():
 
     try:
         # Use the protocol's retrieve() method
-        from HoloLoom.memory.protocol import MemoryQuery
+        from hololoom.memory.protocol import MemoryQuery
 
         # Create query object
         query = MemoryQuery(

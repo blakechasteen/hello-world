@@ -1,4 +1,4 @@
-# HoloLoom API HorizontalPodAutoscaler
+# hololoom API HorizontalPodAutoscaler
 # Part 5: Production Hardening - Day 25
 #
 # Auto-scaling configuration based on:
@@ -97,7 +97,7 @@ metadata:
 data:
   config.yaml: |
     rules:
-      # HoloLoom QPS metric
+      # hololoom QPS metric
       - seriesQuery: 'hololoom_query_total{namespace="hololoom"}'
         resources:
           overrides:
@@ -108,7 +108,7 @@ data:
           as: "hololoom_qps"
         metricsQuery: 'rate(hololoom_query_total{<<.LabelMatchers>>}[2m])'
 
-      # HoloLoom latency p95
+      # hololoom latency p95
       - seriesQuery: 'hololoom_query_latency_seconds_bucket{namespace="hololoom"}'
         resources:
           overrides:

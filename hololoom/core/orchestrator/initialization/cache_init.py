@@ -27,7 +27,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 
 logger = logging.getLogger(__name__)
@@ -61,8 +61,8 @@ def initialize_semantic_cache(orchestrator: 'WeavingOrchestrator') -> None:
         This is expected behavior when semantic_calculus module is unavailable.
     """
     try:
-        from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
-        from HoloLoom.performance.semantic_cache import AdaptiveSemanticCache
+        from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
+        from hololoom.performance.semantic_cache import AdaptiveSemanticCache
 
         logger.info("Initializing semantic cache...")
 

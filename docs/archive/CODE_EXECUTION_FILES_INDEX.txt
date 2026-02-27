@@ -1,7 +1,7 @@
 CODE EXECUTION ABILITY - FILES INDEX
 ====================================
 
-Location: HoloLoom/departments/proto/abilities/core/
+Location: hololoom/departments/proto/abilities/core/
 
 Files Created (5 total):
 ========================
@@ -98,13 +98,13 @@ Quick Start:
 ============
 
 1. Import the ability:
-   from HoloLoom.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+   from hololoom.departments.proto.abilities.core.code_execution import CodeExecutionAbility
 
 2. Create an instance:
    ability = CodeExecutionAbility()
 
 3. Create execution context:
-   from HoloLoom.departments.proto.abilities.protocol import (
+   from hololoom.departments.proto.abilities.protocol import (
        AbilityContext,
        AbilityTrustLevel
    )
@@ -141,12 +141,12 @@ Test Suite:
 ===========
 
 Run all tests:
-  pytest HoloLoom/departments/proto/abilities/core/test_code_execution.py -v
+  pytest hololoom/departments/proto/abilities/core/test_code_execution.py -v
 
 Results: 38 passed in 16.36 seconds
 
 Run specific test class:
-  pytest HoloLoom/departments/proto/abilities/core/test_code_execution.py::TestCodeExecution -v
+  pytest hololoom/departments/proto/abilities/core/test_code_execution.py::TestCodeExecution -v
 
 Test Coverage:
   - Manifest and metadata (8 tests)

@@ -29,7 +29,7 @@ from typing import Optional, Dict, Any, List, Union
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from HoloLoom.protocols.conscience import (
+from hololoom.protocols.conscience import (
     ConscienceProtocol,
     ConscienceDecision,
     StepType,
@@ -42,7 +42,7 @@ from HoloLoom.protocols.conscience import (
 
 # Import ConscienceCalibrator for Thompson Sampling calibration
 try:
-    from HoloLoom.agentic.conscience_calibrator import (
+    from hololoom.agentic.conscience_calibrator import (
         ConscienceCalibrator,
         create_calibrator,
         CalibrationEvent,
@@ -56,9 +56,9 @@ except ImportError:
 
 # Import Conscience with graceful degradation
 try:
-    from HoloLoom.conscience.core import Conscience
-    from HoloLoom.conscience.judgment import Voice, Judgment, Concern
-    from HoloLoom.conscience.lenses import (
+    from hololoom.conscience.core import Conscience
+    from hololoom.conscience.judgment import Voice, Judgment, Concern
+    from hololoom.conscience.lenses import (
         standard,
         paranoid,
         research,
@@ -89,7 +89,7 @@ except ImportError:
         return None
 
 
-logger = logging.getLogger("HoloLoom.agentic.conscience_adapter")
+logger = logging.getLogger("hololoom.agentic.conscience_adapter")
 
 
 # =============================================================================
@@ -617,7 +617,7 @@ class AgenticConscienceAdapter:
             # Witness through conscience
             if CONSCIENCE_AVAILABLE and hasattr(self._conscience, 'witness'):
                 # Create minimal judgment for witness
-                from HoloLoom.conscience.judgment import quiet_judgment, Voice
+                from hololoom.conscience.judgment import quiet_judgment, Voice
 
                 # Reconstruct judgment from decision
                 voice = getattr(Voice, decision.voice, Voice.QUIET)

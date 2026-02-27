@@ -17,12 +17,12 @@ Author: HoloLoom Architecture Team
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from HoloLoom.core.loom.weave_house import WeaveHouse, WeaveResult
-from HoloLoom.core.loom.consensus import LoomConsensus, create_loom_consensus
-from HoloLoom.core.loom.core_looms.recall_loom import RecallLoom
-from HoloLoom.core.loom.core_looms.reason_loom import ReasonLoom
-from HoloLoom.core.loom.core_looms.reflect_loom import ReflectLoom
-from HoloLoom.core.loom.core_looms.refuse_loom import RefuseLoom
+from hololoom.core.loom.weave_house import WeaveHouse, WeaveResult
+from hololoom.core.loom.consensus import LoomConsensus, create_loom_consensus
+from hololoom.core.loom.core_looms.recall_loom import RecallLoom
+from hololoom.core.loom.core_looms.reason_loom import ReasonLoom
+from hololoom.core.loom.core_looms.reflect_loom import ReflectLoom
+from hololoom.core.loom.core_looms.refuse_loom import RefuseLoom
 
 
 @dataclass

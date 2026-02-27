@@ -9,7 +9,7 @@ print("\n=== Testing Analysis Foundations ===\n")
 
 # Test 1: Real Analysis - Metric Spaces
 print("Test 1: Metric Spaces")
-from HoloLoom.warp.math.analysis import MetricSpace
+from hololoom.warp.math.analysis import MetricSpace
 
 embeddings = [np.random.randn(10) for _ in range(50)]
 space = MetricSpace(elements=embeddings, name="EmbeddingSpace")
@@ -21,7 +21,7 @@ print("  PASS\n")
 
 # Test 2: Real Analysis - Sequences
 print("Test 2: Sequence Analysis")
-from HoloLoom.warp.math.analysis import SequenceAnalyzer
+from hololoom.warp.math.analysis import SequenceAnalyzer
 
 sequence = [1/n for n in range(1, 101)]
 is_convergent = SequenceAnalyzer.is_convergent(sequence)
@@ -33,7 +33,7 @@ print("  PASS\n")
 
 # Test 3: Real Analysis - Differentiation
 print("Test 3: Differentiation")
-from HoloLoom.warp.math.analysis import Differentiator
+from hololoom.warp.math.analysis import Differentiator
 
 def f(x):
     return x @ x
@@ -48,7 +48,7 @@ print("  PASS\n")
 
 # Test 4: Real Analysis - Integration
 print("Test 4: Riemann Integration")
-from HoloLoom.warp.math.analysis import RiemannIntegrator
+from hololoom.warp.math.analysis import RiemannIntegrator
 
 # ∫₀¹ x² dx = 1/3
 integral = RiemannIntegrator.integrate_1d(lambda x: x**2, 0, 1)
@@ -61,7 +61,7 @@ print("  PASS\n")
 
 # Test 5: Complex Analysis - Holomorphic Functions
 print("Test 5: Holomorphic Functions")
-from HoloLoom.warp.math.analysis import ComplexFunction
+from hololoom.warp.math.analysis import ComplexFunction
 
 f = ComplexFunction(lambda z: z**2)
 z = 1 + 1j
@@ -75,7 +75,7 @@ print("  PASS\n")
 
 # Test 6: Complex Analysis - Contour Integration
 print("Test 6: Contour Integration")
-from HoloLoom.warp.math.analysis import ContourIntegrator
+from hololoom.warp.math.analysis import ContourIntegrator
 
 # ∫_{|z|=1} 1/z dz = 2πi
 integral = ContourIntegrator.integrate_circle(lambda z: 1/z, center=0, radius=1)
@@ -89,7 +89,7 @@ print("  PASS\n")
 
 # Test 7: Complex Analysis - Residues
 print("Test 7: Residue Calculus")
-from HoloLoom.warp.math.analysis import ResidueCalculator
+from hololoom.warp.math.analysis import ResidueCalculator
 
 def f_pole(z):
     if abs(z - 1) < 1e-10:
@@ -106,7 +106,7 @@ print("  PASS\n")
 
 # Test 8: Complex Analysis - Conformal Maps
 print("Test 8: Conformal Mappings")
-from HoloLoom.warp.math.analysis import ConformalMapper
+from hololoom.warp.math.analysis import ConformalMapper
 
 z = 2 + 3j
 # Identity Mobius transform

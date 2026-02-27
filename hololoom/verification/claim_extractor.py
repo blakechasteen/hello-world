@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-from HoloLoom.verification.protocol import (
+from hololoom.verification.protocol import (
     ClaimExtractorProtocol,
     ClaimType,
     DegradationLevel,

@@ -8,8 +8,8 @@ spherical (clusters), and mixed-curvature product manifolds.
 Install: pip install hololoom[geometry]
 
 Usage:
-    from HoloLoom.config import Config
-    from HoloLoom.expansions.geometry import GeometryConfig
+    from hololoom.config import Config
+    from hololoom.expansions.geometry import GeometryConfig
 
     config = Config.research()
     config.load_expansion(GeometryConfig(use_riemannian=True))
@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 try:
-    from HoloLoom.config import ExpansionBundle
+    from hololoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:

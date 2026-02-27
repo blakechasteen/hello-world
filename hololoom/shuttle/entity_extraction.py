@@ -117,7 +117,7 @@ class PayloadExtractor:
         Expected payload structure:
         {
             "entities": [
-                {"name": "HoloLoom", "type": "Project", "node_id": "proj_123"},
+                {"name": "hololoom", "type": "Project", "node_id": "proj_123"},
                 ...
             ]
         }

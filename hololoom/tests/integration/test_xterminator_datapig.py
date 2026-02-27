@@ -122,7 +122,7 @@ def test_unified_fix_pipeline_structure():
 
 def test_datapig_issue_to_slop_issue_conversion():
     """Test conversion of DATAPIG issues to SlopIssue format"""
-    from HoloLoom.datapig import DataQualityIssue, IssueType, Severity
+    from hololoom.datapig import DataQualityIssue, IssueType, Severity
     from trough.datapig_integration import convert_datapig_issue
 
     # Create a sample DATAPIG issue
@@ -147,7 +147,7 @@ def test_datapig_issue_to_slop_issue_conversion():
 
 def test_fix_suggestion_generation():
     """Test that fix suggestions are generated for DATAPIG issues"""
-    from HoloLoom.datapig import DataQualityIssue, IssueType, Severity
+    from hololoom.datapig import DataQualityIssue, IssueType, Severity
     from trough.datapig_integration import generate_fix_suggestion
 
     # Test duplicate fix suggestion
@@ -167,7 +167,7 @@ def test_fix_suggestion_generation():
 
 def test_data_leak_fix_suggestion():
     """Test fix suggestion for data leak (PII) issues"""
-    from HoloLoom.datapig import DataQualityIssue, IssueType, Severity
+    from hololoom.datapig import DataQualityIssue, IssueType, Severity
     from trough.datapig_integration import generate_fix_suggestion
 
     issue = DataQualityIssue(
@@ -186,7 +186,7 @@ def test_data_leak_fix_suggestion():
 
 def test_stale_data_fix_suggestion():
     """Test fix suggestion for stale data issues"""
-    from HoloLoom.datapig import DataQualityIssue, IssueType, Severity
+    from hololoom.datapig import DataQualityIssue, IssueType, Severity
     from trough.datapig_integration import generate_fix_suggestion
 
     issue = DataQualityIssue(
@@ -205,7 +205,7 @@ def test_stale_data_fix_suggestion():
 
 def test_outlier_fix_suggestion():
     """Test fix suggestion for outlier issues"""
-    from HoloLoom.datapig import DataQualityIssue, IssueType, Severity
+    from hololoom.datapig import DataQualityIssue, IssueType, Severity
     from trough.datapig_integration import generate_fix_suggestion
 
     issue = DataQualityIssue(
@@ -224,7 +224,7 @@ def test_outlier_fix_suggestion():
 
 def test_inconsistent_format_fix_suggestion():
     """Test fix suggestion for inconsistent format issues"""
-    from HoloLoom.datapig import DataQualityIssue, IssueType, Severity
+    from hololoom.datapig import DataQualityIssue, IssueType, Severity
     from trough.datapig_integration import generate_fix_suggestion
 
     issue = DataQualityIssue(

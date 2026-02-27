@@ -181,7 +181,7 @@ def create_semantic_analyzer(
         Configured SemanticAnalyzer instance
 
     Example:
-        >>> from HoloLoom.embedding.spectral import create_embedder
+        >>> from hololoom.embedding.spectral import create_embedder
         >>> embed_model = create_embedder(sizes=[384])
         >>> embed_fn = lambda words: embed_model.encode(words)
         >>> analyzer = create_semantic_analyzer(embed_fn)

@@ -59,7 +59,7 @@ Watches neural activations for safety-relevant patterns that may indicate:
 The SafetyMonitor is automatically loaded. Access it via the engine:
 
 ```python
-from HoloLoom.dark_trace import create_engine
+from hololoom.dark_trace import create_engine
 
 engine = create_engine(config)
 
@@ -96,7 +96,7 @@ class SafetyMonitorPlugin(MonitorPlugin):
 ### Data Structures
 
 ```python
-from HoloLoom.dark_trace.plugins.builtin.safety_monitor import (
+from hololoom.dark_trace.plugins.builtin.safety_monitor import (
     SafetyAlert,
     SafetyAlertLevel,
     SafetyMonitoringResult,
@@ -148,7 +148,7 @@ Exports Dark Trace metrics in Prometheus exposition format for monitoring dashbo
 ### Usage
 
 ```python
-from HoloLoom.dark_trace import create_engine
+from hololoom.dark_trace import create_engine
 
 engine = create_engine(config)
 metrics_plugin = engine.get_plugin("metrics_exporter")
@@ -227,7 +227,7 @@ class MetricsExporterPlugin(MonitorPlugin):
 ### Data Structures
 
 ```python
-from HoloLoom.dark_trace.plugins.builtin.metrics_exporter import (
+from hololoom.dark_trace.plugins.builtin.metrics_exporter import (
     PrometheusMetric,
     MetricsBatch,
 )
@@ -306,7 +306,7 @@ Based on violations, the validator recommends appropriate trust levels:
 ### Usage
 
 ```python
-from HoloLoom.dark_trace import create_engine
+from hololoom.dark_trace import create_engine
 
 engine = create_engine(config)
 validator = engine.get_plugin("alignment_validator")
@@ -364,7 +364,7 @@ class AlignmentValidatorPlugin(ValidatorPlugin):
 ### Data Structures
 
 ```python
-from HoloLoom.dark_trace.plugins.builtin.alignment_validator import (
+from hololoom.dark_trace.plugins.builtin.alignment_validator import (
     AlignmentViolation,
     AlignmentViolationType,
     AlignmentValidationResult,
@@ -396,7 +396,7 @@ result.highest_severity      # Optional[ViolationSeverity] (property)
 Built-in plugins are loaded automatically when the Dark Trace engine starts:
 
 ```python
-from HoloLoom.dark_trace import create_engine, TraceConfig
+from hololoom.dark_trace import create_engine, TraceConfig
 
 config = TraceConfig.standard(input_dim=384)
 engine = create_engine(config)
@@ -428,13 +428,13 @@ for name, plugin in engine.list_plugins():
 If you're extending Dark Trace for your organization, you can create additional built-in plugins:
 
 ```python
-from HoloLoom.dark_trace.plugins.interface import (
+from hololoom.dark_trace.plugins.interface import (
     MonitorPlugin,
     PluginMetadata,
     PluginType,
     builtin_plugin,
 )
-from HoloLoom.dark_trace.plugins.safety_gate import PluginCapability
+from hololoom.dark_trace.plugins.safety_gate import PluginCapability
 
 @builtin_plugin
 class MyOrganizationMonitor(MonitorPlugin):
@@ -470,12 +470,12 @@ Run the built-in plugin tests:
 
 ```bash
 # All plugin tests
-pytest HoloLoom/dark_trace/plugins/tests/ -v
+pytest hololoom/dark_trace/plugins/tests/ -v
 
 # Specific plugin tests
-pytest HoloLoom/dark_trace/plugins/tests/test_safety_monitor.py -v
-pytest HoloLoom/dark_trace/plugins/tests/test_metrics_exporter.py -v
-pytest HoloLoom/dark_trace/plugins/tests/test_alignment_validator.py -v
+pytest hololoom/dark_trace/plugins/tests/test_safety_monitor.py -v
+pytest hololoom/dark_trace/plugins/tests/test_metrics_exporter.py -v
+pytest hololoom/dark_trace/plugins/tests/test_alignment_validator.py -v
 ```
 
 ---

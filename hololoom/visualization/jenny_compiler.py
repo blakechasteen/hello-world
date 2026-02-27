@@ -47,11 +47,11 @@ from .jenny_spec import (
     create_action,
     get_default_actions,
 )
-from HoloLoom.protocols.jenny import CompilationStrategy, RenderTarget
+from hololoom.protocols.jenny import CompilationStrategy, RenderTarget
 
 # Try to import Spacetime
 try:
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 except ImportError:
     Spacetime = Any  # type: ignore
     WeavingTrace = Any  # type: ignore
@@ -1465,7 +1465,7 @@ class JennyCompiler:
         Compile Spacetime into UI specifications.
 
         Args:
-            spacetime: Woven output from HoloLoom weaving cycle
+            spacetime: Woven output from hololoom weaving cycle
             strategy: Compilation strategy (None = use default)
             context: Optional user/session context
 

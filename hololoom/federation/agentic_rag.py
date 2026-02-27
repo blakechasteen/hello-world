@@ -29,13 +29,13 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, TYPE_CHECKING
 
-from HoloLoom.federation.types import (
+from hololoom.federation.types import (
     Capability,
     FederationNode,
     GuildTrustLevel,
     Query,
 )
-from HoloLoom.federation.result_merger import (
+from hololoom.federation.result_merger import (
     RAGResultMerger,
     NodeRAGResult,
     MergedRAGResult,
@@ -44,10 +44,10 @@ from HoloLoom.federation.result_merger import (
 )
 
 if TYPE_CHECKING:
-    from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
-    from HoloLoom.federation.safety import FederationSafetyGate
-    from HoloLoom.federation.rate_limiter import FederatedRateLimiter
-    from HoloLoom.federation.wire_protocol import JSONRPCBuilder, RPCRequest, RPCResponse
+    from hololoom.rag.simple_rag import SimpleRAG, RAGResult
+    from hololoom.federation.safety import FederationSafetyGate
+    from hololoom.federation.rate_limiter import FederatedRateLimiter
+    from hololoom.federation.wire_protocol import JSONRPCBuilder, RPCRequest, RPCResponse
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +159,7 @@ class FederatedRAGResult:
 
     def to_rag_result(self) -> "RAGResult":
         """Convert to standard RAGResult for compatibility."""
-        from HoloLoom.rag.simple_rag import RAGResult
+        from hololoom.rag.simple_rag import RAGResult
 
         return RAGResult(
             response=self.response,
@@ -280,8 +280,8 @@ class FederatedRAG:
     rate limiting, and MI-weighted result merging.
 
     Example:
-        >>> from HoloLoom.rag import SimpleRAG
-        >>> from HoloLoom.federation import FederationSafetyGate
+        >>> from hololoom.rag import SimpleRAG
+        >>> from hololoom.federation import FederationSafetyGate
         >>>
         >>> async with SimpleRAG() as local_rag:
         ...     fed_rag = FederatedRAG(
@@ -566,7 +566,7 @@ class FederatedRAG:
             )
         else:
             # Fallback: create minimal request
-            from HoloLoom.federation.wire_protocol import RPCRequest
+            from hololoom.federation.wire_protocol import RPCRequest
             request = RPCRequest(method=RAG_RECALL_METHOD, params=params)
 
         # Safety check
@@ -705,7 +705,7 @@ def create_federated_rag(
     """
     # Lazy-load RPC builder
     try:
-        from HoloLoom.federation.wire_protocol import JSONRPCBuilder
+        from hololoom.federation.wire_protocol import JSONRPCBuilder
         rpc_builder = JSONRPCBuilder(sender_id="local")
     except ImportError:
         rpc_builder = None

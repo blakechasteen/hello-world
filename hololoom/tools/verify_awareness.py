@@ -13,15 +13,15 @@ import numpy as np
 from typing import List
 
 # HoloLoom imports
-from HoloLoom.memory.awareness_graph import AwarenessGraph
-from HoloLoom.memory.awareness_types import (
+from hololoom.memory.awareness_graph import AwarenessGraph
+from hololoom.memory.awareness_types import (
     SemanticPerception,
     ActivationStrategy,
     ActivationBudget,
     EdgeType
 )
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 import networkx as nx
 
 

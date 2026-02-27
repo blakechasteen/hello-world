@@ -1,7 +1,7 @@
 # Resonance Shed - Feature Extraction Hub
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/resonance/`
+**Location**: `hololoom/resonance/`
 **Code**: 846 lines across 2 files
 
 ---
@@ -19,7 +19,7 @@ The **Resonance Shed** is HoloLoom's feature extraction hub where multiple featu
 ### File Structure
 
 ```
-HoloLoom/resonance/
+hololoom/resonance/
 ├── __init__.py     # 12 lines - Public exports
 └── shed.py         # 834 lines - ResonanceShed implementation
 ```
@@ -108,9 +108,9 @@ class DotPlasma:  # Alias: Features
 ### Initialization
 
 ```python
-from HoloLoom.resonance import ResonanceShed
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.motif.unified import create_motif_detector
+from hololoom.resonance import ResonanceShed
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.motif.unified import create_motif_detector
 
 # Create embedder and motif detector
 embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
@@ -187,7 +187,7 @@ Output: DotPlasma (malleable feature representation)
 ### Example 1: Basic Feature Extraction
 
 ```python
-from HoloLoom.resonance import ResonanceShed
+from hololoom.resonance import ResonanceShed
 
 # Create shed
 shed = ResonanceShed(
@@ -236,7 +236,7 @@ print(f"Spectral (Ψ): {dot_plasma.psi}")
 ### Example 3: With Knowledge Graph
 
 ```python
-from HoloLoom.memory.graph import KG
+from hololoom.memory.graph import KG
 
 # Create knowledge graph
 kg = KG()
@@ -286,8 +286,8 @@ if dot_plasma.confidence < 0.7:
 ## Integration with Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.resonance import ResonanceShed
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.resonance import ResonanceShed
 
 # Orchestrator creates resonance shed
 orchestrator = WeavingOrchestrator(
@@ -410,11 +410,11 @@ class DotPlasma:
 
 **Internal**:
 ```python
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.motif.unified import MotifDetector
-from HoloLoom.memory.protocol import MemoryShard
-from HoloLoom.memory.graph import KG
-from HoloLoom.documentation.types import Features  # Alias: DotPlasma
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.motif.unified import MotifDetector
+from hololoom.memory.protocol import MemoryShard
+from hololoom.memory.graph import KG
+from hololoom.documentation.types import Features  # Alias: DotPlasma
 ```
 
 **External**:
@@ -432,7 +432,7 @@ from typing import List, Dict, Optional
 
 **1. Basic Feature Extraction**
 ```python
-from HoloLoom.resonance import ResonanceShed
+from hololoom.resonance import ResonanceShed
 
 shed = ResonanceShed(embedder=embedder, motif_detector=motif_detector)
 dot_plasma = await shed.lift_threads(query="What is Thompson Sampling?")
@@ -573,10 +573,10 @@ dot_plasma.scales           # List[int] - active scales
 ### Integration Example
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.resonance import ResonanceShed
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.motif.unified import create_motif_detector
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.resonance import ResonanceShed
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.motif.unified import create_motif_detector
 
 # Create resonance shed
 embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])

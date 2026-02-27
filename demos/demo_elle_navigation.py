@@ -21,12 +21,12 @@ Date: November 2025
 import asyncio
 import time
 import math
-from HoloLoom.voice.ar_context import (
+from hololoom.voice.ar_context import (
     create_test_context, ARContext, Vector3, ARObject, ARObjectType,
     NavigationEvent, AREventType
 )
-from HoloLoom.voice.elle_bridge import ElleBridge, ResponseMode, ARVisualization
-from HoloLoom.voice.command_router import CommandRouter, IntentType
+from hololoom.voice.elle_bridge import ElleBridge, ResponseMode, ARVisualization
+from hololoom.voice.command_router import CommandRouter, IntentType
 
 
 async def demo_navigation():

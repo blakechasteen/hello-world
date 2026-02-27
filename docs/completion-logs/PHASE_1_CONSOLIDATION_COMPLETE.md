@@ -27,8 +27,8 @@ Phase 1 Consolidation is **complete** with all 4 tasks successfully implemented,
 **Files Changed**: 3 created, 1 updated
 
 **Achievement**:
-- Standardized 14 protocols into `HoloLoom/protocols/`
-- Single import point: `from HoloLoom.protocols import ...`
+- Standardized 14 protocols into `hololoom/protocols/`
+- Single import point: `from hololoom.protocols import ...`
 - Organized by category: types, features, shuttle, memory
 - Runtime checkable with full type hints
 
@@ -143,7 +143,7 @@ hololoom_narrative/
 
 From SCOPE_AND_SEQUENCE.md, all criteria met:
 
-- [x] All protocols in `HoloLoom/protocols/` (Task 1.1)
+- [x] All protocols in `hololoom/protocols/` (Task 1.1)
 - [x] Shuttle architecture integrated (Task 1.2)
 - [x] HybridStore as default memory backend (Task 1.3)
 - [x] Framework/app separation complete (Task 1.4)
@@ -177,7 +177,7 @@ All commits pushed to remote: ✅
 - Narrative modules mixed with framework core
 
 ### After Phase 1
-- **Protocols**: Single source of truth in `HoloLoom/protocols/`
+- **Protocols**: Single source of truth in `hololoom/protocols/`
 - **Orchestrator**: Enhanced with Shuttle + mythRL protocols
 - **Memory**: 3 backends (INMEMORY, HYBRID, HYPERSPACE) with auto-fallback
 - **Separation**: Framework core + reference apps (hololoom_narrative)
@@ -187,7 +187,7 @@ All commits pushed to remote: ✅
 ## Key Features Added
 
 ### 1. Protocol-Based Architecture
-- Single import: `from HoloLoom.protocols import ...`
+- Single import: `from hololoom.protocols import ...`
 - Runtime checkable protocols
 - Swappable implementations
 - Full type safety
@@ -282,24 +282,24 @@ All commits pushed to remote: ✅
 **Old**:
 ```python
 from dev.protocol_modules_mythrl import PatternSelectionProtocol
-from HoloLoom.memory.protocol import MemoryStore
+from hololoom.memory.protocol import MemoryStore
 ```
 
 **New**:
 ```python
-from HoloLoom.protocols import PatternSelectionProtocol, MemoryStore
+from hololoom.protocols import PatternSelectionProtocol, MemoryStore
 ```
 
 ### Orchestrator Usage
 **Old** (still works with warning):
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
+from hololoom.weaving_shuttle import WeavingShuttle
 shuttle = WeavingShuttle(cfg=config, shards=shards)
 ```
 
 **New** (recommended):
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 orchestrator = WeavingOrchestrator(cfg=config, shards=shards)
 ```
 
@@ -317,7 +317,7 @@ config.memory_backend = MemoryBackend.HYBRID  # Auto-migration handles legacy
 ### Narrative Imports
 **Old**:
 ```python
-from HoloLoom.narrative_intelligence import NarrativeIntelligence
+from hololoom.narrative_intelligence import NarrativeIntelligence
 ```
 
 **New**:

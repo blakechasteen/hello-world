@@ -241,20 +241,20 @@ DOCUMENTATION REFERENCES
 ================================================================================
 
 API REFERENCE:
-  HoloLoom/redteam/swarm/AGENT_IMPLEMENTATIONS_SUMMARY.md (610 lines)
+  hololoom/redteam/swarm/AGENT_IMPLEMENTATIONS_SUMMARY.md (610 lines)
   - Complete method signatures
   - Task types and parameters
   - Metrics and return values
   - Usage examples
 
 USAGE EXAMPLES:
-  HoloLoom/redteam/swarm/INTEGRATION_EXAMPLE.py (456 lines)
+  hololoom/redteam/swarm/INTEGRATION_EXAMPLE.py (456 lines)
   - 5 complete workflow examples
   - Quick start patterns
   - Integration scenarios
 
 VALIDATION REPORT:
-  HoloLoom/redteam/swarm/FINAL_VALIDATION_REPORT.md
+  hololoom/redteam/swarm/FINAL_VALIDATION_REPORT.md
   - Production readiness validation
   - Compliance checklist
   - Performance benchmarks

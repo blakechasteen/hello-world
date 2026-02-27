@@ -1,4 +1,4 @@
-# Prometheus Configuration for HoloLoom Production Deployment
+# Prometheus Configuration for hololoom Production Deployment
 # November 2025
 
 global:
@@ -21,7 +21,7 @@ rule_files:
 
 # Scrape configurations
 scrape_configs:
-  # HoloLoom API Server
+  # hololoom API Server
   - job_name: 'hololoom-api'
     static_configs:
       - targets: ['hololoom-api:9090']

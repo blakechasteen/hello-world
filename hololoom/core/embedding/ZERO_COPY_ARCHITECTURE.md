@@ -97,7 +97,7 @@ Query Text
 ### Basic Usage
 
 ```python
-from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+from hololoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
 
 # Create embedder
 embedder = ZeroCopyMatryoshkaEmbeddings(
@@ -122,11 +122,11 @@ embeddings = embedder.encode(["query text"])  # Returns max size
 
 ```python
 # OLD: Standard projection-based
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
 
 # NEW: Zero-copy (same API!)
-from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+from hololoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
 embedder = ZeroCopyMatryoshkaEmbeddings(sizes=[96, 192, 384])
 
 # Everything else stays the same
@@ -156,7 +156,7 @@ embedder = ZeroCopyMatryoshkaEmbeddings(
 ### Low-Level Store Access
 
 ```python
-from HoloLoom.embedding.zero_copy import EmbeddingStore
+from hololoom.embedding.zero_copy import EmbeddingStore
 import numpy as np
 
 # Create store
@@ -191,7 +191,7 @@ pattern_embedder = MatryoshkaEmbeddings(
 )
 
 # Replace with zero-copy
-from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+from hololoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
 pattern_embedder = ZeroCopyMatryoshkaEmbeddings(
     sizes=pattern_spec.scales,
     base_model_name=self.cfg.base_model_name,
@@ -205,8 +205,8 @@ pattern_embedder = ZeroCopyMatryoshkaEmbeddings(
 The zero-copy embedder is **fully compatible** with ResonanceShed:
 
 ```python
-from HoloLoom.resonance.shed import ResonanceShed
-from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+from hololoom.resonance.shed import ResonanceShed
+from hololoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
 
 embedder = ZeroCopyMatryoshkaEmbeddings(sizes=[96, 192, 384])
 
@@ -230,11 +230,11 @@ dot_plasma = await resonance_shed.weave(text="query", context_graph=None)
 
 ```bash
 # Full test suite
-PYTHONPATH=. pytest HoloLoom/tests/unit/test_zero_copy_embeddings.py -v
+PYTHONPATH=. pytest hololoom/tests/unit/test_zero_copy_embeddings.py -v
 
 # Quick verification
 PYTHONPATH=. python -c "
-from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+from hololoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
 embedder = ZeroCopyMatryoshkaEmbeddings(sizes=[96, 192, 384], base_model_name=None)
 result = embedder.encode(['hello world'])
 print(f'Success! Shape: {result.shape}')

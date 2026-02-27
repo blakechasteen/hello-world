@@ -17,8 +17,8 @@ from .trough_types import SlopIssue, Severity, SlopCategory, Language
 
 # Try to import DATAPIG (optional dependency)
 try:
-    from HoloLoom.datapig import DataPigDetector, DataQualityIssue, IssueType
-    from HoloLoom.datapig.config import DetectorConfig
+    from hololoom.datapig import DataPigDetector, DataQualityIssue, IssueType
+    from hololoom.datapig.config import DetectorConfig
     DATAPIG_AVAILABLE = True
 except ImportError:
     DATAPIG_AVAILABLE = False

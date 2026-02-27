@@ -7,7 +7,7 @@ Tests usage tracking, heat score calculation, decay mechanism, and adaptive retr
 import pytest
 import time
 from unittest.mock import Mock, AsyncMock, MagicMock
-from HoloLoom.recursive.hot_patterns import (
+from hololoom.recursive.hot_patterns import (
     UsageRecord,
     HotPatternTracker,
     AdaptiveRetriever,
@@ -15,8 +15,8 @@ from HoloLoom.recursive.hot_patterns import (
     HotPatternConfig,
     HotPatternFeedbackEngine
 )
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.protocols.types import Query, MemoryShard
 
 
 class TestUsageRecord:

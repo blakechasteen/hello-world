@@ -3,7 +3,7 @@
   "name": "Automated Code Review Pipeline",
   "description": "Comprehensive code review automation with static analysis, security scanning, style checking, test coverage analysis, and AI-powered review synthesis with actionable fix suggestions.",
   "tags": ["code-review", "static-analysis", "security", "quality", "automation", "ci-cd"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-25",
 
   "nodes": [

@@ -86,8 +86,8 @@ Create test script:
 ```python
 # test_real_text.py
 import asyncio
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 async def test_hemingway_style():
     """Test on clean Hemingway-style text."""
@@ -185,8 +185,8 @@ import time
 import numpy as np
 
 async def benchmark_speeds():
-    from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     text = " ".join(["word"] * 200)  # 200 words
 

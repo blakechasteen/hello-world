@@ -13,13 +13,13 @@ Tests:
 import pytest
 import asyncio
 import numpy as np
-from HoloLoom.weaving_orchestrator_bandit import (
+from hololoom.weaving_orchestrator_bandit import (
     BanditOrchestrator,
     BanditConfig,
     create_bandit_orchestrator,
 )
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
 
 
 # ============================================================================

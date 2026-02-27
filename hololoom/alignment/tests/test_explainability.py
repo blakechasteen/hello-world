@@ -16,7 +16,7 @@ import numpy as np
 from typing import Dict, List, Any, Callable
 
 # Causal Explainer imports
-from HoloLoom.alignment.causal_explainer import (
+from hololoom.alignment.causal_explainer import (
     CausalExplainer,
     CausalGraph,
     CausalEdge,
@@ -29,14 +29,14 @@ from HoloLoom.alignment.causal_explainer import (
 )
 
 # Counterfactual Generator imports
-from HoloLoom.alignment.counterfactual_generator import (
+from hololoom.alignment.counterfactual_generator import (
     MinimalCounterfactualGenerator,
     Counterfactual,
     FeatureChange,
 )
 
 # SHAP/LIME Explainer imports
-from HoloLoom.alignment.shap_lime_explainer import (
+from hololoom.alignment.shap_lime_explainer import (
     SHAPExplainer,
     LIMEExplainer,
     SHAPExplanation,
@@ -47,7 +47,7 @@ from HoloLoom.alignment.shap_lime_explainer import (
 )
 
 # Agentic Explainability imports
-from HoloLoom.alignment.agentic_explainability import (
+from hololoom.alignment.agentic_explainability import (
     AgenticExplainer,
     StepExplanation,
     ReasoningExplanation,

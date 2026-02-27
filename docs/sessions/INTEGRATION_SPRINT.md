@@ -9,12 +9,12 @@
 
 ### ✅ COMPLETE Components (Verified)
 1. **Weaving Architecture** - All 6 modules implemented!
-   - [loom/command.py](HoloLoom/loom/command.py) - PatternCard selection (BARE/FAST/FUSED)
-   - [chrono/trigger.py](HoloLoom/chrono/trigger.py) - Temporal control
-   - [warp/space.py](HoloLoom/warp/space.py) - Tensioned manifold
-   - [resonance/shed.py](HoloLoom/resonance/shed.py) - Feature interference
-   - [convergence/engine.py](HoloLoom/convergence/engine.py) - Decision collapse
-   - [fabric/spacetime.py](HoloLoom/fabric/spacetime.py) - Output with trace
+   - [loom/command.py](hololoom/loom/command.py) - PatternCard selection (BARE/FAST/FUSED)
+   - [chrono/trigger.py](hololoom/chrono/trigger.py) - Temporal control
+   - [warp/space.py](hololoom/warp/space.py) - Tensioned manifold
+   - [resonance/shed.py](hololoom/resonance/shed.py) - Feature interference
+   - [convergence/engine.py](hololoom/convergence/engine.py) - Decision collapse
+   - [fabric/spacetime.py](hololoom/fabric/spacetime.py) - Output with trace
 
 2. **SpinningWheel Suite** - 7+ data ingesters working
    - Website scraper (text + images)
@@ -33,12 +33,12 @@
    - Mem0 adapter
 
 4. **Orchestrators** - 3 entry points exist
-   - [Orchestrator.py](HoloLoom/Orchestrator.py) - Neural policy orchestrator
-   - [autospin.py](HoloLoom/autospin.py) - Text auto-spinning wrapper
-   - [conversational.py](HoloLoom/conversational.py) - Chat with auto-memory
+   - [Orchestrator.py](hololoom/Orchestrator.py) - Neural policy orchestrator
+   - [autospin.py](hololoom/autospin.py) - Text auto-spinning wrapper
+   - [conversational.py](hololoom/conversational.py) - Chat with auto-memory
 
 5. **MCP Integration** - Claude Desktop working
-   - [mcp_server.py](HoloLoom/memory/mcp_server.py) - Exposes memory + conversational interface
+   - [mcp_server.py](hololoom/memory/mcp_server.py) - Exposes memory + conversational interface
    - [claude_desktop_config.json](mcp_server/claude_desktop_config.json) - Configuration verified
 
 ### ⚠️ FRAGMENTED Components (Not Connected)
@@ -75,7 +75,7 @@
 3. **Verify working demos**
    - Run `web_to_memory_demo.py` - WORKING ✅
    - Run `test_e2e_conversational.py` - CHECK
-   - Run `HoloLoom/test_unified_policy.py` - CHECK
+   - Run `hololoom/test_unified_policy.py` - CHECK
    - Document which ones actually work
 
 4. **Create canonical demo structure**
@@ -99,7 +99,7 @@
 
 #### Tasks:
 1. **Create WeavingOrchestrator**
-   - New class in `HoloLoom/weaving_orchestrator.py`
+   - New class in `hololoom/weaving_orchestrator.py`
    - Imports all 6 weaving modules
    - Implements complete cycle:
      ```
@@ -107,9 +107,9 @@
      ```
 
 2. **Update existing orchestrators**
-   - [Orchestrator.py](HoloLoom/Orchestrator.py) → use WeavingOrchestrator
-   - [autospin.py](HoloLoom/autospin.py) → pass through to weaving cycle
-   - [conversational.py](HoloLoom/conversational.py) → use weaving for each turn
+   - [Orchestrator.py](hololoom/Orchestrator.py) → use WeavingOrchestrator
+   - [autospin.py](hololoom/autospin.py) → pass through to weaving cycle
+   - [conversational.py](hololoom/conversational.py) → use weaving for each turn
 
 3. **Add trace output**
    - Every response includes Spacetime fabric
@@ -160,10 +160,10 @@
 1. **Create main HoloLoom class**
    ```python
    # Single import, all functionality
-   from HoloLoom import HoloLoom
+   from hololoom import hololoom
 
    # Initialize
-   loom = await HoloLoom.create(
+   loom = await hololoom.create(
        pattern="fused",
        memory="neo4j+qdrant"
    )
@@ -218,7 +218,7 @@
 - ✅ `test_synthesis_integration.py` passes
 
 ### Phase 4 (Unified API)
-- ✅ Single `from HoloLoom import HoloLoom` works
+- ✅ Single `from hololoom import hololoom` works
 - ✅ All functionality accessible via clean API
 - ✅ MCP server uses unified class
 - ✅ Documentation complete

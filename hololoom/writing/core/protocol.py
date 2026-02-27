@@ -10,9 +10,9 @@ from typing import Protocol, List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
-# Import from HoloLoom types
+# Import from hololoom types
 try:
-    from HoloLoom.protocols.types import MemoryShard
+    from hololoom.protocols.types import MemoryShard
 except ImportError:
     # Fallback for standalone usage
     @dataclass

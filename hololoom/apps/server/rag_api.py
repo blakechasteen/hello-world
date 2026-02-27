@@ -38,14 +38,14 @@ from pydantic import BaseModel, Field, validator
 
 # Import RAG system
 try:
-    from HoloLoom.rag import SimpleRAG, RAGResult
+    from hololoom.rag import SimpleRAG, RAGResult
     RAG_AVAILABLE = True
 except ImportError:
     RAG_AVAILABLE = False
     RAGResult = None
     SimpleRAG = None
 
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 
 # ============================================================================

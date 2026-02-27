@@ -1,7 +1,7 @@
 # EGGROLL: Distributed Computing System for HoloLoom
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/eggroll/`
+**Location**: `hololoom/eggroll/`
 **Total Code**: ~8,500 lines across 17 files
 **Performance**: Multi-node distributed evolution with <2ms communication overhead
 **Philosophy**: "Disposable computation, durable learning"
@@ -78,7 +78,7 @@ Unlike traditional centralized training, EGGROLL:
 
 ```python
 import asyncio
-from HoloLoom.eggroll import EggrollIntegration, OptimizationMode, OptimizationConfig
+from hololoom.eggroll import EggrollIntegration, OptimizationMode, OptimizationConfig
 
 async def main():
     # Create integration with 4 workers
@@ -112,7 +112,7 @@ Epoch 1 | Evolution in progress...
   Worker 1: Reward=0.7891
   Worker 2: Reward=0.5543
   Worker 3: Reward=0.6789
-📊 Dashboard data exported to HoloLoom/eggroll/dashboard/data.json
+📊 Dashboard data exported to hololoom/eggroll/dashboard/data.json
 ✅ DONE: Epoch 1
 ```
 
@@ -120,7 +120,7 @@ Epoch 1 | Evolution in progress...
 
 ```bash
 # Launch real-time TUI dashboard
-python HoloLoom/eggroll/dream_catcher.py
+python hololoom/eggroll/dream_catcher.py
 ```
 
 Displays:
@@ -586,10 +586,10 @@ async with EggrollIntegration(num_workers=4) as integration:
 
 ## See Also
 
-- `HoloLoom/memory/` - Knowledge graph (Yarn)
-- `HoloLoom/weaving_orchestrator.py` - Main orchestrator
-- `HoloLoom/alignment/` - Safety framework
-- `HoloLoom/dark_trace/` - Layer introspection
+- `hololoom/memory/` - Knowledge graph (Yarn)
+- `hololoom/weaving_orchestrator.py` - Main orchestrator
+- `hololoom/alignment/` - Safety framework
+- `hololoom/dark_trace/` - Layer introspection
 - `demos/demo_distributed.py` - Working example
 
 ---

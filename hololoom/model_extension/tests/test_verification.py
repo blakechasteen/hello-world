@@ -10,7 +10,7 @@ Tests the three-tier verification system:
 import pytest
 import asyncio
 from datetime import datetime
-from HoloLoom.model_extension.verification import (
+from hololoom.model_extension.verification import (
     VerificationTier,
     ClaimType,
     VerificationResult,

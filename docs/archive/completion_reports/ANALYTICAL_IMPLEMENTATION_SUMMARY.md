@@ -9,7 +9,7 @@ A **mathematically rigorous** extension to HoloLoom's orchestrator that transfor
 ## 📦 Components Created
 
 ### 1. Core Implementation
-**File:** `HoloLoom/analytical_orchestrator.py` (700+ lines)
+**File:** `hololoom/analytical_orchestrator.py` (700+ lines)
 
 **Features:**
 - Extends `WeavingOrchestrator` with analytical enhancements
@@ -183,7 +183,7 @@ Enhanced with Analysis:
 ### Basic Usage
 
 ```python
-from HoloLoom.analytical_orchestrator import create_analytical_orchestrator
+from hololoom.analytical_orchestrator import create_analytical_orchestrator
 
 # Create with all analysis
 weaver = create_analytical_orchestrator(
@@ -394,7 +394,7 @@ The analytical orchestrator makes abstract math **concrete** and **observable**:
 
 ### Import Test
 ```bash
-python -c "from HoloLoom.analytical_orchestrator import create_analytical_orchestrator; print('✓')"
+python -c "from hololoom.analytical_orchestrator import create_analytical_orchestrator; print('✓')"
 ```
 
 ### Demo Suite

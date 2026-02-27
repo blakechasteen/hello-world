@@ -11,8 +11,8 @@ import tempfile
 import os
 from pathlib import Path
 
-from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager
-from HoloLoom.spinningWheel.chat_history import (
+from hololoom.apps.workflow_builder.conversation_manager import ConversationManager
+from hololoom.spinningWheel.chat_history import (
     ChatHistorySpinner,
     ImportanceScore
 )

@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
-from HoloLoom.federation.types import Capability
+from hololoom.federation.types import Capability
 
 
 # ============================================================================

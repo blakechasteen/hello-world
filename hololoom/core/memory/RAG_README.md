@@ -343,7 +343,7 @@ Test the RAG server with your business plan:
 
 ```bash
 # Terminal 1: Start server
-python -m HoloLoom.memory.mcp_rag_server
+python -m hololoom.memory.mcp_rag_server
 
 # Terminal 2: Test with business docs
 # (Use Claude Desktop to query your business plan documents)
@@ -353,7 +353,7 @@ Or write a test script:
 
 ```python
 import asyncio
-from HoloLoom.memory.mcp_rag_server import rag_query, init_memory
+from hololoom.memory.mcp_rag_server import rag_query, init_memory
 
 async def test_rag():
     await init_memory()

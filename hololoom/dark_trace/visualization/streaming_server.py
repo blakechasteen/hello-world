@@ -12,7 +12,7 @@ Key Components:
 - StreamMessage: Standardized message protocol
 
 Usage:
-    from HoloLoom.dark_trace.visualization.streaming_server import (
+    from hololoom.dark_trace.visualization.streaming_server import (
         DarkTraceStreamingServer,
         StreamingConfig,
         create_streaming_server,

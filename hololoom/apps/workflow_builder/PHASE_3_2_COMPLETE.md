@@ -338,7 +338,7 @@ Tool Execution: 45.2ms (30%) ⚠️ BOTTLENECK
 
 ## Files Modified
 
-### HoloLoom/web_dashboard/js/orchestrator_visualizer.js
+### hololoom/web_dashboard/js/orchestrator_visualizer.js
 - **Lines added**: ~100
 - **Changes**:
   - Added `stageTrends` tracking (lines 25-27)
@@ -348,7 +348,7 @@ Tool Execution: 45.2ms (30%) ⚠️ BOTTLENECK
   - Enhanced `updateStageProgress()` with bottleneck detection (lines 160-227)
   - Enhanced `updateStageHistory()` with waterfall bottlenecks (lines 237-298)
 
-### HoloLoom/web_dashboard/control_panel.html
+### hololoom/web_dashboard/control_panel.html
 - **Lines added**: ~100
 - **Changes**:
   - Added bottleneck CSS animations (lines 656-695)
@@ -432,7 +432,7 @@ Tool Execution: 45.2ms (30%) ⚠️ BOTTLENECK
 
 1. **Start server**:
    ```bash
-   PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+   PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
    ```
 
 2. **Open dashboard**:

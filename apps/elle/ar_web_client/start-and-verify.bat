@@ -49,10 +49,10 @@ if %errorlevel%==0 (
 
 REM Step 4: Start backend if not running
 if %BACKEND_RUNNING%==0 (
-    echo [4/5] Starting HoloLoom AR backend...
-    echo     Command: python -m HoloLoom.server.ar_api
+    echo [4/5] Starting hololoom AR backend...
+    echo     Command: python -m hololoom.server.ar_api
     echo.
-    start "HoloLoom AR Backend" cmd /k "cd c:\Users\blake\OneDrive\Documents\mythRL && python -m HoloLoom.server.ar_api"
+    start "hololoom AR Backend" cmd /k "cd c:\Users\blake\OneDrive\Documents\mythRL && python -m hololoom.server.ar_api"
     echo     ✅ Backend server starting in new window...
     echo     Wait 5 seconds for server to initialize...
     timeout /t 5 /nobreak >nul

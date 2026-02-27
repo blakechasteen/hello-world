@@ -5,8 +5,8 @@ Run: PYTHONPATH=. python ingest_my_writing.py
 """
 import asyncio
 from pathlib import Path
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.config import Config
+from hololoom.rag import SimpleRAG
+from hololoom.config import Config
 
 async def ingest_creative_writing():
     print("📚 Creative Writing AI - Loading your stories...\n")

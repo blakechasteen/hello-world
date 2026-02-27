@@ -24,8 +24,8 @@ import sys
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.reflection.feedback_store import FeedbackStore
-from HoloLoom.policy.thompson_sampling import TSBandit
+from hololoom.reflection.feedback_store import FeedbackStore
+from hololoom.policy.thompson_sampling import TSBandit
 
 
 async def demo_basic_feedback():

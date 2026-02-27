@@ -55,18 +55,18 @@ class ImportTest(VerificationTest):
     async def run(self) -> bool:
         try:
             # Core imports
-            from holoLoom.chatops import MatrixBot, ChatOpsOrchestrator
-            from holoLoom.chatops.conversation_memory import ConversationMemory
-            from holoLoom.chatops.matrix_bot import MatrixBotConfig
+            from hololoom.chatops import MatrixBot, ChatOpsOrchestrator
+            from hololoom.chatops.conversation_memory import ConversationMemory
+            from hololoom.chatops.matrix_bot import MatrixBotConfig
 
             # Optional imports
             try:
-                from holoLoom.chatops import ChatOpsSkills
+                from hololoom.chatops import ChatOpsSkills
             except ImportError:
                 pass  # Optional
 
             try:
-                from holoLoom.config import Config
+                from hololoom.config import Config
             except ImportError:
                 pass  # Optional
 
@@ -212,9 +212,9 @@ class ComponentTest(VerificationTest):
 
     async def run(self) -> bool:
         try:
-            from holoLoom.chatops.matrix_bot import MatrixBotConfig, MatrixBot
-            from holoLoom.chatops.chatops_bridge import ChatOpsOrchestrator
-            from holoLoom.chatops.conversation_memory import ConversationMemory
+            from hololoom.chatops.matrix_bot import MatrixBotConfig, MatrixBot
+            from hololoom.chatops.chatops_bridge import ChatOpsOrchestrator
+            from hololoom.chatops.conversation_memory import ConversationMemory
 
             # Test MatrixBotConfig
             config = MatrixBotConfig(
@@ -367,7 +367,7 @@ def main():
     parser.add_argument(
         "--config",
         type=str,
-        default="HoloLoom/chatops/config.yaml",
+        default="hololoom/chatops/config.yaml",
         help="Path to configuration file"
     )
     args = parser.parse_args()

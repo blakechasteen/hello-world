@@ -233,7 +233,7 @@ echo "Security checks passed ✅"
 
 ### Priority Fixes Required
 
-1. **CRIT-1**: [smart_operation_selector.py:1081](HoloLoom/warp/math/smart_operation_selector.py#L1081) - Replace `eval()` with `ast.literal_eval()`
+1. **CRIT-1**: [smart_operation_selector.py:1081](hololoom/warp/math/smart_operation_selector.py#L1081) - Replace `eval()` with `ast.literal_eval()`
 2. **CRIT-2**: [trajectory_recorder.py:14](apps/darkTrace/darkTrace/observers/trajectory_recorder.py#L14) - Replace `pickle` with JSON
 3. **CRIT-3**: [ultraprompt_ollama.py:138](apps/Promptly/promptly/tools/ultraprompt_ollama.py#L138) - Remove `shell=True`
 

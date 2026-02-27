@@ -182,7 +182,7 @@ HOW TO USE
    $ pip install -r requirements.txt
 
 2. Run tests with coverage (automatic via pytest.ini):
-   $ pytest HoloLoom/tests/ -v
+   $ pytest hololoom/tests/ -v
 
 3. View HTML report:
    $ open htmlcov/index.html  # macOS

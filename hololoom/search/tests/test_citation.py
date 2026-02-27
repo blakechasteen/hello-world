@@ -5,12 +5,12 @@ Comprehensive tests for CitationFormatter and citation styles.
 """
 
 import pytest
-from HoloLoom.search.citation import (
+from hololoom.search.citation import (
     CitationFormatter,
     CitationStyle,
     Citation
 )
-from HoloLoom.search.protocol import WebSearchResult, SearchResultType
+from hololoom.search.protocol import WebSearchResult, SearchResultType
 
 
 class TestCitation:

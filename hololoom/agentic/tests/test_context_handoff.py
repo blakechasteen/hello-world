@@ -17,7 +17,7 @@ Date: 2025-12-09
 import pytest
 from typing import List, Dict, Any
 
-from HoloLoom.agentic.context_handoff import (
+from hololoom.agentic.context_handoff import (
     ContextHandoff,
     ContextItem,
     HandoffContext,

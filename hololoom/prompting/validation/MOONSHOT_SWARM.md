@@ -50,7 +50,7 @@
 **Simple, elegant validation in 4 lines**:
 
 ```python
-from HoloLoom.prompting.validation import ValidationPipeline, QualityValidator, LatencyValidator
+from hololoom.prompting.validation import ValidationPipeline, QualityValidator, LatencyValidator
 
 # Create pipeline and add validators (elegant chaining)
 pipeline = ValidationPipeline() \
@@ -72,7 +72,7 @@ if results.passed:
 **Parallel validation across 14 dimensions in 6 lines**:
 
 ```python
-from HoloLoom.prompting.validation import MoonshotSwarm
+from hololoom.prompting.validation import MoonshotSwarm
 
 # Create swarm and add agents (elegant chaining)
 swarm = MoonshotSwarm() \
@@ -140,7 +140,7 @@ Recommendation:
 ### Built-in Validators
 
 ```python
-from HoloLoom.prompting.validation import (
+from hololoom.prompting.validation import (
     QualityValidator,          # Accuracy, completeness, clarity
     LatencyValidator,          # Response time, throughput
     UserSatisfactionValidator, # Ratings, thumbs up/down
@@ -160,7 +160,7 @@ pipeline.add_validator(StatisticalValidator(significance_level=0.05))
 **Create your own validator in 10 lines**:
 
 ```python
-from HoloLoom.prompting.validation import Validator, ValidationContext
+from hololoom.prompting.validation import Validator, ValidationContext
 
 class MyCustomValidator(Validator):
     def __init__(self, threshold: float):
@@ -244,7 +244,7 @@ swarm.add_timeline_agents(weeks=4)
 ```python
 import asyncio
 from datetime import datetime, timedelta
-from HoloLoom.prompting.validation import (
+from hololoom.prompting.validation import (
     MoonshotSwarm,
     ProductionDataCollector,
 )
@@ -450,7 +450,7 @@ complex_pipeline.add_validator(QualityValidator(min_improvement_pct=30.0))
 ### With A/B Testing
 
 ```python
-from HoloLoom.prompting.validation import ABTestRunner, MoonshotSwarm
+from hololoom.prompting.validation import ABTestRunner, MoonshotSwarm
 
 # Run A/B test first
 ab_runner = ABTestRunner(config)
@@ -464,7 +464,7 @@ swarm_results = await swarm.run(ab_results.traditional_executions, ab_results.mr
 ### With Data Collection
 
 ```python
-from HoloLoom.prompting.validation import ProductionDataCollector, MoonshotSwarm
+from hololoom.prompting.validation import ProductionDataCollector, MoonshotSwarm
 
 # Collect data
 collector = ProductionDataCollector()
@@ -484,10 +484,10 @@ results = await swarm.run([q.__dict__ for q in baseline], [q.__dict__ for q in m
 
 ```bash
 # Run all Moonshot Swarm tests
-PYTHONPATH=. pytest HoloLoom/prompting/validation/tests/test_pipeline_swarm.py -v
+PYTHONPATH=. pytest hololoom/prompting/validation/tests/test_pipeline_swarm.py -v
 
 # Run specific test class
-PYTHONPATH=. pytest HoloLoom/prompting/validation/tests/test_pipeline_swarm.py::TestQualityValidator -v
+PYTHONPATH=. pytest hololoom/prompting/validation/tests/test_pipeline_swarm.py::TestQualityValidator -v
 ```
 
 ### Test Coverage (22 Tests)

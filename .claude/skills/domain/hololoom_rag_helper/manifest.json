@@ -3,7 +3,7 @@
   "skill": {
     "name": "hololoom_rag_helper",
     "version": "1.0.0",
-    "author": "HoloLoom Team",
+    "author": "hololoom Team",
     "category": "domain",
     "tags": [
       "hololoom",
@@ -12,7 +12,7 @@
       "qa",
       "multimodal"
     ],
-    "description": "Simplifies HoloLoom RAG operations by providing an easy-to-use interface for question answering with automatic mode selection, multimodal support, and confidence scoring.",
+    "description": "Simplifies hololoom RAG operations by providing an easy-to-use interface for question answering with automatic mode selection, multimodal support, and confidence scoring.",
     "capabilities": [
       "File system access (read)",
       "Code execution (python)"

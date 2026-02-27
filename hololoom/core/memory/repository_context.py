@@ -17,7 +17,7 @@ Usage:
 
     # Register repositories
     await repo_mgr.add_repository(
-        name="HoloLoom",
+        name="hololoom",
         path="c:/Users/blake/OneDrive/Documents/mythRL/HoloLoom",
         tags=["python", "ml", "core"],
         access_level="public"

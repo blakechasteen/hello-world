@@ -15,7 +15,7 @@ class StderrRedirect:
 
 sys.stdout = StderrRedirect()
 
-from HoloLoom.eggroll.integration import EggrollIntegration
+from hololoom.eggroll.integration import EggrollIntegration
 
 # Initialize FastMCP Server
 mcp = FastMCP("EGGROLL Service")

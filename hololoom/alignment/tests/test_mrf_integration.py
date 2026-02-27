@@ -7,11 +7,11 @@ Tests for UnifiedMRF integration into alignment framework.
 and approval request prompt generation.
 
 Usage:
-    pytest HoloLoom/alignment/tests/test_mrf_integration.py -v
+    pytest hololoom/alignment/tests/test_mrf_integration.py -v
 """
 
 import pytest
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     ActionRequest,
     ActionCategory,
@@ -20,7 +20,7 @@ from HoloLoom.alignment.safety_guardrails import (
 
 # Try importing MRF integration (may not be available)
 try:
-    from HoloLoom.alignment.mrf_integration import (
+    from hololoom.alignment.mrf_integration import (
         create_risk_assessment_prompt,
         create_adversarial_detection_prompt,
         create_approval_request_prompt,
@@ -397,4 +397,4 @@ if __name__ == "__main__":
     print()
     print("Total: 18 tests")
     print()
-    print("Run with: pytest HoloLoom/alignment/tests/test_mrf_integration.py -v")
+    print("Run with: pytest hololoom/alignment/tests/test_mrf_integration.py -v")

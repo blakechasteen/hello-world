@@ -9,7 +9,7 @@
 ## ✅ Fixes Applied
 
 ### 1. Removed numpy.typing from typed_dicts.py
-**File**: `HoloLoom/documentation/typed_dicts.py`
+**File**: `hololoom/documentation/typed_dicts.py`
 
 **Change**:
 ```python
@@ -30,13 +30,13 @@ next_state: List[float]
 
 ### 2. Disabled policy import in config.py
 
-**File**: `HoloLoom/config.py` line 15
+**File**: `hololoom/config.py` line 15
 
 **Change**:
 ```python
 # Before
 try:
-    from HoloLoom.policy.unified import BanditStrategy as PolicyBanditStrategy
+    from hololoom.policy.unified import BanditStrategy as PolicyBanditStrategy
     _POLICY_AVAILABLE = True
 except ImportError:
     _POLICY_AVAILABLE = False
@@ -52,20 +52,20 @@ _POLICY_AVAILABLE = False  # Disabled to fix import timeout
 
 ### 3. Made Config import lazy in hololoom.py
 
-**File**: `HoloLoom/hololoom.py` lines 29-36, 95-96
+**File**: `hololoom/hololoom.py` lines 29-36, 95-96
 
 **Change**:
 ```python
 # Before (module level):
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # After (lazy import):
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from HoloLoom.config import Config
+    from hololoom.config import Config
 
 def __init__(self, config: Optional['Config'] = None, ...):
-    from HoloLoom.config import Config  # Lazy import
+    from hololoom.config import Config  # Lazy import
     self.config = config or Config.fast()
 ```
 
@@ -75,16 +75,16 @@ def __init__(self, config: Optional['Config'] = None, ...):
 
 ### 4. Disabled MemoryStore import in protocols/__init__.py
 
-**File**: `HoloLoom/protocols/__init__.py` line 66
+**File**: `hololoom/protocols/__init__.py` line 66
 
 **Change**:
 ```python
 # Before
-from HoloLoom.memory.protocol import MemoryStore
+from hololoom.memory.protocol import MemoryStore
 
 # After
 # MemoryStore is in memory.protocol - DISABLED to avoid circular imports
-# from HoloLoom.memory.protocol import MemoryStore
+# from hololoom.memory.protocol import MemoryStore
 ```
 
 **Result**: Breaks circular dependency `protocols → memory.protocol → protocols`
@@ -98,21 +98,21 @@ from HoloLoom.memory.protocol import MemoryStore
 ### Circular Import Chain Discovered:
 
 ```
-HoloLoom/__init__.py (line 34)
-  → from .hololoom import HoloLoom
-    → HoloLoom/hololoom.py (line 33) ✅ FIXED with lazy import
-      → from HoloLoom.config import Config
+hololoom/__init__.py (line 34)
+  → from .hololoom import hololoom
+    → hololoom/hololoom.py (line 33) ✅ FIXED with lazy import
+      → from hololoom.config import Config
 
-HoloLoom/__init__.py (line 35)
+hololoom/__init__.py (line 35)
   → from .memory.protocol import Memory
-    → HoloLoom/memory/protocol.py (line 113)
-      → from HoloLoom.protocols import ...
-        → HoloLoom/protocols/__init__.py (line 66) ✅ FIXED
-          → from HoloLoom.memory.protocol import MemoryStore (CIRCULAR!)
+    → hololoom/memory/protocol.py (line 113)
+      → from hololoom.protocols import ...
+        → hololoom/protocols/__init__.py (line 66) ✅ FIXED
+          → from hololoom.memory.protocol import MemoryStore (CIRCULAR!)
 
-HoloLoom/protocols/__init__.py (line 37)
+hololoom/protocols/__init__.py (line 37)
   → from .types import ComplexityLevel
-    → HoloLoom/protocols/types.py
+    → hololoom/protocols/types.py
       → ⚠️ HANGS despite only importing stdlib (enum, typing, dataclasses, time)
 ```
 
@@ -128,17 +128,17 @@ HoloLoom/protocols/__init__.py (line 37)
 - ✅ `types.py` loads fine when bypassing package init
 
 ### What Hangs
-- ❌ `import HoloLoom`
-- ❌ `from HoloLoom.config import Config`
-- ❌ `from HoloLoom.documentation.types import Vector`
+- ❌ `import hololoom`
+- ❌ `from hololoom.config import Config`
+- ❌ `from hololoom.documentation.types import Vector`
 - ❌ Any import through package `__init__.py`
 
 ### Root Cause Hypothesis
 The issue is **NOT** in individual files, but in the **package initialization chain**:
 
 ```
-import HoloLoom
-  → HoloLoom/__init__.py imports from hololoom.py
+import hololoom
+  → hololoom/__init__.py imports from hololoom.py
     → hololoom.py imports from memory
       → memory/__init__.py imports from cache.py
         → cache.py imports from embedding.spectral
@@ -155,11 +155,11 @@ Move all imports inside functions/methods instead of module-level:
 
 ```python
 # Instead of this (at module level):
-from HoloLoom.memory.cache import MemoryManager
+from hololoom.memory.cache import MemoryManager
 
 # Do this (lazy import):
 def get_memory_manager():
-    from HoloLoom.memory.cache import MemoryManager
+    from hololoom.memory.cache import MemoryManager
     return MemoryManager()
 ```
 
@@ -196,7 +196,7 @@ class Language(str, Enum):
 Break circular dependencies by reorganizing:
 
 ```
-HoloLoom/
+hololoom/
 ├── core/           # Pure types, no imports
 │   ├── types.py
 │   └── enums.py
@@ -239,10 +239,10 @@ HoloLoom/
 
 ### Short-term (2-4 hours)
 1. Convert module-level imports to lazy imports in key files:
-   - `HoloLoom/__init__.py`
-   - `HoloLoom/hololoom.py`
-   - `HoloLoom/memory/__init__.py`
-   - `HoloLoom/memory/cache.py`
+   - `hololoom/__init__.py`
+   - `hololoom/hololoom.py`
+   - `hololoom/memory/__init__.py`
+   - `hololoom/memory/cache.py`
 
 2. Test imports work after each change
 
@@ -259,12 +259,12 @@ HoloLoom/
 ### Test Individual Imports
 ```bash
 # Test if module loads
-PYTHONPATH=. timeout 3 python -c "import HoloLoom.module; print('OK')"
+PYTHONPATH=. timeout 3 python -c "import hololoom.module; print('OK')"
 
 # Direct file loading (bypasses package init)
 PYTHONPATH=. python -c "
 import importlib.util
-spec = importlib.util.spec_from_file_location('test', 'HoloLoom/file.py')
+spec = importlib.util.spec_from_file_location('test', 'hololoom/file.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 print('OK')
@@ -277,12 +277,12 @@ print('OK')
 python debug_toolkit.py check-circular HoloLoom
 
 # Trace imports
-python debug_toolkit.py trace-import HoloLoom.config
+python debug_toolkit.py trace-import hololoom.config
 ```
 
 ### Profile Import Times
 ```bash
-python debug_toolkit.py profile-import HoloLoom
+python debug_toolkit.py profile-import hololoom
 ```
 
 ---
@@ -302,7 +302,7 @@ python debug_toolkit.py profile-import HoloLoom
 ### For ML Logic Detector
 ```python
 # Use standalone version with local enums
-from HoloLoom.agentic.ml_logic_detector import MLLogicDetector, Language
+from hololoom.agentic.ml_logic_detector import MLLogicDetector, Language
 
 # No HoloLoom package import needed
 detector = MLLogicDetector()

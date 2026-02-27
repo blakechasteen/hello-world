@@ -1,9 +1,9 @@
 """Test Shuttle-HoloLoom Integration (Task 1.2)"""
 import asyncio
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.protocols import ComplexityLevel
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.protocols import ComplexityLevel
 
 async def main():
     print("=" * 60)

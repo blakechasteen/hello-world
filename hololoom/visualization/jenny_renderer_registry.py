@@ -40,7 +40,7 @@ from typing import Dict, List, Optional, Type, Callable, Any, Set
 from dataclasses import dataclass, field
 from functools import wraps
 
-from HoloLoom.protocols.jenny import (
+from hololoom.protocols.jenny import (
     JennyRendererProtocol,
     RenderTarget,
 )
@@ -408,7 +408,7 @@ class RendererRegistry(metaclass=RendererRegistryMeta):
     # Plugin Discovery
     # ========================================================================
 
-    def discover_plugins(self, package_path: str = "HoloLoom.visualization") -> int:
+    def discover_plugins(self, package_path: str = "hololoom.visualization") -> int:
         """
         Discover and register renderer plugins from a package.
 

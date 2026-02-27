@@ -19,7 +19,7 @@
 ### 2. Configuration Validation
 
 ```python
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     create_guardrails,
     create_detector,
     create_guard,
@@ -35,7 +35,7 @@ print("✅ All alignment modules imported successfully")
 Run benchmarks to verify performance on production hardware:
 
 ```bash
-python HoloLoom/alignment/tests/run_benchmarks.py
+python hololoom/alignment/tests/run_benchmarks.py
 ```
 
 **Expected Results**:
@@ -90,7 +90,7 @@ python HoloLoom/alignment/tests/run_benchmarks.py
 
 ```python
 from pathlib import Path
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     create_guardrails,
     create_detector,
     create_guard,
@@ -124,7 +124,7 @@ class ProductionAlignmentConfig:
 
     def _configure_resource_bounds(self):
         """Set production resource limits."""
-        from HoloLoom.alignment.instrumental_convergence import (
+        from hololoom.alignment.instrumental_convergence import (
             ResourceBounds,
             ResourceType,
         )
@@ -184,19 +184,19 @@ class ProductionAlignmentConfig:
 ```python
 import asyncio
 from pathlib import Path
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import Query
+from hololoom.alignment.safety_guardrails import (
     ActionRequest,
     ActionCategory,
 )
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     BehavioralProbe,
     ProbeType,
     ActionObservation,
 )
-from HoloLoom.alignment.audit_trail import (
+from hololoom.alignment.audit_trail import (
     DecisionType,
     OutcomeType,
 )
@@ -235,7 +235,7 @@ class AlignedHoloLoomProduction:
 
     def _register_goals(self):
         """Register production safety goals."""
-        from HoloLoom.alignment.deception_detection import GoalStatement
+        from hololoom.alignment.deception_detection import GoalStatement
 
         goals = [
             GoalStatement(
@@ -305,7 +305,7 @@ class AlignedHoloLoomProduction:
             }
 
         # Step 2: Resource Checks
-        from HoloLoom.alignment.instrumental_convergence import ResourceType
+        from hololoom.alignment.instrumental_convergence import ResourceType
 
         # Check compute budget (estimated query time)
         compute_estimate = 5.0  # seconds (adjust based on query complexity)
@@ -437,7 +437,7 @@ class AlignedHoloLoomProduction:
 
 ```python
 from pathlib import Path
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # Initialize
 config = Config.fast()  # or Config.fused() for research
@@ -547,7 +547,7 @@ flush_interval = 500  # Flush every 500 decisions instead of 100
 **Solution**:
 ```python
 # Review and adjust policies
-from HoloLoom.alignment.safety_guardrails import SafetyPolicy, RiskLevel
+from hololoom.alignment.safety_guardrails import SafetyPolicy, RiskLevel
 
 guardrails.policies[ActionCategory.QUERY] = SafetyPolicy(
     allowed_without_approval=True,

@@ -45,7 +45,7 @@ class HoloLoomWarp:
 
         try:
             # Real Qdrant search
-            from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+            from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
             # Get query embedding
             embedder = MatryoshkaEmbeddings()
@@ -222,7 +222,7 @@ class HoloLoomYarn:
         max_nodes: int,
     ) -> Tuple[NeighborMap, List[str]]:
         """Build neighbor map using HoloLoom KG (NetworkX)."""
-        from HoloLoom.memory.graph import KG
+        from hololoom.memory.graph import KG
 
         neighbor_map: NeighborMap = {}
         visited_nodes = set()

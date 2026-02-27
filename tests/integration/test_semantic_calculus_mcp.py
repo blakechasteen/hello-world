@@ -30,7 +30,7 @@ if __name__ == '__main__' and sys.platform == 'win32':
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.semantic_calculus import mcp_server
+from hololoom.semantic_calculus import mcp_server
 
 
 async def test_initialization():

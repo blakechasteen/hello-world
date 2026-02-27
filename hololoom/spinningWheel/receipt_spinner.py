@@ -20,7 +20,7 @@ Supports:
 - Various receipt layouts
 
 Usage:
-    from HoloLoom.spinningWheel import ReceiptSpinner
+    from hololoom.spinningWheel import ReceiptSpinner
 
     spinner = ReceiptSpinner()
     result = await spinner.spin("receipt.jpg")
@@ -42,16 +42,16 @@ import time
 import re
 from decimal import Decimal
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
     ImportanceScore,
     ImportanceSignals
 )
-from HoloLoom.spinningWheel.ocr_protocol import OCROutputFormat
-from HoloLoom.spinningWheel.ocr_backends import get_all_available_backends
+from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
+from hololoom.spinningWheel.ocr_backends import get_all_available_backends
 
 
 @dataclass

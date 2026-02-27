@@ -16,9 +16,9 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
-from HoloLoom.promptly import DSPyHoloLoom, create_signature
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.promptly import DSPyHoloLoom, create_signature
+from hololoom.config import Config
+from hololoom.protocols.types import MemoryShard
 import dspy
 
 
@@ -26,7 +26,7 @@ import dspy
 # CONFIGURATION
 # ============================================================================
 
-# Sample knowledge base (in production, load from HoloLoom memory)
+# Sample knowledge base (in production, load from hololoom memory)
 KNOWLEDGE_BASE = [
     MemoryShard(
         content="Thompson Sampling is a Bayesian approach to the multi-armed bandit problem. "

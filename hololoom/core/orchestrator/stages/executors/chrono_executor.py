@@ -19,10 +19,10 @@ from __future__ import annotations
 import logging
 from typing import Callable, Optional, TYPE_CHECKING
 
-from HoloLoom.core.orchestrator.protocols import BaseStageExecutor
+from hololoom.core.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
-    from HoloLoom.core.orchestrator.context import WeavingContext
+    from hololoom.core.orchestrator.context import WeavingContext
 
 
 class ChronoTriggerExecutor(BaseStageExecutor):
@@ -83,7 +83,7 @@ class ChronoTriggerExecutor(BaseStageExecutor):
         start = self._start_timing()
 
         # Import and delegate to pure function
-        from HoloLoom.core.orchestrator.stages.steps_0_3 import execute_step2_chrono_trigger
+        from hololoom.core.orchestrator.stages.steps_0_3 import execute_step2_chrono_trigger
 
         ctx = await execute_step2_chrono_trigger(
             ctx=ctx,

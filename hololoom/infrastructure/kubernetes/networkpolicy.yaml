@@ -1,4 +1,4 @@
-# HoloLoom Network Policies
+# hololoom Network Policies
 # Part 5: Production Hardening - Day 25
 #
 # Network isolation and security:
@@ -112,7 +112,7 @@ spec:
           port: 443  # HTTPS
 
 ---
-# Policy 3: Neo4j ingress (allow from HoloLoom only)
+# Policy 3: Neo4j ingress (allow from hololoom only)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -127,7 +127,7 @@ spec:
     - Ingress
 
   ingress:
-    # Allow from HoloLoom API
+    # Allow from hololoom API
     - from:
         - podSelector:
             matchLabels:
@@ -139,7 +139,7 @@ spec:
           port: 7474  # HTTP
 
 ---
-# Policy 4: Qdrant ingress (allow from HoloLoom only)
+# Policy 4: Qdrant ingress (allow from hololoom only)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -154,7 +154,7 @@ spec:
     - Ingress
 
   ingress:
-    # Allow from HoloLoom API
+    # Allow from hololoom API
     - from:
         - podSelector:
             matchLabels:
@@ -243,7 +243,7 @@ spec:
 #      -n default -- curl http://hololoom-api.hololoom:8080/health
 #    # Should fail (timeout)
 #
-# 3. Test allowed egress (from HoloLoom pod):
+# 3. Test allowed egress (from hololoom pod):
 #    kubectl exec -it <hololoom-pod> -n hololoom -- curl http://neo4j:7474
 #    # Should succeed
 #

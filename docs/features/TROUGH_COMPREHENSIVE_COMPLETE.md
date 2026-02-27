@@ -64,7 +64,7 @@ Trough automatically:
 ```bash
 cd mythRL
 pip install fastapi uvicorn networkx
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --reload --port 8000
 ```
 
 Verify:
@@ -170,7 +170,7 @@ def authenticate_user(username: str, password: str) -> Optional[str]:
 ### Server (Python - FastAPI)
 
 ```
-HoloLoom/server/agentic_api.py
+hololoom/server/agentic_api.py
 ├─ RateLimiter (60 req/min per IP)
 ├─ ServerStats (uptime, latencies, success rates)
 ├─ AISlopDetector (15 categories)
@@ -429,7 +429,7 @@ ServerStats(latency_buffer=1000)  # Last 1000 requests
 
 ```bash
 # 4 workers, production mode
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app \
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app \
   --host 0.0.0.0 \
   --port 8000 \
   --workers 4

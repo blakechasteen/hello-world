@@ -2,7 +2,7 @@
 
 **Status**: ✅ Production Ready (November 2025)
 **Updated**: December 2025 - LLMJudge Integration
-**Location**: `HoloLoom/prompting/testing/`
+**Location**: `hololoom/prompting/testing/`
 **Performance**: LLM-based evaluation with heuristic fallback
 
 Comprehensive testing framework for systematic prompt validation and quality assurance across all HoloLoom systems.
@@ -29,7 +29,7 @@ The Prompt Testing Framework provides three types of tests to ensure prompt qual
 ### Basic Usage
 
 ```python
-from HoloLoom.prompting.testing import create_test_suite, PromptTestConfig
+from hololoom.prompting.testing import create_test_suite, PromptTestConfig
 
 # Create test suite with defaults (LLM-based evaluation)
 suite = create_test_suite()
@@ -46,28 +46,28 @@ print(f"Avg latency: {report.avg_latency_ms:.2f}ms")
 
 ```bash
 # Run all tests with LLM evaluation (default)
-python -m HoloLoom.prompting.testing.test_suite --test-type all
+python -m hololoom.prompting.testing.test_suite --test-type all
 
 # Run specific test types
-python -m HoloLoom.prompting.testing.test_suite --test-type golden
-python -m HoloLoom.prompting.testing.test_suite --test-type mutation
-python -m HoloLoom.prompting.testing.test_suite --test-type regression
+python -m hololoom.prompting.testing.test_suite --test-type golden
+python -m hololoom.prompting.testing.test_suite --test-type mutation
+python -m hololoom.prompting.testing.test_suite --test-type regression
 
 # Configure LLM provider
-python -m HoloLoom.prompting.testing.test_suite \
+python -m hololoom.prompting.testing.test_suite \
   --llm-provider anthropic \
   --llm-model claude-3-5-sonnet-20241022
 
 # Use Ollama (local, fast)
-python -m HoloLoom.prompting.testing.test_suite \
+python -m hololoom.prompting.testing.test_suite \
   --llm-provider ollama \
   --llm-model llama3.2:3b
 
 # Disable LLM evaluation (use heuristics)
-python -m HoloLoom.prompting.testing.test_suite --no-llm-judge
+python -m hololoom.prompting.testing.test_suite --no-llm-judge
 
 # Save report to file
-python -m HoloLoom.prompting.testing.test_suite \
+python -m hololoom.prompting.testing.test_suite \
   --output results/test_report.json
 ```
 
@@ -89,7 +89,7 @@ Each criterion is scored 0.0-1.0, and an overall score is computed.
 ### Configuration
 
 ```python
-from HoloLoom.prompting.testing import PromptTestConfig
+from hololoom.prompting.testing import PromptTestConfig
 
 config = PromptTestConfig(
     # LLM Judge settings
@@ -140,7 +140,7 @@ Test prompts against known good outputs:
 
 ```python
 # Add golden test cases
-from HoloLoom.prompting.testing import GoldenDatasetManager, PromptTestCase, TestType
+from hololoom.prompting.testing import GoldenDatasetManager, PromptTestCase, TestType
 
 dataset = GoldenDatasetManager()
 dataset.add_golden_pair(
@@ -168,7 +168,7 @@ Test prompt robustness to variations:
 
 ```python
 # Test mutations of a prompt
-from HoloLoom.prompting.testing import MutationTester
+from hololoom.prompting.testing import MutationTester
 
 tester = MutationTester(config)
 
@@ -195,7 +195,7 @@ Detect quality degradation over time:
 
 ```python
 # Run regression detection
-from HoloLoom.prompting.testing import RegressionDetector
+from hololoom.prompting.testing import RegressionDetector
 
 detector = RegressionDetector(config)
 
@@ -256,7 +256,7 @@ class PromptTestReport:
 The framework collects comprehensive metrics:
 
 ```python
-from HoloLoom.prompting.testing import MetricsCollector, MetricType
+from hololoom.prompting.testing import MetricsCollector, MetricType
 
 collector = suite.metrics_collector
 
@@ -308,7 +308,7 @@ Test prompts across all HoloLoom systems:
 
 ```python
 # Test RAG prompts
-from HoloLoom.rag import SimpleRAG
+from hololoom.rag import SimpleRAG
 
 async def test_rag_prompt():
     rag = SimpleRAG()
@@ -331,7 +331,7 @@ async def test_rag_prompt():
     return quality.overall_score >= 0.85
 
 # Test Agentic prompts
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
 
 async def test_agentic_prompt():
     orchestrator = await create_agentic_orchestrator(config, shards)
@@ -399,7 +399,7 @@ Test Details:
 
 ```bash
 # Complete test suite
-python -m HoloLoom.prompting.testing.test_suite
+python -m hololoom.prompting.testing.test_suite
 
 # Expected output:
 # - Golden tests: 10/10 passing

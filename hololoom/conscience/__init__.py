@@ -11,7 +11,7 @@ Conscience: consider()   / witness() / learn()
 Core Philosophy: "Composable concerns, unified judgment."
 
 Quick Start:
-    from HoloLoom.conscience import Conscience, Voice
+    from hololoom.conscience import Conscience, Voice
 
     async with Conscience() as conscience:
         judgment = await conscience.consider("execute_code", {"code": "..."})
@@ -23,14 +23,14 @@ Quick Start:
             print(f"Blocked: {judgment.guidance}")
 
 Lens Composition:
-    from HoloLoom.conscience import HarmLens, DeceptionLens, PowerLens
+    from hololoom.conscience import HarmLens, DeceptionLens, PowerLens
 
     # Combine lenses with | operator
     custom_lens = HarmLens() | DeceptionLens(threshold=0.4) | PowerLens()
     conscience = Conscience(lens=custom_lens)
 
 Presets:
-    from HoloLoom.conscience import create_conscience
+    from hololoom.conscience import create_conscience
 
     # Standard: Harm + Deception detection
     conscience = create_conscience("standard")

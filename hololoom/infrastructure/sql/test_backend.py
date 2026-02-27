@@ -17,7 +17,7 @@ import asyncio
 import logging
 from pathlib import Path
 
-from HoloLoom.infrastructure.sql import (
+from hololoom.infrastructure.sql import (
     SQLBackend,
     SQLConfig,
     create_sql_backend,

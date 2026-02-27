@@ -25,7 +25,7 @@ Created: 2025-01-20
 import asyncio
 import logging
 import os
-from HoloLoom.llm import UnifiedLLMClient, LLMConfig
+from hololoom.llm import UnifiedLLMClient, LLMConfig
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
@@ -252,7 +252,7 @@ async def demo_6_provider_availability():
                 print(f"✓ {provider}/{model} - Available")
 
                 # Show pricing
-                from HoloLoom.llm.cost_tracker import ModelPricing
+                from hololoom.llm.cost_tracker import ModelPricing
                 pricing = ModelPricing.get_pricing(model)
                 if pricing["input"] == 0:
                     print(f"  Cost: Free (local)")
@@ -308,10 +308,10 @@ async def main():
     print("  2. Try model comparison with multiple providers")
     print()
     print("  3. Integrate into dashboard:")
-    print("     See HoloLoom/llm/DASHBOARD_INTEGRATION.md")
+    print("     See hololoom/llm/DASHBOARD_INTEGRATION.md")
     print()
     print("  4. Read full documentation:")
-    print("     See HoloLoom/llm/README.md")
+    print("     See hololoom/llm/README.md")
     print()
 
 

@@ -29,7 +29,7 @@ Created: December 2025
 import logging
 from typing import Dict, Type, List, Optional
 
-from HoloLoom.tapestry.protocol import FabricSignal
+from hololoom.tapestry.protocol import FabricSignal
 
 logger = logging.getLogger(__name__)
 

@@ -28,7 +28,7 @@ import time
 from typing import Dict, Any, Optional
 from datetime import datetime
 
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -132,7 +132,7 @@ class ProtoDepartment:
             code_context = None
             if context_dict and self._engine:
                 try:
-                    from HoloLoom.apps.departments.proto.domain import CodeContext
+                    from hololoom.apps.departments.proto.domain import CodeContext
                     code_context = CodeContext(**context_dict)
                 except Exception as e:
                     logger.warning(f"Failed to create CodeContext: {e}")

@@ -1,6 +1,6 @@
-# HoloLoom ChatOps Configuration
+# hololoom ChatOps Configuration
 # ================================
-# Configuration for Matrix.org chatbot with HoloLoom integration
+# Configuration for Matrix.org chatbot with hololoom integration
 
 # Matrix Connection
 matrix:
@@ -14,7 +14,7 @@ matrix:
 
   # Device info
   device_id: "HOLOLOOM_BOT_001"
-  device_name: "HoloLoom ChatOps Bot"
+  device_name: "hololoom ChatOps Bot"
 
   # Storage for encryption keys and sync tokens
   store_path: "./matrix_store"
@@ -46,7 +46,7 @@ matrix:
   sync_timeout_ms: 30000
   message_timeout_sec: 120
 
-# HoloLoom Configuration
+# hololoom Configuration
 hololoom:
   # Execution mode: bare, fast, or fused
   mode: "fast"

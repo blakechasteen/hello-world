@@ -12,7 +12,7 @@ import random
 import torch
 import torch.nn as nn
 from typing import Literal
-from HoloLoom.bandits.neural_ts.models import MLP
+from hololoom.bandits.neural_ts.models import MLP
 
 
 class BootstrapPosterior:
@@ -29,7 +29,7 @@ class BootstrapPosterior:
         device: Device models are on
 
     Example:
-        >>> from HoloLoom.bandits.neural_ts.models import create_mlp_ensemble
+        >>> from hololoom.bandits.neural_ts.models import create_mlp_ensemble
         >>> models = create_mlp_ensemble(n_models=7, in_dim=512, hidden=[256, 128])
         >>> posterior = BootstrapPosterior(models)
         >>>
@@ -164,7 +164,7 @@ class MCDropoutPosterior:
         n_samples: Number of forward passes for uncertainty estimation
 
     Example:
-        >>> from HoloLoom.bandits.neural_ts.models import MLP
+        >>> from hololoom.bandits.neural_ts.models import MLP
         >>> model = MLP(in_dim=512, hidden=[256, 128], dropout_p=0.1)
         >>> posterior = MCDropoutPosterior(model, n_samples=10)
         >>>
@@ -295,7 +295,7 @@ def create_bootstrap_posterior(
         ...     device="cuda"
         ... )
     """
-    from HoloLoom.bandits.neural_ts.models import create_mlp_ensemble
+    from hololoom.bandits.neural_ts.models import create_mlp_ensemble
 
     models = create_mlp_ensemble(
         n_models=n_models,

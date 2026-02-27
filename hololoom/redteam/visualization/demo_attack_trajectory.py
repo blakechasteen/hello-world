@@ -5,10 +5,10 @@ This script demonstrates the visualization foundation with realistic
 red team attack data, anomaly detection, and strategy comparison.
 
 Run from repository root:
-    PYTHONPATH=. python HoloLoom/redteam/visualization/demo_attack_trajectory.py
+    PYTHONPATH=. python hololoom/redteam/visualization/demo_attack_trajectory.py
 """
 
-from HoloLoom.redteam.visualization import (
+from hololoom.redteam.visualization import (
     AttackPoint,
     AttackTrajectoryRenderer,
     render_attack_trajectory,

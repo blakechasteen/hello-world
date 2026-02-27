@@ -1,7 +1,7 @@
 # Skills System - Architecture & Usage Guide
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/agentic/skills/`
+**Location**: `hololoom/agentic/skills/`
 **Tests**: 14/14 YAML validation, 5/15 unit tests, 20 integration tests
 **Total Skills**: 13 YAML-based skill templates
 
@@ -26,8 +26,8 @@ Each skill integrates with HoloLoom's RecursiveWeavingOrchestrator for multi-pas
 ### Using Existing Skills
 
 ```python
-from HoloLoom.agentic import execute_skill, list_available_skills
-from HoloLoom.config import Config
+from hololoom.agentic import execute_skill, list_available_skills
+from hololoom.config import Config
 
 # List all available skills
 skills = await list_available_skills()
@@ -53,7 +53,7 @@ print(result.execution_time_ms) # Latency
 
 ### Creating Custom Skills
 
-Create a YAML file in `HoloLoom/agentic/skills/`:
+Create a YAML file in `hololoom/agentic/skills/`:
 
 ```yaml
 name: "my-custom-skill"
@@ -156,7 +156,7 @@ Skills leverage HoloLoom's recursive reasoning engine:
 - **Max Iterations**: Prevent infinite loops (default: 3)
 - **Automatic Improvement**: Low-confidence responses trigger refinement
 
-See `HoloLoom/recursive/` for details on the recursive learning system.
+See `hololoom/recursive/` for details on the recursive learning system.
 
 ---
 
@@ -442,7 +442,7 @@ reasoning:
 3. Apply reasoning strategy (REFINE, VERIFY, etc.)
 4. Repeat until confidence ≥ threshold or max_iterations reached
 
-See `HoloLoom/recursive/advanced_refinement.py` for implementation details.
+See `hololoom/recursive/advanced_refinement.py` for implementation details.
 
 ---
 
@@ -452,16 +452,16 @@ See `HoloLoom/recursive/advanced_refinement.py` for implementation details.
 
 ```bash
 # All skills tests
-pytest HoloLoom/agentic/skills/tests/ -v
+pytest hololoom/agentic/skills/tests/ -v
 
 # YAML validation only (fast - <5s)
-pytest HoloLoom/agentic/skills/tests/test_skill_loading.py -v
+pytest hololoom/agentic/skills/tests/test_skill_loading.py -v
 
 # Unit tests with mocked orchestrator (<10s)
-pytest HoloLoom/agentic/skills/tests/test_skill_execution.py -v
+pytest hololoom/agentic/skills/tests/test_skill_execution.py -v
 
 # Integration tests with real orchestrator (slow - <2min)
-pytest HoloLoom/agentic/skills/tests/test_integration.py -v -m integration
+pytest hololoom/agentic/skills/tests/test_integration.py -v -m integration
 ```
 
 ### Test Coverage
@@ -497,7 +497,7 @@ pytest HoloLoom/agentic/skills/tests/test_integration.py -v -m integration
 Skills respect HoloLoom configuration modes:
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # BARE mode (fastest - <50ms)
 config = Config.bare()
@@ -565,14 +565,14 @@ See the following demo files:
 ### Custom Skill Registry
 
 ```python
-from HoloLoom.agentic.skills import SkillRegistry
+from hololoom.agentic.skills import SkillRegistry
 
 # Create custom registry
 registry = SkillRegistry(skills_dir="./my_skills")
 await registry.load_all_skills()
 
 # Use custom registry
-from HoloLoom.agentic.skills import SkillExecutor
+from hololoom.agentic.skills import SkillExecutor
 
 executor = SkillExecutor(registry=registry, config=Config.fast())
 result = await executor.execute("my-custom-skill", params)
@@ -629,7 +629,7 @@ skills = await list_available_skills()
 print(skills)  # Check available skills
 ```
 
-**Fix**: Ensure YAML file exists in `HoloLoom/agentic/skills/` and uses hyphens (not underscores) in name.
+**Fix**: Ensure YAML file exists in `hololoom/agentic/skills/` and uses hyphens (not underscores) in name.
 
 ### Missing Required Parameter
 
@@ -689,7 +689,7 @@ See [HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md](../../../HOLOLOOM_MASTER_SCOPE_AND_S
 
 To add a new skill:
 
-1. Create YAML file in `HoloLoom/agentic/skills/`
+1. Create YAML file in `hololoom/agentic/skills/`
 2. Follow template structure (see `code-reviewer.yaml` as example)
 3. Add tests to `tests/test_integration.py`
 4. Update this README with skill description

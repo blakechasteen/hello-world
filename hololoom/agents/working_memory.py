@@ -17,11 +17,11 @@ from typing import Dict, List, Optional, Set, Tuple
 import numpy as np
 from pathlib import Path
 
-from HoloLoom.agents.types import WorkingMemoryState, AgentProfile
-from HoloLoom.memory.graph import KG
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
+from hololoom.agents.types import WorkingMemoryState, AgentProfile
+from hololoom.memory.graph import KG
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
 
 
 class AgentWorkingMemory:

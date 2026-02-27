@@ -8,14 +8,14 @@ Tests:
 - Basic integration (mock handlers)
 
 Run:
-    pytest HoloLoom/voice_first/tests/test_basic.py -v
+    pytest hololoom/voice_first/tests/test_basic.py -v
 """
 
 import pytest
 import asyncio
 
-from HoloLoom.voice.threads.grammar import VoiceGrammar, CommandType, CommandIntent
-from HoloLoom.voice.threads.core import (
+from hololoom.voice.threads.grammar import VoiceGrammar, CommandType, CommandIntent
+from hololoom.voice.threads.core import (
     VoiceMode,
     VoiceModeStateMachine,
     VoiceRouter

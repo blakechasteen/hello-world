@@ -6,7 +6,7 @@ Memory does one thing: store, search, learn, navigate.
 No reasoning. No generation. Just memory.
 
 Usage:
-    from HoloLoom.lite import Memory
+    from hololoom.lite import Memory
 
     async with Memory() as mem:
         await mem.store("Thompson Sampling balances exploration")
@@ -24,7 +24,7 @@ import warnings
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.config import Config
+    from hololoom.config import Config
 
 
 @dataclass
@@ -70,7 +70,7 @@ class Memory:
             config: Optional config (defaults to Config.lite())
             persist: Use persistent storage (Neo4j + Qdrant)
         """
-        from HoloLoom.config import Config, MemoryBackend
+        from hololoom.config import Config, MemoryBackend
 
         self.config = config or Config.lite()
         self._persist = persist
@@ -89,9 +89,9 @@ class Memory:
             return
 
         import networkx as nx
-        from HoloLoom.memory.awareness_graph import AwarenessGraph
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-        from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+        from hololoom.memory.awareness_graph import AwarenessGraph
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
         self._embedder = MatryoshkaEmbeddings(sizes=self.config.scales)
 
@@ -102,7 +102,7 @@ class Memory:
 
         if self._persist:
             try:
-                from HoloLoom.memory.backend_factory import create_memory_backend
+                from hololoom.memory.backend_factory import create_memory_backend
                 self._backend = await create_memory_backend(self.config)
 
                 backend_type = type(self._backend).__name__
@@ -189,7 +189,7 @@ class Memory:
         """
         await self._initialize()
 
-        from HoloLoom.memory.awareness_types import ActivationStrategy
+        from hololoom.memory.awareness_types import ActivationStrategy
 
         perception = await self._graph.perceive(query)
         memories = await self._graph.activate(

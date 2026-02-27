@@ -2,7 +2,7 @@
 
 **Status**: ✅ Production Ready
 **Date**: December 2025
-**Location**: `HoloLoom/departments/proto/abilities/core/git_operations.py`
+**Location**: `hololoom/departments/proto/abilities/core/git_operations.py`
 **Lines**: 746 (main implementation)
 
 ## Overview
@@ -204,7 +204,7 @@ if not result.success:
 ## File Structure
 
 ```
-HoloLoom/departments/proto/abilities/core/
+hololoom/departments/proto/abilities/core/
 ├── git_operations.py                     # Main implementation (746 lines)
 ├── test_git_operations.py                # Comprehensive test suite
 ├── GIT_OPERATIONS_README.md              # User documentation
@@ -215,7 +215,7 @@ HoloLoom/departments/proto/abilities/core/
 
 ### 1. Proto System
 ```python
-from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
+from hololoom.apps.departments.proto.abilities.core import GitOperationsAbility
 
 # Proto can use for repository context
 proto.register_ability(GitOperationsAbility())
@@ -255,13 +255,13 @@ result = await ability.execute(params, context)
 ### Running Tests
 ```bash
 # Run all tests
-pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py -v
+pytest hololoom/departments/proto/abilities/core/test_git_operations.py -v
 
 # Run specific test
-pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py::TestGitOperationsStatus::test_status_in_git_repo -v
+pytest hololoom/departments/proto/abilities/core/test_git_operations.py::TestGitOperationsStatus::test_status_in_git_repo -v
 
 # With coverage
-pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py --cov
+pytest hololoom/departments/proto/abilities/core/test_git_operations.py --cov
 ```
 
 ### Test Fixtures
@@ -373,22 +373,22 @@ pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py --cov
 
 ### Step 1: Verify Files
 ```bash
-ls -la HoloLoom/departments/proto/abilities/core/git_operations.py
+ls -la hololoom/departments/proto/abilities/core/git_operations.py
 ```
 
 ### Step 2: Syntax Check
 ```bash
-python -m py_compile HoloLoom/departments/proto/abilities/core/git_operations.py
+python -m py_compile hololoom/departments/proto/abilities/core/git_operations.py
 ```
 
 ### Step 3: Run Tests
 ```bash
-pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py -v
+pytest hololoom/departments/proto/abilities/core/test_git_operations.py -v
 ```
 
 ### Step 4: Integration Test
 ```python
-from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
+from hololoom.apps.departments.proto.abilities.core import GitOperationsAbility
 ability = GitOperationsAbility()
 print(f"✓ Loaded: {ability.name} v{ability.version}")
 ```

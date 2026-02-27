@@ -17,7 +17,7 @@ import json
 import sys
 
 # Test plugin protocol components
-from HoloLoom.dark_trace.plugins.plugin_protocol import (
+from hololoom.dark_trace.plugins.plugin_protocol import (
     PluginCategory,
     PluginStatus,
     PluginMetadata,
@@ -28,13 +28,13 @@ from HoloLoom.dark_trace.plugins.plugin_protocol import (
     create_plugin_metadata,
 )
 
-from HoloLoom.dark_trace.plugins.plugin_loader import (
+from hololoom.dark_trace.plugins.plugin_loader import (
     LoadedPlugin,
     PluginLoader,
     create_loader,
 )
 
-from HoloLoom.dark_trace.plugins.plugin_marketplace import (
+from hololoom.dark_trace.plugins.plugin_marketplace import (
     SortOrder,
     MarketplacePlugin,
     PluginMarketplace,
@@ -111,7 +111,7 @@ def temp_plugin_dir():
     plugin_code = '''
 """Test plugin module for marketplace."""
 import numpy as np
-from HoloLoom.dark_trace.plugins.plugin_protocol import (
+from hololoom.dark_trace.plugins.plugin_protocol import (
     LensPlugin,
     PluginMetadata,
     PluginCategory,
@@ -232,7 +232,7 @@ class TestPluginSigningOptional:
     def test_signing_import(self):
         """Test that signing module can be imported."""
         try:
-            from HoloLoom.dark_trace.plugins.plugin_signing import (
+            from hololoom.dark_trace.plugins.plugin_signing import (
                 SigningAlgorithm,
                 PluginSigner,
                 PluginVerifier,

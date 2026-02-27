@@ -20,7 +20,7 @@ from collections import deque, defaultdict
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
-from HoloLoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
+from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
 
 # Retrieval k values (5 arms)
 RETRIEVAL_K_VALUES = [3, 5, 10, 20, 50]  # 5 discrete values

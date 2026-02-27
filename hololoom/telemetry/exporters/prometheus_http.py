@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Optional
 
-from HoloLoom.telemetry.metrics.prometheus import PrometheusRegistry, get_registry
+from hololoom.telemetry.metrics.prometheus import PrometheusRegistry, get_registry
 
 logger = logging.getLogger(__name__)
 

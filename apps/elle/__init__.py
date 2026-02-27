@@ -1,7 +1,7 @@
 """
 Elle Core - Farm & Kitchen Cooperative Intelligence System
 
-Comprehensive operational intelligence for Coz using HoloLoom/MirrorCore.
+Comprehensive operational intelligence for Coz using hololoom/MirrorCore.
 
 Key components:
 - Voice-editable SOPs

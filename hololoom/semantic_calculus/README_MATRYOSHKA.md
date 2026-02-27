@@ -126,11 +126,11 @@ Matryoshka Scales:
 ## Usage Example
 
 ```python
-from HoloLoom.semantic_calculus.matryoshka_streaming import (
+from hololoom.semantic_calculus.matryoshka_streaming import (
     MatryoshkaSemanticCalculus,
     MatryoshkaScale
 )
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Initialize embedder with Matryoshka scales
 embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])

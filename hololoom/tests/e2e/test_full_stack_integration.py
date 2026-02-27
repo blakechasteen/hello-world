@@ -24,10 +24,10 @@ import time
 from typing import Dict, Any
 from fastapi.testclient import TestClient
 
-from HoloLoom.apps.server.agentic_api import app
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.apps.server.agentic_api import app
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================
@@ -405,13 +405,13 @@ Total: 8 E2E tests covering complete stack
 Test Execution:
 ---------------
 # Run all E2E tests
-pytest HoloLoom/tests/e2e/test_full_stack_integration.py -v -m e2e
+pytest hololoom/tests/e2e/test_full_stack_integration.py -v -m e2e
 
 # Run with performance tests
-pytest HoloLoom/tests/e2e/test_full_stack_integration.py -v -m "e2e and performance"
+pytest hololoom/tests/e2e/test_full_stack_integration.py -v -m "e2e and performance"
 
 # Run single test
-pytest HoloLoom/tests/e2e/test_full_stack_integration.py::test_full_stack_simple_query -v
+pytest hololoom/tests/e2e/test_full_stack_integration.py::test_full_stack_simple_query -v
 
 Success Criteria for Investor Demo:
 ------------------------------------
@@ -423,7 +423,7 @@ Success Criteria for Investor Demo:
 
 Next Steps:
 -----------
-1. Run tests: pytest HoloLoom/tests/e2e/test_full_stack_integration.py -v
+1. Run tests: pytest hololoom/tests/e2e/test_full_stack_integration.py -v
 2. If all pass → Demo ready! 🎉
 3. If any fail → Debug integration layer
 4. Add TypeScript tests: squad/tests/test_hololoom_bridge.test.ts

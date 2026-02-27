@@ -12,7 +12,7 @@ Deep cleaned test organization and removed dead code. **30 minutes.**
 **After:** Organized into unit/integration/e2e structure
 
 ```bash
-HoloLoom/tests/
+hololoom/tests/
 ├── unit/                    # Fast, isolated tests
 │   ├── test_time_bucket.py         (2.2K)
 │   └── test_unified_policy.py      (22K)
@@ -45,13 +45,13 @@ HoloLoom/tests/
 **Total:** 4 files archived, 1 directory deleted
 
 ### 3. Memory Directory Cleanup ✓
-**Before:** 17 files in `HoloLoom/memory/`
-**After:** 13 files in `HoloLoom/memory/`
+**Before:** 17 files in `hololoom/memory/`
+**After:** 13 files in `hololoom/memory/`
 **Reduction:** -24%
 
 **Remaining files (all active):**
 ```
-HoloLoom/memory/
+hololoom/memory/
 ├── __init__.py              # Package exports
 ├── backend_factory.py       # Create backends (231 lines)
 ├── base.py                  # Base classes
@@ -75,28 +75,28 @@ HoloLoom/memory/
 
 ### Unit Tests (Fast ⚡)
 ```bash
-pytest HoloLoom/tests/unit/ -v
+pytest hololoom/tests/unit/ -v
 # Runs in: <5 seconds
 # Tests: Individual components in isolation
 ```
 
 ### Integration Tests (Medium 🔄)
 ```bash
-pytest HoloLoom/tests/integration/ -v
+pytest hololoom/tests/integration/ -v
 # Runs in: <30 seconds
 # Tests: Multiple components working together
 ```
 
 ### End-to-End Tests (Slow 🐢)
 ```bash
-pytest HoloLoom/tests/e2e/ -v
+pytest hololoom/tests/e2e/ -v
 # Runs in: <2 minutes
 # Tests: Full pipeline from query to response
 ```
 
 ### Run All Tests
 ```bash
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 # Runs all test types
 ```
 
@@ -182,28 +182,28 @@ Ruthless Simplification Summary:
 ### Development (Fast Loop)
 ```bash
 # Run only unit tests while developing
-pytest HoloLoom/tests/unit/ -v
+pytest hololoom/tests/unit/ -v
 
 # Run specific test file
-pytest HoloLoom/tests/unit/test_time_bucket.py -v
+pytest hololoom/tests/unit/test_time_bucket.py -v
 
 # Run specific test function
-pytest HoloLoom/tests/unit/test_time_bucket.py::test_time_bucket_from_iso_string -v
+pytest hololoom/tests/unit/test_time_bucket.py::test_time_bucket_from_iso_string -v
 ```
 
 ### Pre-Commit (Medium Loop)
 ```bash
 # Run unit + integration tests
-pytest HoloLoom/tests/unit/ HoloLoom/tests/integration/ -v
+pytest hololoom/tests/unit/ hololoom/tests/integration/ -v
 ```
 
 ### Pre-Deploy (Full Check)
 ```bash
 # Run everything including E2E
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 
 # With coverage report
-pytest HoloLoom/tests/ -v --cov=HoloLoom --cov-report=html
+pytest hololoom/tests/ -v --cov=HoloLoom --cov-report=html
 ```
 
 ### CI/CD Pipeline
@@ -213,37 +213,37 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     steps:
-      - run: pytest HoloLoom/tests/unit/ -v
+      - run: pytest hololoom/tests/unit/ -v
 
   integration-tests:
     needs: unit-tests
     runs-on: ubuntu-latest
     steps:
-      - run: pytest HoloLoom/tests/integration/ -v
+      - run: pytest hololoom/tests/integration/ -v
 
   e2e-tests:
     needs: integration-tests
     runs-on: ubuntu-latest
     steps:
-      - run: pytest HoloLoom/tests/e2e/ -v
+      - run: pytest hololoom/tests/e2e/ -v
 ```
 
 ---
 
 ## Archived Files (Safety Net)
 
-Located in: `HoloLoom/tools/archive/`
+Located in: `hololoom/tools/archive/`
 
 ### Can Be Restored If Needed
 ```bash
 # If you need migrate_to_neo4j.py:
-cp HoloLoom/tools/archive/migrate_to_neo4j.py HoloLoom/memory/
+cp hololoom/tools/archive/migrate_to_neo4j.py hololoom/memory/
 ```
 
 ### Or Permanently Deleted After 30 Days
 ```bash
 # If truly unused after 30 days:
-rm -rf HoloLoom/tools/archive/
+rm -rf hololoom/tools/archive/
 ```
 
 **Philosophy:** Archive first, delete later. Safety over speed.
@@ -260,8 +260,8 @@ rm -rf HoloLoom/tools/archive/
 ### Phase 4: Naming Consistency (1 hour)
 ```bash
 # Standardize to snake_case
-mv HoloLoom/spinningWheel HoloLoom/spinning_wheel
-mv HoloLoom/Documentation HoloLoom/documentation
+mv hololoom/spinningWheel hololoom/spinning_wheel
+mv hololoom/Documentation hololoom/documentation
 # etc.
 ```
 
@@ -336,7 +336,7 @@ See PHASE2_CLEANUP_COMPLETE.md for details."
 ```bash
 # If needed:
 git reset --hard HEAD~1  # Undo Phase 2
-cp HoloLoom/tools/archive/* HoloLoom/memory/  # Restore archived files
+cp hololoom/tools/archive/* hololoom/memory/  # Restore archived files
 ```
 
 ---
@@ -358,8 +358,8 @@ cp HoloLoom/tools/archive/* HoloLoom/memory/  # Restore archived files
 ### Before Phase 2
 ```bash
 # Where are the tests?
-ls HoloLoom/*.py | grep test  # Mixed with source code
-ls HoloLoom/tests/            # Only 2 tests here?
+ls hololoom/*.py | grep test  # Mixed with source code
+ls hololoom/tests/            # Only 2 tests here?
 
 # What type of test is this?
 cat test_backends.py          # Is this unit or integration?
@@ -371,15 +371,15 @@ pytest test_*.py              # Runs everything, slow
 ### After Phase 2
 ```bash
 # Where are the tests?
-ls HoloLoom/tests/            # All tests here, organized
+ls hololoom/tests/            # All tests here, organized
 
 # What type of test is this?
-ls HoloLoom/tests/unit/       # Unit tests
-ls HoloLoom/tests/integration/# Integration tests
-ls HoloLoom/tests/e2e/        # E2E tests
+ls hololoom/tests/unit/       # Unit tests
+ls hololoom/tests/integration/# Integration tests
+ls hololoom/tests/e2e/        # E2E tests
 
 # How do I run fast tests?
-pytest HoloLoom/tests/unit/   # Fast unit tests only (<5s)
+pytest hololoom/tests/unit/   # Fast unit tests only (<5s)
 ```
 
 **Clarity increased by 10x.**

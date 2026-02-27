@@ -14,7 +14,7 @@ Modules:
 - optimization: Multi-objective ethical optimization
 
 Example:
-    >>> from HoloLoom.semantic_calculus.math import SemanticFlow, SemanticSpectrum
+    >>> from hololoom.semantic_calculus.math import SemanticFlow, SemanticSpectrum
     >>> flow = SemanticFlow(embed_fn)
     >>> trajectory = flow.compute_trajectory(words)
     >>> spectrum = SemanticSpectrum()

@@ -102,7 +102,7 @@ claude_code:
 ### Programmatic API
 
 ```python
-from HoloLoom.apps.departments.claude_code import ClaudeCodeDepartment
+from hololoom.apps.departments.claude_code import ClaudeCodeDepartment
 
 # Create department
 dept = ClaudeCodeDepartment(mcp_server_url="ws://localhost:9001")
@@ -329,10 +329,10 @@ claude_code:
 
 ```bash
 # Unit tests
-pytest HoloLoom/departments/claude_code/ -v
+pytest hololoom/departments/claude_code/ -v
 
 # Integration tests (requires VS Code running)
-pytest HoloLoom/departments/claude_code/ -v -m integration
+pytest hololoom/departments/claude_code/ -v -m integration
 ```
 
 ### Debugging
@@ -450,8 +450,8 @@ print(stats)
 - `squad/src/extension.ts` (+50 lines) - Integration
 
 **Matrix Integration**:
-- `HoloLoom/chatops/handlers/code_handlers.py` (250 lines) - Command handlers
-- `HoloLoom/chatops/run_chatops.py` (+50 lines) - Registration
+- `hololoom/chatops/handlers/code_handlers.py` (250 lines) - Command handlers
+- `hololoom/chatops/run_chatops.py` (+50 lines) - Registration
 
 **Total**: ~1,700 lines of production code
 

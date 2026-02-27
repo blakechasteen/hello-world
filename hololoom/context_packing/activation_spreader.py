@@ -348,7 +348,7 @@ class ActivationSpreader:
         if NETWORKX_AVAILABLE and isinstance(graph, nx.MultiDiGraph):
             return list(graph.successors(node))
 
-        # Assume KG from HoloLoom.memory.graph
+        # Assume KG from hololoom.memory.graph
         if hasattr(graph, 'get_outgoing_edges'):
             edges = graph.get_outgoing_edges(node)
             return [edge.tail for edge in edges]
@@ -376,7 +376,7 @@ class ActivationSpreader:
                 neighbors.append((neighbor, edge_type))
             return neighbors
 
-        # KG from HoloLoom
+        # KG from hololoom
         if hasattr(graph, 'get_outgoing_edges'):
             edges = graph.get_outgoing_edges(node)
             return [(edge.tail, edge.type) for edge in edges]

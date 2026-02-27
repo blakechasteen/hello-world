@@ -50,7 +50,7 @@ class TestRunner:
     def __init__(self, project_root: Optional[Path] = None):
         """Initialize test runner with project root."""
         self.project_root = project_root or Path(__file__).parent.parent.parent.parent
-        self.test_base = self.project_root / "HoloLoom" / "tests"
+        self.test_base = self.project_root / "hololoom" / "tests"
 
     async def run_tests(
         self,
@@ -538,10 +538,10 @@ The CI pipeline runs automatically on push to master/main/feature branches.
 To run locally:
 ```bash
 # Unit tests (fast)
-pytest HoloLoom/tests/unit/ -v
+pytest hololoom/tests/unit/ -v
 
 # All tests
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 ```
 
 _Note: Actual CI status would require GitHub API integration._
@@ -668,7 +668,7 @@ if __name__ == "__main__":
 # =============================================================================
 
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory
     )
     REGISTRY_AVAILABLE = True
@@ -681,7 +681,7 @@ class TestHandlers:
     Decorator-based ChatOps handlers for test operations.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.test_handlers import TestHandlers
+        from hololoom.apps.chatops.handlers.test_handlers import TestHandlers
 
         handlers = TestHandlers()
         registry.register_instance(handlers)

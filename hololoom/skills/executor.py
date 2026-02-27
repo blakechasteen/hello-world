@@ -6,11 +6,11 @@ import logging
 from typing import Dict, Any, List, Optional, Union
 from dataclasses import dataclass, field
 
-from HoloLoom.skills.base import (
+from hololoom.skills.base import (
     BaseSkill, SkillInput, SkillOutput, SkillStatus,
     get_registry
 )
-from HoloLoom.skills.cache import SkillCache
+from hololoom.skills.cache import SkillCache
 
 logger = logging.getLogger(__name__)
 

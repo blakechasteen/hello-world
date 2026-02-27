@@ -20,7 +20,7 @@ ActionRequest(
 
 **Example:**
 ```python
-from HoloLoom.alignment import ActionRequest, ActionCategory
+from hololoom.alignment import ActionRequest, ActionCategory
 
 request = ActionRequest(
     action_id="What is Thompson Sampling?",
@@ -63,7 +63,7 @@ ActionObservation(
 
 **Example:**
 ```python
-from HoloLoom.alignment.deception_detection import ActionObservation
+from hololoom.alignment.deception_detection import ActionObservation
 
 observation = ActionObservation(
     action_id=f"query_{hash(query_text)}",
@@ -92,7 +92,7 @@ BehavioralProbe(
 
 **Example:**
 ```python
-from HoloLoom.alignment.deception_detection import BehavioralProbe, ProbeType
+from hololoom.alignment.deception_detection import BehavioralProbe, ProbeType
 
 probe = BehavioralProbe(
     probe_type=ProbeType.GOAL_ALIGNMENT,
@@ -120,7 +120,7 @@ GoalStatement(
 
 **Example:**
 ```python
-from HoloLoom.alignment.deception_detection import GoalStatement
+from hololoom.alignment.deception_detection import GoalStatement
 
 goal = GoalStatement(
     goal_id="helpful",
@@ -150,7 +150,7 @@ ResourceBounds(
 
 **Example:**
 ```python
-from HoloLoom.alignment import ResourceBounds, ResourceType
+from hololoom.alignment import ResourceBounds, ResourceType
 
 bounds = ResourceBounds(
     resource_type=ResourceType.MEMORY,
@@ -186,7 +186,7 @@ log = audit.log_decision(
 
 **Example:**
 ```python
-from HoloLoom.alignment import AuditTrail, DecisionType, OutcomeType
+from hololoom.alignment import AuditTrail, DecisionType, OutcomeType
 
 audit = AuditTrail()
 
@@ -207,11 +207,11 @@ log = audit.log_decision(
 ### Pattern 1: Full Safety Pipeline
 
 ```python
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     create_guardrails, create_detector, create_guard, create_audit_trail,
     ActionRequest, ActionCategory
 )
-from HoloLoom.alignment.deception_detection import ActionObservation
+from hololoom.alignment.deception_detection import ActionObservation
 
 # Create components
 guardrails = create_guardrails()
@@ -257,7 +257,7 @@ if safety_decision.approved:
 ### Pattern 2: With Monitoring
 
 ```python
-from HoloLoom.alignment.monitoring import AlignmentMonitor
+from hololoom.alignment.monitoring import AlignmentMonitor
 
 monitor = AlignmentMonitor(
     thresholds={
@@ -283,7 +283,7 @@ print(f"P99 latency: {stats['p99']:.3f}ms")
 ### Pattern 3: With Prometheus Metrics
 
 ```python
-from HoloLoom.alignment.prometheus_server import start_metrics_server
+from hololoom.alignment.prometheus_server import start_metrics_server
 
 # Start metrics server (in background or separate process)
 # This automatically exposes monitor metrics at /metrics endpoint
@@ -295,7 +295,7 @@ start_metrics_server(port=9090)
 ### Pattern 4: With Matrix Alerts
 
 ```python
-from HoloLoom.alignment.matrix_chatops import setup_matrix_alerting
+from hololoom.alignment.matrix_chatops import setup_matrix_alerting
 
 # Automatic alert forwarding
 setup_matrix_alerting(
@@ -391,13 +391,13 @@ class OutcomeType(Enum):
 
 ```python
 # ✅ CORRECT - Use factory functions
-from HoloLoom.alignment import create_guardrails, create_detector
+from hololoom.alignment import create_guardrails, create_detector
 
 guardrails = create_guardrails()
 detector = create_detector()
 
 # ❌ WRONG - Direct class instantiation may require complex setup
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
 guardrails = SafetyGuardrails()  # Missing required config
 ```
 

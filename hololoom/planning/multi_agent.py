@@ -22,7 +22,7 @@ import logging
 from collections import defaultdict
 
 # Import Layer 2 core
-from HoloLoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action
+from hololoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action
 
 logger = logging.getLogger(__name__)
 
@@ -732,7 +732,7 @@ def create_agent(agent_id: str,
     Returns:
         Configured Agent
     """
-    from HoloLoom.planning.planner import HierarchicalPlanner
+    from hololoom.planning.planner import HierarchicalPlanner
 
     planner = HierarchicalPlanner(dag)
     caps = [

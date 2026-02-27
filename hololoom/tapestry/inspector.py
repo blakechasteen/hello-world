@@ -23,13 +23,13 @@ import asyncio
 import logging
 from typing import List, Dict, Any, Optional
 
-from HoloLoom.tapestry.protocol import (
+from hololoom.tapestry.protocol import (
     Thread,
     FabricSignal,
     SignalResult,
     FabricCheckResult
 )
-from HoloLoom.tapestry.signals.registry import SignalRegistry
+from hololoom.tapestry.signals.registry import SignalRegistry
 
 logger = logging.getLogger(__name__)
 

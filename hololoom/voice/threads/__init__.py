@@ -11,8 +11,8 @@ Features:
 - Natural language and structured command support
 
 Quick Start:
-    >>> from HoloLoom.voice.threads import UnifiedVoiceAgent
-    >>> from HoloLoom.config import Config
+    >>> from hololoom.voice.threads import UnifiedVoiceAgent
+    >>> from hololoom.config import Config
     >>>
     >>> agent = UnifiedVoiceAgent(config=Config.fast())
     >>> response = await agent.process("start a new thread for planning")

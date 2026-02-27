@@ -6,11 +6,11 @@ Provides exporters for:
 - Prometheus HTTP endpoint (metrics scraping)
 """
 
-from HoloLoom.telemetry.exporters.jaeger import (
+from hololoom.telemetry.exporters.jaeger import (
     JaegerExporter,
     create_jaeger_exporter,
 )
-from HoloLoom.telemetry.exporters.prometheus_http import (
+from hololoom.telemetry.exporters.prometheus_http import (
     PrometheusHTTPServer,
     create_prometheus_server,
     start_metrics_server,

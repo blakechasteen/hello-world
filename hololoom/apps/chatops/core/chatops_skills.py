@@ -13,7 +13,7 @@ Pre-built skills for common chatops patterns:
 - Workflow automation
 
 Usage:
-    from holoLoom.chatops import ChatOpsSkills
+    from hololoom.chatops import ChatOpsSkills
 
     skills = ChatOpsSkills(hololoom_bridge=bridge)
     result = await skills.search(query="recent discussions about RL")

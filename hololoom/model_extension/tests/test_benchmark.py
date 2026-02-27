@@ -13,7 +13,7 @@ import tempfile
 import os
 from datetime import datetime
 from unittest.mock import MagicMock, AsyncMock, patch
-from HoloLoom.model_extension.benchmark import (
+from hololoom.model_extension.benchmark import (
     BenchmarkType,
     BenchmarkQuestion,
     BenchmarkResult,

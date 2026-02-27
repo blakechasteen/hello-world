@@ -37,13 +37,13 @@ from typing import Type, List, Dict, Any, Optional
 from dataclasses import dataclass
 
 # Jenny imports
-from HoloLoom.protocols.jenny import (
+from hololoom.protocols.jenny import (
     JennyRendererProtocol,
     RenderTarget,
 )
 
 try:
-    from HoloLoom.visualization import (
+    from hololoom.visualization import (
         JennySpec,
         PanelTypeJenny,
         BindingMode,

@@ -9,7 +9,7 @@
 ## CRITICAL - IMMEDIATE ATTENTION (No Tests, Central Systems)
 
 ### Orchestrator & Weaving (THE CORE)
-- [ ] HoloLoom/orchestrator/ (45+ files)
+- [ ] hololoom/orchestrator/ (45+ files)
   - [ ] orchestrator/core/complexity_detection.py
   - [ ] orchestrator/core/metrics_collection.py
   - [ ] orchestrator/core/background_tasks.py
@@ -34,7 +34,7 @@
   - [ ] orchestrator/pipeline.py
   - [ ] orchestrator/protocol_factory.py
 
-- [ ] HoloLoom/weaving/ (16 files)
+- [ ] hololoom/weaving/ (16 files)
   - [ ] weaving/strategies/base.py
   - [ ] weaving/strategies/lite_strategy.py
   - [ ] weaving/strategies/fast_strategy.py
@@ -49,7 +49,7 @@
   - [ ] weaving/eggroll_weave.py
 
 ### Policy & Neural Core
-- [ ] HoloLoom/policy/ (6 files, NO tests)
+- [ ] hololoom/policy/ (6 files, NO tests)
   - [ ] policy/unified.py (Main neural core + Thompson Sampling)
   - [ ] policy/thompson_sampling.py
   - [ ] policy/bayesian_policy.py
@@ -57,13 +57,13 @@
   - [ ] policy/gp_policy.py
   - [ ] policy/gp_policy.py
 
-- [ ] HoloLoom/neural/ (4 files, NO tests)
+- [ ] hololoom/neural/ (4 files, NO tests)
   - [ ] neural/meta_learning.py
   - [ ] neural/twin_networks.py
   - [ ] neural/value_functions.py
 
 ### Embedding System (37x speedup unvalidated!)
-- [ ] HoloLoom/embedding/ (8 files, NO tests)
+- [ ] hololoom/embedding/ (8 files, NO tests)
   - [ ] embedding/zero_copy.py ⚠️ CRITICAL - 37x speedup claim
   - [ ] embedding/spectral.py (Multi-scale features)
   - [ ] embedding/spectral_multiscale.py
@@ -73,7 +73,7 @@
   - [ ] embedding/riemannian_matryoshka.py
 
 ### Input Adapters (36+ complete black box)
-- [ ] HoloLoom/spinningWheel/ (36+ adapters, NO tests)
+- [ ] hololoom/spinningWheel/ (36+ adapters, NO tests)
   - [ ] spinningWheel/pdf_spinner.py
   - [ ] spinningWheel/youtube_spinner.py
   - [ ] spinningWheel/email_spinner.py
@@ -110,26 +110,26 @@
   - [ ] spinningWheel/dream_spinner.py
 
 ### Memory Awareness & Dynamics
-- [ ] HoloLoom/memory/awareness/ (Multiple files)
+- [ ] hololoom/memory/awareness/ (Multiple files)
   - [ ] memory/awareness_graph.py ⚠️ Core activation system (800+ lines)
   - [ ] memory/activation_field.py
   - [ ] memory/awareness_types.py
 
-- [ ] HoloLoom/memory/spring_dynamics.py ⚠️ Physics-based (699 lines)
+- [ ] hololoom/memory/spring_dynamics.py ⚠️ Physics-based (699 lines)
   - [ ] Physics ODE integration tests
 
-- [ ] HoloLoom/memory/multi_wave_engine.py ⚠️ Consolidation (623 lines)
+- [ ] hololoom/memory/multi_wave_engine.py ⚠️ Consolidation (623 lines)
 
-- [ ] HoloLoom/memory/yarn/ - Knowledge graph
+- [ ] hololoom/memory/yarn/ - Knowledge graph
 
-- [ ] HoloLoom/memory/stores/ (Neo4j, Qdrant)
+- [ ] hololoom/memory/stores/ (Neo4j, Qdrant)
   - [ ] memory/stores/qdrant_store.py
   - [ ] memory/stores/neo4j_graph.py
 
-- [ ] HoloLoom/memory/visual_compression.py (674 lines)
+- [ ] hololoom/memory/visual_compression.py (674 lines)
 
 ### Prompting & Refinement
-- [ ] HoloLoom/prompting/ (Missing MRF tests!)
+- [ ] hololoom/prompting/ (Missing MRF tests!)
   - [ ] prompting/unified_mrf.py (Main 7-component framework)
   - [ ] prompting/model_adapters.py (Claude, Gemini, GPT, Ollama)
   - [ ] prompting/quality_assessment.py
@@ -143,7 +143,7 @@
 ## HIGH PRIORITY (No Tests, Feature-Complete Systems)
 
 ### Input & Multimodal
-- [ ] HoloLoom/input/ (9 files)
+- [ ] hololoom/input/ (9 files)
   - [ ] input/audio_processor.py
   - [ ] input/image_processor.py
   - [ ] input/text_processor.py
@@ -154,7 +154,7 @@
   - [ ] input/simple_embedder.py
 
 ### Visualization & UI (37+ files)
-- [ ] HoloLoom/visualization/ (37 files, NO tests)
+- [ ] hololoom/visualization/ (37 files, NO tests)
   - [ ] visualization/jenny_runtime.py
   - [ ] visualization/jenny_renderer.py
   - [ ] visualization/jenny_spec.py
@@ -175,7 +175,7 @@
   - [ ] visualization/rag_dashboard.py
 
 ### Spatial (AR/VR) - 20+ files
-- [ ] HoloLoom/spatial/ (NO tests)
+- [ ] hololoom/spatial/ (NO tests)
   - [ ] spatial/webxr_graph.py
   - [ ] spatial/spatial_anchors.py
   - [ ] spatial/hand_tracking.py
@@ -195,7 +195,7 @@
   - [ ] spatial/voice_commands.py
 
 ### Causal Reasoning - 8 files
-- [ ] HoloLoom/causal/ (NO tests)
+- [ ] hololoom/causal/ (NO tests)
   - [ ] causal/dag.py (Directed Acyclic Graph)
   - [ ] causal/discovery.py (Structure discovery)
   - [ ] causal/intervention.py (Do-calculus)
@@ -205,7 +205,7 @@
   - [ ] causal/temporal.py
 
 ### Writing System - 21 files
-- [ ] HoloLoom/writing/ (NO tests)
+- [ ] hololoom/writing/ (NO tests)
   - [ ] writing/core/writer.py
   - [ ] writing/core/composer.py
   - [ ] writing/core/protocol.py
@@ -227,32 +227,32 @@
 ## MEDIUM PRIORITY (No Tests, Advanced/Specialized Systems)
 
 ### Advanced Analysis
-- [ ] HoloLoom/clustering/ (4 files)
+- [ ] hololoom/clustering/ (4 files)
   - [ ] clustering/core.py
   - [ ] clustering/thompson.py
   - [ ] clustering/labeler.py
 
-- [ ] HoloLoom/physics/ (Helmholtz Free Energy)
+- [ ] hololoom/physics/ (Helmholtz Free Energy)
   - [ ] physics/physics_integration.py (if separate file)
 
-- [ ] HoloLoom/cve/ (5 files - Cognitive Visual Extractors)
+- [ ] hololoom/cve/ (5 files - Cognitive Visual Extractors)
   - [ ] cve/cognitive_extractors.py
   - [ ] cve/cognitive_protocol.py
   - [ ] cve/cve_server.py
   - [ ] cve/tufte_renderer.py
 
 ### Infrastructure
-- [ ] HoloLoom/llm/ (4 files)
+- [ ] hololoom/llm/ (4 files)
   - [ ] llm/unified_client.py
   - [ ] llm/cost_tracker.py
 
-- [ ] HoloLoom/infrastructure/ (15+ files)
+- [ ] hololoom/infrastructure/ (15+ files)
   - [ ] infrastructure/kubernetes/* (K8s manifests)
   - [ ] infrastructure/grafana/* (Metrics)
   - [ ] infrastructure/sql/* (SQL integration)
   - [ ] infrastructure/mcp/* (MCP server)
 
-- [ ] HoloLoom/telemetry/ (20+ files across 5 subdirs)
+- [ ] hololoom/telemetry/ (20+ files across 5 subdirs)
   - [ ] telemetry/analytics/*
   - [ ] telemetry/exporters/*
   - [ ] telemetry/metrics/*
@@ -260,16 +260,16 @@
   - [ ] telemetry/tracing/*
 
 ### Miscellaneous
-- [ ] HoloLoom/synthesis/ (NO tests)
-- [ ] HoloLoom/motif/ (NO tests)
-- [ ] HoloLoom/resonance/ (Feature fusion)
-- [ ] HoloLoom/fabric/ (4 files - Spacetime output)
+- [ ] hololoom/synthesis/ (NO tests)
+- [ ] hololoom/motif/ (NO tests)
+- [ ] hololoom/resonance/ (Feature fusion)
+- [ ] hololoom/fabric/ (4 files - Spacetime output)
   - [ ] fabric/spacetime.py
   - [ ] fabric/fabric.py
   - [ ] fabric/materializer.py
 
-- [ ] HoloLoom/collaboration/ (Multi-user workspaces)
-- [ ] HoloLoom/chrono/ (Temporal control)
+- [ ] hololoom/collaboration/ (Multi-user workspaces)
+- [ ] hololoom/chrono/ (Temporal control)
 
 ---
 
@@ -331,15 +331,15 @@
 
 ## LEGACY/LOWER PRIORITY
 
-- [ ] HoloLoom/promptly/ (Prompt CLI - legacy, integrated into alignment)
-- [ ] HoloLoom/tools/ (Developer tools)
-- [ ] HoloLoom/examples/ (Example code)
-- [ ] HoloLoom/utils/ (Utility functions)
-- [ ] HoloLoom/ml/ (ML utilities)
-- [ ] HoloLoom/tuning/ (Hyperparameter tuning)
-- [ ] HoloLoom/tui/ (Terminal UI)
-- [ ] HoloLoom/workflows/ (Workflow definitions)
-- [ ] HoloLoom/datapig/ (Data quality assurance)
+- [ ] hololoom/promptly/ (Prompt CLI - legacy, integrated into alignment)
+- [ ] hololoom/tools/ (Developer tools)
+- [ ] hololoom/examples/ (Example code)
+- [ ] hololoom/utils/ (Utility functions)
+- [ ] hololoom/ml/ (ML utilities)
+- [ ] hololoom/tuning/ (Hyperparameter tuning)
+- [ ] hololoom/tui/ (Terminal UI)
+- [ ] hololoom/workflows/ (Workflow definitions)
+- [ ] hololoom/datapig/ (Data quality assurance)
 
 ---
 

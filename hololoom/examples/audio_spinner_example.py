@@ -16,10 +16,10 @@ from pathlib import Path
 # Add holoLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from holoLoom.spinningWheel import AudioSpinner, SpinnerConfig
-from holoLoom.orchestrator import HoloLoomOrchestrator
-from holoLoom.config import Config
-from holoLoom.documentation.types import Query
+from hololoom.spinningWheel import AudioSpinner, SpinnerConfig
+from hololoom.orchestrator import HoloLoomOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import Query
 
 
 async def main():

@@ -27,7 +27,7 @@
 pip install locust
 
 # Start your HoloLoom VoiceAgent server
-# (In separate terminal) python -m HoloLoom.server.agentic_api
+# (In separate terminal) python -m hololoom.server.agentic_api
 
 # Run baseline test (10 users, 5 minutes)
 cd /home/user/hello-world
@@ -85,7 +85,7 @@ locust --help
 ```bash
 # In terminal 1
 cd /home/user/hello-world
-PYTHONPATH=. python -m HoloLoom.server.agentic_api
+PYTHONPATH=. python -m hololoom.server.agentic_api
 # Expected: INFO: Uvicorn running on http://0.0.0.0:8000
 ```
 
@@ -584,10 +584,10 @@ curl http://localhost:8000/health
 
 # If failing, start server
 cd /home/user/hello-world
-PYTHONPATH=. python -m HoloLoom.server.agentic_api
+PYTHONPATH=. python -m hololoom.server.agentic_api
 
 # If port 8000 in use, use different port
-PYTHONPATH=. python -m HoloLoom.server.agentic_api --port 8001
+PYTHONPATH=. python -m hololoom.server.agentic_api --port 8001
 # Then in Locust: --host=http://localhost:8001
 ```
 
@@ -617,7 +617,7 @@ netstat -an | grep ESTABLISHED | wc -l
 tail -f logs/app.log | grep "latency\|duration"
 
 # 5. Check for GC pauses (if Python)
-python -m cProfile -o stats.prof -c "import HoloLoom.server"
+python -m cProfile -o stats.prof -c "import hololoom.server"
 
 # 6. Check network latency
 ping google.com
@@ -683,7 +683,7 @@ Memory Usage:
 **Investigation**:
 ```bash
 # 1. Check for Python memory leaks
-python -m tracemalloc HoloLoom.server.agentic_api
+python -m tracemalloc hololoom.server.agentic_api
 
 # 2. Monitor with 'top' command
 top -p $(pgrep -f hololoom)
@@ -691,7 +691,7 @@ top -p $(pgrep -f hololoom)
 # RES (resident) should not keep growing
 
 # 3. Check for unclosed resources
-grep -n "open\|socket\|connection" HoloLoom/server/*.py
+grep -n "open\|socket\|connection" hololoom/server/*.py
 
 # 4. Monitor by endpoint
 # Which endpoints cause memory growth?

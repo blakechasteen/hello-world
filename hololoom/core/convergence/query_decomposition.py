@@ -19,7 +19,7 @@ import re
 from typing import List, Optional, Callable, Any
 from dataclasses import dataclass
 
-from HoloLoom.core.protocols.recursive_reasoning import (
+from hololoom.core.protocols.recursive_reasoning import (
     DecompositionTree,
     QueryDecomposerProtocol
 )

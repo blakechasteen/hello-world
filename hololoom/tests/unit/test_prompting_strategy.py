@@ -12,23 +12,23 @@ import pytest
 import asyncio
 from pathlib import Path
 
-from HoloLoom.prompting.strategy import (
+from hololoom.prompting.strategy import (
     PromptingStrategy,
     StrategyContext,
     StrategyResult,
     StrategyCategory,
     TemplateStrategy
 )
-from HoloLoom.prompting.registry import (
+from hololoom.prompting.registry import (
     StrategyRegistry,
     get_strategy,
     suggest_strategies
 )
-from HoloLoom.prompting.composite import (
+from hololoom.prompting.composite import (
     CompositeStrategy,
     parse_pipeline
 )
-from HoloLoom.prompting.auto_detect import AutoDetector
+from hololoom.prompting.auto_detect import AutoDetector
 
 
 # Mock strategies for testing
@@ -261,7 +261,7 @@ def test_composite_can_apply_minimum():
 def test_parse_pipeline():
     """Test parse_pipeline creates composite from string"""
     # Register mock strategies
-    from HoloLoom.prompting.registry import get_registry
+    from hololoom.prompting.registry import get_registry
     registry = get_registry()
     registry.register(MockVerifyStrategy())
     registry.register(MockChallengeStrategy())

@@ -9,9 +9,9 @@ Validates that all refinements maintain functionality:
 """
 
 import asyncio
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend, check_backend_health
-from HoloLoom.memory.protocol import Memory, MemoryQuery
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend, check_backend_health
+from hololoom.memory.protocol import Memory, MemoryQuery
 from datetime import datetime
 
 

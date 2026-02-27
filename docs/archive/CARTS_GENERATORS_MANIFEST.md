@@ -13,7 +13,7 @@
 
 #### 1. Package Initialization
 ```
-📁 HoloLoom/redteam/strategies/__init__.py
+📁 hololoom/redteam/strategies/__init__.py
    Lines: 50
    Purpose: Export all generators for easy import
    Status: ✅ Complete
@@ -26,7 +26,7 @@
 
 #### 2. Chain-of-Thought Exploit Generator
 ```
-📁 HoloLoom/redteam/strategies/cot_exploit.py
+📁 hololoom/redteam/strategies/cot_exploit.py
    Lines: 350
    Purpose: CoT reasoning chain exploitation attacks
    Status: ✅ Complete
@@ -49,7 +49,7 @@
 
 #### 3. Tool Abuse Generator
 ```
-📁 HoloLoom/redteam/strategies/tool_abuse.py
+📁 hololoom/redteam/strategies/tool_abuse.py
    Lines: 400
    Purpose: Tool parameter injection and chaining attacks
    Status: ✅ Complete
@@ -73,7 +73,7 @@
 
 #### 4. Prompt Extraction Generator
 ```
-📁 HoloLoom/redteam/strategies/prompt_extraction.py
+📁 hololoom/redteam/strategies/prompt_extraction.py
    Lines: 380
    Purpose: System prompt and context leakage attacks
    Status: ✅ Complete
@@ -100,7 +100,7 @@
 
 #### 5. Comprehensive README
 ```
-📁 HoloLoom/redteam/strategies/README.md
+📁 hololoom/redteam/strategies/README.md
    Lines: 500+
    Purpose: Complete generator documentation and usage guide
    Status: ✅ Complete
@@ -148,7 +148,7 @@
 
 #### 8. Comprehensive Test Suite
 ```
-📁 HoloLoom/redteam/tests/test_attack_strategy_generators.py
+📁 hololoom/redteam/tests/test_attack_strategy_generators.py
    Lines: 250+
    Purpose: Complete test and demo suite
    Status: ✅ Complete
@@ -203,7 +203,7 @@ TOTAL:             ~1,930 lines
 
 ### Standard Import
 ```python
-from HoloLoom.redteam.strategies import (
+from hololoom.redteam.strategies import (
     CoTExploitGenerator,
     ToolAbuseGenerator,
     PromptExtractionGenerator
@@ -212,17 +212,17 @@ from HoloLoom.redteam.strategies import (
 
 ### Direct Imports
 ```python
-from HoloLoom.redteam.strategies.cot_exploit import (
+from hololoom.redteam.strategies.cot_exploit import (
     CoTExploitGenerator,
     CoTPayload
 )
 
-from HoloLoom.redteam.strategies.tool_abuse import (
+from hololoom.redteam.strategies.tool_abuse import (
     ToolAbuseGenerator,
     ToolAbusePayload
 )
 
-from HoloLoom.redteam.strategies.prompt_extraction import (
+from hololoom.redteam.strategies.prompt_extraction import (
     PromptExtractionGenerator,
     PromptExtractionPayload
 )
@@ -231,7 +231,7 @@ from HoloLoom.redteam.strategies.prompt_extraction import (
 ### Running Tests
 ```bash
 cd /c/Users/blake/OneDrive/Documents/mythRL
-python HoloLoom/redteam/tests/test_attack_strategy_generators.py
+python hololoom/redteam/tests/test_attack_strategy_generators.py
 ```
 
 ---
@@ -336,9 +336,9 @@ Average Severity: 0.76
 
 ### Directory Structure
 ```
-✅ HoloLoom/redteam/strategies/      → Core generators
-✅ HoloLoom/redteam/tests/           → Test suite
-✅ HoloLoom/redteam/                 → CARTS system integration
+✅ hololoom/redteam/strategies/      → Core generators
+✅ hololoom/redteam/tests/           → Test suite
+✅ hololoom/redteam/                 → CARTS system integration
 ✅ Repository Root/                  → Documentation
 ```
 
@@ -355,7 +355,7 @@ Average Severity: 0.76
 
 ### 1. Import Generators
 ```python
-from HoloLoom.redteam.strategies import (
+from hololoom.redteam.strategies import (
     CoTExploitGenerator,
     ToolAbuseGenerator,
     PromptExtractionGenerator
@@ -387,7 +387,7 @@ for attack in cot_attacks:
 ### 5. Run Tests
 ```bash
 cd /c/Users/blake/OneDrive/Documents/mythRL
-python HoloLoom/redteam/tests/test_attack_strategy_generators.py
+python hololoom/redteam/tests/test_attack_strategy_generators.py
 ```
 
 ---

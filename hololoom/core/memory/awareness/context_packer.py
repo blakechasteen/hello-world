@@ -16,7 +16,7 @@ from typing import List, Dict, Optional, Any, Tuple
 from enum import Enum
 import time
 
-# Import memory fusion for advanced retrieval (moved to HoloLoom/memory/awareness/ in Dec 2025)
+# Import memory fusion for advanced retrieval (moved to hololoom/memory/awareness/ in Dec 2025)
 try:
     from .memory_fusion import MemoryFusion, MultipassConfig, MemoryNode
     MEMORY_FUSION_AVAILABLE = True

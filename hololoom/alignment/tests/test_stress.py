@@ -26,7 +26,7 @@ from datetime import datetime, timedelta
 import random
 import string
 
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     SafetyGuardrails,
     DeceptionDetector,
     InstrumentalConvergenceGuard,
@@ -44,8 +44,8 @@ from HoloLoom.alignment import (
     ResourceBounds,
     WebhookAlert,
 )
-from HoloLoom.alignment.instrumental_convergence import ResourceType
-from HoloLoom.alignment.deception_detection import ProbeType, GoalStatement, ActionObservation
+from hololoom.alignment.instrumental_convergence import ResourceType
+from hololoom.alignment.deception_detection import ProbeType, GoalStatement, ActionObservation
 
 
 # ============================================================================

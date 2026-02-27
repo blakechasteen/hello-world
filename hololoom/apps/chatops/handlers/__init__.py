@@ -49,7 +49,7 @@ Optional advanced features:
 """
 
 # Core handler registry - always available
-from HoloLoom.apps.chatops.handlers.handler_registry import (
+from hololoom.apps.chatops.handlers.handler_registry import (
     HandlerRegistry,
     HandlerCategory,
     HandlerSpec,
@@ -69,43 +69,43 @@ __all__ = [
 ]
 
 try:
-    from HoloLoom.apps.chatops.handlers.multimodal_handler import MultimodalHandler
+    from hololoom.apps.chatops.handlers.multimodal_handler import MultimodalHandler
     __all__.append("MultimodalHandler")
 except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.thread_handler import ThreadHandler
+    from hololoom.apps.chatops.handlers.thread_handler import ThreadHandler
     __all__.append("ThreadHandler")
 except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.proactive_agent import ProactiveAgent
+    from hololoom.apps.chatops.handlers.proactive_agent import ProactiveAgent
     __all__.append("ProactiveAgent")
 except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.hololoom_handlers import HoloLoomMatrixHandlers
+    from hololoom.apps.chatops.handlers.hololoom_handlers import HoloLoomMatrixHandlers
     __all__.append("HoloLoomMatrixHandlers")
 except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
+    from hololoom.apps.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
     __all__.append("RedTeamMatrixHandlers")
 except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.pattern_tuning import PatternTuner
+    from hololoom.apps.chatops.handlers.pattern_tuning import PatternTuner
     __all__.append("PatternTuner")
 except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.test_handlers import (
+    from hololoom.apps.chatops.handlers.test_handlers import (
         register_test_handlers,
         TestRunner,
         TestStatusTracker,
@@ -133,7 +133,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.code_handlers import (
+    from hololoom.apps.chatops.handlers.code_handlers import (
         register_code_handlers,
         CodeHandlers,
         handle_code_query,
@@ -161,7 +161,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.rag_handlers import (
+    from hololoom.apps.chatops.handlers.rag_handlers import (
         register_rag_handlers,
         RAGHandlers,
         handle_rag_query,
@@ -183,7 +183,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.agentic_handlers import (
+    from hololoom.apps.chatops.handlers.agentic_handlers import (
         register_agentic_handlers,
         AgenticHandlers,
         handle_research,
@@ -205,7 +205,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.visualization_handlers import (
+    from hololoom.apps.chatops.handlers.visualization_handlers import (
         register_visualization_handlers,
         VisualizationHandlers,
         SessionMetrics,
@@ -235,7 +235,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.memory_symphony_handlers import (
+    from hololoom.apps.chatops.handlers.memory_symphony_handlers import (
         register_memory_symphony_handlers,
         MemorySymphonyHandlers,
         handle_memory_strategy,
@@ -257,7 +257,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.temporal_handlers import (
+    from hololoom.apps.chatops.handlers.temporal_handlers import (
         register_temporal_handlers,
         TemporalHandlers,
         handle_temporal_travel,
@@ -277,7 +277,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.department_handlers import (
+    from hololoom.apps.chatops.handlers.department_handlers import (
         register_department_handlers,
         DepartmentHandlers,
         handle_dept_list,
@@ -299,7 +299,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.feedback_handler import (
+    from hololoom.apps.chatops.handlers.feedback_handler import (
         FeedbackProcessor,
         BotMessageTracker,
         ThompsonFeedbackUpdater,
@@ -329,7 +329,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.ingestion_handlers import (
+    from hololoom.apps.chatops.handlers.ingestion_handlers import (
         register_ingestion_handlers,
         IngestionHandlers,
         SourceDetection,
@@ -361,7 +361,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.websocket_progress import (
+    from hololoom.apps.chatops.handlers.websocket_progress import (
         JobMessageType,
         JobProgressMessage,
         JobProgressManager,
@@ -379,7 +379,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.prometheus_metrics import (
+    from hololoom.apps.chatops.handlers.prometheus_metrics import (
         JobMetricsCollector,
         MetricType,
         MetricValue,
@@ -401,7 +401,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.conversation_handlers import (
+    from hololoom.apps.chatops.handlers.conversation_handlers import (
         register_conversation_handlers,
         ConversationHandlers,
         SessionManager,
@@ -425,7 +425,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.cluster_handlers import (
+    from hololoom.apps.chatops.handlers.cluster_handlers import (
         register_cluster_handlers,
         ClusterHandlers,
         ClusterManager,
@@ -457,7 +457,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.alignment_handlers import (
+    from hololoom.apps.chatops.handlers.alignment_handlers import (
         register_alignment_handlers,
         AlignmentHandlers,
         get_guardrails,
@@ -491,7 +491,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.agent_manager_ws import (
+    from hololoom.apps.chatops.handlers.agent_manager_ws import (
         AgentManagerMessageType,
         AgentManagerMessage,
         AgentManagerWSManager,
@@ -513,7 +513,7 @@ except ImportError:
     pass
 
 try:
-    from HoloLoom.apps.chatops.handlers.workflow_handlers import (
+    from hololoom.apps.chatops.handlers.workflow_handlers import (
         register_workflow_handlers,
         WorkflowHandlers,
         get_executor_url,
@@ -550,7 +550,7 @@ except ImportError:
 
 # Learning handlers (December 2025) - Thompson Sampling, hot patterns, refinement
 try:
-    from HoloLoom.apps.chatops.handlers.learning_handlers import (
+    from hololoom.apps.chatops.handlers.learning_handlers import (
         register_learning_handlers,
         LearningHandlers,
         get_learning_engine,
@@ -591,7 +591,7 @@ except ImportError:
 
 # Awareness handlers (December 2025) - Activation, spring dynamics, brain waves
 try:
-    from HoloLoom.apps.chatops.handlers.awareness_handlers import (
+    from hololoom.apps.chatops.handlers.awareness_handlers import (
         register_awareness_handlers,
         AwarenessHandlers,
         get_awareness_graph,
@@ -632,7 +632,7 @@ except ImportError:
 
 # Context handlers (December 2025) - Context packing, adaptive expansion, streaming
 try:
-    from HoloLoom.apps.chatops.handlers.context_handlers import (
+    from hololoom.apps.chatops.handlers.context_handlers import (
         register_context_handlers,
         ContextHandlers,
         get_context_packer,
@@ -677,7 +677,7 @@ except ImportError:
 
 # Semantic handlers (December 2025) - Phase 8: Semantic State -> Policy integration
 try:
-    from HoloLoom.apps.chatops.handlers.semantic_handlers import (
+    from hololoom.apps.chatops.handlers.semantic_handlers import (
         SemanticMatrixHandlers,
         ConversationSemanticContext,
         create_semantic_handlers,
@@ -696,7 +696,7 @@ except ImportError:
 
 # Multi-agent semantic coordination (December 2025) - Phase 7
 try:
-    from HoloLoom.apps.chatops.handlers.multi_agent_semantic import (
+    from hololoom.apps.chatops.handlers.multi_agent_semantic import (
         SharedSemanticRegistry,
         AgentInfo,
         AgentStatus,
@@ -723,7 +723,7 @@ except ImportError:
 
 # Voice handlers (December 2025) - Voice-to-code via Matrix voice messages
 try:
-    from HoloLoom.apps.chatops.handlers.voice_handler import (
+    from hololoom.apps.chatops.handlers.voice_handler import (
         VoiceHandler,
         TranscriptionResult,
         VoiceCommandResult
@@ -738,7 +738,7 @@ except ImportError:
 
 # Code voice grammar (December 2025) - Patterns for voice-to-code commands
 try:
-    from HoloLoom.apps.chatops.handlers.code_voice_grammar import (
+    from hololoom.apps.chatops.handlers.code_voice_grammar import (
         CodeVoiceGrammar,
         CodeIntent,
         CodeCommandIntent

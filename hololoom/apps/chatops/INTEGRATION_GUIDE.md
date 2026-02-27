@@ -33,15 +33,15 @@ pip install sentence-transformers networkx scipy
 Minimal ChatOps deployment with all features enabled.
 """
 import asyncio
-from HoloLoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
-from HoloLoom.apps.chatops.chatops_bridge import ChatOpsOrchestrator
-from HoloLoom.apps.chatops.multimodal_handler import MultiModalHandler
-from HoloLoom.apps.chatops.thread_handler import ThreadHandler
-from HoloLoom.apps.chatops.proactive_agent import ProactiveAgent
-from HoloLoom.apps.chatops.performance_optimizer import PerformanceOptimizer
-from HoloLoom.apps.chatops.custom_commands import CustomCommandManager
-from HoloLoom.apps.chatops.innovative_features import WorkflowEngine, IncidentManager, ChatDashboard
-from HoloLoom.apps.chatops.advanced_chatops import CodeReviewAssistant, ContextAwareAgent, KnowledgeMiner
+from hololoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
+from hololoom.apps.chatops.chatops_bridge import ChatOpsOrchestrator
+from hololoom.apps.chatops.multimodal_handler import MultiModalHandler
+from hololoom.apps.chatops.thread_handler import ThreadHandler
+from hololoom.apps.chatops.proactive_agent import ProactiveAgent
+from hololoom.apps.chatops.performance_optimizer import PerformanceOptimizer
+from hololoom.apps.chatops.custom_commands import CustomCommandManager
+from hololoom.apps.chatops.innovative_features import WorkflowEngine, IncidentManager, ChatDashboard
+from hololoom.apps.chatops.advanced_chatops import CodeReviewAssistant, ContextAwareAgent, KnowledgeMiner
 
 async def main():
     # 1. Configure Matrix bot
@@ -144,7 +144,7 @@ async def main():
             command_name = command_parts[0]
 
             try:
-                from HoloLoom.apps.chatops.custom_commands import CommandContext
+                from hololoom.apps.chatops.custom_commands import CommandContext
                 ctx = CommandContext(
                     user_id=event.sender,
                     conversation_id=conversation_id,
@@ -310,7 +310,7 @@ features:
 ### 1. Workflow Automation
 
 ```python
-from HoloLoom.apps.chatops.innovative_features import WorkflowEngine, WorkflowStep
+from hololoom.apps.chatops.innovative_features import WorkflowEngine, WorkflowStep
 
 # Create workflow engine
 engine = WorkflowEngine()
@@ -356,7 +356,7 @@ workflow = engine.create_workflow("deploy_to_prod", deploy_workflow)
 ### 2. Incident Management
 
 ```python
-from HoloLoom.apps.chatops.innovative_features import IncidentManager
+from hololoom.apps.chatops.innovative_features import IncidentManager
 
 manager = IncidentManager()
 
@@ -389,7 +389,7 @@ postmortem = manager.generate_postmortem(incident_id)
 ### 3. Real-Time Dashboards
 
 ```python
-from HoloLoom.apps.chatops.innovative_features import ChatDashboard, DashboardWidget
+from hololoom.apps.chatops.innovative_features import ChatDashboard, DashboardWidget
 
 dashboard = ChatDashboard()
 
@@ -428,7 +428,7 @@ rendered = await dashboard.render("system_health", metrics)
 ### 4. Code Review Assistant
 
 ```python
-from HoloLoom.apps.chatops.advanced_chatops import CodeReviewAssistant
+from hololoom.apps.chatops.advanced_chatops import CodeReviewAssistant
 
 reviewer = CodeReviewAssistant(github_token="YOUR_GITHUB_TOKEN")
 
@@ -455,7 +455,7 @@ await reviewer.add_comment(123, "auth.js:42", "Add error handling for null token
 ### 5. Context-Aware Agent
 
 ```python
-from HoloLoom.apps.chatops.advanced_chatops import ContextAwareAgent
+from hololoom.apps.chatops.advanced_chatops import ContextAwareAgent
 
 agent = ContextAwareAgent()
 
@@ -485,7 +485,7 @@ context_msg = await agent.switch_context("project_auth", room.room_id)
 ### 6. Knowledge Mining
 
 ```python
-from HoloLoom.apps.chatops.advanced_chatops import KnowledgeMiner
+from hololoom.apps.chatops.advanced_chatops import KnowledgeMiner
 
 miner = KnowledgeMiner()
 
@@ -643,7 +643,7 @@ Bot: → ✅ Priority updated: #478 → HIGH
 
 ```bash
 # Check bot connection
-python -c "from HoloLoom.apps.chatops.verify_deployment import verify_matrix_connection; verify_matrix_connection()"
+python -c "from hololoom.apps.chatops.verify_deployment import verify_matrix_connection; verify_matrix_connection()"
 
 # Check logs
 tail -f logs/chatops.log
@@ -672,7 +672,7 @@ optimizer = PerformanceOptimizer(
 
 ```python
 # Tune thresholds
-from HoloLoom.apps.chatops.pattern_tuning import PatternTuner
+from hololoom.apps.chatops.pattern_tuning import PatternTuner
 
 tuner = PatternTuner()
 
@@ -804,7 +804,7 @@ if resources['memory_mb'] > 500:
 ## Support
 
 - **Documentation**: See [INNOVATIVE_CHATOPS.md](INNOVATIVE_CHATOPS.md)
-- **Examples**: Check `HoloLoom/chatops/examples/`
+- **Examples**: Check `hololoom/chatops/examples/`
 - **Issues**: Report bugs in your issue tracker
 - **Community**: Join the Matrix room for support
 

@@ -21,10 +21,10 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 # Core imports
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.protocols.types import Query
-from HoloLoom.cli_client import HypervisorClient, APIConfig, HTTPX_AVAILABLE
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query
+from hololoom.cli_client import HypervisorClient, APIConfig, HTTPX_AVAILABLE
 
 
 # ============================================================================
@@ -452,7 +452,7 @@ async def cmd_nexus_mcp(args):
     print_info("Launching HoloLoom Nexus (MCP Bridge)...")
     
     try:
-        from HoloLoom.integrations.mcp_server import main as mcp_main
+        from hololoom.integrations.mcp_server import main as mcp_main
         await mcp_main()
     except ImportError as e:
         print_error(f"Failed to import mcp_server: {e}")
@@ -553,7 +553,7 @@ async def cmd_studio(args):
     print_info("Launching HoloLoom Studio...")
     
     try:
-        from HoloLoom.studio_server import start_studio
+        from hololoom.studio_server import start_studio
         
         # Check if dashboard exists
         import os
@@ -563,9 +563,9 @@ async def cmd_studio(args):
         dist_dir = base_dir / "dist"
         
         if not dist_dir.exists():
-            print_warning("Dashboard assets not found in HoloLoom/dist/")
+            print_warning("Dashboard assets not found in hololoom/dist/")
             print_info("To build the dashboard, run:")
-            print("  cd HoloLoom/hololoom-dashboard && npm install && npm run build")
+            print("  cd hololoom/hololoom-dashboard && npm install && npm run build")
             print()
             
         start_studio(

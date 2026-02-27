@@ -73,7 +73,7 @@
 **Use case**: Local development, personal assistants, embedded applications
 
 ```python
-from HoloLoom.lite import HoloLoomLite
+from hololoom.lite import HoloLoomLite
 
 async with HoloLoomLite() as loom:
     # Safety enabled by default
@@ -98,10 +98,10 @@ async with HoloLoomLite() as loom:
 
 ```python
 from fastapi import FastAPI, Depends
-from HoloLoom.lite import HoloLoomLite
-from HoloLoom.saas import create_saas_backend
-from HoloLoom.saas.auth import validate_api_key, AuthContext
-from HoloLoom.saas.routes import customers_router, api_keys_router
+from hololoom.lite import HoloLoomLite
+from hololoom.saas import create_saas_backend
+from hololoom.saas.auth import validate_api_key, AuthContext
+from hololoom.saas.routes import customers_router, api_keys_router
 
 app = FastAPI()
 backend = create_saas_backend()  # SQLite by default
@@ -158,8 +158,8 @@ async def query(
 **Use case**: Multi-node deployment with community verification
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.federation import (
+from hololoom import hololoom
+from hololoom.federation import (
     FederationNode,
     FederationConfig,
     create_node_identity
@@ -209,10 +209,10 @@ async with FederationNode(config) as federation:
 
 ```python
 from fastapi import FastAPI
-from HoloLoom import HoloLoom
-from HoloLoom.federation import FederationNode, FederationConfig
-from HoloLoom.saas import create_saas_backend, SaaSConfig
-from HoloLoom.saas.routes import customers_router, api_keys_router, health_router
+from hololoom import hololoom
+from hololoom.federation import FederationNode, FederationConfig
+from hololoom.saas import create_saas_backend, SaaSConfig
+from hololoom.saas.routes import customers_router, api_keys_router, health_router
 
 app = FastAPI()
 
@@ -330,7 +330,7 @@ Individual User                    Startup                      Enterprise
 pip install hololoom
 
 # Run Lite REPL
-python -m HoloLoom.lite repl
+python -m hololoom.lite repl
 ```
 
 ### For Developers
@@ -341,7 +341,7 @@ git clone https://github.com/your-org/hololoom.git
 cd hololoom
 
 # Start with examples
-python HoloLoom/saas/examples/auth_only_app.py
+python hololoom/saas/examples/auth_only_app.py
 ```
 
 ### For Organizations
@@ -358,7 +358,7 @@ kubectl apply -f k8s/
 
 Join the Federation network:
 ```python
-from HoloLoom.federation import FederationNode
+from hololoom.federation import FederationNode
 
 # Join safety research guild
 node = FederationNode(guild_id="safety_researchers")
@@ -384,8 +384,8 @@ The open source strategy creates a **flywheel effect**:
 ## Related Documentation
 
 - [Self-Hosting Guide](self-hosting/README.md)
-- [SaaS Toolkit](../HoloLoom/saas/README.md)
-- [Federation README](../HoloLoom/federation/README.md)
-- [HoloLoom Lite](../HoloLoom/lite/README.md)
-- [Safety Framework](../HoloLoom/alignment/README.md)
+- [SaaS Toolkit](../hololoom/saas/README.md)
+- [Federation README](../hololoom/federation/README.md)
+- [HoloLoom Lite](../hololoom/lite/README.md)
+- [Safety Framework](../hololoom/alignment/README.md)
 - [SAFETY.md](SAFETY.md) - HoloLoom safety methodology

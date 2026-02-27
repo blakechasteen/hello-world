@@ -30,8 +30,8 @@ import time
 from typing import Dict, List
 from dataclasses import dataclass
 
-from HoloLoom.config import Config
-from HoloLoom.rag.simple_rag import SimpleRAG
+from hololoom.config import Config
+from hololoom.rag.simple_rag import SimpleRAG
 
 
 # ============================================================================

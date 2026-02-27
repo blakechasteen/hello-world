@@ -15,14 +15,14 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 # Import test targets
-from HoloLoom.core.loom.weave_house import (
+from hololoom.core.loom.weave_house import (
     WeaveHouse,
     WeaveResult,
     create_weave_house,
 )
-from HoloLoom.core.loom.base_loom import BaseLoom
-from HoloLoom.core.fabric.fabric import Fabric
-from HoloLoom.core.loom.consensus import LoomConsensus, create_loom_consensus
+from hololoom.core.loom.base_loom import BaseLoom
+from hololoom.core.fabric.fabric import Fabric
+from hololoom.core.loom.consensus import LoomConsensus, create_loom_consensus
 
 
 # =============================================================================

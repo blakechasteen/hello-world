@@ -9,9 +9,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from typing import Literal
-from HoloLoom.bandits.neural_ts.models import MLP
-from HoloLoom.bandits.neural_ts.posterior import BootstrapPosterior, MCDropoutPosterior
-from HoloLoom.bandits.neural_ts.replay import ReplayBuffer
+from hololoom.bandits.neural_ts.models import MLP
+from hololoom.bandits.neural_ts.posterior import BootstrapPosterior, MCDropoutPosterior
+from hololoom.bandits.neural_ts.replay import ReplayBuffer
 
 
 class BanditTrainer:

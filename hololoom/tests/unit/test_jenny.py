@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 # Import Jenny components
-from HoloLoom.visualization.jenny_spec import (
+from hololoom.visualization.jenny_spec import (
     JennySpec,
     LifecycleStage,
     BindingMode,
@@ -38,7 +38,7 @@ from HoloLoom.visualization.jenny_spec import (
     ACTION_DISMISS,
     ACTION_WHY,
 )
-from HoloLoom.visualization.jenny_compiler import (
+from hololoom.visualization.jenny_compiler import (
     JennyCompiler,
     QueryAnalysis,
     analyze_query,
@@ -46,11 +46,11 @@ from HoloLoom.visualization.jenny_compiler import (
     generate_confidence_panel,
     generate_sources_panel,
 )
-from HoloLoom.visualization.spec_ledger import (
+from hololoom.visualization.spec_ledger import (
     SpecLedger,
     SpecLedgerEntry,
 )
-from HoloLoom.protocols.jenny import (
+from hololoom.protocols.jenny import (
     CompilationStrategy,
     RenderTarget,
     JennyCompilerProtocol,
@@ -58,7 +58,7 @@ from HoloLoom.protocols.jenny import (
 )
 
 # Mock Spacetime for testing
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 
 
 # ============================================================================

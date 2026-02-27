@@ -30,7 +30,7 @@ from typing import List, Dict, Any, Optional, Union, Tuple
 from enum import Enum
 from dataclasses import dataclass, field
 
-from HoloLoom.core.fabric.spacetime import Spacetime, Artifact, ArtifactType
+from hololoom.core.fabric.spacetime import Spacetime, Artifact, ArtifactType
 
 logger = logging.getLogger(__name__)
 

@@ -16,12 +16,12 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 # HoloLoom imports
-from HoloLoom.config import Config
-from HoloLoom.agentic import AgenticOrchestrator, ReasoningMode
-from HoloLoom.policy.unified import create_policy, BanditStrategy
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.alignment import SafetyGuardrails, AuditTrail
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.config import Config
+from hololoom.agentic import AgenticOrchestrator, ReasoningMode
+from hololoom.policy.unified import create_policy, BanditStrategy
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.alignment import SafetyGuardrails, AuditTrail
+from hololoom.recursive import FullLearningEngine
 
 
 class BDRWorkflow:

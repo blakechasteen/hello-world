@@ -80,7 +80,7 @@ CARTS evolves from a local testing tool into a production-grade, distributed adv
 **Implementation Plan**:
 
 ```python
-# New file: HoloLoom/redteam/sandbox/process_isolator.py
+# New file: hololoom/redteam/sandbox/process_isolator.py
 
 class ProcessIsolator:
     """Isolate attack execution in sandboxed subprocesses."""
@@ -141,7 +141,7 @@ class ProcessIsolator:
 - Cost tracking for API calls
 
 ```python
-# New file: HoloLoom/redteam/sandbox/network_policy.py
+# New file: hololoom/redteam/sandbox/network_policy.py
 
 @dataclass
 class NetworkPolicy:
@@ -177,7 +177,7 @@ class NetworkPolicy:
 **Strategy**: Copy-on-write overlay filesystem
 
 ```python
-# New file: HoloLoom/redteam/sandbox/filesystem.py
+# New file: hololoom/redteam/sandbox/filesystem.py
 
 class SandboxedFilesystem:
     """Isolated filesystem with copy-on-write semantics."""
@@ -205,7 +205,7 @@ class SandboxedFilesystem:
 **Docker-based isolation** for maximum security:
 
 ```dockerfile
-# HoloLoom/redteam/sandbox/Dockerfile.sandbox
+# hololoom/redteam/sandbox/Dockerfile.sandbox
 
 FROM python:3.11-slim
 
@@ -220,7 +220,7 @@ USER sandbox
 COPY --chown=sandbox:sandbox requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY --chown=sandbox:sandbox HoloLoom/redteam /app/redteam
+COPY --chown=sandbox:sandbox hololoom/redteam /app/redteam
 WORKDIR /app
 
 # Resource limits enforced by Docker
@@ -275,7 +275,7 @@ ENTRYPOINT ["python", "-m", "redteam.sandbox.worker"]
 ### 3.2 Docker Compose Deployment
 
 ```yaml
-# HoloLoom/redteam/deploy/docker-compose.yml
+# hololoom/redteam/deploy/docker-compose.yml
 
 version: '3.8'
 
@@ -336,7 +336,7 @@ volumes:
 ### 3.3 Kubernetes Operator
 
 ```python
-# New file: HoloLoom/redteam/deploy/k8s_operator.py
+# New file: hololoom/redteam/deploy/k8s_operator.py
 
 class CARTSOperator:
     """Kubernetes operator for CARTS deployments."""
@@ -428,7 +428,7 @@ jobs:
 
       - name: Run CARTS scan
         run: |
-          python -m HoloLoom.redteam.cli scan \
+          python -m hololoom.redteam.cli scan \
             --strategies unicode_bypass,prompt_injection,hidden_goal \
             --cycles 5 \
             --payloads-per-strategy 10 \
@@ -437,7 +437,7 @@ jobs:
 
       - name: Check for critical vulnerabilities
         run: |
-          python -m HoloLoom.redteam.cli check \
+          python -m hololoom.redteam.cli check \
             --input carts-results.json \
             --fail-on-critical \
             --fail-on-high-count 3
@@ -498,7 +498,7 @@ jobs:
 ### 3.6 Cost Controls
 
 ```python
-# New file: HoloLoom/redteam/deploy/cost_controller.py
+# New file: hololoom/redteam/deploy/cost_controller.py
 
 @dataclass
 class CostBudget:
@@ -603,7 +603,7 @@ class CostController:
 ### 4.2 Agent Roles
 
 ```python
-# New file: HoloLoom/redteam/swarm/agents.py
+# New file: hololoom/redteam/swarm/agents.py
 
 class ScoutAgent(BaseAgent):
     """Reconnaissance agent that maps attack surface."""
@@ -665,7 +665,7 @@ class ExploitAgent(BaseAgent):
 ### 4.3 Coordinated Attack Plans
 
 ```python
-# New file: HoloLoom/redteam/swarm/coordinator.py
+# New file: hololoom/redteam/swarm/coordinator.py
 
 class SwarmCoordinator:
     """Coordinate multi-agent adversarial campaigns."""
@@ -752,7 +752,7 @@ class SwarmCoordinator:
 ### 5.1 Transfer Learning for Attacks
 
 ```python
-# New file: HoloLoom/redteam/transfer/analyzer.py
+# New file: hololoom/redteam/transfer/analyzer.py
 
 class TransferAnalyzer:
     """Analyze vulnerability transferability across models."""
@@ -797,7 +797,7 @@ class TransferAnalyzer:
 ### 5.2 Model Fingerprinting
 
 ```python
-# New file: HoloLoom/redteam/transfer/fingerprint.py
+# New file: hololoom/redteam/transfer/fingerprint.py
 
 class ModelFingerprinter:
     """Identify model characteristics for transfer optimization."""
@@ -831,7 +831,7 @@ class ModelFingerprinter:
 ### 6.1 Patch Generation
 
 ```python
-# New file: HoloLoom/redteam/defense/patch_generator.py
+# New file: hololoom/redteam/defense/patch_generator.py
 
 class PatchGenerator:
     """Generate patches for discovered vulnerabilities."""
@@ -891,7 +891,7 @@ class PatchGenerator:
 ### 6.2 Continuous Defense Adaptation
 
 ```python
-# New file: HoloLoom/redteam/defense/adaptive_defense.py
+# New file: hololoom/redteam/defense/adaptive_defense.py
 
 class AdaptiveDefenseSystem:
     """Continuously adapt defenses based on red team findings."""
@@ -999,9 +999,9 @@ class AdaptiveDefenseSystem:
 
 ## References
 
-- **MRF Framework**: HoloLoom/prompting/unified_mrf.py
-- **Safety Guardrails**: HoloLoom/alignment/safety_guardrails.py
-- **Thompson Sampling**: HoloLoom/policy/unified.py
+- **MRF Framework**: hololoom/prompting/unified_mrf.py
+- **Safety Guardrails**: hololoom/alignment/safety_guardrails.py
+- **Thompson Sampling**: hololoom/policy/unified.py
 - **Genetic Algorithms**: Research from OpenAI, Anthropic red team papers
 
 ---

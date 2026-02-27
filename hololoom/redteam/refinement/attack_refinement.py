@@ -62,8 +62,8 @@ from datetime import datetime
 import asyncio
 import re
 
-from HoloLoom.redteam.provenance.attack_scratchpad import AttackScratchpad, AttackScratchpadEntry, AttackStrategy, DefenseLayer
-from HoloLoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker, StrategyTrajectory, RefinementPattern
+from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad, AttackScratchpadEntry, AttackStrategy, DefenseLayer
+from hololoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker, StrategyTrajectory, RefinementPattern
 
 logger = logging.getLogger(__name__)
 

@@ -15,8 +15,8 @@ if sys.platform == 'win32':
 
 sys.path.insert(0, '.')
 
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
 
 async def test_orchestrator_initialization():
     """Test orchestrator initialization step by step."""
@@ -54,7 +54,7 @@ async def test_orchestrator_initialization():
     # Step 3: Import orchestrator
     print("\n[3/5] Importing WeavingOrchestrator...")
     start = datetime.now()
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
     elapsed = (datetime.now() - start).total_seconds()
     print(f"  [OK] Imported in {elapsed:.3f}s")
 

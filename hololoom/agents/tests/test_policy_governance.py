@@ -18,7 +18,7 @@ Created: 2025-01-20
 import pytest
 from datetime import datetime
 
-from HoloLoom.agents.policy_governance import (
+from hololoom.agents.policy_governance import (
     PolicyEngine,
     RoleBasedAccessControl,
     TopicGovernance,

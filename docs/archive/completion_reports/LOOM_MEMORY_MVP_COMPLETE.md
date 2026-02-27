@@ -136,7 +136,7 @@ class MemoryConfig:
 
 ```
 loom_memory_integration_demo.py    # MVP integration demo
-HoloLoom/
+hololoom/
 ├── loom/
 │   └── command.py                 # Pattern card selection
 ├── memory/

@@ -33,7 +33,7 @@ Default Implementations (Phase 3):
     - DefaultSpacetimeAssembler: Wraps fabric assembly
 
 Usage:
-    >>> from HoloLoom.core.orchestrator.protocols import (
+    >>> from hololoom.core.orchestrator.protocols import (
     ...     StageExecutorProtocol,
     ...     BaseStageExecutor,
     ...     PatternSelectorProtocol,
@@ -48,7 +48,7 @@ Usage:
 
 Backward Compatibility:
     All Phase 2 imports continue to work:
-    >>> from HoloLoom.core.orchestrator.protocols import StageExecutorProtocol
+    >>> from hololoom.core.orchestrator.protocols import StageExecutorProtocol
 
 Author: Claude Code (Elegance Pass - Phase 2-3)
 Date: 2025-12-09

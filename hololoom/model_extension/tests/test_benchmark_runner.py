@@ -15,7 +15,7 @@ import pytest
 import asyncio
 from typing import List, Dict, Tuple
 
-from HoloLoom.model_extension.eval.benchmark_runner import (
+from hololoom.model_extension.eval.benchmark_runner import (
     BenchmarkRunner,
     BenchmarkResult,
     BenchmarkDataset,

@@ -25,7 +25,7 @@ import tempfile
 import asyncio
 import json
 
-from HoloLoom.spinningWheel.voice_scratchpad import (
+from hololoom.spinningWheel.voice_scratchpad import (
     VoiceScratchpad,
     VoicePrompt,
     VoiceResponse,
@@ -34,7 +34,7 @@ from HoloLoom.spinningWheel.voice_scratchpad import (
 
 # Try to import Whisper and TTS
 try:
-    from HoloLoom.spinningWheel.whisper_spinner import WhisperSpinner
+    from hololoom.spinningWheel.whisper_spinner import WhisperSpinner
     WHISPER_AVAILABLE = True
 except ImportError:
     WHISPER_AVAILABLE = False

@@ -96,7 +96,7 @@ const config: Config = {
   ],
 
   plugins: [
-    // ZERO-COPY: API docs from HoloLoom/*/README.md
+    // ZERO-COPY: API docs from hololoom/*/README.md
     [
       '@docusaurus/plugin-content-docs',
       {

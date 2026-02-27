@@ -16,13 +16,13 @@ from datetime import date, timedelta
 from fastapi import FastAPI, Depends, HTTPException, Request
 from contextlib import asynccontextmanager
 
-from HoloLoom.saas import (
+from hololoom.saas import (
     SaaSBackend,
     SaaSConfig,
     create_saas_backend,
 )
-from HoloLoom.saas.auth import validate_api_key, AuthContext
-from HoloLoom.saas.routes import customers_router, api_keys_router, health_router
+from hololoom.saas.auth import validate_api_key, AuthContext
+from hololoom.saas.routes import customers_router, api_keys_router, health_router
 
 
 # ============================================================================

@@ -17,7 +17,7 @@ The HoloLoom Federation system is a **production-ready decentralized P2P network
 
 ### ✅ Primary Documentation
 
-**File**: `/HoloLoom/federation/README.md`
+**File**: `/hololoom/federation/README.md`
 - **Lines**: 1,150 (comprehensive)
 - **Size**: 32 KB
 - **Status**: ✅ Production-Ready
@@ -69,7 +69,7 @@ The HoloLoom Federation system is a **production-ready decentralized P2P network
 ## Code Structure
 
 ```
-HoloLoom/federation/           4,357 lines total
+hololoom/federation/           4,357 lines total
 
 Core Modules:
 ├── core.py                   23,860 bytes - Federation client (main entry)
@@ -197,7 +197,7 @@ Tests:
 | Requirement | Status | Details |
 |-------------|--------|---------|
 | Status line with date | ✅ | "✅ Production Ready (December 2025)" |
-| Location and line count | ✅ | "HoloLoom/federation/ (4,357 lines across 9 files)" |
+| Location and line count | ✅ | "hololoom/federation/ (4,357 lines across 9 files)" |
 | Overview (2-3 paragraphs) | ✅ | Lines 15-32, covers SWIM/Kademlia/P2P |
 | Quick Start code example | ✅ | Lines 36-102, 2 scenarios |
 | Key Components table | ✅ | Lines 104-119, 9 components |

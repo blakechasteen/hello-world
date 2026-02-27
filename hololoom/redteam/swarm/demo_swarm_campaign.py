@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Import swarm components
-from HoloLoom.redteam.swarm import (
+from hololoom.redteam.swarm import (
     # Coordinator
     SwarmCoordinator,
     CampaignPhase,

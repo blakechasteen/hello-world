@@ -6,7 +6,7 @@ Agentic interface for ML training operations.
 Created: 2025-12-31
 """
 
-from HoloLoom.ml.skills.ml_trainer_skill import (
+from hololoom.ml.skills.ml_trainer_skill import (
     MLTrainerSkill,
     MLOperation,
 )

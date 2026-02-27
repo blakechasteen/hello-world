@@ -18,7 +18,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from typing import List, Dict, Any
 
 # Import enums
-from HoloLoom.dreamweaving import (
+from hololoom.dreamweaving import (
     EntityType,
     EventType,
     ConsistencyLevel,
@@ -26,7 +26,7 @@ from HoloLoom.dreamweaving import (
 )
 
 # Import dataclasses
-from HoloLoom.dreamweaving import (
+from hololoom.dreamweaving import (
     WorldEntity,
     NarrativeEvent,
     WorldState,
@@ -35,7 +35,7 @@ from HoloLoom.dreamweaving import (
 )
 
 # Import core classes
-from HoloLoom.dreamweaving.core import DreamWeaver, DreamWeaverConfig
+from hololoom.dreamweaving.core import DreamWeaver, DreamWeaverConfig
 
 
 # ============================================================================
@@ -725,7 +725,7 @@ class TestDreamWeaverIntegration:
         config = DreamWeaverConfig(auto_save=False)
         mock_holo_config = MagicMock()
 
-        with patch('HoloLoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
+        with patch('hololoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
             mock_instance = AsyncMock()
             MockOrchestrator.return_value = mock_instance
 
@@ -740,7 +740,7 @@ class TestDreamWeaverIntegration:
         config = DreamWeaverConfig(auto_save=False)
         mock_holo_config = MagicMock()
 
-        with patch('HoloLoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
+        with patch('hololoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
             mock_instance = AsyncMock()
             mock_instance.weave = AsyncMock(return_value=MagicMock(
                 response="A medieval fantasy world with kingdoms and magic"
@@ -762,7 +762,7 @@ class TestDreamWeaverIntegration:
         config = DreamWeaverConfig(auto_save=False)
         mock_holo_config = MagicMock()
 
-        with patch('HoloLoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
+        with patch('hololoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
             mock_instance = AsyncMock()
             MockOrchestrator.return_value = mock_instance
 
@@ -775,7 +775,7 @@ class TestDreamWeaverIntegration:
         config = DreamWeaverConfig(auto_save=False)
         mock_holo_config = MagicMock()
 
-        with patch('HoloLoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
+        with patch('hololoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
             mock_instance = AsyncMock()
             MockOrchestrator.return_value = mock_instance
 
@@ -788,7 +788,7 @@ class TestDreamWeaverIntegration:
         config = DreamWeaverConfig(auto_save=False)
         mock_holo_config = MagicMock()
 
-        with patch('HoloLoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
+        with patch('hololoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
             mock_instance = AsyncMock()
             mock_instance.weave = AsyncMock(return_value=MagicMock(
                 response="You enter the dark forest"
@@ -816,7 +816,7 @@ class TestDreamWeaverIntegration:
         config = DreamWeaverConfig(auto_save=False)
         mock_holo_config = MagicMock()
 
-        with patch('HoloLoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
+        with patch('hololoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
             mock_instance = AsyncMock()
             mock_instance.weave = AsyncMock(return_value=MagicMock(
                 response="A wise old wizard named Gandor"
@@ -838,7 +838,7 @@ class TestDreamWeaverIntegration:
         config = DreamWeaverConfig(auto_save=False)
         mock_holo_config = MagicMock()
 
-        with patch('HoloLoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
+        with patch('hololoom.dreamweaving.core.WeavingOrchestrator') as MockOrchestrator:
             mock_instance = AsyncMock()
             mock_instance.weave = AsyncMock(return_value=MagicMock(
                 response="A fierce battle erupts"

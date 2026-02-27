@@ -310,7 +310,7 @@ class PropagationAnalyzer:
     and discovers circuits - connected subgraphs that compute functions.
 
     Usage:
-        from HoloLoom.dark_trace.multilayer import CorrelationTracker
+        from hololoom.dark_trace.multilayer import CorrelationTracker
 
         # Get correlations
         tracker = CorrelationTracker(n_layers=12)

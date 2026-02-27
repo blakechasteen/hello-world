@@ -23,7 +23,7 @@ export CONTEXT_ENV=production
 
 ```python
 from fastapi import FastAPI, HTTPException, Response
-from HoloLoom.context import (
+from hololoom.context import (
     ProductionConfig,
     create_system_monitor,
     create_circuit_breaker_registry,
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
 ```bash
 # Quick validation
-cd HoloLoom/context
+cd hololoom/context
 PYTHONPATH=../.. python test_integration_e2e.py
 
 # Should see: [SUCCESS] All end-to-end integration tests passed!
@@ -226,7 +226,7 @@ scrape_configs:
 ### Development (Local Testing)
 
 ```python
-from HoloLoom.context import ProductionConfig
+from hololoom.context import ProductionConfig
 
 config = ProductionConfig.development()
 
@@ -575,7 +575,7 @@ config.monitoring.metrics_export = "none"
 
 ```bash
 # 1. Run integration tests
-cd HoloLoom/context
+cd hololoom/context
 PYTHONPATH=../.. python test_integration_e2e.py
 
 # 2. Load test (with hey or ab)

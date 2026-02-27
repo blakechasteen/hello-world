@@ -45,7 +45,7 @@ class MathCapabilities:
 
     def to_semantic_config(self):
         """Convert to SemanticCalculusConfig."""
-        from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+        from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
         if not self.semantic_calculus.get('enabled', False):
             return None
@@ -158,7 +158,7 @@ class PatternCard:
 
         Args:
             card_name: Name of card to load (without .yaml extension)
-            cards_dir: Directory containing card files (default: HoloLoom/cards/)
+            cards_dir: Directory containing card files (default: hololoom/cards/)
             overrides: Runtime overrides to apply after loading
 
         Returns:

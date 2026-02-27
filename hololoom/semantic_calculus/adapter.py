@@ -62,7 +62,7 @@ def quick_analysis(text: str, embed_fn: Callable) -> Dict[str, Any]:
         Analysis results with trajectory and semantic forces
 
     Example:
-        >>> from HoloLoom.embedding.spectral import create_embedder
+        >>> from hololoom.embedding.spectral import create_embedder
         >>> embedder = create_embedder(sizes=[384])
         >>> embed_fn = lambda words: embedder.encode(words)
         >>> result = quick_analysis("Your text...", embed_fn)

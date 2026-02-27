@@ -12,7 +12,7 @@ with real-time alerting, dashboard integration, and Prometheus export.
 - Resource utilization gauges by type
 
 Usage:
-    from HoloLoom.alignment.monitoring import AlignmentMonitor
+    from hololoom.alignment.monitoring import AlignmentMonitor
 
     monitor = AlignmentMonitor()
 

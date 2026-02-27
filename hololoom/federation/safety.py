@@ -35,14 +35,14 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import Any, Dict, FrozenSet, List, Optional, Set, TYPE_CHECKING
 
-from HoloLoom.federation.types import (
+from hololoom.federation.types import (
     FederationNode,
     GuildTrustLevel,
     Query,
     Response,
     FederationError,
 )
-from HoloLoom.federation.identity import Identity, SignedMessage
+from hololoom.federation.identity import Identity, SignedMessage
 
 # Import cryptography for direct signature verification
 try:
@@ -52,8 +52,8 @@ except ImportError:
     HAS_CRYPTOGRAPHY = False
 
 if TYPE_CHECKING:
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, SafetyDecision
-    from HoloLoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails, SafetyDecision
+    from hololoom.alignment.audit_trail import AuditTrail
 
 
 # ============================================================================
@@ -588,7 +588,7 @@ class FederationSafetyGate:
         """Run safety guardrails on request."""
         try:
             # Import here to avoid circular imports
-            from HoloLoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+            from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
 
             # Map method to action category
             category = self._method_to_category(request.method)
@@ -630,7 +630,7 @@ class FederationSafetyGate:
 
     def _method_to_category(self, method: str) -> 'ActionCategory':
         """Map JSON-RPC method to action category."""
-        from HoloLoom.alignment.safety_guardrails import ActionCategory
+        from hololoom.alignment.safety_guardrails import ActionCategory
 
         # Map method prefixes to categories
         if method.startswith("hololoom.rag."):
@@ -695,14 +695,14 @@ def create_federation_safety_gate(
     # Lazy import to avoid circular dependencies
     if guardrails is None:
         try:
-            from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+            from hololoom.alignment.safety_guardrails import SafetyGuardrails
             guardrails = SafetyGuardrails()
         except ImportError:
             pass
 
     if audit_trail is None:
         try:
-            from HoloLoom.alignment.audit_trail import AuditTrail
+            from hololoom.alignment.audit_trail import AuditTrail
             audit_trail = AuditTrail()
         except ImportError:
             pass

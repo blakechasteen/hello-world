@@ -26,7 +26,7 @@ from .protocol import ConscienceLens, WitnessProtocol, LearnerProtocol
 from .lenses import CompositeLens, HarmLens, DeceptionLens, PowerLens, standard
 
 
-logger = logging.getLogger("HoloLoom.conscience")
+logger = logging.getLogger("hololoom.conscience")
 
 
 # =============================================================================

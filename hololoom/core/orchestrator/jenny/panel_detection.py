@@ -14,10 +14,10 @@ import time
 from typing import Dict, List, Any, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.core.protocols.types import Query
-    from HoloLoom.core.fabric.spacetime import Spacetime
-    from HoloLoom.core.loom.command import PatternSpec
-    from HoloLoom.core.protocols import ComplexityLevel
+    from hololoom.core.protocols.types import Query
+    from hololoom.core.fabric.spacetime import Spacetime
+    from hololoom.core.loom.command import PatternSpec
+    from hololoom.core.protocols import ComplexityLevel
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ def get_panel_type_candidates(spacetime: 'Spacetime') -> List:
     Returns:
         List of appropriate PanelTypeJenny candidates
     """
-    from HoloLoom.visualization.jenny_spec import PanelTypeJenny
+    from hololoom.visualization.jenny_spec import PanelTypeJenny
 
     response = spacetime.response or ""
     trace = spacetime.trace
@@ -125,7 +125,7 @@ def detect_panel_type_heuristic(spacetime: 'Spacetime'):
     Returns:
         PanelTypeJenny enum value
     """
-    from HoloLoom.visualization.jenny_spec import PanelTypeJenny
+    from hololoom.visualization.jenny_spec import PanelTypeJenny
 
     response = spacetime.response or ""
     trace = spacetime.trace
@@ -179,7 +179,7 @@ def detect_jenny_panel_type(
     Returns:
         PanelTypeJenny enum value
     """
-    from HoloLoom.visualization.jenny_spec import PanelTypeJenny
+    from hololoom.visualization.jenny_spec import PanelTypeJenny
 
     # Phase 2.1-2.2: Try MRF-learned selection first
     if jenny_mrf_compiler and jenny_learner:

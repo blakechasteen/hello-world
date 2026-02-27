@@ -17,18 +17,18 @@ import os
 from datetime import datetime
 
 # Week 3 imports
-from HoloLoom.memory.llm_consolidator import (
+from hololoom.memory.llm_consolidator import (
     create_production_consolidator,
     create_llm_config,
     calculate_cost
 )
 
 # Week 2 imports
-from HoloLoom.memory.consolidation import MemoryConsolidator, ConsolidationStrategy
-from HoloLoom.memory.lifecycle_manager import ContextStreamManager, MemoryScope
+from hololoom.memory.consolidation import MemoryConsolidator, ConsolidationStrategy
+from hololoom.memory.lifecycle_manager import ContextStreamManager, MemoryScope
 
 # Week 1 imports
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.documentation.types import MemoryShard
 
 
 # ============================================================================
@@ -63,7 +63,7 @@ def create_sample_episodes():
             id="ep4",
             text="HoloLoom uses Thompson Sampling in its policy engine. "
                  "The bandit selects which tool to use based on historical success rates.",
-            entities=["HoloLoom", "ThompsonSampling", "PolicyEngine"],
+            entities=["hololoom", "ThompsonSampling", "PolicyEngine"],
             metadata={"timestamp": datetime.now().isoformat(), "type": "episode"}
         ),
         MemoryShard(

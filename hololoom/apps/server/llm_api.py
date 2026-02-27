@@ -19,8 +19,8 @@ from typing import Dict, List, Optional, Any
 import logging
 import asyncio
 
-from HoloLoom.llm import UnifiedLLMClient, LLMConfig, LLMResponse
-from HoloLoom.config import Config
+from hololoom.llm import UnifiedLLMClient, LLMConfig, LLMResponse
+from hololoom.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +114,7 @@ def get_llm_client(config: Optional[Config] = None) -> UnifiedLLMClient:
         if config is None:
             config = Config.fast()
 
-        # Build primary config from HoloLoom config
+        # Build primary config from hololoom config
         primary = LLMConfig(
             provider=config.llm_primary_provider,
             model=config.llm_primary_model,
@@ -340,7 +340,7 @@ async def list_models():
         List of model information including pricing and availability
     """
     try:
-        from HoloLoom.llm.cost_tracker import ModelPricing
+        from hololoom.llm.cost_tracker import ModelPricing
 
         client = get_llm_client()
         available_models = client.list_available_models()

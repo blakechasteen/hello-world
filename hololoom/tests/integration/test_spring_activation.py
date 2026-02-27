@@ -11,8 +11,8 @@ Date: 2025-10-29
 """
 
 import pytest
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.memory.spring_dynamics import (
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.memory.spring_dynamics import (
     SpringConfig,
     SpringDynamics,
     NodeState,

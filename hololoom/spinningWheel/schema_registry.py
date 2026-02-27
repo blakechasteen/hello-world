@@ -15,7 +15,7 @@ Philosophy:
      the schema should find the spinner."
 
 Usage:
-    from HoloLoom.spinningWheel import SchemaRegistry
+    from hololoom.spinningWheel import SchemaRegistry
 
     # Create registry
     registry = SchemaRegistry(memory_backend)
@@ -39,7 +39,7 @@ from enum import Enum
 import json
 from pathlib import Path
 
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

@@ -2,10 +2,10 @@ import asyncio
 import sys
 import os
 
-# Ensure we can import HoloLoom
+# Ensure we can import hololoom
 sys.path.append(os.getcwd())
 
-from HoloLoom.eggroll.integration import EggrollIntegration
+from hololoom.eggroll.integration import EggrollIntegration
 
 async def main():
     print("🌍 Distributed Evolution Simulation (Mini-Cluster)")

@@ -6,7 +6,7 @@ Universal data ingestion - everything becomes a memory operation.
 Philosophy: "If you need to configure it, we failed."
 
 Ruthlessly Elegant API:
-    from HoloLoom.spinningWheel import spin
+    from hololoom.spinningWheel import spin
 
     # Ingest anything into memory
     memory = await spin(anything)

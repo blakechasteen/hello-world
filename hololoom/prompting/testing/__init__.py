@@ -13,7 +13,7 @@ Updated: December 2025 - LLMJudge integration
 """
 
 # Protocol definitions
-from HoloLoom.prompting.testing.protocol import (
+from hololoom.prompting.testing.protocol import (
     PromptTestCase,
     PromptTestResult,
     PromptTestReport,
@@ -23,13 +23,13 @@ from HoloLoom.prompting.testing.protocol import (
 )
 
 # Test suite
-from HoloLoom.prompting.testing.test_suite import (
+from hololoom.prompting.testing.test_suite import (
     PromptTestSuite,
     create_test_suite,
 )
 
 # Mutation testing
-from HoloLoom.prompting.testing.mutation_testing import (
+from hololoom.prompting.testing.mutation_testing import (
     MutationType,
     Mutation,
     PromptMutator,
@@ -38,19 +38,19 @@ from HoloLoom.prompting.testing.mutation_testing import (
 )
 
 # Golden dataset management
-from HoloLoom.prompting.testing.golden_dataset import (
+from hololoom.prompting.testing.golden_dataset import (
     GoldenDatasetManager,
     create_golden_dataset,
 )
 
 # Regression detection
-from HoloLoom.prompting.testing.regression_testing import (
+from hololoom.prompting.testing.regression_testing import (
     RegressionDetector,
     create_regression_detector,
 )
 
 # Metrics collection
-from HoloLoom.prompting.testing.metrics_collector import (
+from hololoom.prompting.testing.metrics_collector import (
     MetricsCollector,
     MetricType,
     Metric,
@@ -59,7 +59,7 @@ from HoloLoom.prompting.testing.metrics_collector import (
 )
 
 # Golden chain datasets (December 2025)
-from HoloLoom.prompting.testing.golden_chains import (
+from hololoom.prompting.testing.golden_chains import (
     GoldenPair,
     TestDifficulty,
     CHAIN_GOLDEN_DATASETS,

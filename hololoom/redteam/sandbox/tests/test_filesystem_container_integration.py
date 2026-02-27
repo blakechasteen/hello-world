@@ -3,7 +3,7 @@ Integration tests for Filesystem & Container Sandbox System
 Tests complete isolation workflows with fallback handling.
 
 Status: Production Ready (November 2025)
-Location: HoloLoom/redteam/sandbox/tests/test_filesystem_container_integration.py
+Location: hololoom/redteam/sandbox/tests/test_filesystem_container_integration.py
 Tests: 12/12 passing (100%)
 """
 
@@ -14,7 +14,7 @@ import os
 from pathlib import Path
 
 # Import modules
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     FilesystemSandbox, FilesystemSandboxConfig, FilesystemBackend,
     ContainerExecutor, ContainerSandboxConfig, ResourceLimits,
     create_filesystem_sandbox, execute_in_container,

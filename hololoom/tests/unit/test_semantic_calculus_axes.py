@@ -25,7 +25,7 @@ import pytest
 import numpy as np
 from unittest.mock import Mock
 
-from HoloLoom.semantic_calculus.dimensions import (
+from hololoom.semantic_calculus.dimensions import (
     SemanticDimension, STANDARD_DIMENSIONS
 )
 

@@ -24,8 +24,8 @@ import pytest
 import numpy as np
 from unittest.mock import patch
 
-from HoloLoom.policy.thompson_sampling import TSBandit
-from HoloLoom.protocols.types import BanditStrategy
+from hololoom.policy.thompson_sampling import TSBandit
+from hololoom.protocols.types import BanditStrategy
 
 
 # ============================================================================

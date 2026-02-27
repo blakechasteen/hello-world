@@ -10,7 +10,7 @@ import logging
 from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass
 
-from HoloLoom.causal import CausalDAG
+from hololoom.causal import CausalDAG
 
 logger = logging.getLogger(__name__)
 

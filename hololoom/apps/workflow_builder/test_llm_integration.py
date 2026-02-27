@@ -20,7 +20,7 @@ async def test_llm_integration():
     # Test 1: Check imports
     print("\n1. Testing imports...")
     try:
-        from HoloLoom.apps.workflow_builder.llm_executor import execute_llm_agent
+        from hololoom.apps.workflow_builder.llm_executor import execute_llm_agent
         print("   [OK] llm_executor imports successfully")
     except ImportError as e:
         print(f"   [FAIL] Failed to import llm_executor: {e}")
@@ -29,7 +29,7 @@ async def test_llm_integration():
     # Test 2: Check workflow_executor has LLM support
     print("\n2. Testing workflow_executor integration...")
     try:
-        from HoloLoom.apps.workflow_builder.workflow_executor import LLM_AGENTS_AVAILABLE
+        from hololoom.apps.workflow_builder.workflow_executor import LLM_AGENTS_AVAILABLE
         if LLM_AGENTS_AVAILABLE:
             print("   [OK] LLM agents available in workflow_executor")
         else:
@@ -76,7 +76,7 @@ async def test_llm_integration():
     }
 
     inputs = {
-        'text': 'Say "Hello from HoloLoom LLM integration!" and nothing else.'
+        'text': 'Say "Hello from hololoom LLM integration!" and nothing else.'
     }
 
     try:
@@ -106,7 +106,7 @@ async def test_structured_llm():
     """Test structured output LLM"""
     print("\n4. Testing Structured Output LLM...")
 
-    from HoloLoom.apps.workflow_builder.llm_executor import execute_llm_agent
+    from hololoom.apps.workflow_builder.llm_executor import execute_llm_agent
 
     import os
     import json

@@ -14,7 +14,7 @@ Author: Claude Code
 Date: 2025-11-22
 
 Quick Start:
-    >>> from HoloLoom.context_packing import ContextPacker, ContextPackerConfig
+    >>> from hololoom.context_packing import ContextPacker, ContextPackerConfig
     >>>
     >>> config = ContextPackerConfig.balanced()  # 40-60% savings
     >>> packer = ContextPacker(config)
@@ -31,7 +31,7 @@ Quick Start:
     >>> print(f"Compression ratio: {result.compression_ratio:.1%}")
 
 Phase 5 Information-Theoretic Packing:
-    >>> from HoloLoom.context_packing import information_budget_pack
+    >>> from hololoom.context_packing import information_budget_pack
     >>>
     >>> nodes, scales, mi_scores = information_budget_pack(
     ...     query="What is Thompson Sampling?",

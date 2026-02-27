@@ -3,7 +3,7 @@
   "name": "Self-Healing Research Pipeline",
   "description": "Uses Thompson Sampling to dynamically select best strategy based on query characteristics. Automatically heals low-confidence paths.",
   "tags": ["research", "adaptive", "thompson-sampling", "self-healing"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-23",
 
   "nodes": [

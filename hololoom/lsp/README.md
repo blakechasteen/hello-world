@@ -24,13 +24,13 @@ python -c "import pygls; print('pygls installed:', pygls.__version__)"
 
 ```bash
 # Start on stdio (standard input/output for editors)
-PYTHONPATH=. python -m HoloLoom.lsp.server
+PYTHONPATH=. python -m hololoom.lsp.server
 
 # Or with explicit log level
-PYTHONPATH=. python -m HoloLoom.lsp.server --log-level INFO
+PYTHONPATH=. python -m hololoom.lsp.server --log-level INFO
 
 # Or start on TCP port (for testing/debugging)
-PYTHONPATH=. python -m HoloLoom.lsp.server --port 8080
+PYTHONPATH=. python -m hololoom.lsp.server --port 8080
 ```
 
 The server will start and wait for LSP client connections.
@@ -47,7 +47,7 @@ The server will start and wait for LSP client connections.
   "lsp": {
     "hololoom": {
       "command": "python",
-      "args": ["-m", "HoloLoom.lsp.server"],
+      "args": ["-m", "hololoom.lsp.server"],
       "languages": ["python"],
       "initializationOptions": {}
     }
@@ -64,7 +64,7 @@ The server will start and wait for LSP client connections.
 local lspconfig = require('lspconfig')
 
 lspconfig.hololoom.setup {
-    cmd = {"python", "-m", "HoloLoom.lsp.server"},
+    cmd = {"python", "-m", "hololoom.lsp.server"},
     filetypes = {"python"},
 }
 ```
@@ -76,7 +76,7 @@ lspconfig.hololoom.setup {
 (lsp-register-client
  (make-lsp-client
   :new-connection (lsp-stdio-connection
-                   '("python" "-m" "HoloLoom.lsp.server"))
+                   '("python" "-m" "hololoom.lsp.server"))
   :major-modes '(python-mode)
   :server-id 'hololoom-lsp))
 ```
@@ -87,7 +87,7 @@ Use an LSP test client:
 
 ```bash
 # Terminal 1: Start the server on TCP
-PYTHONPATH=. python -m HoloLoom.lsp.server --port 8080
+PYTHONPATH=. python -m hololoom.lsp.server --port 8080
 
 # Terminal 2: Test with a simple LSP client
 python -c "
@@ -122,14 +122,14 @@ sock.close()
 
 ```bash
 # Create tests/test_lsp_server.py
-PYTHONPATH=. python -m pytest HoloLoom/lsp/tests/ -v
+PYTHONPATH=. python -m pytest hololoom/lsp/tests/ -v
 ```
 
 ### Integration Testing
 
 ```bash
 # 1. Start server in background
-PYTHONPATH=. python -m HoloLoom.lsp.server --log-level DEBUG &
+PYTHONPATH=. python -m hololoom.lsp.server --log-level DEBUG &
 SERVER_PID=$!
 
 # 2. Run LSP client tests
@@ -145,7 +145,7 @@ Open server logs while using the LSP features:
 
 ```bash
 # Terminal 1: Start server with debug logging
-PYTHONPATH=. python -m HoloLoom.lsp.server --log-level DEBUG
+PYTHONPATH=. python -m hololoom.lsp.server --log-level DEBUG
 
 # Terminal 2: Open your editor
 # Trigger completion, hover, etc.
@@ -199,7 +199,7 @@ The following LSP handlers are implemented as stubs (ready for integration):
 
 #### `textDocument/completion` (Completion)
 - **When**: User presses Ctrl+Space or types `.`
-- **Returns**: List of completion items from HoloLoom memories
+- **Returns**: List of completion items from hololoom memories
 - **Status**: Placeholder returns hardcoded items
 - **TODO**: Query HoloLoom for context-aware completions
 
@@ -271,7 +271,7 @@ Example logs:
 ### Command-Line Arguments
 
 ```bash
-python -m HoloLoom.lsp.server [OPTIONS]
+python -m hololoom.lsp.server [OPTIONS]
 
 Options:
   --port PORT           TCP port to listen on (default: stdio)
@@ -309,7 +309,7 @@ Add to `.vscode/settings.json`:
   "lsp": {
     "hololoom": {
       "command": "python",
-      "args": ["-m", "HoloLoom.lsp.server", "--log-level", "DEBUG"],
+      "args": ["-m", "hololoom.lsp.server", "--log-level", "DEBUG"],
       "languages": ["python"],
       "initializationOptions": {},
       "trace.server": "verbose"
@@ -324,7 +324,7 @@ Add to `init.lua`:
 
 ```lua
 require('lspconfig').hololoom.setup {
-    cmd = {"python", "-m", "HoloLoom.lsp.server"},
+    cmd = {"python", "-m", "hololoom.lsp.server"},
     filetypes = {"python"},
     root_dir = require('lspconfig').util.root_pattern(".git", "setup.py", "pyproject.toml"),
     single_file_support = true,
@@ -354,7 +354,7 @@ pip install pygls
 
 **Solution**: Run with PYTHONPATH:
 ```bash
-PYTHONPATH=. python -m HoloLoom.lsp.server
+PYTHONPATH=. python -m hololoom.lsp.server
 ```
 
 ### No Completions Appearing
@@ -365,7 +365,7 @@ PYTHONPATH=. python -m HoloLoom.lsp.server
 
 **Temporary workaround**: Check server logs:
 ```bash
-PYTHONPATH=. python -m HoloLoom.lsp.server --log-level DEBUG
+PYTHONPATH=. python -m hololoom.lsp.server --log-level DEBUG
 ```
 
 ### Editor Won't Connect
@@ -386,12 +386,12 @@ telnet 127.0.0.1 8080
 
 **Monitor**: CPU and memory usage
 ```bash
-ps aux | grep "HoloLoom.lsp"
+ps aux | grep "hololoom.lsp"
 ```
 
 **Profile**: With log-level DEBUG
 ```bash
-PYTHONPATH=. python -m HoloLoom.lsp.server --log-level DEBUG 2>&1 | tee lsp.log
+PYTHONPATH=. python -m hololoom.lsp.server --log-level DEBUG 2>&1 | tee lsp.log
 ```
 
 ## Development
@@ -437,7 +437,7 @@ When integrating HoloLoom components:
 
 ```python
 # In Python shell
-from HoloLoom.lsp.server import server, initialize, completion
+from hololoom.lsp.server import server, initialize, completion
 from pygls.lsp import InitializeParams, CompletionParams, Position
 
 # Mock params
@@ -478,7 +478,7 @@ print([item.label for item in items.items])
 - **LSP Specification**: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
 - **pygls Documentation**: https://pygls.readthedocs.io/
 - **HoloLoom Architecture**: See `HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md`
-- **Weaving Orchestrator**: See `HoloLoom/weaving_orchestrator.py`
+- **Weaving Orchestrator**: See `hololoom/weaving_orchestrator.py`
 
 ## License
 

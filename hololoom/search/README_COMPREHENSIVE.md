@@ -1,7 +1,7 @@
 # HoloLoom Search Module - Comprehensive Documentation
 
 **Status**: Production Ready (December 2025)
-**Location**: `HoloLoom/search/` (6 core modules, ~90,000+ lines total)
+**Location**: `hololoom/search/` (6 core modules, ~90,000+ lines total)
 **Performance**: 6-50× faster than traditional search via Matryoshka + adaptive caching
 **Test Coverage**: Unit, integration, and end-to-end tests for all components
 
@@ -85,7 +85,7 @@ Final Result (with sources & citations)
 ### 1. Basic Matryoshka Search
 
 ```python
-from HoloLoom.search import MatryoshkaWebSearch, SearchConfig
+from hololoom.search import MatryoshkaWebSearch, SearchConfig
 
 # Create search engine
 config = SearchConfig(
@@ -117,7 +117,7 @@ print(f"Cache hit rate: {stats['cache_hit_rate']:.1%}")
 ### 2. Agentic Search with Auto-Routing
 
 ```python
-from HoloLoom.search import SearchOrchestrator, SearchQuery
+from hololoom.search import SearchOrchestrator, SearchQuery
 
 # Create orchestrator (handles all agents)
 orchestrator = SearchOrchestrator()
@@ -149,8 +149,8 @@ result = await orchestrator.search(
 ### 3. Search with Citations
 
 ```python
-from HoloLoom.search import MatryoshkaWebSearch
-from HoloLoom.search import CitationFormatter, CitationStyle
+from hololoom.search import MatryoshkaWebSearch
+from hololoom.search import CitationFormatter, CitationStyle
 
 search = MatryoshkaWebSearch(config=config)
 formatter = CitationFormatter(style=CitationStyle.INLINE_NUMERIC)
@@ -177,7 +177,7 @@ print(cited_text)
 ### 4. Search + Convert to Memory Shards
 
 ```python
-from HoloLoom.search import MatryoshkaWebSearch
+from hololoom.search import MatryoshkaWebSearch
 
 search = MatryoshkaWebSearch(config=config)
 
@@ -199,7 +199,7 @@ async with HoloLoom() as loom:
 ### 5. Integrated Web Crawler + Search
 
 ```python
-from HoloLoom.search import WebCrawlerSearch, WebCrawlerSearchConfig
+from hololoom.search import WebCrawlerSearch, WebCrawlerSearchConfig
 
 # Deep exploration: search + crawl + extract
 config = WebCrawlerSearchConfig(
@@ -569,8 +569,8 @@ With caching:
 ### 1. With HoloLoom Memory
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.search import MatryoshkaWebSearch
+from hololoom import hololoom
+from hololoom.search import MatryoshkaWebSearch
 
 # Search and add to memory
 search = MatryoshkaWebSearch(config=config)
@@ -590,8 +590,8 @@ async with HoloLoom() as loom:
 ### 2. With HoloLoom Weaving
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.search import MatryoshkaWebSearch, SearchConfig
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.search import MatryoshkaWebSearch, SearchConfig
 
 # Get search results
 search = MatryoshkaWebSearch(config=config)
@@ -605,8 +605,8 @@ spacetime = await orchestrator.weave(query)
 ### 3. With RAG System
 
 ```python
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.search import MatryoshkaWebSearch
+from hololoom.rag import SimpleRAG
+from hololoom.search import MatryoshkaWebSearch
 
 # Get fresh search results
 search = MatryoshkaWebSearch(config=config)
@@ -624,8 +624,8 @@ result = await rag.query(query)
 ### 4. With Agentic Reasoning
 
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator
-from HoloLoom.search import MatryoshkaWebSearch
+from hololoom.agentic import create_agentic_orchestrator
+from hololoom.search import MatryoshkaWebSearch
 
 # Create agentic system
 orchestrator = await create_agentic_orchestrator(config, shards)
@@ -766,23 +766,23 @@ class WebCrawlerSearchConfig:
 
 ```bash
 # Unit tests (fast, isolated)
-pytest HoloLoom/search/tests/test_protocol.py -v
-pytest HoloLoom/search/tests/test_matryoshka.py -v
-pytest HoloLoom/search/tests/test_cache.py -v
-pytest HoloLoom/search/tests/test_citation.py -v
+pytest hololoom/search/tests/test_protocol.py -v
+pytest hololoom/search/tests/test_matryoshka.py -v
+pytest hololoom/search/tests/test_cache.py -v
+pytest hololoom/search/tests/test_citation.py -v
 
 # Integration tests (multi-component)
-pytest HoloLoom/search/tests/test_orchestrator.py -v
-pytest HoloLoom/search/tests/test_crawler_integration.py -v
+pytest hololoom/search/tests/test_orchestrator.py -v
+pytest hololoom/search/tests/test_crawler_integration.py -v
 
 # All tests
-pytest HoloLoom/search/ -v
+pytest hololoom/search/ -v
 ```
 
 ### Mock Provider for Testing
 
 ```python
-from HoloLoom.search.providers import MockSearchProvider, create_provider
+from hololoom.search.providers import MockSearchProvider, create_provider
 
 # Use mock provider (no API key needed)
 config = SearchConfig(provider="mock")

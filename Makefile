@@ -26,8 +26,8 @@ UVICORN := $(PYTHON) -m uvicorn
 PROJECT_NAME := hololoom
 PYTHON_VERSION := 3.10+
 ROOT_DIR := $(CURDIR)
-SRC_DIR := $(ROOT_DIR)/HoloLoom
-TESTS_DIR := $(ROOT_DIR)/HoloLoom/tests
+SRC_DIR := $(ROOT_DIR)/hololoom
+TESTS_DIR := $(ROOT_DIR)/hololoom/tests
 DEMOS_DIR := $(ROOT_DIR)/demos
 DOCS_DIR := $(ROOT_DIR)/docs
 BUILD_DIR := $(ROOT_DIR)/build
@@ -244,24 +244,24 @@ serve-docs:  ## Serve documentation locally
 server:  ## Start API server (port 8000)
 	@echo "$(BLUE)Starting HoloLoom API server on http://localhost:8000$(RESET)"
 	@echo "$(YELLOW)Documentation available at http://localhost:8000/docs$(RESET)"
-	PYTHONPATH=. $(UVICORN) HoloLoom.server.agentic_api:app --host 127.0.0.1 --port 8000
+	PYTHONPATH=. $(UVICORN) hololoom.server.agentic_api:app --host 127.0.0.1 --port 8000
 
 server-dev:  ## Start server with auto-reload
 	@echo "$(BLUE)Starting HoloLoom API server with auto-reload on http://localhost:8000$(RESET)"
 	@echo "$(YELLOW)The server will restart when code changes$(RESET)"
-	PYTHONPATH=. $(UVICORN) HoloLoom.server.agentic_api:app --host 127.0.0.1 --port 8000 --reload
+	PYTHONPATH=. $(UVICORN) hololoom.server.agentic_api:app --host 127.0.0.1 --port 8000 --reload
 
 server-workflow:  ## Start workflow executor (port 8001)
 	@echo "$(BLUE)Starting workflow executor on http://localhost:8001$(RESET)"
-	PYTHONPATH=. $(PYTHON) HoloLoom/web_dashboard/workflow_executor.py
+	PYTHONPATH=. $(PYTHON) hololoom/web_dashboard/workflow_executor.py
 
 mcp-memory:  ## Start memory MCP server
 	@echo "$(BLUE)Starting memory MCP server...$(RESET)"
-	PYTHONPATH=. $(PYTHON) HoloLoom/server/mcp_memory.py
+	PYTHONPATH=. $(PYTHON) hololoom/server/mcp_memory.py
 
 mcp-search:  ## Start search MCP server
 	@echo "$(BLUE)Starting search MCP server...$(RESET)"
-	PYTHONPATH=. $(PYTHON) HoloLoom/server/mcp_search.py
+	PYTHONPATH=. $(PYTHON) hololoom/server/mcp_search.py
 
 # =============================================================================
 # VALIDATION & BENCHMARKING
@@ -285,7 +285,7 @@ experiments:  ## Run automated experiments suite
 
 benchmark:  ## Run performance benchmarks
 	@echo "$(BLUE)Running performance benchmarks...$(RESET)"
-	PYTHONPATH=. $(PYTHON) -m pytest HoloLoom/tests/ -v --benchmark-only
+	PYTHONPATH=. $(PYTHON) -m pytest hololoom/tests/ -v --benchmark-only
 	@echo "$(GREEN)✓ Benchmarks complete$(RESET)"
 
 # =============================================================================
@@ -328,8 +328,8 @@ version:  ## Show version information
 	@echo "  Root Directory: $(ROOT_DIR)"
 	@echo ""
 	@echo "$(BLUE)Package Version:$(RESET)"
-	@$(PYTHON) -c "from HoloLoom import __version__" 2>/dev/null && \
-		$(PYTHON) -c "from HoloLoom import __version__; print('  HoloLoom: ' + __version__)" || \
+	@$(PYTHON) -c "from hololoom import __version__" 2>/dev/null && \
+		$(PYTHON) -c "from hololoom import __version__; print('  HoloLoom: ' + __version__)" || \
 		echo "  HoloLoom: Unable to determine version"
 	@echo ""
 	@echo "$(BLUE)Python Information:$(RESET)"

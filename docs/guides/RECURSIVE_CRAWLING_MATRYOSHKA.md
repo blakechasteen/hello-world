@@ -48,7 +48,7 @@ Layer 3 (Deep Links)
 ### Basic Usage
 
 ```python
-from HoloLoom.spinningWheel.recursive_crawler import crawl_recursive
+from hololoom.spinningWheel.recursive_crawler import crawl_recursive
 
 # Crawl article + related pages
 pages = await crawl_recursive(
@@ -67,7 +67,7 @@ for page in pages:
 ### Custom Thresholds
 
 ```python
-from HoloLoom.spinningWheel.recursive_crawler import RecursiveCrawler, CrawlConfig
+from hololoom.spinningWheel.recursive_crawler import RecursiveCrawler, CrawlConfig
 
 # Very strict gating
 config = CrawlConfig(

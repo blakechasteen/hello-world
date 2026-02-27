@@ -28,7 +28,7 @@ Research Basis:
 - Universal feature hypothesis
 
 Usage:
-    from HoloLoom.dark_trace.models import (
+    from hololoom.dark_trace.models import (
         # Adapter protocol
         ModelAdapter,
         ActivationHook,
@@ -59,7 +59,7 @@ Usage:
     similarity = compare_fingerprints(fp1, fp2)
 """
 
-from HoloLoom.dark_trace.models.adapter import (
+from hololoom.dark_trace.models.adapter import (
     ModelAdapter,
     ActivationHook,
     HookHandle,
@@ -73,18 +73,18 @@ from HoloLoom.dark_trace.models.adapter import (
     make_cache_key,
 )
 
-from HoloLoom.dark_trace.models.policy_adapter import (
+from hololoom.dark_trace.models.policy_adapter import (
     PolicyAdapter,
     PolicyLayerType,
 )
 
-from HoloLoom.dark_trace.models.transformer_adapter import (
+from hololoom.dark_trace.models.transformer_adapter import (
     TransformerAdapter,
     TransformerLayerType,
     get_layer_names,
 )
 
-from HoloLoom.dark_trace.models.fingerprint import (
+from hololoom.dark_trace.models.fingerprint import (
     FeatureFingerprint,
     ModelFingerprinter,
     FingerprintConfig,

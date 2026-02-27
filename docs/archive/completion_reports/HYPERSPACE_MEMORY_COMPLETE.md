@@ -121,7 +121,7 @@ for memory in all_memories:
 ### File Structure
 
 ```
-HoloLoom/memory/stores/
+hololoom/memory/stores/
 ├── hybrid_neo4j_qdrant.py    # Main hybrid store (Production)
 ├── neo4j_vector_store.py      # Neo4j with vector support
 ├── qdrant_store.py            # Qdrant multi-scale vectors
@@ -135,7 +135,7 @@ Tests:
 ### Usage
 
 ```python
-from HoloLoom.memory.stores.hybrid_neo4j_qdrant import (
+from hololoom.memory.stores.hybrid_neo4j_qdrant import (
     HybridNeo4jQdrant,
     Memory,
     MemoryQuery,
@@ -447,5 +447,5 @@ We built a **production-ready, token-efficient, hybrid memory system** that:
 
 *Documentation generated: 2025-10-24*
 *Test suite: test_hybrid_eval.py*
-*Implementation: HoloLoom/memory/stores/hybrid_neo4j_qdrant.py*
+*Implementation: hololoom/memory/stores/hybrid_neo4j_qdrant.py*
 *Architecture: LOOM_MEMORY_INTEGRATION.md*

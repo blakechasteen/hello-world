@@ -3,19 +3,19 @@ Memory Protocols - Protocol-based interfaces for memory backends.
 All backends implement MemoryStore protocol for easy extension.
 
 UPDATED (Phase 0, Task 7): This module now imports canonical types and protocols
-from HoloLoom.core.protocols instead of defining them locally.
+from hololoom.core.protocols instead of defining them locally.
 
-Import from here for backward compatibility, or import directly from HoloLoom.core.protocols.
+Import from here for backward compatibility, or import directly from hololoom.core.protocols.
 """
 
 import os
 import logging
 from typing import List, Dict, Optional, Any
 
-from HoloLoom.utils.security import sanitize_uri
+from hololoom.utils.security import sanitize_uri
 
 # Import canonical types and protocols
-from HoloLoom.core.protocols import (
+from hololoom.core.protocols import (
     Memory,
     MemoryQuery,
     MemoryRetrievalResult as RetrievalResult,  # Alias for backward compatibility
@@ -57,7 +57,7 @@ async def create_unified_memory(
     - Supports explicit backend selection
     - Handles configuration files
     - Provides graceful degradation with logging
-    - Constructs UnifiedMemory from HoloLoom.core.memory.unified
+    - Constructs UnifiedMemory from hololoom.core.memory.unified
 
     Args:
         user_id: User identifier passed to UnifiedMemory constructor
@@ -98,7 +98,7 @@ async def create_unified_memory(
     
     # Try to import UnifiedMemory
     try:
-        from HoloLoom.core.memory.unified import UnifiedMemory
+        from hololoom.core.memory.unified import UnifiedMemory
     except ImportError as e:
         raise ImportError(
             f"UnifiedMemory implementation not available: {e}\n"

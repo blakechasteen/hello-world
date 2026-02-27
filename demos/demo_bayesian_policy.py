@@ -23,10 +23,10 @@ import numpy as np
 import time
 from typing import List
 
-from HoloLoom.config import Config
-from HoloLoom.policy.unified import create_policy, BanditStrategy
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Features, Context
+from hololoom.config import Config
+from hololoom.policy.unified import create_policy, BanditStrategy
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Features, Context
 
 
 # ============================================================================
@@ -370,8 +370,8 @@ async def main():
     print("  • Performance overhead: ~10× (MC sampling)")
 
     print("\n🔧 Usage in Production:")
-    print("  from HoloLoom.config import Config")
-    print("  from HoloLoom.policy.unified import create_policy")
+    print("  from hololoom.config import Config")
+    print("  from hololoom.policy.unified import create_policy")
     print("")
     print("  config = Config.fused()")
     print("  config.use_bayesian = True  # Enable uncertainty quantification")

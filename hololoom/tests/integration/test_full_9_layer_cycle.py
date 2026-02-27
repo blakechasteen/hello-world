@@ -32,10 +32,10 @@ import time
 from datetime import datetime
 from typing import List
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config, ExecutionMode
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
 
 # ============================================================================

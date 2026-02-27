@@ -15,7 +15,7 @@ The test suite validates all HoloLoom components through **387+ tests** organize
 ## Test Organization
 
 ```
-HoloLoom/tests/
+hololoom/tests/
 ├── conftest.py         # Central fixtures, mocks, performance budgets
 ├── unit/               # Fast isolated tests (<500ms)
 │   ├── test_config.py
@@ -43,34 +43,34 @@ HoloLoom/tests/
 
 ### All Tests
 ```bash
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 ```
 
 ### By Tier
 ```bash
 # Unit tests (fast, <5s total)
-pytest HoloLoom/tests/unit/ -v
+pytest hololoom/tests/unit/ -v
 
 # Integration tests (medium, <30s total)
-pytest HoloLoom/tests/integration/ -v
+pytest hololoom/tests/integration/ -v
 
 # E2E tests (slow, <5min total)
-pytest HoloLoom/tests/e2e/ -v
+pytest hololoom/tests/e2e/ -v
 ```
 
 ### Specific Test File
 ```bash
-pytest HoloLoom/tests/e2e/test_concurrent_queries.py -v
+pytest hololoom/tests/e2e/test_concurrent_queries.py -v
 ```
 
 ### Specific Test
 ```bash
-pytest HoloLoom/tests/e2e/test_concurrent_queries.py::TestParallelQueryExecution::test_concurrent_weave_calls -v
+pytest hololoom/tests/e2e/test_concurrent_queries.py::TestParallelQueryExecution::test_concurrent_weave_calls -v
 ```
 
 ### With Performance Budget Warnings
 ```bash
-pytest HoloLoom/tests/ -v -W default::UserWarning
+pytest hololoom/tests/ -v -W default::UserWarning
 ```
 
 ## Test Statistics
@@ -87,37 +87,37 @@ pytest HoloLoom/tests/ -v -W default::UserWarning
 ### test_config.py (20/20 passing)
 **Coverage**: Configuration system (BARE/FAST/FUSED modes)
 ```bash
-pytest HoloLoom/tests/unit/test_config.py -v
+pytest hololoom/tests/unit/test_config.py -v
 ```
 
 ### test_weaving_shuttle.py (14/14 passing)
 **Coverage**: Backward compatibility shim
 ```bash
-pytest HoloLoom/tests/unit/test_weaving_shuttle.py -v
+pytest hololoom/tests/unit/test_weaving_shuttle.py -v
 ```
 
 ### test_unified_policy.py (60+ assertions)
 **Coverage**: Neural decision-making, Thompson Sampling
 ```bash
-pytest HoloLoom/tests/unit/test_unified_policy.py -v
+pytest hololoom/tests/unit/test_unified_policy.py -v
 ```
 
 ### test_embedding_spectral.py (32/32 passing, 60+ assertions)
 **Coverage**: Matryoshka embeddings, spectral features
 ```bash
-pytest HoloLoom/tests/unit/test_embedding_spectral.py -v
+pytest hololoom/tests/unit/test_embedding_spectral.py -v
 ```
 
 ### test_memory_graph.py (80+ assertions)
 **Coverage**: NetworkX knowledge graph operations
 ```bash
-pytest HoloLoom/tests/unit/test_memory_graph.py -v
+pytest hololoom/tests/unit/test_memory_graph.py -v
 ```
 
 ### test_memory_cache.py (70+ assertions)
 **Coverage**: BM25 and vector retrieval with caching
 ```bash
-pytest HoloLoom/tests/unit/test_memory_cache.py -v
+pytest hololoom/tests/unit/test_memory_cache.py -v
 ```
 
 ## E2E Tests (9 files, 143 tests)
@@ -125,55 +125,55 @@ pytest HoloLoom/tests/unit/test_memory_cache.py -v
 ### test_error_handling.py (20 tests)
 **Coverage**: Graceful degradation, network failures, invalid inputs
 ```bash
-pytest HoloLoom/tests/e2e/test_error_handling.py -v
+pytest hololoom/tests/e2e/test_error_handling.py -v
 ```
 
 ### test_concurrent_queries.py (20 tests)
 **Coverage**: 100 concurrent queries, race conditions, deadlock prevention
 ```bash
-pytest HoloLoom/tests/e2e/test_concurrent_queries.py -v
+pytest hololoom/tests/e2e/test_concurrent_queries.py -v
 ```
 
 ### test_performance_profile.py (15 tests)
 **Coverage**: Latency, memory profiling, throughput, scaling
 ```bash
-pytest HoloLoom/tests/e2e/test_performance_profile.py -v
+pytest hololoom/tests/e2e/test_performance_profile.py -v
 ```
 
 ### test_reflection_loop.py (20 tests)
 **Coverage**: Thompson Sampling, pattern extraction, learning
 ```bash
-pytest HoloLoom/tests/e2e/test_reflection_loop.py -v
+pytest hololoom/tests/e2e/test_reflection_loop.py -v
 ```
 
 ### test_memory_growth.py (10 tests)
 **Coverage**: Leak detection (500 queries), long sessions
 ```bash
-pytest HoloLoom/tests/e2e/test_memory_growth.py -v
+pytest hololoom/tests/e2e/test_memory_growth.py -v
 ```
 
 ### test_persistence.py (10 tests)
 **Coverage**: Checkpoint save/load, state recovery
 ```bash
-pytest HoloLoom/tests/e2e/test_persistence.py -v
+pytest hololoom/tests/e2e/test_persistence.py -v
 ```
 
 ### test_edge_cases.py (17 tests)
 **Coverage**: Unicode, 50K char inputs, emoji, pathological patterns
 ```bash
-pytest HoloLoom/tests/e2e/test_edge_cases.py -v
+pytest hololoom/tests/e2e/test_edge_cases.py -v
 ```
 
 ### test_cache_effectiveness.py (15 tests)
 **Coverage**: Hit rates, speedup validation, semantic caching
 ```bash
-pytest HoloLoom/tests/e2e/test_cache_effectiveness.py -v
+pytest hololoom/tests/e2e/test_cache_effectiveness.py -v
 ```
 
 ### test_integration_scenarios.py (12 tests)
 **Coverage**: Complete workflows, multi-turn conversations
 ```bash
-pytest HoloLoom/tests/e2e/test_integration_scenarios.py -v
+pytest hololoom/tests/e2e/test_integration_scenarios.py -v
 ```
 
 ## Test Infrastructure

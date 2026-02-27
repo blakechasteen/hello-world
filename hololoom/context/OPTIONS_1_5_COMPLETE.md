@@ -25,7 +25,7 @@ Integrated Part 5 production hardening features into the main `WeavingOrchestrat
 
 ### Files Modified
 
-**`HoloLoom/weaving_orchestrator.py`** (~400 lines added):
+**`hololoom/weaving_orchestrator.py`** (~400 lines added):
 1. **Imports** (lines 68-101): Graceful fallback for production features
 2. **Constructor parameters** (lines 424-431): 7 new optional parameters
 3. **Component initialization** (lines 497-513): Production components
@@ -47,8 +47,8 @@ Integrated Part 5 production hardening features into the main `WeavingOrchestrat
 ### Usage Example
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 
 config = Config.fused()
 
@@ -94,7 +94,7 @@ Production-ready Kubernetes manifests for deploying HoloLoom with full productio
 
 ### Files Created (11 files, ~3,500 lines)
 
-**HoloLoom/kubernetes/**:
+**hololoom/kubernetes/**:
 1. **namespace.yaml** (120 lines)
    - Namespace with ResourceQuota and LimitRange
    - Isolates HoloLoom resources
@@ -209,7 +209,7 @@ Comprehensive production documentation for operations, troubleshooting, and perf
 
 ### Files Created (3 files, ~3,300 lines)
 
-**HoloLoom/context/**:
+**hololoom/context/**:
 
 1. **OPERATIONS_RUNBOOK.md** (700 lines)
    - System overview and architecture
@@ -249,7 +249,7 @@ Comprehensive production documentation for operations, troubleshooting, and perf
 ### Documentation Structure
 
 ```
-HoloLoom/context/
+hololoom/context/
 ├── OPERATIONS_RUNBOOK.md          # Operations manual
 ├── TROUBLESHOOTING_GUIDE.md       # Debugging guide
 ├── PERFORMANCE_TUNING_GUIDE.md    # Optimization guide
@@ -291,7 +291,7 @@ Production-ready Grafana dashboards for monitoring HoloLoom.
 
 ### Files Created (2 files, ~800 lines)
 
-**HoloLoom/grafana/**:
+**hololoom/grafana/**:
 
 1. **overview-dashboard.json** (600 lines)
    - 11 panels covering key metrics
@@ -347,14 +347,14 @@ curl -X POST http://admin:admin@localhost:3000/api/dashboards/db \
 ### Option 1 Integration
 
 ```
-HoloLoom/
+hololoom/
 └── weaving_orchestrator.py (MODIFIED, ~400 lines added)
 ```
 
 ### Option 3 Kubernetes
 
 ```
-HoloLoom/kubernetes/
+hololoom/kubernetes/
 ├── namespace.yaml              (120 lines)
 ├── deployment.yaml             (350 lines)
 ├── service.yaml                (60 lines)
@@ -371,7 +371,7 @@ HoloLoom/kubernetes/
 ### Option 5 Documentation
 
 ```
-HoloLoom/context/
+hololoom/context/
 ├── OPERATIONS_RUNBOOK.md       (700 lines)
 ├── TROUBLESHOOTING_GUIDE.md    (1,200 lines)
 └── PERFORMANCE_TUNING_GUIDE.md (1,400 lines)
@@ -380,7 +380,7 @@ HoloLoom/context/
 ### Grafana Dashboards
 
 ```
-HoloLoom/grafana/
+hololoom/grafana/
 ├── overview-dashboard.json     (600 lines)
 └── README.md                   (200 lines)
 ```
@@ -405,7 +405,7 @@ HoloLoom/grafana/
 
 ```bash
 # Run integration tests
-PYTHONPATH=. python HoloLoom/context/test_integration_e2e.py
+PYTHONPATH=. python hololoom/context/test_integration_e2e.py
 
 # Expected output:
 # [PASS] Complete Production Scenario
@@ -587,7 +587,7 @@ PYTHONPATH=. python HoloLoom/context/test_integration_e2e.py
 **Thank you for using HoloLoom! 🚀**
 
 For questions or support:
-- **Documentation**: See guides in `HoloLoom/context/` and `HoloLoom/kubernetes/`
+- **Documentation**: See guides in `hololoom/context/` and `hololoom/kubernetes/`
 - **Issues**: https://github.com/yourusername/hololoom/issues
 - **Email**: support@hololoom.ai
 

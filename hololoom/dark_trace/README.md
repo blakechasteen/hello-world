@@ -38,9 +38,9 @@ Layer 1: OBSERVATION (darkTrace.observers)
 │ • DimensionTracker - 244D dimension activation tracking          │
 │ • FlowAnalyzer - Velocity, acceleration, curvature analysis      │
 └─────────────────────────────────────────────────────────────────┘
-              ▼ Uses: HoloLoom.semantic_calculus
-                      HoloLoom.semantic_calculus.analyzer
-                      HoloLoom.semantic_calculus.dimensions
+              ▼ Uses: hololoom.semantic_calculus
+                      hololoom.semantic_calculus.analyzer
+                      hololoom.semantic_calculus.dimensions
 
 Layer 2: ANALYSIS (darkTrace.analyzers)
 ┌─────────────────────────────────────────────────────────────────┐
@@ -49,9 +49,9 @@ Layer 2: ANALYSIS (darkTrace.analyzers)
 │ • AttractorDetector - Find stable semantic concepts              │
 │ • FingerprintGenerator - Create model-specific signatures        │
 └─────────────────────────────────────────────────────────────────┘
-              ▼ Uses: HoloLoom.semantic_calculus.system_id
-                      HoloLoom.semantic_calculus.flow_calculus
-                      HoloLoom.warp.math.meaning_synthesizer
+              ▼ Uses: hololoom.semantic_calculus.system_id
+                      hololoom.semantic_calculus.flow_calculus
+                      hololoom.warp.math.meaning_synthesizer
 
 Layer 3: CONTROL (darkTrace.controllers)
 ┌─────────────────────────────────────────────────────────────────┐
@@ -60,8 +60,8 @@ Layer 3: CONTROL (darkTrace.controllers)
 │ • ControlVectorGenerator - Generate control vectors              │
 │ • AttackVectorLibrary - Semantic attack patterns                 │
 └─────────────────────────────────────────────────────────────────┘
-              ▼ Uses: HoloLoom.policy.semantic_nudging
-                      HoloLoom.semantic_calculus.integrator
+              ▼ Uses: hololoom.policy.semantic_nudging
+                      hololoom.semantic_calculus.integrator
 
 Layer 4: EXPLOITATION (darkTrace.exploits)
 ┌─────────────────────────────────────────────────────────────────┐
@@ -110,12 +110,12 @@ darkTrace Module (new):
 darkTrace is **NOT** tied to specific applications:
 
 - ❌ **WRONG**: `narrative_analyzer` imports and modifies darkTrace
-- ✅ **RIGHT**: Both `narrative_analyzer` and `darkTrace` import from HoloLoom core
+- ✅ **RIGHT**: Both `narrative_analyzer` and `darkTrace` import from hololoom core
 
 ```python
 # Application code (narrative_analyzer, chatbot, etc.)
-from HoloLoom.darkTrace import SemanticObserver, TrajectoryPredictor
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.darkTrace import SemanticObserver, TrajectoryPredictor
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 # Application uses darkTrace through clean API
 observer = SemanticObserver(config=SemanticCalculusConfig.fused_narrative())
@@ -128,7 +128,7 @@ darkTrace provides **plugin system** for extensions:
 
 ```python
 # Custom analyzers
-from HoloLoom.darkTrace.plugins import AnalyzerPlugin
+from hololoom.darkTrace.plugins import AnalyzerPlugin
 
 class MyCustomAnalyzer(AnalyzerPlugin):
     def analyze(self, trajectory):
@@ -170,7 +170,7 @@ control:
 ## Module Structure
 
 ```
-HoloLoom/darkTrace/
+hololoom/darkTrace/
 │
 ├── README.md                    # This file
 ├── ARCHITECTURE.md              # Detailed architecture
@@ -250,7 +250,7 @@ HoloLoom/darkTrace/
 
 **API**:
 ```python
-from HoloLoom.darkTrace import SemanticObserver
+from hololoom.darkTrace import SemanticObserver
 
 observer = SemanticObserver(
     config=SemanticCalculusConfig.fused_general(),
@@ -273,9 +273,9 @@ for token in llm_stream:
 
 **Dependencies** (HoloLoom core only):
 ```python
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 ```
 
 ---
@@ -286,7 +286,7 @@ from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
 
 **API**:
 ```python
-from HoloLoom.darkTrace import TrajectoryPredictor
+from hololoom.darkTrace import TrajectoryPredictor
 
 predictor = TrajectoryPredictor(
     config=SemanticCalculusConfig.fused_general()
@@ -315,8 +315,8 @@ print(f"Most likely dimensions: {prediction.dominant_dimensions}")
 
 **Dependencies** (HoloLoom core only):
 ```python
-from HoloLoom.semantic_calculus.system_id import SemanticSystemIdentification
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.system_id import SemanticSystemIdentification
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
 ```
 
 ---
@@ -327,7 +327,7 @@ from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
 
 **API**:
 ```python
-from HoloLoom.darkTrace import FingerprintGenerator
+from hololoom.darkTrace import FingerprintGenerator
 
 fingerprinter = FingerprintGenerator()
 
@@ -353,8 +353,8 @@ print(f"Fingerprint similarity: {similarity}")
 
 **Dependencies** (HoloLoom core only):
 ```python
-from HoloLoom.semantic_calculus.flow_calculus import SemanticFlowCalculus
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.flow_calculus import SemanticFlowCalculus
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
 ```
 
 ---
@@ -365,7 +365,7 @@ from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
 
 **API**:
 ```python
-from HoloLoom.darkTrace import EmbeddingManipulator
+from hololoom.darkTrace import EmbeddingManipulator
 
 manipulator = EmbeddingManipulator(
     config=SemanticCalculusConfig.fused_general(),
@@ -398,9 +398,9 @@ if not safety_result.is_safe:
 
 **Dependencies** (HoloLoom core only):
 ```python
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.semantic_calculus.integrator import GeometricIntegrator
-from HoloLoom.policy.semantic_nudging import SemanticNudgePolicy
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.integrator import GeometricIntegrator
+from hololoom.policy.semantic_nudging import SemanticNudgePolicy
 ```
 
 ---
@@ -410,7 +410,7 @@ from HoloLoom.policy.semantic_nudging import SemanticNudgePolicy
 ### Configuration
 
 ```python
-from HoloLoom.darkTrace import DarkTraceConfig
+from hololoom.darkTrace import DarkTraceConfig
 
 config = DarkTraceConfig(
     # Observation settings
@@ -574,7 +574,7 @@ patterns = detector.get_known_patterns() -> List[JailbreakPattern]
 ### 1. Custom Analyzers
 
 ```python
-from HoloLoom.darkTrace.plugins import AnalyzerPlugin
+from hololoom.darkTrace.plugins import AnalyzerPlugin
 
 class MyCustomAnalyzer(AnalyzerPlugin):
     """Custom analyzer for domain-specific patterns."""
@@ -605,12 +605,12 @@ class MyCustomAnalyzer(AnalyzerPlugin):
         return "1.0.0"
 
 # Register plugin
-from HoloLoom.darkTrace import register_plugin
+from hololoom.darkTrace import register_plugin
 
 register_plugin("analyzer", MyCustomAnalyzer)
 
 # Use in code
-from HoloLoom.darkTrace import get_analyzer
+from hololoom.darkTrace import get_analyzer
 
 analyzer = get_analyzer("my_custom_analyzer", config={...})
 result = analyzer.analyze(trajectory)
@@ -619,7 +619,7 @@ result = analyzer.analyze(trajectory)
 ### 2. Custom Fingerprint Metrics
 
 ```python
-from HoloLoom.darkTrace.plugins import FingerprintMetricPlugin
+from hololoom.darkTrace.plugins import FingerprintMetricPlugin
 
 class MyFingerprintMetric(FingerprintMetricPlugin):
     """Custom metric for fingerprint comparison."""
@@ -643,7 +643,7 @@ class MyFingerprintMetric(FingerprintMetricPlugin):
         return "my_custom_metric"
 
 # Register and use
-from HoloLoom.darkTrace import FingerprintGenerator
+from hololoom.darkTrace import FingerprintGenerator
 
 generator = FingerprintGenerator()
 generator.register_metric("my_custom_metric", MyFingerprintMetric())
@@ -654,7 +654,7 @@ similarity = generator.compare(fp1, fp2, metric="my_custom_metric")
 ### 3. Custom Control Methods
 
 ```python
-from HoloLoom.darkTrace.plugins import ControlMethodPlugin
+from hololoom.darkTrace.plugins import ControlMethodPlugin
 
 class MyControlMethod(ControlMethodPlugin):
     """Custom embedding manipulation method."""
@@ -692,7 +692,7 @@ class MyControlMethod(ControlMethodPlugin):
         return "my_control_method"
 
 # Register and use
-from HoloLoom.darkTrace import EmbeddingManipulator
+from hololoom.darkTrace import EmbeddingManipulator
 
 manipulator = EmbeddingManipulator()
 manipulator.register_method("my_control_method", MyControlMethod())
@@ -714,8 +714,8 @@ modified = manipulator.manipulate(
 
 ```python
 # app.py (your application)
-from HoloLoom.darkTrace import SemanticObserver, TrajectoryPredictor
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.darkTrace import SemanticObserver, TrajectoryPredictor
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 class MyApplication:
     def __init__(self):
@@ -742,12 +742,12 @@ class MyApplication:
 
 ```python
 # research_pipeline.py
-from HoloLoom.darkTrace import (
+from hololoom.darkTrace import (
     TrajectoryRecorder,
     FingerprintGenerator,
     SafetyAnalyzer
 )
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 class ResearchPipeline:
     def __init__(self, config: SemanticCalculusConfig):
@@ -790,8 +790,8 @@ class ResearchPipeline:
 #   setup.py
 
 # my_analyzer.py
-from HoloLoom.darkTrace.plugins import AnalyzerPlugin
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.darkTrace.plugins import AnalyzerPlugin
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
 
 class DomainSpecificAnalyzer(AnalyzerPlugin):
     """Analyzer for domain-specific patterns."""
@@ -836,8 +836,8 @@ setup(
 ### Example 1: Real-Time LLM Monitoring
 
 ```python
-from HoloLoom.darkTrace import SemanticObserver
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.darkTrace import SemanticObserver
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 # Setup observer
 config = SemanticCalculusConfig.fused_dialogue()  # Optimized for conversation
@@ -863,8 +863,8 @@ observer.save_trajectory("quantum_computing_output.pkl")
 ### Example 2: Model Fingerprinting
 
 ```python
-from HoloLoom.darkTrace import FingerprintGenerator
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.darkTrace import FingerprintGenerator
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 # Collect outputs from different models
 claude_outputs = [claude.generate(prompt) for prompt in test_prompts]
@@ -894,8 +894,8 @@ print(f"Mystery model identified as: {identified}")
 ### Example 3: Trajectory Prediction
 
 ```python
-from HoloLoom.darkTrace import TrajectoryPredictor
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.darkTrace import TrajectoryPredictor
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 # Setup predictor
 config = SemanticCalculusConfig.fused_general()
@@ -926,7 +926,7 @@ prediction.plot(save_path="prediction.png")
 ### Example 4: Safety Analysis (Research)
 
 ```python
-from HoloLoom.darkTrace import SafetyAnalyzer, JailbreakDetector
+from hololoom.darkTrace import SafetyAnalyzer, JailbreakDetector
 
 # Safety analysis pipeline
 analyzer = SafetyAnalyzer()
@@ -977,7 +977,7 @@ entry_points = {
 ### Plugin Discovery
 
 ```python
-from HoloLoom.darkTrace import discover_plugins, list_plugins
+from hololoom.darkTrace import discover_plugins, list_plugins
 
 # Discover all installed plugins
 discover_plugins()
@@ -993,7 +993,7 @@ print(f"Available analyzers: {analyzers}")
 ### Plugin Loading
 
 ```python
-from HoloLoom.darkTrace import load_plugin
+from hololoom.darkTrace import load_plugin
 
 # Load plugin by name
 my_analyzer = load_plugin('analyzers', 'my_analyzer', config={...})
@@ -1004,7 +1004,7 @@ result = my_analyzer.analyze(trajectory)
 
 ### Plugin Development Guide
 
-See [`HoloLoom/darkTrace/plugins/DEVELOPMENT.md`](./plugins/DEVELOPMENT.md) for:
+See [`hololoom/darkTrace/plugins/DEVELOPMENT.md`](./plugins/DEVELOPMENT.md) for:
 - Plugin API reference
 - Development workflow
 - Testing guidelines
@@ -1131,7 +1131,7 @@ Same as HoloLoom (MIT License)
   title={darkTrace: Semantic Reverse Engineering of Large Language Models},
   author={HoloLoom Team},
   year={2025},
-  url={https://github.com/your-repo/HoloLoom/darkTrace}
+  url={https://github.com/your-repo/hololoom/darkTrace}
 }
 ```
 
@@ -1153,7 +1153,7 @@ Phase 9 adds support for interpretability across multiple model types through a 
 
 **ModelAdapter Protocol** (`models/adapter.py`):
 ```python
-from HoloLoom.dark_trace.models import ModelAdapter, LayerInfo, SteeringConfig
+from hololoom.dark_trace.models import ModelAdapter, LayerInfo, SteeringConfig
 
 class MyModelAdapter(ModelAdapter):
     def get_activations(self, inputs, layer):
@@ -1178,7 +1178,7 @@ acts = adapter.get_activations(inputs, "layer.5")
 Compare learned features across different model architectures:
 
 ```python
-from HoloLoom.dark_trace.models import (
+from hololoom.dark_trace.models import (
     ModelFingerprinter,
     compare_models,
     find_universal_features,
@@ -1215,7 +1215,7 @@ Phase 10 provides seamless integration with HoloLoom's weaving orchestrator.
 ### Quick Start
 
 ```python
-from HoloLoom.integrations import (
+from hololoom.integrations import (
     DarkTraceIntegration,
     IntegrationConfig,
     IntegrationMode,
@@ -1296,7 +1296,7 @@ if result.safety_blocked:
 ### Decorator Usage
 
 ```python
-from HoloLoom.integrations import with_interpretability, IntegrationMode
+from hololoom.integrations import with_interpretability, IntegrationMode
 
 class MyOrchestrator:
     @with_interpretability(mode=IntegrationMode.ACTIVE)

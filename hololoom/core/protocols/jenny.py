@@ -112,7 +112,7 @@ class JennyCompilerProtocol(Protocol):
         Compile Spacetime into UI specifications.
 
         Args:
-            spacetime: Woven output from HoloLoom weaving cycle
+            spacetime: Woven output from hololoom weaving cycle
             strategy: How aggressively to generate panels
             context: Optional user/session context for personalization
 
@@ -139,7 +139,7 @@ class JennyCompilerProtocol(Protocol):
         - Reduced time-to-first-panel
 
         Args:
-            spacetime: Woven output from HoloLoom weaving cycle
+            spacetime: Woven output from hololoom weaving cycle
             strategy: How aggressively to generate panels
             context: Optional user/session context
 

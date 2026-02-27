@@ -22,7 +22,7 @@ from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
 
-from HoloLoom.spinningWheel.ocr_protocol import (
+from hololoom.spinningWheel.ocr_protocol import (
     BaseOCRBackend,
     OCRResult,
     OCRQuality,

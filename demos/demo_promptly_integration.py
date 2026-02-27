@@ -24,10 +24,10 @@ from rich.table import Table
 from rich.syntax import Syntax
 from rich.markdown import Markdown
 
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
-from HoloLoom.protocols.recursive_reasoning import ReasoningStrategy
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
+from hololoom.protocols.recursive_reasoning import ReasoningStrategy
 
 
 console = Console()

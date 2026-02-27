@@ -381,9 +381,9 @@ This analysis used the following framework:
 ### Integration Test Script
 
 ```python
-# HoloLoom/departments/claude_code/tests/test_integration.py
+# hololoom/departments/claude_code/tests/test_integration.py
 import pytest
-from HoloLoom.apps.departments.claude_code import ClaudeCodeDepartment
+from hololoom.apps.departments.claude_code import ClaudeCodeDepartment
 
 @pytest.mark.asyncio
 async def test_code_query():

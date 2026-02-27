@@ -18,7 +18,7 @@ Safety Domains Mapped:
 - Corrigibility (resistance to correction)
 
 Usage:
-    from HoloLoom.dark_trace.integration.alignment import (
+    from hololoom.dark_trace.integration.alignment import (
         AlignmentBridge,
         create_alignment_bridge,
     )
@@ -40,8 +40,8 @@ from enum import Enum
 import numpy as np
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.engine import DarkTraceEngine
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
 
 class SafetyDimension(Enum):

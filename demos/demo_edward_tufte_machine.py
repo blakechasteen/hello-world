@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List
 from pathlib import Path
 
-from HoloLoom.visualization import (
+from hololoom.visualization import (
     DashboardConstructor,
     save_dashboard
 )

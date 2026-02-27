@@ -20,7 +20,7 @@ If you only want to use the Thompson Sampling bandit without the feedback store:
 
 ```python
 # No additional dependencies needed
-from HoloLoom.policy.thompson_sampling import TSBandit
+from hololoom.policy.thompson_sampling import TSBandit
 
 bandit = TSBandit(n_arms=5)
 ```
@@ -46,7 +46,7 @@ pip install aiosqlite numpy pytest pytest-asyncio
 ```python
 # Test import
 import asyncio
-from HoloLoom.reflection.feedback_store import FeedbackStore
+from hololoom.reflection.feedback_store import FeedbackStore
 
 async def test():
     async with FeedbackStore(db_path=":memory:") as store:

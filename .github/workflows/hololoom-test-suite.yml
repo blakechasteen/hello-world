@@ -4,14 +4,14 @@ on:
   push:
     branches: [ master, main, 'feature/**' ]
     paths:
-      - 'HoloLoom/**'
+      - 'hololoom/**'
       - 'tests/**'
       - '.github/workflows/hololoom-test-suite.yml'
       - 'requirements.txt'
   pull_request:
     branches: [ master, main ]
     paths:
-      - 'HoloLoom/**'
+      - 'hololoom/**'
       - 'tests/**'
   workflow_dispatch:  # Allow manual trigger
 
@@ -55,7 +55,7 @@ jobs:
 
       - name: Run Unit Tests
         run: |
-          python -m pytest HoloLoom/tests/unit/ -v \
+          python -m pytest hololoom/tests/unit/ -v \
             --timeout=30 \
             --tb=short \
             -x  # Stop on first failure for fast feedback
@@ -63,18 +63,18 @@ jobs:
 
       - name: Run Policy Tests
         run: |
-          python -m pytest HoloLoom/policy/ -v \
+          python -m pytest hololoom/policy/ -v \
             --timeout=30 \
             --tb=short \
-            --ignore=HoloLoom/policy/tests/test_slow*.py
+            --ignore=hololoom/policy/tests/test_slow*.py
         continue-on-error: true
 
       - name: Run Memory Unit Tests
         run: |
-          python -m pytest HoloLoom/memory/tests/ -v \
+          python -m pytest hololoom/memory/tests/ -v \
             --timeout=30 \
             --tb=short \
-            --ignore=HoloLoom/memory/tests/test_integration*.py
+            --ignore=hololoom/memory/tests/test_integration*.py
         continue-on-error: true
 
   # ============================================================================
@@ -113,7 +113,7 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          python -m pytest HoloLoom/tests/integration/ -v \
+          python -m pytest hololoom/tests/integration/ -v \
             --timeout=60 \
             --tb=short \
             -x
@@ -121,7 +121,7 @@ jobs:
 
       - name: Run Cross-Component Tests
         run: |
-          python -m pytest HoloLoom/tests/integration/test_cross_component_integration.py -v \
+          python -m pytest hololoom/tests/integration/test_cross_component_integration.py -v \
             --timeout=120 \
             --tb=short
         continue-on-error: true
@@ -160,10 +160,10 @@ jobs:
 
       - name: Run RAG Unit Tests
         run: |
-          python -m pytest HoloLoom/rag/tests/ -v \
+          python -m pytest hololoom/rag/tests/ -v \
             --timeout=60 \
             --tb=short \
-            --ignore=HoloLoom/rag/tests/test_*_e2e.py
+            --ignore=hololoom/rag/tests/test_*_e2e.py
         continue-on-error: true
 
   # ============================================================================
@@ -199,7 +199,7 @@ jobs:
 
       - name: Run Routing Tests
         run: |
-          python -m pytest HoloLoom/routing/ -v \
+          python -m pytest hololoom/routing/ -v \
             --timeout=30 \
             --tb=short
         continue-on-error: true
@@ -237,7 +237,7 @@ jobs:
 
       - name: Run Alignment Tests
         run: |
-          python -m pytest HoloLoom/alignment/tests/ -v \
+          python -m pytest hololoom/alignment/tests/ -v \
             --timeout=30 \
             --tb=short
         continue-on-error: true
@@ -279,7 +279,7 @@ jobs:
 
       - name: Run E2E Tests
         run: |
-          python -m pytest HoloLoom/tests/e2e/ -v \
+          python -m pytest hololoom/tests/e2e/ -v \
             --timeout=300 \
             --tb=short
         continue-on-error: true

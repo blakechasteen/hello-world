@@ -11,7 +11,7 @@ import numpy.typing as npt
 from collections import deque
 from dataclasses import dataclass, field
 from typing import Literal
-from HoloLoom.bandits.neural_ts.types import Observation, Context, Action
+from hololoom.bandits.neural_ts.types import Observation, Context, Action
 
 
 @dataclass

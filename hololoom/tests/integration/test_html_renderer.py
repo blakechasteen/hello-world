@@ -13,8 +13,8 @@ from dataclasses import dataclass, field
 from typing import Dict, List
 from pathlib import Path
 
-from HoloLoom.visualization.constructor import DashboardConstructor
-from HoloLoom.visualization.html_renderer import HTMLRenderer, save_dashboard
+from hololoom.visualization.constructor import DashboardConstructor
+from hololoom.visualization.html_renderer import HTMLRenderer, save_dashboard
 
 
 @dataclass
@@ -129,8 +129,8 @@ def test_different_layouts():
     print('\n[TEST] Testing Different Layouts')
     print('=' * 60)
 
-    from HoloLoom.visualization.strategy import StrategySelector, QueryAnalyzer
-    from HoloLoom.visualization.dashboard import LayoutType
+    from hololoom.visualization.strategy import StrategySelector, QueryAnalyzer
+    from hololoom.visualization.dashboard import LayoutType
 
     test_cases = [
         ('What is X?', 'FACTUAL', LayoutType.METRIC),

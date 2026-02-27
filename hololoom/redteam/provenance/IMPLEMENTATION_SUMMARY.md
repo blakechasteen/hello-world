@@ -1,7 +1,7 @@
 # Attack Provenance Implementation Summary
 
 **Created**: November 2025
-**Location**: `HoloLoom/redteam/provenance/`
+**Location**: `hololoom/redteam/provenance/`
 **Status**: Production Ready
 **Test Coverage**: 22 tests (100% passing)
 
@@ -154,7 +154,7 @@ Exports complete provenance:
 
 ## Design Patterns
 
-### Pattern 1: Scratchpad (from HoloLoom/recursive/scratchpad.py)
+### Pattern 1: Scratchpad (from hololoom/recursive/scratchpad.py)
 
 Lightweight provenance tracking:
 - Dataclass-based entries
@@ -197,7 +197,7 @@ Multiple query methods:
 
 ### With CARTS Red Team
 ```python
-from HoloLoom.redteam.provenance import AttackScratchpad
+from hololoom.redteam.provenance import AttackScratchpad
 
 scratchpad = AttackScratchpad()
 # Track attacks from CARTS orchestrator
@@ -207,7 +207,7 @@ provenance.export_to_json("audit.json")
 
 ### With HoloLoom Alignment
 ```python
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.alignment import SafetyGuardrails
 
 # Track which defenses are vulnerable
 scratchpad.get_by_layer(DefenseLayer.SAFETY_RAILS)
@@ -282,7 +282,7 @@ Execution Time: 0.17 seconds
 ## Usage Example
 
 ```python
-from HoloLoom.redteam.provenance import (
+from hololoom.redteam.provenance import (
     AttackScratchpad,
     AttackStrategy,
     DefenseLayer

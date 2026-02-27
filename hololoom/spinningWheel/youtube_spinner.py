@@ -32,13 +32,13 @@ from dataclasses import dataclass, field
 from urllib.parse import urlparse, parse_qs
 import warnings
 
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities
 )
-from HoloLoom.spinningWheel.importance import ImportanceScorer
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
+from hololoom.protocols.types import MemoryShard
 
 # Try to import youtube-transcript-api
 try:

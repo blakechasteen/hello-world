@@ -8,7 +8,7 @@ Tests the core writing functionality.
 import pytest
 from typing import List
 
-from HoloLoom.writing import (
+from hololoom.writing import (
     write,
     refine_text,
     Writer,
@@ -18,9 +18,9 @@ from HoloLoom.writing import (
     StyleGuide,
     RefinementStrategy
 )
-from HoloLoom.writing.core.protocol import MemoryShard
-from HoloLoom.writing.modes import NarrativeWriter
-from HoloLoom.writing.refinement import EleganceRefiner
+from hololoom.writing.core.protocol import MemoryShard
+from hololoom.writing.modes import NarrativeWriter
+from hololoom.writing.refinement import EleganceRefiner
 
 
 # Test fixtures

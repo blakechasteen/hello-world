@@ -446,7 +446,7 @@ Immersive spatial audio with:
 ### Enable/Disable Features
 
 ```python
-from HoloLoom.voice.elle_bridge import ElleBridge, ResponseMode
+from hololoom.voice.elle_bridge import ElleBridge, ResponseMode
 
 bridge = ElleBridge(
     orchestrator=None,                              # HoloLoom integration
@@ -459,7 +459,7 @@ bridge = ElleBridge(
 ### Spatial Audio Configuration
 
 ```python
-from HoloLoom.voice.spatial_audio import SpatialAudioConfig, SpatialAudioHandler
+from hololoom.voice.spatial_audio import SpatialAudioConfig, SpatialAudioHandler
 
 config = SpatialAudioConfig(
     sample_rate=16000,                  # Hz
@@ -621,10 +621,10 @@ If spatial position is unexpected:
 ## Documentation References
 
 - [Elle Integration Architecture](../ELLE_INTEGRATION_ARCHITECTURE.md)
-- [ARContext API](../HoloLoom/voice/ar_context.py)
-- [CommandRouter API](../HoloLoom/voice/command_router.py)
-- [ElleBridge API](../HoloLoom/voice/elle_bridge.py)
-- [Spatial Audio API](../HoloLoom/voice/spatial_audio.py)
+- [ARContext API](../hololoom/voice/ar_context.py)
+- [CommandRouter API](../hololoom/voice/command_router.py)
+- [ElleBridge API](../hololoom/voice/elle_bridge.py)
+- [Spatial Audio API](../hololoom/voice/spatial_audio.py)
 
 ---
 

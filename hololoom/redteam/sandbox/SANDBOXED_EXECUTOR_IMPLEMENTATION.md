@@ -12,7 +12,7 @@ Created `SandboxedExecutor` - a complete sandbox integration wrapper for `Attack
 
 ### 1. Core Class: SandboxedExecutor (~400 lines)
 
-**File**: `HoloLoom/redteam/sandbox/sandboxed_executor.py`
+**File**: `hololoom/redteam/sandbox/sandboxed_executor.py`
 
 **Key Features**:
 - Wraps `AttackExecutor` with same interface (drop-in replacement)
@@ -105,7 +105,7 @@ async def sandboxed_attack_execution(
 
 ### 4. Package Integration
 
-**Updated**: `HoloLoom/redteam/sandbox/__init__.py`
+**Updated**: `hololoom/redteam/sandbox/__init__.py`
 
 **Exports**:
 - `SandboxedExecutor` - Main class
@@ -184,7 +184,7 @@ SandboxedExecutor (wrapping layer)
 
 ## Testing
 
-**File**: `HoloLoom/redteam/sandbox/tests/test_sandboxed_executor.py`
+**File**: `hololoom/redteam/sandbox/tests/test_sandboxed_executor.py`
 
 **Coverage**: 30+ test cases
 
@@ -248,7 +248,7 @@ SandboxedExecutor (wrapping layer)
 
 ## Demo
 
-**File**: `HoloLoom/redteam/sandbox/demo_sandboxed_executor.py`
+**File**: `hololoom/redteam/sandbox/demo_sandboxed_executor.py`
 
 **Features**: 10 comprehensive demos
 
@@ -265,12 +265,12 @@ SandboxedExecutor (wrapping layer)
 
 **Run with**:
 ```bash
-python -m HoloLoom.redteam.sandbox.demo_sandboxed_executor
+python -m hololoom.redteam.sandbox.demo_sandboxed_executor
 ```
 
 ## Documentation
 
-**File**: `HoloLoom/redteam/sandbox/SANDBOXED_EXECUTOR_README.md`
+**File**: `hololoom/redteam/sandbox/SANDBOXED_EXECUTOR_README.md`
 
 **Coverage** (~300 lines):
 - Quick start (3 patterns)
@@ -397,8 +397,8 @@ python -m HoloLoom.redteam.sandbox.demo_sandboxed_executor
 ### Example 1: Simple Execution
 
 ```python
-from HoloLoom.redteam.sandbox import create_sandboxed_executor
-from HoloLoom.redteam.strategies import AttackStrategy
+from hololoom.redteam.sandbox import create_sandboxed_executor
+from hololoom.redteam.strategies import AttackStrategy
 
 async with await create_sandboxed_executor() as executor:
     result = await executor.execute_attack(
@@ -412,8 +412,8 @@ async with await create_sandboxed_executor() as executor:
 ### Example 2: Batch with Monitoring
 
 ```python
-from HoloLoom.redteam.sandbox import create_sandboxed_executor, SandboxConfig, SandboxMode
-from HoloLoom.redteam.strategies import AttackPayload, AttackStrategy
+from hololoom.redteam.sandbox import create_sandboxed_executor, SandboxConfig, SandboxMode
+from hololoom.redteam.strategies import AttackPayload, AttackStrategy
 
 config = SandboxConfig(mode=SandboxMode.DOCKER)
 

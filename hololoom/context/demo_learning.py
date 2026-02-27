@@ -13,9 +13,9 @@ repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
 import asyncio
-from HoloLoom.infrastructure.sql import SQLConfig, create_sql_backend, load_mock_data
-from HoloLoom.infrastructure.mcp import create_mcp_server, generate_session_id
-from HoloLoom.context import create_query_router
+from hololoom.infrastructure.sql import SQLConfig, create_sql_backend, load_mock_data
+from hololoom.infrastructure.mcp import create_mcp_server, generate_session_id
+from hololoom.context import create_query_router
 
 
 async def main():

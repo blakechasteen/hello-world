@@ -18,9 +18,9 @@ from datetime import datetime, timedelta
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.awareness.compositional_awareness import CompositionalAwarenessLayer
-from HoloLoom.awareness.context_packer import SmartContextPacker, TokenBudget
-from HoloLoom.awareness.memory_fusion import MemoryFusion, MultipassConfig, MemoryNode
+from hololoom.awareness.compositional_awareness import CompositionalAwarenessLayer
+from hololoom.awareness.context_packer import SmartContextPacker, TokenBudget
+from hololoom.awareness.memory_fusion import MemoryFusion, MultipassConfig, MemoryNode
 
 
 def print_section(title: str, char: str = "=", width: int = 80):

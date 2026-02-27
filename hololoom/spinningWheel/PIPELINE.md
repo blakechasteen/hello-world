@@ -358,7 +358,7 @@ MemoryShard(
 
 ### Stage 1: Input Detection
 
-**File**: `HoloLoom/input/router.py` (`InputRouter.detect_modality()`)
+**File**: `hololoom/input/router.py` (`InputRouter.detect_modality()`)
 
 **Latency**: 0.5-2ms
 
@@ -409,10 +409,10 @@ MP3:  b'ID3' or b'\xff\xfb'
 ### Stage 2: Modality Processing
 
 **Files**:
-- `HoloLoom/input/text_processor.py` (TextProcessor)
-- `HoloLoom/input/image_processor.py` (ImageProcessor)
-- `HoloLoom/input/audio_processor.py` (AudioProcessor)
-- `HoloLoom/input/structured_processor.py` (StructuredDataProcessor)
+- `hololoom/input/text_processor.py` (TextProcessor)
+- `hololoom/input/image_processor.py` (ImageProcessor)
+- `hololoom/input/audio_processor.py` (AudioProcessor)
+- `hololoom/input/structured_processor.py` (StructuredDataProcessor)
 
 **Latency**:
 - TEXT: 5-20ms (spaCy NER: +10ms)
@@ -499,7 +499,7 @@ class StructuredFeatures:
 
 ### Stage 4: Multi-Modal Fusion
 
-**File**: `HoloLoom/input/fusion.py` (`MultiModalFusion.fuse()`)
+**File**: `hololoom/input/fusion.py` (`MultiModalFusion.fuse()`)
 
 **When Fusion Occurs**:
 1. User provides `List[inputs]` to `spin()`
@@ -553,7 +553,7 @@ async def fuse(
 
 ### Stage 5: Shard Creation
 
-**File**: `HoloLoom/spinningWheel/multimodal_spinner.py` (`MultiModalSpinner._create_shard()`)
+**File**: `hololoom/spinningWheel/multimodal_spinner.py` (`MultiModalSpinner._create_shard()`)
 
 **Entity Extraction Logic**:
 
@@ -1199,7 +1199,7 @@ Total per shard:        ~2-3KB
 ### Example 1: Text String
 
 ```python
-from HoloLoom.spinningWheel import spin
+from hololoom.spinningWheel import spin
 
 # Input
 text = "Thompson Sampling is a Bayesian approach to multi-armed bandits."
@@ -1341,7 +1341,7 @@ memory = await spin(inputs)
 ### Example 5: Batch Processing
 
 ```python
-from HoloLoom.spinningWheel import spin_batch
+from hololoom.spinningWheel import spin_batch
 
 # Input
 sources = [
@@ -1362,7 +1362,7 @@ memory = await spin_batch(sources, max_concurrent=5)
 ### Example 6: Directory Ingestion
 
 ```python
-from HoloLoom.spinningWheel import spin_directory
+from hololoom.spinningWheel import spin_directory
 
 # Input
 directory = "/path/to/research_papers"
@@ -1384,7 +1384,7 @@ memory = await spin_directory(
 ### Example 7: URL Crawling
 
 ```python
-from HoloLoom.spinningWheel import spin_url
+from hololoom.spinningWheel import spin_url
 
 # Input
 url = "https://example.com/article.html"

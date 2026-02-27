@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from typing import Dict, Any, List
 
 # Import test targets
-from HoloLoom.visualization.jenny_llm_compiler import (
+from hololoom.visualization.jenny_llm_compiler import (
     LLMJennyCompiler,
     LLMClient,
     LLMPanelSelection,
@@ -27,7 +27,7 @@ from HoloLoom.visualization.jenny_llm_compiler import (
     LLM_PANEL_TYPES,
     BASE_PROMPT_TEMPLATE,
 )
-from HoloLoom.visualization.jenny_spec import PanelTypeJenny
+from hololoom.visualization.jenny_spec import PanelTypeJenny
 
 
 # ============================================================================
@@ -323,7 +323,7 @@ class TestLLMJennyCompiler:
 
     def test_initialization_with_learner(self):
         """Test compiler with pre-configured learner."""
-        from HoloLoom.visualization.jenny_mrf import PanelTypeLearner
+        from hololoom.visualization.jenny_mrf import PanelTypeLearner
 
         learner = PanelTypeLearner()
         compiler = LLMJennyCompiler(
@@ -399,7 +399,7 @@ class TestLLMJennyCompiler:
 
         # Mock analyze_query
         with patch(
-            'HoloLoom.visualization.jenny_llm_compiler.analyze_query',
+            'hololoom.visualization.jenny_llm_compiler.analyze_query',
             return_value=mock_analysis
         ):
             result = await compiler.compile(mock_spacetime)
@@ -423,7 +423,7 @@ class TestLLMJennyCompiler:
         compiler._llm_legacy.generate = AsyncMock(return_value="I don't know")
 
         with patch(
-            'HoloLoom.visualization.jenny_llm_compiler.analyze_query',
+            'hololoom.visualization.jenny_llm_compiler.analyze_query',
             return_value=mock_analysis
         ):
             with patch.object(
@@ -466,14 +466,14 @@ class TestFactoryFunctions:
         )
 
         # Should fall back to MRF compiler
-        from HoloLoom.visualization.jenny_mrf import JennyMRFCompiler
+        from hololoom.visualization.jenny_mrf import JennyMRFCompiler
         assert isinstance(compiler, JennyMRFCompiler)
 
     def test_create_compiler_with_fallback_no_llm_preference(self):
         """Test when LLM not preferred."""
         compiler = create_compiler_with_fallback(prefer_llm=False)
 
-        from HoloLoom.visualization.jenny_mrf import JennyMRFCompiler
+        from hololoom.visualization.jenny_mrf import JennyMRFCompiler
         assert isinstance(compiler, JennyMRFCompiler)
 
 
@@ -535,7 +535,7 @@ class TestGracefulFallbackChain:
         compiler._llm_legacy.generate = AsyncMock(return_value='{"panel_type": "graph", "reason": "test", "confidence": 0.8}')
 
         with patch(
-            'HoloLoom.visualization.jenny_llm_compiler.analyze_query',
+            'hololoom.visualization.jenny_llm_compiler.analyze_query',
             return_value=mock_analysis
         ):
             result = await compiler.compile(mock_spacetime)
@@ -557,7 +557,7 @@ class TestGracefulFallbackChain:
         compiler._llm_legacy.generate = AsyncMock(return_value=None)
 
         with patch(
-            'HoloLoom.visualization.jenny_llm_compiler.analyze_query',
+            'hololoom.visualization.jenny_llm_compiler.analyze_query',
             return_value=mock_analysis
         ):
             with patch.object(
@@ -612,7 +612,7 @@ class TestPhaseIntegration:
 
     def test_inherits_from_mrf_compiler(self):
         """Test that LLMJennyCompiler inherits from JennyMRFCompiler."""
-        from HoloLoom.visualization.jenny_mrf import JennyMRFCompiler
+        from hololoom.visualization.jenny_mrf import JennyMRFCompiler
 
         compiler = LLMJennyCompiler()
         assert isinstance(compiler, JennyMRFCompiler)

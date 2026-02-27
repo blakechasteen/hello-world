@@ -38,7 +38,7 @@ import uuid
 import numpy as np
 from datetime import datetime
 
-from HoloLoom.apps.departments.base import BaseDepartment, DepartmentRequest, DepartmentResponse
+from hololoom.apps.departments.base import BaseDepartment, DepartmentRequest, DepartmentResponse
 
 
 # ============================================================================

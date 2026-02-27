@@ -173,7 +173,7 @@
 ## File Locations
 
 ```
-HoloLoom/federation/
+hololoom/federation/
 ├── SEED_NETWORK_BOOTSTRAP.md           (Complete design - 26k words)
 ├── OPERATOR_IMPLEMENTATION_GUIDE.md    (Deployment playbook - 15k words)
 ├── DASHBOARD_METRICS_SPEC.md           (Monitoring spec - 12k words)

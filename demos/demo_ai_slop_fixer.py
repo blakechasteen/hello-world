@@ -22,9 +22,9 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.agentic.codebase_ingestion import CodebaseIndexer, Language
-from HoloLoom.agentic.hallucination_detector import HallucinationDetector
-from HoloLoom.agentic.code_verification import CodeVerifier
+from hololoom.agentic.codebase_ingestion import CodebaseIndexer, Language
+from hololoom.agentic.hallucination_detector import HallucinationDetector
+from hololoom.agentic.code_verification import CodeVerifier
 
 
 # Sample "codebase" - functions that actually exist

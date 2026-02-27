@@ -9,7 +9,7 @@ Date: October 29, 2025
 """
 
 from pathlib import Path
-from HoloLoom.visualization.stage_waterfall import (
+from hololoom.visualization.stage_waterfall import (
     StageWaterfallRenderer,
     WaterfallStage,
     StageStatus,
@@ -444,7 +444,7 @@ def test_combined_demo():
                 <code>render_pipeline_waterfall()</code> to visualize any query's execution timeline.
             </p>
             <pre style="background: #f3f4f6; padding: 12px; border-radius: 4px; font-size: 12px; overflow-x: auto;">
-from HoloLoom.visualization.stage_waterfall import render_pipeline_waterfall
+from hololoom.visualization.stage_waterfall import render_pipeline_waterfall
 
 # After weaving
 spacetime = await orchestrator.weave(query)

@@ -636,6 +636,6 @@ if __name__ == "__main__":
     print("  - LIMEExplainer: Local linear approximations")
     print("  - UnifiedExplainer: Combined SHAP + LIME interface")
     print("\nUsage:")
-    print("  from HoloLoom.alignment.shap_lime_explainer import UnifiedExplainer")
+    print("  from hololoom.alignment.shap_lime_explainer import UnifiedExplainer")
     print("  explainer = UnifiedExplainer(predict_fn, feature_names)")
     print("  shap, lime = await explainer.explain(query_id, text, features, tool, conf)")

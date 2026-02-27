@@ -18,14 +18,14 @@ Date: 2025-12-22
 Phase: 11.7 - Built-in Plugins
 """
 
-from HoloLoom.dark_trace.plugins.builtin.safety_monitor import (
+from hololoom.dark_trace.plugins.builtin.safety_monitor import (
     SafetyMonitorPlugin,
     SafetyAlert,
     SafetyAlertLevel,
     SafetyMonitoringResult,
 )
 
-from HoloLoom.dark_trace.plugins.builtin.alignment_validator import (
+from hololoom.dark_trace.plugins.builtin.alignment_validator import (
     AlignmentValidatorPlugin,
     AlignmentViolation,
     AlignmentViolationType,
@@ -33,7 +33,7 @@ from HoloLoom.dark_trace.plugins.builtin.alignment_validator import (
     ViolationSeverity,
 )
 
-from HoloLoom.dark_trace.plugins.builtin.metrics_exporter import (
+from hololoom.dark_trace.plugins.builtin.metrics_exporter import (
     MetricsExporterPlugin,
     PrometheusMetric,
     MetricsBatch,

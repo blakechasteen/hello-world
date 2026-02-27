@@ -23,11 +23,11 @@ The Shuttle integration (MCTS-powered Warp↔Yarn intersection) is ready for dep
 ### Problem
 `component_init.py` was importing `create_retriever` from the wrong module, causing all integration tests to fail with:
 ```
-ImportError: cannot import name 'create_retriever' from 'HoloLoom.memory.backend_factory'
+ImportError: cannot import name 'create_retriever' from 'hololoom.memory.backend_factory'
 ```
 
 ### Root Cause
-Two incorrect imports in [HoloLoom/orchestrator/initialization/component_init.py](../orchestrator/initialization/component_init.py:152):
+Two incorrect imports in [hololoom/orchestrator/initialization/component_init.py](../orchestrator/initialization/component_init.py:152):
 - **Line 152**: Shuttle retriever creation (for HoloLoomWarpAdapter)
 - **Line 272**: Legacy retriever creation (backwards compatibility with shards)
 
@@ -36,24 +36,24 @@ Both were importing from `memory.backend_factory` instead of `memory.base`.
 ### Solution Applied
 Changed both imports from:
 ```python
-from HoloLoom.memory.backend_factory import create_retriever  # WRONG
+from hololoom.memory.backend_factory import create_retriever  # WRONG
 ```
 
 To:
 ```python
-from HoloLoom.memory.base import create_retriever  # CORRECT
+from hololoom.memory.base import create_retriever  # CORRECT
 ```
 
 ### Verification
 ```bash
-$ grep -n "from HoloLoom.memory" HoloLoom/orchestrator/initialization/component_init.py | grep create_retriever
-152:            from HoloLoom.memory.base import create_retriever
-272:        from HoloLoom.memory.base import create_retriever
+$ grep -n "from hololoom.memory" hololoom/orchestrator/initialization/component_init.py | grep create_retriever
+152:            from hololoom.memory.base import create_retriever
+272:        from hololoom.memory.base import create_retriever
 
-$ python -c "from HoloLoom.memory.base import create_retriever; print('SUCCESS')"
+$ python -c "from hololoom.memory.base import create_retriever; print('SUCCESS')"
 SUCCESS: create_retriever imported from memory.base
 
-$ python -m py_compile HoloLoom/orchestrator/initialization/component_init.py
+$ python -m py_compile hololoom/orchestrator/initialization/component_init.py
 SUCCESS: No syntax errors in component_init.py
 ```
 
@@ -72,10 +72,10 @@ Ran 15 unit tests covering:
 
 **Test Command**:
 ```bash
-pytest HoloLoom/shuttle/tests/test_weaving_integration.py -v
+pytest hololoom/shuttle/tests/test_weaving_integration.py -v
 ```
 
-**Test File**: [HoloLoom/shuttle/tests/test_weaving_integration.py](tests/test_weaving_integration.py:1) (360 lines)
+**Test File**: [hololoom/shuttle/tests/test_weaving_integration.py](tests/test_weaving_integration.py:1) (360 lines)
 
 ---
 
@@ -97,10 +97,10 @@ pytest HoloLoom/shuttle/tests/test_weaving_integration.py -v
 
 **Test Command**:
 ```bash
-pytest HoloLoom/tests/integration/test_shuttle_weaving.py -v
+pytest hololoom/tests/integration/test_shuttle_weaving.py -v
 ```
 
-**Test File**: [HoloLoom/tests/integration/test_shuttle_weaving.py](../tests/integration/test_shuttle_weaving.py:1) (250+ lines)
+**Test File**: [hololoom/tests/integration/test_shuttle_weaving.py](../tests/integration/test_shuttle_weaving.py:1) (250+ lines)
 
 ---
 
@@ -116,7 +116,7 @@ pytest HoloLoom/tests/integration/test_shuttle_weaving.py -v
 - Confidence - quality impact
 - Thread selection metrics - Warp vs Yarn split
 
-**Benchmark Script**: [HoloLoom/shuttle/benchmarks/weaving_performance.py](benchmarks/weaving_performance.py:1)
+**Benchmark Script**: [hololoom/shuttle/benchmarks/weaving_performance.py](benchmarks/weaving_performance.py:1)
 
 **Output**: Will generate comparison report with statistical analysis (mean, median, std dev)
 
@@ -125,7 +125,7 @@ pytest HoloLoom/tests/integration/test_shuttle_weaving.py -v
 ## Deployment Artifacts: ✅ Complete
 
 ### A/B Testing Script
-**File**: [HoloLoom/shuttle/deployment/ab_testing.py](deployment/ab_testing.py:1) (450+ lines)
+**File**: [hololoom/shuttle/deployment/ab_testing.py](deployment/ab_testing.py:1) (450+ lines)
 **Features**:
 - 50/50 traffic split (Shuttle vs Simple)
 - Real-time metrics collection
@@ -135,7 +135,7 @@ pytest HoloLoom/tests/integration/test_shuttle_weaving.py -v
 
 **Usage**:
 ```python
-from HoloLoom.shuttle.deployment.ab_testing import ABTest
+from hololoom.shuttle.deployment.ab_testing import ABTest
 
 async with ABTest(
     shuttle_stage=shuttle_stage,
@@ -147,7 +147,7 @@ async with ABTest(
 ```
 
 ### Production Rollout Guide
-**File**: [HoloLoom/shuttle/deployment/production_rollout.md](deployment/production_rollout.md:1) (540 lines)
+**File**: [hololoom/shuttle/deployment/production_rollout.md](deployment/production_rollout.md:1) (540 lines)
 **Coverage**:
 - 5 deployment phases (10% → 25% → 50% → 75% → 100%)
 - Monitoring strategy (latency, quality, error rate)
@@ -219,21 +219,21 @@ async with ABTest(
 ## Files Modified
 
 ### Core Integration
-1. **[HoloLoom/orchestrator/initialization/component_init.py](../orchestrator/initialization/component_init.py:152)** (lines 152, 272) - Import fixes
+1. **[hololoom/orchestrator/initialization/component_init.py](../orchestrator/initialization/component_init.py:152)** (lines 152, 272) - Import fixes
 
 ### Shuttle Components (No Changes This Session)
-2. [HoloLoom/shuttle/weaving_integration.py](weaving_integration.py:1) - Adapters and ShuttleStage
-3. [HoloLoom/shuttle/orchestrator_v2.py](orchestrator_v2.py:1) - Main Shuttle orchestrator
-4. [HoloLoom/shuttle/config.py](config.py:1) - ShuttleConfig and modes
+2. [hololoom/shuttle/weaving_integration.py](weaving_integration.py:1) - Adapters and ShuttleStage
+3. [hololoom/shuttle/orchestrator_v2.py](orchestrator_v2.py:1) - Main Shuttle orchestrator
+4. [hololoom/shuttle/config.py](config.py:1) - ShuttleConfig and modes
 
 ### Tests
-5. [HoloLoom/shuttle/tests/test_weaving_integration.py](tests/test_weaving_integration.py:1) - Unit tests (15 passing)
-6. [HoloLoom/tests/integration/test_shuttle_weaving.py](../tests/integration/test_shuttle_weaving.py:1) - Integration tests (running)
+5. [hololoom/shuttle/tests/test_weaving_integration.py](tests/test_weaving_integration.py:1) - Unit tests (15 passing)
+6. [hololoom/tests/integration/test_shuttle_weaving.py](../tests/integration/test_shuttle_weaving.py:1) - Integration tests (running)
 
 ### Deployment
-7. [HoloLoom/shuttle/deployment/ab_testing.py](deployment/ab_testing.py:1) - A/B testing script
-8. [HoloLoom/shuttle/deployment/production_rollout.md](deployment/production_rollout.md:1) - Rollout guide
-9. [HoloLoom/shuttle/benchmarks/weaving_performance.py](benchmarks/weaving_performance.py:1) - Performance benchmarks
+7. [hololoom/shuttle/deployment/ab_testing.py](deployment/ab_testing.py:1) - A/B testing script
+8. [hololoom/shuttle/deployment/production_rollout.md](deployment/production_rollout.md:1) - Rollout guide
+9. [hololoom/shuttle/benchmarks/weaving_performance.py](benchmarks/weaving_performance.py:1) - Performance benchmarks
 
 ---
 
@@ -253,7 +253,7 @@ async with ABTest(
 
 ## Contact & Support
 
-- **Integration Code**: [HoloLoom/shuttle/weaving_integration.py](weaving_integration.py:1)
+- **Integration Code**: [hololoom/shuttle/weaving_integration.py](weaving_integration.py:1)
 - **Test Results**: Check background processes (749f42 for integration, 3b50ee for benchmarks)
 - **Deployment Guide**: [production_rollout.md](deployment/production_rollout.md:1)
 

@@ -82,9 +82,9 @@ console = Console(force_terminal=True, legacy_windows=False)
 
 # Import HoloLoom components
 try:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.config import Config
-    from HoloLoom.loom.command import PatternCard
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.config import Config
+    from hololoom.loom.command import PatternCard
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:
     console.print(f"[red]Error importing HoloLoom: {e}[/red]")

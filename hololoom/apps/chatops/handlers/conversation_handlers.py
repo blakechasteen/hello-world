@@ -17,7 +17,7 @@ Features:
 - Auto-storage of weaving results (optional)
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.conversation_handlers import (
+    from hololoom.apps.chatops.handlers.conversation_handlers import (
         register_conversation_handlers,
         ConversationHandlers,
         record_weave_result,
@@ -41,7 +41,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 if TYPE_CHECKING:
-    from HoloLoom.fabric.spacetime import Spacetime
+    from hololoom.fabric.spacetime import Spacetime
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -79,8 +79,8 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.protocols.types import Query
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.protocols.types import Query
     ORCHESTRATOR_AVAILABLE = True
 except ImportError:
     ORCHESTRATOR_AVAILABLE = False
@@ -93,7 +93,7 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.apps.chatops.handlers.thread_handler import ThreadHandler, ThreadContext
+    from hololoom.apps.chatops.handlers.thread_handler import ThreadHandler, ThreadContext
     THREAD_AVAILABLE = True
 except ImportError:
     THREAD_AVAILABLE = False
@@ -106,14 +106,14 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.apps.chatops.scratchpad import (
+    from hololoom.apps.chatops.scratchpad import (
         ScratchArtifact,
         ArtifactScope,
         ArtifactReference,
         SessionArtifactContext
     )
-    from HoloLoom.apps.chatops.scratchpad.manager import ScratchPadManager
-    from HoloLoom.apps.chatops.handlers.scratchpad_handlers import (
+    from hololoom.apps.chatops.scratchpad.manager import ScratchPadManager
+    from hololoom.apps.chatops.handlers.scratchpad_handlers import (
         record_last_result,
         get_scratchpad_manager,
         set_scratchpad_manager
@@ -378,7 +378,7 @@ async def _auto_store_artifacts(
                 name = f"auto_{artifact_type}_{spacetime.spacetime_id[:8]}"
 
             # Get artifact type
-            from HoloLoom.apps.chatops.scratchpad import ArtifactType
+            from hololoom.apps.chatops.scratchpad import ArtifactType
             artifact_type_enum = ArtifactType.DATA  # Default
 
             type_value = getattr(artifact, 'type', None)
@@ -803,7 +803,7 @@ class ConversationHandlers:
     Decorator-based ChatOps handlers for multi-turn conversations.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.conversation_handlers import ConversationHandlers
+        from hololoom.apps.chatops.handlers.conversation_handlers import ConversationHandlers
 
         handlers = ConversationHandlers(orchestrator=weaving_orchestrator)
         registry.register_instance(handlers)

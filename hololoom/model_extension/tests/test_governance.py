@@ -11,7 +11,7 @@ Tests the tiered governance architecture:
 import pytest
 import asyncio
 from datetime import datetime
-from HoloLoom.model_extension.governance import (
+from hololoom.model_extension.governance import (
     PolicyTier,
     DecisionType,
     Policy,

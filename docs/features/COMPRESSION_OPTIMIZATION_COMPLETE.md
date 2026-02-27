@@ -47,7 +47,7 @@ width = height * 1.5
 ### File Changes
 
 **1. Added `calculate_optimal_dimensions()` function** (+45 lines)
-**File**: `HoloLoom/memory/visual_compression.py` (line 459-499)
+**File**: `hololoom/memory/visual_compression.py` (line 459-499)
 
 ```python
 def calculate_optimal_dimensions(
@@ -82,7 +82,7 @@ def calculate_optimal_dimensions(
 ```
 
 **2. Updated `compress_to_visual()` signature**
-**File**: `HoloLoom/memory/visual_compression.py` (line 502-508)
+**File**: `hololoom/memory/visual_compression.py` (line 502-508)
 
 ```python
 def compress_to_visual(
@@ -95,7 +95,7 @@ def compress_to_visual(
 ```
 
 **3. Added adaptive sizing logic** (+34 lines)
-**File**: `HoloLoom/memory/visual_compression.py` (line 550-583)
+**File**: `hololoom/memory/visual_compression.py` (line 550-583)
 
 ```python
 # Adaptive sizing: estimate tokens first
@@ -117,7 +117,7 @@ if height is None:
 ```
 
 **4. Fixed table token estimation** (Bug fix)
-**File**: `HoloLoom/memory/visual_compression.py` (line 366-375)
+**File**: `hololoom/memory/visual_compression.py` (line 366-375)
 
 ```python
 # Old (broken): Treated {'headers': [...], 'rows': [...]} as 1 row
@@ -136,7 +136,7 @@ elif isinstance(data, dict):
 ```
 
 **5. Updated HoloLoom API call**
-**File**: `HoloLoom/hololoom.py` (line 691-696)
+**File**: `hololoom/hololoom.py` (line 691-696)
 
 ```python
 # Old: Fixed 1200×800
@@ -273,7 +273,7 @@ Examples:
 ### Automatic (Adaptive Sizing)
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     # Adaptive sizing enabled by default
@@ -296,7 +296,7 @@ photo, metrics = await loom.compress_to_visual(
 ### Custom Target Ratio ✅
 
 ```python
-from HoloLoom.memory.visual_compression import compress_to_visual
+from hololoom.memory.visual_compression import compress_to_visual
 
 # Higher compression (5×) - smaller images
 image, metrics = compress_to_visual(
@@ -379,11 +379,11 @@ if estimated_tokens > 10000:
 
 ### Unit Tests ✅ COMPLETE
 
-**File**: [`HoloLoom/tests/unit/test_visual_compression.py`](HoloLoom/tests/unit/test_visual_compression.py)
+**File**: [`hololoom/tests/unit/test_visual_compression.py`](hololoom/tests/unit/test_visual_compression.py)
 
 **Run**:
 ```bash
-PYTHONPATH=. pytest HoloLoom/tests/unit/test_visual_compression.py -v
+PYTHONPATH=. pytest hololoom/tests/unit/test_visual_compression.py -v
 ```
 
 **Coverage**: 24 tests across 5 test classes (100% pass rate)

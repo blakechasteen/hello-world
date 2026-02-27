@@ -7,7 +7,7 @@
 Already included in Proto. Just import:
 
 ```python
-from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
+from hololoom.apps.departments.proto.abilities.core import GitOperationsAbility
 ```
 
 ## Basic Usage (3 lines)
@@ -201,7 +201,7 @@ result = await ability.execute({
 ## Integration with Proto
 
 ```python
-from HoloLoom.apps.departments.proto import Proto
+from hololoom.apps.departments.proto import Proto
 
 proto = Proto()
 proto.register_ability(GitOperationsAbility())
@@ -222,13 +222,13 @@ analysis = await proto.analyze(code, context_repo="/repo")
 
 ```bash
 # Run tests
-pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py -v
+pytest hololoom/departments/proto/abilities/core/test_git_operations.py -v
 
 # Test specific operation
 pytest -k "test_status" -v
 
 # With coverage
-pytest --cov=HoloLoom.apps.departments.proto.abilities.core.git_operations
+pytest --cov=hololoom.apps.departments.proto.abilities.core.git_operations
 ```
 
 ## Troubleshooting

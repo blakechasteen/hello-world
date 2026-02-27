@@ -13,7 +13,7 @@ Created: 2025-01-20
 
 import logging
 from typing import Optional
-from HoloLoom.llm.unified_client import LLMConfig, LLMResponse
+from hololoom.llm.unified_client import LLMConfig, LLMResponse
 
 logger = logging.getLogger(__name__)
 

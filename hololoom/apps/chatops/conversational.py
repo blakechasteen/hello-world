@@ -30,11 +30,11 @@ from datetime import datetime
 from dataclasses import dataclass, field
 
 try:
-    from holoLoom.documentation.types import Query, MemoryShard
-    from holoLoom.config import Config
-    from holoLoom.orchestrator import HoloLoomOrchestrator
-    from holoLoom.spinningWheel import TextSpinner, TextSpinnerConfig
-    from holoLoom.autospin import AutoSpinOrchestrator
+    from hololoom.documentation.types import Query, MemoryShard
+    from hololoom.config import Config
+    from hololoom.orchestrator import HoloLoomOrchestrator
+    from hololoom.spinningWheel import TextSpinner, TextSpinnerConfig
+    from hololoom.autospin import AutoSpinOrchestrator
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run from repository root with PYTHONPATH set")

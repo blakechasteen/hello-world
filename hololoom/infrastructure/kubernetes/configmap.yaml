@@ -1,4 +1,4 @@
-# HoloLoom API ConfigMap
+# hololoom API ConfigMap
 # Part 5: Production Hardening - Day 25
 #
 # Non-sensitive configuration values
@@ -44,7 +44,7 @@ data:
 
   # Configuration file (YAML)
   config.yaml: |
-    # HoloLoom Production Configuration
+    # hololoom Production Configuration
     environment: production
 
     # Execution mode

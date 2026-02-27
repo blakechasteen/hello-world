@@ -23,7 +23,7 @@ Phase 4 expands the Metaprompting Refinement Framework (MRF) to HoloLoom's remai
 
 ### 1. Agentic/Skills Integration (~422 lines)
 
-**File**: `HoloLoom/agentic/mrf_integration.py`
+**File**: `hololoom/agentic/mrf_integration.py`
 
 **Purpose**: Integrates UnifiedMRF into agentic reasoning system for all 4 reasoning modes.
 
@@ -46,8 +46,8 @@ Phase 4 expands the Metaprompting Refinement Framework (MRF) to HoloLoom's remai
 
 **Example Usage**:
 ```python
-from HoloLoom.agentic.mrf_integration import create_agentic_mrf_prompt
-from HoloLoom.agentic.core import ReasoningMode
+from hololoom.agentic.mrf_integration import create_agentic_mrf_prompt
+from hololoom.agentic.core import ReasoningMode
 
 # Create VERIFY mode prompt
 prompt = create_agentic_mrf_prompt(
@@ -70,7 +70,7 @@ prompt = create_agentic_mrf_prompt(
 
 **Quality Assessment**:
 ```python
-from HoloLoom.agentic.mrf_integration import assess_agentic_quality
+from hololoom.agentic.mrf_integration import assess_agentic_quality
 
 response = """Verified claims:
 - Thompson Sampling uses Bayesian priors
@@ -85,7 +85,7 @@ quality = assess_agentic_quality(response, ReasoningMode.VERIFY)
 
 ### 2. RAG System Integration (~429 lines)
 
-**File**: `HoloLoom/rag/mrf_integration.py`
+**File**: `hololoom/rag/mrf_integration.py`
 
 **Purpose**: Integrates UnifiedMRF into RAG system for query reformulation, answer generation, summarization, and multimodal Q&A.
 
@@ -109,7 +109,7 @@ quality = assess_agentic_quality(response, ReasoningMode.VERIFY)
 
 **Example Usage**:
 ```python
-from HoloLoom.rag.mrf_integration import create_rag_mrf_prompt, RAGMode
+from hololoom.rag.mrf_integration import create_rag_mrf_prompt, RAGMode
 
 # Create ANSWER mode prompt with sources
 sources = [
@@ -136,7 +136,7 @@ prompt = create_rag_mrf_prompt(
 
 **Complete RAG Pipeline**:
 ```python
-from HoloLoom.rag.mrf_integration import enhance_rag_with_mrf
+from hololoom.rag.mrf_integration import enhance_rag_with_mrf
 
 # Run full RAG pipeline with reformulation
 result = enhance_rag_with_mrf(
@@ -155,7 +155,7 @@ result = enhance_rag_with_mrf(
 
 **Quality Assessment**:
 ```python
-from HoloLoom.rag.mrf_integration import assess_rag_quality
+from hololoom.rag.mrf_integration import assess_rag_quality
 
 response = "According to [Source 1], Thompson Sampling is a Bayesian algorithm. [Source 2] explains its applications."
 quality = assess_rag_quality("What is TS?", response, sources, RAGMode.ANSWER)
@@ -166,7 +166,7 @@ quality = assess_rag_quality("What is TS?", response, sources, RAGMode.ANSWER)
 
 ### 3. Memory Consolidation Integration (~446 lines)
 
-**File**: `HoloLoom/memory/mrf_consolidation.py`
+**File**: `hololoom/memory/mrf_consolidation.py`
 
 **Purpose**: Integrates UnifiedMRF into memory consolidation for episodic → semantic conversion.
 
@@ -190,9 +190,9 @@ quality = assess_rag_quality("What is TS?", response, sources, RAGMode.ANSWER)
 
 **Example Usage**:
 ```python
-from HoloLoom.memory.mrf_consolidation import create_consolidation_mrf_prompt
-from HoloLoom.memory.consolidation import ConsolidationStrategy
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.memory.mrf_consolidation import create_consolidation_mrf_prompt
+from hololoom.memory.consolidation import ConsolidationStrategy
+from hololoom.protocols.types import MemoryShard
 
 # Create test episodes
 episodes = [
@@ -231,7 +231,7 @@ prompt = create_consolidation_mrf_prompt(
 
 **Complete Consolidation Pipeline**:
 ```python
-from HoloLoom.memory.mrf_consolidation import enhance_consolidation_with_mrf
+from hololoom.memory.mrf_consolidation import enhance_consolidation_with_mrf
 
 # Run all 4 consolidation strategies
 result = enhance_consolidation_with_mrf(
@@ -251,7 +251,7 @@ result = enhance_consolidation_with_mrf(
 
 **Quality Assessment**:
 ```python
-from HoloLoom.memory.mrf_consolidation import assess_consolidation_quality
+from hololoom.memory.mrf_consolidation import assess_consolidation_quality
 
 facts = [
     "Thompson Sampling balances exploration and exploitation",
@@ -271,7 +271,7 @@ quality = assess_consolidation_quality(
 
 ### 4. Comprehensive Test Suite (~462 lines)
 
-**File**: `HoloLoom/prompting/validation/test_phase4_integrations.py`
+**File**: `hololoom/prompting/validation/test_phase4_integrations.py`
 
 **Test Coverage**: 21 tests across 4 test classes
 
@@ -312,7 +312,7 @@ quality = assess_consolidation_quality(
 ```bash
 cd "c:\Users\blake\OneDrive\Documents\mythRL"
 set PYTHONPATH=.
-python -m pytest HoloLoom/prompting/validation/test_phase4_integrations.py -v --tb=line
+python -m pytest hololoom/prompting/validation/test_phase4_integrations.py -v --tb=line
 ```
 
 **Result**:
@@ -488,8 +488,8 @@ components = ["# ROLE", "# OBJECTIVE", "# PROCESS", "# FORMAT",
 
 ### Example 1: Agentic VERIFY Mode
 ```python
-from HoloLoom.agentic.mrf_integration import create_agentic_mrf_prompt
-from HoloLoom.agentic.core import ReasoningMode
+from hololoom.agentic.mrf_integration import create_agentic_mrf_prompt
+from hololoom.agentic.core import ReasoningMode
 
 prompt = create_agentic_mrf_prompt(
     query="Verify: Thompson Sampling is Bayesian-optimal",
@@ -510,7 +510,7 @@ prompt = create_agentic_mrf_prompt(
 
 ### Example 2: RAG ANSWER Mode with Citations
 ```python
-from HoloLoom.rag.mrf_integration import create_rag_mrf_prompt, RAGMode
+from hololoom.rag.mrf_integration import create_rag_mrf_prompt, RAGMode
 
 sources = [
     "Source 1: Thompson Sampling uses Bayesian inference",
@@ -533,9 +533,9 @@ prompt = create_rag_mrf_prompt(
 
 ### Example 3: Memory FACT_EXTRACTION
 ```python
-from HoloLoom.memory.mrf_consolidation import create_consolidation_mrf_prompt
-from HoloLoom.memory.consolidation import ConsolidationStrategy
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.memory.mrf_consolidation import create_consolidation_mrf_prompt
+from hololoom.memory.consolidation import ConsolidationStrategy
+from hololoom.protocols.types import MemoryShard
 
 episodes = [
     MemoryShard(text="Learned about Thompson Sampling today", id="ep_1",

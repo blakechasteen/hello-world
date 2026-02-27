@@ -8,11 +8,11 @@ Available Modes:
     - desktop: Gradio desktop app (requires: gradio)
 
 Usage:
-    from HoloLoom.lite.ui import launch
+    from hololoom.lite.ui import launch
     launch(mode="repl")
 
     # Or directly:
-    from HoloLoom.lite.ui.repl import start_repl
+    from hololoom.lite.ui.repl import start_repl
     start_repl()
 
 Date: December 2025
@@ -53,14 +53,14 @@ def launch(mode: str = "repl", **kwargs) -> None:
 
 def _launch_repl(**kwargs) -> None:
     """Launch simple REPL."""
-    from HoloLoom.lite.ui.repl import start_repl
+    from hololoom.lite.ui.repl import start_repl
     start_repl(**kwargs)
 
 
 def _launch_terminal(**kwargs) -> None:
     """Launch rich terminal."""
     try:
-        from HoloLoom.lite.ui.terminal import start_terminal
+        from hololoom.lite.ui.terminal import start_terminal
         start_terminal(**kwargs)
     except ImportError:
         print("Rich terminal requires 'rich' package.")
@@ -73,7 +73,7 @@ def _launch_terminal(**kwargs) -> None:
 def _launch_web(**kwargs) -> None:
     """Launch web chat."""
     try:
-        from HoloLoom.lite.ui.web import start_web
+        from hololoom.lite.ui.web import start_web
         start_web(**kwargs)
     except ImportError as e:
         print(f"Web chat requires 'fastapi' and 'uvicorn' packages.")
@@ -84,7 +84,7 @@ def _launch_web(**kwargs) -> None:
 def _launch_desktop(**kwargs) -> None:
     """Launch Gradio desktop app."""
     try:
-        from HoloLoom.lite.ui.desktop import start_desktop
+        from hololoom.lite.ui.desktop import start_desktop
         start_desktop(**kwargs)
     except ImportError as e:
         print(f"Desktop app requires 'gradio' package.")

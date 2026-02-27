@@ -397,7 +397,7 @@ Vulnerabilities by Attack Strategy
 ### Red Team Analysis Pipeline
 
 ```python
-from HoloLoom.redteam.visualization import (
+from hololoom.redteam.visualization import (
     ThompsonEvolutionRenderer,
     VulnerabilityWaterfallRenderer,
 )
@@ -480,7 +480,7 @@ def generate_redteam_dashboard(session_data):
 ```python
 # Generate individual HTML files for multiple red team runs
 import os
-from HoloLoom.redteam.visualization import render_thompson_evolution
+from hololoom.redteam.visualization import render_thompson_evolution
 
 for run_id, run_data in enumerate(red_team_runs):
     html = render_thompson_evolution(
@@ -547,7 +547,7 @@ for run_id, run_data in enumerate(red_team_runs):
 ## Testing & Validation
 
 ```python
-# Unit tests (in HoloLoom/redteam/visualization/tests/)
+# Unit tests (in hololoom/redteam/visualization/tests/)
 
 def test_thompson_evolution_snapshot_validation():
     """Test ArmSnapshot validates alpha/beta."""

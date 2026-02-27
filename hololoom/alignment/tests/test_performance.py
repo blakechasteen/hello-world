@@ -26,13 +26,13 @@ from typing import List, Dict
 from pathlib import Path
 import tempfile
 
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     ActionRequest,
     ActionCategory,
     create_guardrails,
 )
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     DeceptionDetector,
     BehavioralProbe,
     ProbeType,
@@ -40,13 +40,13 @@ from HoloLoom.alignment.deception_detection import (
     ActionObservation,
     create_detector,
 )
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
     ResourceBounds,
     ResourceType,
     create_guard,
 )
-from HoloLoom.alignment.audit_trail import (
+from hololoom.alignment.audit_trail import (
     AuditTrail,
     DecisionType,
     OutcomeType,

@@ -7,7 +7,7 @@ Tests:
 3. Operation-based CRDT (concurrent edits, merge, vector clocks)
 4. WorkflowAgentExecutor (real HoloLoom integrations)
 
-Run with: PYTHONPATH=. python HoloLoom/web_dashboard/test_workflow_integration.py
+Run with: PYTHONPATH=. python hololoom/web_dashboard/test_workflow_integration.py
 """
 
 import asyncio
@@ -47,7 +47,7 @@ async def test_persistence():
     test_separator("TEST 1: SQLite Persistence")
 
     try:
-        from HoloLoom.apps.workflow_builder.workflow_persistence import (
+        from hololoom.apps.workflow_builder.workflow_persistence import (
             WorkflowPersistence,
             WorkflowRecord,
             VersionRecord,
@@ -163,7 +163,7 @@ def test_authentication():
     test_separator("TEST 2: HMAC-SHA256 Authentication")
 
     try:
-        from HoloLoom.apps.workflow_builder.workflow_auth import (
+        from hololoom.apps.workflow_builder.workflow_auth import (
             AuthContext,
             NonceTracker,
             compute_signature,
@@ -303,7 +303,7 @@ def test_crdt():
     test_separator("TEST 3: Operation-Based CRDT")
 
     try:
-        from HoloLoom.apps.workflow_builder.workflow_crdt import (
+        from hololoom.apps.workflow_builder.workflow_crdt import (
             VectorClock,
             Operation,
             OperationType,
@@ -480,7 +480,7 @@ async def test_agent_executor():
     test_separator("TEST 4: WorkflowAgentExecutor")
 
     try:
-        from HoloLoom.apps.workflow_builder.workflow_agents import (
+        from hololoom.apps.workflow_builder.workflow_agents import (
             WorkflowAgentExecutor,
             AgentResult
         )

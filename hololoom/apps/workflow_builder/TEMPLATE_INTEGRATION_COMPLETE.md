@@ -329,7 +329,7 @@ Canvas ready
 ## File Structure
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── workflow_builder.html          (UPDATED: +210 lines integration)
 ├── template_gallery.html          (UPDATED: +20 lines postMessage)
 ├── workflow_builder.js            (unchanged)

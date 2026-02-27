@@ -5,10 +5,10 @@
 
 import pytest
 from datetime import datetime
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config
-from HoloLoom.recursive import FullLearningEngine
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom import hololoom
+from hololoom.config import Config
+from hololoom.recursive import FullLearningEngine
+from hololoom.documentation.types import Query, MemoryShard
 
 
 @pytest.mark.asyncio

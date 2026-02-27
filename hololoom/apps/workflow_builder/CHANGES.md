@@ -10,7 +10,7 @@
 
 ### 1. workflow_builder.html
 **Status**: Modified ✅
-**Location**: `HoloLoom/web_dashboard/workflow_builder.html`
+**Location**: `hololoom/web_dashboard/workflow_builder.html`
 **Lines Added**: 210 (lines 1773-1976)
 **Type**: Feature Addition (Integration)
 
@@ -81,7 +81,7 @@
 
 ### 2. template_gallery.html
 **Status**: Modified ✅
-**Location**: `HoloLoom/web_dashboard/template_gallery.html`
+**Location**: `hololoom/web_dashboard/template_gallery.html`
 **Lines Modified**: 20 (lines 1074-1093)
 **Type**: Enhancement (Cross-origin Communication)
 
@@ -143,7 +143,7 @@ function loadTemplate(template) {
 
 ### 1. TEMPLATE_INTEGRATION_COMPLETE.md
 **Status**: Created ✅
-**Location**: `HoloLoom/web_dashboard/TEMPLATE_INTEGRATION_COMPLETE.md`
+**Location**: `hololoom/web_dashboard/TEMPLATE_INTEGRATION_COMPLETE.md`
 **Size**: 2,500+ lines
 **Type**: Comprehensive Documentation
 
@@ -165,7 +165,7 @@ function loadTemplate(template) {
 
 ### 2. TESTING_GUIDE.md
 **Status**: Created ✅
-**Location**: `HoloLoom/web_dashboard/TESTING_GUIDE.md`
+**Location**: `hololoom/web_dashboard/TESTING_GUIDE.md`
 **Size**: 400+ lines
 **Type**: Testing Documentation
 
@@ -184,7 +184,7 @@ function loadTemplate(template) {
 
 ### 3. IMPLEMENTATION_SUMMARY.md
 **Status**: Created ✅
-**Location**: `HoloLoom/web_dashboard/IMPLEMENTATION_SUMMARY.md`
+**Location**: `hololoom/web_dashboard/IMPLEMENTATION_SUMMARY.md`
 **Size**: 600+ lines
 **Type**: Summary Documentation
 
@@ -208,7 +208,7 @@ function loadTemplate(template) {
 
 ### 4. CHANGES.md (This File)
 **Status**: Created ✅
-**Location**: `HoloLoom/web_dashboard/CHANGES.md`
+**Location**: `hololoom/web_dashboard/CHANGES.md`
 **Size**: Current
 **Type**: Change Log
 

@@ -15,10 +15,10 @@ Author: HoloLoom Architecture Team
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-from HoloLoom.core.loom.weave_house import WeaveHouse, create_weave_house
-from HoloLoom.core.loom.dreaming import DreamOrchestrator, create_dream_orchestrator
-from HoloLoom.core.loom.consensus import LoomConsensus, create_loom_consensus
-from HoloLoom.core.loom.core_looms import (
+from hololoom.core.loom.weave_house import WeaveHouse, create_weave_house
+from hololoom.core.loom.dreaming import DreamOrchestrator, create_dream_orchestrator
+from hololoom.core.loom.consensus import LoomConsensus, create_loom_consensus
+from hololoom.core.loom.core_looms import (
     RecallLoom,
     ReasonLoom,
     ReachLoom,
@@ -26,7 +26,7 @@ from HoloLoom.core.loom.core_looms import (
     RefuseLoom,
     create_all_looms,
 )
-from HoloLoom.core.loom.protocol import Loom
+from hololoom.core.loom.protocol import Loom
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +65,8 @@ async def create_weave_house_system(
 
     Example:
         ```python
-        from HoloLoom.config import Config
-        from HoloLoom.core.loom.initialization import create_weave_house_system
+        from hololoom.config import Config
+        from hololoom.core.loom.initialization import create_weave_house_system
 
         config = Config.fused()
 
@@ -163,7 +163,7 @@ def create_research_weave_house(
     Returns:
         Research-optimized WeaveHouse
     """
-    from HoloLoom.core.loom.domain_houses.research_house import ResearchHouse, ResearchConfig
+    from hololoom.core.loom.domain_houses.research_house import ResearchHouse, ResearchConfig
 
     research_config = ResearchConfig(
         exploration_depth=3,
@@ -193,7 +193,7 @@ def create_code_review_weave_house(
     Returns:
         Code-review-optimized WeaveHouse
     """
-    from HoloLoom.core.loom.domain_houses.code_review_house import (
+    from hololoom.core.loom.domain_houses.code_review_house import (
         CodeReviewHouse,
         CodeReviewConfig
     )

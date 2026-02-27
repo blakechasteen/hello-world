@@ -28,10 +28,10 @@ export MATRIX_HOMESERVER="https://matrix.org"
 export MATRIX_USER="@mybot:matrix.org"
 export MATRIX_PASSWORD="secret"
 
-python HoloLoom/chatops/run_bot.py
+python hololoom/chatops/run_bot.py
 
 # Or with command line arguments
-python HoloLoom/chatops/run_bot.py \
+python hololoom/chatops/run_bot.py \
   --homeserver https://matrix.org \
   --user @mybot:matrix.org \
   --password secret \
@@ -80,7 +80,7 @@ python HoloLoom/chatops/run_bot.py \
 
 #### Example: !test run
 ```
-!test run HoloLoom/tests/unit/
+!test run hololoom/tests/unit/
 ```
 
 ---
@@ -100,7 +100,7 @@ python HoloLoom/chatops/run_bot.py \
 
 #### Example: !code explain
 ```
-!code explain HoloLoom/policy/unified.py:150
+!code explain hololoom/policy/unified.py:150
 ```
 
 ---
@@ -539,7 +539,7 @@ The bot automatically uses the best available backend with graceful degradation.
 To add a new command handler:
 
 ```python
-from HoloLoom.apps.chatops.handlers import chatops_handler, HandlerCategory
+from hololoom.apps.chatops.handlers import chatops_handler, HandlerCategory
 
 @chatops_handler(
     command="mycommand",
@@ -555,7 +555,7 @@ async def handle_mycommand(args: str, room_id: str, sender: str) -> str:
 Register in `__init__.py` with graceful degradation:
 ```python
 try:
-    from HoloLoom.apps.chatops.handlers.my_handlers import (
+    from hololoom.apps.chatops.handlers.my_handlers import (
         register_my_handlers,
         handle_mycommand
     )

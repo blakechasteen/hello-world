@@ -18,7 +18,7 @@ from fastapi.datastructures import Headers
 
 
 # Import the security components
-from HoloLoom.apps.server.ar_api import (
+from hololoom.apps.server.ar_api import (
     validate_image_upload,
     RateLimiter,
     MAX_FILE_SIZE,
@@ -370,7 +370,7 @@ class TestRateLimiter:
     @pytest.mark.asyncio
     async def test_global_vision_rate_limiter(self):
         """Test that global vision_rate_limiter is configured correctly."""
-        from HoloLoom.apps.server.ar_api import vision_rate_limiter
+        from hololoom.apps.server.ar_api import vision_rate_limiter
 
         # Should be configured with conservative limits
         assert vision_rate_limiter.max_requests == 10

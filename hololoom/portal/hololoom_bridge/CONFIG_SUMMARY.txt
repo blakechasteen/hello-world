@@ -3,9 +3,9 @@ HoloLoom Bridge Configuration - Summary
 ================================================================================
 
 CREATED FILES:
-  1. HoloLoom/portal/hololoom_bridge/config.py (111 lines)
-  2. HoloLoom/portal/configs/bridge.yaml (24 lines)
-  3. HoloLoom/portal/hololoom_bridge/CONFIG_README.md (comprehensive guide)
+  1. hololoom/portal/hololoom_bridge/config.py (111 lines)
+  2. hololoom/portal/configs/bridge.yaml (24 lines)
+  3. hololoom/portal/hololoom_bridge/CONFIG_README.md (comprehensive guide)
 
 ================================================================================
 BridgeConfig Pydantic Model
@@ -53,7 +53,7 @@ Automatic Type Conversion:
 YAML Configuration (bridge.yaml)
 ================================================================================
 
-Located at: HoloLoom/portal/configs/bridge.yaml
+Located at: hololoom/portal/configs/bridge.yaml
 
 Features:
   ✓ Well-commented configuration
@@ -110,8 +110,8 @@ INTEGRATION POINTS
 ================================================================================
 
 Already Integrated:
-  ✓ HoloLoom/portal/hololoom_bridge/__init__.py imports BridgeConfig
-  ✓ HoloLoom/portal/hololoom_bridge/bridge.py uses load_bridge_config()
+  ✓ hololoom/portal/hololoom_bridge/__init__.py imports BridgeConfig
+  ✓ hololoom/portal/hololoom_bridge/bridge.py uses load_bridge_config()
 
 Ready for Use:
   ✓ Portal server can load config at startup
@@ -132,7 +132,7 @@ Main Reference: CONFIG_README.md
   - Full API reference
 
 Quick Start:
-  from HoloLoom.portal.hololoom_bridge import load_bridge_config
+  from hololoom.portal.hololoom_bridge import load_bridge_config
   config = load_bridge_config()
 
 Lines of Code:

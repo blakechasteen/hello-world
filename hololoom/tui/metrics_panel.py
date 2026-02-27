@@ -307,7 +307,7 @@ class MetricsPanel:
         self.console.print(self.render_compact())
 
     def update_from_spacetime(self, spacetime: Any):
-        """Update metrics from HoloLoom Spacetime result."""
+        """Update metrics from hololoom Spacetime result."""
         if hasattr(spacetime, 'confidence'):
             self.set_metric("activation", spacetime.confidence)
 

@@ -23,8 +23,8 @@ if sys.platform == 'win32':
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
-from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories, Memory
+from hololoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+from hololoom.memory.protocol import create_unified_memory, shards_to_memories, Memory
 
 
 async def scrape_and_store(url: str, memory_backend: str = 'simple'):
@@ -194,7 +194,7 @@ async def demo_recursive_crawl_to_memory():
     print("BONUS: RECURSIVE CRAWL → MEMORY STORAGE")
     print("=" * 80)
 
-    from HoloLoom.spinning_wheel.recursive_crawler import crawl_recursive, CrawlConfig
+    from hololoom.spinning_wheel.recursive_crawler import crawl_recursive, CrawlConfig
 
     seed_url = "https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices"
     seed_topic = "Claude agent skills best practices"
@@ -211,7 +211,7 @@ async def demo_recursive_crawl_to_memory():
     print(f"Config: depth={config.max_depth}, max_pages={config.max_pages}")
 
     try:
-        from HoloLoom.spinning_wheel.recursive_crawler import RecursiveCrawler
+        from hololoom.spinning_wheel.recursive_crawler import RecursiveCrawler
         crawler = RecursiveCrawler(config)
         pages = await crawler.crawl(seed_url, seed_topic)
 

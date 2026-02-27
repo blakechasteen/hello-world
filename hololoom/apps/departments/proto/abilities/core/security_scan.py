@@ -5,7 +5,7 @@ Provides built-in security scanning capabilities for detecting common vulnerabil
 in code without requiring external tools.
 
 Status: Production Ready
-Location: HoloLoom/departments/proto/abilities/core/security_scan.py
+Location: hololoom/departments/proto/abilities/core/security_scan.py
 Version: 1.0.0
 """
 

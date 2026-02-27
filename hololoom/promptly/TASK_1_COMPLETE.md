@@ -202,7 +202,7 @@ Example flow:
 3. Commits to Git: `git add optimized_qa_prompt.txt`
 4. Developer integrates:
 ```python
-from HoloLoom.promptly import create_signature
+from hololoom.promptly import create_signature
 
 qa_sig = create_signature(
     "QA",
@@ -320,7 +320,7 @@ This system serves them
 # (using beginner_prompts.py)
 
 # STEP 2: Developer integrates
-from HoloLoom.promptly import DSPyHoloLoom, create_signature
+from hololoom.promptly import DSPyHoloLoom, create_signature
 
 qa_signature = create_signature(
     "QuestionAnsweringOptimized",
@@ -496,7 +496,7 @@ Task 1 is **complete and successful**. The beginner prompts system:
 
 **Test Run Command**:
 ```bash
-cd HoloLoom/promptly
+cd hololoom/promptly
 python test_beginner_prompts.py
 ```
 

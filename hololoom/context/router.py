@@ -22,12 +22,12 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 import logging
 
-from HoloLoom.context.classifier import QueryClassifier, BackendSelection, Backend
-from HoloLoom.context.bandit import ThompsonBandit
-from HoloLoom.context.calibration import ConfidenceCalibrator
-from HoloLoom.context.learning_tracker import LearningTracker
-from HoloLoom.context.strategy_updater import StrategyUpdater
-from HoloLoom.infrastructure.mcp import (
+from hololoom.context.classifier import QueryClassifier, BackendSelection, Backend
+from hololoom.context.bandit import ThompsonBandit
+from hololoom.context.calibration import ConfidenceCalibrator
+from hololoom.context.learning_tracker import LearningTracker
+from hololoom.context.strategy_updater import StrategyUpdater
+from hololoom.infrastructure.mcp import (
     MCPRequest,
     MCPResponse,
     MCPServer,

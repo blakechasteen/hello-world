@@ -33,42 +33,42 @@ def test_smoke_imports():
     print("="*80)
 
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
         print("[OK] WeavingOrchestrator")
     except Exception as e:
         print(f"[FAIL] WeavingOrchestrator: {e}")
         return False
 
     try:
-        from HoloLoom.convergence.mcts_engine import MCTSConvergenceEngine
+        from hololoom.convergence.mcts_engine import MCTSConvergenceEngine
         print("[OK] MCTSConvergenceEngine")
     except Exception as e:
         print(f"[FAIL] MCTSConvergenceEngine: {e}")
         return False
 
     try:
-        from HoloLoom.embedding.matryoshka_gate import MatryoshkaGate
+        from hololoom.embedding.matryoshka_gate import MatryoshkaGate
         print("[OK] MatryoshkaGate")
     except Exception as e:
         print(f"[FAIL] MatryoshkaGate: {e}")
         return False
 
     try:
-        from HoloLoom.synthesis_bridge import SynthesisBridge
+        from hololoom.synthesis_bridge import SynthesisBridge
         print("[OK] SynthesisBridge")
     except Exception as e:
         print(f"[FAIL] SynthesisBridge: {e}")
         return False
 
     try:
-        from HoloLoom.unified_api import HoloLoom
+        from hololoom.unified_api import hololoom
         print("[OK] HoloLoom (Unified API)")
     except Exception as e:
         print(f"[FAIL] HoloLoom: {e}")
         return False
 
     try:
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
         print("[OK] MatryoshkaEmbeddings")
     except Exception as e:
         print(f"[FAIL] MatryoshkaEmbeddings: {e}")
@@ -88,7 +88,7 @@ def test_mcts_engine():
     print("LEVEL 2A: MCTS Flux Capacitor")
     print("="*80)
 
-    from HoloLoom.convergence.mcts_engine import MCTSConvergenceEngine
+    from hololoom.convergence.mcts_engine import MCTSConvergenceEngine
 
     tools = ["search", "summarize", "extract"]
     engine = MCTSConvergenceEngine(tools=tools, n_simulations=10)
@@ -117,8 +117,8 @@ def test_matryoshka_gating():
     print("LEVEL 2B: Matryoshka Gating")
     print("="*80)
 
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-    from HoloLoom.embedding.matryoshka_gate import MatryoshkaGate, GateConfig
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.embedding.matryoshka_gate import MatryoshkaGate, GateConfig
 
     # Create embedder
     embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
@@ -165,8 +165,8 @@ async def test_synthesis_bridge():
     print("LEVEL 2C: Synthesis Bridge")
     print("="*80)
 
-    from HoloLoom.synthesis_bridge import SynthesisBridge
-    from HoloLoom.loom.command import PatternCard, PatternSpec
+    from hololoom.synthesis_bridge import SynthesisBridge
+    from hololoom.loom.command import PatternCard, PatternSpec
 
     # Create bridge
     bridge = SynthesisBridge(enable_enrichment=True)
@@ -218,8 +218,8 @@ async def test_weaving_cycle():
     print("LEVEL 3A: Complete Weaving Cycle")
     print("="*80)
 
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.config import Config
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.config import Config
 
     # Create orchestrator with MCTS
     weaver = WeavingOrchestrator(
@@ -274,7 +274,7 @@ async def test_unified_api():
     print("LEVEL 3B: Unified API")
     print("="*80)
 
-    from HoloLoom.unified_api import HoloLoom
+    from hololoom.unified_api import hololoom
 
     # Create HoloLoom
     loom = await HoloLoom.create(
@@ -322,8 +322,8 @@ async def test_performance():
     print("LEVEL 4: Performance Tests")
     print("="*80)
 
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.config import Config
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.config import Config
 
     # Create orchestrator
     weaver = WeavingOrchestrator(

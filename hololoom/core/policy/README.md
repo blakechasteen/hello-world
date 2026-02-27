@@ -1,7 +1,7 @@
 # HoloLoom Policy Module
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/policy/`
+**Location**: `hololoom/policy/`
 **Total Code**: 3,082 lines across 6 Python files
 
 ---
@@ -15,8 +15,8 @@ The Policy Module is HoloLoom's **neural decision engine**, combining transforme
 ### Quick Start
 
 ```python
-from HoloLoom.policy import create_policy, BanditStrategy
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.policy import create_policy, BanditStrategy
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 # Create embedder
 emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
@@ -42,7 +42,7 @@ print(f"Chosen Tool: {action_plan.chosen_tool}")
 ### File Structure
 
 ```
-HoloLoom/policy/
+hololoom/policy/
 ├── __init__.py                  # 18 lines - Public exports
 ├── unified.py                   # 1,233 lines - Main policy engine
 ├── thompson_sampling.py         # 160 lines - Bandit strategies
@@ -260,7 +260,7 @@ print(f"Total: {unc['total']:.3f}")
 
 **Usage**:
 ```python
-from HoloLoom.policy.gp_policy import create_gp_policy, GPConfig
+from hololoom.policy.gp_policy import create_gp_policy, GPConfig
 
 policy = create_gp_policy(
     mem_dim=384,
@@ -301,7 +301,7 @@ hyperparams = action_plan.metadata['gp']['hyperparams']
 
 **Usage**:
 ```python
-from HoloLoom.policy.semantic_nudging import (
+from hololoom.policy.semantic_nudging import (
     SemanticNudgePolicy,
     define_semantic_goals
 )
@@ -339,9 +339,9 @@ action_plan = await semantic_policy.decide(
 
 ```python
 import asyncio
-from HoloLoom.policy import create_policy, BanditStrategy
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Features, Context
+from hololoom.policy import create_policy, BanditStrategy
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Features, Context
 
 async def demo():
     emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
@@ -445,7 +445,7 @@ asyncio.run(demo_bayesian())
 
 ```python
 # From weaving_orchestrator.py
-from HoloLoom.policy import create_policy
+from hololoom.policy import create_policy
 
 class WeavingOrchestrator:
     def __init__(self, cfg: Config, shards, guardrails=None):
@@ -606,8 +606,8 @@ action_plan.metadata = {
 
 **Unit Tests**:
 ```bash
-pytest HoloLoom/tests/unit/test_unified_policy.py -v
-pytest HoloLoom/tests/unit/test_bayesian_policy.py -v
+pytest hololoom/tests/unit/test_unified_policy.py -v
+pytest hololoom/tests/unit/test_bayesian_policy.py -v
 ```
 
 **Demos**:
@@ -706,11 +706,11 @@ class BanditStrategy(Enum):
 
 **Internal**:
 ```python
-from HoloLoom.documentation.types import Features, Context, ActionPlan
-from HoloLoom.protocols import PolicyEngine
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-from HoloLoom.semantic_calculus import SemanticSpectrum  # Optional
+from hololoom.documentation.types import Features, Context, ActionPlan
+from hololoom.protocols import PolicyEngine
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.semantic_calculus import SemanticSpectrum  # Optional
 ```
 
 **External**:
@@ -740,7 +740,7 @@ import numpy as np
 
 ```python
 # 1. Create policy (one-liner)
-from HoloLoom.policy import create_policy
+from hololoom.policy import create_policy
 policy = create_policy(mem_dim=384, emb=embedder, scales=[96, 192, 384])
 
 # 2. Make decision

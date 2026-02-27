@@ -22,7 +22,7 @@ import time
 import hashlib
 import logging
 
-from HoloLoom.dark_trace.plugins.plugin_protocol import (
+from hololoom.dark_trace.plugins.plugin_protocol import (
     DarkTracePlugin,
     LensPlugin,
     ValidatorPlugin,
@@ -50,7 +50,7 @@ _ABSTRACT_PLUGIN_CLASSES = (
     DatasetPlugin,
     ModelAdapterPlugin,
 )
-from HoloLoom.dark_trace.plugins.plugin_signing import (
+from hololoom.dark_trace.plugins.plugin_signing import (
     PluginVerifier,
     SignedManifest,
 )

@@ -1,7 +1,7 @@
 # CARTS: Continuous Adversarial Red Team System
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/redteam/`
+**Location**: `hololoom/redteam/`
 **Total Code**: 52,383 lines across 77 Python files
 **Philosophy**: "Continuously probe, learn, and evolve."
 
@@ -41,8 +41,8 @@ CARTS (Continuous Adversarial Red Team System) is a production-grade red team or
 ### Basic Red Team Cycle
 
 ```python
-from HoloLoom.redteam import create_orchestrator
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.redteam import create_orchestrator
+from hololoom.alignment import SafetyGuardrails
 
 # Create safety system to test against
 guardrails = SafetyGuardrails()
@@ -91,7 +91,7 @@ print(f"Critical vulnerabilities: {sum(1 for v in stats.vulnerabilities if v.sev
 ### Sandboxed Execution (Phase 2+)
 
 ```python
-from HoloLoom.redteam.sandbox import create_sandboxed_executor
+from hololoom.redteam.sandbox import create_sandboxed_executor
 
 # Create sandboxed executor (transparent sandboxing)
 executor = await create_sandboxed_executor()
@@ -118,7 +118,7 @@ await executor.close()
 ### Swarm Attacks (Phase 3+)
 
 ```python
-from HoloLoom.redteam.swarm import create_coordinator
+from hololoom.redteam.swarm import create_coordinator
 
 # Create swarm coordinator
 coordinator = create_coordinator(
@@ -141,7 +141,7 @@ print(f"Messages exchanged: {campaign_result.total_messages}")
 ### Attack Refinement (Phase 4+)
 
 ```python
-from HoloLoom.redteam.refinement import AttackRefiner
+from hololoom.redteam.refinement import AttackRefiner
 
 # Create refiner for payload improvement
 refiner = AttackRefiner(
@@ -191,7 +191,7 @@ CARTS consists of **9 core components** plus **5 optional phases**:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam import PayloadGenerator, AttackStrategy
+from hololoom.redteam import PayloadGenerator, AttackStrategy
 
 generator = PayloadGenerator()
 
@@ -199,7 +199,7 @@ generator = PayloadGenerator()
 payload = generator.generate(AttackStrategy.PROMPT_INJECTION)
 
 # MRF-enhanced generation
-from HoloLoom.redteam.mrf_payloads import MRFPayloadEnhancer
+from hololoom.redteam.mrf_payloads import MRFPayloadEnhancer
 
 enhancer = MRFPayloadEnhancer()
 enhanced = await enhancer.enhance(payload)
@@ -234,7 +234,7 @@ Update on failure:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam import RedTeamBandit, create_bandit
+from hololoom.redteam import RedTeamBandit, create_bandit
 
 # Create bandit with automatic arm initialization
 bandit = create_bandit(
@@ -279,7 +279,7 @@ Executes attack payloads against HoloLoom's safety systems:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam import AttackExecutor, create_executor, AttackStrategy
+from hololoom.redteam import AttackExecutor, create_executor, AttackStrategy
 
 # Create executor
 executor = create_executor(
@@ -330,7 +330,7 @@ Evolves successful payloads using genetic algorithm principles:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam import PayloadMutator, create_mutator
+from hololoom.redteam import PayloadMutator, create_mutator
 
 # Create mutator
 mutator = create_mutator(mutation_rate=0.1)
@@ -379,7 +379,7 @@ VERIFIED (fix tested, no regression)
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam import VulnerabilityTracker, create_tracker
+from hololoom.redteam import VulnerabilityTracker, create_tracker
 
 # Create tracker
 tracker = create_tracker(state_dir="./redteam_state")
@@ -417,7 +417,7 @@ Generates comprehensive Markdown vulnerability reports:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam import ReportGenerator
+from hololoom.redteam import ReportGenerator
 
 # Create reporter
 reporter = ReportGenerator(tracker=tracker, bandit=bandit)
@@ -446,7 +446,7 @@ Analyzes attack payloads using Metaprompting Refinement Framework:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam.mrf_analytics import MRFAttackAnalyzer
+from hololoom.redteam.mrf_analytics import MRFAttackAnalyzer
 
 analyzer = MRFAttackAnalyzer()
 
@@ -473,7 +473,7 @@ Integrates Metaprompting Refinement Framework for guided mutation and enhancemen
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam.mrf_integration import MRFMutationEngine
+from hololoom.redteam.mrf_integration import MRFMutationEngine
 
 # Create MRF mutation engine
 engine = MRFMutationEngine(enable_mrf=True)
@@ -504,7 +504,7 @@ Main orchestrator coordinating all red team components:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam import create_orchestrator
+from hololoom.redteam import create_orchestrator
 
 # Create orchestrator
 orchestrator = create_orchestrator(
@@ -548,7 +548,7 @@ Transparent sandboxing for isolated attack execution:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam.sandbox import create_sandboxed_executor
+from hololoom.redteam.sandbox import create_sandboxed_executor
 
 executor = await create_sandboxed_executor(
     sandbox_mode="process",  # or "network", "filesystem", "container"
@@ -582,7 +582,7 @@ Multi-agent adversarial attacks with coordinated learning:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam.swarm import create_coordinator
+from hololoom.redteam.swarm import create_coordinator
 
 coordinator = create_coordinator(
     num_agents=4,
@@ -618,7 +618,7 @@ Quality-driven improvement of promising payloads:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam.refinement import AttackRefiner
+from hololoom.redteam.refinement import AttackRefiner
 
 refiner = AttackRefiner(
     initial_payload="ignore previous instructions",
@@ -653,7 +653,7 @@ Systematic testing of safety assumptions through behavioral probes:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam.probes import AttackProber
+from hololoom.redteam.probes import AttackProber
 
 prober = AttackProber()
 
@@ -725,7 +725,7 @@ Orchestrates all learning components:
 
 **Quick Start**:
 ```python
-from HoloLoom.redteam.learning import create_unified_learner
+from hololoom.redteam.learning import create_unified_learner
 
 learner = create_unified_learner(
     enable_context=True,
@@ -1048,7 +1048,7 @@ Automatic monitoring of:
 ### Quick Start
 
 ```python
-from HoloLoom.redteam.sandbox import create_sandboxed_executor
+from hololoom.redteam.sandbox import create_sandboxed_executor
 
 # Auto-detect best isolation mode
 executor = await create_sandboxed_executor(
@@ -1078,7 +1078,7 @@ await executor.close()
 ### Resource Limits
 
 ```python
-from HoloLoom.redteam.sandbox import SandboxConfig
+from hololoom.redteam.sandbox import SandboxConfig
 
 config = SandboxConfig(
     sandbox_mode="process",
@@ -1108,7 +1108,7 @@ Timeline visualization showing:
 
 **Example**:
 ```python
-from HoloLoom.redteam.visualization import VulnerabilityWaterfallRenderer
+from hololoom.redteam.visualization import VulnerabilityWaterfallRenderer
 
 renderer = VulnerabilityWaterfallRenderer()
 
@@ -1156,7 +1156,7 @@ Real-time monitoring of:
 
 **Example**:
 ```python
-from HoloLoom.redteam.visualization import create_learning_dashboard
+from hololoom.redteam.visualization import create_learning_dashboard
 
 dashboard = create_learning_dashboard(
     learner=learner,
@@ -1309,8 +1309,8 @@ pip install HoloLoom
 ### 2. Create Basic Test
 
 ```python
-from HoloLoom.redteam import create_orchestrator
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.redteam import create_orchestrator
+from hololoom.alignment import SafetyGuardrails
 
 # Create safety system
 guardrails = SafetyGuardrails()

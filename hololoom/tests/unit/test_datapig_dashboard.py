@@ -11,7 +11,7 @@ Tests Tufte-style HTML report generation with:
 **Status**: Complete
 
 Run:
-    pytest HoloLoom/tests/unit/test_datapig_dashboard.py -v
+    pytest hololoom/tests/unit/test_datapig_dashboard.py -v
 """
 
 import pytest
@@ -19,14 +19,14 @@ import time
 from typing import List
 
 # DATAPIG imports
-from HoloLoom.datapig.dashboard import (
+from hololoom.datapig.dashboard import (
     QualityReport,
     render_quality_dashboard,
     render_small_multiples,
     render_density_table,
     render_sparkline
 )
-from HoloLoom.datapig.detector import DataQualityIssue, IssueType, Severity
+from hololoom.datapig.detector import DataQualityIssue, IssueType, Severity
 
 
 # ============================================================================
@@ -403,7 +403,7 @@ def test_dashboard_end_to_end_integration():
     2. Analyze datasets
     3. Generate dashboard
     """
-    from HoloLoom.datapig.detector import DataPigDetector
+    from hololoom.datapig.detector import DataPigDetector
 
     # Sample datasets
     datasets = [

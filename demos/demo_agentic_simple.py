@@ -20,7 +20,7 @@ print("="*80)
 print("\nChecking dependencies...")
 
 try:
-    from HoloLoom.documentation.types import Query, MemoryShard
+    from hololoom.documentation.types import Query, MemoryShard
     print("✓ Core types imported")
 except ImportError as e:
     print(f"✗ Could not import types: {e}")
@@ -29,14 +29,14 @@ except ImportError as e:
     sys.exit(1)
 
 try:
-    from HoloLoom.config import Config
+    from hololoom.config import Config
     print("✓ Config imported")
 except ImportError as e:
     print(f"✗ Could not import config: {e}")
     sys.exit(1)
 
 try:
-    from HoloLoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.audit_trail import AuditTrail
     print("✓ AuditTrail imported")
 except ImportError as e:
     print(f"✗ Could not import audit_trail: {e}")
@@ -44,7 +44,7 @@ except ImportError as e:
 
 print("\nAttempting to import agentic system...")
 try:
-    from HoloLoom.agentic.core import (
+    from hololoom.agentic.core import (
         AgenticOrchestrator,
         ReasoningMode,
         AgenticIntent,
@@ -106,12 +106,12 @@ print("="*80)
 print("""
 Option 1: HTTP Server (Recommended)
   1. Install: pip install fastapi uvicorn
-  2. Start: python HoloLoom/server/agentic_api.py
+  2. Start: python hololoom/server/agentic_api.py
   3. Test: curl http://localhost:8000/health
   4. Use from VS Code Squad extension
 
 Option 2: Python API
-  from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+  from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
 
   async with create_agentic_orchestrator(config, shards) as agent:
       result = await agent.reason(
@@ -141,7 +141,7 @@ print("""
   - weaving orchestrator
 
 → For a working end-to-end demo, use the HTTP server approach
-→ See HoloLoom/server/README.md for setup instructions
+→ See hololoom/server/README.md for setup instructions
 """)
 
 print("\n" + "="*80)
@@ -149,5 +149,5 @@ print("Demo Complete!")
 print("="*80)
 print("\nNext steps:")
 print("  1. Read AGENTIC_SYSTEM_COMPLETE.md for full overview")
-print("  2. Start HTTP server: python HoloLoom/server/agentic_api.py")
+print("  2. Start HTTP server: python hololoom/server/agentic_api.py")
 print("  3. Test from VS Code or curl")

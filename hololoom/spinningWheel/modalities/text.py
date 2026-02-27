@@ -14,7 +14,7 @@ Design Philosophy:
 - Optional enrichment for entity/motif extraction
 
 Usage:
-    from HoloLoom.spinningWheel.text import TextSpinner, TextSpinnerConfig
+    from hololoom.spinningWheel.text import TextSpinner, TextSpinnerConfig
 
     config = TextSpinnerConfig(
         chunk_by='paragraph',  # or 'sentence', 'character', None
@@ -38,7 +38,7 @@ from .base import BaseSpinner, SpinnerConfig
 
 # Import HoloLoom types
 try:
-    from HoloLoom.protocols.types import MemoryShard
+    from hololoom.protocols.types import MemoryShard
 except ImportError:
     # Fallback if types not available
     from dataclasses import dataclass, field

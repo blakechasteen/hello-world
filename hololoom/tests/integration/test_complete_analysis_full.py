@@ -25,7 +25,7 @@ print("="*70 + "\n")
 print("Module 1: REAL ANALYSIS")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import MetricSpace, SequenceAnalyzer, Differentiator
+from hololoom.warp.math.analysis import MetricSpace, SequenceAnalyzer, Differentiator
 
 # Test metric spaces
 embeddings = [np.random.randn(10) for _ in range(30)]
@@ -49,7 +49,7 @@ print(f"[3/21] Gradient of x^2: {np.allclose(grad, 2*point, atol=1e-4)}")
 print("\nModule 2: COMPLEX ANALYSIS")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import ComplexFunction, ContourIntegrator, ResidueCalculator
+from hololoom.warp.math.analysis import ComplexFunction, ContourIntegrator, ResidueCalculator
 
 # Holomorphic function
 f = ComplexFunction(lambda z: z**2)
@@ -73,7 +73,7 @@ print(f"[6/21] Residue at simple pole: {abs(res - 1) < 0.1}")
 print("\nModule 3: FUNCTIONAL ANALYSIS")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import HilbertSpace, BoundedOperator, SpectralAnalyzer
+from hololoom.warp.math.analysis import HilbertSpace, BoundedOperator, SpectralAnalyzer
 
 # Hilbert space and Gram-Schmidt
 vectors = [np.array([1.0, 0.0, 0.0]), np.array([1.0, 1.0, 0.0]), np.array([1.0, 1.0, 1.0])]
@@ -100,7 +100,7 @@ print(f"[9/21] Spectral radius: {spectral_radius:.4f}, eigenvalues: {eigenvalues
 print("\nModule 4: MEASURE THEORY")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import SigmaAlgebra, Measure, LebesgueMeasure, LebesgueIntegrator
+from hololoom.warp.math.analysis import SigmaAlgebra, Measure, LebesgueMeasure, LebesgueIntegrator
 
 # Sigma-algebra
 space = {1, 2, 3, 4, 5}
@@ -124,7 +124,7 @@ print(f"[12/21] Lebesgue measure [0,1]: {leb_measure} (exact: 1.0)")
 print("\nModule 5: FOURIER & HARMONIC ANALYSIS")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import FourierTransform, WaveletTransform, TimeFrequencyAnalysis
+from hololoom.warp.math.analysis import FourierTransform, WaveletTransform, TimeFrequencyAnalysis
 
 # FFT
 signal = np.sin(2 * np.pi * 5 * np.linspace(0, 1, 100))  # 5 Hz sine wave
@@ -147,7 +147,7 @@ print(f"[15/21] STFT: shape {stft_matrix.shape} (freq x time)")
 print("\nModule 6: STOCHASTIC CALCULUS")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import BrownianMotion, ItoIntegrator, StochasticDifferentialEquation
+from hololoom.warp.math.analysis import BrownianMotion, ItoIntegrator, StochasticDifferentialEquation
 
 # Brownian motion
 paths = BrownianMotion.generate_path(T=1.0, n_steps=100, n_paths=5)
@@ -171,7 +171,7 @@ print(f"[18/21] SDE (Euler-Maruyama): {sde_result.method}, {sde_result.X.shape[0
 print("\nModule 7: ADVANCED TOPICS")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import (
+from hololoom.warp.math.analysis import (
     WaveFrontSet, Hyperreal, NonstandardAnalysis, PAdicNumber
 )
 

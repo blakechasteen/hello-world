@@ -8,8 +8,8 @@ PDE-based semantic flow for temporal dynamics.
 Install: pip install hololoom[physics]
 
 Usage:
-    from HoloLoom.config import Config
-    from HoloLoom.expansions.physics import PhysicsConfig
+    from hololoom.config import Config
+    from hololoom.expansions.physics import PhysicsConfig
 
     config = Config.research()
     config.load_expansion(PhysicsConfig(use_gp_bandits=True))
@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
 try:
-    from HoloLoom.config import ExpansionBundle
+    from hololoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:

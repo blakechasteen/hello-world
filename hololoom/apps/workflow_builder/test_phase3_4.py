@@ -7,7 +7,7 @@ and data persistence.
 
 Usage:
     # Start server first: PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
-    python HoloLoom/web_dashboard/test_phase3_4.py
+    python hololoom/web_dashboard/test_phase3_4.py
 """
 
 import asyncio

@@ -21,8 +21,8 @@ if __name__ == '__main__' and sys.platform == 'win32':
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
-from HoloLoom.memory.protocol import create_unified_memory, shards_to_memories
+from hololoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+from hololoom.memory.protocol import create_unified_memory, shards_to_memories
 
 
 async def main():

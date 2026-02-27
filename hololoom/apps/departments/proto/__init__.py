@@ -5,7 +5,7 @@ A relaxed, context-aware code assistant that integrates
 deeply with HoloLoom's infrastructure.
 
 Quick Start:
-    from HoloLoom.apps.departments.proto import ProtoEngine, ProtoConfig
+    from hololoom.apps.departments.proto import ProtoEngine, ProtoConfig
 
     async with ProtoEngine(ProtoConfig.default()) as proto:
         response = await proto.process("explain this code")
@@ -43,10 +43,10 @@ Status: Production Ready (2025-12-02)
 __version__ = "0.1.0"
 
 # Core
-from HoloLoom.apps.departments.proto.core import ProtoEngine, ProtoConfig, ProtoMode
+from hololoom.apps.departments.proto.core import ProtoEngine, ProtoConfig, ProtoMode
 
 # Domain
-from HoloLoom.apps.departments.proto.domain import (
+from hololoom.apps.departments.proto.domain import (
     ProtoIntent,
     ProtoAction,
     ProtoResponse,
@@ -58,7 +58,7 @@ from HoloLoom.apps.departments.proto.domain import (
 )
 
 # Abilities
-from HoloLoom.apps.departments.proto.abilities import (
+from hololoom.apps.departments.proto.abilities import (
     Ability,
     BaseAbility,
     AbilityManifest,
@@ -72,7 +72,7 @@ from HoloLoom.apps.departments.proto.abilities import (
 )
 
 # Integration
-from HoloLoom.apps.departments.proto.integration import (
+from hololoom.apps.departments.proto.integration import (
     AgenticBridge,
     ProtoReasoningMode,
     AgenticBridgeResult,

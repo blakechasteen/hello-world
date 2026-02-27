@@ -1,7 +1,7 @@
 """
 Unit tests for Spacetime output structure.
 
-Tests the core output type from HoloLoom/fabric/spacetime.py:
+Tests the core output type from hololoom/fabric/spacetime.py:
 - Spacetime creation and validation
 - WeavingTrace structure
 - Serialization/deserialization
@@ -18,7 +18,7 @@ import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from HoloLoom.fabric.spacetime import (
+from hololoom.fabric.spacetime import (
     Spacetime,
     WeavingTrace,
     FabricCollection

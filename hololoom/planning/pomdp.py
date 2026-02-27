@@ -25,7 +25,7 @@ from collections import defaultdict
 from copy import deepcopy
 
 # Import Layer 2 core
-from HoloLoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action, ActionType
+from hololoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action, ActionType
 
 logger = logging.getLogger(__name__)
 

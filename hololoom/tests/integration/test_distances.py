@@ -1,8 +1,8 @@
 import sys
 sys.path.insert(0, '.')
 import numpy as np
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus, MatryoshkaScale
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus, MatryoshkaScale
 
 # Create embedder and semantic calculator
 embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])

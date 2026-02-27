@@ -13,13 +13,13 @@
    - Contains all HTML, CSS, and core JavaScript
    - Fully functional template browser
    - Status: ✅ Complete, tested, ready to deploy
-   - Location: `HoloLoom/web_dashboard/template_gallery.html`
+   - Location: `hololoom/web_dashboard/template_gallery.html`
 
 2. **template_gallery.js** (500+ lines)
    - Optional JavaScript module for advanced features
    - Provides TemplateGallery class
    - Analytics, recommendations, import/export
-   - Location: `HoloLoom/web_dashboard/template_gallery.js`
+   - Location: `hololoom/web_dashboard/template_gallery.js`
 
 3. **example_workflows/** (8 JSON files - existing)
    - Research Pipeline
@@ -35,19 +35,19 @@
 
 1. **TEMPLATE_GALLERY_README.md** (600+ lines)
    - Comprehensive technical documentation
-   - Location: `HoloLoom/web_dashboard/TEMPLATE_GALLERY_README.md`
+   - Location: `hololoom/web_dashboard/TEMPLATE_GALLERY_README.md`
 
 2. **TEMPLATE_GALLERY_QUICK_START.md** (300+ lines)
    - User-friendly quick start guide
-   - Location: `HoloLoom/web_dashboard/TEMPLATE_GALLERY_QUICK_START.md`
+   - Location: `hololoom/web_dashboard/TEMPLATE_GALLERY_QUICK_START.md`
 
 3. **TEMPLATE_GALLERY_TESTING.md** (400+ lines)
    - Testing procedures and checklists
-   - Location: `HoloLoom/web_dashboard/TEMPLATE_GALLERY_TESTING.md`
+   - Location: `hololoom/web_dashboard/TEMPLATE_GALLERY_TESTING.md`
 
 4. **INTEGRATION_GUIDE.md** (300+ lines)
    - How to connect gallery to workflow builder
-   - Location: `HoloLoom/web_dashboard/INTEGRATION_GUIDE.md`
+   - Location: `hololoom/web_dashboard/INTEGRATION_GUIDE.md`
 
 5. **TEMPLATE_GALLERY_WAVE1_COMPLETE.md** (500+ lines)
    - Executive summary of Wave 1 delivery
@@ -55,20 +55,20 @@
 
 6. **GALLERY_MANIFEST.md** (This file)
    - Complete file listing and quick reference
-   - Location: `HoloLoom/web_dashboard/GALLERY_MANIFEST.md`
+   - Location: `hololoom/web_dashboard/GALLERY_MANIFEST.md`
 
 ## Quick Access
 
 ### To View the Gallery
 ```bash
 # Windows
-start HoloLoom/web_dashboard/template_gallery.html
+start hololoom/web_dashboard/template_gallery.html
 
 # Mac/Linux
-open HoloLoom/web_dashboard/template_gallery.html
+open hololoom/web_dashboard/template_gallery.html
 
 # Local server (recommended)
-cd HoloLoom/web_dashboard && python -m http.server 8000
+cd hololoom/web_dashboard && python -m http.server 8000
 # Visit: http://localhost:8000/template_gallery.html
 ```
 
@@ -125,7 +125,7 @@ cd HoloLoom/web_dashboard && python -m http.server 8000
 ## File Locations
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── template_gallery.html             ← Main UI (OPEN THIS)
 ├── template_gallery.js               ← Advanced features
 ├── TEMPLATE_GALLERY_README.md        ← Full docs

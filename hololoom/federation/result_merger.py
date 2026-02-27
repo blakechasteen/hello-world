@@ -19,7 +19,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from HoloLoom.federation.types import GuildTrustLevel
+from hololoom.federation.types import GuildTrustLevel
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +137,7 @@ class RAGResultMerger:
     3. Weight by node trust level
 
     Example:
-        >>> from HoloLoom.context_packing import ImportanceScorer
+        >>> from hololoom.context_packing import ImportanceScorer
         >>> scorer = ImportanceScorer()
         >>> merger = RAGResultMerger(importance_scorer=scorer)
         >>>
@@ -171,7 +171,7 @@ class RAGResultMerger:
         """Ensure importance scorer is available."""
         if self._scorer is None and not self._scorer_loaded:
             try:
-                from HoloLoom.context_packing import ImportanceScorer
+                from hololoom.context_packing import ImportanceScorer
                 self._scorer = ImportanceScorer()
                 self._scorer_loaded = True
             except ImportError:

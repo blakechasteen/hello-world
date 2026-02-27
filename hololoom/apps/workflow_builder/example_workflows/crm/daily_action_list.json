@@ -3,7 +3,7 @@
   "name": "Daily Action List Generator",
   "description": "Generate prioritized daily action list for all active contacts",
   "tags": ["crm", "daily_actions", "prioritization"],
-  "author": "HoloLoom CRM",
+  "author": "hololoom CRM",
   "created": "2025-11-04",
   "nodes": [
     {

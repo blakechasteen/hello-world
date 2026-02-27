@@ -10,14 +10,14 @@ Public API:
 - load_mock_data: Mock data loader
 """
 
-from HoloLoom.infrastructure.sql.backend import (
+from hololoom.infrastructure.sql.backend import (
     SQLBackend,
     SQLConfig,
     QueryResult,
     create_sql_backend
 )
 
-from HoloLoom.infrastructure.sql.mock_data import (
+from hololoom.infrastructure.sql.mock_data import (
     load_mock_data,
     MOCK_POLICY_RULES,
     MOCK_TRANSACTIONS,

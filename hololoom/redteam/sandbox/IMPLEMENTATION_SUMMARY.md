@@ -154,7 +154,7 @@ remove_policy() [cleanup, restore previous rules]
 
 **Test Status**:
 ```bash
-pytest HoloLoom/redteam/sandbox/tests/test_isolation_and_policy.py -v
+pytest hololoom/redteam/sandbox/tests/test_isolation_and_policy.py -v
 # Expected: 40+ tests, all passing on supported platforms
 # Gracefully skipped on unsupported platforms
 ```
@@ -287,8 +287,8 @@ Recommended to use with:
 ### With HoloLoom Red Team System
 
 ```python
-from HoloLoom.redteam.sandbox.process_isolation import ProcessIsolator
-from HoloLoom.redteam.sandbox.network_policy import NetworkPolicy
+from hololoom.redteam.sandbox.process_isolation import ProcessIsolator
+from hololoom.redteam.sandbox.network_policy import NetworkPolicy
 
 # In RedTeamExecutor or RedTeamSandbox
 async def execute_code_safely(code: str):
@@ -325,7 +325,7 @@ async def execute_code_safely(code: str):
 ## Files Created
 
 ```
-HoloLoom/redteam/sandbox/
+hololoom/redteam/sandbox/
 ├── process_isolation.py                    (450 lines)
 │   ├── ProcessIsolationConfig
 │   ├── ProcessIsolator (main class)

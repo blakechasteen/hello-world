@@ -922,7 +922,7 @@ RAG_OPTIMIZED_GOLDEN: List[GoldenPair] = [
     # Exact source attribution
     GoldenPair(
         prompt="Quote exactly what the CLAUDE.md says about the FUSED mode.",
-        expected_output="[Exact quote from CLAUDE.md, Configuration section]: 'FUSED: Full processing (all features, 3 scales, multi-scale retrieval) - highest quality'. Located in the 'Configuration (HoloLoom/config.py)' section under 'Three execution modes'.",
+        expected_output="[Exact quote from CLAUDE.md, Configuration section]: 'FUSED: Full processing (all features, 3 scales, multi-scale retrieval) - highest quality'. Located in the 'Configuration (hololoom/config.py)' section under 'Three execution modes'.",
         quality_score=0.90,
         tags=["rag", "attribution", "exact_quote", "accuracy"],
         difficulty=TestDifficulty.MEDIUM,

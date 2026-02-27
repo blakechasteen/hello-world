@@ -4,13 +4,13 @@ HoloLoom - Unified Memory System
 The 10/10 Layer: Everything is a memory operation.
 
 Usage:
-    from HoloLoom import HoloLoom
+    from hololoom import hololoom
 
     # Initialize (single-device mode)
     loom = HoloLoom()
 
     # Initialize (cross-device mode with identity)
-    from HoloLoom.handoff import UnifiedIdentity
+    from hololoom.handoff import UnifiedIdentity
     identity = UnifiedIdentity.generate("blake")
     loom = HoloLoom(identity=identity)  # Syncs across devices!
 
@@ -36,26 +36,26 @@ from typing import Any, List, Optional, Dict, Union, Tuple, TYPE_CHECKING
 from pathlib import Path
 import networkx as nx
 
-# LAZY IMPORTS: Break circular dependency with HoloLoom/__init__.py
+# LAZY IMPORTS: Break circular dependency with hololoom/__init__.py
 # Config is imported lazily in __init__() method instead of module level
 if TYPE_CHECKING:
-    from HoloLoom.config import Config
-    from HoloLoom.handoff.identity import UnifiedIdentity
-    from HoloLoom.handoff.orchestrator import HardenedHandoffOrchestrator
-    from HoloLoom.handoff.synced_memory import SyncedMemory
-    from HoloLoom.core.loom.weave_house import WeaveHouse, WeaveResult
-    from HoloLoom.core.loom.dreaming import DreamOrchestrator
-    from HoloLoom.core.fabric.fabric import Fabric
+    from hololoom.config import Config
+    from hololoom.handoff.identity import UnifiedIdentity
+    from hololoom.handoff.orchestrator import HardenedHandoffOrchestrator
+    from hololoom.handoff.synced_memory import SyncedMemory
+    from hololoom.core.loom.weave_house import WeaveHouse, WeaveResult
+    from hololoom.core.loom.dreaming import DreamOrchestrator
+    from hololoom.core.fabric.fabric import Fabric
 
-from HoloLoom.core.memory.protocol import Memory
-from HoloLoom.core.memory.awareness_graph import AwarenessGraph
-from HoloLoom.core.memory.awareness_types import ActivationStrategy, AwarenessMetrics
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
-from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.core.memory.protocol import Memory
+from hololoom.core.memory.awareness_graph import AwarenessGraph
+from hololoom.core.memory.awareness_types import ActivationStrategy, AwarenessMetrics
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
 
 # Input processing (graceful degradation)
 try:
-    from HoloLoom.input.router import InputRouter
+    from hololoom.input.router import InputRouter
     MULTIMODAL_AVAILABLE = True
 except ImportError:
     InputRouter = None
@@ -109,11 +109,11 @@ class HoloLoom:
             >>> loom = HoloLoom()
             >>>
             >>> # With custom config
-            >>> from HoloLoom.config import Config
+            >>> from hololoom.config import Config
             >>> loom = HoloLoom(config=Config.fused())
             >>>
             >>> # Cross-device mode (syncs memories across devices)
-            >>> from HoloLoom.handoff import UnifiedIdentity
+            >>> from hololoom.handoff import UnifiedIdentity
             >>> identity = UnifiedIdentity.generate("blake")
             >>> loom = HoloLoom(identity=identity)
             >>>
@@ -123,7 +123,7 @@ class HoloLoom:
             >>> loom = HoloLoom(config=Config.multi_perspective())
         """
         # LAZY IMPORT: Import Config here to break circular dependency
-        from HoloLoom.config import Config
+        from hololoom.config import Config
 
         # Configuration
         self.config = config or Config.fast()
@@ -135,8 +135,8 @@ class HoloLoom:
 
         if identity is not None:
             # Lazy import handoff modules
-            from HoloLoom.handoff.orchestrator import HardenedHandoffOrchestrator
-            from HoloLoom.handoff.synced_memory import SyncedMemory
+            from hololoom.handoff.orchestrator import HardenedHandoffOrchestrator
+            from hololoom.handoff.synced_memory import SyncedMemory
 
             # Create synced memory and handoff orchestrator
             self._synced_memory = SyncedMemory(identity)
@@ -678,8 +678,8 @@ Shift detected: {metrics['shift_detected']}
     def _ensure_photo_memory(self):
         """Lazy-initialize photo memory storage."""
         if not hasattr(self, '_photo_memory'):
-            from HoloLoom.core.memory.photo_tokens import PhotoTokenMemory
-            from HoloLoom.core.memory.graph import KG
+            from hololoom.core.memory.photo_tokens import PhotoTokenMemory
+            from hololoom.core.memory.graph import KG
 
             # Create photo memory storage
             storage_path = self.config.data_dir if hasattr(self.config, 'data_dir') else "./photo_memory"
@@ -908,7 +908,7 @@ Shift detected: {metrics['shift_detected']}
             >>> results = await loom.recall("architecture", include_photos=True)
             >>> # Vision model can read diagram directly
         """
-        from HoloLoom.core.memory.visual_compression import compress_to_visual, CompressionMetrics
+        from hololoom.core.memory.visual_compression import compress_to_visual, CompressionMetrics
 
         # Compress data to visual representation
         image, metrics = compress_to_visual(
@@ -988,7 +988,7 @@ Shift detected: {metrics['shift_detected']}
 
         # Use DeepSeek-OCR for decompression
         try:
-            from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
+            from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
 
             spinner = DeepSeekOCRSpinner()
             extracted_text = await spinner.extract_text(photo_token.image_data)
@@ -1104,7 +1104,7 @@ Shift detected: {metrics['shift_detected']}
         if self._weave_house_initialized:
             return
 
-        from HoloLoom.core.loom.initialization import create_weave_house_system
+        from hololoom.core.loom.initialization import create_weave_house_system
 
         self._weave_house, self._dream_orchestrator = await create_weave_house_system(
             config=self.config,

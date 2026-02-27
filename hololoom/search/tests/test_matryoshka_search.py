@@ -6,7 +6,7 @@ Comprehensive unit and integration tests for three-stage web search.
 
 import pytest
 import asyncio
-from HoloLoom.search import MatryoshkaWebSearch, SearchConfig
+from hololoom.search import MatryoshkaWebSearch, SearchConfig
 
 
 class TestMatryoshkaWebSearch:

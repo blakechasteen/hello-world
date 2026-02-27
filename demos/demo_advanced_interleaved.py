@@ -17,12 +17,12 @@ from typing import Dict, List, Any
 
 import networkx as nx
 
-from HoloLoom.memory.interleaved_generation import (
+from hololoom.memory.interleaved_generation import (
     ContextChunk,
     GenerationToken,
     StreamMetadata
 )
-from HoloLoom.memory.interleaved_generation_advanced import (
+from hololoom.memory.interleaved_generation_advanced import (
     AdvancedInterleavedManager,
     MockAdaptiveLLM,
     stream_advanced_generation

@@ -11,7 +11,7 @@ Usage:
 
 import asyncio
 import numpy as np
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     # Phase 1
     SafetyGuardrails,
     ActionRequest,

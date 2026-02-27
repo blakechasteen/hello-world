@@ -25,14 +25,14 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 # Import directly from modules, avoiding problematic redteam __init__
-from HoloLoom.redteam.refinement.attack_refinement import (
+from hololoom.redteam.refinement.attack_refinement import (
     AttackRefiner,
     AttackRefinementStrategy,
     AttackQualityMetrics,
     AttackRefinementResult
 )
-from HoloLoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
-from HoloLoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
+from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
+from hololoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
 
 
 @pytest.fixture

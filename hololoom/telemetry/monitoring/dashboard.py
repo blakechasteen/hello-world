@@ -13,7 +13,7 @@ Features:
 - Live dashboard updates
 
 Usage:
-    from HoloLoom.telemetry.monitoring import MonitoringDashboard, MetricsCollector
+    from hololoom.telemetry.monitoring import MonitoringDashboard, MetricsCollector
     
     collector = MetricsCollector()
     dashboard = MonitoringDashboard(collector)

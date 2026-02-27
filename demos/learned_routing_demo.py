@@ -12,7 +12,7 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent
 sys.path.insert(0, str(repo_root))
 
-from HoloLoom.routing.integration import RoutingOrchestrator, classify_query_type
+from hololoom.routing.integration import RoutingOrchestrator, classify_query_type
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
@@ -53,7 +53,7 @@ def demo_thompson_sampling():
     """Demo 2: Thompson Sampling learning."""
     console.print("\n[bold cyan]Demo 2: Thompson Sampling Learning[/bold cyan]\n")
     
-    from HoloLoom.routing import ThompsonBandit
+    from hololoom.routing import ThompsonBandit
     
     backends = ['HYBRID', 'NEO4J_QDRANT', 'NETWORKX']
     bandit = ThompsonBandit(backends=backends)
@@ -132,7 +132,7 @@ def demo_per_query_type_learning():
     """Demo 3: Per-query-type specialized learning."""
     console.print("\n[bold cyan]Demo 3: Per-Query-Type Learning[/bold cyan]\n")
     
-    from HoloLoom.routing import LearnedRouter
+    from hololoom.routing import LearnedRouter
     import random
     
     backends = ['HYBRID', 'NEO4J_QDRANT', 'NETWORKX']
@@ -200,8 +200,8 @@ def demo_ab_testing():
     """Demo 4: A/B testing learned vs rule-based."""
     console.print("\n[bold cyan]Demo 4: A/B Testing[/bold cyan]\n")
     
-    from HoloLoom.routing import ABTestRouter, StrategyVariant
-    from HoloLoom.routing.integration import rule_based_routing
+    from hololoom.routing import ABTestRouter, StrategyVariant
+    from hololoom.routing.integration import rule_based_routing
     import random
     
     # Create temporary storage

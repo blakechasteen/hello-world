@@ -13,7 +13,7 @@ This is the main user-facing API that consolidates:
 - Data ingestion
 
 Usage:
-    from HoloLoom import HoloLoom
+    from hololoom import hololoom
 
     # Create instance
     loom = await HoloLoom.create(
@@ -44,14 +44,14 @@ from pathlib import Path
 from datetime import datetime
 
 try:
-    from HoloLoom.config import Config
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.spinningWheel.modalities.website import WebsiteSpinnerConfig, WebsiteSpinner
-    from HoloLoom.spinningWheel.modalities.youtube import YouTubeSpinnerConfig, YouTubeSpinner
-    from HoloLoom.core.memory.protocol import create_unified_memory, shards_to_memories
-    from HoloLoom.core.fabric.spacetime import Spacetime
-    from HoloLoom.core.convergence.engine import CollapseStrategy
-    from HoloLoom.core.protocols.types import Query
+    from hololoom.config import Config
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.spinningWheel.modalities.website import WebsiteSpinnerConfig, WebsiteSpinner
+    from hololoom.spinningWheel.modalities.youtube import YouTubeSpinnerConfig, YouTubeSpinner
+    from hololoom.core.memory.protocol import create_unified_memory, shards_to_memories
+    from hololoom.core.fabric.spacetime import Spacetime
+    from hololoom.core.convergence.engine import CollapseStrategy
+    from hololoom.core.protocols.types import Query
 except ImportError as e:
     print(f"Import error: {e}")
     print("\nMake sure you run from repository root with PYTHONPATH set")
@@ -154,7 +154,7 @@ class HoloLoom:
         enable_synthesis: bool = True,
         enable_narrative_depth: bool = False,
         collapse_strategy: str = "epsilon_greedy"
-    ) -> "HoloLoom":
+    ) -> "hololoom":
         """
         Create HoloLoom instance (async factory).
 
@@ -343,7 +343,7 @@ class HoloLoom:
 
         try:
             # Use TextSpinner to create shards
-            from HoloLoom.spinningWheel import TextSpinnerConfig, TextSpinner
+            from hololoom.spinningWheel import TextSpinnerConfig, TextSpinner
 
             config = TextSpinnerConfig(chunk_size=500, chunk_by='paragraph')
             spinner = TextSpinner(config)

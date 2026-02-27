@@ -28,7 +28,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.visualization.knowledge_graph import (
+from hololoom.visualization.knowledge_graph import (
     KnowledgeGraphRenderer,
     GraphNode,
     GraphEdge,
@@ -37,7 +37,7 @@ from HoloLoom.visualization.knowledge_graph import (
     render_knowledge_graph_from_kg,
     render_knowledge_graph_from_networkx
 )
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.graph import KG, KGEdge
 
 
 def test_basic_rendering():

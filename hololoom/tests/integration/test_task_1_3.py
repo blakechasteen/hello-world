@@ -1,7 +1,7 @@
 """Test Memory Backend Simplification (Task 1.3)"""
 import asyncio
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend, check_backend_health
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend, check_backend_health
 
 async def main():
     print("=" * 80)

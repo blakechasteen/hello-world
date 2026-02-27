@@ -1,7 +1,7 @@
 import asyncio
-from holoLoom.orchestrator import HoloLoomOrchestrator
-from holoLoom.documentation.types import Query, MemoryShard
-from holoLoom.config import Config
+from hololoom.orchestrator import HoloLoomOrchestrator
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
 
 
 def test_orchestrator_basic():

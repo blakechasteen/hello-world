@@ -16,8 +16,8 @@ from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
 import re
 
-from HoloLoom.spinningWheel.protocol import BaseSpinner, SpinResult
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import BaseSpinner, SpinResult
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

@@ -129,7 +129,7 @@
 ## 🗂️ File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── MOONSHOT_README.md                         # ← You are here
 ├── MOONSHOT_COMPLETE.md                       # ← Start here (overview)
 ├── B2B_PRODUCT_ARCHITECTURE.md                # Business model

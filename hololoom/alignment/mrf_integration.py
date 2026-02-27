@@ -19,7 +19,7 @@ Benefits:
 - Explicit uncertainty handling for ambiguous cases
 
 Example:
-    from HoloLoom.alignment.mrf_integration import create_risk_assessment_prompt
+    from hololoom.alignment.mrf_integration import create_risk_assessment_prompt
 
     # Risk assessment with MRF
     prompt = create_risk_assessment_prompt(
@@ -34,14 +34,14 @@ import logging
 from typing import Optional, Dict, Any, List
 from enum import Enum
 
-from HoloLoom.prompting.unified_mrf import (
+from hololoom.prompting.unified_mrf import (
     UnifiedMRF,
     MetapromptConfig,
     ModelProvider
 )
 
 try:
-    from HoloLoom.alignment.safety_guardrails import (
+    from hololoom.alignment.safety_guardrails import (
         ActionCategory,
         RiskLevel,
         ActionRequest

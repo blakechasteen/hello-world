@@ -33,11 +33,11 @@ from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
-from HoloLoom.core.embedding.matryoshka_gate import (
+from hololoom.core.embedding.matryoshka_gate import (
     MatryoshkaGate, GateConfig, GateResult, GateStrategy
 )
-from HoloLoom.performance.compositional_cache import CompositionalCache
-from HoloLoom.motif.xbar_chunker import UniversalGrammarChunker, XBarNode
+from hololoom.performance.compositional_cache import CompositionalCache
+from hololoom.motif.xbar_chunker import UniversalGrammarChunker, XBarNode
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +143,7 @@ class LinguisticMatryoshkaGate(MatryoshkaGate):
         if self.compositional_cache is None and self.linguistic_config.use_compositional_cache:
             logger.info("Creating compositional cache...")
             if self.ug_chunker:
-                from HoloLoom.core.warp.merge import MergeOperator
+                from hololoom.core.warp.merge import MergeOperator
                 merge_operator = MergeOperator(embedder)
 
                 self.compositional_cache = CompositionalCache(
@@ -552,7 +552,7 @@ class LinguisticMatryoshkaGate(MatryoshkaGate):
 
 if __name__ == "__main__":
     import asyncio
-    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
 
     async def demo():
         print("=" * 80)

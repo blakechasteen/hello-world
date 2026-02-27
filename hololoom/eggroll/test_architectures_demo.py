@@ -6,8 +6,8 @@ import numpy as np
 # Add project root to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-from HoloLoom.eggroll.mirror_core import MirrorCoreAgent
-from HoloLoom.eggroll.architectures import get_model, LiquidStateMachine, NeuromorphicNet
+from hololoom.eggroll.mirror_core import MirrorCoreAgent
+from hololoom.eggroll.architectures import get_model, LiquidStateMachine, NeuromorphicNet
 
 def run_test(name, model_type, **kwargs):
     print(f"\n⚡ --- Testing Architecture: {name} ({model_type}) ---")

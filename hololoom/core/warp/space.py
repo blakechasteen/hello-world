@@ -22,7 +22,7 @@ from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 import numpy as np
 
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     ActionCategory,
     ActionRequest,
     SafetyDecision,
@@ -554,7 +554,7 @@ class WarpSpace:
 
 if __name__ == "__main__":
     import asyncio
-    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
 
     async def demo():
         print("="*80)

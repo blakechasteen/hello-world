@@ -35,7 +35,7 @@ This integration brings together two powerful systems:
 Every chat response goes through the ultraprompt framework:
 
 ```python
-from HoloLoom.apps.chatops.promptly_integration import PromptlyEnhancedBot
+from hololoom.apps.chatops.promptly_integration import PromptlyEnhancedBot
 
 bot = PromptlyEnhancedBot()
 
@@ -285,7 +285,7 @@ quality:
 ### Python Configuration
 
 ```python
-from HoloLoom.apps.chatops.promptly_integration import (
+from hololoom.apps.chatops.promptly_integration import (
     PromptlyEnhancedBot,
     UltrapromptConfig,
     JudgeConfig,
@@ -789,7 +789,7 @@ async def harvest_training_data():
 
 1. **Deploy Integration**
    ```bash
-   cd HoloLoom/chatops
+   cd hololoom/chatops
    python -m pip install -e ../../Promptly/promptly
    python promptly_integration.py  # Run demo
    ```

@@ -7,8 +7,8 @@ The semantic detection layer is **fully configurable**. You can tune it in three
 Control how many semantic dimensions are detected at each scale.
 
 ```python
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
 embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
 
@@ -55,7 +55,7 @@ calculator = MatryoshkaSemanticCalculus(
 Define your own semantic dimensions with custom exemplars:
 
 ```python
-from HoloLoom.semantic_calculus.dimensions import SemanticDimension, SemanticSpectrum
+from hololoom.semantic_calculus.dimensions import SemanticDimension, SemanticSpectrum
 
 # Define a custom dimension
 tech_innovation = SemanticDimension(
@@ -83,7 +83,7 @@ startup_hustle = SemanticDimension(
 )
 
 # Create a custom spectrum
-from HoloLoom.semantic_calculus.dimensions import STANDARD_DIMENSIONS
+from hololoom.semantic_calculus.dimensions import STANDARD_DIMENSIONS
 
 custom_dims = STANDARD_DIMENSIONS[:10] + [tech_innovation, startup_hustle]
 custom_spectrum = SemanticSpectrum(dimensions=custom_dims)
@@ -130,9 +130,9 @@ embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])  # Uses BGE
 ## Complete Example: Custom Startup Semantic Detector
 
 ```python
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
-from HoloLoom.semantic_calculus.dimensions import SemanticDimension, STANDARD_DIMENSIONS
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+from hololoom.semantic_calculus.dimensions import SemanticDimension, STANDARD_DIMENSIONS
 
 # 1. Define custom dimensions for startup analysis
 custom_startup_dims = STANDARD_DIMENSIONS[:8] + [
@@ -198,7 +198,7 @@ asyncio.run(analyze_startup_text())
 
 ```bash
 # Run the tunable demo
-cd HoloLoom/semantic_calculus
+cd hololoom/semantic_calculus
 python demo_tunable_semantics.py
 ```
 

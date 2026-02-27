@@ -3,7 +3,7 @@
   "name": "Adversarial Verification Pipeline",
   "description": "Generates an answer, then an adversarial critique, then resolves disagreements through consensus. Inspired by debate-based AI safety.",
   "tags": ["verification", "adversarial", "debate", "safety", "consensus"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-23",
 
   "nodes": [

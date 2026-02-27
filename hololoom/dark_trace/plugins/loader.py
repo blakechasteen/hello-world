@@ -27,7 +27,7 @@ Safety Features:
 - All events audited to AlignmentBridge
 
 Usage:
-    from HoloLoom.dark_trace.plugins.loader import (
+    from hololoom.dark_trace.plugins.loader import (
         PluginLoader,
         LoaderConfig,
         create_plugin_loader
@@ -60,18 +60,18 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.engine import DarkTraceEngine
-    from HoloLoom.dark_trace.plugins.safety_gate import (
+    from hololoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.dark_trace.plugins.safety_gate import (
         PluginSafetyGate,
         TrustLevel,
         SafetyCheckResult,
     )
-    from HoloLoom.dark_trace.plugins.alignment_bridge import PluginAlignmentBridge
-    from HoloLoom.dark_trace.plugins.registry import PluginRegistry
-    from HoloLoom.dark_trace.plugins.discovery import DiscoveredPlugin
-    from HoloLoom.dark_trace.plugins.interface import DarkTracePlugin
+    from hololoom.dark_trace.plugins.alignment_bridge import PluginAlignmentBridge
+    from hololoom.dark_trace.plugins.registry import PluginRegistry
+    from hololoom.dark_trace.plugins.discovery import DiscoveredPlugin
+    from hololoom.dark_trace.plugins.interface import DarkTracePlugin
 
-logger = logging.getLogger("HoloLoom.dark_trace.plugins.loader")
+logger = logging.getLogger("hololoom.dark_trace.plugins.loader")
 
 
 # =============================================================================
@@ -715,7 +715,7 @@ class PluginLoader:
                     ):
                         # Check if it's a plugin subclass
                         try:
-                            from HoloLoom.dark_trace.plugins.interface import (
+                            from hololoom.dark_trace.plugins.interface import (
                                 DarkTracePlugin
                             )
                             if issubclass(attr, DarkTracePlugin):
@@ -982,7 +982,7 @@ class PluginLoader:
 
         # Filter by trust level if specified
         if min_trust_level:
-            from HoloLoom.dark_trace.plugins.safety_gate import TrustLevel
+            from hololoom.dark_trace.plugins.safety_gate import TrustLevel
 
             trust_order = [
                 TrustLevel.SANDBOXED,

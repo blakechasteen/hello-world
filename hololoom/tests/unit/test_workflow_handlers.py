@@ -290,13 +290,13 @@ class TestWorkflowList:
     @pytest.mark.asyncio
     async def test_list_success(self, mock_room, mock_event):
         """Test successful workflow listing."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_list
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_list
 
         mock_session = MockClientSession({
             "http://localhost:8001/api/workflow/versions?branch=main": MockResponse(MOCK_WORKFLOW_VERSIONS)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_list(mock_room, mock_event, "")
 
         assert "Workflow Versions" in result
@@ -308,13 +308,13 @@ class TestWorkflowList:
     @pytest.mark.asyncio
     async def test_list_with_branch(self, mock_room, mock_event):
         """Test listing workflows from specific branch."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_list
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_list
 
         mock_session = MockClientSession({
             "http://localhost:8001/api/workflow/versions?branch=develop": MockResponse(MOCK_WORKFLOW_VERSIONS)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_list(mock_room, mock_event, "develop")
 
         assert "develop" in result
@@ -323,13 +323,13 @@ class TestWorkflowList:
     @pytest.mark.asyncio
     async def test_list_empty(self, mock_room, mock_event):
         """Test listing when no workflows exist."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_list
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_list
 
         mock_session = MockClientSession({
             "http://localhost:8001/api/workflow/versions?branch=main": MockResponse(MOCK_WORKFLOW_EMPTY)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_list(mock_room, mock_event, "")
 
         assert "No saved workflows found" in result
@@ -337,11 +337,11 @@ class TestWorkflowList:
     @pytest.mark.asyncio
     async def test_list_api_error(self, mock_room, mock_event):
         """Test handling of API error."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_list
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_list
 
         mock_session = MockClientSession(should_raise=True)
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_list(mock_room, mock_event, "")
 
         assert "Failed to list workflows" in result or "Connection error" in result
@@ -357,7 +357,7 @@ class TestWorkflowRun:
     @pytest.mark.asyncio
     async def test_run_success(self, mock_room, mock_event):
         """Test successful workflow execution."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
 
         workflow_json = json.dumps({
             "version": "1.0",
@@ -370,7 +370,7 @@ class TestWorkflowRun:
             "http://localhost:8001/api/workflow/execute": MockResponse(MOCK_WORKFLOW_EXECUTION_SUCCESS)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_run(mock_room, mock_event, workflow_json)
 
         assert "Workflow Executed" in result
@@ -380,7 +380,7 @@ class TestWorkflowRun:
     @pytest.mark.asyncio
     async def test_run_partial_success(self, mock_room, mock_event):
         """Test partial workflow execution (some nodes failed)."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
 
         workflow_json = json.dumps({
             "version": "1.0",
@@ -393,7 +393,7 @@ class TestWorkflowRun:
             "http://localhost:8001/api/workflow/execute": MockResponse(MOCK_WORKFLOW_EXECUTION_PARTIAL)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_run(mock_room, mock_event, workflow_json)
 
         assert "Workflow Executed" in result
@@ -402,7 +402,7 @@ class TestWorkflowRun:
     @pytest.mark.asyncio
     async def test_run_invalid_json(self, mock_room, mock_event):
         """Test handling of invalid JSON input."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
 
         result = await handle_workflow_run(mock_room, mock_event, "not valid json {{{")
 
@@ -411,7 +411,7 @@ class TestWorkflowRun:
     @pytest.mark.asyncio
     async def test_run_empty_input(self, mock_room, mock_event):
         """Test handling of empty input."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
 
         result = await handle_workflow_run(mock_room, mock_event, "")
 
@@ -421,12 +421,12 @@ class TestWorkflowRun:
     @pytest.mark.asyncio
     async def test_run_api_error(self, mock_room, mock_event):
         """Test handling of API execution error."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
 
         workflow_json = json.dumps({"version": "1.0", "nodes": [], "connections": []})
         mock_session = MockClientSession(should_raise=True)
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_run(mock_room, mock_event, workflow_json)
 
         assert "error" in result.lower() or "failed" in result.lower()
@@ -442,13 +442,13 @@ class TestWorkflowStatus:
     @pytest.mark.asyncio
     async def test_status_healthy(self, mock_room, mock_event):
         """Test status when executor is healthy."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_status
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_status
 
         mock_session = MockClientSession({
             "http://localhost:8001/health": MockResponse(MOCK_HEALTH_RESPONSE)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_status(mock_room, mock_event, "")
 
         assert "Status" in result or "Executor" in result
@@ -457,11 +457,11 @@ class TestWorkflowStatus:
     @pytest.mark.asyncio
     async def test_status_offline(self, mock_room, mock_event):
         """Test status when executor is offline."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_status
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_status
 
         mock_session = MockClientSession(should_raise=True)
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_status(mock_room, mock_event, "")
 
         assert "offline" in result.lower() or "error" in result.lower() or "failed" in result.lower()
@@ -469,13 +469,13 @@ class TestWorkflowStatus:
     @pytest.mark.asyncio
     async def test_status_with_active_workflows(self, mock_room, mock_event):
         """Test status shows active workflow count."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_status
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_status
 
         mock_session = MockClientSession({
             "http://localhost:8001/health": MockResponse(MOCK_HEALTH_RESPONSE)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_status(mock_room, mock_event, "")
 
         # Should contain information about executor
@@ -492,7 +492,7 @@ class TestWorkflowValidate:
     @pytest.mark.asyncio
     async def test_validate_success(self, mock_room, mock_event):
         """Test validation of valid workflow."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
 
         workflow_json = json.dumps({
             "version": "1.0",
@@ -505,7 +505,7 @@ class TestWorkflowValidate:
             "http://localhost:8001/api/workflow/validate": MockResponse(MOCK_VALIDATION_SUCCESS)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_validate(mock_room, mock_event, workflow_json)
 
         assert "valid" in result.lower() or "success" in result.lower()
@@ -514,7 +514,7 @@ class TestWorkflowValidate:
     @pytest.mark.asyncio
     async def test_validate_with_cycles(self, mock_room, mock_event):
         """Test validation detects cycles."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
 
         workflow_json = json.dumps({
             "version": "1.0",
@@ -530,7 +530,7 @@ class TestWorkflowValidate:
             "http://localhost:8001/api/workflow/validate": MockResponse(MOCK_VALIDATION_INVALID)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_validate(mock_room, mock_event, workflow_json)
 
         assert "invalid" in result.lower() or "cycle" in result.lower() or "error" in result.lower()
@@ -538,7 +538,7 @@ class TestWorkflowValidate:
     @pytest.mark.asyncio
     async def test_validate_invalid_json(self, mock_room, mock_event):
         """Test validation with invalid JSON."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
 
         result = await handle_workflow_validate(mock_room, mock_event, "not json")
 
@@ -547,7 +547,7 @@ class TestWorkflowValidate:
     @pytest.mark.asyncio
     async def test_validate_empty_input(self, mock_room, mock_event):
         """Test validation with empty input."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
 
         result = await handle_workflow_validate(mock_room, mock_event, "")
 
@@ -564,8 +564,8 @@ class TestWorkflowGenerate:
     @pytest.mark.asyncio
     async def test_generate_success(self, mock_room, mock_event, mock_generator):
         """Test successful workflow generation."""
-        from HoloLoom.apps.chatops.handlers import workflow_handlers
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
+        from hololoom.apps.chatops.handlers import workflow_handlers
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
 
         # Set the mock generator
         original_generator = workflow_handlers._generator
@@ -582,7 +582,7 @@ class TestWorkflowGenerate:
     @pytest.mark.asyncio
     async def test_generate_empty_description(self, mock_room, mock_event):
         """Test generation with empty description."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
 
         result = await handle_workflow_generate(mock_room, mock_event, "")
 
@@ -591,8 +591,8 @@ class TestWorkflowGenerate:
     @pytest.mark.asyncio
     async def test_generate_failure(self, mock_room, mock_event, mock_failing_generator):
         """Test handling of generation failure."""
-        from HoloLoom.apps.chatops.handlers import workflow_handlers
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
+        from hololoom.apps.chatops.handlers import workflow_handlers
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
 
         original_generator = workflow_handlers._generator
         workflow_handlers._generator = mock_failing_generator
@@ -607,8 +607,8 @@ class TestWorkflowGenerate:
     @pytest.mark.asyncio
     async def test_generate_unavailable(self, mock_room, mock_event):
         """Test generation when generator is unavailable."""
-        from HoloLoom.apps.chatops.handlers import workflow_handlers
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
+        from hololoom.apps.chatops.handlers import workflow_handlers
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
 
         original_generator = workflow_handlers._generator
         original_available = workflow_handlers.GENERATOR_AVAILABLE
@@ -635,13 +635,13 @@ class TestWorkflowAgents:
     @pytest.mark.asyncio
     async def test_agents_success(self, mock_room, mock_event):
         """Test successful agent listing."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_agents
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_agents
 
         mock_session = MockClientSession({
             "http://localhost:8001/api/agents": MockResponse(MOCK_AGENTS_RESPONSE)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_agents(mock_room, mock_event, "")
 
         assert "query" in result.lower() or "agents" in result.lower()
@@ -649,11 +649,11 @@ class TestWorkflowAgents:
     @pytest.mark.asyncio
     async def test_agents_api_error_fallback(self, mock_room, mock_event):
         """Test fallback to hardcoded agents on API error."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_agents
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_agents
 
         mock_session = MockClientSession(should_raise=True)
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_agents(mock_room, mock_event, "")
 
         # Should still return agent info (hardcoded fallback)
@@ -662,13 +662,13 @@ class TestWorkflowAgents:
     @pytest.mark.asyncio
     async def test_agents_categories(self, mock_room, mock_event):
         """Test that all agent categories are included."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_agents
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_agents
 
         mock_session = MockClientSession({
             "http://localhost:8001/api/agents": MockResponse(MOCK_AGENTS_RESPONSE)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_agents(mock_room, mock_event, "")
 
         # Check for agent type mentions (case-insensitive)
@@ -686,13 +686,13 @@ class TestWorkflowOptimize:
     @pytest.mark.asyncio
     async def test_optimize_with_suggestions(self, mock_room, mock_event):
         """Test optimization returns suggestions."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
 
         mock_session = MockClientSession({
             "http://localhost:8001/api/workflow/test-workflow/optimize": MockResponse(MOCK_OPTIMIZATION_SUGGESTIONS)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_optimize(mock_room, mock_event, "test-workflow")
 
         assert "Optimization" in result or "suggestion" in result.lower()
@@ -701,13 +701,13 @@ class TestWorkflowOptimize:
     @pytest.mark.asyncio
     async def test_optimize_no_suggestions(self, mock_room, mock_event):
         """Test optimization when no improvements found."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
 
         mock_session = MockClientSession({
             "http://localhost:8001/api/workflow/optimal/optimize": MockResponse(MOCK_OPTIMIZATION_EMPTY)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_optimize(mock_room, mock_event, "optimal")
 
         assert "No optimization" in result or "well-optimized" in result.lower() or "no suggestions" in result.lower()
@@ -715,7 +715,7 @@ class TestWorkflowOptimize:
     @pytest.mark.asyncio
     async def test_optimize_empty_id(self, mock_room, mock_event):
         """Test optimization with empty workflow ID."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
 
         result = await handle_workflow_optimize(mock_room, mock_event, "")
 
@@ -725,11 +725,11 @@ class TestWorkflowOptimize:
     @pytest.mark.asyncio
     async def test_optimize_api_error(self, mock_room, mock_event):
         """Test optimization with API error."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
 
         mock_session = MockClientSession(should_raise=True)
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_optimize(mock_room, mock_event, "test-workflow")
 
         assert "error" in result.lower() or "failed" in result.lower()
@@ -745,7 +745,7 @@ class TestWorkflowHelp:
     @pytest.mark.asyncio
     async def test_help_content(self, mock_room, mock_event):
         """Test help returns comprehensive information."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_help
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_help
 
         result = await handle_workflow_help(mock_room, mock_event, "")
 
@@ -770,7 +770,7 @@ class TestConfiguration:
 
     def test_get_set_executor_url(self):
         """Test getting and setting executor URL."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import (
+        from hololoom.apps.chatops.handlers.workflow_handlers import (
             get_executor_url, set_executor_url
         )
 
@@ -784,8 +784,8 @@ class TestConfiguration:
 
     def test_get_set_generator(self):
         """Test getting and setting generator."""
-        from HoloLoom.apps.chatops.handlers import workflow_handlers
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import (
+        from hololoom.apps.chatops.handlers import workflow_handlers
+        from hololoom.apps.chatops.handlers.workflow_handlers import (
             get_generator, set_generator
         )
 
@@ -808,7 +808,7 @@ class TestWorkflowHandlersClass:
 
     def test_init_default(self):
         """Test default initialization."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import WorkflowHandlers
+        from hololoom.apps.chatops.handlers.workflow_handlers import WorkflowHandlers
 
         handlers = WorkflowHandlers()
         # Should not raise
@@ -816,7 +816,7 @@ class TestWorkflowHandlersClass:
 
     def test_init_custom_url(self):
         """Test initialization with custom executor URL."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import (
+        from hololoom.apps.chatops.handlers.workflow_handlers import (
             WorkflowHandlers, get_executor_url, set_executor_url
         )
 
@@ -831,7 +831,7 @@ class TestWorkflowHandlersClass:
     @pytest.mark.asyncio
     async def test_handler_methods_exist(self):
         """Test that all handler methods exist."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import WorkflowHandlers
+        from hololoom.apps.chatops.handlers.workflow_handlers import WorkflowHandlers
 
         handlers = WorkflowHandlers()
 
@@ -854,7 +854,7 @@ class TestRegistration:
 
     def test_register_workflow_handlers(self):
         """Test register_workflow_handlers function exists and is callable."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import register_workflow_handlers
+        from hololoom.apps.chatops.handlers.workflow_handlers import register_workflow_handlers
 
         # Should not raise
         result = register_workflow_handlers()
@@ -871,8 +871,8 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_unicode_in_description(self, mock_room, mock_event, mock_generator):
         """Test handling of unicode in workflow description."""
-        from HoloLoom.apps.chatops.handlers import workflow_handlers
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
+        from hololoom.apps.chatops.handlers import workflow_handlers
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_generate
 
         original_generator = workflow_handlers._generator
         workflow_handlers._generator = mock_generator
@@ -891,7 +891,7 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_very_long_workflow_json(self, mock_room, mock_event):
         """Test handling of very long workflow JSON."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_validate
 
         # Create a workflow with many nodes
         nodes = [{"id": f"node_{i}", "type": "query"} for i in range(100)]
@@ -910,7 +910,7 @@ class TestEdgeCases:
             })
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_validate(mock_room, mock_event, json.dumps(workflow))
 
         assert result is not None
@@ -918,14 +918,14 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_special_characters_in_workflow_id(self, mock_room, mock_event):
         """Test handling of special characters in workflow ID."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_optimize
 
         mock_session = MockClientSession({
             "http://localhost:8001/api/workflow/workflow-with-dashes_and_underscores/optimize":
                 MockResponse(MOCK_OPTIMIZATION_EMPTY)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_optimize(
                 mock_room, mock_event,
                 "workflow-with-dashes_and_underscores"
@@ -944,7 +944,7 @@ class TestTimeoutHandling:
     @pytest.mark.asyncio
     async def test_run_respects_timeout(self, mock_room, mock_event):
         """Test that workflow run uses longer timeout."""
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
+        from hololoom.apps.chatops.handlers.workflow_handlers import handle_workflow_run
 
         workflow_json = json.dumps({
             "version": "1.0",
@@ -956,7 +956,7 @@ class TestTimeoutHandling:
             "http://localhost:8001/api/workflow/execute": MockResponse(MOCK_WORKFLOW_EXECUTION_SUCCESS)
         })
 
-        with patch('HoloLoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
+        with patch('hololoom.apps.chatops.handlers.workflow_handlers.aiohttp.ClientSession', return_value=mock_session):
             result = await handle_workflow_run(mock_room, mock_event, workflow_json)
 
         # Check that a POST request was made

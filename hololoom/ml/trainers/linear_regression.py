@@ -14,13 +14,13 @@ from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
-from HoloLoom.ml.config import LinearRegressionConfig
-from HoloLoom.ml.protocol import (
+from hololoom.ml.config import LinearRegressionConfig
+from hololoom.ml.protocol import (
     DataSplit,
     ModelType,
     TaskType,
 )
-from HoloLoom.ml.trainers.base_trainer import BaseTrainer, SKLEARN_AVAILABLE
+from hololoom.ml.trainers.base_trainer import BaseTrainer, SKLEARN_AVAILABLE
 
 if SKLEARN_AVAILABLE:
     from sklearn.linear_model import LinearRegression

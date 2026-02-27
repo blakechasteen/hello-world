@@ -23,7 +23,7 @@ import pytest
 import networkx as nx
 from typing import List
 
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.graph import KG, KGEdge
 
 
 # ============================================================================

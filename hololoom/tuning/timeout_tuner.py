@@ -26,7 +26,7 @@ try:
 except ImportError:
     PSUTIL_AVAILABLE = False
 
-from HoloLoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter, create_safe_parameter
+from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter, create_safe_parameter
 
 logger = logging.getLogger(__name__)
 

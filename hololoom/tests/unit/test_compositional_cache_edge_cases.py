@@ -23,17 +23,17 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
-from HoloLoom.performance.compositional_cache import (
+from hololoom.performance.compositional_cache import (
     CompositionalCache,
     CacheStats
 )
-from HoloLoom.motif.xbar_chunker import (
+from hololoom.motif.xbar_chunker import (
     UniversalGrammarChunker,
     XBarNode,
     Category,
     SPACY_AVAILABLE
 )
-from HoloLoom.warp.merge import MergeOperator
+from hololoom.warp.merge import MergeOperator
 
 
 # ============================================================================

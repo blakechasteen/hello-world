@@ -20,7 +20,7 @@ Date: November 8, 2025
 """
 
 import pytest
-from HoloLoom.config import Config, ExecutionMode, MemoryBackend
+from hololoom.config import Config, ExecutionMode, MemoryBackend
 
 
 class TestConfigModeEdgeCases:

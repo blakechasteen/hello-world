@@ -1,7 +1,7 @@
 # HoloLoom Causal Reasoning Engine
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/causal/`
+**Location**: `hololoom/causal/`
 **Total Lines**: 3,150 lines of production code across 8 modules
 **Date Implemented**: November 2025
 
@@ -43,8 +43,8 @@ Level 3: Counterfactual (Twin Networks)
 ## Quick Start
 
 ```python
-from HoloLoom.causal import CausalDAG, CausalNode, CausalEdge, NodeType
-from HoloLoom.causal import InterventionEngine, CounterfactualEngine, CausalQuery, QueryType
+from hololoom.causal import CausalDAG, CausalNode, CausalEdge, NodeType
+from hololoom.causal import InterventionEngine, CounterfactualEngine, CausalQuery, QueryType
 
 # Build causal model
 dag = CausalDAG()
@@ -305,8 +305,8 @@ static_dag = tcdag.to_static_dag()
 ### With HoloLoom Memory
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.causal import CausalDAG, CausalNode, CausalEdge
+from hololoom import hololoom
+from hololoom.causal import CausalDAG, CausalNode, CausalEdge
 
 async with HoloLoom() as loom:
     memories = await loom.recall("causal relationships")
@@ -323,8 +323,8 @@ async with HoloLoom() as loom:
 ### With Agentic Reasoning
 
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator
-from HoloLoom.causal import InterventionEngine
+from hololoom.agentic import create_agentic_orchestrator
+from hololoom.causal import InterventionEngine
 
 async with create_agentic_orchestrator(config, shards) as orch:
     dag = await orch.get_system_causal_model()
@@ -475,7 +475,7 @@ HoloLoom's causal engine answers three fundamentally different types of question
 ### 1. Import the Causal Engine
 
 ```python
-from HoloLoom.causal import (
+from hololoom.causal import (
     CausalDAG, CausalNode, CausalEdge, NodeType,
     InterventionEngine, CounterfactualEngine, CausalQuery, QueryType
 )
@@ -554,7 +554,7 @@ print(ate_result.explanation)
 ### 5. Active Causal Discovery
 
 ```python
-from HoloLoom.causal import CausalDiscovery
+from hololoom.causal import CausalDiscovery
 
 # Learn causal structure from data
 discoverer = CausalDiscovery(
@@ -582,7 +582,7 @@ print(f"Discovered {len(learned_dag.edges)} causal relationships")
 **Data needed**: Observational data only
 
 ```python
-from HoloLoom.causal import CausalQuery, QueryType
+from hololoom.causal import CausalQuery, QueryType
 
 # "What's the probability of recovery given treatment?"
 query = CausalQuery(
@@ -860,7 +860,7 @@ Instead of hand-coding your DAG, let the system learn it automatically:
 ### PC Algorithm (Peter-Clark)
 
 ```python
-from HoloLoom.causal import CausalDiscovery, ActiveCausalLearner
+from hololoom.causal import CausalDiscovery, ActiveCausalLearner
 
 # 1. Constraint-based discovery
 discoverer = CausalDiscovery(
@@ -919,7 +919,7 @@ learned_dag = learner.get_dag()
 Real-world causality takes TIME. Causes don't instantly produce effects:
 
 ```python
-from HoloLoom.causal import TemporalCausalDAG, TemporalEdge
+from hololoom.causal import TemporalCausalDAG, TemporalEdge
 
 tcdag = TemporalCausalDAG(
     variables=['treatment', 'recovery', 'side_effects'],
@@ -966,7 +966,7 @@ for timestep, state in enumerate(trajectory):
 Combine **symbolic causal structure** (interpretable) with **learned neural mechanisms** (powerful):
 
 ```python
-from HoloLoom.causal import NeuralStructuralCausalModel, NeuralMechanism
+from hololoom.causal import NeuralStructuralCausalModel, NeuralMechanism
 
 nscm = NeuralStructuralCausalModel(dag)
 
@@ -997,8 +997,8 @@ The causal engine integrates seamlessly with HoloLoom's other reasoning systems:
 ### 1. Agentic Reasoning with Causal Constraints
 
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator
-from HoloLoom.causal import CounterfactualEngine
+from hololoom.agentic import create_agentic_orchestrator
+from hololoom.causal import CounterfactualEngine
 
 # Create agent with causal constraints
 orchestrator = await create_agentic_orchestrator(
@@ -1018,8 +1018,8 @@ result = await orchestrator.reason(
 ### 2. Alignment Framework with Causal Analysis
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.causal import InterventionEngine
+from hololoom.alignment import SafetyGuardrails
+from hololoom.causal import InterventionEngine
 
 # Causal analysis for safety: "Will this action cause harm?"
 cf_engine = CounterfactualEngine(world_model_dag)
@@ -1039,8 +1039,8 @@ if counterfactual.counterfactual_outcome > harm_threshold:
 ### 3. Memory System with Causal Relationships
 
 ```python
-from HoloLoom.memory import UnifiedMemory
-from HoloLoom.causal import CausalDAG
+from hololoom.memory import UnifiedMemory
+from hololoom.causal import CausalDAG
 
 # Build causal knowledge graph
 memory = UnifiedMemory(backend=backend)

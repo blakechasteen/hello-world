@@ -18,8 +18,8 @@ import pytest
 import numpy as np
 from typing import Tuple, Optional
 from dataclasses import dataclass
-from HoloLoom.config import Config
-from HoloLoom.warp.semantic_pde import (
+from hololoom.config import Config
+from hololoom.warp.semantic_pde import (
     HeatEquationSolver,
     WaveEquationSolver,
     ReactionDiffusionSolver,

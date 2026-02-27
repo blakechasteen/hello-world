@@ -68,9 +68,9 @@
 ```python
 import asyncio
 import time
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
 
 async def benchmark_query_latency(
     orchestrator: WeavingOrchestrator,
@@ -238,7 +238,7 @@ async def benchmark_cache_effectiveness(
 Choose the right mode for your workload:
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # BARE: Fastest, minimal features
 # - Use for: Simple factual queries, latency-critical applications

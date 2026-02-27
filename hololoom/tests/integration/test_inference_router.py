@@ -19,21 +19,21 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from HoloLoom.federation.types import (
+from hololoom.federation.types import (
     FederationNode,
     GuildTrustLevel,
     Capability,
 )
-from HoloLoom.federation.safety import (
+from hololoom.federation.safety import (
     SafetyCheckResult,
     FederationSafetyResult,
     FederationPermission,
 )
-from HoloLoom.federation.rate_limiter import (
+from hololoom.federation.rate_limiter import (
     RateLimitTier,
     RateLimitInfo,
 )
-from HoloLoom.federation.inference_router import (
+from hololoom.federation.inference_router import (
     InferenceStatus,
     InferenceRequest,
     InferenceToken,
@@ -45,7 +45,7 @@ from HoloLoom.federation.inference_router import (
     INFERENCE_GENERATE_METHOD,
     INFERENCE_CAPABILITIES_METHOD,
 )
-from HoloLoom.federation.load_balancer import SelectionResult
+from hololoom.federation.load_balancer import SelectionResult
 
 
 # =============================================================================
@@ -671,7 +671,7 @@ class TestStreamingInference:
         mock_proxy.__aexit__ = AsyncMock(return_value=None)
         mock_proxy.stream = mock_stream
 
-        with patch('HoloLoom.federation.inference_router.StreamingProxy', return_value=mock_proxy):
+        with patch('hololoom.federation.inference_router.StreamingProxy', return_value=mock_proxy):
             tokens = []
             async for token in router_with_mocks.generate_stream(
                 request=request,

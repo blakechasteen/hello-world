@@ -14,8 +14,8 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from HoloLoom.ml.config import ValidationConfig, ValidationStrictness
-from HoloLoom.ml.protocol import (
+from hololoom.ml.config import ValidationConfig, ValidationStrictness
+from hololoom.ml.protocol import (
     DataSplit,
     DataValidationIssue,
     DataValidationResult,

@@ -353,8 +353,8 @@ class ContextDepartment(Department):
         self.long_term_memory = {}  # Learned patterns (which context helps which dept?)
 
         # Existing HoloLoom components
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
 
         self.orchestrator = WeavingOrchestrator(cfg=Config.fused())
         self.config = config
@@ -362,7 +362,7 @@ class ContextDepartment(Department):
 
     async def execute(self, request: DepartmentRequest) -> DepartmentResponse:
         """Use existing HoloLoom orchestrator for context enrichment"""
-        from HoloLoom.documentation.types import Query
+        from hololoom.documentation.types import Query
 
         # Extract query from request
         query_text = request.parameters.get("query", "")

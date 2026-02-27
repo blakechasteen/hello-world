@@ -12,9 +12,9 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.protocols import ComplexityLevel
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.protocols import ComplexityLevel
 
 
 def create_test_shards():
@@ -40,7 +40,7 @@ async def test_refactored_orchestrator():
     print("=" * 60)
 
     # Import the refactored orchestrator
-    from HoloLoom.weaving_orchestrator_refactored import WeavingOrchestratorRefactored
+    from hololoom.weaving_orchestrator_refactored import WeavingOrchestratorRefactored
 
     # Create configuration
     config = Config.fast()
@@ -98,7 +98,7 @@ async def test_original_orchestrator():
     print("=" * 60)
 
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
 
         # Create configuration
         config = Config.fast()

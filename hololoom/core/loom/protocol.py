@@ -35,7 +35,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 # Import Department protocol
-from HoloLoom.core.protocols.department import (
+from hololoom.core.protocols.department import (
     Department,
     DepartmentRequest,
     DepartmentResponse,

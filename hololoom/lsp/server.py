@@ -5,7 +5,7 @@ HoloLoom LSP Server
 Language Server Protocol (LSP) implementation for HoloLoom neural memory system.
 
 This server provides:
-- Code completion from HoloLoom memories
+- Code completion from hololoom memories
 - Hover information with entity context
 - Go-to-definition via knowledge graph relationships
 - Workspace symbol search (semantic)
@@ -174,7 +174,7 @@ def format_memory_as_markdown(memory) -> str:
     """Format a memory object as Markdown for hover/documentation.
 
     Args:
-        memory: Memory object from HoloLoom
+        memory: Memory object from hololoom
 
     Returns:
         Markdown-formatted string
@@ -258,8 +258,8 @@ async def on_initialized(params):
 
     # Initialize HoloLoom
     try:
-        from HoloLoom import HoloLoom
-        from HoloLoom.config import Config
+        from hololoom import hololoom
+        from hololoom.config import Config
 
         logger.info("Initializing HoloLoom instance...")
         config = Config.fast()  # Use FAST mode for balance
@@ -311,7 +311,7 @@ async def completion(params: CompletionParams) -> CompletionList:
     """Provide code completion items.
 
     Called when the user triggers completion (e.g., Ctrl+Space or typing '.').
-    Returns a list of completion items from HoloLoom memories.
+    Returns a list of completion items from hololoom memories.
 
     Args:
         params: Completion parameters (position, document, trigger char)
@@ -353,7 +353,7 @@ async def completion(params: CompletionParams) -> CompletionList:
         # Query HoloLoom for relevant memories
         memories = await server.hololoom.recall(query, limit=10)
 
-        logger.debug(f"Retrieved {len(memories)} memories from HoloLoom")
+        logger.debug(f"Retrieved {len(memories)} memories from hololoom")
 
         # Convert memories to CompletionItems
         items = []
@@ -395,7 +395,7 @@ async def hover(params: HoverParams) -> Optional[Hover]:
     """Provide hover information for symbols.
 
     Called when the user hovers over a symbol.
-    Returns documentation, type information, etc. from HoloLoom knowledge graph.
+    Returns documentation, type information, etc. from hololoom knowledge graph.
 
     Args:
         params: Hover parameters (position, document)
@@ -565,7 +565,7 @@ async def workspace_symbol(params: WorkspaceSymbolParams) -> List[SymbolInformat
     """Search for symbols in the workspace.
 
     Called when the user searches for symbols (Ctrl+T in VSCode, etc.).
-    Returns matching symbols from HoloLoom knowledge graph.
+    Returns matching symbols from hololoom knowledge graph.
 
     Args:
         params: Workspace symbol parameters (query)

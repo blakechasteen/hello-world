@@ -21,7 +21,7 @@ from typing import Dict, List, Any, Optional, Union, Tuple
 from dataclasses import dataclass
 import warnings
 
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     ActionCategory,
     ActionRequest,
     SafetyDecision,
@@ -672,7 +672,7 @@ if __name__ == "__main__":
         print("3. GPU-Accelerated Warp Space")
         print("-" * 40)
 
-        from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
 
         async def test_gpu():
             embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])

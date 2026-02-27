@@ -347,7 +347,7 @@ The implementation includes 7 comprehensive examples:
 ## Files Created
 
 ```
-HoloLoom/redteam/swarm/
+hololoom/redteam/swarm/
 ├── coordinator.py                          (600 lines)
 ├── COORDINATOR_DOCUMENTATION.md            (500+ lines)
 ├── COORDINATOR_USAGE_EXAMPLE.py            (300+ lines)

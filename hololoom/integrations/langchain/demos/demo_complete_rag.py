@@ -27,8 +27,8 @@ async def demo_simple_rag():
     print("📚 Pipeline: Ingest → Recall → Generate\n")
 
     print("""
-    from HoloLoom import HoloLoom
-    from HoloLoom.integrations.langchain import MultiProviderLLM
+    from hololoom import hololoom
+    from hololoom.integrations.langchain import MultiProviderLLM
 
     async def simple_rag():
         async with HoloLoom() as loom:
@@ -63,8 +63,8 @@ async def demo_document_rag():
     print("📄 Pipeline: Load Docs → Vector Store → Retrieve → Generate\n")
 
     print("""
-    from HoloLoom import HoloLoom
-    from HoloLoom.integrations.langchain import (
+    from hololoom import hololoom
+    from hololoom.integrations.langchain import (
         UniversalDocumentLoader,
         VectorStoreFactory,
         MultiProviderLLM
@@ -116,8 +116,8 @@ async def demo_multi_source_rag():
     print("🌐 Pipeline: Web + PDFs + Code → Synthesize\n")
 
     print("""
-    from HoloLoom import HoloLoom
-    from HoloLoom.integrations.langchain import (
+    from hololoom import hololoom
+    from hololoom.integrations.langchain import (
         UniversalDocumentLoader,
         MultiProviderLLM
     )
@@ -173,9 +173,9 @@ async def demo_agentic_rag():
     print("🤖 Pipeline: Question → Sub-Questions → Research → Synthesis\n")
 
     print("""
-    from HoloLoom import HoloLoom
-    from HoloLoom.integrations.langchain import MultiProviderLLM
-    from HoloLoom.agentic import AgenticOrchestrator, ReasoningMode
+    from hololoom import hololoom
+    from hololoom.integrations.langchain import MultiProviderLLM
+    from hololoom.agentic import AgenticOrchestrator, ReasoningMode
 
     async def agentic_rag():
         # Load knowledge base
@@ -216,7 +216,7 @@ async def demo_quick_prototype():
     print("⚡ Simplified API for Rapid Development\n")
 
     print("""
-    from HoloLoom.integrations.langchain import QuickPrototype
+    from hololoom.integrations.langchain import QuickPrototype
 
     async def quick_rag():
         # Setup
@@ -270,8 +270,8 @@ def demo_performance_tips():
 
     print("\n4️⃣  HoloLoom Query Cache:")
     print("""
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.config import Config
 
     config = Config.fast()
     config.query_cache_size = 10000  # Cache 10k queries

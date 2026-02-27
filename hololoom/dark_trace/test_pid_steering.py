@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 import time
-from HoloLoom.dark_trace.steering_policy import ConsistencyGuard, PIDSteeringController
+from hololoom.dark_trace.steering_policy import ConsistencyGuard, PIDSteeringController
 
 class MockProbe:
     def __init__(self):

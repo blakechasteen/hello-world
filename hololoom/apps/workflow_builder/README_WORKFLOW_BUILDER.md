@@ -13,7 +13,7 @@
 ### 1. Start the Backend
 
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 ```
 

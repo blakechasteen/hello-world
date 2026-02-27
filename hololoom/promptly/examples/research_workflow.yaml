@@ -58,7 +58,7 @@ steps:
 
 metadata:
   version: "1.0"
-  author: "HoloLoom"
+  author: "hololoom"
   category: "research"
   tags:
     - research

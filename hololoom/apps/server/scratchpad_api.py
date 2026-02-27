@@ -25,11 +25,11 @@ from pathlib import Path
 import tempfile
 import asyncio
 
-from HoloLoom.spinningWheel.live_scratchpad import LiveScratchpad
+from hololoom.spinningWheel.live_scratchpad import LiveScratchpad
 
 # Try to import Whisper
 try:
-    from HoloLoom.spinningWheel.whisper_spinner import WhisperSpinner
+    from hololoom.spinningWheel.whisper_spinner import WhisperSpinner
     WHISPER_AVAILABLE = True
 except ImportError:
     WHISPER_AVAILABLE = False
@@ -266,7 +266,7 @@ async def finalize(request: FinalizeRequest):
 
         # Ingest into HoloLoom (if available)
         try:
-            from HoloLoom.hololoom import HoloLoom
+            from hololoom.hololoom import hololoom
 
             async with HoloLoom() as loom:
                 await loom.experience([shard])

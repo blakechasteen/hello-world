@@ -7,7 +7,7 @@ step definitions with automatic context passing, conditional branching, and
 loop support.
 
 **Status**: ✅ Complete (November 2025)
-**Location**: `HoloLoom/chaining/`
+**Location**: `hololoom/chaining/`
 **Total Code**: ~2,500 lines
 
 **Key Features**:
@@ -22,9 +22,9 @@ loop support.
 
 **Quick Start**:
 ```python
-from HoloLoom.chaining import Chain, ChainStep, StepType, ChainPatterns
-from HoloLoom.chaining import ChainOrchestrator
-from HoloLoom.apps.departments.rag_department import RAGDepartment
+from hololoom.chaining import Chain, ChainStep, StepType, ChainPatterns
+from hololoom.chaining import ChainOrchestrator
+from hololoom.apps.departments.rag_department import RAGDepartment
 
 # Use a pre-built pattern
 chain = ChainPatterns.verified_query()  # execute → verify

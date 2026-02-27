@@ -75,6 +75,6 @@ We are moving to a **Glass Box** model where we expose LLM internals to the RL s
 ---
 
 ## 5. Immediate Next Steps for Implementation
-1.  **Implement `StructuredLLM` Adapter**: Create `HoloLoom/drivers/structured.py` using Pydantic + Ollama JSON mode.
+1.  **Implement `StructuredLLM` Adapter**: Create `hololoom/drivers/structured.py` using Pydantic + Ollama JSON mode.
 2.  **Expose Logits**: Update `OllamaLLM.generate()` to return `perplexity` or `entropy` metrics.
 3.  **Refine Convergence**: Update `ThompsonBandit` to use `entropy` as a context feature for exploration.

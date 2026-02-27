@@ -18,8 +18,8 @@ import pytest
 import numpy as np
 from typing import Tuple, Dict
 from scipy import stats
-from HoloLoom.config import Config
-from HoloLoom.warp.variational_inference import (
+from hololoom.config import Config
+from hololoom.warp.variational_inference import (
     VariationalPosterior,
     BayesianNeuralNetwork,
     MCDropout,

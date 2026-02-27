@@ -57,7 +57,7 @@ class SelfImprovingBot:
 ### Example: Automatic Quality Improvement
 
 ```python
-from HoloLoom.chatops.self_improving_bot import SelfImprovingBot
+from hololoom.chatops.self_improving_bot import SelfImprovingBot
 
 bot = SelfImprovingBot()
 
@@ -140,7 +140,7 @@ class TeamLearningSystem:
 ### Example: Create Training Dataset
 
 ```python
-from HoloLoom.chatops.team_learning import TeamLearningSystem
+from hololoom.chatops.team_learning import TeamLearningSystem
 
 system = TeamLearningSystem()
 
@@ -267,7 +267,7 @@ class WorkflowMarketplace:
 ### Example: Publish Workflow
 
 ```python
-from HoloLoom.chatops.workflow_marketplace import WorkflowMarketplace
+from hololoom.chatops.workflow_marketplace import WorkflowMarketplace
 
 marketplace = WorkflowMarketplace()
 
@@ -426,7 +426,7 @@ class PredictiveQualitySystem:
 ### Example: Predict Before Processing
 
 ```python
-from HoloLoom.chatops.predictive_quality import PredictiveQualitySystem
+from hololoom.chatops.predictive_quality import PredictiveQualitySystem
 
 system = PredictiveQualitySystem()
 
@@ -597,7 +597,7 @@ class MultiAgentSystem:
 ### Example: Intelligent Routing
 
 ```python
-from HoloLoom.chatops.multi_agent import MultiAgentSystem
+from hololoom.chatops.multi_agent import MultiAgentSystem
 
 system = MultiAgentSystem()
 
@@ -716,11 +716,11 @@ result = await system.collaborate(
 Here's how all 5 features work together:
 
 ```python
-from HoloLoom.chatops.self_improving_bot import SelfImprovingBot
-from HoloLoom.chatops.team_learning import TeamLearningSystem
-from HoloLoom.chatops.workflow_marketplace import WorkflowMarketplace
-from HoloLoom.chatops.predictive_quality import PredictiveQualitySystem
-from HoloLoom.chatops.multi_agent import MultiAgentSystem
+from hololoom.chatops.self_improving_bot import SelfImprovingBot
+from hololoom.chatops.team_learning import TeamLearningSystem
+from hololoom.chatops.workflow_marketplace import WorkflowMarketplace
+from hololoom.chatops.predictive_quality import PredictiveQualitySystem
+from hololoom.chatops.multi_agent import MultiAgentSystem
 
 # Initialize all systems
 self_improving = SelfImprovingBot()

@@ -17,7 +17,7 @@ These techniques are based on cutting-edge research from:
 - FGSM and PGD adversarial attacks (Goodfellow et al., 2014; Madry et al., 2018)
 
 Usage:
-    from HoloLoom.dark_trace.research import (
+    from hololoom.dark_trace.research import (
         # Sparse Probing
         SparseProbe,
         FeatureProber,
@@ -69,7 +69,7 @@ Author: HoloLoom Team
 Created: December 2025
 """
 
-from HoloLoom.dark_trace.research.sparse_probing import (
+from hololoom.dark_trace.research.sparse_probing import (
     # Enums
     ProbeType,
     # Config and Results
@@ -85,7 +85,7 @@ from HoloLoom.dark_trace.research.sparse_probing import (
     create_feature_prober,
 )
 
-from HoloLoom.dark_trace.research.concept_erasure import (
+from hololoom.dark_trace.research.concept_erasure import (
     # Enums
     ErasureMethod,
     # Config and Results
@@ -101,7 +101,7 @@ from HoloLoom.dark_trace.research.concept_erasure import (
     create_concept_surgery,
 )
 
-from HoloLoom.dark_trace.research.adversarial_discovery import (
+from hololoom.dark_trace.research.adversarial_discovery import (
     # Enums
     AttackMethod,
     TargetType,
@@ -123,7 +123,7 @@ from HoloLoom.dark_trace.research.adversarial_discovery import (
 )
 
 # Phase 2: Adversarial Probing Suite
-from HoloLoom.dark_trace.research.adversarial_prober import (
+from hololoom.dark_trace.research.adversarial_prober import (
     # Enums
     VulnerabilityLevel,
     ProbeMethod,
@@ -139,7 +139,7 @@ from HoloLoom.dark_trace.research.adversarial_prober import (
 )
 
 # Phase 2: Genetic Adversarial Search
-from HoloLoom.dark_trace.research.genetic_prober import (
+from hololoom.dark_trace.research.genetic_prober import (
     # Enums
     SelectionMethod,
     CrossoverMethod,
@@ -156,7 +156,7 @@ from HoloLoom.dark_trace.research.genetic_prober import (
 )
 
 # Phase 2: Adversarial Catalog
-from HoloLoom.dark_trace.research.adversarial_catalog import (
+from hololoom.dark_trace.research.adversarial_catalog import (
     # Enums
     VulnerabilityStatus,
     # Data Structures

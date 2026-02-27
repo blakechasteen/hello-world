@@ -14,7 +14,7 @@ Commands:
 - !alignment help - Show alignment help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.alignment_handlers import register_alignment_handlers
+    from hololoom.apps.chatops.handlers.alignment_handlers import register_alignment_handlers
 
     # In run_chatops.py:
     register_alignment_handlers(bot, guardrails, audit_trail)
@@ -27,8 +27,8 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-    from HoloLoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.alignment.audit_trail import AuditTrail
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -40,7 +40,7 @@ except ImportError:
 
 # Alignment imports with graceful degradation
 try:
-    from HoloLoom.alignment.safety_guardrails import (
+    from hololoom.alignment.safety_guardrails import (
         SafetyGuardrails,
         ActionRequest,
         ActionCategory,
@@ -57,7 +57,7 @@ except ImportError:
     SafetyDecision = None
 
 try:
-    from HoloLoom.alignment.audit_trail import (
+    from hololoom.alignment.audit_trail import (
         AuditTrail,
         DecisionLog,
         DecisionType,
@@ -73,7 +73,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True

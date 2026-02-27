@@ -13,7 +13,7 @@ import asyncio
 import time
 from typing import List
 
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     SandboxMode,
     SandboxConfig,
     SandboxResult,
@@ -21,7 +21,7 @@ from HoloLoom.redteam.sandbox import (
     ResourceSummary,
     ResourceMonitor,
 )
-from HoloLoom.redteam.sandbox.protocols import (
+from hololoom.redteam.sandbox.protocols import (
     validate_sandbox_config,
     get_sandbox_mode_availability,
     select_best_sandbox_mode,

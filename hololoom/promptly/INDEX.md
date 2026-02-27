@@ -24,7 +24,7 @@
 
 ## 💻 Source Code
 
-### Core Integration (HoloLoom/promptly/)
+### Core Integration (hololoom/promptly/)
 
 | File | Lines | Description | Key Classes/Functions |
 |------|-------|-------------|----------------------|
@@ -40,7 +40,7 @@
 | [migrate.py](migrate.py) | 200 | Database migrations |
 | [schema.sql](schema.sql) | 300 | Database schema |
 
-## 🎨 Example Workflows (HoloLoom/promptly/examples/)
+## 🎨 Example Workflows (hololoom/promptly/examples/)
 
 | File | Description | Steps | Complexity |
 |------|-------------|-------|------------|
@@ -61,7 +61,7 @@
 PYTHONPATH=. python demos/demo_dspy_promptly_integration.py
 ```
 
-## 🧪 Tests (HoloLoom/tests/integration/)
+## 🧪 Tests (hololoom/tests/integration/)
 
 | File | Lines | Tests | Description |
 |------|-------|-------|-------------|
@@ -76,7 +76,7 @@ PYTHONPATH=. python demos/demo_dspy_promptly_integration.py
 
 **Run**:
 ```bash
-pytest HoloLoom/tests/integration/test_dspy_integration.py -v
+pytest hololoom/tests/integration/test_dspy_integration.py -v
 ```
 
 ## 📊 Summary Documents (Repository Root)
@@ -217,7 +217,7 @@ pytest HoloLoom/tests/integration/test_dspy_integration.py -v
 ## 📦 File Organization
 
 ```
-HoloLoom/promptly/
+hololoom/promptly/
 ├── 📄 INDEX.md                           ◄── You are here
 ├── 📄 SETUP_GUIDE.md                     Installation & config
 ├── 📄 README_DSPY_INTEGRATION.md         Complete documentation
@@ -245,7 +245,7 @@ HoloLoom/promptly/
 demos/
 └── 🚀 demo_dspy_promptly_integration.py  Complete demo (550 lines)
 
-HoloLoom/tests/integration/
+hololoom/tests/integration/
 └── 🧪 test_dspy_integration.py           Integration tests (400 lines)
 
 Repository root/

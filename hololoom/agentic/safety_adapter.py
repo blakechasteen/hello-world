@@ -25,7 +25,7 @@ import logging
 import unicodedata
 from typing import Optional, Dict, Any
 
-from HoloLoom.protocols.safety import (
+from hololoom.protocols.safety import (
     SafetyGateProtocol,
     SafetyGateDecision,
     SafetyRiskLevel,
@@ -33,7 +33,7 @@ from HoloLoom.protocols.safety import (
 
 # Import alignment framework with graceful degradation
 try:
-    from HoloLoom.alignment.safety_guardrails import (
+    from hololoom.alignment.safety_guardrails import (
         SafetyGuardrails,
         ActionRequest,
         ActionCategory,
@@ -47,7 +47,7 @@ except ImportError:
     ActionCategory = None
     RiskLevel = None
 
-logger = logging.getLogger("HoloLoom.agentic.safety_adapter")
+logger = logging.getLogger("hololoom.agentic.safety_adapter")
 
 
 class AgenticSafetyAdapter:
@@ -63,8 +63,8 @@ class AgenticSafetyAdapter:
     - Fail-closed exception handling
 
     Example:
-        from HoloLoom.agentic.safety_adapter import AgenticSafetyAdapter
-        from HoloLoom.alignment import SafetyGuardrails
+        from hololoom.agentic.safety_adapter import AgenticSafetyAdapter
+        from hololoom.alignment import SafetyGuardrails
 
         guardrails = SafetyGuardrails()
         adapter = AgenticSafetyAdapter(guardrails)

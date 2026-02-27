@@ -9,7 +9,7 @@ DEPRECATED: This module is maintained for backward compatibility only.
 The Shuttle architecture has been integrated into the canonical WeavingOrchestrator.
 All new code should import from weaving_orchestrator instead:
 
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 This compatibility shim will be maintained through mythRL 1.x for backward compatibility
 but may be removed in 2.0.
@@ -25,12 +25,12 @@ See: SCOPE_AND_SEQUENCE.md Task 1.2 for integration details.
 import warnings
 
 # Import the canonical implementation
-from HoloLoom.weaving_orchestrator import (
+from hololoom.weaving_orchestrator import (
     WeavingOrchestrator,
     ToolExecutor,
 )
 # YarnGraph has been moved to memory module - use LegacyShardsAdapter for compatibility
-from HoloLoom.core.memory.graph import LegacyShardsAdapter as YarnGraph
+from hololoom.core.memory.graph import LegacyShardsAdapter as YarnGraph
 
 # Compatibility alias
 WeavingShuttle = WeavingOrchestrator
@@ -38,7 +38,7 @@ WeavingShuttle = WeavingOrchestrator
 # Emit deprecation warning on import
 warnings.warn(
     "WeavingShuttle is deprecated. Use WeavingOrchestrator instead:\n"
-    "  from HoloLoom.weaving_orchestrator import WeavingOrchestrator\n"
+    "  from hololoom.weaving_orchestrator import WeavingOrchestrator\n"
     "This compatibility shim will be removed in mythRL 2.0.",
     DeprecationWarning,
     stacklevel=2

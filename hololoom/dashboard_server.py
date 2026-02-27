@@ -38,10 +38,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 # HoloLoom imports
-from HoloLoom.config import Config
-from HoloLoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
-from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
-from HoloLoom.agentic.skill_agents import SkillRegistry, list_available_skills
+from hololoom.config import Config
+from hololoom.telemetry.analytics.recursive_analytics import RecursiveAnalytics
+from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
+from hololoom.agentic.skill_agents import SkillRegistry, list_available_skills
 
 # Initialize logging
 logging.basicConfig(

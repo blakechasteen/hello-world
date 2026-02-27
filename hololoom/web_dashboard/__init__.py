@@ -4,7 +4,7 @@ HoloLoom web_dashboard — MOVED to HoloLoom.apps.workflow_builder
 This package was relocated on 2026-02-26.
 Import from ``HoloLoom.apps.workflow_builder`` instead.
 
-This shim exists so that ``from HoloLoom.web_dashboard.X import Y``
+This shim exists so that ``from hololoom.web_dashboard.X import Y``
 emits a helpful deprecation warning rather than a confusing ImportError.
 """
 
@@ -17,10 +17,10 @@ import types
 class _DeprecatedFinder:
     """Meta-path finder that redirects HoloLoom.web_dashboard.* imports."""
 
-    _PREFIX = "HoloLoom.web_dashboard."
+    _PREFIX = "hololoom.web_dashboard."
 
     def find_module(self, fullname, path=None):
-        if fullname == "HoloLoom.web_dashboard" or fullname.startswith(self._PREFIX):
+        if fullname == "hololoom.web_dashboard" or fullname.startswith(self._PREFIX):
             return self
         return None
 
@@ -30,7 +30,7 @@ class _DeprecatedFinder:
 
         # Map old name → new name
         new_name = fullname.replace(
-            "HoloLoom.web_dashboard", "HoloLoom.apps.workflow_builder", 1
+            "hololoom.web_dashboard", "hololoom.apps.workflow_builder", 1
         )
 
         warnings.warn(

@@ -1,7 +1,7 @@
 # HoloLoom Spatial Computing Module
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/spatial/`
+**Location**: `hololoom/spatial/`
 **Total Code**: ~8,500+ lines across 20 Python modules
 **Implemented**: November-December 2025
 
@@ -9,7 +9,7 @@
 
 HoloLoom Spatial Computing is a comprehensive **AR/VR (Augmented and Virtual Reality) system** that transforms knowledge graphs into immersive 3D experiences. Built on WebXR standards, it enables users to explore, interact with, and collaborate on structured knowledge in spatial environments.
 
-Rather than viewing information on flat screens, spatial computing brings knowledge into the physical world—anchoring it to real locations, manipulating it with hand gestures, and sharing it across multiple users in mixed reality sessions. The system bridges the gap between abstract symbolic knowledge (from HoloLoom's memory graph) and concrete spatial understanding (3D positioning, embodied interaction, environmental awareness).
+Rather than viewing information on flat screens, spatial computing brings knowledge into the physical world—anchoring it to real locations, manipulating it with hand gestures, and sharing it across multiple users in mixed reality sessions. The system bridges the gap between abstract symbolic knowledge (from hololoom's memory graph) and concrete spatial understanding (3D positioning, embodied interaction, environmental awareness).
 
 **Core Philosophy**: "Knowledge should live in space." The spatial module makes this real by supporting:
 
@@ -24,7 +24,7 @@ Rather than viewing information on flat screens, spatial computing brings knowle
 ### Basic 3D Knowledge Graph Visualization
 
 ```python
-from HoloLoom.spatial import WebXRKnowledgeGraph, NodeLayout
+from hololoom.spatial import WebXRKnowledgeGraph, NodeLayout
 
 # Create 3D knowledge graph
 graph = WebXRKnowledgeGraph()
@@ -53,7 +53,7 @@ json_data = graph.to_json()
 ### Spatial Anchors for AR Persistence
 
 ```python
-from HoloLoom.spatial import SpatialAnchorManager, WorldPosition
+from hololoom.spatial import SpatialAnchorManager, WorldPosition
 
 # Create anchor manager (persists knowledge to real-world locations)
 manager = SpatialAnchorManager(storage_path="./anchors.json")
@@ -82,7 +82,7 @@ anchors_json = manager.export_for_ar()  # Send to AR client
 ### Hand Tracking & Gesture Recognition
 
 ```python
-from HoloLoom.spatial import HandTracker, GestureType
+from hololoom.spatial import HandTracker, GestureType
 
 # Create hand tracker (processes WebXR hand joint data)
 tracker = HandTracker()
@@ -108,7 +108,7 @@ for joint_pos in tracker.get_hand_joints("right"):
 ### Multi-User Collaborative Sessions
 
 ```python
-from HoloLoom.spatial import (
+from hololoom.spatial import (
     CollaborativeSpatialSession,
     SpatialContext,
     SpatialActivityType
@@ -145,7 +145,7 @@ bob_sees_same_state = True  # Real-time synchronization
 ### Mobile-Responsive Spatial UI
 
 ```python
-from HoloLoom.spatial import (
+from hololoom.spatial import (
     MobileSpatialUIManager,
     DeviceType,
     create_default_spatial_ui
@@ -746,8 +746,8 @@ The spatial module integrates seamlessly with HoloLoom's core systems:
 ### 1. Knowledge Graph Integration
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.spatial import WebXRKnowledgeGraph
+from hololoom import hololoom
+from hololoom.spatial import WebXRKnowledgeGraph
 
 async with HoloLoom() as loom:
     # Get HoloLoom's knowledge graph
@@ -764,8 +764,8 @@ async with HoloLoom() as loom:
 ### 2. Memory Consolidation in AR
 
 ```python
-from HoloLoom.memory.consolidation import MemoryConsolidator
-from HoloLoom.spatial import SpatialAnchorManager
+from hololoom.memory.consolidation import MemoryConsolidator
+from hololoom.spatial import SpatialAnchorManager
 
 consolidator = MemoryConsolidator(...)
 manager = SpatialAnchorManager(storage_path="./ar_anchors.json")
@@ -783,8 +783,8 @@ for fact in consolidator.consolidate_once()['facts_extracted']:
 ### 3. Agentic Reasoning in Spatial Context
 
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator
-from HoloLoom.spatial import CollaborativeSpatialSession
+from hololoom.agentic import create_agentic_orchestrator
+from hololoom.spatial import CollaborativeSpatialSession
 
 # Agentic reasoning can happen within spatial sessions
 session = await CollaborativeSpatialSession.create(...)
@@ -801,8 +801,8 @@ for step in result.steps_taken:
 ### 4. Alignment Framework in AR
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.spatial import SpatialNotificationManager
+from hololoom.alignment import SafetyGuardrails
+from hololoom.spatial import SpatialNotificationManager
 
 guardrails = SafetyGuardrails(enable_human_in_loop=True)
 notifier = SpatialNotificationManager()
@@ -822,8 +822,8 @@ if decision.requires_human_approval:
 ### 5. Learning Systems Integration
 
 ```python
-from HoloLoom.recursive import HotPatternFeedbackEngine
-from HoloLoom.spatial import WebXRKnowledgeGraph
+from hololoom.recursive import HotPatternFeedbackEngine
+from hololoom.spatial import WebXRKnowledgeGraph
 
 # Hot pattern feedback adapts what's shown in spatial graph
 engine = HotPatternFeedbackEngine(...)
@@ -943,7 +943,7 @@ for pattern in hot_patterns:
 
 **File Organization**:
 ```
-HoloLoom/spatial/
+hololoom/spatial/
 ├── math_types.py              # Vector3, Quaternion, Transform, Color, BoundingBox
 ├── webxr_graph.py             # 3D knowledge graph visualization
 ├── spatial_anchors.py         # AR anchor persistence

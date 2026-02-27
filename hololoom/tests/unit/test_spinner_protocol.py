@@ -19,8 +19,8 @@ import time
 from pathlib import Path
 from typing import List, Any, AsyncIterator
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     SpinnerStatus,
     SpinnerCapabilities,
     SpinResult,
@@ -30,7 +30,7 @@ from HoloLoom.spinningWheel.protocol import (
     SpinnerProtocol,
     BaseSpinner
 )
-from HoloLoom.spinningWheel.importance import (
+from hololoom.spinningWheel.importance import (
     LengthScorer,
     TechnicalScorer,
     StructuralScorer,
@@ -41,7 +41,7 @@ from HoloLoom.spinningWheel.importance import (
     ImportanceScorer,
     create_chat_scorer
 )
-from HoloLoom.spinningWheel.utils import (
+from hololoom.spinningWheel.utils import (
     CheckpointManager,
     StreamBuffer,
     BatchProcessor,

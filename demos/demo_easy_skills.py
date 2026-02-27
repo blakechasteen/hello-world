@@ -19,7 +19,7 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.skills import (
+from hololoom.skills import (
     # Easy skill creation
     skill,
     code_skill,
@@ -285,7 +285,7 @@ async def main():
     print("All demos completed!")
     print("="*70)
     print("\nUsage Summary:")
-    print("  from HoloLoom.skills import launch_skill, skill")
+    print("  from hololoom.skills import launch_skill, skill")
     print("  ")
     print("  @skill(name='my_skill')")
     print("  async def my_skill(param: str) -> dict:")

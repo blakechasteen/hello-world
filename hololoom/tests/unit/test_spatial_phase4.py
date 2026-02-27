@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock, AsyncMock, patch
 
 # Phase 4 Spatial - Collaborative Session
-from HoloLoom.spatial.collaborative_session import (
+from hololoom.spatial.collaborative_session import (
     SpatialActivityType, SpatialZoneType, GestureAction,
     SpatialContext, SpatialZone, SharedSpatialObject, GestureMapping,
     ARContextProvider, GestureCollaborationBridge, CollaborativeSpatialSession,
@@ -24,7 +24,7 @@ from HoloLoom.spatial.collaborative_session import (
 )
 
 # Phase 4 Spatial - Knowledge Overlay
-from HoloLoom.spatial.knowledge_overlay import (
+from hololoom.spatial.knowledge_overlay import (
     OverlayStyle, EdgeStyle, LayoutAlgorithm, VisibilityMode,
     KnowledgeNodeOverlay, KnowledgeEdgeOverlay, OverlayCluster, MemoryPalaceRoom,
     LayoutEngine, KnowledgeOverlayManager,
@@ -32,7 +32,7 @@ from HoloLoom.spatial.knowledge_overlay import (
 )
 
 # Phase 4 Spatial - Mobile Spatial UI
-from HoloLoom.spatial.mobile_spatial_ui import (
+from hololoom.spatial.mobile_spatial_ui import (
     DeviceType, ScreenOrientation, InputMode, UIScale,
     TouchGestureType, UIComponentType, UIAnchor, LayoutBreakpoint,
     TouchGesture, DeviceCapabilities, ResponsiveValue, LayoutConstraints,
@@ -42,10 +42,10 @@ from HoloLoom.spatial.mobile_spatial_ui import (
 )
 
 # Shared math types
-from HoloLoom.spatial.math_types import Vector3, Quaternion, Color, Transform
+from hololoom.spatial.math_types import Vector3, Quaternion, Color, Transform
 
 # Collaboration imports for session types
-from HoloLoom.collaboration.session import SessionType
+from hololoom.collaboration.session import SessionType
 
 
 # ============================================================================
@@ -236,7 +236,7 @@ class TestGestureMapping:
 
     def test_mapping_creation(self):
         """Test creating a gesture mapping."""
-        from HoloLoom.spatial.hand_tracking import GestureType
+        from hololoom.spatial.hand_tracking import GestureType
 
         mapping = GestureMapping(
             gesture_type=GestureType.WAVE,
@@ -248,7 +248,7 @@ class TestGestureMapping:
 
     def test_mapping_can_trigger(self):
         """Test cooldown checking."""
-        from HoloLoom.spatial.hand_tracking import GestureType
+        from hololoom.spatial.hand_tracking import GestureType
 
         mapping = GestureMapping(
             gesture_type=GestureType.POINT,
@@ -509,7 +509,7 @@ class TestGestureCollaborationBridge:
 
     def test_add_mapping(self):
         """Test adding custom gesture mapping."""
-        from HoloLoom.spatial.hand_tracking import GestureType
+        from hololoom.spatial.hand_tracking import GestureType
 
         session = create_collaborative_spatial_session(
             name="Mapping Test",

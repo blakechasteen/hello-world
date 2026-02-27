@@ -6,7 +6,7 @@ Star Trek-themed data quality validation system.
 "Computer, analyze data integrity." - Every Star Trek captain ever
 
 Usage:
-    from HoloLoom.datapig import DataPigDetector
+    from hololoom.datapig import DataPigDetector
 
     detector = DataPigDetector()
     issues = detector.analyze_dataset(df)

@@ -16,18 +16,18 @@ import pytest
 import asyncio
 from datetime import datetime, timedelta
 
-from HoloLoom.memory.consolidation import (
+from hololoom.memory.consolidation import (
     MemoryConsolidator,
     ConsolidationStrategy,
     ConsolidationResult,
     LLMConsolidator
 )
-from HoloLoom.memory.lifecycle_manager import (
+from hololoom.memory.lifecycle_manager import (
     ContextStreamManager,
     MemoryScope
 )
-from HoloLoom.memory.graph import KG
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.memory.graph import KG
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

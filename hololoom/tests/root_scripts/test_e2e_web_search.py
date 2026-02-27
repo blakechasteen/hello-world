@@ -4,9 +4,9 @@ End-to-End Test: Perplexity-Style Web Search
 Complete workflow from query -> search -> cite -> response
 """
 import asyncio
-from HoloLoom.agentic.web_research import WebResearchOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.agentic.web_research import WebResearchOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import MemoryShard
 
 async def main():
     print("=" * 80)

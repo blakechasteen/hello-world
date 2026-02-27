@@ -10,11 +10,11 @@ from typing import Protocol, Dict, List, Any, Optional
 from dataclasses import dataclass
 from datetime import datetime
 
-from HoloLoom.core.protocols.types import Query, MemoryShard, Features
-from HoloLoom.core.protocols import ComplexityLevel, ProvenanceTrace
-from HoloLoom.core.fabric.spacetime import Spacetime
-from HoloLoom.core.chrono.trigger import TemporalWindow
-from HoloLoom.core.loom.command import PatternSpec
+from hololoom.core.protocols.types import Query, MemoryShard, Features
+from hololoom.core.protocols import ComplexityLevel, ProvenanceTrace
+from hololoom.core.fabric.spacetime import Spacetime
+from hololoom.core.chrono.trigger import TemporalWindow
+from hololoom.core.loom.command import PatternSpec
 
 
 @dataclass

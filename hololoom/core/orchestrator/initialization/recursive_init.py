@@ -28,7 +28,7 @@ import logging
 from typing import Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 
 logger = logging.getLogger(__name__)
@@ -76,11 +76,11 @@ def initialize_recursive_learning(orchestrator: 'WeavingOrchestrator') -> None:
         return  # Already initialized
 
     try:
-        from HoloLoom.core.recursive.scratchpad import Scratchpad
-        from HoloLoom.core.recursive.loop_integration import PatternLearner
-        from HoloLoom.core.recursive.hot_patterns import HotPatternTracker
-        from HoloLoom.core.recursive.advanced_refinement import AdvancedRefiner
-        from HoloLoom.core.recursive.full_learning_loop import (
+        from hololoom.core.recursive.scratchpad import Scratchpad
+        from hololoom.core.recursive.loop_integration import PatternLearner
+        from hololoom.core.recursive.hot_patterns import HotPatternTracker
+        from hololoom.core.recursive.advanced_refinement import AdvancedRefiner
+        from hololoom.core.recursive.full_learning_loop import (
             ThompsonPriors,
             PolicyWeights,
             BackgroundLearner,

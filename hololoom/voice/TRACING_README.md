@@ -99,7 +99,7 @@ curl http://localhost:16686
 ### 3. Enable Tracing in VoiceAgent
 
 ```python
-from HoloLoom.voice.tracing import TracingManager, TracingConfig
+from hololoom.voice.tracing import TracingManager, TracingConfig
 
 # Create tracing manager
 config = TracingConfig(
@@ -237,7 +237,7 @@ Attributes on root span:
 ### TracingConfig
 
 ```python
-from HoloLoom.voice.tracing import TracingConfig, SamplingStrategy
+from hololoom.voice.tracing import TracingConfig, SamplingStrategy
 
 config = TracingConfig(
     # Core settings
@@ -316,7 +316,7 @@ config = TracingConfig(
 ### Basic Usage
 
 ```python
-from HoloLoom.voice.tracing import TracingManager, TracingConfig
+from hololoom.voice.tracing import TracingManager, TracingConfig
 
 # Initialize tracing
 config = TracingConfig()
@@ -752,7 +752,7 @@ Improvement: 50% reduction
 ### Example: Add Span for Entity Extraction
 
 ```python
-from HoloLoom.voice.tracing import get_tracing_manager
+from hololoom.voice.tracing import get_tracing_manager
 
 tracing = get_tracing_manager()
 

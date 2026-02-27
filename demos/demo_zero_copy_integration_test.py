@@ -16,8 +16,8 @@ Date: 2025-11-12
 
 import asyncio
 import time
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
 
 # Test queries
 TEST_QUERIES = [
@@ -58,7 +58,7 @@ async def test_standard_embeddings():
     config = Config.fast()
     config.enable_zero_copy_embeddings = False
 
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
     async with WeavingOrchestrator(cfg=config, shards=MEMORY_SHARDS) as orchestrator:
         results = []
@@ -87,7 +87,7 @@ async def test_zero_copy_embeddings():
     config = Config.fast()
     config.enable_zero_copy_embeddings = True
 
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
     async with WeavingOrchestrator(cfg=config, shards=MEMORY_SHARDS) as orchestrator:
         results = []

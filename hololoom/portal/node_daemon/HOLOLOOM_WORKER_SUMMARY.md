@@ -1,7 +1,7 @@
 # HoloLoom Worker Module - Complete Implementation Summary
 
 **Created**: 2025-12-03 22:44 UTC
-**Location**: `HoloLoom/portal/node_daemon/`
+**Location**: `hololoom/portal/node_daemon/`
 **Status**: ✅ Production Ready
 
 ---
@@ -275,7 +275,7 @@ async def handle_job(self, job_request: JobRequest) -> JobResult:
 
 ### Run Demo
 ```bash
-cd HoloLoom/portal/node_daemon
+cd hololoom/portal/node_daemon
 python hololoom_worker_demo.py
 ```
 
@@ -286,7 +286,7 @@ python -m py_compile hololoom_worker.py
 
 ### Verify HoloLoom
 ```bash
-python -c "from HoloLoom import HoloLoom; print('OK')"
+python -c "from hololoom import hololoom; print('OK')"
 ```
 
 ---

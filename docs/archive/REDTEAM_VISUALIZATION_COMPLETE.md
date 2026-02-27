@@ -1,7 +1,7 @@
 # Red Team Attack Visualization Foundation - COMPLETE
 
 **Status**: ✅ **Production Ready** (November 2025)
-**Location**: `HoloLoom/redteam/visualization/`
+**Location**: `hololoom/redteam/visualization/`
 **Completion Date**: December 5, 2025
 **Total Lines**: 1,072 lines of production code + 2,500+ lines of documentation
 
@@ -22,14 +22,14 @@ A complete, production-ready visualization foundation for red team attack tracki
 
 ## Implementation Complete ✅
 
-### 1. **HoloLoom/redteam/visualization/__init__.py** (39 lines)
+### 1. **hololoom/redteam/visualization/__init__.py** (39 lines)
 
 **Status**: ✅ Complete
 
 Provides clean package interface with lazy loading:
 
 ```python
-from HoloLoom.redteam.visualization import (
+from hololoom.redteam.visualization import (
     AttackPoint,
     StrategyMetrics,
     AttackTrajectoryRenderer,
@@ -47,7 +47,7 @@ from HoloLoom.redteam.visualization import (
 
 ---
 
-### 2. **HoloLoom/redteam/visualization/attack_trajectory.py** (1,034 lines)
+### 2. **hololoom/redteam/visualization/attack_trajectory.py** (1,034 lines)
 
 **Status**: ✅ Complete - Production Ready
 
@@ -252,7 +252,7 @@ html = renderer.render(
 ### Pattern 1: Simple Visualization (2 minutes)
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 html = render_attack_trajectory(
     strategies=["strategy_1", "strategy_2", "strategy_3"],
@@ -269,7 +269,7 @@ with open("analysis.html", "w") as f:
 ### Pattern 2: Advanced Rendering (5 minutes)
 
 ```python
-from HoloLoom.redteam.visualization import (
+from hololoom.redteam.visualization import (
     AttackTrajectoryRenderer, AttackPoint
 )
 
@@ -309,7 +309,7 @@ html = renderer.render(
 ### Pattern 3: Batch Processing
 
 ```python
-from HoloLoom.redteam.visualization import AttackTrajectoryRenderer
+from hololoom.redteam.visualization import AttackTrajectoryRenderer
 
 # Process multiple campaigns
 campaigns = {
@@ -363,7 +363,7 @@ End-to-end rendering verified:
 ### Demo Execution
 
 ```bash
-cd HoloLoom/redteam/visualization
+cd hololoom/redteam/visualization
 PYTHONPATH=../.. python demo_attack_trajectory.py
 # Generates: demo_output_simple.html
 #            demo_output_advanced.html
@@ -377,7 +377,7 @@ All demo outputs validated and functional.
 ## File Structure
 
 ```
-HoloLoom/redteam/visualization/
+hololoom/redteam/visualization/
 ├── __init__.py                      (39 lines)    ✅
 ├── attack_trajectory.py             (1034 lines)  ✅
 ├── demo_attack_trajectory.py        (370 lines)   ✅
@@ -499,7 +499,7 @@ Total: 2,543 lines (1,072 production code + 1,471 documentation)
 ### 1. Basic Usage (Fastest)
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 html = render_attack_trajectory(
     strategies=["prompt_injection", "jailbreak"],
@@ -515,7 +515,7 @@ with open("output.html", "w") as f:
 ### 2. Run Demo
 
 ```bash
-cd HoloLoom/redteam/visualization
+cd hololoom/redteam/visualization
 PYTHONPATH=../.. python demo_attack_trajectory.py
 # Opens: demo_output_production.html
 ```
@@ -523,8 +523,8 @@ PYTHONPATH=../.. python demo_attack_trajectory.py
 ### 3. Integrate with Red Team System
 
 ```python
-from HoloLoom.redteam.visualization import AttackTrajectoryRenderer
-from HoloLoom.redteam.tracker import get_attack_history
+from hololoom.redteam.visualization import AttackTrajectoryRenderer
+from hololoom.redteam.tracker import get_attack_history
 
 # Get attack data from tracker
 attacks = get_attack_history(campaign_id="carts_2025_q4")

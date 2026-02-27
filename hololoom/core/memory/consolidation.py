@@ -34,13 +34,13 @@ from enum import Enum
 import asyncio
 import logging
 
-from HoloLoom.core.protocols.types import MemoryShard
-from HoloLoom.core.memory.lifecycle_manager import (
+from hololoom.core.protocols.types import MemoryShard
+from hololoom.core.memory.lifecycle_manager import (
     ContextStreamManager,
     MemoryScope,
     LifeCycle
 )
-from HoloLoom.core.memory.graph import KG, KGEdge
+from hololoom.core.memory.graph import KG, KGEdge
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ class ConsolidationResult:
 
 # Import production LLM consolidator (Week 3)
 try:
-    from HoloLoom.core.memory.llm_consolidator import (
+    from hololoom.core.memory.llm_consolidator import (
         ProductionLLMConsolidator,
         LLMConfig,
         create_production_consolidator

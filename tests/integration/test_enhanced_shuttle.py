@@ -6,10 +6,10 @@ Demonstrates progressive complexity assessment and protocol integration.
 """
 
 import asyncio
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.protocols import ComplexityLevel, ProvenceTrace
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.protocols import ComplexityLevel, ProvenceTrace
+from hololoom.config import Config
+from hololoom.Documentation.types import Query, MemoryShard
 
 async def test_enhanced_shuttle():
     """Test the enhanced WeavingShuttle with complexity detection."""

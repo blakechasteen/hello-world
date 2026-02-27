@@ -10,7 +10,7 @@ Tests:
 """
 
 import pytest
-from HoloLoom.config import Config, ExecutionMode, MemoryBackend
+from hololoom.config import Config, ExecutionMode, MemoryBackend
 
 
 class TestConfigCreation:

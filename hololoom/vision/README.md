@@ -1,7 +1,7 @@
 # HoloLoom Vision Tools - Comprehensive Computer Vision for AR
 
 **Status**: ✅ Production Ready (Phase 2, 4, 5 - December 2025)
-**Location**: `HoloLoom/vision/`
+**Location**: `hololoom/vision/`
 **Total Lines**: ~4,515 lines across 10 Python files
 **Date Created**: November 22, 2025 (Phase 2)
 **Last Updated**: December 2025 (Phases 4 & 5 integrated)
@@ -77,7 +77,7 @@ The vision system is designed with **graceful degradation** as a core principle:
 
 ---
 
-## Python Backend (HoloLoom/vision/)
+## Python Backend (hololoom/vision/)
 
 ### Installation
 
@@ -98,7 +98,7 @@ pip install scikit-learn
 ### Quick Start
 
 ```python
-from HoloLoom.vision import create_object_detector, create_scene_analyzer, create_hand_tracker
+from hololoom.vision import create_object_detector, create_scene_analyzer, create_hand_tracker
 import numpy as np
 import cv2
 
@@ -212,7 +212,7 @@ PINKY_MCP, PINKY_PIP, PINKY_DIP, PINKY_TIP
 
 **Helper Functions**:
 ```python
-from HoloLoom.vision.hand_tracker import get_pointing_direction, get_pinch_strength
+from hololoom.vision.hand_tracker import get_pointing_direction, get_pinch_strength
 
 # Get 3D pointing direction for navigation
 direction = get_pointing_direction(hand_pose)  # Returns Vector3 or None
@@ -466,7 +466,7 @@ curl -X POST http://localhost:8000/ar/vision/track_hands \
 
 **Quick Start**:
 ```python
-from HoloLoom.vision import create_depth_estimator, depth_to_3d_point, create_point_cloud
+from hololoom.vision import create_depth_estimator, depth_to_3d_point, create_point_cloud
 
 estimator = create_depth_estimator(backend="midas")
 await estimator.initialize()
@@ -503,7 +503,7 @@ point_cloud = create_point_cloud(depth_map)
 
 **Quick Start**:
 ```python
-from HoloLoom.vision import create_marker_detector
+from hololoom.vision import create_marker_detector
 
 detector = create_marker_detector(
     marker_types=["aruco", "qr_code", "apriltag"]
@@ -540,7 +540,7 @@ for marker in markers:
 
 **Quick Start**:
 ```python
-from HoloLoom.vision import create_semantic_segmenter, visualize_segmentation
+from hololoom.vision import create_semantic_segmenter, visualize_segmentation
 
 segmenter = create_semantic_segmenter(
     model="deeplabv3_resnet50",
@@ -575,7 +575,7 @@ visualization = visualize_segmentation(frame, mask)
 
 **Quick Start**:
 ```python
-from HoloLoom.vision import create_pose_estimator, get_joint_angle, detect_gesture
+from hololoom.vision import create_pose_estimator, get_joint_angle, detect_gesture
 
 estimator = create_pose_estimator(model_complexity=1)
 await estimator.initialize()
@@ -604,7 +604,7 @@ gesture = detect_gesture(pose)  # "standing", "sitting", "running"
 
 **Quick Start**:
 ```python
-from HoloLoom.vision import create_slam_processor, create_camera_matrix
+from hololoom.vision import create_slam_processor, create_camera_matrix
 
 slam = create_slam_processor(
     camera_matrix=create_camera_matrix(fx=525, fy=525, cx=320, cy=240),
@@ -696,16 +696,16 @@ pose2 = await slam.track_frame(frame2)
 
 ```bash
 # Run all vision tests
-pytest HoloLoom/vision/tests/ -v
+pytest hololoom/vision/tests/ -v
 
 # Test object detection
-pytest HoloLoom/vision/tests/test_object_detector.py -v
+pytest hololoom/vision/tests/test_object_detector.py -v
 
 # Test scene analysis
-pytest HoloLoom/vision/tests/test_scene_analyzer.py -v
+pytest hololoom/vision/tests/test_scene_analyzer.py -v
 
 # Test hand tracking
-pytest HoloLoom/vision/tests/test_hand_tracker.py -v
+pytest hololoom/vision/tests/test_hand_tracker.py -v
 ```
 
 ### Frontend Tests
@@ -772,8 +772,8 @@ pip install mediapipe --no-cache-dir
 The vision system integrates seamlessly with HoloLoom's weaving orchestrator and memory systems:
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.vision import VisionPipeline, create_object_detector, create_scene_analyzer
+from hololoom import hololoom
+from hololoom.vision import VisionPipeline, create_object_detector, create_scene_analyzer
 
 # Create HoloLoom instance with vision
 async with HoloLoom() as loom:

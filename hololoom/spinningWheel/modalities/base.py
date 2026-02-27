@@ -3,14 +3,14 @@ Backward Compatibility Shim for Old Spinner Pattern
 ====================================================
 
 Provides the old BaseSpinner/SpinnerConfig pattern for legacy modality spinners.
-New spinners should use the protocol from HoloLoom.spinningWheel.protocol instead.
+New spinners should use the protocol from hololoom.spinningWheel.protocol instead.
 """
 
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any
 from dataclasses import dataclass
 
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 @dataclass

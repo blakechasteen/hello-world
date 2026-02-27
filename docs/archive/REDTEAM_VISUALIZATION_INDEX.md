@@ -20,7 +20,7 @@
 ### Implementation (Production Code)
 
 ```
-HoloLoom/redteam/visualization/
+hololoom/redteam/visualization/
 ├── __init__.py                      (39 lines)    - Package interface
 ├── attack_trajectory.py             (1,034 lines) - Core renderer
 ├── demo_attack_trajectory.py        (370 lines)   - Working examples
@@ -46,7 +46,7 @@ HoloLoom/redteam/visualization/
 ### 1. Attack Trajectory Visualization
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 html = render_attack_trajectory(
     strategies=["prompt_injection", "jailbreak", "overflow"],
@@ -121,7 +121,7 @@ Small multiples showing:
 ### Use Case 1: Executive Report
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 from datetime import datetime
 
 html = render_attack_trajectory(

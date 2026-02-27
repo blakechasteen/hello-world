@@ -48,7 +48,7 @@ Phase 2 successfully delivers a production-ready Docker Compose deployment for H
    - Minimal image size (~150MB)
    - Production-optimized
 
-3. **HoloLoom/voice_ux/milestone3/server.js** (350 lines)
+3. **hololoom/voice_ux/milestone3/server.js** (350 lines)
    - HTTP API wrapper for complete_emotional_pipeline.js
    - 3 endpoints: /analyze, /health, /metrics
    - Prometheus metrics export
@@ -318,7 +318,7 @@ open http://localhost:3001
 3. `.env.example` (80 lines) - Environment template
 
 ### Production Server
-4. `HoloLoom/voice_ux/milestone3/server.js` (350 lines) - HTTP API
+4. `hololoom/voice_ux/milestone3/server.js` (350 lines) - HTTP API
 
 ### Monitoring
 5. `docker/prometheus/prometheus.yml` (70 lines)

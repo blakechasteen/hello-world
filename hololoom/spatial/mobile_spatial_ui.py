@@ -21,7 +21,7 @@ import logging
 import math
 
 # Import spatial math types
-from HoloLoom.spatial.math_types import Vector3, Quaternion, Color, Transform
+from hololoom.spatial.math_types import Vector3, Quaternion, Color, Transform
 
 logger = logging.getLogger(__name__)
 

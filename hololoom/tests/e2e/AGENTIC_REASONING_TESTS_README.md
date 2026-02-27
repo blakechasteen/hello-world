@@ -1,7 +1,7 @@
 # Agentic Reasoning E2E Tests
 
 **Status**: ✅ All 14 tests passing (100%)
-**Location**: `HoloLoom/tests/e2e/test_agentic_reasoning_modes.py`
+**Location**: `hololoom/tests/e2e/test_agentic_reasoning_modes.py`
 **Runtime**: ~3.7 minutes for full suite
 **Created**: 2025-12-01
 
@@ -158,28 +158,28 @@ All tests follow consistent pattern:
 
 **Full suite**:
 ```bash
-python -m pytest HoloLoom/tests/e2e/test_agentic_reasoning_modes.py -v
+python -m pytest hololoom/tests/e2e/test_agentic_reasoning_modes.py -v
 # 14 passed in ~3.7 minutes
 ```
 
 **Single mode**:
 ```bash
 # DIRECT mode tests only
-python -m pytest HoloLoom/tests/e2e/test_agentic_reasoning_modes.py -k "direct" -v
+python -m pytest hololoom/tests/e2e/test_agentic_reasoning_modes.py -k "direct" -v
 
 # VERIFY mode tests only
-python -m pytest HoloLoom/tests/e2e/test_agentic_reasoning_modes.py -k "verify" -v
+python -m pytest hololoom/tests/e2e/test_agentic_reasoning_modes.py -k "verify" -v
 
 # RESEARCH mode tests only
-python -m pytest HoloLoom/tests/e2e/test_agentic_reasoning_modes.py -k "research" -v
+python -m pytest hololoom/tests/e2e/test_agentic_reasoning_modes.py -k "research" -v
 
 # PLAN_EXECUTE mode tests only
-python -m pytest HoloLoom/tests/e2e/test_agentic_reasoning_modes.py -k "plan_execute" -v
+python -m pytest hololoom/tests/e2e/test_agentic_reasoning_modes.py -k "plan_execute" -v
 ```
 
 **With detailed output**:
 ```bash
-python -m pytest HoloLoom/tests/e2e/test_agentic_reasoning_modes.py -xvs
+python -m pytest hololoom/tests/e2e/test_agentic_reasoning_modes.py -xvs
 ```
 
 ## Performance Characteristics
@@ -287,8 +287,8 @@ Tests validate integration with:
 
 ## References
 
-- **Implementation**: `HoloLoom/agentic/core.py` (1172 lines)
-- **Alignment**: `HoloLoom/alignment/safety_guardrails.py`
-- **Consciousness**: `HoloLoom/awareness/`
-- **Recursive Learning**: `HoloLoom/recursive/`
+- **Implementation**: `hololoom/agentic/core.py` (1172 lines)
+- **Alignment**: `hololoom/alignment/safety_guardrails.py`
+- **Consciousness**: `hololoom/awareness/`
+- **Recursive Learning**: `hololoom/recursive/`
 - **Documentation**: `CLAUDE.md` (Agentic Reasoning System section)

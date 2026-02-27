@@ -65,7 +65,7 @@ class MemoryBackend(Enum):
 
 # Import BanditStrategy from shared types (no circular dependency)
 try:
-    from HoloLoom.protocols.types import BanditStrategy
+    from hololoom.protocols.types import BanditStrategy
 except ImportError:
     # Fallback if protocols not available
     class BanditStrategy(Enum):
@@ -280,7 +280,7 @@ class Config:
         config = Config(retrieval_k=10, pipeline_timeout=10.0)
 
         # With expansion bundles
-        from HoloLoom.expansions.physics import PhysicsConfig
+        from hololoom.expansions.physics import PhysicsConfig
         config = Config.research()
         config.load_expansion(PhysicsConfig())
     """

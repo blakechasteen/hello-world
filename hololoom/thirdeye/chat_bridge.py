@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import AsyncIterator, Callable, Dict, Any, List, Optional
 from enum import Enum, auto
 
-from HoloLoom.thirdeye.concept import (
+from hololoom.thirdeye.concept import (
     Concept,
     ConceptType,
     SemanticPosition,
@@ -25,7 +25,7 @@ from HoloLoom.thirdeye.concept import (
     create_comparison_concept,
     create_process_concept,
 )
-from HoloLoom.thirdeye.transition import (
+from hololoom.thirdeye.transition import (
     Transition,
     calculate_transition,
     create_emphasis_transition,

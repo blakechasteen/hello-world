@@ -609,11 +609,11 @@
 
 ### 1. Start Server
 ```bash
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 ```
 
 ### 2. Open Dashboard
-Open `HoloLoom/web_dashboard/control_panel.html` in browser
+Open `hololoom/web_dashboard/control_panel.html` in browser
 
 ### 3. Verify Each Dashboard
 

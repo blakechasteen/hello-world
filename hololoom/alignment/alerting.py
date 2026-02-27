@@ -46,7 +46,7 @@ try:
 except ImportError:
     AIOHTTP_AVAILABLE = False
 
-logger = logging.getLogger("HoloLoom.alignment.alerting")
+logger = logging.getLogger("hololoom.alignment.alerting")
 
 
 class AlertSeverity(Enum):
@@ -69,7 +69,7 @@ class Alert:
     severity: AlertSeverity
     title: str
     message: str
-    source: str = "HoloLoom"
+    source: str = "hololoom"
     timestamp: float = field(default_factory=time.time)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -243,7 +243,7 @@ class AlertDispatcher:
         self,
         title: str,
         message: str,
-        source: str = "HoloLoom",
+        source: str = "hololoom",
         metadata: Optional[Dict[str, Any]] = None
     ) -> Dict[str, bool]:
         """Send CRITICAL severity alert."""
@@ -260,7 +260,7 @@ class AlertDispatcher:
         self,
         title: str,
         message: str,
-        source: str = "HoloLoom",
+        source: str = "hololoom",
         metadata: Optional[Dict[str, Any]] = None
     ) -> Dict[str, bool]:
         """Send WARNING severity alert."""
@@ -277,7 +277,7 @@ class AlertDispatcher:
         self,
         title: str,
         message: str,
-        source: str = "HoloLoom",
+        source: str = "hololoom",
         metadata: Optional[Dict[str, Any]] = None
     ) -> Dict[str, bool]:
         """Send INFO severity alert."""

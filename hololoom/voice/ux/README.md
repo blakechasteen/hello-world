@@ -72,7 +72,7 @@ HoloLoom Voice UX enables natural voice-first interaction with the HoloLoom syst
 
 ### Voice Input Pipeline
 
-**File**: `HoloLoom/web_dashboard/js/voice_input_pipeline.js` (400+ lines)
+**File**: `hololoom/web_dashboard/js/voice_input_pipeline.js` (400+ lines)
 
 **Responsibilities**:
 - **Speech-to-Text**: Web Speech API with continuous recognition
@@ -108,7 +108,7 @@ HoloLoom Voice UX enables natural voice-first interaction with the HoloLoom syst
 
 ### Thread State Manager
 
-**File**: `HoloLoom/web_dashboard/js/thread_state_manager.js` (330+ lines)
+**File**: `hololoom/web_dashboard/js/thread_state_manager.js` (330+ lines)
 
 **Responsibilities**:
 - **Thread Lifecycle**: INACTIVE → ACTIVE → BACKGROUND → ARCHIVED
@@ -135,7 +135,7 @@ INACTIVE ──activate()──> ACTIVE ──background()──> BACKGROUND
 
 ### Voice Orchestrator
 
-**File**: `HoloLoom/web_dashboard/js/voice_orchestrator.js` (650+ lines)
+**File**: `hololoom/web_dashboard/js/voice_orchestrator.js` (650+ lines)
 
 **Responsibilities**:
 - **Intent Routing**: Routes intents to appropriate handlers
@@ -165,8 +165,8 @@ _handleHelp(intent)               // Show help message
 ### Thread UI Component
 
 **Files**:
-- `HoloLoom/web_dashboard/js/thread_ui_component.js` (360+ lines)
-- `HoloLoom/web_dashboard/css/thread_ui.css` (450+ lines)
+- `hololoom/web_dashboard/js/thread_ui_component.js` (360+ lines)
+- `hololoom/web_dashboard/css/thread_ui.css` (450+ lines)
 
 **Responsibilities**:
 - **ThreadCard**: Individual thread visualization (name, state, summary, actions)
@@ -191,7 +191,7 @@ _handleHelp(intent)               // Show help message
 
 ### Voice UI Integration
 
-**File**: `HoloLoom/web_dashboard/js/voice_ui_integration.js` (430+ lines)
+**File**: `hololoom/web_dashboard/js/voice_ui_integration.js` (430+ lines)
 
 **Responsibilities**:
 - **Component Wiring**: Connects voice, threads, UI, metrics
@@ -208,7 +208,7 @@ _handleHelp(intent)               // Show help message
 
 ### Analytics Monitor Integration
 
-**File**: `HoloLoom/web_dashboard/js/analytics_monitor.js` (enhanced with 160+ lines)
+**File**: `hololoom/web_dashboard/js/analytics_monitor.js` (enhanced with 160+ lines)
 
 **New Methods** (Phase 3.11 Integration):
 ```javascript
@@ -235,7 +235,7 @@ shouldDisableVoice() // Returns {shouldDisable, reason}
 ## File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── voice_ux/
 │   ├── README.md                          # This file
 │   └── types.py                           # Python type definitions
@@ -270,7 +270,7 @@ HoloLoom/
 
 1. **Open Demo**:
    ```bash
-   cd HoloLoom/web_dashboard
+   cd hololoom/web_dashboard
    open voice_ux_demo.html  # or use a web server
    ```
 
@@ -652,10 +652,10 @@ Loom: [Highlights code, opens thread, speaks explanation]
 ### Integrate with HoloLoom Backend
 
 ```python
-# HoloLoom/voice_ux/backend_integration.py
+# hololoom/voice_ux/backend_integration.py
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 
 class VoiceBackendBridge:
     """Bridge between voice frontend and HoloLoom backend"""
@@ -671,7 +671,7 @@ class VoiceBackendBridge:
 
     async def process_voice_query(self, text: str, thread_id: str):
         """Process voice query through HoloLoom"""
-        from HoloLoom.Documentation.types import Query
+        from hololoom.Documentation.types import Query
 
         query = Query(text=text, metadata={'thread_id': thread_id})
         spacetime = await self.orchestrator.weave(query)
@@ -686,7 +686,7 @@ class VoiceBackendBridge:
 ### FastAPI Endpoint
 
 ```python
-# HoloLoom/server/voice_api.py
+# hololoom/server/voice_api.py
 
 from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel

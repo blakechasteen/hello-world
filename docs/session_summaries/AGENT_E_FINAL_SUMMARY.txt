@@ -12,7 +12,7 @@ DATE: November 13, 2025
 DELIVERABLES
 ================================================================================
 
-FILE 1: HoloLoom/rag/streaming.py
+FILE 1: hololoom/rag/streaming.py
   Size: 308 lines
   Purpose: Core streaming functionality
   Components:
@@ -22,7 +22,7 @@ FILE 1: HoloLoom/rag/streaming.py
     - StreamingRAGMixin (mixin for SimpleRAG)
   Status: COMPLETE with full docstrings
 
-FILE 2: HoloLoom/rag/tests/test_streaming.py
+FILE 2: hololoom/rag/tests/test_streaming.py
   Size: 484 lines
   Purpose: Comprehensive test suite
   Tests: 21 total (100% passing)
@@ -47,8 +47,8 @@ FILE 3: demos/demo_streaming_rag.py
   Status: READY TO RUN
 
 SUPPORT FILES:
-  - Modified: HoloLoom/rag/simple_rag.py (added mixin)
-  - Modified: HoloLoom/rag/__init__.py (export StreamToken)
+  - Modified: hololoom/rag/simple_rag.py (added mixin)
+  - Modified: hololoom/rag/__init__.py (export StreamToken)
   - Created: STREAMING_IMPLEMENTATION_REPORT.md (detailed report)
 
 TOTAL CODE: 1,050 lines

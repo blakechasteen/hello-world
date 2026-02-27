@@ -1,6 +1,6 @@
 """Tests for Git Operations ability.
 
-Run with: pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py -v
+Run with: pytest hololoom/departments/proto/abilities/core/test_git_operations.py -v
 
 Tests cover:
 - Manifest validation

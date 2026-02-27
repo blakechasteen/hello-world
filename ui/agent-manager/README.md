@@ -495,8 +495,8 @@ See [WEBSOCKET_CLIENT.md](./WEBSOCKET_CLIENT.md) for complete API reference.
 
 ## Related Files
 
-- [Backend WebSocket Handler](../../HoloLoom/chatops/handlers/websocket_progress.py)
-- [Agent Manager API](../../HoloLoom/server/agentic_api.py)
+- [Backend WebSocket Handler](../../hololoom/chatops/handlers/websocket_progress.py)
+- [Agent Manager API](../../hololoom/server/agentic_api.py)
 
 ## Contributing
 

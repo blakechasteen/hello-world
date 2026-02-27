@@ -90,7 +90,7 @@ stats = generator.get_statistics()
 ### Usage Example
 
 ```python
-from HoloLoom.redteam.strategies import CoTExploitGenerator
+from hololoom.redteam.strategies import CoTExploitGenerator
 
 generator = CoTExploitGenerator()
 
@@ -204,7 +204,7 @@ stats = generator.get_statistics()
 ### Usage Example
 
 ```python
-from HoloLoom.redteam.strategies import ToolAbuseGenerator
+from hololoom.redteam.strategies import ToolAbuseGenerator
 
 generator = ToolAbuseGenerator()
 
@@ -337,7 +337,7 @@ stats = generator.get_statistics()
 ### Usage Example
 
 ```python
-from HoloLoom.redteam.strategies import PromptExtractionGenerator
+from hololoom.redteam.strategies import PromptExtractionGenerator
 
 generator = PromptExtractionGenerator()
 
@@ -417,7 +417,7 @@ class PromptExtractionPayload:
 ### Step 1: Import Generators
 
 ```python
-from HoloLoom.redteam.strategies import (
+from hololoom.redteam.strategies import (
     CoTExploitGenerator,
     ToolAbuseGenerator,
     PromptExtractionGenerator
@@ -451,7 +451,7 @@ all_attacks = cot_attacks + tool_attacks + prompt_attacks
 ### Step 4: Execute with Orchestrator
 
 ```python
-from HoloLoom.redteam.orchestrator import ORCHESTRATORManager
+from hololoom.redteam.orchestrator import ORCHESTRATORManager
 
 orchestrator = ORCHESTRATORManager()
 
@@ -466,7 +466,7 @@ for attack in all_attacks:
 ### Step 5: Track Results
 
 ```python
-from HoloLoom.redteam.tracker import RedTeamTracker
+from hololoom.redteam.tracker import RedTeamTracker
 
 tracker = RedTeamTracker()
 
@@ -503,7 +503,7 @@ Comprehensive test suite in `tests/test_attack_strategy_generators.py`:
 ```bash
 # Run tests
 cd /c/Users/blake/OneDrive/Documents/mythRL
-python HoloLoom/redteam/tests/test_attack_strategy_generators.py
+python hololoom/redteam/tests/test_attack_strategy_generators.py
 ```
 
 **Test Coverage**:
@@ -538,7 +538,7 @@ python HoloLoom/redteam/tests/test_attack_strategy_generators.py
 ### Installation
 ```bash
 # Files are already in place at:
-# /c/Users/blake/OneDrive/Documents/mythRL/HoloLoom/redteam/strategies/
+# /c/Users/blake/OneDrive/Documents/mythRL/hololoom/redteam/strategies/
 ```
 
 ### Configuration
@@ -575,10 +575,10 @@ payloads = prompt_gen.generate_all()  # No target required
 
 ## References
 
-- CARTS System: `/c/Users/blake/OneDrive/Documents/mythRL/HoloLoom/redteam/`
-- Orchestrator: `HoloLoom/redteam/orchestrator.py`
-- Tracker: `HoloLoom/redteam/tracker.py`
-- MRF Integration: `HoloLoom/redteam/mrf_integration.py`
+- CARTS System: `/c/Users/blake/OneDrive/Documents/mythRL/hololoom/redteam/`
+- Orchestrator: `hololoom/redteam/orchestrator.py`
+- Tracker: `hololoom/redteam/tracker.py`
+- MRF Integration: `hololoom/redteam/mrf_integration.py`
 
 ---
 

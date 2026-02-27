@@ -13,7 +13,7 @@ Key Features:
 - TraceLens Integration: Unified interpretability interface
 
 Usage:
-    from HoloLoom.dark_trace.sae import (
+    from hololoom.dark_trace.sae import (
         ResearchSAE,
         ResearchTrainer,
         TrainingConfig,
@@ -47,14 +47,14 @@ Usage:
 """
 
 # Core SAE architecture
-from HoloLoom.dark_trace.sae.core import (
+from hololoom.dark_trace.sae.core import (
     ResearchSAE,
     FeatureHealth,
     ActivationTracker,
 )
 
 # Research-grade training
-from HoloLoom.dark_trace.sae.trainer import (
+from hololoom.dark_trace.sae.trainer import (
     ResearchTrainer,
     TrainingConfig,
     L1AnnealingScheduler,
@@ -63,7 +63,7 @@ from HoloLoom.dark_trace.sae.trainer import (
 )
 
 # Evaluation and metrics
-from HoloLoom.dark_trace.sae.evaluator import (
+from hololoom.dark_trace.sae.evaluator import (
     SAEEvaluator,
     ReconstructionMetrics,
     SparsityMetrics,
@@ -72,7 +72,7 @@ from HoloLoom.dark_trace.sae.evaluator import (
 )
 
 # Auto-labeling
-from HoloLoom.dark_trace.sae.labeler import (
+from hololoom.dark_trace.sae.labeler import (
     FeatureLabeler,
     ActivationPatternAnalyzer,
     SemanticAlignmentScorer,
@@ -81,13 +81,13 @@ from HoloLoom.dark_trace.sae.labeler import (
 )
 
 # TraceLens integration
-from HoloLoom.dark_trace.sae.lens import (
+from hololoom.dark_trace.sae.lens import (
     SAELens,
 )
 
 # Legacy (backward compatibility)
 # For new projects, use ResearchSAE and ResearchTrainer instead
-from HoloLoom.dark_trace.sae.legacy import (
+from hololoom.dark_trace.sae.legacy import (
     SparseAutoEncoder,
     DarkSaeTrainer,
 )

@@ -275,8 +275,8 @@ Bot:                ✅ Approved for production (2/2 approvals)
 # bot/promptly_matrix_bot.py
 
 from nio import AsyncClient, MatrixRoom, RoomMessageText
-from HoloLoom.promptly import DSPyHoloLoom
-from HoloLoom.config import Config
+from hololoom.promptly import DSPyHoloLoom
+from hololoom.config import Config
 
 class PromptlyMatrixBot:
     """Promptly bot for Matrix (Application Service)"""
@@ -931,8 +931,8 @@ Target tokens: 2000
 ```python
 # bot/hololoom_integration.py
 
-from HoloLoom import HoloLoom
-from HoloLoom.documentation.types import MemoryShard
+from hololoom import hololoom
+from hololoom.documentation.types import MemoryShard
 
 class HoloLoomIntegration:
     """Integrate Matrix bot with HoloLoom memory"""
@@ -967,7 +967,7 @@ class HoloLoomIntegration:
         examples = self.convert_to_examples(memories)
 
         # Optimize
-        from HoloLoom.promptly import DSPyHoloLoom
+        from hololoom.promptly import DSPyHoloLoom
         bridge = DSPyHoloLoom(config=self.loom.config)
         optimized = await bridge.optimize_from_memory(
             signature=signature,

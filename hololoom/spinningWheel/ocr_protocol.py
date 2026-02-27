@@ -562,7 +562,7 @@ def create_ocr_backend_chain(
     # Add DeepSeek (best quality)
     if prefer_deepseek:
         try:
-            from HoloLoom.spinningWheel.ocr_backends.deepseek import DeepSeekOCRBackend
+            from hololoom.spinningWheel.ocr_backends.deepseek import DeepSeekOCRBackend
             backends.append(DeepSeekOCRBackend())
         except ImportError:
             pass
@@ -575,13 +575,13 @@ def create_ocr_backend_chain(
     # Add Tesseract fallback
     if enable_fallback:
         try:
-            from HoloLoom.spinningWheel.ocr_backends.tesseract import TesseractOCRBackend
+            from hololoom.spinningWheel.ocr_backends.tesseract import TesseractOCRBackend
             backends.append(TesseractOCRBackend())
         except ImportError:
             pass
 
     # Last resort: Filename extraction
-    from HoloLoom.spinningWheel.ocr_backends.fallback import FallbackOCRBackend
+    from hololoom.spinningWheel.ocr_backends.fallback import FallbackOCRBackend
     backends.append(FallbackOCRBackend())
 
     return OCRBackendChain(backends)

@@ -61,7 +61,7 @@ class MetricsCollector:
         Initialize metrics collector.
         
         Args:
-            storage_path: Path to store metrics (default: HoloLoom/routing/metrics.jsonl)
+            storage_path: Path to store metrics (default: hololoom/routing/metrics.jsonl)
         """
         self.storage_path = storage_path or Path(__file__).parent / 'metrics.jsonl'
         self.metrics: List[RoutingMetrics] = []

@@ -15,7 +15,7 @@ Features:
 - Learning state persistence and recovery
 
 Usage:
-    from HoloLoom.prompting.analytics import ThompsonLearner
+    from hololoom.prompting.analytics import ThompsonLearner
 
     # Create learner
     learner = ThompsonLearner()

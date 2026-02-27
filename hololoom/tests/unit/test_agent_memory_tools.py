@@ -15,19 +15,19 @@ import pytest
 import asyncio
 from datetime import datetime, timedelta
 
-from HoloLoom.agentic.memory_tools import (
+from hololoom.agentic.memory_tools import (
     AgentMemoryTools,
     MemoryStoreResult,
     MemorySearchResult,
     MemoryUpdateResult,
     MemoryDeleteResult
 )
-from HoloLoom.memory.lifecycle_manager import (
+from hololoom.memory.lifecycle_manager import (
     ContextStreamManager,
     MemoryScope,
     LifeCycle
 )
-from HoloLoom.memory.graph import KG
+from hololoom.memory.graph import KG
 
 
 # ============================================================================
@@ -95,7 +95,7 @@ async def test_store_with_entities(agent_tools, knowledge_graph):
     """Test storing memory with entities (adds to KG)."""
     result = await agent_tools.store(
         content="Alice works on HoloLoom with Bob",
-        entities=["Alice", "HoloLoom", "Bob"],
+        entities=["Alice", "hololoom", "Bob"],
         importance=0.8
     )
 
@@ -103,7 +103,7 @@ async def test_store_with_entities(agent_tools, knowledge_graph):
 
     # Check KG has entities
     assert "Alice" in knowledge_graph.G.nodes
-    assert "HoloLoom" in knowledge_graph.G.nodes
+    assert "hololoom" in knowledge_graph.G.nodes
     assert "Bob" in knowledge_graph.G.nodes
 
 

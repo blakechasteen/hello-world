@@ -11,7 +11,7 @@
 ## 🏆 What We Built
 
 ### 1. Abstract Algebra (743 lines)
-**File**: `HoloLoom/warp/math/algebra/abstract_algebra.py`
+**File**: `hololoom/warp/math/algebra/abstract_algebra.py`
 
 **The Fundamental Structures**:
 
@@ -37,7 +37,7 @@
 - Characteristic computation
 
 ### 2. Galois Theory (557 lines)
-**File**: `HoloLoom/warp/math/algebra/galois_theory.py`
+**File**: `hololoom/warp/math/algebra/galois_theory.py`
 
 **The Crown Jewel of Algebra**:
 
@@ -62,7 +62,7 @@
 - Cyclotomic polynomials
 
 ### 3. Module Theory (324 lines)
-**File**: `HoloLoom/warp/math/algebra/module_theory.py`
+**File**: `hololoom/warp/math/algebra/module_theory.py`
 
 **Generalized Vector Spaces**:
 
@@ -84,7 +84,7 @@
 - Free modules are projective
 
 ### 4. Homological Algebra (407 lines)
-**File**: `HoloLoom/warp/math/algebra/homological_algebra.py`
+**File**: `hololoom/warp/math/algebra/homological_algebra.py`
 
 **The Deep Machinery**:
 

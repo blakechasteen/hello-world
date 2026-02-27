@@ -17,7 +17,7 @@ Scenarios:
 
 import asyncio
 from pathlib import Path
-from HoloLoom.scratchpad import (
+from hololoom.scratchpad import (
     RecursiveScratchpad,
     Thought,
     ThoughtType,
@@ -202,7 +202,7 @@ async def demo_persistence():
 
         # Search thoughts
         print("\n🔍 Searching for 'Thompson Sampling':")
-        from HoloLoom.scratchpad.persistence import ThoughtPersistence
+        from hololoom.scratchpad.persistence import ThoughtPersistence
         persistence = ThoughtPersistence(Path("demo_scratchpad.db"))
         await persistence.initialize()
 

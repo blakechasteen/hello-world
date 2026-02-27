@@ -4,7 +4,7 @@
 
 ## Overview
 
-`HoloLoom/ts_core/` provides a **unified interface** for Thompson Sampling across:
+`hololoom/ts_core/` provides a **unified interface** for Thompson Sampling across:
 
 1. **Discrete Multi-Armed Bandits** (Beta-Bernoulli) - A/B testing, agent routing
 2. **Bayesian Linear Contextual Bandits** - News recommendation, linear rewards
@@ -19,7 +19,7 @@
 ### One-Line Usage
 
 ```python
-from HoloLoom.bandits import create_thompson_sampler
+from hololoom.bandits import create_thompson_sampler
 
 # Discrete MAB (A/B testing)
 sampler = create_thompson_sampler("discrete", n_arms=2)
@@ -33,7 +33,7 @@ sampler.update(context, action, reward)
 
 # Neural Bandit (deep contextual)
 sampler = create_thompson_sampler("neural", context_dim=384, n_actions=5)
-# See HoloLoom.bandits for full neural API
+# See hololoom.bandits for full neural API
 
 # GP-TS (continuous optimization)
 sampler = create_thompson_sampler("gp", param_dim=10)
@@ -56,7 +56,7 @@ Posterior: θ_a | data ~ Beta(α + successes, β + failures)
 
 **Example**:
 ```python
-from HoloLoom.bandits.models.discrete_bernoulli import DiscreteBernoulliTS
+from hololoom.bandits.models.discrete_bernoulli import DiscreteBernoulliTS
 
 # A/B test
 sampler = DiscreteBernoulliTS(n_arms=2, alpha_prior=1.0, beta_prior=1.0)
@@ -86,7 +86,7 @@ sampler = DiscreteBernoulliTS(n_arms=5, alpha_prior=1.0, beta_prior=1.0)
 sampler = DiscreteBernoulliTS(n_arms=5, alpha_prior=10.0, beta_prior=1.0)
 
 # Using factory
-from HoloLoom.bandits.models.discrete_bernoulli import create_discrete_ts
+from hololoom.bandits.models.discrete_bernoulli import create_discrete_ts
 sampler = create_discrete_ts(n_arms=5, prior="optimistic")
 ```
 
@@ -103,7 +103,7 @@ Posterior: Gaussian (closed-form conjugate update)
 
 **Example**:
 ```python
-from HoloLoom.bandits.models.bayes_linear import BayesianLinearTS
+from hololoom.bandits.models.bayes_linear import BayesianLinearTS
 
 # News article recommendation
 sampler = BayesianLinearTS(context_dim=50, n_actions=10)
@@ -136,7 +136,7 @@ sampler = BayesianLinearTS(
 )
 
 # Using factory
-from HoloLoom.bandits.models.bayes_linear import create_bayesian_linear_ts
+from hololoom.bandits.models.bayes_linear import create_bayesian_linear_ts
 sampler = create_bayesian_linear_ts(
     context_dim=50,
     n_actions=10,
@@ -148,11 +148,11 @@ sampler = create_bayesian_linear_ts(
 
 **Use Cases**: Tool selection with embeddings, non-linear rewards
 
-**See**: [HoloLoom/bandits/README.md](../bandits/README.md) for full documentation.
+**See**: [hololoom/bandits/README.md](../bandits/README.md) for full documentation.
 
 **Example**:
 ```python
-from HoloLoom.bandits import create_thompson_sampler
+from hololoom.bandits import create_thompson_sampler
 
 # HoloLoom tool selection
 sampler = create_thompson_sampler(
@@ -181,7 +181,7 @@ Posterior: GP(μ_post, k_post)
 
 **Example**:
 ```python
-from HoloLoom.bandits.models.gp_ts import GaussianProcessTS
+from hololoom.bandits.models.gp_ts import GaussianProcessTS
 
 # Hyperparameter tuning
 sampler = GaussianProcessTS(
@@ -215,7 +215,7 @@ sampler = GaussianProcessTS(
 )
 
 # Using factory
-from HoloLoom.bandits.models.gp_ts import create_gp_ts
+from hololoom.bandits.models.gp_ts import create_gp_ts
 sampler = create_gp_ts(param_dim=10, kernel="matern")
 ```
 
@@ -228,7 +228,7 @@ sampler = create_gp_ts(param_dim=10, kernel="matern")
 **One function to rule them all**:
 
 ```python
-from HoloLoom.bandits import create_thompson_sampler
+from hololoom.bandits import create_thompson_sampler
 
 # Discrete
 sampler = create_thompson_sampler(
@@ -268,7 +268,7 @@ sampler = create_thompson_sampler(
 ### Convenience Functions
 
 ```python
-from HoloLoom.bandits.samplers import (
+from hololoom.bandits.samplers import (
     create_discrete_mab,
     create_contextual_bandit,
     create_continuous_optimizer,
@@ -309,7 +309,7 @@ sampler = create_continuous_optimizer(param_dim=10)
 
 ```bash
 # All ts_core tests (22 tests)
-PYTHONPATH=. pytest HoloLoom/ts_core/tests/test_ts_models.py -v
+PYTHONPATH=. pytest hololoom/ts_core/tests/test_ts_models.py -v
 ```
 
 **Test Coverage**:
@@ -365,7 +365,7 @@ def test_discrete_learning():
 ### Tool Selection
 
 ```python
-from HoloLoom.bandits import create_thompson_sampler
+from hololoom.bandits import create_thompson_sampler
 
 # Neural bandit for tool selection
 tool_sampler = create_thompson_sampler(
@@ -393,7 +393,7 @@ async def weave(query):
 ### Agent Routing
 
 ```python
-from HoloLoom.bandits import create_discrete_mab
+from hololoom.bandits import create_discrete_mab
 
 # Discrete MAB for routing queries to agents
 router = create_discrete_mab(n_arms=5)  # 5 agents
@@ -408,7 +408,7 @@ for query in queries:
 ### Hyperparameter Tuning
 
 ```python
-from HoloLoom.bandits import create_continuous_optimizer
+from hololoom.bandits import create_continuous_optimizer
 
 # GP-TS for tuning learning rates, temperatures, etc.
 optimizer = create_continuous_optimizer(

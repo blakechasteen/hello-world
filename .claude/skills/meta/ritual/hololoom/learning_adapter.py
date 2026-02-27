@@ -22,14 +22,14 @@ import json
 import random
 import math
 
-# Try to import HoloLoom learning systems
+# Try to import hololoom learning systems
 HOLOLOOM_LEARNING_AVAILABLE = False
 try:
     hololoom_path = Path(__file__).parent.parent.parent.parent.parent.parent
     if str(hololoom_path) not in sys.path:
         sys.path.insert(0, str(hololoom_path))
 
-    from HoloLoom.convergence.engine import ThompsonBandit
+    from hololoom.convergence.engine import ThompsonBandit
     HOLOLOOM_LEARNING_AVAILABLE = True
 except ImportError:
     pass

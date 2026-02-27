@@ -23,19 +23,19 @@ import asyncio
 from datetime import datetime
 from typing import List, Dict, Any
 
-from HoloLoom.visualization.jenny_runtime import (
+from hololoom.visualization.jenny_runtime import (
     JennyRuntime,
     JennyConfig,
     JennyPanel,
     create_runtime,
     jenny_session,
 )
-from HoloLoom.visualization.jenny_spec import (
+from hololoom.visualization.jenny_spec import (
     LifecycleStage,
     BindingMode,
     PanelTypeJenny,
 )
-from HoloLoom.visualization.jenny_actions import ActionStatus
+from hololoom.visualization.jenny_actions import ActionStatus
 
 
 # ============================================================================

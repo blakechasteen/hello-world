@@ -17,22 +17,22 @@ from typing import List
 import pytest
 
 # Import all Portal components
-from HoloLoom.portal.shared.load_balancer import (
+from hololoom.portal.shared.load_balancer import (
     LoadBalancer,
     LoadBalanceStrategy,
 )
-from HoloLoom.portal.shared.types import (
+from hololoom.portal.shared.types import (
     NodeRecord,
     NodeCapabilities,
     NodeStatus,
 )
-from HoloLoom.portal.shared.metrics import (
+from hololoom.portal.shared.metrics import (
     MetricsRegistry,
 )
-from HoloLoom.portal.shared.pki import (
+from hololoom.portal.shared.pki import (
     PKIManager,
 )
-from HoloLoom.portal.shared.cas_storage import (
+from hololoom.portal.shared.cas_storage import (
     CASStorage,
 )
 

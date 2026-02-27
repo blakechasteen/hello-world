@@ -1,7 +1,7 @@
 # Federation - Decentralized P2P Network of HoloLoom Nodes
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/federation/` (4,357 lines across 9 files)
+**Location**: `hololoom/federation/` (4,357 lines across 9 files)
 **Performance**: O(log n) routing, <500ms consensus, million-node capable
 **Architecture**: SWIM gossip + Kademlia DHT + Byzantine consensus
 
@@ -36,7 +36,7 @@ Unlike traditional microservices requiring load balancers and API gateways, fede
 ### Basic Federation (2-3 nodes)
 
 ```python
-from HoloLoom.federation import Federation, FederationConfig
+from hololoom.federation import Federation, FederationConfig
 
 # Node 1: Bootstrap node
 async with Federation(FederationConfig.production()) as node1:
@@ -62,8 +62,8 @@ async with Federation(FederationConfig.production()) as node1:
 ### Production Deployment (10+ nodes)
 
 ```python
-from HoloLoom.federation import Federation, FederationConfig, AdmissionPolicy
-from HoloLoom.federation.guild import GuildManager
+from hololoom.federation import Federation, FederationConfig, AdmissionPolicy
+from hololoom.federation.guild import GuildManager
 
 async def deploy_federated_system():
     # Create federation with custom config
@@ -170,7 +170,7 @@ SWIM (Scalable Weakly-consistent Infection-style Membership) is a decentralized 
 ### Configuration Parameters
 
 ```python
-from HoloLoom.federation import FederationConfig
+from hololoom.federation import FederationConfig
 
 # Development: Fast detection, high overhead
 dev_config = FederationConfig.development()
@@ -247,8 +247,8 @@ return sorted(candidates, key=distance)[:k]
 ### Quick Start
 
 ```python
-from HoloLoom.federation import Federation
-from HoloLoom.federation.types import Capability
+from hololoom.federation import Federation
+from hololoom.federation.types import Capability
 
 fed = Federation()
 await fed.join("bootstrap.hololoom.net:9000")
@@ -334,8 +334,8 @@ Verification Process:
 ### Quick Start
 
 ```python
-from HoloLoom.federation import Federation
-from HoloLoom.federation.types import VerificationLevel
+from hololoom.federation import Federation
+from hololoom.federation.types import VerificationLevel
 
 fed = Federation()
 await fed.join("bootstrap.hololoom.net:9000")
@@ -436,8 +436,8 @@ VETERAN (> 180 days)
 ### Quick Start
 
 ```python
-from HoloLoom.federation import Federation, AdmissionPolicy
-from HoloLoom.federation.types import GuildTrustLevel
+from hololoom.federation import Federation, AdmissionPolicy
+from hololoom.federation.types import GuildTrustLevel
 
 fed = Federation()
 await fed.join("bootstrap.hololoom.net:9000")
@@ -561,7 +561,7 @@ Message Overhead ≈ log₂(n_nodes) messages per node per heartbeat
 ### Network Errors
 
 ```python
-from HoloLoom.federation.types import NetworkError
+from hololoom.federation.types import NetworkError
 
 try:
     result = await fed.query("...")
@@ -574,7 +574,7 @@ except NetworkError as e:
 ### Verification Errors
 
 ```python
-from HoloLoom.federation.types import VerificationError
+from hololoom.federation.types import VerificationError
 
 try:
     result = await fed.query("...", verify=True, level=VerificationLevel.DEEP)
@@ -586,7 +586,7 @@ except VerificationError as e:
 ### Routing Errors
 
 ```python
-from HoloLoom.federation.types import RoutingError
+from hololoom.federation.types import RoutingError
 
 try:
     result = await fed.query("...", verify=True)
@@ -598,7 +598,7 @@ except RoutingError as e:
 ### Guild Errors
 
 ```python
-from HoloLoom.federation.types import GuildError
+from hololoom.federation.types import GuildError
 
 try:
     await fed.join_guild(guild_id)
@@ -610,7 +610,7 @@ except GuildError as e:
 ### Timeout Errors
 
 ```python
-from HoloLoom.federation.types import TimeoutError
+from hololoom.federation.types import TimeoutError
 
 try:
     result = await fed.query("...", timeout_ms=5000)
@@ -628,7 +628,7 @@ except TimeoutError as e:
 Every node has Ed25519 key pair:
 
 ```python
-from HoloLoom.federation.identity import Identity
+from hololoom.federation.identity import Identity
 
 identity = Identity.generate()
 identity.save("node_key.pem")
@@ -742,7 +742,7 @@ ml_core = await fed.create_guild("ML Core", "ml_core", AdmissionPolicy.VOTED)
 ### Metrics Exported
 
 ```python
-from HoloLoom.federation.core import Federation
+from hololoom.federation.core import Federation
 
 fed = Federation()
 metrics = fed.get_metrics()
@@ -1051,10 +1051,10 @@ Run the federation test suite:
 
 ```bash
 # Unit tests
-pytest HoloLoom/federation/tests/test_*.py -v
+pytest hololoom/federation/tests/test_*.py -v
 
 # Integration tests
-pytest HoloLoom/federation/tests/integration/ -v
+pytest hololoom/federation/tests/integration/ -v
 
 # Expected: All tests passing
 # Coverage: >90% of federation code
@@ -1196,7 +1196,7 @@ Traditional AI safety relies on vendor good faith:
 ### Getting Started with Federation
 
 ```python
-from HoloLoom.federation import Federation, FederationConfig
+from hololoom.federation import Federation, FederationConfig
 
 # Join the community network
 async with Federation(FederationConfig.production()) as node:
@@ -1234,7 +1234,7 @@ async with Federation(FederationConfig.production()) as node:
 
 For issues, questions, or contributions:
 
-- **GitHub Issues**: [HoloLoom/federation](https://github.com/hololoom/hololoom/issues)
+- **GitHub Issues**: [hololoom/federation](https://github.com/hololoom/hololoom/issues)
 - **Slack**: #federation-discussion
 - **Email**: federation@hololoom.ai
 

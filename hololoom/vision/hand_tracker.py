@@ -19,7 +19,7 @@ import logging
 import numpy as np
 from datetime import datetime
 
-from HoloLoom.vision.protocol import (
+from hololoom.vision.protocol import (
     HandPose,
     HandLandmark,
     HandTrackerProtocol,

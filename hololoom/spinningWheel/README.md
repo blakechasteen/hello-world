@@ -86,7 +86,7 @@ Raw Data → Spinner → MemoryShards → HoloLoom Memory → Retrieval & Reason
 - **Dependencies**: `youtube-transcript-api` (required), `pytube` (optional for metadata)
 - **Usage**:
   ```python
-  from HoloLoom.spinningWheel.youtube_spinner import YouTubeSpinner
+  from hololoom.spinningWheel.youtube_spinner import YouTubeSpinner
 
   spinner = YouTubeSpinner(chunk_duration=60.0)  # 60-second chunks
   result = await spinner.spin("https://youtube.com/watch?v=dQw4w9WgXcQ")
@@ -123,7 +123,7 @@ Raw Data → Spinner → MemoryShards → HoloLoom Memory → Retrieval & Reason
 - **Dependencies**: `beautifulsoup4`, `requests`, `html2text`
 - **Usage**:
   ```python
-  from HoloLoom.spinningWheel.url_spinner import URLSpinner
+  from hololoom.spinningWheel.url_spinner import URLSpinner
 
   spinner = URLSpinner(extract_links=True)
   result = await spinner.spin("https://docs.python.org/3/tutorial/")
@@ -142,7 +142,7 @@ Raw Data → Spinner → MemoryShards → HoloLoom Memory → Retrieval & Reason
 - **Dependencies**: `PyPDF2` or `pdfplumber` (required), `pytesseract` (OCR, optional)
 - **Usage**:
   ```python
-  from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
+  from hololoom.spinningWheel.pdf_spinner import PDFSpinner
 
   # Basic usage
   spinner = PDFSpinner(importance_threshold=0.3)
@@ -186,7 +186,7 @@ Raw Data → Spinner → MemoryShards → HoloLoom Memory → Retrieval & Reason
 - **Dependencies**: `git` CLI (must be in PATH)
 - **Usage**:
   ```python
-  from HoloLoom.spinningWheel.git_spinner import GitSpinner
+  from hololoom.spinningWheel.git_spinner import GitSpinner
 
   # Full repository ingestion
   spinner = GitSpinner(importance_threshold=0.4)
@@ -250,7 +250,7 @@ Raw Data → Spinner → MemoryShards → HoloLoom Memory → Retrieval & Reason
 - **Dependencies**: `email` (stdlib), `imaplib` (stdlib), `beautifulsoup4` (optional for HTML)
 - **Usage**:
   ```python
-  from HoloLoom.spinningWheel.email_spinner import EmailSpinner
+  from hololoom.spinningWheel.email_spinner import EmailSpinner
 
   # IMAP ingestion
   spinner = EmailSpinner(
@@ -291,7 +291,7 @@ Raw Data → Spinner → MemoryShards → HoloLoom Memory → Retrieval & Reason
 - **Dependencies**: `pytesseract` or `deepseek-ocr`, `PIL`
 - **Usage**:
   ```python
-  from HoloLoom.spinningWheel.receipt_spinner import ReceiptSpinner
+  from hololoom.spinningWheel.receipt_spinner import ReceiptSpinner
 
   spinner = ReceiptSpinner(enable_deepseek=True)
   result = await spinner.spin("/path/to/receipt.jpg")
@@ -361,9 +361,9 @@ pip install pandas openpyxl          # Spreadsheets
 ### Basic Usage
 
 ```python
-from HoloLoom.spinningWheel.youtube_spinner import YouTubeSpinner
-from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
-from HoloLoom.spinningWheel.git_spinner import GitSpinner
+from hololoom.spinningWheel.youtube_spinner import YouTubeSpinner
+from hololoom.spinningWheel.pdf_spinner import PDFSpinner
+from hololoom.spinningWheel.git_spinner import GitSpinner
 
 # YouTube video transcription
 youtube = YouTubeSpinner(chunk_duration=60.0)
@@ -390,7 +390,7 @@ for shard in result.shards:
 ### Checking Availability
 
 ```python
-from HoloLoom.spinningWheel.protocol import get_available_spinners
+from hololoom.spinningWheel.protocol import get_available_spinners
 
 # List all available spinners (based on installed dependencies)
 available = get_available_spinners()
@@ -416,7 +416,7 @@ if capabilities.incremental:
 Spinners work even when optional dependencies are missing:
 
 ```python
-from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
+from hololoom.spinningWheel.pdf_spinner import PDFSpinner
 
 # Without pytesseract: OCR disabled, but text extraction works
 spinner = PDFSpinner(enable_ocr=True)
@@ -434,7 +434,7 @@ print(f"Extracted {result.shard_count} shards")
 Every spinner uses a **9-signal importance system**:
 
 ```python
-from HoloLoom.spinningWheel.protocol import ImportanceSignals
+from hololoom.spinningWheel.protocol import ImportanceSignals
 
 signals = ImportanceSignals(
     length_score=0.8,          # Longer = more substantive
@@ -466,7 +466,7 @@ result = await spinner.spin("/repo")
 For large data sources (repositories, email archives), use streaming to avoid loading everything into memory:
 
 ```python
-from HoloLoom.spinningWheel.git_spinner import GitSpinner
+from hololoom.spinningWheel.git_spinner import GitSpinner
 
 spinner = GitSpinner()
 
@@ -485,7 +485,7 @@ async for shard in spinner.spin_stream("/linux/kernel"):
 Resume from last checkpoint and process only new data:
 
 ```python
-from HoloLoom.spinningWheel.git_spinner import GitSpinner
+from hololoom.spinningWheel.git_spinner import GitSpinner
 
 spinner = GitSpinner(checkpoint_dir=".checkpoints")
 
@@ -506,7 +506,7 @@ spinner.save_checkpoint(update_checkpoint(checkpoint, result))
 Spinners automatically save progress for resumable operations:
 
 ```python
-from HoloLoom.spinningWheel.email_spinner import EmailSpinner
+from hololoom.spinningWheel.email_spinner import EmailSpinner
 
 spinner = EmailSpinner(
     imap_server="imap.gmail.com",
@@ -679,7 +679,7 @@ CHORE = ImportanceScore(
 Override default weights for domain-specific needs:
 
 ```python
-from HoloLoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.importance import ImportanceScorer
 
 # Prioritize recency for news articles
 news_scorer = ImportanceScorer(weights={
@@ -705,7 +705,7 @@ score = news_scorer.score_text(
 `MultimodalSpinner` combines text + images into unified representation:
 
 ```python
-from HoloLoom.spinningWheel.multimodal_spinner import MultiModalSpinner
+from hololoom.spinningWheel.multimodal_spinner import MultiModalSpinner
 
 spinner = MultiModalSpinner(
     enable_clip=True,           # CLIP embeddings for images
@@ -730,8 +730,8 @@ for shard in result.shards:
 `SchemaAwareReceiptSpinner` uses domain knowledge for structured extraction:
 
 ```python
-from HoloLoom.spinningWheel.schema_aware_receipt_spinner import SchemaAwareReceiptSpinner
-from HoloLoom.spinningWheel.schema_registry import ReceiptSchema
+from hololoom.spinningWheel.schema_aware_receipt_spinner import SchemaAwareReceiptSpinner
+from hololoom.spinningWheel.schema_registry import ReceiptSchema
 
 # Register custom schema
 target_schema = ReceiptSchema(
@@ -759,7 +759,7 @@ print(shard.metadata['line_items'])      # [{"name": "Milk", "price": 3.99}, ...
 Process multiple inputs in parallel:
 
 ```python
-from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
+from hololoom.spinningWheel.pdf_spinner import PDFSpinner
 import asyncio
 
 spinner = PDFSpinner()
@@ -783,7 +783,7 @@ print(f"Processed {len(pdf_files)} PDFs → {total_shards} shards")
 Add preprocessing hooks to spinners:
 
 ```python
-from HoloLoom.spinningWheel.url_spinner import URLSpinner
+from hololoom.spinningWheel.url_spinner import URLSpinner
 
 class CustomURLSpinner(URLSpinner):
     async def _preprocess(self, html: str) -> str:
@@ -813,13 +813,13 @@ result = await spinner.spin("https://example.com")
 ### Step 1: Inherit from BaseSpinner
 
 ```python
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinnerCapabilities,
     SpinResult,
     ImportanceSignals
 )
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.documentation.types import MemoryShard
 from typing import List, Any
 
 class MyCustomSpinner(BaseSpinner):
@@ -906,7 +906,7 @@ class MyCustomSpinner(BaseSpinner):
 ### Step 2: Register Spinner
 
 ```python
-# Add to HoloLoom/spinningWheel/__init__.py
+# Add to hololoom/spinningWheel/__init__.py
 from .my_custom_spinner import MyCustomSpinner
 
 __all__ = [
@@ -918,7 +918,7 @@ __all__ = [
 ### Step 3: Use Your Spinner
 
 ```python
-from HoloLoom.spinningWheel.my_custom_spinner import MyCustomSpinner
+from hololoom.spinningWheel.my_custom_spinner import MyCustomSpinner
 
 spinner = MyCustomSpinner(importance_threshold=0.4)
 result = await spinner.spin("/path/to/data")
@@ -1016,7 +1016,7 @@ async for shard in spinner.spin_stream("/huge/repo"):
 For API-based spinners (YouTube, DeepSeek OCR):
 
 ```python
-from HoloLoom.spinningWheel.youtube_spinner import YouTubeSpinner
+from hololoom.spinningWheel.youtube_spinner import YouTubeSpinner
 import asyncio
 
 class RateLimitedYouTubeSpinner(YouTubeSpinner):
@@ -1043,12 +1043,12 @@ All spinners have comprehensive unit tests:
 
 ```bash
 # Test all spinners
-pytest HoloLoom/spinningWheel/tests/ -v
+pytest hololoom/spinningWheel/tests/ -v
 
 # Test specific spinner
-pytest HoloLoom/spinningWheel/tests/test_youtube_spinner.py -v
-pytest HoloLoom/spinningWheel/tests/test_pdf_spinner.py -v
-pytest HoloLoom/spinningWheel/tests/test_git_spinner.py -v
+pytest hololoom/spinningWheel/tests/test_youtube_spinner.py -v
+pytest hololoom/spinningWheel/tests/test_pdf_spinner.py -v
+pytest hololoom/spinningWheel/tests/test_git_spinner.py -v
 ```
 
 ### Integration Tests
@@ -1057,7 +1057,7 @@ Test spinners with real data:
 
 ```bash
 # Integration tests (requires external dependencies)
-pytest HoloLoom/tests/integration/test_spinners.py -v
+pytest hololoom/tests/integration/test_spinners.py -v
 ```
 
 ---
@@ -1095,7 +1095,7 @@ async for shard in spinner.spin_stream(large_source):
 A: Yes, override `score_importance()` in your custom spinner or use custom weights:
 
 ```python
-from HoloLoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.importance import ImportanceScorer
 
 scorer = ImportanceScorer(weights={'recency': 0.5, 'engagement': 0.3})
 ```
@@ -1141,9 +1141,9 @@ if result.warnings:
 
 We welcome contributions! To add a new spinner:
 
-1. **Create spinner file**: `HoloLoom/spinningWheel/my_spinner.py`
+1. **Create spinner file**: `hololoom/spinningWheel/my_spinner.py`
 2. **Inherit from `BaseSpinner`**: Implement `_spin_impl()`, `get_capabilities()`, `is_available()`
-3. **Add tests**: `HoloLoom/spinningWheel/tests/test_my_spinner.py`
+3. **Add tests**: `hololoom/spinningWheel/tests/test_my_spinner.py`
 4. **Update this README**: Add your spinner to the registry
 5. **Submit PR**: With examples and documentation
 

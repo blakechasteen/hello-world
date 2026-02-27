@@ -19,7 +19,7 @@ Successfully implemented Part 4 of the Hybrid Query Routing Architecture: Learni
 ## What Was Built
 
 ### 1. Confidence Calibrator (365 lines)
-**File**: `HoloLoom/context/calibration.py`
+**File**: `hololoom/context/calibration.py`
 
 **Key Components**:
 - `ConfidenceCalibrator`: Tracks predicted vs. actual confidence
@@ -53,7 +53,7 @@ adjusted_confidence = binned_actual[predicted_bin]
 ---
 
 ### 2. Learning Tracker (372 lines)
-**File**: `HoloLoom/context/learning_tracker.py`
+**File**: `hololoom/context/learning_tracker.py`
 
 **Key Components**:
 - `LearningTracker`: Records all routing decisions
@@ -87,7 +87,7 @@ class PerformanceMetrics:
 ---
 
 ### 3. Strategy Updater (398 lines)
-**File**: `HoloLoom/context/strategy_updater.py`
+**File**: `hololoom/context/strategy_updater.py`
 
 **Key Components**:
 - `StrategyUpdater`: Adaptive routing strategy adjustments
@@ -121,7 +121,7 @@ if current_confidence < last_confidence - 0.05:
 ---
 
 ### 4. Router Integration (+60 lines)
-**File**: `HoloLoom/context/router.py` (updated)
+**File**: `hololoom/context/router.py` (updated)
 
 **Key Changes**:
 - Added three learning flags:
@@ -162,7 +162,7 @@ async def route(self, query: str) -> RoutingResult:
 ---
 
 ### 5. Comprehensive Test Suite (483 lines)
-**File**: `HoloLoom/context/test_learning_routing.py`
+**File**: `hololoom/context/test_learning_routing.py`
 
 **6 Validation Tests**:
 
@@ -324,9 +324,9 @@ Tests Passed: 6/6
 ## Integration Example
 
 ```python
-from HoloLoom.context import create_query_router
-from HoloLoom.infrastructure.mcp import create_mcp_server, generate_session_id
-from HoloLoom.infrastructure.sql import SQLConfig
+from hololoom.context import create_query_router
+from hololoom.infrastructure.mcp import create_mcp_server, generate_session_id
+from hololoom.infrastructure.sql import SQLConfig
 
 # Create MCP server
 sql_config = SQLConfig(sqlite_path="./data/production.db")
@@ -385,15 +385,15 @@ print(f"Strategy updates: {router.strategy_updater.update_count}")
 ## Files Modified
 
 ### New Files Created (4)
-1. `HoloLoom/context/calibration.py` (365 lines)
-2. `HoloLoom/context/learning_tracker.py` (372 lines)
-3. `HoloLoom/context/strategy_updater.py` (398 lines)
-4. `HoloLoom/context/test_learning_routing.py` (483 lines)
+1. `hololoom/context/calibration.py` (365 lines)
+2. `hololoom/context/learning_tracker.py` (372 lines)
+3. `hololoom/context/strategy_updater.py` (398 lines)
+4. `hololoom/context/test_learning_routing.py` (483 lines)
 
 ### Existing Files Updated (3)
-1. `HoloLoom/context/router.py` (+60 lines)
-2. `HoloLoom/context/__init__.py` (+15 lines for exports)
-3. `HoloLoom/context/classifier.py` (+5 lines for backend_weights)
+1. `hololoom/context/router.py` (+60 lines)
+2. `hololoom/context/__init__.py` (+15 lines for exports)
+3. `hololoom/context/classifier.py` (+5 lines for backend_weights)
 
 **Total Lines Added**: ~1,698 lines
 

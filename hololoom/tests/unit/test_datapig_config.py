@@ -8,7 +8,7 @@ Date: 2025-11-22
 """
 
 import pytest
-from HoloLoom.datapig.config import DetectorConfig, PresetConfig
+from hololoom.datapig.config import DetectorConfig, PresetConfig
 
 
 # ============================================================================
@@ -104,7 +104,7 @@ def test_preset_ml_validation():
 
 def test_config_with_detector():
     """Test using config with DataPigDetector"""
-    from HoloLoom.datapig import DataPigDetector
+    from hololoom.datapig import DataPigDetector
 
     config = PresetConfig.strict()
     detector = DataPigDetector(enable_verbose=False)

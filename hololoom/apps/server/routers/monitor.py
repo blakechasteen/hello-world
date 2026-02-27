@@ -29,7 +29,7 @@ router = APIRouter(tags=["Monitoring"])
 # ============================================================================
 
 try:
-    from HoloLoom.agentic.monitoring import get_monitor, start_monitoring, stop_monitoring
+    from hololoom.agentic.monitoring import get_monitor, start_monitoring, stop_monitoring
     MONITORING_AVAILABLE = True
 except ImportError:
     MONITORING_AVAILABLE = False

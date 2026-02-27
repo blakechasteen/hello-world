@@ -21,12 +21,12 @@ from unittest.mock import Mock, AsyncMock, patch
 from typing import Optional
 
 # Import the components we're testing
-from HoloLoom.protocols.safety import (
+from hololoom.protocols.safety import (
     SafetyGateProtocol,
     SafetyGateDecision,
     SafetyRiskLevel,
 )
-from HoloLoom.agentic.safety_adapter import (
+from hololoom.agentic.safety_adapter import (
     AgenticSafetyAdapter,
     create_safety_adapter,
     ALIGNMENT_AVAILABLE,

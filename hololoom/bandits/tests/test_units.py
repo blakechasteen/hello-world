@@ -15,19 +15,19 @@ Tests each module in isolation:
 import pytest
 import numpy as np
 import torch
-from HoloLoom.bandits.neural_ts.types import Context, Action, Observation
-from HoloLoom.bandits.neural_ts.models import MLP, create_mlp_ensemble, estimate_model_size
-from HoloLoom.bandits.neural_ts.posterior import (
+from hololoom.bandits.neural_ts.types import Context, Action, Observation
+from hololoom.bandits.neural_ts.models import MLP, create_mlp_ensemble, estimate_model_size
+from hololoom.bandits.neural_ts.posterior import (
     BootstrapPosterior,
     MCDropoutPosterior,
     create_bootstrap_posterior,
     create_mc_dropout_posterior,
 )
-from HoloLoom.bandits.neural_ts.replay import ReplayBuffer
-from HoloLoom.bandits.neural_ts.trainer import BanditTrainer
-from HoloLoom.bandits.neural_ts.featurizer import ContextActionFeaturizer, create_loom_featurizer
-from HoloLoom.bandits.neural_ts.eval import BanditEvaluator, compute_cumulative_regret
-from HoloLoom.bandits.config import BanditConfig, create_neural_ts_policy
+from hololoom.bandits.neural_ts.replay import ReplayBuffer
+from hololoom.bandits.neural_ts.trainer import BanditTrainer
+from hololoom.bandits.neural_ts.featurizer import ContextActionFeaturizer, create_loom_featurizer
+from hololoom.bandits.neural_ts.eval import BanditEvaluator, compute_cumulative_regret
+from hololoom.bandits.config import BanditConfig, create_neural_ts_policy
 
 
 # ============================================================================

@@ -12,14 +12,14 @@ import pytest
 import asyncio
 from datetime import datetime
 
-from HoloLoom.memory.integrated_memory_system import (
+from hololoom.memory.integrated_memory_system import (
     IntegratedMemorySystem,
     IntegratedMemoryConfig,
     create_integrated_memory_system,
     create_production_memory_system
 )
-from HoloLoom.memory.lifecycle_manager import MemoryScope
-from HoloLoom.memory.consolidation import ConsolidationStrategy
+from hololoom.memory.lifecycle_manager import MemoryScope
+from hololoom.memory.consolidation import ConsolidationStrategy
 
 
 # ============================================================================

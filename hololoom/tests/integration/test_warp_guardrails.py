@@ -6,9 +6,9 @@ from typing import List, Optional
 import numpy as np
 import pytest
 
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-from HoloLoom.warp.space import WarpSpace
-from HoloLoom.warp.optimized import GPUWarpSpace, HAS_TORCH
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.warp.space import WarpSpace
+from hololoom.warp.optimized import GPUWarpSpace, HAS_TORCH
 
 
 class _StubEmbedder:

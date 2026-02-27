@@ -10,34 +10,34 @@
 
 ### What We Have
 
-**Location**: `HoloLoom/warp/math/algebra/` + `analysis/functional_analysis.py`
+**Location**: `hololoom/warp/math/algebra/` + `analysis/functional_analysis.py`
 
 #### Core Operations
 ```python
 # Matrix multiplication
-from HoloLoom.warp.math.algebra import Ring
+from hololoom.warp.math.algebra import Ring
 # Matrices form a ring with addition and multiplication
 
 # Dot products / Inner products
-from HoloLoom.warp.math.analysis import HilbertSpace
+from hololoom.warp.math.analysis import HilbertSpace
 hilbert = HilbertSpace(dimension=100)
 inner_product = hilbert.inner_product(v, w)  # <v, w>
 
 # Eigendecomposition
-from HoloLoom.warp.math.analysis import SpectralTheory
+from hololoom.warp.math.analysis import SpectralTheory
 eigenvalues, eigenvectors = SpectralTheory.spectral_decomposition(matrix)
 ```
 
 #### Hyperdimensional Vector Spaces
 ```python
 # Infinite-dimensional spaces
-from HoloLoom.warp.math.analysis import HilbertSpace, BanachSpace
+from hololoom.warp.math.analysis import HilbertSpace, BanachSpace
 
 # L² space (square-integrable functions)
 L2 = HilbertSpace.l2_sequence_space()
 
 # Operators on infinite-dimensional spaces
-from HoloLoom.warp.math.analysis import BoundedOperator
+from hololoom.warp.math.analysis import BoundedOperator
 operator = BoundedOperator(...)
 spectrum = operator.spectrum()  # Eigenvalues (may be continuous!)
 ```
@@ -91,11 +91,11 @@ class SpectralTheory:
 
 ### What We Have
 
-**Location**: `HoloLoom/warp/math/analysis/` + `extensions/multivariable_calculus.py`
+**Location**: `hololoom/warp/math/analysis/` + `extensions/multivariable_calculus.py`
 
 #### Single-Variable Calculus
 ```python
-from HoloLoom.warp.math.analysis import Differentiator, RiemannIntegrator
+from hololoom.warp.math.analysis import Differentiator, RiemannIntegrator
 
 # Derivatives
 deriv = Differentiator.derivative(f, x=2.0)
@@ -106,7 +106,7 @@ integral = RiemannIntegrator.integrate(f, a=0, b=1)
 
 #### Multivariable Calculus
 ```python
-from HoloLoom.warp.math.extensions import ScalarField, VectorField
+from hololoom.warp.math.extensions import ScalarField, VectorField
 
 # Gradient (∇f)
 field = ScalarField(lambda x: np.sum(x**2))
@@ -125,7 +125,7 @@ laplacian = field.laplacian(point)
 
 #### Optimization (Gradient Descent & Friends)
 ```python
-from HoloLoom.warp.math.analysis import NumericalOptimization
+from hololoom.warp.math.analysis import NumericalOptimization
 
 # Gradient descent
 x_min = NumericalOptimization.gradient_descent(
@@ -151,7 +151,7 @@ x_min = NumericalOptimization.newton_method(
 
 #### Advanced: Optimal Transport
 ```python
-from HoloLoom.warp.math.analysis import OptimalTransport
+from hololoom.warp.math.analysis import OptimalTransport
 
 # Wasserstein distance (Earth Mover's Distance)
 dist = OptimalTransport.wasserstein_distance(p, q)
@@ -180,11 +180,11 @@ distance = OptimalTransport.sinkhorn_distance(a, b, cost_matrix)
 
 ### What We Have
 
-**Location**: `HoloLoom/warp/math/analysis/probability_theory.py` + `decision/information_theory.py`
+**Location**: `hololoom/warp/math/analysis/probability_theory.py` + `decision/information_theory.py`
 
 #### Core Probability
 ```python
-from HoloLoom.warp.math.analysis import RandomVariable, CommonDistributions
+from hololoom.warp.math.analysis import RandomVariable, CommonDistributions
 
 # Random variables
 rv = RandomVariable(samples)
@@ -199,7 +199,7 @@ exponential = CommonDistributions.exponential(lambda_=1.0)
 
 #### Bayesian Inference
 ```python
-from HoloLoom.warp.math.analysis import BayesianInference
+from hololoom.warp.math.analysis import BayesianInference
 
 # Posterior update
 posterior = BayesianInference.bayes_update(
@@ -219,7 +219,7 @@ beta_posterior = BayesianInference.beta_binomial_conjugate(
 
 #### Stochastic Processes
 ```python
-from HoloLoom.warp.math.analysis import BrownianMotion, MarkovChain
+from hololoom.warp.math.analysis import BrownianMotion, MarkovChain
 
 # Brownian motion (Wiener process)
 W = BrownianMotion.standard(T=1.0, n_steps=1000)
@@ -231,7 +231,7 @@ stationary = mc.stationary_distribution()
 
 #### Information Theory
 ```python
-from HoloLoom.warp.math.decision import Entropy, MutualInformation
+from hololoom.warp.math.decision import Entropy, MutualInformation
 
 # Shannon entropy
 H = Entropy.shannon(probabilities, base=2)  # bits
@@ -269,21 +269,21 @@ kl = DivergenceMetrics.kl_divergence(p, q)
 #### Supervised Learning (via Statistics)
 ```python
 # Feature selection via mutual information
-from HoloLoom.warp.math.decision import MutualInformation
+from hololoom.warp.math.decision import MutualInformation
 
 mi_scores = [MutualInformation.from_samples(features[:, i], target)
              for i in range(n_features)]
 top_features = np.argsort(mi_scores)[-k:]
 
 # Bayesian learning
-from HoloLoom.warp.math.analysis import BayesianInference
+from hololoom.warp.math.analysis import BayesianInference
 
 posterior = BayesianInference.bayes_update(prior, likelihood, data)
 ```
 
 #### Optimization for Deep Learning
 ```python
-from HoloLoom.warp.math.analysis import NumericalOptimization
+from hololoom.warp.math.analysis import NumericalOptimization
 
 # Adam (state-of-the-art for neural networks)
 params = NumericalOptimization.adam(
@@ -306,7 +306,7 @@ params = NumericalOptimization.gradient_descent_momentum(
 #### Reinforcement Learning Components
 ```python
 # Markov Decision Processes (via Markov chains)
-from HoloLoom.warp.math.analysis import MarkovChain
+from hololoom.warp.math.analysis import MarkovChain
 
 mdp = MarkovChain(transition_matrix)
 value_function = mdp.solve_steady_state()
@@ -315,7 +315,7 @@ value_function = mdp.solve_steady_state()
 # Already in HoloLoom policy module!
 
 # Game theory (multi-agent RL)
-from HoloLoom.warp.math.decision import NashEquilibrium
+from hololoom.warp.math.decision import NashEquilibrium
 
 equilibria = NashEquilibrium.find_pure(game)
 ```
@@ -323,13 +323,13 @@ equilibria = NashEquilibrium.find_pure(game)
 #### Manifold Learning
 ```python
 # Hyperbolic embeddings (hierarchical data)
-from HoloLoom.warp.math.extensions import PoincareBall
+from hololoom.warp.math.extensions import PoincareBall
 
 ball = PoincareBall(dimension=128)
 embedded = ball.exponential_map(center, tangent_vector)
 
 # Riemannian optimization
-from HoloLoom.warp.math.geometry import RiemannianMetric, Geodesic
+from hololoom.warp.math.geometry import RiemannianMetric, Geodesic
 
 metric = RiemannianMetric.sphere(radius=1.0)
 geodesic = Geodesic(metric)
@@ -339,12 +339,12 @@ optimal_path = geodesic.integrate(x0, v0, t_final=1.0)
 #### Information-Theoretic Learning
 ```python
 # Variational inference (minimize KL divergence)
-from HoloLoom.warp.math.decision import DivergenceMetrics
+from hololoom.warp.math.decision import DivergenceMetrics
 
 kl_loss = DivergenceMetrics.kl_divergence(q_approx, p_true)
 
 # Rate-distortion (lossy compression)
-from HoloLoom.warp.math.decision import RateDistortion
+from hololoom.warp.math.decision import RateDistortion
 
 rate = RateDistortion.gaussian_source(variance, distortion)
 ```
@@ -377,16 +377,16 @@ This is where discrete meets continuous, where embeddings become concepts.
 #### Discrete Structures (Words, Tokens, Symbols)
 ```python
 # Combinatorics (counting discrete objects)
-from HoloLoom.warp.math.extensions import IntegerPartition, CatalanNumbers
+from hololoom.warp.math.extensions import IntegerPartition, CatalanNumbers
 
 # Partitions (grouping symbols)
 partitions = IntegerPartition.generate_partitions(5)
 
 # Graph theory (knowledge graphs)
-from HoloLoom.warp.math.combinatorics import Graph  # From earlier sprints
+from hololoom.warp.math.combinatorics import Graph  # From earlier sprints
 
 # Logic (symbolic reasoning)
-from HoloLoom.warp.math.logic import PropositionalLogic, FirstOrderLogic
+from hololoom.warp.math.logic import PropositionalLogic, FirstOrderLogic
 
 formula = Proposition.var("P") & Proposition.var("Q")
 is_sat = PropositionalLogic.is_satisfiable(formula, ["P", "Q"])
@@ -395,13 +395,13 @@ is_sat = PropositionalLogic.is_satisfiable(formula, ["P", "Q"])
 #### Continuous Embeddings (Vector Representations)
 ```python
 # Embeddings in hyperbolic space (hierarchies)
-from HoloLoom.warp.math.extensions import PoincareBall
+from hololoom.warp.math.extensions import PoincareBall
 
 ball = PoincareBall(dimension=300)  # Word embedding dimension
 word_vector = ball.exponential_map(root_concept, direction)
 
 # Geometric embeddings
-from HoloLoom.warp.math.geometry import RiemannianMetric
+from hololoom.warp.math.geometry import RiemannianMetric
 
 # Words as points on manifold
 metric = RiemannianMetric.hyperbolic(dim=300)
@@ -410,13 +410,13 @@ metric = RiemannianMetric.hyperbolic(dim=300)
 #### Semantic Similarity (Turning Vectors Into Meaning)
 ```python
 # Distance = semantic similarity
-from HoloLoom.warp.math.extensions import PoincareBall
+from hololoom.warp.math.extensions import PoincareBall
 
 ball = PoincareBall(dimension=300)
 semantic_distance = ball.distance(word1_embedding, word2_embedding)
 
 # Mutual information (word co-occurrence)
-from HoloLoom.warp.math.decision import MutualInformation
+from hololoom.warp.math.decision import MutualInformation
 
 mi = MutualInformation.from_samples(word1_contexts, word2_contexts)
 # High MI = words appear in similar contexts
@@ -425,19 +425,19 @@ mi = MutualInformation.from_samples(word1_contexts, word2_contexts)
 #### Generative Models (Numbers → Words)
 ```python
 # Probability distributions over vocabulary
-from HoloLoom.warp.math.analysis import CommonDistributions
+from hololoom.warp.math.analysis import CommonDistributions
 
 # Softmax over logits
 logits = neural_network(input_embedding)
 probs = np.exp(logits) / np.sum(np.exp(logits))
 
 # Sample word from distribution
-from HoloLoom.warp.math.analysis import RandomVariable
+from hololoom.warp.math.analysis import RandomVariable
 
 next_word_id = RandomVariable.sample_categorical(probs)
 
 # Markov chains (language models)
-from HoloLoom.warp.math.analysis import MarkovChain
+from hololoom.warp.math.analysis import MarkovChain
 
 mc = MarkovChain(word_transition_matrix)
 stationary = mc.stationary_distribution()  # Long-run word frequencies
@@ -446,7 +446,7 @@ stationary = mc.stationary_distribution()  # Long-run word frequencies
 #### Information-Theoretic Text Metrics
 ```python
 # Entropy of text (surprisal)
-from HoloLoom.warp.math.decision import Entropy
+from hololoom.warp.math.decision import Entropy
 
 text_entropy = Entropy.from_samples(token_sequence)
 
@@ -454,7 +454,7 @@ text_entropy = Entropy.from_samples(token_sequence)
 perplexity = np.exp(text_entropy)  # Lower = better language model
 
 # Mutual information between tokens
-from HoloLoom.warp.math.decision import MutualInformation
+from hololoom.warp.math.decision import MutualInformation
 
 context_mi = MutualInformation.from_samples(tokens[:-1], tokens[1:])
 ```

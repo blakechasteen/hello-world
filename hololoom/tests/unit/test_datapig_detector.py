@@ -19,7 +19,7 @@ Date: 2025-11-22
 
 import pytest
 from datetime import datetime, timedelta
-from HoloLoom.datapig import (
+from hololoom.datapig import (
     DataPigDetector,
     DataQualityIssue,
     IssueType,

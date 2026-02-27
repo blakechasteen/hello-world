@@ -336,8 +336,8 @@ All standard packages, no exotic dependencies!
 - **Roadmap**: [SEMANTIC_LEARNING_ROADMAP.md](./SEMANTIC_LEARNING_ROADMAP.md)
 
 ### Code
-- **Nudging**: [HoloLoom/policy/semantic_nudging.py](./HoloLoom/policy/semantic_nudging.py)
-- **Learning**: [HoloLoom/reflection/semantic_learning.py](./HoloLoom/reflection/semantic_learning.py)
+- **Nudging**: [hololoom/policy/semantic_nudging.py](./hololoom/policy/semantic_nudging.py)
+- **Learning**: [hololoom/reflection/semantic_learning.py](./hololoom/reflection/semantic_learning.py)
 
 ---
 

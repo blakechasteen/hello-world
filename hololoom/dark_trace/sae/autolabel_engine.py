@@ -29,13 +29,13 @@ import json
 import torch
 import numpy as np
 
-from HoloLoom.dark_trace.sae.labeler import (
+from hololoom.dark_trace.sae.labeler import (
     FeatureLabel,
     ActivationPatternAnalyzer,
     SemanticAlignmentScorer,
     LabelCache,
 )
-from HoloLoom.dark_trace.sae.label_prompts import (
+from hololoom.dark_trace.sae.label_prompts import (
     LabelPromptBuilder,
     LabelPromptContext,
     LabelResponseParser,
@@ -369,7 +369,7 @@ class AutoLabelEngine:
     def _init_llm_client(self) -> None:
         """Initialize the LLM client."""
         try:
-            from HoloLoom.llm import UnifiedLLMClient, LLMConfig
+            from hololoom.llm import UnifiedLLMClient, LLMConfig
 
             primary = LLMConfig(
                 provider=self.config.llm_provider,

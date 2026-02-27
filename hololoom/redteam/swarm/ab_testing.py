@@ -2,7 +2,7 @@
 
 CARTS Phase 4: Statistical Validation System
 Status: Foundation Implementation (December 2025)
-Location: HoloLoom/redteam/swarm/ab_testing.py
+Location: hololoom/redteam/swarm/ab_testing.py
 
 FIRST PRINCIPLE (5.5): "A/B testing for high-stakes decisions"
 

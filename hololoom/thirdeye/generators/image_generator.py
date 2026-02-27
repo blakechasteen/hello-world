@@ -5,7 +5,7 @@ ThirdEye Image Generator
 High-level API for generating 2D images from ThirdEye scenes.
 
 Usage:
-    from HoloLoom.thirdeye.generators import ImageGenerator
+    from hololoom.thirdeye.generators import ImageGenerator
 
     generator = ImageGenerator()
 

@@ -14,7 +14,7 @@ WHY GP BANDITS?
 
 USAGE:
 ```python
-from HoloLoom.core.policy.gp_policy import GPPolicy, GPConfig
+from hololoom.core.policy.gp_policy import GPPolicy, GPConfig
 
 # Create GP-based policy
 policy = GPPolicy(
@@ -56,7 +56,7 @@ import torch
 import logging
 
 # Import GP bandits
-from HoloLoom.bandits.gaussian_process_bandits import (
+from hololoom.bandits.gaussian_process_bandits import (
     GPThompsonSampling,
     GPUpperConfidenceBound,
     GaussianProcess,
@@ -67,15 +67,15 @@ from HoloLoom.bandits.gaussian_process_bandits import (
 )
 
 # Import policy components
-from HoloLoom.core.policy.unified import (
+from hololoom.core.policy.unified import (
     UnifiedPolicy,
     create_policy,
     BanditStrategy,
 )
 
 # Import types
-from HoloLoom.core.protocols.types import Features, Context, ActionPlan
-from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.core.protocols.types import Features, Context, ActionPlan
+from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
 
 logger = logging.getLogger(__name__)
 

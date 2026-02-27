@@ -70,10 +70,10 @@ Query → │
 ### Basic MCTS Agent
 
 ```python
-from HoloLoom.agents.orchestrator_mcts import create_mcts_agent
-from HoloLoom.memory.graph import KG
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Query
+from hololoom.agents.orchestrator_mcts import create_mcts_agent
+from hololoom.memory.graph import KG
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Query
 
 # Setup
 kg = KG()
@@ -106,7 +106,7 @@ async with create_mcts_agent(
 ### MCTS Working Memory Only
 
 ```python
-from HoloLoom.agents.working_memory_mcts import MCTSWorkingMemory
+from hololoom.agents.working_memory_mcts import MCTSWorkingMemory
 
 # Create MCTS working memory
 wm = MCTSWorkingMemory(
@@ -127,7 +127,7 @@ print(f"Reward improvement: {stats['avg_reward_improvement']:.3f}")
 ### Hierarchical Planning
 
 ```python
-from HoloLoom.agents.planner_mcts import HierarchicalMCTSPlanner
+from hololoom.agents.planner_mcts import HierarchicalMCTSPlanner
 
 # Create planner
 planner = HierarchicalMCTSPlanner(
@@ -359,7 +359,7 @@ create_mcts_agent(
 ### Visualize MCTS Tree
 
 ```python
-from HoloLoom.agents.mcts_core import visualize_mcts_tree
+from hololoom.agents.mcts_core import visualize_mcts_tree
 
 # After MCTS search
 _, root = await mcts_engine.search(initial_state, n_simulations=100)
@@ -393,7 +393,7 @@ print(f"Simulations/sec: {stats['simulations_per_second']:.0f}")
 ### Custom State Space
 
 ```python
-from HoloLoom.agents.mcts_core import MCTSStateSpace, MCTSEngine
+from hololoom.agents.mcts_core import MCTSStateSpace, MCTSEngine
 
 class MyStateSpace(MCTSStateSpace):
     def get_legal_actions(self, state):

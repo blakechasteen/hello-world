@@ -8,7 +8,7 @@
 
 Run this to check what's installed:
 ```bash
-python HoloLoom/web_dashboard/test_voice_integration.py
+python hololoom/web_dashboard/test_voice_integration.py
 ```
 
 ---
@@ -132,7 +132,7 @@ voice_integration = await create_voice_integration(
 pip install pyttsx3
 
 # Step 2: Verify it works
-python HoloLoom/web_dashboard/test_voice_integration.py
+python hololoom/web_dashboard/test_voice_integration.py
 
 # Expected output:
 #   TTS Available: True
@@ -151,7 +151,7 @@ pip install git+https://github.com/suno-ai/bark.git scipy
 # tts_backend="bark"
 
 # Test again
-python HoloLoom/web_dashboard/test_voice_integration.py
+python hololoom/web_dashboard/test_voice_integration.py
 ```
 
 ### Production (If Needed)
@@ -187,20 +187,20 @@ Based on test output:
 ### For Tonight (pyttsx3):
 ```bash
 pip install pyttsx3
-python HoloLoom/web_dashboard/test_voice_integration.py
+python hololoom/web_dashboard/test_voice_integration.py
 ```
 
 ### For Quality (BARK):
 ```bash
 pip install git+https://github.com/suno-ai/bark.git scipy
-python HoloLoom/web_dashboard/test_voice_integration.py
+python hololoom/web_dashboard/test_voice_integration.py
 ```
 
 ### For Premium (ElevenLabs):
 ```bash
 pip install elevenlabs
 set ELEVENLABS_API_KEY=your-api-key
-python HoloLoom/web_dashboard/test_voice_integration.py
+python hololoom/web_dashboard/test_voice_integration.py
 ```
 
 ---
@@ -282,7 +282,7 @@ pip install elevenlabs
 
 1. Choose your backend (pyttsx3 recommended for tonight)
 2. Install dependencies
-3. Run verification: `python HoloLoom/web_dashboard/test_voice_integration.py`
+3. Run verification: `python hololoom/web_dashboard/test_voice_integration.py`
 4. Follow VOICE_QUICK_START.md for integration
 5. Test voice in dashboard!
 

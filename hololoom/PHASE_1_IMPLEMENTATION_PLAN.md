@@ -48,7 +48,7 @@ Build the generic department infrastructure that all departments will use.
 
 ### Deliverables
 
-#### 1. Department Protocol (`HoloLoom/departments/protocol.py`)
+#### 1. Department Protocol (`hololoom/departments/protocol.py`)
 **Lines**: ~500
 
 ```python
@@ -74,7 +74,7 @@ Build the generic department infrastructure that all departments will use.
 
 **Status**: ✅ Specified in [DEPARTMENT_INTERFACE_SPEC.md](DEPARTMENT_INTERFACE_SPEC.md)
 
-#### 2. Base Department (`HoloLoom/departments/base.py`)
+#### 2. Base Department (`hololoom/departments/base.py`)
 **Lines**: ~300
 
 ```python
@@ -150,7 +150,7 @@ class BaseDepartment(ABC):
         }
 ```
 
-#### 3. Department Registry (`HoloLoom/departments/registry.py`)
+#### 3. Department Registry (`hololoom/departments/registry.py`)
 **Lines**: ~200
 
 ```python
@@ -282,7 +282,7 @@ Original plan focused on beekeeping-specific MasterWeaver department. **New stra
 
 ### Deliverables
 
-#### 1. Context Department (`HoloLoom/departments/context.py`)
+#### 1. Context Department (`hololoom/departments/context.py`)
 **Lines**: ~600
 
 ```python
@@ -303,12 +303,12 @@ class ContextDepartment(BaseDepartment):
         self.confidence_range = (0.55, 0.88)
 
         # HoloLoom orchestrator
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
         self.orchestrator = WeavingOrchestrator(cfg=Config.fused())
 
         # Memory systems
-        from HoloLoom.reflection.buffer import ReflectionBuffer
+        from hololoom.reflection.buffer import ReflectionBuffer
         self.medium_term_memory = ReflectionBuffer(
             capacity=1000,
             persist_path="./context_sessions"
@@ -424,7 +424,7 @@ async def test_context_learning():
 
 **Note**: The original Week 3-4 plan focused on Context Department only. Adding RAG, Planning, Orchestration, and Infrastructure departments extends this to **Week 3-5** (3 weeks total).
 
-#### 2. RAG Department (`HoloLoom/departments/rag.py`)
+#### 2. RAG Department (`hololoom/departments/rag.py`)
 **Lines**: ~500
 
 **Key Features**:
@@ -433,7 +433,7 @@ async def test_context_learning():
 - Citation tracking for responses
 - Confidence calibration based on retrieval quality
 
-#### 3. Planning Department (`HoloLoom/departments/planning.py`)
+#### 3. Planning Department (`hololoom/departments/planning.py`)
 **Lines**: ~450
 
 **Key Features**:
@@ -442,7 +442,7 @@ async def test_context_learning():
 - Resource estimation per step
 - Plan validation and feasibility checks
 
-#### 4. Orchestration Department (`HoloLoom/departments/orchestration.py`)
+#### 4. Orchestration Department (`hololoom/departments/orchestration.py`)
 **Lines**: ~550
 
 **Key Features**:
@@ -451,7 +451,7 @@ async def test_context_learning():
 - Result aggregation with confidence weighting
 - Fallback strategies for department failures
 
-#### 5. Infrastructure Department (`HoloLoom/departments/infrastructure.py`)
+#### 5. Infrastructure Department (`hololoom/departments/infrastructure.py`)
 **Lines**: ~400
 
 **Key Features**:
@@ -477,18 +477,18 @@ async def test_context_learning():
 #### Developer Documentation
 
 **Deliverables**:
-1. **Developer Guide** (`HoloLoom/DEVELOPER_GUIDE.md`) - ~1,500 lines
+1. **Developer Guide** (`hololoom/DEVELOPER_GUIDE.md`) - ~1,500 lines
    - How to build a custom department
    - Protocol requirements and best practices
    - Testing strategies
    - Example: Building a healthcare-specific department
 
-2. **API Reference** (`HoloLoom/API_REFERENCE.md`) - ~800 lines
+2. **API Reference** (`hololoom/API_REFERENCE.md`) - ~800 lines
    - Complete protocol API documentation
    - All dataclass fields and methods
    - Type signatures and examples
 
-3. **Architecture Diagrams** (`HoloLoom/ARCHITECTURE_DIAGRAMS.md`) - ~400 lines
+3. **Architecture Diagrams** (`hololoom/ARCHITECTURE_DIAGRAMS.md`) - ~400 lines
    - Department interaction flows
    - Confidence negotiation sequences
    - DS-STAR verification loop
@@ -574,7 +574,7 @@ Build domain-specific department for extracting beekeeping knowledge from audio 
 
 ### Deliverables
 
-#### 1. MasterWeaver Department (`HoloLoom/departments/beekeeping/masterweaver.py`)
+#### 1. MasterWeaver Department (`hololoom/departments/beekeeping/masterweaver.py`)
 **Lines**: ~800
 
 ```python
@@ -595,7 +595,7 @@ class MasterWeaverDepartment(BaseDepartment):
         self.confidence_range = (0.40, 0.75)  # Lower confidence (learning domain)
 
         # SpinningWheel for transcript processing
-        from HoloLoom.spinningWheel import AudioSpinner
+        from hololoom.spinningWheel import AudioSpinner
         self.audio_spinner = AudioSpinner()
 
         # LLM for entity extraction (Ollama or OpenAI)
@@ -757,7 +757,7 @@ Return JSON: {{"entities": [{{"type": "...", "value": "...", "confidence": 0.0-1
         return min(0.75, base_confidence)  # Cap at upper range
 ```
 
-#### 2. Beekeeping Taxonomy (`HoloLoom/departments/beekeeping/taxonomy.json`)
+#### 2. Beekeeping Taxonomy (`hololoom/departments/beekeeping/taxonomy.json`)
 **Lines**: ~200
 
 ```json
@@ -847,7 +847,7 @@ Zero-copy data access with confidence-aware querying.
 
 ### Deliverables
 
-#### 1. Infrastructure Department (`HoloLoom/departments/beekeeping/infrastructure.py`)
+#### 1. Infrastructure Department (`hololoom/departments/beekeeping/infrastructure.py`)
 **Lines**: ~500
 
 ```python
@@ -868,8 +868,8 @@ class InfrastructureDepartment(BaseDepartment):
         self.confidence_range = (0.70, 0.95)  # Higher confidence (deterministic)
 
         # Database clients
-        from HoloLoom.memory.neo4j_graph import Neo4jGraph
-        from HoloLoom.memory.qdrant_backend import QdrantBackend
+        from hololoom.memory.neo4j_graph import Neo4jGraph
+        from hololoom.memory.qdrant_backend import QdrantBackend
 
         self.neo4j = Neo4jGraph(uri=config.neo4j_uri)
         self.qdrant = QdrantBackend(host=config.qdrant_host)
@@ -968,7 +968,7 @@ Build cross-department validation and task routing.
 
 ### Deliverables
 
-#### 1. Verification Department (`HoloLoom/departments/verification.py`)
+#### 1. Verification Department (`hololoom/departments/verification.py`)
 **Lines**: ~600
 
 ```python
@@ -1055,7 +1055,7 @@ class VerificationDepartment(BaseDepartment):
         return detail == expected_detail
 ```
 
-#### 2. Orchestration Department (`HoloLoom/departments/orchestration.py`)
+#### 2. Orchestration Department (`hololoom/departments/orchestration.py`)
 **Lines**: ~700
 
 ```python
@@ -1312,7 +1312,7 @@ async def test_privacy_envelope():
     ...
 ```
 
-#### 3. Documentation (`HoloLoom/PHASE_1_COMPLETE.md`)
+#### 3. Documentation (`hololoom/PHASE_1_COMPLETE.md`)
 **Lines**: ~500
 
 Summary of Phase 1 achievements, known issues, next steps for Phase 2.

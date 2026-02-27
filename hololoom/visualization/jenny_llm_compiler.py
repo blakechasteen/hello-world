@@ -21,7 +21,7 @@ Fallback Chain:
     3. Base heuristic detection (always available)
 
 Usage:
-    from HoloLoom.visualization.jenny_llm_compiler import (
+    from hololoom.visualization.jenny_llm_compiler import (
         LLMJennyCompiler,
         create_llm_compiler,
     )
@@ -66,11 +66,11 @@ from .jenny_compiler import (
     generate_reasoning_panel,
     generate_metric_panel,
 )
-from HoloLoom.protocols.jenny import CompilationStrategy
+from hololoom.protocols.jenny import CompilationStrategy
 
 # Try to import MRF for prompt enhancement
 try:
-    from HoloLoom.prompting.unified_mrf import (
+    from hololoom.prompting.unified_mrf import (
         UnifiedMRF,
         RefinementStrategyType,
         ModelProvider,
@@ -84,7 +84,7 @@ except ImportError:
 
 # Try to import Semantic Calculus for intent detection
 try:
-    from HoloLoom.semantic_calculus.matryoshka_semantic import MatryoshkaSemanticCalculus
+    from hololoom.semantic_calculus.matryoshka_semantic import MatryoshkaSemanticCalculus
     SEMANTIC_CALCULUS_AVAILABLE = True
 except ImportError:
     SEMANTIC_CALCULUS_AVAILABLE = False
@@ -92,7 +92,7 @@ except ImportError:
 
 # Try to import Spacetime
 try:
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 except ImportError:
     Spacetime = Any  # type: ignore
     WeavingTrace = Any  # type: ignore
@@ -120,7 +120,7 @@ except ImportError:
 
 # Legacy fallback
 try:
-    from HoloLoom.weaving_orchestrator_llm import create_llm_client
+    from hololoom.weaving_orchestrator_llm import create_llm_client
     LLM_CLIENT_AVAILABLE = True
 except ImportError:
     LLM_CLIENT_AVAILABLE = False
@@ -667,7 +667,7 @@ class LLMJennyCompiler(JennyMRFCompiler):
         3. Base heuristic detection
 
         Args:
-            spacetime: Woven output from HoloLoom weaving cycle
+            spacetime: Woven output from hololoom weaving cycle
             strategy: Compilation strategy (None = use default)
             context: Optional user/session context
 

@@ -11,7 +11,7 @@ Commands:
 - !rag stats - Show cache hit rate, sources
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.rag_handlers import register_rag_handlers
+    from hololoom.apps.chatops.handlers.rag_handlers import register_rag_handlers
 
     # In run_chatops.py:
     register_rag_handlers(bot, rag_instance)
@@ -23,7 +23,7 @@ import logging
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.rag.simple_rag import SimpleRAG
+    from hololoom.rag.simple_rag import SimpleRAG
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -33,7 +33,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -365,7 +365,7 @@ class RAGHandlers:
     Decorator-based ChatOps handlers for RAG operations.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.rag_handlers import RAGHandlers
+        from hololoom.apps.chatops.handlers.rag_handlers import RAGHandlers
 
         handlers = RAGHandlers(rag=rag_instance)
         registry.register_instance(handlers)

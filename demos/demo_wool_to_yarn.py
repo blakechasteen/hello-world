@@ -97,7 +97,7 @@ Thank you!"""
     print("STEP 2: Extracting data with OCR...")
     print("-" * 70)
 
-    from HoloLoom.spinningWheel import ReceiptSpinner
+    from hololoom.spinningWheel import ReceiptSpinner
 
     spinner = ReceiptSpinner(
         verify_calculations=True,
@@ -127,7 +127,7 @@ Thank you!"""
     print("STEP 3: Schema registration & RAG matching...")
     print("-" * 70)
 
-    from HoloLoom.spinningWheel.schema_registry import (
+    from hololoom.spinningWheel.schema_registry import (
         SchemaRegistry,
         create_expense_schema
     )

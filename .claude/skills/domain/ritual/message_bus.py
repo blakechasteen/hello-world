@@ -5,7 +5,7 @@ Ritual Message Bus
 Created: December 30, 2025
 Purpose: Priority-queued message bus for inter-phase communication
 
-Mirrors HoloLoom/agentic/multi_agent.py:MessageBus pattern.
+Mirrors hololoom/agentic/multi_agent.py:MessageBus pattern.
 Enables ritual phases to communicate via structured messages with:
 - Priority ordering (CRITICAL > HIGH > NORMAL > LOW)
 - TTL-based message expiration

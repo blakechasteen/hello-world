@@ -2,7 +2,7 @@
 
 **Status**: ✅ Production Ready (November 2025)
 **Version**: 1.0.0
-**Location**: `HoloLoom/spinningWheel/pdf_spinner.py`
+**Location**: `hololoom/spinningWheel/pdf_spinner.py`
 **Lines**: 782 lines
 **Test Coverage**: 20/20 tests passing
 
@@ -371,7 +371,7 @@ brew install tesseract
 ### Verification
 
 ```python
-from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
+from hololoom.spinningWheel.pdf_spinner import PDFSpinner
 
 spinner = PDFSpinner()
 print(spinner.is_available())  # Should print True if PyPDF2 installed
@@ -384,7 +384,7 @@ print(spinner.is_available())  # Should print True if PyPDF2 installed
 ### Basic Usage
 
 ```python
-from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
+from hololoom.spinningWheel.pdf_spinner import PDFSpinner
 from pathlib import Path
 
 # Create spinner
@@ -637,7 +637,7 @@ print(f"OCR applied to {ocr_pages} pages")
 ### Pattern 4: Custom Domain Scoring
 
 ```python
-from HoloLoom.spinningWheel.pdf_spinner import create_pdf_scorer
+from hololoom.spinningWheel.pdf_spinner import create_pdf_scorer
 
 # Create custom scorer for legal documents
 scorer = create_pdf_scorer()
@@ -783,8 +783,8 @@ if result.metadata.get('ocr_pages', 0) > 0:
 ### Integration with HoloLoom Memory
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
+from hololoom import hololoom
+from hololoom.spinningWheel.pdf_spinner import PDFSpinner
 from pathlib import Path
 
 # Create spinner
@@ -805,9 +805,9 @@ async with HoloLoom() as loom:
 ### Integration with WeavingOrchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.spinningWheel.pdf_spinner import PDFSpinner
+from hololoom.config import Config
 
 # Spin PDFs
 spinner = PDFSpinner()
@@ -822,7 +822,7 @@ async with WeavingOrchestrator(cfg=config, shards=result.shards) as orchestrator
 ### Integration with FileUploadSpinner
 
 ```python
-from HoloLoom.spinningWheel.file_upload_spinner import FileUploadSpinner
+from hololoom.spinningWheel.file_upload_spinner import FileUploadSpinner
 
 # FileUploadSpinner automatically routes .pdf to PDFSpinner
 upload_spinner = FileUploadSpinner(importance_threshold=0.3)
@@ -838,7 +838,7 @@ result = await upload_spinner.spin(Path("./document.pdf"))
 
 ### Test Suite
 
-Location: `HoloLoom/tests/unit/test_pdf_spinner.py`
+Location: `hololoom/tests/unit/test_pdf_spinner.py`
 Tests: 20/20 passing
 Coverage: ~95%
 
@@ -875,13 +875,13 @@ Coverage: ~95%
 
 ```bash
 # All PDF spinner tests
-pytest HoloLoom/tests/unit/test_pdf_spinner.py -v
+pytest hololoom/tests/unit/test_pdf_spinner.py -v
 
 # Specific test
-pytest HoloLoom/tests/unit/test_pdf_spinner.py::test_pdf_spinner_score_page_importance -v
+pytest hololoom/tests/unit/test_pdf_spinner.py::test_pdf_spinner_score_page_importance -v
 
 # With coverage
-pytest HoloLoom/tests/unit/test_pdf_spinner.py --cov=HoloLoom.spinningWheel.pdf_spinner
+pytest hololoom/tests/unit/test_pdf_spinner.py --cov=hololoom.spinningWheel.pdf_spinner
 ```
 
 ---
@@ -1021,5 +1021,5 @@ PDFSpinner is a production-ready system for ingesting PDF documents into HoloLoo
 - Customize scoring for your domain
 
 For examples, see `demos/pdf_spinner_example.py`.
-For tests, see `HoloLoom/tests/unit/test_pdf_spinner.py`.
+For tests, see `hololoom/tests/unit/test_pdf_spinner.py`.
 For issues, see [GitHub Issues](https://github.com/anthropics/claude-code/issues).

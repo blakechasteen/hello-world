@@ -303,7 +303,7 @@ async def demo():
     print("  ✓ Resource optimization and scheduling")
     print("  ✓ Predictive cash flow analytics")
     print("  ✓ Bottleneck detection and recommendations")
-    print("  ✓ Complete integration with HoloLoom/MirrorCore")
+    print("  ✓ Complete integration with hololoom/MirrorCore")
     print("\nNext steps:")
     print("  1. Run: python -m elle.voice_interface (for interactive voice session)")
     print("  2. Check: elle/examples/ for SOP markdown files")

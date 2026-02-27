@@ -27,8 +27,8 @@ import time
 from typing import List
 from pathlib import Path
 
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
 
 
 # ============================================================================
@@ -85,7 +85,7 @@ class TestScratchpadWorkflow:
     async def test_scratchpad_provenance_tracking(self, test_shards):
         """Scratchpad should track complete provenance."""
         try:
-            from HoloLoom.recursive import weave_with_scratchpad
+            from hololoom.recursive import weave_with_scratchpad
 
             config = Config.fast()
             query = Query(text="What is Thompson Sampling?")
@@ -113,7 +113,7 @@ class TestScratchpadWorkflow:
     async def test_scratchpad_refinement_trigger(self, test_shards):
         """Scratchpad should trigger refinement for low confidence."""
         try:
-            from HoloLoom.recursive import weave_with_scratchpad
+            from hololoom.recursive import weave_with_scratchpad
 
             config = Config.bare()  # BARE mode = lower confidence
             query = Query(text="What is Thompson Sampling?")
@@ -146,7 +146,7 @@ class TestLearningLoopWorkflow:
     async def test_pattern_extraction_across_queries(self, test_shards):
         """System should learn patterns from successful queries."""
         try:
-            from HoloLoom.recursive import LearningLoopEngine
+            from hololoom.recursive import LearningLoopEngine
 
             config = Config.fast()
 
@@ -174,7 +174,7 @@ class TestLearningLoopWorkflow:
     async def test_pattern_pruning(self, test_shards):
         """Old patterns should be pruned."""
         try:
-            from HoloLoom.recursive import LearningLoopEngine
+            from hololoom.recursive import LearningLoopEngine
 
             config = Config.fast()
 
@@ -208,7 +208,7 @@ class TestHotPatternWorkflow:
     async def test_hot_pattern_tracking(self, test_shards):
         """Hot patterns should boost retrieval."""
         try:
-            from HoloLoom.recursive import HotPatternFeedbackEngine
+            from hololoom.recursive import HotPatternFeedbackEngine
 
             config = Config.fast()
 
@@ -240,8 +240,8 @@ class TestAdvancedRefinementWorkflow:
     async def test_all_refinement_strategies(self, test_shards):
         """All refinement strategies should work."""
         try:
-            from HoloLoom.recursive import AdvancedRefiner, RefinementStrategy
-            from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.recursive import AdvancedRefiner, RefinementStrategy
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
 
             config = Config.fast()
 
@@ -280,8 +280,8 @@ class TestAdvancedRefinementWorkflow:
     async def test_quality_improvement_trajectory(self, test_shards):
         """Refinement should improve quality over iterations."""
         try:
-            from HoloLoom.recursive import AdvancedRefiner, RefinementStrategy
-            from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.recursive import AdvancedRefiner, RefinementStrategy
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
 
             config = Config.bare()  # Start with low quality
 
@@ -322,7 +322,7 @@ class TestFullLearningLoopWorkflow:
     async def test_thompson_sampling_updates(self, test_shards):
         """Thompson Sampling priors should update based on outcomes."""
         try:
-            from HoloLoom.recursive import FullLearningEngine
+            from hololoom.recursive import FullLearningEngine
 
             config = Config.fast()
 
@@ -349,7 +349,7 @@ class TestFullLearningLoopWorkflow:
     async def test_policy_weight_adaptation(self, test_shards):
         """Policy adapter weights should adapt based on success."""
         try:
-            from HoloLoom.recursive import FullLearningEngine
+            from hololoom.recursive import FullLearningEngine
 
             config = Config.fast()
 
@@ -379,7 +379,7 @@ class TestFullLearningLoopWorkflow:
     async def test_learning_statistics_tracking(self, test_shards):
         """System should track comprehensive learning statistics."""
         try:
-            from HoloLoom.recursive import FullLearningEngine
+            from hololoom.recursive import FullLearningEngine
 
             config = Config.fast()
 
@@ -420,7 +420,7 @@ class TestStatePersistence:
     async def test_save_and_load_learning_state(self, test_shards, tmp_path):
         """Learning state should persist across sessions."""
         try:
-            from HoloLoom.recursive import FullLearningEngine
+            from hololoom.recursive import FullLearningEngine
 
             config = Config.fast()
             state_path = tmp_path / "learning_state"
@@ -469,7 +469,7 @@ class TestEndToEndLearning:
     async def test_multi_session_improvement(self, test_shards):
         """System should improve across multiple query sessions."""
         try:
-            from HoloLoom.recursive import FullLearningEngine
+            from hololoom.recursive import FullLearningEngine
 
             config = Config.fast()
 

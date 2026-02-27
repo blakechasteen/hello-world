@@ -33,7 +33,7 @@ Individual engineers can optimize prompts effectively with DSPy. But scaling acr
 **Setup**:
 ```python
 # Individual engineer setup
-from HoloLoom.promptly import DSPyHoloLoom, create_signature
+from hololoom.promptly import DSPyHoloLoom, create_signature
 
 bridge = DSPyHoloLoom(config=Config.fast(), lm_model="openai/gpt-4o-mini")
 
@@ -98,7 +98,7 @@ team_repo/
 ```python
 # team_repo/signatures/qa_signatures.py
 
-from HoloLoom.promptly import create_signature
+from hololoom.promptly import create_signature
 
 # Standard Q&A signature (approved by team)
 QA_SIGNATURE_V1 = create_signature(
@@ -123,7 +123,7 @@ SIGNATURE_METADATA = {
 **Quality Gates**:
 
 ```python
-from HoloLoom.promptly.metrics_system import MetricsEvaluator, MetricType
+from hololoom.promptly.metrics_system import MetricsEvaluator, MetricType
 
 # Team standard: All programs must score >0.75
 TEAM_EVALUATOR = MetricsEvaluator(
@@ -295,9 +295,9 @@ from typing import Dict, List
 import asyncio
 from datetime import datetime
 
-from HoloLoom.promptly import DSPyHoloLoom, DSPyWorkflowAdapter
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.promptly.metrics_system import MetricsEvaluator
+from hololoom.promptly import DSPyHoloLoom, DSPyWorkflowAdapter
+from hololoom.alignment import SafetyGuardrails
+from hololoom.promptly.metrics_system import MetricsEvaluator
 
 app = FastAPI(title="Enterprise DSPy Service")
 
@@ -615,7 +615,7 @@ Answer technical questions using HoloLoom context.
 
 ## Inputs
 - question (str): User question
-- context (str): Retrieved context from HoloLoom
+- context (str): Retrieved context from hololoom
 
 ## Outputs
 - answer (str): Generated answer

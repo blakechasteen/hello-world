@@ -18,10 +18,10 @@ import asyncio
 from unittest.mock import patch, MagicMock, AsyncMock
 import logging
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
 # NOTE: InMemoryBackend is created via backend_factory, not imported directly
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

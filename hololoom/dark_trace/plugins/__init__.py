@@ -15,7 +15,7 @@ Created: December 2025
 
 Example Usage:
     # Creating a custom lens plugin
-    from HoloLoom.dark_trace.plugins import (
+    from hololoom.dark_trace.plugins import (
         LensPlugin,
         PluginMetadata,
         PluginCategory,
@@ -38,14 +38,14 @@ Example Usage:
             return {"my_feature": activations.mean(axis=-1)}
 
     # Loading plugins
-    from HoloLoom.dark_trace.plugins import create_loader
+    from hololoom.dark_trace.plugins import create_loader
 
     loader = create_loader(plugin_dirs=[Path("./plugins")])
     loader.discover_plugins()
     loader.enable_hot_reload()
 
     # Using the marketplace
-    from HoloLoom.dark_trace.plugins import create_marketplace
+    from hololoom.dark_trace.plugins import create_marketplace
 
     marketplace = create_marketplace()
     plugins = marketplace.search(query="lens", category=PluginCategory.LENS)
@@ -53,7 +53,7 @@ Example Usage:
 """
 
 # Plugin protocol and types
-from HoloLoom.dark_trace.plugins.plugin_protocol import (
+from hololoom.dark_trace.plugins.plugin_protocol import (
     # Enums
     PluginCategory,
     PluginStatus,
@@ -82,7 +82,7 @@ from HoloLoom.dark_trace.plugins.plugin_protocol import (
 )
 
 # Signing and verification
-from HoloLoom.dark_trace.plugins.plugin_signing import (
+from hololoom.dark_trace.plugins.plugin_signing import (
     # Enums
     SigningAlgorithm,
 
@@ -102,7 +102,7 @@ from HoloLoom.dark_trace.plugins.plugin_signing import (
 )
 
 # Plugin loader with hot reload
-from HoloLoom.dark_trace.plugins.plugin_loader import (
+from hololoom.dark_trace.plugins.plugin_loader import (
     # Data classes
     LoadedPlugin,
 
@@ -115,7 +115,7 @@ from HoloLoom.dark_trace.plugins.plugin_loader import (
 )
 
 # Marketplace
-from HoloLoom.dark_trace.plugins.plugin_marketplace import (
+from hololoom.dark_trace.plugins.plugin_marketplace import (
     # Enums
     SortOrder,
 

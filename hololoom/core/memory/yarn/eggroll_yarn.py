@@ -20,7 +20,7 @@ class Yarn:
         
         # Connect to Unified Memory
         try:
-            from HoloLoom.core.memory.unified import UnifiedMemory
+            from hololoom.core.memory.unified import UnifiedMemory
             self.memory = UnifiedMemory()
             self.has_memory = True
         except ImportError:
@@ -64,7 +64,7 @@ class Yarn:
         Returns the ID of the most central/influential model.
         """
         try:
-            from HoloLoom.eggroll.math_crusher import GraphTheory
+            from hololoom.eggroll.math_crusher import GraphTheory
             
             if len(self.graph) < 2:
                 return "N/A"

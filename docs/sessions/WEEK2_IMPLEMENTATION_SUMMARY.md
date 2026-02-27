@@ -11,7 +11,7 @@
 
 ### 1. Agent Memory Tools ✅
 
-**File**: `HoloLoom/agentic/memory_tools.py` (560 lines)
+**File**: `hololoom/agentic/memory_tools.py` (560 lines)
 
 **Based on Research**:
 - **LangMem**: "Agents decide what to store, not passive accumulation"
@@ -28,8 +28,8 @@
 
 **API Example**:
 ```python
-from HoloLoom.agentic.memory_tools import AgentMemoryTools
-from HoloLoom.memory.lifecycle_manager import ContextStreamManager, MemoryScope
+from hololoom.agentic.memory_tools import AgentMemoryTools
+from hololoom.memory.lifecycle_manager import ContextStreamManager, MemoryScope
 
 # Create tools
 manager = ContextStreamManager()
@@ -77,7 +77,7 @@ stats = tools.get_statistics()
 
 ### 2. Background Consolidation ✅
 
-**File**: `HoloLoom/memory/consolidation.py` (650 lines)
+**File**: `hololoom/memory/consolidation.py` (650 lines)
 
 **Based on Research**:
 - **LangMem**: "Two-path design - hot path (fast queries) + background path (consolidation)"
@@ -100,7 +100,7 @@ stats = tools.get_statistics()
 
 **API Example**:
 ```python
-from HoloLoom.memory.consolidation import MemoryConsolidator, ConsolidationStrategy
+from hololoom.memory.consolidation import MemoryConsolidator, ConsolidationStrategy
 
 # Create consolidator
 consolidator = MemoryConsolidator(
@@ -140,7 +140,7 @@ await consolidator.stop_background_consolidation()
 
 ### Agent Memory Tools Tests ✅
 
-**File**: `HoloLoom/tests/unit/test_agent_memory_tools.py` (370 lines, 19 tests)
+**File**: `hololoom/tests/unit/test_agent_memory_tools.py` (370 lines, 19 tests)
 
 **100% Pass Rate** (19/19 passing)
 
@@ -178,7 +178,7 @@ await consolidator.stop_background_consolidation()
 
 **Run Tests**:
 ```bash
-PYTHONPATH=. pytest HoloLoom/tests/unit/test_agent_memory_tools.py -v
+PYTHONPATH=. pytest hololoom/tests/unit/test_agent_memory_tools.py -v
 # 19 passed in 0.54s
 ```
 
@@ -186,7 +186,7 @@ PYTHONPATH=. pytest HoloLoom/tests/unit/test_agent_memory_tools.py -v
 
 ### Background Consolidation Tests ✅
 
-**File**: `HoloLoom/tests/unit/test_consolidation.py` (480 lines, 19 tests)
+**File**: `hololoom/tests/unit/test_consolidation.py` (480 lines, 19 tests)
 
 **100% Pass Rate** (19/19 passing)
 
@@ -230,7 +230,7 @@ PYTHONPATH=. pytest HoloLoom/tests/unit/test_agent_memory_tools.py -v
 
 **Run Tests**:
 ```bash
-PYTHONPATH=. pytest HoloLoom/tests/unit/test_consolidation.py -v
+PYTHONPATH=. pytest hololoom/tests/unit/test_consolidation.py -v
 # 19 passed in 1.77s
 ```
 
@@ -457,10 +457,10 @@ archived = archive_stream.memories
 
 ### Created (Week 2)
 
-1. **`HoloLoom/agentic/memory_tools.py`** (560 lines) - Agent memory tools
-2. **`HoloLoom/memory/consolidation.py`** (650 lines) - Background consolidation
-3. **`HoloLoom/tests/unit/test_agent_memory_tools.py`** (370 lines, 19 tests) - Agent tools tests
-4. **`HoloLoom/tests/unit/test_consolidation.py`** (480 lines, 19 tests) - Consolidation tests
+1. **`hololoom/agentic/memory_tools.py`** (560 lines) - Agent memory tools
+2. **`hololoom/memory/consolidation.py`** (650 lines) - Background consolidation
+3. **`hololoom/tests/unit/test_agent_memory_tools.py`** (370 lines, 19 tests) - Agent tools tests
+4. **`hololoom/tests/unit/test_consolidation.py`** (480 lines, 19 tests) - Consolidation tests
 5. **`WEEK2_IMPLEMENTATION_SUMMARY.md`** (this file)
 
 ### Modified (Week 2)

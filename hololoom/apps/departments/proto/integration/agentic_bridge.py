@@ -24,8 +24,8 @@ from enum import Enum
 
 # Import HoloLoom types
 try:
-    from HoloLoom.agentic.core import AgenticOrchestrator, ReasoningMode
-    from HoloLoom.protocols.types import Query
+    from hololoom.agentic.core import AgenticOrchestrator, ReasoningMode
+    from hololoom.protocols.types import Query
     AGENTIC_AVAILABLE = True
 except ImportError:
     AGENTIC_AVAILABLE = False

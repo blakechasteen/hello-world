@@ -3,16 +3,16 @@
 This PR prepares release `v1.0.1`.
 
 ## Summary of changes
-- Finalized policy fixes in `HoloLoom/policy/unified.py`:
+- Finalized policy fixes in `hololoom/policy/unified.py`:
   - Ensure policy outputs include `value` for categorical/gaussian modes
   - Added `get_value` and deterministic sampling support in `sample_action`
-- Added shared types and embeddings used by the policy (tests): `HoloLoom/embedding/spectral.py`
-- Made `HoloLoom` a proper package with `HoloLoom/__init__.py` and fixed package imports
-- Added `HoloLoom/README.md` instructions for running the example trainer (`train_agent`)
+- Added shared types and embeddings used by the policy (tests): `hololoom/embedding/spectral.py`
+- Made `HoloLoom` a proper package with `hololoom/__init__.py` and fixed package imports
+- Added `hololoom/README.md` instructions for running the example trainer (`train_agent`)
 - Added `.gitignore` to exclude virtualenv, editor, and log artifacts
 
 ## Notable behavior
-- The test harness `HoloLoom/test_unified_policy.py` runs successfully (18/18 tests passed in the local environment used for development).
+- The test harness `hololoom/test_unified_policy.py` runs successfully (18/18 tests passed in the local environment used for development).
 - A short training run on `CartPole-v1` (2k timesteps) completes successfully and saves a checkpoint under `logs/test_run_small/checkpoints/final.pt`.
 
 ## How to test locally
@@ -28,13 +28,13 @@ pip install torch numpy gymnasium matplotlib
 2. Run the unit test harness:
 
 ```bash
-PYTHONPATH=HoloLoom .venv/bin/python HoloLoom/test_unified_policy.py
+PYTHONPATH=HoloLoom .venv/bin/python hololoom/test_unified_policy.py
 ```
 
 3. Run a short trainer session:
 
 ```bash
-PYTHONPATH=HoloLoom .venv/bin/python -c "from HoloLoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
+PYTHONPATH=HoloLoom .venv/bin/python -c "from hololoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
 ```
 
 ## Follow-ups / Recommendations

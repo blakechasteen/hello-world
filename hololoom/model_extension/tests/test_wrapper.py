@@ -14,7 +14,7 @@ import pytest
 import asyncio
 from datetime import datetime
 from unittest.mock import MagicMock, AsyncMock, patch
-from HoloLoom.model_extension.wrapper import (
+from hololoom.model_extension.wrapper import (
     RetrievalStrategy,
     LearningMode,
     LLMConfig,
@@ -25,22 +25,22 @@ from HoloLoom.model_extension.wrapper import (
     create_memory_augmented_llm,
     create_config,
 )
-from HoloLoom.model_extension.uncertainty import (
+from hololoom.model_extension.uncertainty import (
     UncertaintyEnvelope,
     ConfidenceTier,
     UncertaintySource,
 )
-from HoloLoom.model_extension.verification import (
+from hololoom.model_extension.verification import (
     VerificationStatus,
     VerificationTier,
     ClaimType,
 )
-from HoloLoom.model_extension.governance import (
+from hololoom.model_extension.governance import (
     PolicyDecision,
     PolicyTier,
     Decision,
 )
-from HoloLoom.model_extension.providers import GenerationConfig
+from hololoom.model_extension.providers import GenerationConfig
 
 
 class TestRetrievalStrategy:
@@ -550,7 +550,7 @@ class TestMemoryAugmentedLLMContextManager:
     @pytest.mark.asyncio
     async def test_context_manager_initializes(self):
         """Test context manager initializes LLM."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
 
             async with MemoryAugmentedLLM(provider="test") as llm:
@@ -559,7 +559,7 @@ class TestMemoryAugmentedLLMContextManager:
     @pytest.mark.asyncio
     async def test_context_manager_cleans_up(self):
         """Test context manager cleans up on exit."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
 
             async with MemoryAugmentedLLM(provider="test") as llm:
@@ -575,7 +575,7 @@ class TestMemoryAugmentedLLMLearn:
     @pytest.mark.asyncio
     async def test_learn_single_content(self):
         """Test learning single content."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
 
             async with MemoryAugmentedLLM() as llm:
@@ -586,7 +586,7 @@ class TestMemoryAugmentedLLMLearn:
     @pytest.mark.asyncio
     async def test_learn_multiple_contents(self):
         """Test learning multiple contents."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
 
             async with MemoryAugmentedLLM() as llm:
@@ -602,7 +602,7 @@ class TestMemoryAugmentedLLMLearn:
     @pytest.mark.asyncio
     async def test_learn_updates_learning_buffer(self):
         """Test learning updates learning buffer."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
 
             async with MemoryAugmentedLLM() as llm:
@@ -619,7 +619,7 @@ class TestMemoryAugmentedLLMLearn:
     @pytest.mark.asyncio
     async def test_learn_disabled_mode_no_buffer_update(self):
         """Test learning doesn't update buffer in disabled mode."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
 
             async with MemoryAugmentedLLM(learning_mode="disabled") as llm:
@@ -641,7 +641,7 @@ class TestMemoryAugmentedLLMRecall:
     @pytest.mark.asyncio
     async def test_recall_uses_default_strategy(self):
         """Test recall uses config's default strategy."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
 
             async with MemoryAugmentedLLM(
@@ -667,8 +667,8 @@ class TestMemoryAugmentedLLMRecall:
         # Mock create_memory_backend BEFORE entering context manager to prevent hang
         # during __aenter__ -> _initialize() -> _initialize_memory()
         # Use AsyncMock because create_memory_backend is an async function
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             # Return InMemoryBackend to avoid Neo4j/Qdrant connection
             mock_backend.return_value = InMemoryBackend()
@@ -691,8 +691,8 @@ class TestMemoryAugmentedLLMReflect:
     @pytest.mark.asyncio
     async def test_reflect_updates_pattern_weights(self):
         """Test reflect updates pattern weights on positive feedback."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = InMemoryBackend()
 
@@ -723,8 +723,8 @@ class TestMemoryAugmentedLLMReflect:
     @pytest.mark.asyncio
     async def test_reflect_updates_pattern_weights_negative(self):
         """Test reflect updates pattern weights on negative feedback."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = InMemoryBackend()
 
@@ -756,8 +756,8 @@ class TestMemoryAugmentedLLMReflect:
     @pytest.mark.asyncio
     async def test_reflect_disabled_mode_does_nothing(self):
         """Test reflect does nothing in disabled mode."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = InMemoryBackend()
 
@@ -781,11 +781,11 @@ class TestMemoryAugmentedLLMQuery:
     @pytest.mark.asyncio
     async def test_query_memory_only_no_provider(self):
         """Test query falls back to memory-only when no provider."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = InMemoryBackend()
-            with patch("HoloLoom.model_extension.wrapper.get_best_available_provider") as mock_best:
+            with patch("hololoom.model_extension.wrapper.get_best_available_provider") as mock_best:
                 mock_best.return_value = None
 
                 async with MemoryAugmentedLLM() as llm:
@@ -806,15 +806,15 @@ class TestMemoryAugmentedLLMQuery:
     @pytest.mark.asyncio
     async def test_query_with_context_override(self):
         """Test query with context override."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
             mock_instance = MagicMock()
             mock_instance.is_available.return_value = True
             mock_instance.model = "test-model"
 
             # Create async generate method
             async def mock_generate(*args, **kwargs):
-                from HoloLoom.model_extension.providers import GenerationResult
+                from hololoom.model_extension.providers import GenerationResult
                 return GenerationResult(
                     text="Generated response",
                     model="test",
@@ -933,8 +933,8 @@ class TestCreateMemoryAugmentedLLM:
     @pytest.mark.asyncio
     async def test_creates_initialized_llm(self):
         """Test convenience function creates initialized LLM."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = InMemoryBackend()
 
@@ -948,8 +948,8 @@ class TestCreateMemoryAugmentedLLM:
     @pytest.mark.asyncio
     async def test_accepts_kwargs(self):
         """Test convenience function accepts kwargs."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider, \
-             patch("HoloLoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider, \
+             patch("hololoom.memory.backend_factory.create_memory_backend", new_callable=AsyncMock) as mock_backend:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
             mock_backend.return_value = InMemoryBackend()
 
@@ -1049,7 +1049,7 @@ class TestPatternWeightsClamping:
     @pytest.mark.asyncio
     async def test_weights_clamped_high(self):
         """Test weights are clamped at max 0.9."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
 
             async with MemoryAugmentedLLM(learning_rate=0.5) as llm:
@@ -1072,7 +1072,7 @@ class TestPatternWeightsClamping:
     @pytest.mark.asyncio
     async def test_weights_clamped_low(self):
         """Test weights are clamped at min 0.1."""
-        with patch("HoloLoom.model_extension.wrapper.create_provider") as mock_provider:
+        with patch("hololoom.model_extension.wrapper.create_provider") as mock_provider:
             mock_provider.return_value = MagicMock(is_available=lambda: False)
 
             async with MemoryAugmentedLLM(learning_rate=0.5) as llm:

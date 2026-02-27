@@ -824,7 +824,7 @@ def render_knowledge_graph_from_kg(
     highlighted_path: Optional[List[str]] = None
 ) -> str:
     """
-    Render knowledge graph directly from HoloLoom KG object.
+    Render knowledge graph directly from hololoom KG object.
 
     Primary programmatic API for automated tool calling.
 
@@ -839,8 +839,8 @@ def render_knowledge_graph_from_kg(
         Complete HTML document as string
 
     Example:
-        from HoloLoom.memory.graph import KG
-        from HoloLoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
+        from hololoom.memory.graph import KG
+        from hololoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
 
         kg = KG()
         # ... add edges ...

@@ -11,7 +11,7 @@ Tests for all 6 Moonshot phases working together:
 - M6: Analytics Collection (jenny_analytics.py)
 
 Run with:
-    pytest HoloLoom/tests/integration/test_jenny_moonshot.py -v
+    pytest hololoom/tests/integration/test_jenny_moonshot.py -v
 
 Date: December 2025
 Author: HoloLoom Team
@@ -25,7 +25,7 @@ from typing import List, Dict, Any
 from unittest.mock import MagicMock, AsyncMock, patch
 
 # Jenny core imports
-from HoloLoom.visualization.jenny_spec import (
+from hololoom.visualization.jenny_spec import (
     JennySpec,
     PanelTypeJenny,
     PanelSizeJenny,
@@ -35,7 +35,7 @@ from HoloLoom.visualization.jenny_spec import (
     create_spec,
 )
 
-from HoloLoom.protocols.jenny import RenderTarget
+from hololoom.protocols.jenny import RenderTarget
 
 
 # ============================================================================
@@ -93,7 +93,7 @@ def sample_specs() -> List[JennySpec]:
 @pytest.fixture
 def fresh_registry():
     """Fresh renderer registry for test isolation."""
-    from HoloLoom.visualization.jenny_renderer_registry import RendererRegistry
+    from hololoom.visualization.jenny_renderer_registry import RendererRegistry
     registry = RendererRegistry()
     registry.clear()
     return registry
@@ -102,7 +102,7 @@ def fresh_registry():
 @pytest.fixture
 def analytics_collector():
     """Fresh analytics collector for test isolation."""
-    from HoloLoom.visualization.jenny_analytics import JennyAnalyticsCollector
+    from hololoom.visualization.jenny_analytics import JennyAnalyticsCollector
     collector = JennyAnalyticsCollector()
     collector.clear()
     return collector
@@ -117,7 +117,7 @@ class TestRendererRegistryIntegration:
 
     def test_registry_singleton_pattern(self):
         """Registry should be a singleton."""
-        from HoloLoom.visualization.jenny_renderer_registry import RendererRegistry
+        from hololoom.visualization.jenny_renderer_registry import RendererRegistry
 
         registry1 = RendererRegistry()
         registry2 = RendererRegistry()
@@ -126,7 +126,7 @@ class TestRendererRegistryIntegration:
 
     def test_register_all_renderers(self, fresh_registry):
         """All 5 renderers should be registerable."""
-        from HoloLoom.visualization.jenny_renderer import (
+        from hololoom.visualization.jenny_renderer import (
             HTMLRenderer,
             TerminalRenderer,
             JSONRenderer,
@@ -154,7 +154,7 @@ class TestRendererRegistryIntegration:
 
     def test_priority_based_selection(self, fresh_registry):
         """Higher priority renderer should be selected."""
-        from HoloLoom.visualization.jenny_renderer import HTMLRenderer
+        from hololoom.visualization.jenny_renderer import HTMLRenderer
 
         # Register with specific priority
         fresh_registry.register(HTMLRenderer, priority=100)
@@ -165,7 +165,7 @@ class TestRendererRegistryIntegration:
 
     def test_get_renderer_for_each_target(self, fresh_registry):
         """Should find renderer for each target type."""
-        from HoloLoom.visualization.jenny_renderer import (
+        from hololoom.visualization.jenny_renderer import (
             HTMLRenderer,
             JSONRenderer,
             ReactRenderer,
@@ -185,7 +185,7 @@ class TestRendererRegistryIntegration:
     @pytest.mark.asyncio
     async def test_concurrent_rendering(self, fresh_registry, sample_specs):
         """Should render to multiple targets concurrently."""
-        from HoloLoom.visualization.jenny_renderer import (
+        from hololoom.visualization.jenny_renderer import (
             HTMLRenderer,
             JSONRenderer,
         )
@@ -213,7 +213,7 @@ class TestAsyncLLMClientIntegration:
 
     def test_config_creation(self):
         """Should create LLM client config."""
-        from HoloLoom.visualization.jenny_llm_client import LLMClientConfig
+        from hololoom.visualization.jenny_llm_client import LLMClientConfig
 
         config = LLMClientConfig.fast()
         assert config.timeout_seconds == 5.0
@@ -225,7 +225,7 @@ class TestAsyncLLMClientIntegration:
 
     def test_response_dataclass(self):
         """LLMResponse should hold response data."""
-        from HoloLoom.visualization.jenny_llm_client import LLMResponse
+        from hololoom.visualization.jenny_llm_client import LLMResponse
 
         response = LLMResponse(
             content="Test response",
@@ -241,7 +241,7 @@ class TestAsyncLLMClientIntegration:
 
     def test_error_dataclass(self):
         """LLMError should hold error details."""
-        from HoloLoom.visualization.jenny_llm_client import LLMError
+        from hololoom.visualization.jenny_llm_client import LLMError
 
         error = LLMError(
             error_type="timeout",
@@ -257,7 +257,7 @@ class TestAsyncLLMClientIntegration:
     @pytest.mark.asyncio
     async def test_graceful_degradation_no_llm(self):
         """Should handle LLM unavailability gracefully."""
-        from HoloLoom.visualization.jenny_llm_client import LLMClientConfig
+        from hololoom.visualization.jenny_llm_client import LLMClientConfig
 
         # Config with invalid endpoint should not crash on creation
         config = LLMClientConfig(
@@ -276,7 +276,7 @@ class TestAccessibilityIntegration:
 
     def test_aria_roles_enum(self):
         """Should have all required ARIA roles."""
-        from HoloLoom.visualization.jenny_accessibility import AriaRole
+        from hololoom.visualization.jenny_accessibility import AriaRole
 
         # Landmark roles
         assert AriaRole.MAIN.value == "main"
@@ -292,7 +292,7 @@ class TestAccessibilityIntegration:
 
     def test_aria_live_settings(self):
         """Should have ARIA live region settings."""
-        from HoloLoom.visualization.jenny_accessibility import AriaLive
+        from hololoom.visualization.jenny_accessibility import AriaLive
 
         assert AriaLive.OFF.value == "off"
         assert AriaLive.POLITE.value == "polite"
@@ -300,7 +300,7 @@ class TestAccessibilityIntegration:
 
     def test_aria_attributes_to_dict(self):
         """Should convert AriaAttributes to dict."""
-        from HoloLoom.visualization.jenny_accessibility import (
+        from hololoom.visualization.jenny_accessibility import (
             AriaAttributes,
             AriaRole,
             AriaLive,
@@ -320,7 +320,7 @@ class TestAccessibilityIntegration:
 
     def test_aria_attributes_boolean_handling(self):
         """Should handle boolean attributes correctly."""
-        from HoloLoom.visualization.jenny_accessibility import AriaAttributes
+        from hololoom.visualization.jenny_accessibility import AriaAttributes
 
         attrs = AriaAttributes(
             expanded=True,
@@ -345,7 +345,7 @@ class TestReactRendererIntegration:
     @pytest.mark.asyncio
     async def test_render_to_react_props(self, sample_specs):
         """Should render specs to React component props."""
-        from HoloLoom.visualization.jenny_renderer import ReactRenderer
+        from hololoom.visualization.jenny_renderer import ReactRenderer
 
         renderer = ReactRenderer()
         output = await renderer.render(sample_specs, target=RenderTarget.REACT)
@@ -360,7 +360,7 @@ class TestReactRendererIntegration:
     @pytest.mark.asyncio
     async def test_accessibility_props_included(self, sample_specs):
         """Should include accessibility props in React output."""
-        from HoloLoom.visualization.jenny_renderer import ReactRenderer
+        from hololoom.visualization.jenny_renderer import ReactRenderer
 
         renderer = ReactRenderer()
         output = await renderer.render(
@@ -382,7 +382,7 @@ class TestReactRendererIntegration:
     @pytest.mark.asyncio
     async def test_event_handler_props(self, sample_specs):
         """Should include event handler props."""
-        from HoloLoom.visualization.jenny_renderer import ReactRenderer
+        from hololoom.visualization.jenny_renderer import ReactRenderer
 
         renderer = ReactRenderer()
         output = await renderer.render(
@@ -404,7 +404,7 @@ class TestReactRendererIntegration:
     @pytest.mark.asyncio
     async def test_content_props_by_panel_type(self, sample_specs):
         """Should generate type-specific content props."""
-        from HoloLoom.visualization.jenny_renderer import ReactRenderer
+        from hololoom.visualization.jenny_renderer import ReactRenderer
 
         renderer = ReactRenderer()
         output = await renderer.render(sample_specs, target=RenderTarget.REACT)
@@ -434,7 +434,7 @@ class TestARRendererIntegration:
     @pytest.mark.asyncio
     async def test_render_to_ar_json(self, sample_specs):
         """Should render specs to AR JSON."""
-        from HoloLoom.visualization.jenny_renderer import ARRenderer
+        from hololoom.visualization.jenny_renderer import ARRenderer
 
         renderer = ARRenderer()
         output = await renderer.render(sample_specs, target=RenderTarget.AR)
@@ -449,7 +449,7 @@ class TestARRendererIntegration:
     @pytest.mark.asyncio
     async def test_transform_calculations(self, sample_specs):
         """Should calculate 3D transforms correctly."""
-        from HoloLoom.visualization.jenny_renderer import ARRenderer
+        from hololoom.visualization.jenny_renderer import ARRenderer
 
         renderer = ARRenderer()
         output = await renderer.render(sample_specs, target=RenderTarget.AR)
@@ -472,7 +472,7 @@ class TestARRendererIntegration:
     @pytest.mark.asyncio
     async def test_coordinate_systems(self, sample_specs):
         """Should support different coordinate systems."""
-        from HoloLoom.visualization.jenny_renderer import ARRenderer
+        from hololoom.visualization.jenny_renderer import ARRenderer
 
         renderer = ARRenderer()
 
@@ -497,7 +497,7 @@ class TestARRendererIntegration:
     @pytest.mark.asyncio
     async def test_size_to_meters_mapping(self, sample_specs):
         """Should map panel sizes to physical meters."""
-        from HoloLoom.visualization.jenny_renderer import ARRenderer
+        from hololoom.visualization.jenny_renderer import ARRenderer
 
         renderer = ARRenderer()
 
@@ -553,7 +553,7 @@ class TestAnalyticsIntegration:
 
     def test_render_event_property_pattern(self):
         """RenderEvent should use @property pattern."""
-        from HoloLoom.visualization.jenny_analytics import RenderEvent, MetricType
+        from hololoom.visualization.jenny_analytics import RenderEvent, MetricType
 
         event = RenderEvent(
             value=50.0,
@@ -570,7 +570,7 @@ class TestAnalyticsIntegration:
 
     def test_compile_event_property_pattern(self):
         """CompileEvent should use @property pattern."""
-        from HoloLoom.visualization.jenny_analytics import CompileEvent, MetricType
+        from hololoom.visualization.jenny_analytics import CompileEvent, MetricType
 
         event = CompileEvent(
             value=100.0,
@@ -586,7 +586,7 @@ class TestAnalyticsIntegration:
 
     def test_analytics_dashboard_render(self, analytics_collector):
         """Should render analytics dashboard HTML."""
-        from HoloLoom.visualization.jenny_analytics import JennyAnalyticsDashboard
+        from hololoom.visualization.jenny_analytics import JennyAnalyticsDashboard
 
         # Record some events
         analytics_collector.record_render(latency_ms=50, target='html', panel_count=3)
@@ -657,7 +657,7 @@ class TestFullMoonshotPipeline:
         4. Render to AR (M5)
         5. Record analytics (M6)
         """
-        from HoloLoom.visualization.jenny_renderer import (
+        from hololoom.visualization.jenny_renderer import (
             HTMLRenderer,
             ReactRenderer,
             ARRenderer,
@@ -734,7 +734,7 @@ class TestFullMoonshotPipeline:
     @pytest.mark.asyncio
     async def test_accessibility_in_all_render_targets(self, sample_specs):
         """Accessibility props should be available in React output."""
-        from HoloLoom.visualization.jenny_renderer import ReactRenderer
+        from hololoom.visualization.jenny_renderer import ReactRenderer
 
         renderer = ReactRenderer()
 
@@ -764,7 +764,7 @@ class TestFullMoonshotPipeline:
         analytics_collector
     ):
         """Should render to multiple targets concurrently."""
-        from HoloLoom.visualization.jenny_renderer import (
+        from hololoom.visualization.jenny_renderer import (
             HTMLRenderer,
             JSONRenderer,
             ReactRenderer,
@@ -805,8 +805,8 @@ class TestConvenienceFunctions:
 
     def test_render_jenny_function(self, fresh_registry, sample_specs):
         """render_jenny should use global registry."""
-        from HoloLoom.visualization.jenny_renderer import HTMLRenderer
-        from HoloLoom.visualization.jenny_renderer_registry import render_jenny
+        from hololoom.visualization.jenny_renderer import HTMLRenderer
+        from hololoom.visualization.jenny_renderer_registry import render_jenny
 
         fresh_registry.register(HTMLRenderer, priority=10)
 
@@ -819,7 +819,7 @@ class TestConvenienceFunctions:
 
     def test_analytics_convenience_functions(self):
         """Module-level analytics functions should work."""
-        from HoloLoom.visualization.jenny_analytics import (
+        from hololoom.visualization.jenny_analytics import (
             record_render,
             record_compile,
             record_confidence,
@@ -850,7 +850,7 @@ class TestEdgeCases:
 
     def test_empty_specs_list(self, fresh_registry):
         """Should handle empty specs gracefully."""
-        from HoloLoom.visualization.jenny_renderer import HTMLRenderer
+        from hololoom.visualization.jenny_renderer import HTMLRenderer
 
         fresh_registry.register(HTMLRenderer, priority=10)
 
@@ -871,7 +871,7 @@ class TestEdgeCases:
 
     def test_analytics_with_no_events(self):
         """Should handle empty analytics gracefully."""
-        from HoloLoom.visualization.jenny_analytics import JennyAnalyticsCollector
+        from hololoom.visualization.jenny_analytics import JennyAnalyticsCollector
 
         collector = JennyAnalyticsCollector()
         collector.clear()

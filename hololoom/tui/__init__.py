@@ -4,10 +4,10 @@
 # Rich-based terminal interfaces for HoloLoom
 # Mirrors web UI functionality in terminal environment
 
-from HoloLoom.tui.pipeline_display import PipelineDisplay
-from HoloLoom.tui.graph_display import GraphDisplay
-from HoloLoom.tui.metrics_panel import MetricsPanel
-from HoloLoom.tui.shell import HoloLoomTUI
+from hololoom.tui.pipeline_display import PipelineDisplay
+from hololoom.tui.graph_display import GraphDisplay
+from hololoom.tui.metrics_panel import MetricsPanel
+from hololoom.tui.shell import HoloLoomTUI
 
 __all__ = [
     'PipelineDisplay',

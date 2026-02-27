@@ -9,7 +9,7 @@ description: "Systematically debug code, find root causes, and suggest fixes"
 metadata:
   category: "development"
   tags: ["debugging", "troubleshooting", "root-cause-analysis", "testing"]
-  author: "HoloLoom Agent System"
+  author: "hololoom Agent System"
   created: "2025-11-16"
 
 # Recursive reasoning configuration

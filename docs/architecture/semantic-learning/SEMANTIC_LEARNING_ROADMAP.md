@@ -46,12 +46,12 @@ python demos/semantic_multitask_learning_demo.py
 **Goal**: Wire semantic learning into actual HoloLoom production system
 
 #### B1. Integrate Semantic State Computation (4 hours)
-**Location**: `HoloLoom/weaving_shuttle.py`
+**Location**: `hololoom/weaving_shuttle.py`
 
 ```python
 # Add to WeavingShuttle
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.policy.semantic_nudging import compute_semantic_state
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.policy.semantic_nudging import compute_semantic_state
 
 class WeavingShuttle:
     def __init__(self, ...):
@@ -97,7 +97,7 @@ async with WeavingShuttle(config) as shuttle:
 ```
 
 #### B2. Enhance Reflection Buffer (4 hours)
-**Location**: `HoloLoom/reflection/buffer.py`
+**Location**: `hololoom/reflection/buffer.py`
 
 ```python
 # Add semantic trajectory storage
@@ -137,7 +137,7 @@ class ReflectionBuffer:
 ```
 
 #### B3. Upgrade PPO Trainer (6 hours)
-**Location**: `HoloLoom/reflection/ppo_trainer.py`
+**Location**: `hololoom/reflection/ppo_trainer.py`
 
 ```python
 # Add multi-task learning
@@ -181,7 +181,7 @@ class PPOTrainer:
 ```
 
 #### B4. Add Semantic Goals API (2 hours)
-**Location**: `HoloLoom/weaving_orchestrator.py`
+**Location**: `hololoom/weaving_orchestrator.py`
 
 ```python
 # User-facing semantic goals API
@@ -257,7 +257,7 @@ async def test_semantic_integration():
 
 ```python
 # Analyze dimension importance across tasks
-from HoloLoom.reflection.semantic_learning import analyze_dimension_importance
+from hololoom.reflection.semantic_learning import analyze_dimension_importance
 
 results = analyze_dimension_importance(
     buffer=reflection_buffer,
@@ -544,7 +544,7 @@ python demos/semantic_multitask_learning_demo.py
 git checkout -b feature/semantic-learning-integration
 
 # Start with semantic state computation
-# Edit: HoloLoom/weaving_shuttle.py
+# Edit: hololoom/weaving_shuttle.py
 # Add: compute_semantic_state() to weaving cycle
 ```
 
@@ -597,8 +597,8 @@ Before proceeding, decide:
 ## Files Ready to Use
 
 ### Code (Production-Ready)
-- ✅ `HoloLoom/policy/semantic_nudging.py`
-- ✅ `HoloLoom/reflection/semantic_learning.py`
+- ✅ `hololoom/policy/semantic_nudging.py`
+- ✅ `hololoom/reflection/semantic_learning.py`
 
 ### Demos (Runnable)
 - ✅ `demos/semantic_micropolicy_nudge_demo.py`

@@ -10,7 +10,7 @@ Philosophy:
 - Enables testing with mocks
 
 Usage:
-    from HoloLoom.core.protocols.safety import SafetyGateProtocol
+    from hololoom.core.protocols.safety import SafetyGateProtocol
 
     class MyCustomSafetyGate:
         async def gate_reasoning(

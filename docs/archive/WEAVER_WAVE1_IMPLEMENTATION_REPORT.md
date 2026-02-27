@@ -27,7 +27,7 @@ Successfully implemented 4 critical TODO items in the HoloLoom workflow builder 
 ## Detailed Fixes
 
 ### TODO 1: File Upload API Endpoint
-**File**: `HoloLoom/web_dashboard/js/ingestion_ui.js` (lines 152-202)
+**File**: `hololoom/web_dashboard/js/ingestion_ui.js` (lines 152-202)
 **Status**: ✅ COMPLETE
 
 #### What Was Fixed
@@ -74,7 +74,7 @@ this.showSuccess(`File ingestion started (Job ID: ${result.job_id})`);
 ---
 
 ### TODO 2: Web URL Ingestion API Endpoint
-**File**: `HoloLoom/web_dashboard/js/ingestion_ui.js` (lines 207-284)
+**File**: `hololoom/web_dashboard/js/ingestion_ui.js` (lines 207-284)
 **Status**: ✅ COMPLETE
 
 #### What Was Fixed
@@ -125,7 +125,7 @@ this.showSuccess(`Fetching and processing ${new URL(url).hostname}...`);
 ---
 
 ### TODO 3: Entity Details Fetch
-**File**: `HoloLoom/web_dashboard/js/memory_explorer.js` (lines 224-358)
+**File**: `hololoom/web_dashboard/js/memory_explorer.js` (lines 224-358)
 **Status**: ✅ COMPLETE
 
 #### What Was Fixed
@@ -213,7 +213,7 @@ displayEntityDetails(entityData) {
 ---
 
 ### TODO 4: Voice Analytics Storage
-**File**: `HoloLoom/web_dashboard/js/voice_orchestrator.js` (lines 583-643)
+**File**: `hololoom/web_dashboard/js/voice_orchestrator.js` (lines 583-643)
 **Status**: ✅ COMPLETE
 
 #### What Was Fixed

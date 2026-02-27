@@ -9,7 +9,7 @@ Date: October 29, 2025
 """
 
 from pathlib import Path
-from HoloLoom.visualization.confidence_trajectory import (
+from hololoom.visualization.confidence_trajectory import (
     ConfidenceTrajectoryRenderer,
     ConfidencePoint,
     AnomalyType,
@@ -470,7 +470,7 @@ def test_combined_demo():
                 The confidence trajectory visualization provides a simple API for automated tool calling:
             </p>
             <div class="api-example">
-from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
 
 # Simple usage - just confidence scores
 confidences = [0.92, 0.88, 0.65, 0.87, 0.91]

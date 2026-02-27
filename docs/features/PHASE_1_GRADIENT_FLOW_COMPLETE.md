@@ -19,7 +19,7 @@ No central coordinator needed - physics handles the routing automatically!
 
 ## What Was Implemented
 
-### 1. GradientFlowEngine ([gradient_flow.py](HoloLoom/physics/gradient_flow.py)) - 330 lines
+### 1. GradientFlowEngine ([gradient_flow.py](hololoom/physics/gradient_flow.py)) - 330 lines
 
 **Core gradient descent engine** for routing through loss landscapes.
 
@@ -50,7 +50,7 @@ Where:
 - `combined_loss` - Weighted combination
 - `create_tool_selection_loss` - For tool selection
 
-### 2. FlowRouter ([flow_router.py](HoloLoom/routing/flow_router.py)) - 470 lines
+### 2. FlowRouter ([flow_router.py](hololoom/routing/flow_router.py)) - 470 lines
 
 **High-level routing API** with specialized routers.
 
@@ -108,12 +108,12 @@ decision = await router.select_tool("Complex reasoning task")
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `HoloLoom/physics/gradient_flow.py` | 330 | Core gradient descent engine |
-| `HoloLoom/routing/flow_router.py` | 470 | High-level routing API |
-| `HoloLoom/physics/__init__.py` | +29 | Updated exports |
-| `HoloLoom/routing/__init__.py` | +19 | Updated exports |
+| `hololoom/physics/gradient_flow.py` | 330 | Core gradient descent engine |
+| `hololoom/routing/flow_router.py` | 470 | High-level routing API |
+| `hololoom/physics/__init__.py` | +29 | Updated exports |
+| `hololoom/routing/__init__.py` | +19 | Updated exports |
 | `demos/demo_gradient_flow_routing.py` | 230 | Datacenter demo |
-| `HoloLoom/tests/integration/test_gradient_flow.py` | 220 | Integration tests |
+| `hololoom/tests/integration/test_gradient_flow.py` | 220 | Integration tests |
 
 **Total**: ~1,298 lines
 
@@ -269,7 +269,7 @@ engine = GradientFlowEngine(
 Use gradient flow for instant routing, Thompson Sampling for learning:
 
 ```python
-from HoloLoom.routing import FlowRouter, LearnedRouter
+from hololoom.routing import FlowRouter, LearnedRouter
 
 # Gradient flow provides baseline
 gradient_router = FlowRouter(...)
@@ -286,8 +286,8 @@ final_decision = blend(baseline_decision, learned_decision, weight=0.7)
 ### Use with Weaving Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.routing import create_tool_router
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.routing import create_tool_router
 
 # Create tool router for orchestrator
 tool_router = create_tool_router(

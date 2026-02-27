@@ -13,7 +13,7 @@ Commands:
 - !dept help - Department command help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.department_handlers import register_department_handlers
+    from hololoom.apps.chatops.handlers.department_handlers import register_department_handlers
 
     # In run_chatops.py:
     register_department_handlers(bot, registry)
@@ -26,7 +26,7 @@ import json
 from typing import Optional, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.apps.departments.registry import DepartmentRegistry
+    from hololoom.apps.departments.registry import DepartmentRegistry
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -36,13 +36,13 @@ except ImportError:
 
 # Department imports
 try:
-    from HoloLoom.apps.departments.registry import (
+    from hololoom.apps.departments.registry import (
         DepartmentRegistry,
         DepartmentInstance,
         get_global_registry,
         create_registry
     )
-    from HoloLoom.protocols.department import (
+    from hololoom.protocols.department import (
         DepartmentRequest,
         DepartmentResponse,
         ConfidenceLevel,
@@ -60,7 +60,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -510,7 +510,7 @@ class DepartmentHandlers:
     Decorator-based ChatOps handlers for Department operations.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.department_handlers import DepartmentHandlers
+        from hololoom.apps.chatops.handlers.department_handlers import DepartmentHandlers
 
         handlers = DepartmentHandlers(registry=dept_registry)
         registry.register_instance(handlers)

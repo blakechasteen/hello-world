@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 
 # Rust-accelerated operations (with NumPy fallback)
-from HoloLoom.eggroll.rust_ops import (
+from hololoom.eggroll.rust_ops import (
     cluster_population,
     diversity_bonus,
     compute_warp_similarity,
@@ -23,11 +23,11 @@ from HoloLoom.eggroll.rust_ops import (
 )
 
 # Observability (Prometheus metrics + OpenTelemetry tracing)
-from HoloLoom.eggroll.metrics import (
+from hololoom.eggroll.metrics import (
     EggrollMetricsCollector,
     create_eggroll_collector,
 )
-from HoloLoom.eggroll.tracing import (
+from hololoom.eggroll.tracing import (
     trace_epoch,
     trace_rust_operation,
     eggroll_span,
@@ -35,22 +35,22 @@ from HoloLoom.eggroll.tracing import (
 )
 
 # Core HoloLoom Components
-from HoloLoom.shuttle.eggroll_shuttle import Shuttle, PerturbSpec
-from HoloLoom.warp.eggroll_warp import Warp
-from HoloLoom.memory.yarn.eggroll_yarn import Yarn
-from HoloLoom.orchestrator.eggroll_weave import Weave
+from hololoom.shuttle.eggroll_shuttle import Shuttle, PerturbSpec
+from hololoom.warp.eggroll_warp import Warp
+from hololoom.memory.yarn.eggroll_yarn import Yarn
+from hololoom.orchestrator.eggroll_weave import Weave
 import torch
-from HoloLoom.eggroll.loom_node import LoomNode
-from HoloLoom.eggroll.mirror_core import MirrorCoreAgent
+from hololoom.eggroll.loom_node import LoomNode
+from hololoom.eggroll.mirror_core import MirrorCoreAgent
 
 # Advanced Math Subsystems
-from HoloLoom.eggroll.math_crusher import (
+from hololoom.eggroll.math_crusher import (
     PIDController, 
     CalculusTools, 
     CyberneticRegulator, 
     AdvancedRegression
 )
-from HoloLoom.eggroll.distributed_backend import LocalBackend, RayBackend
+from hololoom.eggroll.distributed_backend import LocalBackend, RayBackend
 
 # --- Configuration & Types ---
 
@@ -279,7 +279,7 @@ class EggrollIntegration:
         self.config = OptimizationConfig.from_mode(mode)
         self.optimizer = CyberneticOptimizer(self.config)
 
-    def export_dashboard_data(self, filepath: str = "HoloLoom/eggroll/dashboard/data.json") -> None:
+    def export_dashboard_data(self, filepath: str = "hololoom/eggroll/dashboard/data.json") -> None:
         """Exports the Yarn lineage graph to a JSON file for the D3.js dashboard."""
         import json
         import networkx as nx

@@ -131,9 +131,9 @@ def get_metrics() -> Dict                   # Get agent metrics
 ### Basic Agent Creation
 
 ```python
-from HoloLoom.redteam.swarm.agent_base import BaseAgent
-from HoloLoom.redteam.swarm.communication import MessageBus
-from HoloLoom.redteam.swarm.protocols import AgentRole, AgentTask, AgentResult
+from hololoom.redteam.swarm.agent_base import BaseAgent
+from hololoom.redteam.swarm.communication import MessageBus
+from hololoom.redteam.swarm.protocols import AgentRole, AgentTask, AgentResult
 
 # Create message bus
 bus = MessageBus()
@@ -184,8 +184,8 @@ finally:
 ### Creating Custom Agent Subclass
 
 ```python
-from HoloLoom.redteam.swarm.agent_base import BaseAgent
-from HoloLoom.redteam.swarm.protocols import AgentTask, AgentResult
+from hololoom.redteam.swarm.agent_base import BaseAgent
+from hololoom.redteam.swarm.protocols import AgentTask, AgentResult
 
 class ScoutAgent(BaseAgent):
     """Custom agent for vulnerability probing."""
@@ -537,13 +537,13 @@ ACTIVE
 
 ```bash
 # Run all agent base tests
-pytest HoloLoom/redteam/swarm/tests/test_agent_base.py -v
+pytest hololoom/redteam/swarm/tests/test_agent_base.py -v
 
 # Run specific test
-pytest HoloLoom/redteam/swarm/tests/test_agent_base.py::test_agent_lifecycle -v
+pytest hololoom/redteam/swarm/tests/test_agent_base.py::test_agent_lifecycle -v
 
 # Run with coverage
-pytest HoloLoom/redteam/swarm/tests/test_agent_base.py --cov --cov-report=html
+pytest hololoom/redteam/swarm/tests/test_agent_base.py --cov --cov-report=html
 ```
 
 ### Example Test
@@ -677,7 +677,7 @@ async def monitor_loop():
 The BaseAgent integrates seamlessly with the SwarmCoordinator:
 
 ```python
-from HoloLoom.redteam.swarm.coordinator import SwarmCoordinator
+from hololoom.redteam.swarm.coordinator import SwarmCoordinator
 
 # Create coordinator
 coordinator = SwarmCoordinator(message_bus=bus)
@@ -722,10 +722,10 @@ while not task_complete:
 
 ## References
 
-- **Protocols**: `HoloLoom/redteam/swarm/protocols.py`
-- **MessageBus**: `HoloLoom/redteam/swarm/communication.py`
-- **Coordinator**: `HoloLoom/redteam/swarm/coordinator.py` (Phase 5)
-- **Tests**: `HoloLoom/redteam/swarm/tests/test_agent_base.py`
+- **Protocols**: `hololoom/redteam/swarm/protocols.py`
+- **MessageBus**: `hololoom/redteam/swarm/communication.py`
+- **Coordinator**: `hololoom/redteam/swarm/coordinator.py` (Phase 5)
+- **Tests**: `hololoom/redteam/swarm/tests/test_agent_base.py`
 
 ## Summary
 

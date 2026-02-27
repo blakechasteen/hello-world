@@ -16,8 +16,8 @@ Updated: 2025-12-15 - Removed broken elle.domain imports (module incomplete)
 
 import pytest
 from datetime import datetime
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config
+from hololoom import hololoom
+from hololoom.config import Config
 # NOTE: Elle domain types removed - elle integration incomplete
 # from elle.domain import ElleRequest, User, SceneSnapshot, ObjectInScene
 
@@ -43,7 +43,7 @@ async def test_elle_stores_memories_in_hololoom():
 # Test 2: Scene context retrieval
 @pytest.mark.asyncio
 async def test_elle_retrieves_scene_context_from_hololoom():
-    """Test Elle can retrieve past scene context from HoloLoom."""
+    """Test Elle can retrieve past scene context from hololoom."""
     config = Config.fast()
     
     async with HoloLoom(config=config) as loom:
@@ -183,7 +183,7 @@ async def test_elle_memory_persistence():
 @pytest.mark.asyncio
 async def test_elle_hybrid_backend_integration():
     """Test Elle works with HYBRID (Neo4j + Qdrant) backend."""
-    from HoloLoom.config import MemoryBackend
+    from hololoom.config import MemoryBackend
     
     config = Config.fast()
     config.memory_backend = MemoryBackend.HYBRID

@@ -89,7 +89,7 @@ if not result.success:
 ### 4. Clean Public API
 ```python
 # Import exactly what you need
-from HoloLoom.portal.hololoom_bridge import (
+from hololoom.portal.hololoom_bridge import (
     HoloLoomBridge,
     BridgeConfig,
     LoomQuery,
@@ -112,11 +112,11 @@ Portal Server
   └─ Job result ────→ Store to HoloLoom for learning
 
 Node Daemon
-  ├─ WASM execution ─→ Get context from HoloLoom
+  ├─ WASM execution ─→ Get context from hololoom
   └─ Job results ───→ Store to HoloLoom
 
 Shuttle Bot
-  ├─ !status ──→ Query recent activity from HoloLoom
+  ├─ !status ──→ Query recent activity from hololoom
   ├─ !query ───→ Search HoloLoom memory
   └─ !reason ──→ Execute HoloLoom reasoning
 ```
@@ -147,14 +147,14 @@ Shuttle Bot
 
 ```python
 # Simplest usage
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
+from hololoom.portal.hololoom_bridge import HoloLoomBridge
 
 bridge = HoloLoomBridge()
 result = await bridge.recall("Thompson Sampling", k=5)
 print(f"Found {len(result.data)} memories")
 
 # With config
-from HoloLoom.portal.hololoom_bridge import BridgeConfig
+from hololoom.portal.hololoom_bridge import BridgeConfig
 
 config = BridgeConfig(hololoom_url="http://192.168.1.100:8000")
 async with HoloLoomBridge(config) as bridge:
@@ -176,7 +176,7 @@ async with HoloLoomBridge(config) as bridge:
 ## Files Created
 
 ```
-HoloLoom/portal/hololoom_bridge/
+hololoom/portal/hololoom_bridge/
 ├── __init__.py                    # Public API (27 lines)
 ├── bridge.py                      # Implementation (347 lines)
 ├── BRIDGE_OVERVIEW.md             # Complete reference (250 lines)
@@ -189,7 +189,7 @@ HoloLoom/portal/hololoom_bridge/
 1. **Test locally**: Run bridge against local HoloLoom instance
    ```bash
    PYTHONPATH=. python -c "
-   from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
+   from hololoom.portal.hololoom_bridge import HoloLoomBridge
    import asyncio
    
    async def test():
@@ -213,7 +213,7 @@ HoloLoom/portal/hololoom_bridge/
 - ✅ Zero crashes from missing HoloLoom (graceful fallback)
 - ✅ <200ms typical latency for recall operations
 - ✅ >80% success rate for experience storage
-- ✅ Portal learns from HoloLoom intelligence (job allocation improves)
+- ✅ Portal learns from hololoom intelligence (job allocation improves)
 
 ---
 

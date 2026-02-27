@@ -13,10 +13,10 @@ import sys
 class _DeprecatedFinder:
     """Meta-path finder that redirects HoloLoom.chatops.* imports."""
 
-    _PREFIX = "HoloLoom.chatops."
+    _PREFIX = "hololoom.chatops."
 
     def find_module(self, fullname, path=None):
-        if fullname == "HoloLoom.chatops" or fullname.startswith(self._PREFIX):
+        if fullname == "hololoom.chatops" or fullname.startswith(self._PREFIX):
             return self
         return None
 
@@ -25,7 +25,7 @@ class _DeprecatedFinder:
             return sys.modules[fullname]
 
         new_name = fullname.replace(
-            "HoloLoom.chatops", "HoloLoom.apps.chatops", 1
+            "hololoom.chatops", "hololoom.apps.chatops", 1
         )
 
         warnings.warn(

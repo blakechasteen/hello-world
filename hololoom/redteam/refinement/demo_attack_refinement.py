@@ -20,12 +20,12 @@ import sys
 from datetime import datetime
 from tabulate import tabulate
 
-from HoloLoom.redteam.refinement.attack_refinement import (
+from hololoom.redteam.refinement.attack_refinement import (
     AttackRefiner,
     AttackRefinementStrategy,
 )
-from HoloLoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
-from HoloLoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
+from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
+from hololoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
 
 
 def print_header(title: str) -> None:

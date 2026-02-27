@@ -17,7 +17,7 @@ from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from dataclasses import asdict
 from datetime import datetime
 
-from HoloLoom.spinningWheel.recursive_crawler import (
+from hololoom.spinningWheel.recursive_crawler import (
     LinkInfo,
     CrawlConfig,
     CrawlState,
@@ -27,7 +27,7 @@ from HoloLoom.spinningWheel.recursive_crawler import (
     crawl_multiple,
     WEBSITE_SPINNER_AVAILABLE,
 )
-from HoloLoom.spinningWheel.protocol import SpinResult, ImportanceScore
+from hololoom.spinningWheel.protocol import SpinResult, ImportanceScore
 
 
 # ============================================================================
@@ -902,7 +902,7 @@ class TestCrawlerImportanceScoring:
 
     def test_score_importance_basic(self):
         """Test basic importance scoring."""
-        from HoloLoom.documentation.types import MemoryShard
+        from hololoom.documentation.types import MemoryShard
 
         crawler = RecursiveCrawlerSpinner()
         shard = MemoryShard(
@@ -924,7 +924,7 @@ class TestCrawlerImportanceScoring:
 
     def test_score_importance_technical_content(self):
         """Test importance scoring for technical content."""
-        from HoloLoom.documentation.types import MemoryShard
+        from hololoom.documentation.types import MemoryShard
 
         crawler = RecursiveCrawlerSpinner()
         shard = MemoryShard(
@@ -946,7 +946,7 @@ class TestCrawlerImportanceScoring:
 
     def test_score_importance_depth_penalty(self):
         """Test that deeper pages get lower scores."""
-        from HoloLoom.documentation.types import MemoryShard
+        from hololoom.documentation.types import MemoryShard
 
         crawler = RecursiveCrawlerSpinner()
 
@@ -1260,7 +1260,7 @@ class TestCrawlerIntegration:
         if not WEBSITE_SPINNER_AVAILABLE:
             pytest.skip("WebsiteSpinner not available")
 
-        from HoloLoom.documentation.types import MemoryShard
+        from hololoom.documentation.types import MemoryShard
 
         config = CrawlConfig(
             max_depth=1,
@@ -1304,7 +1304,7 @@ class TestCrawlerIntegration:
         if not WEBSITE_SPINNER_AVAILABLE:
             pytest.skip("WebsiteSpinner not available")
 
-        from HoloLoom.documentation.types import MemoryShard
+        from hololoom.documentation.types import MemoryShard
 
         config = CrawlConfig(
             max_depth=3,

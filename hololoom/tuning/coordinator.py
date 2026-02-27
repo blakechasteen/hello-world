@@ -11,15 +11,15 @@ from typing import Dict, List, Any, Optional
 from collections import defaultdict
 import time
 
-from HoloLoom.tuning.base import TuningAgent, ThompsonBandit
-from HoloLoom.tuning.persistence import TuningStateManager
-from HoloLoom.tuning.timeout_tuner import TimeoutTuner
-from HoloLoom.tuning.cache_tuner import CacheTuner
-from HoloLoom.tuning.threshold_tuner import ThresholdTuner
-from HoloLoom.tuning.memory_tuner import MemoryTuner
-from HoloLoom.tuning.complexity_tuner import ComplexityTuner
-from HoloLoom.tuning.policy_tuner import PolicyTuner
-from HoloLoom.tuning.physics_tuner import PhysicsTuner
+from hololoom.tuning.base import TuningAgent, ThompsonBandit
+from hololoom.tuning.persistence import TuningStateManager
+from hololoom.tuning.timeout_tuner import TimeoutTuner
+from hololoom.tuning.cache_tuner import CacheTuner
+from hololoom.tuning.threshold_tuner import ThresholdTuner
+from hololoom.tuning.memory_tuner import MemoryTuner
+from hololoom.tuning.complexity_tuner import ComplexityTuner
+from hololoom.tuning.policy_tuner import PolicyTuner
+from hololoom.tuning.physics_tuner import PhysicsTuner
 
 logger = logging.getLogger(__name__)
 

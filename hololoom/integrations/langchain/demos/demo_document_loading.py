@@ -25,7 +25,7 @@ def demo_basic_loading():
     print("1️⃣  Text File Loading")
     print("   Status: Would load .txt, .md files")
     print("   Usage:")
-    print("   from HoloLoom.integrations.langchain import UniversalDocumentLoader")
+    print("   from hololoom.integrations.langchain import UniversalDocumentLoader")
     print("   loader = UniversalDocumentLoader()")
     print("   shards = loader.load('document.txt')\n")
 
@@ -62,17 +62,17 @@ def demo_specialized_loaders():
     print("="*60 + "\n")
 
     print("🐙 GitHub Repository")
-    print("   from HoloLoom.integrations.langchain import load_github_repo")
+    print("   from hololoom.integrations.langchain import load_github_repo")
     print("   shards = load_github_repo('https://github.com/user/repo', branch='main')")
     print("   → Loads all files from repository\n")
 
     print("💬 Slack Workspace")
-    print("   from HoloLoom.integrations.langchain import load_slack_workspace")
+    print("   from hololoom.integrations.langchain import load_slack_workspace")
     print("   shards = load_slack_workspace('slack_export/')")
     print("   → Loads Slack export directory\n")
 
     print("📓 Notion Database")
-    print("   from HoloLoom.integrations.langchain import load_notion_database")
+    print("   from hololoom.integrations.langchain import load_notion_database")
     print("   shards = load_notion_database(notion_token, database_id)")
     print("   → Loads Notion database\n")
 
@@ -83,7 +83,7 @@ def demo_supported_formats():
     print("Demo 4: Supported Formats (100+)")
     print("="*60 + "\n")
 
-    from HoloLoom.integrations.langchain import supported_document_types
+    from hololoom.integrations.langchain import supported_document_types
 
     try:
         formats = supported_document_types()
@@ -114,8 +114,8 @@ def demo_integration_with_hololoom():
 
     print("📚 Complete RAG Pipeline:")
     print("""
-    from HoloLoom import HoloLoom
-    from HoloLoom.integrations.langchain import load_documents
+    from hololoom import hololoom
+    from hololoom.integrations.langchain import load_documents
 
     # Load documents
     shards = load_documents('docs/')

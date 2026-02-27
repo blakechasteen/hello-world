@@ -24,7 +24,7 @@ def demo_model_adapters():
     print("PHASE 9: Multi-Model Adapters")
     print("=" * 70)
 
-    from HoloLoom.dark_trace import (
+    from hololoom.dark_trace import (
         DummyAdapter, LayerType, LayerInfo,
         SteeringConfig, ActivationCache, make_cache_key
     )
@@ -84,7 +84,7 @@ def demo_fingerprinting():
     print("PHASE 9: Model Fingerprinting")
     print("=" * 70)
 
-    from HoloLoom.dark_trace import (
+    from hololoom.dark_trace import (
         DummyAdapter, ModelFingerprinter, FingerprintConfig,
         compare_fingerprints, find_universal_features, find_model_specific_features
     )
@@ -159,10 +159,10 @@ def demo_traced_orchestrator():
     print("PHASE 10: Traced Orchestrator Integration")
     print("=" * 70)
 
-    from HoloLoom.dark_trace import (
+    from hololoom.dark_trace import (
         TracedSpacetime, OrchestratorConfig
     )
-    from HoloLoom.dark_trace.integration.orchestrator import (
+    from hololoom.dark_trace.integration.orchestrator import (
         FeatureTrace, DecisionTrace
     )
 
@@ -249,11 +249,11 @@ def demo_alignment_bridge():
     print("PHASE 10: Alignment Bridge")
     print("=" * 70)
 
-    from HoloLoom.dark_trace import (
+    from hololoom.dark_trace import (
         AlignmentBridge, SafetyFeatureMapping, AlignmentConfig,
         create_alignment_bridge
     )
-    from HoloLoom.dark_trace.integration.alignment import SafetyDimension
+    from hololoom.dark_trace.integration.alignment import SafetyDimension
 
     print("\n1. Safety Feature Mapping:")
     mapping = SafetyFeatureMapping()
@@ -310,7 +310,7 @@ def demo_monitoring():
     print("PHASE 10: Production Monitoring")
     print("=" * 70)
 
-    from HoloLoom.dark_trace import (
+    from hololoom.dark_trace import (
         InterpretabilityMonitor, FeatureStatistics, DriftDetector,
         MonitorConfig, create_monitor
     )
@@ -412,7 +412,7 @@ def evaluate_performance():
     print("PERFORMANCE EVALUATION")
     print("=" * 70)
 
-    from HoloLoom.dark_trace import (
+    from hololoom.dark_trace import (
         DummyAdapter, create_monitor, FeatureStatistics
     )
 

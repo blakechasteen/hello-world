@@ -23,7 +23,7 @@ if sys.platform == 'win32':
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.writing import (
+from hololoom.writing import (
     write,
     refine_text,
     Writer,
@@ -34,9 +34,9 @@ from HoloLoom.writing import (
     RefinementStrategy,
     create_default_writer
 )
-from HoloLoom.writing.core.protocol import MemoryShard
-from HoloLoom.writing.modes import NarrativeWriter
-from HoloLoom.writing.refinement import EleganceRefiner
+from hololoom.writing.core.protocol import MemoryShard
+from hololoom.writing.modes import NarrativeWriter
+from hololoom.writing.refinement import EleganceRefiner
 
 
 # Sample memory data
@@ -376,8 +376,8 @@ async def main():
     print("  4. Complete quality tracking & metrics")
     print("  5. Graceful degradation when context missing")
     print("\nNext steps:")
-    print("  - Explore HoloLoom/writing/README.md for full documentation")
-    print("  - Check HoloLoom/tests/unit/test_writing.py for more examples")
+    print("  - Explore hololoom/writing/README.md for full documentation")
+    print("  - Check hololoom/tests/unit/test_writing.py for more examples")
     print("  - Integrate with WeavingOrchestrator for memory-backed writing")
 
 

@@ -17,20 +17,20 @@ import asyncio
 from datetime import datetime
 from typing import List, Tuple, Any
 
-from HoloLoom.core.memory.retrieval_result import (
+from hololoom.core.memory.retrieval_result import (
     RetrievalStatus,
     RetrievalResultEnhanced,
     TraversalResult,
     ensure_retrieval_result
 )
-from HoloLoom.core.memory.retriever_registry import (
+from hololoom.core.memory.retriever_registry import (
     RetrieverRegistry,
     RetrieverType,
     RetrieverHealth,
     FallbackResult,
     create_retriever_registry
 )
-from HoloLoom.core.protocols.types import MemoryShard
+from hololoom.core.protocols.types import MemoryShard
 
 
 # --- Test Fixtures ---
@@ -448,7 +448,7 @@ class TestW9Integration:
     async def test_semantic_retriever_unavailable_is_informative(self):
         """SemanticRetriever returns informative result when unavailable."""
         # This test verifies the actual SemanticRetriever behavior
-        from HoloLoom.core.memory.hybrid_retrieval import SemanticRetriever
+        from hololoom.core.memory.hybrid_retrieval import SemanticRetriever
 
         # Create retriever with fallback disabled
         # Note: May raise HfHubHTTPError if sentence-transformers tries to download
@@ -477,8 +477,8 @@ class TestW9Integration:
     @pytest.mark.asyncio
     async def test_graph_retriever_empty_graph_is_informative(self):
         """GraphRetriever returns informative result for empty graph."""
-        from HoloLoom.core.memory.hybrid_retrieval import GraphRetriever
-        from HoloLoom.core.memory.graph import KG
+        from hololoom.core.memory.hybrid_retrieval import GraphRetriever
+        from hololoom.core.memory.graph import KG
 
         kg = KG()  # Empty graph
         retriever = GraphRetriever(kg=kg, max_hops=2)
@@ -495,8 +495,8 @@ class TestW9Integration:
 
     def test_graph_traversal_missing_entity_is_informative(self):
         """Graph traversal returns informative result for missing entity."""
-        from HoloLoom.core.memory.hybrid_retrieval import GraphRetriever
-        from HoloLoom.core.memory.graph import KG, KGEdge
+        from hololoom.core.memory.hybrid_retrieval import GraphRetriever
+        from hololoom.core.memory.graph import KG, KGEdge
 
         kg = KG()
         kg.add_edge(KGEdge(src="entity_a", dst="entity_b", type="RELATES_TO", weight=1.0))

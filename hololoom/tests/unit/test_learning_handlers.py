@@ -347,7 +347,7 @@ def mock_reflection_buffer():
 def learning_handlers(mock_learning_engine, mock_hot_tracker, mock_reflection_buffer):
     """Import and configure learning handlers."""
     with patch.dict('sys.modules', {
-        'HoloLoom.recursive': Mock(
+        'hololoom.recursive': Mock(
             FullLearningEngine=MockFullLearningEngine,
             ThompsonPriors=MockThompsonPriors,
             PolicyWeights=MockPolicyWeights,
@@ -361,12 +361,12 @@ def learning_handlers(mock_learning_engine, mock_hot_tracker, mock_reflection_bu
             PatternLearner=MockPatternLearner,
             LearnedPattern=MockLearnedPattern,
         ),
-        'HoloLoom.reflection.buffer': Mock(
+        'hololoom.reflection.buffer': Mock(
             ReflectionBuffer=MockReflectionBuffer,
             ReflectionMetrics=MockReflectionMetrics
         ),
     }):
-        from HoloLoom.apps.chatops.handlers import learning_handlers as lh
+        from hololoom.apps.chatops.handlers import learning_handlers as lh
 
         # Set global instances
         lh.set_learning_engine(mock_learning_engine)

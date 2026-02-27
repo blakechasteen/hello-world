@@ -15,7 +15,7 @@ import os
 # Add HoloLoom to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../'))
 
-from HoloLoom.voice.emotion_bridge import (
+from hololoom.voice.emotion_bridge import (
     EmotionBridge,
     EmotionBridgeConfig,
     EmotionResult,
@@ -301,8 +301,8 @@ async def test_voice_agent_enhancement():
     """Test enhancing VoiceAgent with emotions (if available)"""
 
     try:
-        from HoloLoom.voice import VoiceAgent
-        from HoloLoom.voice.emotion_bridge import enhance_voice_agent_with_emotions
+        from hololoom.voice import VoiceAgent
+        from hololoom.voice.emotion_bridge import enhance_voice_agent_with_emotions
     except ImportError:
         pytest.skip("VoiceAgent not available")
 

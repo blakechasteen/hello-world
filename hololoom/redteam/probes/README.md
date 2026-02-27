@@ -1,7 +1,7 @@
 # Behavioral Probes: Systematic Vulnerability Testing
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/redteam/probes/`
+**Location**: `hololoom/redteam/probes/`
 **Total Code**: ~400 lines (behavioral_probes.py) + 31 total probes
 **Test Coverage**: Dry-run mode with no executor required
 
@@ -70,7 +70,7 @@ AttackProber (Main orchestrator)
 ### Basic Usage
 
 ```python
-from HoloLoom.redteam.probes import AttackProber
+from hololoom.redteam.probes import AttackProber
 
 # Initialize prober (dry-run mode, no executor needed)
 prober = AttackProber()
@@ -87,7 +87,7 @@ print(report.summary())
 ### Filtered Testing
 
 ```python
-from HoloLoom.redteam.probes import AttackProber, AttackProbeType
+from hololoom.redteam.probes import AttackProber, AttackProbeType
 
 # Test only specific attack types
 prober = AttackProber()
@@ -402,7 +402,7 @@ report = await prober.run_probe_suite("target")
 Provide actual executor for real vulnerability testing:
 
 ```python
-from HoloLoom.redteam.executor import AttackExecutor
+from hololoom.redteam.executor import AttackExecutor
 
 executor = AttackExecutor(target_system)
 prober = AttackProber(executor=executor)
@@ -447,9 +447,9 @@ research_probes = [p for p in probes if "research" in p.tags]
 Works seamlessly with HoloLoom red team:
 
 ```python
-from HoloLoom.redteam.probes import AttackProber
-from HoloLoom.redteam.executor import AttackExecutor
-from HoloLoom.redteam.learning import UnifiedLearner
+from hololoom.redteam.probes import AttackProber
+from hololoom.redteam.executor import AttackExecutor
+from hololoom.redteam.learning import UnifiedLearner
 
 # Create executor and learning system
 executor = AttackExecutor(target_system)
@@ -559,6 +559,6 @@ Research foundations:
 
 ## See Also
 
-- `HoloLoom/alignment/deception_detection.py` - Behavioral probe foundations
-- `HoloLoom/redteam/executor.py` - Attack execution
-- `HoloLoom/redteam/learning/` - Attack learning systems
+- `hololoom/alignment/deception_detection.py` - Behavioral probe foundations
+- `hololoom/redteam/executor.py` - Attack execution
+- `hololoom/redteam/learning/` - Attack learning systems

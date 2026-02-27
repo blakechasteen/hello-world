@@ -76,25 +76,25 @@ alignment_alerts_total{level="critical"} 0
 
 **Start server**:
 ```bash
-python HoloLoom/alignment/prometheus_server.py
+python hololoom/alignment/prometheus_server.py
 ```
 
 **With authentication**:
 ```bash
 export PROMETHEUS_AUTH_USER=admin
 export PROMETHEUS_AUTH_PASS=secret
-python HoloLoom/alignment/prometheus_server.py
+python hololoom/alignment/prometheus_server.py
 ```
 
 **Custom port**:
 ```bash
 export PROMETHEUS_PORT=8080
-python HoloLoom/alignment/prometheus_server.py
+python hololoom/alignment/prometheus_server.py
 ```
 
 **Programmatic**:
 ```python
-from HoloLoom.alignment.prometheus_server import start_metrics_server
+from hololoom.alignment.prometheus_server import start_metrics_server
 
 start_metrics_server(port=9090, host='0.0.0.0')
 ```
@@ -188,7 +188,7 @@ Time: 2025-11-02 14:30:00
 
 **Webhook Mode (Simple)**:
 ```python
-from HoloLoom.alignment.matrix_chatops import send_matrix_webhook
+from hololoom.alignment.matrix_chatops import send_matrix_webhook
 
 send_matrix_webhook(
     alert,
@@ -198,7 +198,7 @@ send_matrix_webhook(
 
 **Bot Mode (Advanced)**:
 ```python
-from HoloLoom.alignment.matrix_chatops import MatrixBot
+from hololoom.alignment.matrix_chatops import MatrixBot
 
 bot = MatrixBot(
     homeserver="https://matrix.org",
@@ -214,7 +214,7 @@ await bot.close()
 
 **Automatic Alerting**:
 ```python
-from HoloLoom.alignment.matrix_chatops import setup_matrix_alerting
+from hololoom.alignment.matrix_chatops import setup_matrix_alerting
 
 setup_matrix_alerting(
     monitor,
@@ -306,13 +306,13 @@ def monitor():
 
 ```bash
 # Run all integration tests
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py -v
 
 # Run specific test
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py::test_alignment_basic_integration -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py::test_alignment_basic_integration -v
 
 # Run with coverage
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py --cov=HoloLoom.alignment -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py --cov=hololoom.alignment -v
 
 # Run standalone demo
 python demos/demo_alignment_orchestrator.py
@@ -355,7 +355,7 @@ python demos/demo_alignment_orchestrator.py
 ```bash
 # Terminal 1: Start metrics server
 export PROMETHEUS_PORT=9090
-python HoloLoom/alignment/prometheus_server.py
+python hololoom/alignment/prometheus_server.py
 ```
 
 ### 2. Configure Matrix Alerts
@@ -372,7 +372,7 @@ export MATRIX_ROOM_ID=!alignment:matrix.org
 
 ```bash
 # Verify all systems working
-pytest HoloLoom/tests/integration/test_alignment_hololoom.py -v
+pytest hololoom/tests/integration/test_alignment_hololoom.py -v
 ```
 
 ### 4. Deploy to Production

@@ -6,7 +6,7 @@ Tests refinement strategies, quality trajectory tracking, and strategy learning.
 
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
-from HoloLoom.recursive.advanced_refinement import (
+from hololoom.recursive.advanced_refinement import (
     RefinementStrategy,
     QualityMetrics,
     RefinementResult,
@@ -14,9 +14,9 @@ from HoloLoom.recursive.advanced_refinement import (
     AdvancedRefiner,
     refine_with_strategy
 )
-from HoloLoom.protocols.types import Query
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.recursive.scratchpad import Scratchpad
+from hololoom.protocols.types import Query
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.recursive.scratchpad import Scratchpad
 from datetime import datetime
 
 

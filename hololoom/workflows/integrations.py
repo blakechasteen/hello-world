@@ -13,7 +13,7 @@ Date: November 2025
 import logging
 from typing import Dict, Any, Optional
 
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 logger = logging.getLogger(__name__)
 

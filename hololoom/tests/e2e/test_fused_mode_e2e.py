@@ -33,9 +33,9 @@ import pytest
 import time
 from typing import List
 
-from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config, ExecutionMode
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.protocols.types import Query, MemoryShard
 
 
 # ============================================================================
@@ -66,7 +66,7 @@ def rich_test_shards():
             id="shard_2",
             text="HoloLoom uses Matryoshka embeddings at multiple scales: 96, 192, 384.",
             episode="embeddings",
-            entities=["HoloLoom", "Matryoshka", "embeddings"],
+            entities=["hololoom", "Matryoshka", "embeddings"],
             motifs=["multi-scale", "semantic", "vectors"],
             metadata={"topic": "embeddings", "quality": "high"}
         ),

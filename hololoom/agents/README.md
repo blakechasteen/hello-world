@@ -1,7 +1,7 @@
 # HoloLoom Agent System
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/agents/`
+**Location**: `hololoom/agents/`
 **Total Code**: 8,938 lines across 19 modules
 **Philosophy**: "MCTS all the way down" - Monte Carlo Tree Search powers everything
 
@@ -64,10 +64,10 @@ When a search discovers a breakthrough:
 ### Creating a Specialized Agent
 
 ```python
-from HoloLoom.agents import create_agent
-from HoloLoom.memory.graph import KG
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.protocols.types import Query
+from hololoom.agents import create_agent
+from hololoom.memory.graph import KG
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.protocols.types import Query
 
 # Shared knowledge (all agents read/write to same graph)
 kg = KG()
@@ -110,7 +110,7 @@ GENERAL_AGENT        # General-purpose assistant
 ### Multi-Agent Conversation
 
 ```python
-from HoloLoom.agents.multi_agent_communication import (
+from hololoom.agents.multi_agent_communication import (
     MessageBus, ConversationManager, Budget
 )
 
@@ -143,7 +143,7 @@ async with manager.create_conversation(
 ### Policy-Governed Decisions
 
 ```python
-from HoloLoom.agents.policy_governance import (
+from hololoom.agents.policy_governance import (
     GovernancePolicy, PolicyRule, PolicyDecision, AgentRole
 )
 
@@ -517,8 +517,8 @@ Breakthrough feed-forward typically **2-3x accelerates discovery**:
 Agents integrate naturally with the main weaving orchestrator:
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.agents import create_agent
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.agents import create_agent
 
 async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
     # Create specialized agents
@@ -660,10 +660,10 @@ Agent receives query
 
 ```bash
 # Run agent system tests
-pytest HoloLoom/tests/unit/test_agents*.py -v
+pytest hololoom/tests/unit/test_agents*.py -v
 
 # Run integration tests with orchestrator
-pytest HoloLoom/tests/integration/test_agent_integration.py -v
+pytest hololoom/tests/integration/test_agent_integration.py -v
 ```
 
 ---
@@ -726,8 +726,8 @@ HoloLoom Agent System is part of the HoloLoom project. See LICENSE file in repos
 ## Contributing
 
 Contributions welcome! Please:
-1. Run tests: `pytest HoloLoom/agents/` -v`
-2. Follow code style: `black HoloLoom/agents/`
+1. Run tests: `pytest hololoom/agents/` -v`
+2. Follow code style: `black hololoom/agents/`
 3. Add docstrings to new classes/functions
 4. Update this README if adding new features
 

@@ -296,18 +296,18 @@ class AdaptiveSemanticCache:
 
 ### ✅ Compatible with Current Architecture
 
-**1. MatryoshkaEmbeddings (HoloLoom/embedding/spectral.py:84-289)**
+**1. MatryoshkaEmbeddings (hololoom/embedding/spectral.py:84-289)**
 
 Current implementation already has embedding cache (lines 118-120):
 ```python
 # Embedding cache (text -> embedding)
-from HoloLoom.performance.cache import QueryCache
+from hololoom.performance.cache import QueryCache
 self._embedding_cache = QueryCache(max_size=500, ttl_seconds=3600)
 ```
 
 **Status:** ✅ Already caches at 384D level. Our design adds caching at 244D level.
 
-**2. SemanticSpectrum (HoloLoom/semantic_calculus/dimensions.py:1332-1470)**
+**2. SemanticSpectrum (hololoom/semantic_calculus/dimensions.py:1332-1470)**
 
 Current implementation (lines 1361-1371):
 ```python
@@ -321,7 +321,7 @@ def project_vector(self, vector: np.ndarray) -> Dict[str, float]:
 
 **Status:** ✅ Pure function, perfect for caching. No side effects.
 
-**3. QueryCache (HoloLoom/performance/cache.py:26-100)**
+**3. QueryCache (hololoom/performance/cache.py:26-100)**
 
 Current LRU cache implementation:
 ```python
@@ -652,12 +652,12 @@ This hybrid design is a **textbook example** of multi-level caching done right:
 ---
 
 **Files to Create:**
-- `HoloLoom/performance/semantic_cache.py` (implementation)
-- `HoloLoom/semantic_calculus/cache_integration.py` (integration)
+- `hololoom/performance/semantic_cache.py` (implementation)
+- `hololoom/semantic_calculus/cache_integration.py` (integration)
 - `measure_semantic_cache_performance.py` (benchmarks)
 - `SEMANTIC_CACHE_PERFORMANCE.md` (results)
 
 **Files to Modify:**
-- `HoloLoom/semantic_calculus/dimensions.py` (add cache option)
-- `HoloLoom/embedding/spectral.py` (integrate semantic cache)
-- `HoloLoom/weaving_orchestrator.py` (use semantic cache)
+- `hololoom/semantic_calculus/dimensions.py` (add cache option)
+- `hololoom/embedding/spectral.py` (integrate semantic cache)
+- `hololoom/weaving_orchestrator.py` (use semantic cache)

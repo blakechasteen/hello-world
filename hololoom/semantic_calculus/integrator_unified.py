@@ -15,15 +15,15 @@ Preserves backward compatibility while enabling advanced numerical methods.
 Migration Guide:
 ---------------
 OLD:
-    from HoloLoom.semantic_calculus.integrator import GeometricIntegrator
+    from hololoom.semantic_calculus.integrator import GeometricIntegrator
     integrator = GeometricIntegrator(projection_matrix)
 
 NEW:
-    from HoloLoom.semantic_calculus.integrator_unified import UnifiedGeometricIntegrator
+    from hololoom.semantic_calculus.integrator_unified import UnifiedGeometricIntegrator
     integrator = UnifiedGeometricIntegrator(projection_matrix, integrator_type="verlet")
 
 Or for backward compatibility:
-    from HoloLoom.semantic_calculus.integrator_unified import GeometricIntegrator
+    from hololoom.semantic_calculus.integrator_unified import GeometricIntegrator
     integrator = GeometricIntegrator(projection_matrix)  # Still works!
 """
 
@@ -33,7 +33,7 @@ from dataclasses import dataclass
 
 # Import moonshot integrators
 try:
-    from HoloLoom.memory.integrators import (
+    from hololoom.memory.integrators import (
         IntegratorType,
         DynamicalState,
         ForceFunction,

@@ -19,7 +19,7 @@ Key Components:
 - ResourceMonitor: <5% overhead resource tracking
 
 Usage:
-    from HoloLoom.redteam.sandbox import (
+    from hololoom.redteam.sandbox import (
         SandboxMode, SandboxConfig, SandboxManager
     )
 

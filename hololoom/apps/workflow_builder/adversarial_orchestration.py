@@ -35,20 +35,20 @@ from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass
 from enum import Enum
 
-from HoloLoom.apps.workflow_builder.agent_orchestration import (
+from hololoom.apps.workflow_builder.agent_orchestration import (
     AgentOrchestrationSystem,
     PersistentAgent,
     TaskPriority,
     TaskType,
     AgentTask
 )
-from HoloLoom.agents.adversarial_agents import (
+from hololoom.agents.adversarial_agents import (
     CreativeAgent,
     QualityControlAgent,
     AdversarialNegotiationSystem
 )
-from HoloLoom.memory.graph import KG
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.memory.graph import KG
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 
 # ============================================================================
@@ -382,9 +382,9 @@ async def example_adversarial_orchestration():
     3. High creativity task
     4. High strictness task
     """
-    from HoloLoom.memory.graph import KG
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-    from HoloLoom.protocols.types import Query
+    from hololoom.memory.graph import KG
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.protocols.types import Query
 
     # Create system
     kg = KG()

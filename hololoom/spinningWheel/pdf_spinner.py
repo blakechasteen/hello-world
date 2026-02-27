@@ -15,7 +15,7 @@ Requires: PyPDF2 or pdfplumber
 Optional: pytesseract (OCR), tabula-py (advanced tables)
 
 Usage:
-    from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
+    from hololoom.spinningWheel.pdf_spinner import PDFSpinner
 
     spinner = PDFSpinner(importance_threshold=0.3)
 
@@ -57,15 +57,15 @@ try:
 except ImportError:
     pass
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
     ImportanceScore,
     ImportanceSignals
 )
-from HoloLoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass

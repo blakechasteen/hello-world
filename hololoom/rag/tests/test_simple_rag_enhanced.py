@@ -21,9 +21,9 @@ Tests follow HoloLoom testing patterns:
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch, Mock
-from HoloLoom.rag import SimpleRAG, RAGResult
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom.rag import SimpleRAG, RAGResult
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 
 # ============================================================================

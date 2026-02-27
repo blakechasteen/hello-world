@@ -15,8 +15,8 @@ import numpy as np
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.memory.spring_dynamics_engine import SpringDynamicsEngine, SpringEngineConfig
-from HoloLoom.awareness.beta_wave_packer import BetaWaveContextPacker, TokenBudget
+from hololoom.memory.spring_dynamics_engine import SpringDynamicsEngine, SpringEngineConfig
+from hololoom.awareness.beta_wave_packer import BetaWaveContextPacker, TokenBudget
 
 
 def print_section(title: str, char: str = "="):

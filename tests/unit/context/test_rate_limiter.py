@@ -22,7 +22,7 @@ sys.path.insert(0, str(repo_root))
 import asyncio
 import pytest
 import time
-from HoloLoom.context.rate_limiter import (
+from hololoom.context.rate_limiter import (
     RateLimiterType,
     RateLimiterConfig,
     TokenBucketRateLimiter,
@@ -34,7 +34,7 @@ from HoloLoom.context.rate_limiter import (
     create_sliding_window_limiter,
     create_concurrent_limiter
 )
-from HoloLoom.context.error_handling import RateLimitExceededError
+from hololoom.context.error_handling import RateLimitExceededError
 
 
 # ============================================================================

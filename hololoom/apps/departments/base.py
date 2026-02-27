@@ -28,7 +28,7 @@ import asyncio
 import time
 import logging
 
-from HoloLoom.protocols.department import (
+from hololoom.protocols.department import (
     Department,
     DepartmentRequest,
     DepartmentResponse,

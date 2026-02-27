@@ -31,7 +31,7 @@ from .fabric import (
     MultiFabricCollection,
 )
 
-# Synthesis (merged from HoloLoom.synthesis, 2026-02-27)
+# Synthesis (merged from hololoom.synthesis, 2026-02-27)
 from .enriched_memory import EnrichedMemory, ReasoningType, MemoryEnricher
 from .pattern_extractor import PatternExtractor, Pattern, PatternType
 from .data_synthesizer import DataSynthesizer, TrainingExample, SynthesisConfig
@@ -49,7 +49,7 @@ __all__ = [
     "Resolution",
     "MultiFabricCollection",
 
-    # ===== Synthesis (merged from HoloLoom.synthesis) =====
+    # ===== Synthesis (merged from hololoom.synthesis) =====
     "EnrichedMemory",
     "ReasoningType",
     "MemoryEnricher",

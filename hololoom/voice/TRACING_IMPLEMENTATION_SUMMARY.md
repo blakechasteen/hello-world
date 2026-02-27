@@ -15,7 +15,7 @@ Implemented comprehensive distributed tracing for HoloLoom VoiceAgent using Open
 
 ## Deliverables
 
-### 1. Core Implementation (HoloLoom/voice/tracing.py)
+### 1. Core Implementation (hololoom/voice/tracing.py)
 
 **Lines**: 678
 **Key Components**:
@@ -117,7 +117,7 @@ Implemented comprehensive distributed tracing for HoloLoom VoiceAgent using Open
 
 ---
 
-### 4. Test Suite (HoloLoom/voice/tests/test_tracing.py)
+### 4. Test Suite (hololoom/voice/tests/test_tracing.py)
 
 **Lines**: 623
 **Test Count**: 35 tests (10 sync, 25 async)
@@ -272,7 +272,7 @@ Implemented comprehensive distributed tracing for HoloLoom VoiceAgent using Open
 
 ---
 
-### 7. Documentation (HoloLoom/voice/TRACING_README.md)
+### 7. Documentation (hololoom/voice/TRACING_README.md)
 
 **Lines**: 1,224
 **Sections**: 14
@@ -368,11 +368,11 @@ Implemented comprehensive distributed tracing for HoloLoom VoiceAgent using Open
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `HoloLoom/voice/tracing.py` | 678 | Core implementation |
-| `HoloLoom/voice/tests/test_tracing.py` | 623 | Test suite (35 tests) |
+| `hololoom/voice/tracing.py` | 678 | Core implementation |
+| `hololoom/voice/tests/test_tracing.py` | 623 | Test suite (35 tests) |
 | `demos/demo_tracing_analysis.py` | 502 | Demo with 6 scenarios |
 | `demos/benchmark_tracing_overhead.py` | 241 | Performance benchmarks |
-| `HoloLoom/voice/TRACING_README.md` | 1,224 | Comprehensive documentation |
+| `hololoom/voice/TRACING_README.md` | 1,224 | Comprehensive documentation |
 | `docker-compose.tracing.yml` | 134 | Jaeger infrastructure |
 | `config/jaeger-sampling.json` | 30 | Sampling strategies |
 | **Total** | **3,432** | **7 files** |
@@ -489,7 +489,7 @@ docker-compose -f docker-compose.tracing.yml up -d
 ### 3. Integrate with VoiceAgent
 
 ```python
-from HoloLoom.voice.tracing import TracingManager, TracingConfig
+from hololoom.voice.tracing import TracingManager, TracingConfig
 
 # Initialize
 config = TracingConfig(

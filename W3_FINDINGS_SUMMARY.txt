@@ -3,7 +3,7 @@ W3: DEPRECATED CODE WEAKNESS ANALYSIS - FINDINGS SUMMARY
 ================================================================================
 
 Project: HoloLoom (mythRL)
-Scope: HoloLoom/ directory (2,026 Python files)
+Scope: hololoom/ directory (2,026 Python files)
 Date: December 31, 2025
 Status: RESEARCH ONLY - No code modifications made
 
@@ -25,14 +25,14 @@ TOP 3 CRITICAL ISSUES
 ================================================================================
 
 1. COMPATIBILITY SHIM CAUSING CONFUSION
-   File: HoloLoom/weaving_shuttle.py
+   File: hololoom/weaving_shuttle.py
    Issue: WeavingShuttle = WeavingOrchestrator alias hides true origin
    Impact: 11 files import via deprecated shim
    Status: Well-documented but not yet migrated
    Fix: Update 11 imports, archive in v2.0
 
 2. DUPLICATE QUALITY TRAJECTORY FILES
-   Location: HoloLoom/redteam/refinement/
+   Location: hololoom/redteam/refinement/
    Files: quality_trajectory.py (30KB) + quality_trajectory_updated.py (30KB)
    Issue: Two nearly-identical files, unclear which is canonical
    Status: Both claim "Production Ready (November 2025)"
@@ -52,14 +52,14 @@ DEPRECATED FILES (PROPERLY MARKED)
 ================================================================================
 
 ✅ GOOD - Clear deprecation notices:
-  - HoloLoom/weaving_shuttle.py (compatibility shim)
-  - HoloLoom/dark_trace/sae/legacy.py (legacy SAE)
+  - hololoom/weaving_shuttle.py (compatibility shim)
+  - hololoom/dark_trace/sae/legacy.py (legacy SAE)
 
 ⚠️ UNCLEAR - No clear deprecation markers:
-  - HoloLoom/weaving_orchestrator_refactored.py
-  - HoloLoom/shuttle/orchestrator_v2.py
-  - HoloLoom/redteam/refinement/quality_trajectory_updated.py
-  - HoloLoom/prompting/testing/golden_*.py
+  - hololoom/weaving_orchestrator_refactored.py
+  - hololoom/shuttle/orchestrator_v2.py
+  - hololoom/redteam/refinement/quality_trajectory_updated.py
+  - hololoom/prompting/testing/golden_*.py
 
 ================================================================================
 ARCHITECTURAL ISSUES
@@ -157,22 +157,22 @@ FILES RECOMMENDED FOR ARCHIVAL
 
 MOVE TO .archive/:
 
-1. HoloLoom/weaving_orchestrator_refactored.py
-2. HoloLoom/shuttle/orchestrator_v2.py
-3. HoloLoom/redteam/refinement/quality_trajectory_updated.py
-4. HoloLoom/redteam/refinement/quality_trajectory_extensions.py
+1. hololoom/weaving_orchestrator_refactored.py
+2. hololoom/shuttle/orchestrator_v2.py
+3. hololoom/redteam/refinement/quality_trajectory_updated.py
+4. hololoom/redteam/refinement/quality_trajectory_extensions.py
 5. Unused memory backend implementations
-6. HoloLoom/prompting/testing/golden_dataset.py
-7. HoloLoom/prompting/testing/golden_chains.py
+6. hololoom/prompting/testing/golden_dataset.py
+7. hololoom/prompting/testing/golden_chains.py
 8. Deprecated shuttle test files (after consolidation)
 
 KEEP (Core, Non-Deprecated):
 
-✅ HoloLoom/weaving_orchestrator.py (canonical)
-✅ HoloLoom/memory/unified.py (current API)
-✅ HoloLoom/weaving_shuttle.py (shim for v1.x)
-✅ HoloLoom/dark_trace/sae/legacy.py (properly marked)
-✅ HoloLoom/lite/ (maintained alternative)
+✅ hololoom/weaving_orchestrator.py (canonical)
+✅ hololoom/memory/unified.py (current API)
+✅ hololoom/weaving_shuttle.py (shim for v1.x)
+✅ hololoom/dark_trace/sae/legacy.py (properly marked)
+✅ hololoom/lite/ (maintained alternative)
 ✅ Current test files (after consolidation)
 
 ================================================================================

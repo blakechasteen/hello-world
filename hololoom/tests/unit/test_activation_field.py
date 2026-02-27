@@ -12,7 +12,7 @@ Verifies:
 import pytest
 import numpy as np
 import networkx as nx
-from HoloLoom.memory.activation_field import ActivationField
+from hololoom.memory.activation_field import ActivationField
 
 
 def test_activation_field_creation():

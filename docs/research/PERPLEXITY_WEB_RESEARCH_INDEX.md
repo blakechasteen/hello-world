@@ -33,7 +33,7 @@
    - Integration points
    - Production deployment guide
 
-4. **[HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md)** (20 min read)
+4. **[hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md)** (20 min read)
    - Core integration details
    - Configuration reference
    - Use cases
@@ -67,10 +67,10 @@
 - [WEB_CRAWLER_INTEGRATION_COMPLETE.md](WEB_CRAWLER_INTEGRATION_COMPLETE.md) - Architecture Diagrams
 
 **Component Details**:
-- MatryoshkaWebSearch: [HoloLoom/search/matryoshka_search.py](HoloLoom/search/matryoshka_search.py)
-- RecursiveCrawler: [HoloLoom/spinning_wheel/recursive_crawler.py](HoloLoom/spinning_wheel/recursive_crawler.py)
-- WebsiteSpinner: [HoloLoom/spinning_wheel/website.py](HoloLoom/spinning_wheel/website.py)
-- AgenticWebResearcher: [HoloLoom/agentic/web_researcher.py](HoloLoom/agentic/web_researcher.py)
+- MatryoshkaWebSearch: [hololoom/search/matryoshka_search.py](hololoom/search/matryoshka_search.py)
+- RecursiveCrawler: [hololoom/spinning_wheel/recursive_crawler.py](hololoom/spinning_wheel/recursive_crawler.py)
+- WebsiteSpinner: [hololoom/spinning_wheel/website.py](hololoom/spinning_wheel/website.py)
+- AgenticWebResearcher: [hololoom/agentic/web_researcher.py](hololoom/agentic/web_researcher.py)
 
 ### Usage & Examples
 
@@ -80,14 +80,14 @@
 
 **Advanced Usage**:
 - [PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md](PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md) - Integration examples
-- [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Configuration examples
+- [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Configuration examples
 
 ### Testing
 
 **Integration Tests**:
 - [test_web_crawler_integration.py](test_web_crawler_integration.py) - 4 integration tests
 
-**Unit Tests** (in [HoloLoom/search/tests/](HoloLoom/search/tests/)):
+**Unit Tests** (in [hololoom/search/tests/](hololoom/search/tests/)):
 - test_matryoshka_search.py (8/8) ✅
 - test_web_research_integration.py (20/20) ✅
 - test_citation.py (25/25) ✅
@@ -109,17 +109,17 @@
 
 **Production Guide**:
 - [PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md](PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md) - Production section
-- [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Installation & setup
+- [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Installation & setup
 
 **Configuration**:
 - [PERPLEXITY_WEB_RESEARCH_QUICK_REF.md](PERPLEXITY_WEB_RESEARCH_QUICK_REF.md) - Common configurations
-- [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Full config reference
+- [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Full config reference
 
 ### Roadmap
 
 **Future Development**:
 - [PERPLEXITY_WEB_RESEARCH_ROADMAP.md](PERPLEXITY_WEB_RESEARCH_ROADMAP.md) - Complete roadmap (Phase 3-6)
-- [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Short-term roadmap
+- [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Short-term roadmap
 
 ---
 
@@ -130,7 +130,7 @@
 **Getting Started**:
 1. [PERPLEXITY_WEB_RESEARCH_QUICK_REF.md](PERPLEXITY_WEB_RESEARCH_QUICK_REF.md) - Quick start
 2. [demo_agentic_web_researcher.py](demo_agentic_web_researcher.py) - Run demos
-3. [HoloLoom/agentic/web_researcher.py](HoloLoom/agentic/web_researcher.py) - Read source code
+3. [hololoom/agentic/web_researcher.py](hololoom/agentic/web_researcher.py) - Read source code
 
 **Deep Dive**:
 4. [PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md](PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md) - Complete architecture
@@ -162,7 +162,7 @@
 
 **Deployment**:
 1. [PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md](PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md) - Production deployment
-2. [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Installation guide
+2. [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md) - Installation guide
 
 **Monitoring**:
 3. [PERPLEXITY_WEB_RESEARCH_ROADMAP.md](PERPLEXITY_WEB_RESEARCH_ROADMAP.md) - Phase 5 observability
@@ -185,7 +185,7 @@ mythRL/
 ├── demo_agentic_web_researcher.py (Live Demos)
 ├── test_web_crawler_integration.py (Integration Tests)
 │
-├── HoloLoom/
+├── hololoom/
 │   ├── search/
 │   │   ├── README_WEB_CRAWLER_INTEGRATION.md (Core Integration Docs)
 │   │   ├── web_crawler_integration.py (350 lines - Core Integration)
@@ -247,18 +247,18 @@ mythRL/
 
 ### Implementing a Feature
 
-1. Read [HoloLoom/agentic/web_researcher.py](HoloLoom/agentic/web_researcher.py) (understand current code)
+1. Read [hololoom/agentic/web_researcher.py](hololoom/agentic/web_researcher.py) (understand current code)
 2. Check [PERPLEXITY_WEB_RESEARCH_ROADMAP.md](PERPLEXITY_WEB_RESEARCH_ROADMAP.md) (see if planned)
 3. Write implementation in appropriate file
 4. Add tests to [test_web_crawler_integration.py](test_web_crawler_integration.py)
-5. Update documentation in [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md)
+5. Update documentation in [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md)
 6. Add demo to [demo_agentic_web_researcher.py](demo_agentic_web_researcher.py)
 
 ### Debugging an Issue
 
 1. Run [demo_agentic_web_researcher.py](demo_agentic_web_researcher.py) (verify working)
 2. Check [PERPLEXITY_WEB_RESEARCH_QUICK_REF.md](PERPLEXITY_WEB_RESEARCH_QUICK_REF.md) troubleshooting section
-3. Read [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md) configuration
+3. Read [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md) configuration
 4. Review [WEB_CRAWLER_INTEGRATION_COMPLETE.md](WEB_CRAWLER_INTEGRATION_COMPLETE.md) known issues
 5. Check test failures in [test_web_crawler_integration.py](test_web_crawler_integration.py)
 
@@ -266,7 +266,7 @@ mythRL/
 
 1. Review [PERPLEXITY_WEB_RESEARCH_ROADMAP.md](PERPLEXITY_WEB_RESEARCH_ROADMAP.md) (see what's planned)
 2. Check [WEB_CRAWLER_INTEGRATION_COMPLETE.md](WEB_CRAWLER_INTEGRATION_COMPLETE.md) limitations
-3. Read [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md) roadmap section
+3. Read [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md) roadmap section
 4. Update [PERPLEXITY_WEB_RESEARCH_ROADMAP.md](PERPLEXITY_WEB_RESEARCH_ROADMAP.md) with new plans
 
 ---

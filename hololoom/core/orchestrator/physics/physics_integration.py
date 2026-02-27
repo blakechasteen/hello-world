@@ -24,11 +24,11 @@ import logging
 from typing import Optional, Dict, Any, TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.physics.unified_physics import UnifiedPhysicsResult
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.physics.unified_physics import UnifiedPhysicsResult
 
-from HoloLoom.core.protocols.types import Query
-from HoloLoom.core.fabric.spacetime import Spacetime
+from hololoom.core.protocols.types import Query
+from hololoom.core.fabric.spacetime import Spacetime
 
 
 logger = logging.getLogger(__name__)

@@ -30,7 +30,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from HoloLoom.warp.math_pipeline_integration import (
+from hololoom.warp.math_pipeline_integration import (
     create_math_integration_lite,
     create_math_integration_fast,
     MathPipelineIntegration

@@ -171,7 +171,7 @@ The `AnalyticalWeavingOrchestrator` uses **hardcoded** operation sequences:
 **With MathOperationSelector**, this becomes **dynamic**:
 
 ```python
-from HoloLoom.warp.math.operation_selector import MathOperationSelector
+from hololoom.warp.math.operation_selector import MathOperationSelector
 
 class SmartAnalyticalOrchestrator(AnalyticalWeavingOrchestrator):
     def __init__(self, **kwargs):
@@ -327,7 +327,7 @@ ops["your_operation"] = MathOperation(
     description="What your operation does",
     use_cases=[QueryIntent.ANALYSIS, QueryIntent.TRANSFORMATION],
     prerequisites=["metric_distance", "eigenvalues"],
-    module_path="HoloLoom.warp.math.your_module",
+    module_path="hololoom.warp.math.your_module",
     function_name="YourClass.your_method",
     estimated_cost=15
 )
@@ -404,7 +404,7 @@ Natural Language Response
 ---
 
 **Files**:
-- Implementation: `HoloLoom/warp/math/operation_selector.py`
-- Integration: `HoloLoom/analytical_orchestrator.py`
-- Foundation: `HoloLoom/warp/math/` (32 modules)
+- Implementation: `hololoom/warp/math/operation_selector.py`
+- Integration: `hololoom/analytical_orchestrator.py`
+- Foundation: `hololoom/warp/math/` (32 modules)
 - Usage: See demo in `operation_selector.py`

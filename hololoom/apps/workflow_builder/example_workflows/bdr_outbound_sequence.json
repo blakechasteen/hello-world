@@ -6,7 +6,7 @@
   "nodes": [
     {
       "id": "node_1",
-      "type": "HoloLoom Query",
+      "type": "hololoom Query",
       "position": {"x": 50, "y": 100},
       "config": {
         "title": "Prospect Research",
@@ -70,7 +70,7 @@
     },
     {
       "id": "node_6",
-      "type": "HoloLoom Query",
+      "type": "hololoom Query",
       "position": {"x": 450, "y": 250},
       "config": {
         "title": "Generate Personalized Email",
@@ -105,7 +105,7 @@
     },
     {
       "id": "node_9",
-      "type": "HoloLoom Query",
+      "type": "hololoom Query",
       "position": {"x": 250, "y": 350},
       "config": {
         "title": "LinkedIn Connection Note",
@@ -117,7 +117,7 @@
     },
     {
       "id": "node_10",
-      "type": "HoloLoom Query",
+      "type": "hololoom Query",
       "position": {"x": 250, "y": 450},
       "config": {
         "title": "Wait & Retry Email",
@@ -141,7 +141,7 @@
     },
     {
       "id": "node_12",
-      "type": "HoloLoom Query",
+      "type": "hololoom Query",
       "position": {"x": 650, "y": 350},
       "config": {
         "title": "Warm Call Script",
@@ -153,7 +153,7 @@
     },
     {
       "id": "node_13",
-      "type": "HoloLoom Query",
+      "type": "hololoom Query",
       "position": {"x": 650, "y": 450},
       "config": {
         "title": "Cold Call Script",
@@ -200,7 +200,7 @@
     },
     {
       "id": "node_17",
-      "type": "HoloLoom Query",
+      "type": "hololoom Query",
       "position": {"x": 450, "y": 520},
       "config": {
         "title": "Value-Add Follow-up",
@@ -250,7 +250,7 @@
     },
     {
       "id": "node_21",
-      "type": "HoloLoom Query",
+      "type": "hololoom Query",
       "position": {"x": 250, "y": 690},
       "config": {
         "title": "Generate Comment",
@@ -262,7 +262,7 @@
     },
     {
       "id": "node_22",
-      "type": "HoloLoom Query",
+      "type": "hololoom Query",
       "position": {"x": 250, "y": 790},
       "config": {
         "title": "Breakup Email",

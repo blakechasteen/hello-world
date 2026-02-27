@@ -34,7 +34,7 @@ from .jenny_spec import (
     BindingMode,
     DissolutionTrigger,
 )
-from HoloLoom.protocols.jenny import RenderTarget, JennyRendererProtocol
+from hololoom.protocols.jenny import RenderTarget, JennyRendererProtocol
 
 # Try to import accessibility layer (Phase M3)
 try:

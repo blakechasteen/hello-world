@@ -20,14 +20,14 @@ from typing import List, Dict, Any
 
 # These imports assume the redteam module is in PYTHONPATH
 # Adjust import paths as needed for your environment
-# from HoloLoom.redteam.swarm.communication import MessageBus
-# from HoloLoom.redteam.swarm.scout_agent import ScoutAgent
-# from HoloLoom.redteam.swarm.attack_agent import AttackAgent
-# from HoloLoom.redteam.swarm.exploit_agent import ExploitAgent
-# from HoloLoom.redteam.swarm.protocols import (
+# from hololoom.redteam.swarm.communication import MessageBus
+# from hololoom.redteam.swarm.scout_agent import ScoutAgent
+# from hololoom.redteam.swarm.attack_agent import AttackAgent
+# from hololoom.redteam.swarm.exploit_agent import ExploitAgent
+# from hololoom.redteam.swarm.protocols import (
 #     AgentTask, AgentMessage, AgentRole, MessagePriority
 # )
-# from HoloLoom.redteam.bandit import RedTeamBandit
+# from hololoom.redteam.bandit import RedTeamBandit
 
 
 # Configure logging for demonstration

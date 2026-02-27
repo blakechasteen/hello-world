@@ -18,7 +18,7 @@ from dataclasses import field
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-from HoloLoom.prompting.testing.protocol import (
+from hololoom.prompting.testing.protocol import (
     PromptTestCase,
     PromptTestResult,
     PromptTestReport,
@@ -26,14 +26,14 @@ from HoloLoom.prompting.testing.protocol import (
     TestStatus,
     TestType,
 )
-from HoloLoom.prompting.testing.golden_dataset import GoldenDatasetManager
-from HoloLoom.prompting.testing.mutation_testing import MutationTester
-from HoloLoom.prompting.testing.regression_testing import RegressionDetector
-from HoloLoom.prompting.testing.metrics_collector import MetricsCollector, MetricType
+from hololoom.prompting.testing.golden_dataset import GoldenDatasetManager
+from hololoom.prompting.testing.mutation_testing import MutationTester
+from hololoom.prompting.testing.regression_testing import RegressionDetector
+from hololoom.prompting.testing.metrics_collector import MetricsCollector, MetricType
 
 # LLM Judge integration (December 2025)
 try:
-    from HoloLoom.chaining.evaluation import (
+    from hololoom.chaining.evaluation import (
         LLMJudge,
         JudgeCriteria,
         JudgeConfig,

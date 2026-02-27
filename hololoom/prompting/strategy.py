@@ -266,10 +266,10 @@ class LLMPoweredStrategy(PromptingStrategy):
         """
         if not self.orchestrator:
             # Lazy import to avoid circular dependency
-            from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-            from HoloLoom.config import Config
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.config import Config
             self.orchestrator = WeavingOrchestrator(cfg=Config.fast())
 
-        from HoloLoom.protocols.types import Query
+        from hololoom.protocols.types import Query
         spacetime = await self.orchestrator.weave(Query(text=prompt))
         return spacetime.response

@@ -76,7 +76,7 @@ class Warp:
     def __init__(self):
         # Initialize Symbolic Evaluators
         try:
-            from HoloLoom.alignment.safety_guardrails import create_guardrails
+            from hololoom.alignment.safety_guardrails import create_guardrails
             self.guardrails = create_guardrails()
             self.has_safety = True
         except ImportError:
@@ -84,7 +84,7 @@ class Warp:
             # print("Warning: SafetyGuardrails not available.")
 
         try:
-            from HoloLoom.core.resonance.shed import ResonanceShed
+            from hololoom.core.resonance.shed import ResonanceShed
             self.resonance = ResonanceShed()
             self.has_resonance = True
         except ImportError:
@@ -171,7 +171,7 @@ class Warp:
             output_vec = self.embed(output_text)
             
             # Hyperbolic
-            from HoloLoom.eggroll.math_crusher import HyperbolicGeometry
+            from hololoom.eggroll.math_crusher import HyperbolicGeometry
             hyp_target = HyperbolicGeometry.exp_map(target_vec)
             hyp_output = HyperbolicGeometry.exp_map(output_vec)
             hyp_dist = HyperbolicGeometry.poincare_distance(hyp_target, hyp_output)
@@ -182,7 +182,7 @@ class Warp:
             scores["semantic"] = (similarity + 1) / 2
             
             # Information Theory
-            from HoloLoom.eggroll.math_crusher import InformationTheory, StatisticalMeasures
+            from hololoom.eggroll.math_crusher import InformationTheory, StatisticalMeasures
             def softmax(x):
                 e_x = np.exp(x - np.max(x))
                 return e_x / e_x.sum()
@@ -198,7 +198,7 @@ class Warp:
             scores["novelty"] = min(1.0, kl / 6.0)
             
             # Topology
-            from HoloLoom.eggroll.math_crusher import TopologicalFeatures
+            from hololoom.eggroll.math_crusher import TopologicalFeatures
             chunks = [c for c in output_text.split('.') if len(c) > 5]
             if len(chunks) > 3:
                 chunk_vecs = np.array([self.embed(c) for c in chunks])
@@ -216,7 +216,7 @@ class Warp:
         # 2. Safety
         if self.has_safety:
             try:
-                from HoloLoom.alignment.safety_guardrails import ActionCategory
+                from hololoom.alignment.safety_guardrails import ActionCategory
                 decision = self.guardrails.evaluate_action(
                     action="eggroll_evaluation", category=ActionCategory.QUERY, text_input=output_text
                 )

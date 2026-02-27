@@ -17,7 +17,7 @@ pip install redis
 
 ```python
 import asyncio
-from HoloLoom.workflows import WorkflowExecutor, WorkflowTemplates
+from hololoom.workflows import WorkflowExecutor, WorkflowTemplates
 
 async def main():
     # Load pre-built template
@@ -45,7 +45,7 @@ Total Time: 156.3ms
 ## 2. Explore All Templates (90 seconds)
 
 ```python
-from HoloLoom.workflows import WorkflowTemplates
+from hololoom.workflows import WorkflowTemplates
 
 # List all templates
 templates = WorkflowTemplates.list_templates()
@@ -82,7 +82,7 @@ verified_qa:
 ### From Python
 
 ```python
-from HoloLoom.workflows import WorkflowNode, WorkflowDefinition, NodeType
+from hololoom.workflows import WorkflowNode, WorkflowDefinition, NodeType
 
 # Create nodes
 query_node = WorkflowNode(
@@ -144,7 +144,7 @@ with open("my_workflow.json", "w") as f:
 Load and execute:
 
 ```python
-from HoloLoom.workflows import WorkflowDefinition, WorkflowExecutor
+from hololoom.workflows import WorkflowDefinition, WorkflowExecutor
 
 with open("my_workflow.json") as f:
     workflow = WorkflowDefinition.from_json(f.read())
@@ -157,7 +157,7 @@ async with WorkflowExecutor(workflow) as executor:
 
 ```bash
 # Start backend
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 
 # Open in browser
@@ -178,8 +178,8 @@ python workflow_executor.py
 ### SQLite (Single-Node Production)
 
 ```python
-from HoloLoom.workflows import WorkflowExecutor
-from HoloLoom.workflows.state import SQLiteState
+from hololoom.workflows import WorkflowExecutor
+from hololoom.workflows.state import SQLiteState
 
 # Create persistent state backend
 state = SQLiteState(db_path="./workflows.db")
@@ -194,7 +194,7 @@ async with WorkflowExecutor(workflow, state_backend=state) as executor:
 ### Redis (Distributed Production)
 
 ```python
-from HoloLoom.workflows.state import RedisState
+from hololoom.workflows.state import RedisState
 
 # Connect to Redis
 state = RedisState(redis_url="redis://localhost:6379")
@@ -209,8 +209,8 @@ async with WorkflowExecutor(workflow, state_backend=state) as executor:
 ## 6. Enable Checkpointing (1 minute)
 
 ```python
-from HoloLoom.workflows import WorkflowExecutor, CheckpointManager
-from HoloLoom.workflows.state import SQLiteState
+from hololoom.workflows import WorkflowExecutor, CheckpointManager
+from hololoom.workflows.state import SQLiteState
 
 # Configure checkpointing
 state = SQLiteState()
@@ -287,7 +287,7 @@ for i, r in enumerate(results):
 
 ## Next Steps
 
-1. **Read Full Documentation** - `HoloLoom/workflows/README.md`
+1. **Read Full Documentation** - `hololoom/workflows/README.md`
 2. **Explore Templates** - Try all 9 pre-built templates
 3. **Visual Builder** - Create workflows visually
 4. **Custom Workflows** - Build domain-specific workflows
@@ -439,7 +439,7 @@ See `demos/demo_agentic_workflows.py` for complete examples (when created).
 
 ## Support
 
-- **Documentation**: `HoloLoom/workflows/README.md` (complete guide)
+- **Documentation**: `hololoom/workflows/README.md` (complete guide)
 - **Quick Start**: This file
 - **API Reference**: Inline code documentation
 - **Examples**: Demo scripts (TODO)

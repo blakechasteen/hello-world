@@ -1,7 +1,7 @@
 # HoloLoom Chaining System
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/chaining/`
+**Location**: `hololoom/chaining/`
 **Total Code**: ~3,600 lines across 6 core Python files
 **Date**: December 2025
 
@@ -26,8 +26,8 @@ The Chaining System provides a declarative, pattern-based approach to building m
 ### Simple Query (Direct Answer)
 
 ```python
-from HoloLoom.chaining import Chain, ChainPatterns, ChainOrchestrator
-from HoloLoom.apps.departments.protocol import DepartmentRequest
+from hololoom.chaining import Chain, ChainPatterns, ChainOrchestrator
+from hololoom.apps.departments.protocol import DepartmentRequest
 
 # Use pre-built simple_query pattern
 chain = ChainPatterns.simple_query()
@@ -81,7 +81,7 @@ print(f"Confidence: {result.confidence:.2f}")
 ### Custom Chain with Branching
 
 ```python
-from HoloLoom.chaining import Chain, ChainStep, StepType, Conditions
+from hololoom.chaining import Chain, ChainStep, StepType, Conditions
 
 # Create custom chain with branching
 chain = Chain(
@@ -366,14 +366,14 @@ elif requires_safety_gating:
 The chaining system is built into HoloLoom. Just import:
 
 ```python
-from HoloLoom.chaining import Chain, ChainStep, StepType, ChainOrchestrator, ChainPatterns
+from hololoom.chaining import Chain, ChainStep, StepType, ChainOrchestrator, ChainPatterns
 ```
 
 ### 30-Second Example
 
 ```python
-from HoloLoom.chaining import ChainOrchestrator, ChainPatterns
-from HoloLoom.apps.departments.rag_department import RAGDepartment
+from hololoom.chaining import ChainOrchestrator, ChainPatterns
+from hololoom.apps.departments.rag_department import RAGDepartment
 
 # Use a pre-built pattern
 chain = ChainPatterns.verified_query()  # execute → verify → output
@@ -398,7 +398,7 @@ async with RAGDepartment() as rag_dept:
 A `Chain` defines the sequence of steps to execute:
 
 ```python
-from HoloLoom.chaining import Chain, ChainStep, StepType
+from hololoom.chaining import Chain, ChainStep, StepType
 
 chain = Chain(name="my_chain", entry_point="execute")
 
@@ -571,7 +571,7 @@ chain = ChainPatterns.balanced()
 ### Simple Conditions
 
 ```python
-from HoloLoom.chaining import Conditions
+from hololoom.chaining import Conditions
 
 # Confidence thresholds
 Conditions.confidence_above(0.75)
@@ -620,7 +620,7 @@ cond = Conditions.combine_not(Conditions.error_occurred())
 ### Pre-Built Combinations
 
 ```python
-from HoloLoom.chaining import CommonConditions
+from hololoom.chaining import CommonConditions
 
 CommonConditions.high_confidence()      # >= 0.75
 CommonConditions.low_confidence()       # < 0.75
@@ -635,7 +635,7 @@ CommonConditions.ready_to_output()      # >= 0.5
 ### Simple Sequential Chain
 
 ```python
-from HoloLoom.chaining import Chain, ChainStep, StepType
+from hololoom.chaining import Chain, ChainStep, StepType
 
 chain = Chain(name="my_chain", entry_point="step1")
 
@@ -658,7 +658,7 @@ chain.add_step("step3", ChainStep(
 ### Chain with Conditional Branching
 
 ```python
-from HoloLoom.chaining import Conditions
+from hololoom.chaining import Conditions
 
 chain = Chain(name="adaptive", entry_point="execute")
 
@@ -829,7 +829,7 @@ Chain: my_chain
 The chaining system works with any department implementing `DepartmentProtocol`:
 
 ```python
-from HoloLoom.apps.departments.rag_department import RAGDepartment
+from hololoom.apps.departments.rag_department import RAGDepartment
 
 async with RAGDepartment() as rag_dept:
     orchestrator = ChainOrchestrator(rag_dept)
@@ -1012,7 +1012,7 @@ chain.add_step("refine", ChainStep(
 
 ```bash
 # Run chain orchestrator tests
-pytest HoloLoom/chaining/tests/test_chain_orchestrator.py -v
+pytest hololoom/chaining/tests/test_chain_orchestrator.py -v
 
 # Expected: 20+ test cases passing
 # Coverage: Chain definition, execution, conditions, patterns
@@ -1099,7 +1099,7 @@ log_metrics({
 ## Contact & Support
 
 For issues, questions, or feature requests:
-- GitHub Issues: HoloLoom/issues
+- GitHub Issues: hololoom/issues
 - Email: team@hololoom.ai
 - Documentation: https://hololoom.ai/docs/chaining
 

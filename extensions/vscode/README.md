@@ -192,8 +192,8 @@ curl -X POST http://localhost:8000/query \
 ## Learn More
 
 - [HoloLoom Documentation](../CLAUDE.md)
-- [Agentic Architecture](../HoloLoom/agentic/)
-- [Alignment & Safety](../HoloLoom/alignment/)
+- [Agentic Architecture](../hololoom/agentic/)
+- [Alignment & Safety](../hololoom/alignment/)
 
 ---
 

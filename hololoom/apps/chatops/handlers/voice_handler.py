@@ -43,7 +43,7 @@ try:
 except ImportError:
     NIO_AVAILABLE = False
 
-from HoloLoom.apps.chatops.handlers.code_voice_grammar import (
+from hololoom.apps.chatops.handlers.code_voice_grammar import (
     CodeVoiceGrammar,
     CodeCommandIntent,
     CodeIntent
@@ -51,7 +51,7 @@ from HoloLoom.apps.chatops.handlers.code_voice_grammar import (
 
 # Try to import WhisperSpinner
 try:
-    from HoloLoom.spinningWheel.whisper_spinner import (
+    from hololoom.spinningWheel.whisper_spinner import (
         WhisperSpinner,
         AudioTranscription,
         WHISPER_AVAILABLE

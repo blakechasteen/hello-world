@@ -3,7 +3,7 @@
   "name": "Multi-Factor Lead Scoring",
   "description": "Score leads using parallel analysis of multiple engagement factors with Thompson Sampling",
   "tags": ["crm", "lead_scoring", "thompson_sampling", "advanced"],
-  "author": "HoloLoom CRM",
+  "author": "hololoom CRM",
   "created": "2025-11-04",
   "nodes": [
     {

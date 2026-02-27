@@ -16,14 +16,14 @@ import pytest
 import asyncio
 from pathlib import Path
 
-from HoloLoom.agentic.skills import (
+from hololoom.agentic.skills import (
     execute_skill,
     list_available_skills,
     get_registry,
     SkillExecutionResult
 )
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.config import Config
+from hololoom.protocols.types import MemoryShard
 
 
 class TestEndToEndExecution:

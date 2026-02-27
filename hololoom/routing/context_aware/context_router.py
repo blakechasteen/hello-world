@@ -182,7 +182,7 @@ class ContextAwareRouter:
             (enriched_context, quality_score)
         """
         try:
-            from HoloLoom.departments import get_department
+            from hololoom.departments import get_department
 
             context_dept = get_department("context")
 
@@ -231,7 +231,7 @@ class ContextAwareRouter:
         self, query: str, context: UserContext
     ) -> RoutingDecision:
         """Route using rule-based classification"""
-        from HoloLoom.routing.query_classifier import QueryClassifier, QueryComplexity
+        from hololoom.routing.query_classifier import QueryClassifier, QueryComplexity
 
         classifier = QueryClassifier()
         result = classifier.classify(query)
@@ -265,7 +265,7 @@ class ContextAwareRouter:
     ) -> RoutingDecision:
         """Route using ML model predictions"""
         # Placeholder for ML-based routing (Task 5)
-        # Will be implemented in HoloLoom/routing/ml/
+        # Will be implemented in hololoom/routing/ml/
         return await self._route_rule_based(query, context)
 
     async def _route_hybrid(

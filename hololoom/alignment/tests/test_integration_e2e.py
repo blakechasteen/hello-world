@@ -10,7 +10,7 @@ Tests the complete integration of all alignment components:
 - Full request pipeline through all components
 
 Usage:
-    pytest HoloLoom/alignment/tests/test_integration_e2e.py -v
+    pytest hololoom/alignment/tests/test_integration_e2e.py -v
 """
 
 import pytest
@@ -22,28 +22,28 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock, AsyncMock, patch
 
 # Core Safety Components
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     ActionRequest,
     ActionCategory,
     RiskLevel,
     create_guardrails,
 )
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     DeceptionDetector,
     BehavioralProbe,
     ProbeType,
     GoalStatement,
     create_detector,
 )
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
     ResourceBounds,
     ResourceType,
     ViolationType,
     create_guard,
 )
-from HoloLoom.alignment.audit_trail import (
+from hololoom.alignment.audit_trail import (
     AuditTrail,
     DecisionType,
     OutcomeType,
@@ -51,7 +51,7 @@ from HoloLoom.alignment.audit_trail import (
 )
 
 # Monitoring & Alerting (E2.1 and E2.3)
-from HoloLoom.alignment.monitoring import (
+from hololoom.alignment.monitoring import (
     AlignmentMonitor,
     AlertLevel,
     SafetyRiskLevel,
@@ -62,7 +62,7 @@ from HoloLoom.alignment.monitoring import (
     get_global_monitor,
     set_global_monitor,
 )
-from HoloLoom.alignment.alerting import (
+from hololoom.alignment.alerting import (
     AlertDispatcher,
     AlertConfig,
     AlertSeverity,
@@ -308,7 +308,7 @@ class TestDeceptionDetectorAuditIntegration:
 
     def test_hidden_goal_detection_logged(self, detector, audit):
         """Verify hidden goal detection is logged."""
-        from HoloLoom.alignment.deception_detection import ActionObservation
+        from hololoom.alignment.deception_detection import ActionObservation
 
         # Register a goal
         goal = GoalStatement("g1", "Be helpful to users")
@@ -639,7 +639,7 @@ class TestAlertDispatcherIntegration:
     @pytest.mark.asyncio
     async def test_deception_detection_triggers_alert(self, detector, alert_dispatcher):
         """Verify deception detection can trigger alerts."""
-        from HoloLoom.alignment.deception_detection import ActionObservation
+        from hololoom.alignment.deception_detection import ActionObservation
 
         # Detect hidden goal
         goal = GoalStatement("g1", "Be helpful")

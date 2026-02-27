@@ -16,7 +16,7 @@ Philosophy:
 > "Every explanation deserves clarity, simplicity, and beauty."
 
 Usage:
-    from HoloLoom.visualization.jenny_mrf import (
+    from hololoom.visualization.jenny_mrf import (
         JennyMRFCompiler,
         PanelTypeLearner,
         generate_why_panel_mrf,
@@ -66,11 +66,11 @@ from .jenny_compiler import (
     generate_reasoning_panel,
     generate_metric_panel,
 )
-from HoloLoom.protocols.jenny import CompilationStrategy
+from hololoom.protocols.jenny import CompilationStrategy
 
 # Try to import MRF
 try:
-    from HoloLoom.prompting.unified_mrf import (
+    from hololoom.prompting.unified_mrf import (
         UnifiedMRF,
         RefinementStrategyType,
         ModelProvider,
@@ -84,7 +84,7 @@ except ImportError:
 
 # Try to import Spacetime
 try:
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 except ImportError:
     Spacetime = Any  # type: ignore
     WeavingTrace = Any  # type: ignore
@@ -545,7 +545,7 @@ class JennyMRFCompiler(JennyCompiler):
         Compile Spacetime into UI specifications with MRF enhancement.
 
         Args:
-            spacetime: Woven output from HoloLoom weaving cycle
+            spacetime: Woven output from hololoom weaving cycle
             strategy: Compilation strategy (None = use default)
             context: Optional user/session context
 

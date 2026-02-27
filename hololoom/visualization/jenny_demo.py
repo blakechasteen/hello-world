@@ -18,7 +18,7 @@ Run:
     python -m HoloLoom.visualization.jenny_demo
 
 Or:
-    PYTHONPATH=. python HoloLoom/visualization/jenny_demo.py
+    PYTHONPATH=. python hololoom/visualization/jenny_demo.py
 """
 
 import asyncio
@@ -31,19 +31,19 @@ from typing import List, Dict, Any
 if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from HoloLoom.visualization.jenny_runtime import (
+from hololoom.visualization.jenny_runtime import (
     JennyRuntime,
     JennyConfig,
     JennyPanel,
     jenny_session,
 )
-from HoloLoom.visualization.jenny_spec import (
+from hololoom.visualization.jenny_spec import (
     LifecycleStage,
     BindingMode,
     PanelTypeJenny,
 )
-from HoloLoom.visualization.jenny_actions import ActionStatus
-from HoloLoom.visualization.jenny_streaming import StreamUpdate
+from hololoom.visualization.jenny_actions import ActionStatus
+from hololoom.visualization.jenny_streaming import StreamUpdate
 
 
 # ============================================================================

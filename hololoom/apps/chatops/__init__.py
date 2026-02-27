@@ -11,7 +11,7 @@ Organization:
     deploy/     - Deployment scripts and tests
 
 Quick Start:
-    >>> from HoloLoom.apps.chatops import ChatOpsRunner
+    >>> from hololoom.apps.chatops import ChatOpsRunner
     >>> import asyncio
     >>>
     >>> config = {
@@ -28,7 +28,7 @@ Quick Start:
 """
 
 # Core components - always available
-from HoloLoom.apps.chatops.core import (
+from hololoom.apps.chatops.core import (
     MatrixBot,
     MatrixBotConfig,
     ChatOpsOrchestrator,
@@ -43,14 +43,14 @@ from HoloLoom.apps.chatops.core import (
 
 # Main runner
 try:
-    from HoloLoom.apps.chatops.run_chatops import ChatOpsRunner
+    from hololoom.apps.chatops.run_chatops import ChatOpsRunner
     _RUNNER_AVAILABLE = True
 except ImportError:
     _RUNNER_AVAILABLE = False
 
 # Optional handlers - import if available
 try:
-    from HoloLoom.apps.chatops.handlers import (
+    from hololoom.apps.chatops.handlers import (
         MultimodalHandler,
         ThreadHandler,
         ProactiveAgent,

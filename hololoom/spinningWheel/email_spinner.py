@@ -15,7 +15,7 @@ Requires: email (stdlib), imaplib (stdlib)
 Optional: beautifulsoup4 (HTML parsing)
 
 Usage:
-    from HoloLoom.spinningWheel.email_spinner import EmailSpinner
+    from hololoom.spinningWheel.email_spinner import EmailSpinner
 
     # IMAP
     spinner = EmailSpinner(
@@ -50,8 +50,8 @@ try:
 except ImportError:
     pass
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
@@ -59,7 +59,7 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceScore,
     ImportanceSignals
 )
-from HoloLoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.importance import ImportanceScorer
 
 
 @dataclass

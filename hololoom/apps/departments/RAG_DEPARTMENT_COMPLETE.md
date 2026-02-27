@@ -26,7 +26,7 @@ The **RAG Department** is the first of 5 core departments for the HoloLoom B2B f
 
 ### 1. RAG Department Implementation ✅
 
-**File**: [`HoloLoom/departments/rag_department.py`](./rag_department.py)
+**File**: [`hololoom/departments/rag_department.py`](./rag_department.py)
 **Lines**: 850 lines
 **Status**: ✅ Complete
 
@@ -52,7 +52,7 @@ The **RAG Department** is the first of 5 core departments for the HoloLoom B2B f
 
 ### 2. Unit Test Suite ✅
 
-**File**: [`HoloLoom/departments/tests/test_rag_department.py`](./tests/test_rag_department.py)
+**File**: [`hololoom/departments/tests/test_rag_department.py`](./tests/test_rag_department.py)
 **Lines**: 772 lines
 **Status**: ✅ Complete (43 tests)
 
@@ -74,7 +74,7 @@ The **RAG Department** is the first of 5 core departments for the HoloLoom B2B f
 
 ### 3. Integration Test Suite ✅
 
-**File**: [`HoloLoom/departments/tests/test_rag_integration.py`](./tests/test_rag_integration.py)
+**File**: [`hololoom/departments/tests/test_rag_integration.py`](./tests/test_rag_integration.py)
 **Lines**: 411 lines
 **Status**: ✅ Complete (11 tests, **all passing**)
 
@@ -103,7 +103,7 @@ BaseDepartment (base.py)
     ↓
 RAGDepartment (rag_department.py)
     ↓
-    ├─ SimpleRAG (HoloLoom/rag/simple_rag.py)
+    ├─ SimpleRAG (hololoom/rag/simple_rag.py)
     │   ├─ HoloLoom (memory system)
     │   ├─ WeavingOrchestrator (LLM generation)
     │   └─ Matryoshka embeddings (96, 192, 384D)
@@ -155,9 +155,9 @@ update_strategy() ← Feedback (helpful/unhelpful)
 ### Basic Query
 
 ```python
-from HoloLoom.apps.departments.rag_department import RAGDepartment
-from HoloLoom.apps.departments.protocol import DepartmentRequest
-from HoloLoom.config import Config
+from hololoom.apps.departments.rag_department import RAGDepartment
+from hololoom.apps.departments.protocol import DepartmentRequest
+from hololoom.config import Config
 
 # Initialize department
 config = Config.fast()
@@ -251,16 +251,16 @@ async with RAGDepartment(config=config) as dept:
 
 ```bash
 # Unit tests (43 tests)
-pytest HoloLoom/departments/tests/test_rag_department.py -v
+pytest hololoom/departments/tests/test_rag_department.py -v
 
 # Integration tests (11 tests)
-pytest HoloLoom/departments/tests/test_rag_integration.py -v
+pytest hololoom/departments/tests/test_rag_integration.py -v
 
 # All tests
-pytest HoloLoom/departments/tests/ -v
+pytest hololoom/departments/tests/ -v
 
 # Test collection (verify all tests discovered)
-pytest HoloLoom/departments/tests/ --collect-only
+pytest hololoom/departments/tests/ --collect-only
 ```
 
 ### Test Results
@@ -292,11 +292,11 @@ test_rag_integration.py::test_integration_summary PASSED                 [100%]
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `HoloLoom/departments/rag_department.py` | 850 | Main RAG Department implementation |
-| `HoloLoom/departments/tests/test_rag_department.py` | 772 | Unit tests (43 tests) |
-| `HoloLoom/departments/tests/test_rag_integration.py` | 411 | Integration tests (11 tests) |
-| `HoloLoom/departments/tests/__init__.py` | 0 | Package marker |
-| `HoloLoom/departments/RAG_DEPARTMENT_COMPLETE.md` | 400+ | This document |
+| `hololoom/departments/rag_department.py` | 850 | Main RAG Department implementation |
+| `hololoom/departments/tests/test_rag_department.py` | 772 | Unit tests (43 tests) |
+| `hololoom/departments/tests/test_rag_integration.py` | 411 | Integration tests (11 tests) |
+| `hololoom/departments/tests/__init__.py` | 0 | Package marker |
+| `hololoom/departments/RAG_DEPARTMENT_COMPLETE.md` | 400+ | This document |
 
 **Total**: 5 new files, **2,433+ lines of code and documentation**
 
@@ -419,7 +419,7 @@ None (RAG Department is completely new implementation)
 ## Documentation Structure
 
 ```
-HoloLoom/departments/
+hololoom/departments/
 ├── rag_department.py              # Main implementation (850 lines)
 ├── RAG_DEPARTMENT_COMPLETE.md     # This document (400+ lines)
 ├── protocol.py                    # Department protocol (750 lines, Week 1-2)

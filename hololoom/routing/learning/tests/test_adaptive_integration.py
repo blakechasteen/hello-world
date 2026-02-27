@@ -22,7 +22,7 @@ from datetime import datetime
 import tempfile
 import shutil
 
-from HoloLoom.routing.learning import (
+from hololoom.routing.learning import (
     PatternMiner,
     ContinuousValidator,
     AdaptiveUpdater,

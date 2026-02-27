@@ -37,7 +37,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 import json
 
-logger = logging.getLogger("HoloLoom.alignment.automated_auditor")
+logger = logging.getLogger("hololoom.alignment.automated_auditor")
 
 
 # =============================================================================

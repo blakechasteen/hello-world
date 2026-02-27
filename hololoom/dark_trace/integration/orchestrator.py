@@ -16,7 +16,7 @@ Integration Points:
 3. Output (Step 9): Attach feature analysis to Spacetime
 
 Usage:
-    from HoloLoom.dark_trace.integration.orchestrator import (
+    from hololoom.dark_trace.integration.orchestrator import (
         DarkTraceOrchestrator,
         create_traced_orchestrator,
     )
@@ -40,9 +40,9 @@ import numpy as np
 import time
 
 if TYPE_CHECKING:
-    from HoloLoom.config import Config
-    from HoloLoom.dark_trace.engine import DarkTraceEngine
-    from HoloLoom.dark_trace.result import TraceResult
+    from hololoom.config import Config
+    from hololoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.dark_trace.result import TraceResult
 
 
 class TracePoint(Enum):
@@ -465,7 +465,7 @@ def create_traced_orchestrator(
         Configured DarkTraceOrchestrator
     """
     # Import here to avoid circular imports
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
     # Create base orchestrator
     base_orchestrator = WeavingOrchestrator(cfg=config, shards=shards)
@@ -474,8 +474,8 @@ def create_traced_orchestrator(
     engine = dark_trace_engine
     if engine is None:
         try:
-            from HoloLoom.dark_trace.engine import DarkTraceEngine
-            from HoloLoom.dark_trace.trace_config import TraceConfig
+            from hololoom.dark_trace.engine import DarkTraceEngine
+            from hololoom.dark_trace.trace_config import TraceConfig
             engine = DarkTraceEngine(TraceConfig.standard())
         except ImportError:
             engine = None

@@ -63,7 +63,7 @@ import re
 import time
 
 # UnifiedMRF for enhanced prompting (Phase 2.1 - Nov 2025)
-from HoloLoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+from hololoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
 
 # Optional dependencies (graceful degradation)
 try:
@@ -414,7 +414,7 @@ class TextToSQLTranslator:
         for attempt in range(max_retries):
             try:
                 # Call LLM
-                from HoloLoom.protocols.types import Query
+                from hololoom.protocols.types import Query
                 query_obj = Query(text=prompt)
                 spacetime = await self.llm_provider.weave(query_obj, use_llm=True)
 

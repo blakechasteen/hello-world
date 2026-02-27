@@ -2,7 +2,7 @@
 
 **Status**: ✅ Production Ready (November 2025)
 **Version**: 1.0.0
-**Location**: `HoloLoom/spinningWheel/email_spinner.py`
+**Location**: `hololoom/spinningWheel/email_spinner.py`
 **Lines**: 602 lines
 **Test Coverage**: 20/20 tests passing
 
@@ -371,7 +371,7 @@ BeautifulSoup provides better HTML email parsing.
 ### Verification
 
 ```python
-from HoloLoom.spinningWheel.email_spinner import EmailSpinner
+from hololoom.spinningWheel.email_spinner import EmailSpinner
 
 spinner = EmailSpinner()
 print(spinner.is_available())  # Should print True (always)
@@ -384,7 +384,7 @@ print(spinner.is_available())  # Should print True (always)
 ### Basic mbox Usage
 
 ```python
-from HoloLoom.spinningWheel.email_spinner import EmailSpinner
+from hololoom.spinningWheel.email_spinner import EmailSpinner
 from pathlib import Path
 
 # Create spinner
@@ -656,7 +656,7 @@ if len(result.shards) > 0:
 ### Pattern 4: Custom Domain Scoring
 
 ```python
-from HoloLoom.spinningWheel.email_spinner import create_email_scorer
+from hololoom.spinningWheel.email_spinner import create_email_scorer
 
 # Create custom scorer for customer support
 scorer = create_email_scorer()
@@ -825,8 +825,8 @@ print(f"Thread detection rate: {(thread_roots + replies) / len(result.shards) * 
 ### Integration with HoloLoom Memory
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.spinningWheel.email_spinner import EmailSpinner
+from hololoom import hololoom
+from hololoom.spinningWheel.email_spinner import EmailSpinner
 from pathlib import Path
 
 # Create spinner
@@ -855,9 +855,9 @@ async with HoloLoom() as loom:
 ### Integration with WeavingOrchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.spinningWheel.email_spinner import EmailSpinner
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.spinningWheel.email_spinner import EmailSpinner
+from hololoom.config import Config
 
 # Spin emails
 spinner = EmailSpinner()
@@ -874,7 +874,7 @@ async with WeavingOrchestrator(cfg=config, shards=result.shards) as orchestrator
 ### Integration with FileUploadSpinner
 
 ```python
-from HoloLoom.spinningWheel.file_upload_spinner import FileUploadSpinner
+from hololoom.spinningWheel.file_upload_spinner import FileUploadSpinner
 
 # FileUploadSpinner automatically routes .mbox to EmailSpinner
 upload_spinner = FileUploadSpinner(importance_threshold=0.3)
@@ -890,7 +890,7 @@ result = await upload_spinner.spin(Path("./emails.mbox"))
 
 ### Test Suite
 
-Location: `HoloLoom/tests/unit/test_email_spinner.py`
+Location: `hololoom/tests/unit/test_email_spinner.py`
 Tests: 20/20 passing
 Coverage: ~95%
 
@@ -928,13 +928,13 @@ Coverage: ~95%
 
 ```bash
 # All email spinner tests
-pytest HoloLoom/tests/unit/test_email_spinner.py -v
+pytest hololoom/tests/unit/test_email_spinner.py -v
 
 # Specific test
-pytest HoloLoom/tests/unit/test_email_spinner.py::test_email_spinner_score_importance_high -v
+pytest hololoom/tests/unit/test_email_spinner.py::test_email_spinner_score_importance_high -v
 
 # With coverage
-pytest HoloLoom/tests/unit/test_email_spinner.py --cov=HoloLoom.spinningWheel.email_spinner
+pytest hololoom/tests/unit/test_email_spinner.py --cov=hololoom.spinningWheel.email_spinner
 ```
 
 ---
@@ -1061,5 +1061,5 @@ EmailSpinner is a production-ready system for ingesting email archives and mailb
 - Customize scoring for your domain
 
 For examples, see `demos/email_spinner_example.py`.
-For tests, see `HoloLoom/tests/unit/test_email_spinner.py`.
+For tests, see `hololoom/tests/unit/test_email_spinner.py`.
 For issues, see [GitHub Issues](https://github.com/anthropics/claude-code/issues).

@@ -1,7 +1,7 @@
 # Orchestrator Stages
 
 **Status**: Production Ready (December 2025)
-**Location**: `HoloLoom/orchestrator/stages/`
+**Location**: `hololoom/orchestrator/stages/`
 **Lines**: ~1,539 lines across 3 stage files
 **Philosophy**: "Data flows through, orchestrator coordinates"
 
@@ -102,7 +102,7 @@ Enhances the query through an LLM call before processing:
 - Expansion
 
 ```python
-from HoloLoom.orchestrator.stages import execute_step0_meta_prompt
+from hololoom.orchestrator.stages import execute_step0_meta_prompt
 
 ctx = await execute_step0_meta_prompt(
     ctx,
@@ -128,7 +128,7 @@ Selects the processing pattern based on query complexity:
 | **FUSED** | <300ms | Complex queries |
 
 ```python
-from HoloLoom.orchestrator.stages import execute_step1_pattern_selection
+from hololoom.orchestrator.stages import execute_step1_pattern_selection
 
 ctx = await execute_step1_pattern_selection(ctx, loom_command)
 print(f"Selected: {ctx.pattern_spec.name}")
@@ -145,7 +145,7 @@ Creates temporal context for memory retrieval:
 - Pipeline timeout from pattern spec
 
 ```python
-from HoloLoom.orchestrator.stages import execute_step2_chrono_trigger
+from hololoom.orchestrator.stages import execute_step2_chrono_trigger
 
 ctx = await execute_step2_chrono_trigger(
     ctx,
@@ -164,7 +164,7 @@ Selects relevant memory threads using:
 - **Yarn Graph**: Simple temporal thread selection (fallback)
 
 ```python
-from HoloLoom.orchestrator.stages import execute_step3_thread_selection
+from hololoom.orchestrator.stages import execute_step3_thread_selection
 
 ctx = await execute_step3_thread_selection(
     ctx,
@@ -211,7 +211,7 @@ Retrieves context with intelligent graph traversal:
 **Main Parallel Executor**:
 
 ```python
-from HoloLoom.orchestrator.stages import execute_steps_4_6_parallel
+from hololoom.orchestrator.stages import execute_steps_4_6_parallel
 
 ctx = await execute_steps_4_6_parallel(
     ctx, cfg, embedder,
@@ -234,7 +234,7 @@ Performs tensor operations in continuous manifold:
 - Context vector generation
 
 ```python
-from HoloLoom.orchestrator.stages import execute_step5_5_warp_compute
+from hololoom.orchestrator.stages import execute_step5_5_warp_compute
 
 ctx = await execute_step5_5_warp_compute(ctx)
 print(f"Attention entropy: {ctx.warp_compute_results['attention_entropy']:.3f}")
@@ -250,7 +250,7 @@ Physics-based context optimization using activation spreading:
 - Requires MultiWaveMemoryEngine with spring_engine
 
 ```python
-from HoloLoom.orchestrator.stages import execute_step6_5_beta_wave_packing
+from hololoom.orchestrator.stages import execute_step6_5_beta_wave_packing
 
 ctx = await execute_step6_5_beta_wave_packing(ctx, cfg, memory)
 if ctx.packed_context:
@@ -276,7 +276,7 @@ Collapses probability distributions to discrete tool selection:
 | **PURE_THOMPSON** | Pure Thompson Sampling |
 
 ```python
-from HoloLoom.orchestrator.stages import execute_step7_convergence
+from hololoom.orchestrator.stages import execute_step7_convergence
 
 ctx = await execute_step7_convergence(ctx, cfg, policy, tool_executor)
 print(f"Selected: {ctx.collapse_result.tool}")
@@ -293,7 +293,7 @@ Gates action through safety guardrails and executes:
 - Graceful degradation if safety check fails
 
 ```python
-from HoloLoom.orchestrator.stages import execute_step8_tool_execution
+from hololoom.orchestrator.stages import execute_step8_tool_execution
 
 ctx = await execute_step8_tool_execution(
     ctx, tool_executor, guardrails, audit_trail
@@ -315,7 +315,7 @@ Weaves final output with complete provenance:
 - Assembles final Spacetime artifact
 
 ```python
-from HoloLoom.orchestrator.stages import execute_step9_spacetime_fabric
+from hololoom.orchestrator.stages import execute_step9_spacetime_fabric
 
 ctx = await execute_step9_spacetime_fabric(ctx, cfg)
 print(f"Response: {ctx.spacetime.response}")
@@ -330,7 +330,7 @@ print(f"Duration: {ctx.spacetime.trace.duration_ms:.1f}ms")
 Complete pipeline execution:
 
 ```python
-from HoloLoom.orchestrator.stages import (
+from hololoom.orchestrator.stages import (
     execute_step1_pattern_selection,
     execute_step2_chrono_trigger,
     execute_step3_thread_selection,
@@ -339,7 +339,7 @@ from HoloLoom.orchestrator.stages import (
     execute_step8_tool_execution,
     execute_step9_spacetime_fabric
 )
-from HoloLoom.orchestrator.context import WeavingContext
+from hololoom.orchestrator.context import WeavingContext
 
 # Create context
 ctx = WeavingContext(query=query)
@@ -446,7 +446,7 @@ Portal stages integrate seamlessly with the existing orchestrator:
 
 ```python
 # In WeavingOrchestrator.weave()
-from HoloLoom.orchestrator.stages import execute_steps_4_6_parallel
+from hololoom.orchestrator.stages import execute_steps_4_6_parallel
 
 # Replace monolithic feature extraction with parallel stages
 ctx = await execute_steps_4_6_parallel(
@@ -480,7 +480,7 @@ ctx = await execute_steps_4_6_parallel(
 ## Exports
 
 ```python
-from HoloLoom.orchestrator.stages import (
+from hololoom.orchestrator.stages import (
     # Steps 0-3
     execute_step0_meta_prompt,
     execute_step1_pattern_selection,

@@ -21,7 +21,7 @@ Research Basis:
 - Interpretability benchmarking best practices
 
 Usage:
-    from HoloLoom.dark_trace.eval import (
+    from hololoom.dark_trace.eval import (
         # Metrics
         SAEMetrics,
         ReconstructionMetrics,
@@ -74,7 +74,7 @@ Usage:
 """
 
 # Core metrics
-from HoloLoom.dark_trace.eval.metrics import (
+from hololoom.dark_trace.eval.metrics import (
     SAEMetrics,
     ReconstructionMetrics,
     SparsityMetrics,
@@ -87,7 +87,7 @@ from HoloLoom.dark_trace.eval.metrics import (
 )
 
 # Benchmarks
-from HoloLoom.dark_trace.eval.benchmarks import (
+from hololoom.dark_trace.eval.benchmarks import (
     SyntheticBenchmark,
     FeatureRecoveryBenchmark,
     InterventionBenchmark,
@@ -98,7 +98,7 @@ from HoloLoom.dark_trace.eval.benchmarks import (
 )
 
 # Baselines
-from HoloLoom.dark_trace.eval.baselines import (
+from hololoom.dark_trace.eval.baselines import (
     BaselineMethod,
     RandomBaseline,
     PCABaseline,
@@ -109,7 +109,7 @@ from HoloLoom.dark_trace.eval.baselines import (
 )
 
 # Reporting
-from HoloLoom.dark_trace.eval.reporter import (
+from hololoom.dark_trace.eval.reporter import (
     EvaluationReporter,
     EvaluationReport,
     MetricsDashboard,

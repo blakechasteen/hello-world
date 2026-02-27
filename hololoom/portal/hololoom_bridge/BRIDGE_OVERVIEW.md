@@ -41,7 +41,7 @@ class LoomQuery(BaseModel):
     context: Optional[Dict] = None     # Additional context
 ```
 
-**LoomResult**: Structured result from HoloLoom
+**LoomResult**: Structured result from hololoom
 ```python
 class LoomResult(BaseModel):
     success: bool                      # Query succeeded
@@ -109,7 +109,7 @@ if status["available"]:
 
 ### Simple Query
 ```python
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
+from hololoom.portal.hololoom_bridge import HoloLoomBridge
 
 bridge = HoloLoomBridge()
 result = await bridge.recall("What is Thompson Sampling?")
@@ -118,7 +118,7 @@ print(f"Found {len(result.data)} memories")
 
 ### Context Manager Pattern (Recommended)
 ```python
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge, BridgeConfig
+from hololoom.portal.hololoom_bridge import HoloLoomBridge, BridgeConfig
 
 config = BridgeConfig(hololoom_url="http://192.168.1.100:8000")
 async with HoloLoomBridge(config) as bridge:
@@ -146,13 +146,13 @@ else:
 ### Portal Integration
 ```python
 # In Portal Node Daemon
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
+from hololoom.portal.hololoom_bridge import HoloLoomBridge
 
 bridge = HoloLoomBridge()
 
 # Execute job
 async def execute_ml_job(config):
-    # Get context from HoloLoom
+    # Get context from hololoom
     context = await bridge.recall(config['query'], k=20)
 
     # Process on local hardware
@@ -271,7 +271,7 @@ if result.error:
 ### With Shuttle Bot
 ```python
 # Shuttle Bot can use bridge for:
-# - Answering user questions from HoloLoom memory
+# - Answering user questions from hololoom memory
 # - Storing commands to knowledge graph
 # - Multi-turn reasoning about jobs
 ```
@@ -281,7 +281,7 @@ if result.error:
 Basic test structure (can be implemented):
 ```python
 import pytest
-from HoloLoom.portal.hololoom_bridge import (
+from hololoom.portal.hololoom_bridge import (
     HoloLoomBridge, BridgeConfig, LoomQuery, LoomResult
 )
 

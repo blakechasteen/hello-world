@@ -279,7 +279,7 @@ class SQLContextPacker:
         Integrates with Phase 6.1 AdaptiveCompressionStrategy if available.
         """
         try:
-            from HoloLoom.context_packing import (
+            from hololoom.context_packing import (
                 AdaptiveCompressionStrategy,
                 AdaptiveComplexity
             )
@@ -701,8 +701,8 @@ def get_adaptive_sql_budget(query: str) -> Tuple[int, int, int]:
         >>> print(f"Limits: {max_rows} rows, {max_cols} cols, {budget} tokens")
     """
     try:
-        from HoloLoom.context_packing import get_adaptive_mi_budget, AdaptiveComplexity
-        from HoloLoom.context_packing.adaptive_strategy import AdaptiveCompressionStrategy
+        from hololoom.context_packing import get_adaptive_mi_budget, AdaptiveComplexity
+        from hololoom.context_packing.adaptive_strategy import AdaptiveCompressionStrategy
 
         strategy = AdaptiveCompressionStrategy()
         result = strategy.select_strategy(query)

@@ -39,7 +39,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 # Import only from shared types layer
-from HoloLoom.core.protocols.types import Vector
+from hololoom.core.protocols.types import Vector
 
 # Optional dependencies
 try:
@@ -539,7 +539,7 @@ def benchmark_zero_copy_vs_projection(
         Dict with timing results
     """
     import time
-    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
 
     results = {}
 

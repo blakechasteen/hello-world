@@ -27,13 +27,13 @@ from datetime import datetime, timedelta
 import asyncio
 import logging
 
-from HoloLoom.protocols.types import MemoryShard, Query
-from HoloLoom.memory.lifecycle_manager import (
+from hololoom.protocols.types import MemoryShard, Query
+from hololoom.memory.lifecycle_manager import (
     ContextStreamManager,
     MemoryScope,
     LifeCycle
 )
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.graph import KG, KGEdge
 
 logger = logging.getLogger(__name__)
 

@@ -14,9 +14,9 @@ Date: 2025-11-03
 import pytest
 import numpy as np
 from typing import List, Tuple
-from HoloLoom.config import Config
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.warp.riemannian_geometry import (
+from hololoom.config import Config
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.warp.riemannian_geometry import (
     HyperbolicSpace,
     SphericalSpace,
     ManifoldType,

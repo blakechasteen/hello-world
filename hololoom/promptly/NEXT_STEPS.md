@@ -68,8 +68,8 @@
 **What to build**:
 ```python
 # training_data_loader.py
-from HoloLoom import HoloLoom
-from HoloLoom.documentation.types import MemoryShard
+from hololoom import hololoom
+from hololoom.documentation.types import MemoryShard
 
 async def load_training_data():
     """Load 20-30 HoloLoom Q&A examples into memory"""
@@ -97,7 +97,7 @@ async def load_training_data():
 **Then test optimization**:
 ```python
 # Test that optimization works with real data
-from HoloLoom.promptly import DSPyHoloLoom
+from hololoom.promptly import DSPyHoloLoom
 
 bridge = DSPyHoloLoom(config=Config.fused())
 optimized = await bridge.optimize_from_memory(
@@ -127,13 +127,13 @@ optimized = await bridge.optimize_from_memory(
 **Week 1 Tasks**:
 1. Create directory structure
 ```bash
-mkdir -p HoloLoom/promptly/{foundation,core,state,execution,solvers,orchestration,interfaces}
-mkdir -p HoloLoom/promptly/solvers/{schema,surgical,staged,confidence,consistency,context}
+mkdir -p hololoom/promptly/{foundation,core,state,execution,solvers,orchestration,interfaces}
+mkdir -p hololoom/promptly/solvers/{schema,surgical,staged,confidence,consistency,context}
 ```
 
 2. Define core types
 ```python
-# HoloLoom/promptly/core/types.py
+# hololoom/promptly/core/types.py
 @dataclass
 class PromptlyRequest:
     task: str
@@ -154,7 +154,7 @@ class PromptlyResponse:
 
 3. Define protocols
 ```python
-# HoloLoom/promptly/core/protocols.py
+# hololoom/promptly/core/protocols.py
 class SchemaValidator(Protocol):
     def validate(self, data: Any, schema: Schema) -> ValidationResult: ...
 
@@ -167,7 +167,7 @@ class ContextOptimizer(Protocol):
 
 4. Backward compatibility
 ```python
-# HoloLoom/promptly/legacy/__init__.py
+# hololoom/promptly/legacy/__init__.py
 # Move existing files here, ensure imports still work
 ```
 
@@ -456,7 +456,7 @@ Based on everything we've built:
 
 ```bash
 # Create the demo
-cd HoloLoom/promptly
+cd hololoom/promptly
 python beginner_prompts.py
 # Record it, make GIF, done
 

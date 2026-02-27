@@ -11,7 +11,7 @@ Tests:
 6. Error handling
 
 Run:
-    pytest HoloLoom/tests/integration/test_dspy_integration.py -v
+    pytest hololoom/tests/integration/test_dspy_integration.py -v
 """
 
 import pytest
@@ -19,14 +19,14 @@ import asyncio
 from pathlib import Path
 import tempfile
 
-from HoloLoom.config import Config
-from HoloLoom.promptly.dspy_bridge import (
+from hololoom.config import Config
+from hololoom.promptly.dspy_bridge import (
     DSPyHoloLoom,
     DSPySignature,
     create_signature,
     DSPY_AVAILABLE
 )
-from HoloLoom.promptly.dspy_workflow_adapter import (
+from hololoom.promptly.dspy_workflow_adapter import (
     DSPyWorkflowAdapter,
     DSPyWorkflowStep,
     create_qa_workflow
@@ -135,7 +135,7 @@ class TestDSPyBridge:
 
     @pytest.mark.asyncio
     async def test_create_signature_from_pattern(self, bridge):
-        """Test creating signature from HoloLoom pattern"""
+        """Test creating signature from hololoom pattern"""
         sig = await bridge.create_signature_from_pattern(
             pattern_name="TestPattern",
             description="Test pattern signature",

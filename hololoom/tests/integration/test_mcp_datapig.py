@@ -43,7 +43,7 @@ def temp_sample_dataset():
 def test_mcp_tool_availability():
     """Test that DATAPIG is available for MCP integration"""
     # Check that DATAPIG detector can be imported
-    from HoloLoom.datapig import DataPigDetector
+    from hololoom.datapig import DataPigDetector
 
     detector = DataPigDetector(enable_verbose=False)
     assert detector is not None
@@ -51,7 +51,7 @@ def test_mcp_tool_availability():
 
 def test_mcp_analyze_dataset_structure():
     """Test MCP analyze_dataset tool structure"""
-    from HoloLoom.datapig import DataPigDetector
+    from hololoom.datapig import DataPigDetector
 
     detector = DataPigDetector(enable_verbose=False)
 
@@ -68,7 +68,7 @@ def test_mcp_analyze_dataset_structure():
 
 def test_mcp_tool_response_format():
     """Test that MCP tool responses are in expected format"""
-    from HoloLoom.datapig import DataPigDetector, DataQualityIssue
+    from hololoom.datapig import DataPigDetector, DataQualityIssue
 
     detector = DataPigDetector(enable_verbose=False)
 

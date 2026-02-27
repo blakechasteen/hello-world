@@ -6,7 +6,7 @@ import asyncio
 import json
 import time
 from typing import Dict, Any, List
-from HoloLoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
+from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
                                    SkillCategory, SkillStatus)
 
 
@@ -165,5 +165,5 @@ class DockerSkill(BaseSkill):
         return {"type": prune_type, "message": f"{prune_type} pruned"}
 
 
-from HoloLoom.skills.base import register_skill
+from hololoom.skills.base import register_skill
 register_skill(DockerSkill())

@@ -121,7 +121,7 @@ def generate_report(results):
     report.append("## Top 10 Files with Most Issues")
     report.append("")
     for i, result in enumerate(top_files, 1):
-        rel_path = result['file'].replace('\\', '/').split('HoloLoom/')[-1]
+        rel_path = result['file'].replace('\\', '/').split('hololoom/')[-1]
         report.append(f"{i}. **{rel_path}** - {result['total']} issues")
         
         # Show top 3 issues
@@ -145,7 +145,7 @@ def generate_report(results):
     for result in results:
         for issue in result['slop_issues']:
             if issue.severity == Severity.HIGH or issue.severity == Severity.CRITICAL:
-                rel_path = result['file'].replace('\\', '/').split('HoloLoom/')[-1]
+                rel_path = result['file'].replace('\\', '/').split('hololoom/')[-1]
                 examples.append({
                     'file': rel_path,
                     'line': issue.line_number,

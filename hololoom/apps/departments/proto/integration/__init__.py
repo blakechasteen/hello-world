@@ -19,13 +19,13 @@ Both components designed for graceful degradation and seamless integration.
 Status: Production ready (2025-12-02)
 """
 
-from HoloLoom.apps.departments.proto.integration.agentic_bridge import (
+from hololoom.apps.departments.proto.integration.agentic_bridge import (
     AgenticBridge,
     ProtoReasoningMode,
     AgenticBridgeResult,
 )
 
-from HoloLoom.apps.departments.proto.integration.department_bridge import (
+from hololoom.apps.departments.proto.integration.department_bridge import (
     ProtoDepartment,
 )
 

@@ -24,15 +24,15 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.search.web_crawler_integration import (
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.search.web_crawler_integration import (
     WebCrawlerSearch,
     WebCrawlerSearchConfig,
     SearchCrawlResult
 )
-from HoloLoom.agentic.core import AgenticOrchestrator, ReasoningMode
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.agentic.core import AgenticOrchestrator, ReasoningMode
+from hololoom.recursive import FullLearningEngine
 
 
 logger = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 {
   "name": "squad",
-  "displayName": "Squad - HoloLoom Agent API",
-  "description": "Agentic coding assistant powered by HoloLoom's multi-step reasoning",
+  "displayName": "Squad - hololoom Agent API",
+  "description": "Agentic coding assistant powered by hololoom's multi-step reasoning",
   "version": "0.1.0",
   "publisher": "hololoom",
   "engines": {
@@ -20,13 +20,13 @@
       "explorer": [
         {
           "id": "hololoomAgents",
-          "name": "HoloLoom Agents",
+          "name": "hololoom Agents",
           "icon": "$(pulse)",
           "contextualTitle": "Agent Monitoring"
         },
         {
           "id": "hololoomSkills",
-          "name": "HoloLoom Skills",
+          "name": "hololoom Skills",
           "icon": "$(extensions)",
           "contextualTitle": "Installed Skills"
         }
@@ -65,12 +65,12 @@
       },
       {
         "command": "hololoom.refreshAgentMonitor",
-        "title": "HoloLoom: Refresh Agent Monitor",
+        "title": "hololoom: Refresh Agent Monitor",
         "icon": "$(refresh)"
       },
       {
         "command": "hololoom.showAgentDetails",
-        "title": "HoloLoom: Show Agent Details"
+        "title": "hololoom: Show Agent Details"
       },
       {
         "command": "skills.openExplorer",

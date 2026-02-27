@@ -20,11 +20,11 @@ from dataclasses import dataclass, asdict
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.performance.profiler import Profiler, ProfilerRegistry
-from HoloLoom.performance.metrics import MetricsCollector
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config, ExecutionMode
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.performance.profiler import Profiler, ProfilerRegistry
+from hololoom.performance.metrics import MetricsCollector
 
 
 @dataclass

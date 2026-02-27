@@ -28,9 +28,9 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Set, TYPE_CHECKING
 #  TELEMETRY - OpenTelemetry tracing + Prometheus metrics (Phase 5)
 # ─────────────────────────────────────────────────────────────────────────────
 try:
-    from HoloLoom.telemetry.tracing import get_tracer, SpanKind
-    from HoloLoom.telemetry.tracing.context import W3CTraceContext
-    from HoloLoom.telemetry.metrics import get_registry
+    from hololoom.telemetry.tracing import get_tracer, SpanKind
+    from hololoom.telemetry.tracing.context import W3CTraceContext
+    from hololoom.telemetry.metrics import get_registry
     TELEMETRY_AVAILABLE = True
 except ImportError:
     TELEMETRY_AVAILABLE = False
@@ -62,7 +62,7 @@ except ImportError:
     dec_pending_queries = None
 
 if TYPE_CHECKING:
-    from HoloLoom.hololoom import HoloLoom as HoloLoomType
+    from hololoom.hololoom import hololoom as HoloLoomType
 
 from .gossip import SwimMembership
 from .identity import Identity, create_node, get_or_create_identity

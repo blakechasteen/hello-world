@@ -6,9 +6,9 @@ Tests the complete weaving cycle from query to response.
 
 import asyncio
 import pytest
-from HoloLoom.config import Config
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.protocols.types import Query
+from hololoom.config import Config
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.protocols.types import Query
 
 
 @pytest.mark.asyncio

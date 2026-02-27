@@ -29,7 +29,7 @@ async def test_1_loom_command():
     logger.info("TEST 1: Loom Command - Pattern Selection")
     logger.info("="*80)
 
-    from HoloLoom.loom.command import LoomCommand, PatternCard
+    from hololoom.loom.command import LoomCommand, PatternCard
 
     loom = LoomCommand(default_pattern=PatternCard.FAST, auto_select=True)
 
@@ -67,8 +67,8 @@ async def test_2_chrono_trigger():
     logger.info("TEST 2: Chrono Trigger - Temporal Control")
     logger.info("="*80)
 
-    from HoloLoom.chrono.trigger import ChronoTrigger
-    from HoloLoom.config import Config
+    from hololoom.chrono.trigger import ChronoTrigger
+    from hololoom.config import Config
 
     config = Config.fast()
     chrono = ChronoTrigger(config, enable_heartbeat=False)
@@ -105,9 +105,9 @@ async def test_3_resonance_shed():
     logger.info("TEST 3: Resonance Shed - Feature Interference")
     logger.info("="*80)
 
-    from HoloLoom.resonance.shed import ResonanceShed
-    from HoloLoom.motif.base import create_motif_detector
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.resonance.shed import ResonanceShed
+    from hololoom.motif.base import create_motif_detector
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     # Create components
     motif_detector = create_motif_detector(mode="regex")
@@ -145,8 +145,8 @@ async def test_4_warp_space():
     logger.info("TEST 4: Warp Space - Tensioned Tensor Field (THE WARP DRIVE!)")
     logger.info("="*80)
 
-    from HoloLoom.warp.space import WarpSpace
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.warp.space import WarpSpace
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     import numpy as np
 
     embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
@@ -219,7 +219,7 @@ async def test_5_convergence_engine():
     logger.info("TEST 5: Convergence Engine - Continuous to Discrete")
     logger.info("="*80)
 
-    from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy
+    from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
     import numpy as np
 
     tools = ["search", "summarize", "extract", "respond", "clarify"]
@@ -279,7 +279,7 @@ async def test_6_spacetime_fabric():
     logger.info("TEST 6: Spacetime - Woven Fabric Output")
     logger.info("="*80)
 
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace, FabricCollection
+    from hololoom.fabric.spacetime import Spacetime, WeavingTrace, FabricCollection
     import tempfile
 
     # Create a weaving trace
@@ -371,9 +371,9 @@ async def test_7_complete_weaving_cycle():
     logger.info("TEST 7: COMPLETE WEAVING CYCLE - All Components Together")
     logger.info("="*80)
 
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.config import Config
-    from HoloLoom.convergence.engine import CollapseStrategy
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.config import Config
+    from hololoom.convergence.engine import CollapseStrategy
 
     # Create orchestrator with all components
     logger.info("\nInitializing WeavingOrchestrator...")
@@ -439,8 +439,8 @@ async def test_8_error_handling():
     logger.info("TEST 8: Error Handling and Edge Cases")
     logger.info("="*80)
 
-    from HoloLoom.warp.space import WarpSpace
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.warp.space import WarpSpace
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
     warp = WarpSpace(embedder, scales=[96, 192, 384])
@@ -481,8 +481,8 @@ async def test_9_performance_benchmark():
     logger.info("TEST 9: Performance Benchmark")
     logger.info("="*80)
 
-    from HoloLoom.warp.space import WarpSpace
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.warp.space import WarpSpace
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     import numpy as np
 
     embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])

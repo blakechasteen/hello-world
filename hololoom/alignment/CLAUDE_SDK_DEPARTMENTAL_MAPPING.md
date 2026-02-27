@@ -447,7 +447,7 @@ Entity extraction, domain understanding, knowledge structuring
 ### File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── alignment/
 │   ├── mcp_department_registry.py         # ✅ Created - Department definitions
 │   ├── CLAUDE_SDK_DEPARTMENTAL_MAPPING.md # ✅ This file

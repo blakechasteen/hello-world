@@ -1,7 +1,7 @@
 # Sandbox Architecture & Reference
 
 **Status**: Production Ready (December 5, 2025)
-**Location**: `HoloLoom/redteam/sandbox/`
+**Location**: `hololoom/redteam/sandbox/`
 **Total Code**: ~450 lines (protocols: 150, monitor: 300)
 **Performance**: <5% overhead target (actual: ~0.5%)
 
@@ -331,7 +331,7 @@ Auto-select best mode: DOCKER > CGROUPS > SUBPROCESS
 ### Basic Execution with Resource Monitoring
 
 ```python
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     SandboxMode, SandboxConfig, ResourceMonitor
 )
 
@@ -521,7 +521,7 @@ summary = await monitor.stop()
 
 Comprehensive test suite (24 tests):
 ```bash
-pytest HoloLoom/redteam/sandbox/tests/ -v
+pytest hololoom/redteam/sandbox/tests/ -v
 ```
 
 **Test coverage**:
@@ -563,4 +563,4 @@ Sandbox decisions prioritize:
 - `protocols.py` - Configuration and protocol definitions
 - `monitor.py` - Resource monitoring implementation
 - `QUICKSTART.md` - Quick start guide with examples
-- `HoloLoom/redteam/` - Complete red team module
+- `hololoom/redteam/` - Complete red team module

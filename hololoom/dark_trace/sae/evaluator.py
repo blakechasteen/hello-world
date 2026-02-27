@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any, Tuple
 import math
 
-from HoloLoom.dark_trace.sae.core import ResearchSAE
+from hololoom.dark_trace.sae.core import ResearchSAE
 
 
 @dataclass

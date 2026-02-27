@@ -2,7 +2,7 @@ Proto CLI Implementation Summary
 ================================
 
 Status: Production Ready (December 2025)
-Location: HoloLoom/departments/proto/adapters/cli/
+Location: hololoom/departments/proto/adapters/cli/
 Total Code: 508 lines across 3 files
 
 FILES
@@ -80,7 +80,7 @@ Command line:
   $ proto repl
 
 Programmatic:
-  from HoloLoom.departments.proto.adapters.cli import ProtoCLI
+  from hololoom.departments.proto.adapters.cli import ProtoCLI
   cli = ProtoCLI()
   result = await cli.process_query("question", "context.py")
   await cli.shutdown()
@@ -103,7 +103,7 @@ To enable 'proto' command globally, add to setup.py:
 
   entry_points={
       "console_scripts": [
-          "proto = HoloLoom.departments.proto.adapters.cli:cli",
+          "proto = hololoom.departments.proto.adapters.cli:cli",
       ],
   },
 

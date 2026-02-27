@@ -7,7 +7,7 @@
 ## Quick Links
 
 ### Primary Documentation
-- **Main README** → `/HoloLoom/federation/README.md` (1,150 lines)
+- **Main README** → `/hololoom/federation/README.md` (1,150 lines)
   - Start here for everything: overview, examples, API reference
   - Complete guide to federation system
 
@@ -121,7 +121,7 @@
 
 ## Documentation Map by File
 
-### HoloLoom/federation/README.md (1,150 lines)
+### hololoom/federation/README.md (1,150 lines)
 
 **Sections** (in order):
 
@@ -145,7 +145,7 @@
 | Troubleshooting | 1065-1119 | 4 problems + solutions | 15 min |
 | Roadmap | 1120-1129 | Future plans | 5 min |
 
-### Codebase Files (HoloLoom/federation/)
+### Codebase Files (hololoom/federation/)
 
 | File | Lines | Purpose |
 |------|-------|---------|

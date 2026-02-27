@@ -265,7 +265,7 @@ Optimized prompts are just text:
 ### With HoloLoom
 ```python
 # Developer can integrate optimized prompt
-from HoloLoom.promptly import DSPyHoloLoom
+from hololoom.promptly import DSPyHoloLoom
 
 bridge = DSPyHoloLoom(config=Config.fused())
 # Use beginner's optimized prompt here
@@ -341,5 +341,5 @@ The beginner prompts system is:
 **Test Environment**:
 - OS: Windows (cp1252 console)
 - Python: 3.12
-- Location: `HoloLoom/promptly/`
+- Location: `hololoom/promptly/`
 - Test Script: `test_beginner_prompts.py`

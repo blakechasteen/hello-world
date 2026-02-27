@@ -15,11 +15,11 @@ from typing import Dict, Any
 import numpy as np
 import pytest
 
-from HoloLoom.ml.config import (
+from hololoom.ml.config import (
     ValidationConfig,
     ValidationStrictness,
 )
-from HoloLoom.ml.protocol import DataSplit
+from hololoom.ml.protocol import DataSplit
 
 
 # ---------------------------------------------------------------------------
@@ -86,12 +86,12 @@ class TestSpinningWheelAdapter:
 
     def test_import_adapter(self):
         """Test adapter can be imported."""
-        from HoloLoom.ml.integration import SpinningWheelMLAdapter
+        from hololoom.ml.integration import SpinningWheelMLAdapter
         assert SpinningWheelMLAdapter is not None
 
     def test_create_adapter(self):
         """Test creating adapter."""
-        from HoloLoom.ml.integration import SpinningWheelMLAdapter
+        from hololoom.ml.integration import SpinningWheelMLAdapter
 
         adapter = SpinningWheelMLAdapter()
         assert adapter is not None
@@ -99,7 +99,7 @@ class TestSpinningWheelAdapter:
     @pytest.mark.asyncio
     async def test_ingest_csv(self):
         """Test ingesting CSV file."""
-        from HoloLoom.ml.integration import SpinningWheelMLAdapter
+        from hololoom.ml.integration import SpinningWheelMLAdapter
 
         adapter = SpinningWheelMLAdapter()
 
@@ -122,7 +122,7 @@ class TestSpinningWheelAdapter:
     @pytest.mark.asyncio
     async def test_ingest_with_feature_selection(self):
         """Test ingesting with specific feature columns."""
-        from HoloLoom.ml.integration import SpinningWheelMLAdapter
+        from hololoom.ml.integration import SpinningWheelMLAdapter
 
         adapter = SpinningWheelMLAdapter()
 
@@ -144,7 +144,7 @@ class TestSpinningWheelAdapter:
     @pytest.mark.asyncio
     async def test_ingest_auto_detect_features(self):
         """Test automatic feature detection (all non-target columns)."""
-        from HoloLoom.ml.integration import SpinningWheelMLAdapter
+        from hololoom.ml.integration import SpinningWheelMLAdapter
 
         adapter = SpinningWheelMLAdapter()
 
@@ -165,7 +165,7 @@ class TestSpinningWheelAdapter:
     @pytest.mark.asyncio
     async def test_create_data_split(self):
         """Test creating data split from ingested data."""
-        from HoloLoom.ml.integration import SpinningWheelMLAdapter
+        from hololoom.ml.integration import SpinningWheelMLAdapter
 
         adapter = SpinningWheelMLAdapter()
 
@@ -201,19 +201,19 @@ class TestDataPigAdapter:
 
     def test_import_adapter(self):
         """Test adapter can be imported."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
         assert DataPigMLAdapter is not None
 
     def test_create_adapter(self):
         """Test creating adapter."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         adapter = DataPigMLAdapter()
         assert adapter is not None
 
     def test_create_adapter_with_config(self):
         """Test creating adapter with custom config."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         config = ValidationConfig(
             strictness=ValidationStrictness.HIGH,
@@ -224,7 +224,7 @@ class TestDataPigAdapter:
 
     def test_validate_clean_data(self):
         """Test validating clean data."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         adapter = DataPigMLAdapter()
 
@@ -242,7 +242,7 @@ class TestDataPigAdapter:
 
     def test_detect_missing_values(self):
         """Test detecting missing values."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         adapter = DataPigMLAdapter()
 
@@ -263,7 +263,7 @@ class TestDataPigAdapter:
 
     def test_detect_infinite_values(self):
         """Test detecting infinite values."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         adapter = DataPigMLAdapter()
 
@@ -284,7 +284,7 @@ class TestDataPigAdapter:
 
     def test_detect_constant_features(self):
         """Test detecting constant features."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         adapter = DataPigMLAdapter()
 
@@ -303,7 +303,7 @@ class TestDataPigAdapter:
 
     def test_detect_constant_target(self):
         """Test detecting constant target."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         adapter = DataPigMLAdapter()
 
@@ -322,7 +322,7 @@ class TestDataPigAdapter:
 
     def test_detect_insufficient_samples(self):
         """Test detecting insufficient samples."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         config = ValidationConfig(min_samples=100)
         adapter = DataPigMLAdapter(config=config)
@@ -340,7 +340,7 @@ class TestDataPigAdapter:
 
     def test_detect_outliers(self):
         """Test detecting outliers."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         adapter = DataPigMLAdapter()
 
@@ -359,7 +359,7 @@ class TestDataPigAdapter:
 
     def test_detect_multicollinearity(self):
         """Test detecting multicollinearity."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         config = ValidationConfig(
             check_multicollinearity=True,
@@ -382,7 +382,7 @@ class TestDataPigAdapter:
 
     def test_generate_recommendations(self):
         """Test generating recommendations."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         adapter = DataPigMLAdapter()
 
@@ -399,7 +399,7 @@ class TestDataPigAdapter:
 
     def test_validate_data_split(self):
         """Test validating a DataSplit object."""
-        from HoloLoom.ml.integration import DataPigMLAdapter
+        from hololoom.ml.integration import DataPigMLAdapter
 
         adapter = DataPigMLAdapter()
 
@@ -432,8 +432,8 @@ class TestEndToEndPipeline:
     @pytest.mark.asyncio
     async def test_complete_pipeline(self):
         """Test complete pipeline: ingest → validate → train → evaluate."""
-        from HoloLoom.ml.integration import SpinningWheelMLAdapter, DataPigMLAdapter
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.integration import SpinningWheelMLAdapter, DataPigMLAdapter
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create CSV file
@@ -478,8 +478,8 @@ class TestEndToEndPipeline:
     @pytest.mark.asyncio
     async def test_pipeline_with_validation_issues(self):
         """Test pipeline handles validation issues gracefully."""
-        from HoloLoom.ml.integration import SpinningWheelMLAdapter, DataPigMLAdapter
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.integration import SpinningWheelMLAdapter, DataPigMLAdapter
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create CSV with missing values

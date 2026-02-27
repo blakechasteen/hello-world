@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 
-from HoloLoom.utils.time_bucket import time_bucket, to_utc_datetime
-from HoloLoom.memory.graph import KG
+from hololoom.utils.time_bucket import time_bucket, to_utc_datetime
+from hololoom.memory.graph import KG
 
 
 def test_time_bucket_from_iso_string():

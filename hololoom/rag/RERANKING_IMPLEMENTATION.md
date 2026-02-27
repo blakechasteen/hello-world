@@ -13,7 +13,7 @@ This document describes the implementation of cross-encoder reranking for HoloLo
 
 ### Files Created
 
-1. **`HoloLoom/rag/reranking.py`** (358 lines)
+1. **`hololoom/rag/reranking.py`** (358 lines)
    - `Reranker` protocol definition
    - `CrossEncoderReranker` implementation (primary)
    - `NoOpReranker` fallback
@@ -21,7 +21,7 @@ This document describes the implementation of cross-encoder reranking for HoloLo
    - `RerankingStats` dataclass
    - Benefit computation utilities
 
-2. **`HoloLoom/rag/tests/test_reranking.py`** (520 lines, 33 tests)
+2. **`hololoom/rag/tests/test_reranking.py`** (520 lines, 33 tests)
    - Protocol compliance tests
    - Cross-encoder reranking tests
    - No-op reranker tests
@@ -35,7 +35,7 @@ This document describes the implementation of cross-encoder reranking for HoloLo
    - Precision metrics
    - Latency analysis
 
-4. **`HoloLoom/rag/simple_rag.py`** (Updated, 370 lines)
+4. **`hololoom/rag/simple_rag.py`** (Updated, 370 lines)
    - Added reranking parameters to `__init__`
    - Reranking integration in `query()` method
    - Reranking statistics tracking
@@ -202,7 +202,7 @@ spacetime = await orchestrator.weave(Query(text=question))
 ### Basic Usage (No Reranking)
 
 ```python
-from HoloLoom.rag import SimpleRAG
+from hololoom.rag import SimpleRAG
 
 async with SimpleRAG() as rag:
     await rag.ingest("Thompson Sampling uses Bayesian statistics")
@@ -212,7 +212,7 @@ async with SimpleRAG() as rag:
 ### With Reranking Enabled
 
 ```python
-from HoloLoom.rag import SimpleRAG
+from hololoom.rag import SimpleRAG
 
 async with SimpleRAG(
     enable_reranking=True,
@@ -228,7 +228,7 @@ async with SimpleRAG(
 ### Direct Reranker API
 
 ```python
-from HoloLoom.rag.reranking import CrossEncoderReranker, create_reranker
+from hololoom.rag.reranking import CrossEncoderReranker, create_reranker
 
 # Using factory
 reranker = create_reranker("cross-encoder")  # Falls back to NoOp if unavailable
@@ -361,7 +361,7 @@ async with SimpleRAG() as rag:
 
 ## Files Modified
 
-### `HoloLoom/rag/simple_rag.py`
+### `hololoom/rag/simple_rag.py`
 
 **Changes**:
 - Added imports: `time`, `create_reranker`, `Reranker`

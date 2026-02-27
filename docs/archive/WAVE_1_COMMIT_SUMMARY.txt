@@ -6,14 +6,14 @@ Wave: 1 - Mobile-First Responsive CSS
 Status: COMPLETE
 
 ## Files Modified
-- HoloLoom/web_dashboard/workflow_builder.html (+609 lines CSS)
-- HoloLoom/web_dashboard/workflow_builder.js (+220 lines JS)
+- hololoom/web_dashboard/workflow_builder.html (+609 lines CSS)
+- hololoom/web_dashboard/workflow_builder.js (+220 lines JS)
 
 ## Files Created
-- HoloLoom/web_dashboard/MOBILE_RESPONSIVE_FEATURES.md (800+ lines)
-- HoloLoom/web_dashboard/MOBILE_QUICK_REFERENCE.md (400+ lines)
-- HoloLoom/web_dashboard/IMPLEMENTATION_CHECKLIST.md (450 lines)
-- HoloLoom/web_dashboard/WAVE_1_VALIDATION_REPORT.md (600+ lines)
+- hololoom/web_dashboard/MOBILE_RESPONSIVE_FEATURES.md (800+ lines)
+- hololoom/web_dashboard/MOBILE_QUICK_REFERENCE.md (400+ lines)
+- hololoom/web_dashboard/IMPLEMENTATION_CHECKLIST.md (450 lines)
+- hololoom/web_dashboard/WAVE_1_VALIDATION_REPORT.md (600+ lines)
 - WAVE_1_MOBILE_RESPONSIVE_SUMMARY.md (700+ lines)
 - WAVE_1_COMPLETION_SUMMARY.md (450+ lines)
 

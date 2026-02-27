@@ -12,15 +12,15 @@ Tests the complete integration of beekeeping entity extraction:
 - DS-STAR verification workflow
 
 Run with:
-    pytest HoloLoom/tests/integration/test_masterweaver_department.py -v
+    pytest hololoom/tests/integration/test_masterweaver_department.py -v
 """
 
 import pytest
 import asyncio
 from pathlib import Path
 
-from HoloLoom.departments import DepartmentRequest, DepartmentRegistry
-from HoloLoom.apps.departments.beekeeping import MasterWeaverDepartment
+from hololoom.departments import DepartmentRequest, DepartmentRegistry
+from hololoom.apps.departments.beekeeping import MasterWeaverDepartment
 
 
 # ============================================================================

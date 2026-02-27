@@ -1,7 +1,7 @@
 # Workflow Analytics Dashboard - Tufte-Style Edition
 
 **Status**: ✅ Production Ready (December 9, 2025)
-**Location**: `HoloLoom/web_dashboard/workflow_analytics.html`
+**Location**: `hololoom/web_dashboard/workflow_analytics.html`
 **Lines of Code**: 1,333 (623 CSS + 610 JavaScript + 100 HTML)
 **Design Philosophy**: Edward Tufte's principles of data visualization excellence
 

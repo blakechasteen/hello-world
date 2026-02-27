@@ -34,15 +34,15 @@ This guide shows how to integrate the **Repository Context Manager** with mythRL
 ### Step 1: Extend AgenticOrchestrator
 
 ```python
-# HoloLoom/agentic/core_with_repos.py
+# hololoom/agentic/core_with_repos.py
 from typing import Optional, Set
-from HoloLoom.agentic import AgenticOrchestrator, ReasoningMode
-from HoloLoom.memory.repository_context import (
+from hololoom.agentic import AgenticOrchestrator, ReasoningMode
+from hololoom.memory.repository_context import (
     RepositoryContextManager,
     AgentQueryContext,
     AccessLevel
 )
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 
 class RepositoryAwareOrchestrator(AgenticOrchestrator):
@@ -177,10 +177,10 @@ class RepositoryAwareOrchestrator(AgenticOrchestrator):
 ### Step 2: Create Factory Function
 
 ```python
-# HoloLoom/agentic/factory.py
-from HoloLoom.agentic.core_with_repos import RepositoryAwareOrchestrator
-from HoloLoom.memory.repository_context import create_repo_manager, AccessLevel
-from HoloLoom.config import Config
+# hololoom/agentic/factory.py
+from hololoom.agentic.core_with_repos import RepositoryAwareOrchestrator
+from hololoom.memory.repository_context import create_repo_manager, AccessLevel
+from hololoom.config import Config
 
 
 async def create_code_aware_agent(
@@ -271,8 +271,8 @@ async def create_code_aware_agent(
 
 ```python
 # Example 1: Single agent with code context
-from HoloLoom.agentic.factory import create_code_aware_agent
-from HoloLoom.agentic import ReasoningMode
+from hololoom.agentic.factory import create_code_aware_agent
+from hololoom.agentic import ReasoningMode
 
 # Create frontend agent
 frontend_agent = await create_code_aware_agent(
@@ -375,8 +375,8 @@ contractor_agent = RepositoryAwareOrchestrator(
 ```python
 # test_repository_aware_orchestrator.py
 import pytest
-from HoloLoom.agentic.factory import create_code_aware_agent
-from HoloLoom.agentic import ReasoningMode
+from hololoom.agentic.factory import create_code_aware_agent
+from hololoom.agentic import ReasoningMode
 
 
 @pytest.mark.asyncio

@@ -19,7 +19,7 @@ import numpy as np
 from typing import Dict, Any, List
 
 # Phase 9: Model Adapters
-from HoloLoom.dark_trace.models.adapter import (
+from hololoom.dark_trace.models.adapter import (
     ModelAdapter,
     DummyAdapter,
     ActivationHook,
@@ -34,7 +34,7 @@ from HoloLoom.dark_trace.models.adapter import (
 )
 
 # Phase 9: Fingerprinting
-from HoloLoom.dark_trace.models.fingerprint import (
+from hololoom.dark_trace.models.fingerprint import (
     FeatureFingerprint,
     ModelFingerprinter,
     FingerprintConfig,
@@ -45,7 +45,7 @@ from HoloLoom.dark_trace.models.fingerprint import (
 )
 
 # Phase 10: Integration
-from HoloLoom.integrations.dark_trace_integration import (
+from hololoom.integrations.dark_trace_integration import (
     DarkTraceIntegration,
     IntegrationConfig,
     IntegrationMode,

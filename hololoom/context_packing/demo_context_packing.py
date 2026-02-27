@@ -24,7 +24,7 @@ except ImportError:
     print("Install with: pip install networkx")
     sys.exit(1)
 
-from HoloLoom.context_packing import (
+from hololoom.context_packing import (
     ContextPacker,
     ContextPackerConfig,
     ActivationSpreader,

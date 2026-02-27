@@ -13,7 +13,7 @@ Key Features:
 - Safety-aware feature monitoring
 
 Usage:
-    from HoloLoom.integrations.dark_trace_integration import (
+    from hololoom.integrations.dark_trace_integration import (
         DarkTraceIntegration,
         create_integration,
         enable_dark_trace,
@@ -53,20 +53,20 @@ except ImportError:
 import numpy as np
 
 # Dark Trace imports
-from HoloLoom.dark_trace.engine import DarkTraceEngine, create_engine
-from HoloLoom.dark_trace.trace_config import TraceConfig, TraceMode
-from HoloLoom.dark_trace.result import TraceResult, SteeringResult
-from HoloLoom.dark_trace.protocol import (
+from hololoom.dark_trace.engine import DarkTraceEngine, create_engine
+from hololoom.dark_trace.trace_config import TraceConfig, TraceMode
+from hololoom.dark_trace.result import TraceResult, SteeringResult
+from hololoom.dark_trace.protocol import (
     Feature,
     FeatureActivation,
     SafetyFlag,
     LensType,
 )
-from HoloLoom.dark_trace.models.policy_adapter import (
+from hololoom.dark_trace.models.policy_adapter import (
     PolicyAdapter,
     create_policy_adapter,
 )
-from HoloLoom.dark_trace.models.fingerprint import (
+from hololoom.dark_trace.models.fingerprint import (
     ModelFingerprinter,
     FeatureFingerprint,
     FingerprintConfig,
@@ -76,14 +76,14 @@ from HoloLoom.dark_trace.models.fingerprint import (
 )
 
 # Phase 2: Adversarial Probing imports
-from HoloLoom.dark_trace.research.adversarial_prober import (
+from hololoom.dark_trace.research.adversarial_prober import (
     AdversarialProber,
     ProbeConfig,
     VulnerabilityLevel,
     VulnerabilityReport,
     create_prober,
 )
-from HoloLoom.dark_trace.research.adversarial_catalog import (
+from hololoom.dark_trace.research.adversarial_catalog import (
     AdversarialCatalog,
     CatalogedVulnerability,
     VulnerabilityStatus,
@@ -91,7 +91,7 @@ from HoloLoom.dark_trace.research.adversarial_catalog import (
 )
 
 # Phase 2: Visualization Dashboard imports
-from HoloLoom.dark_trace.visualization import (
+from hololoom.dark_trace.visualization import (
     DarkTraceStreamingServer,
     StreamingConfig,
     create_streaming_server,

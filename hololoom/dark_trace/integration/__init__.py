@@ -25,7 +25,7 @@ Integration Points:
 3. Monitoring: Track feature statistics over time
 
 Usage:
-    from HoloLoom.dark_trace.integration import (
+    from hololoom.dark_trace.integration import (
         # Orchestrator integration
         DarkTraceOrchestrator,
         create_traced_orchestrator,
@@ -49,21 +49,21 @@ Usage:
     print(trace.safety_relevant)
 """
 
-from HoloLoom.dark_trace.integration.orchestrator import (
+from hololoom.dark_trace.integration.orchestrator import (
     DarkTraceOrchestrator,
     TracedSpacetime,
     OrchestratorConfig,
     create_traced_orchestrator,
 )
 
-from HoloLoom.dark_trace.integration.alignment import (
+from hololoom.dark_trace.integration.alignment import (
     AlignmentBridge,
     SafetyFeatureMapping,
     AlignmentConfig,
     create_alignment_bridge,
 )
 
-from HoloLoom.dark_trace.integration.monitoring import (
+from hololoom.dark_trace.integration.monitoring import (
     InterpretabilityMonitor,
     FeatureStatistics,
     DriftDetector,
@@ -71,7 +71,7 @@ from HoloLoom.dark_trace.integration.monitoring import (
     create_monitor,
 )
 
-from HoloLoom.dark_trace.integration.safety_gate import (
+from hololoom.dark_trace.integration.safety_gate import (
     SafetyAction,
     ConcernType,
     SafetyConcern,
@@ -82,7 +82,7 @@ from HoloLoom.dark_trace.integration.safety_gate import (
     create_safety_gate,
 )
 
-from HoloLoom.dark_trace.integration.orchestrator_hooks import (
+from hololoom.dark_trace.integration.orchestrator_hooks import (
     IntegrationMode,
     HookPoint,
     HookContext,

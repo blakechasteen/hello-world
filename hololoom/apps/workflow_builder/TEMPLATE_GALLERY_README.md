@@ -1,7 +1,7 @@
 # HoloLoom Template Gallery - Wave 1 (WEAVER Moonshot)
 
 **Status**: ✅ Complete (December 9, 2025)
-**Location**: `HoloLoom/web_dashboard/template_gallery.html`
+**Location**: `hololoom/web_dashboard/template_gallery.html`
 **Files**: `template_gallery.html` (1,100+ lines) + `template_gallery.js` (500+ lines)
 
 ## Overview
@@ -119,16 +119,16 @@ class TemplateGallery {
 
 ### Direct URL
 ```
-file:///c:/Users/blake/OneDrive/Documents/mythRL/HoloLoom/web_dashboard/template_gallery.html
+file:///c:/Users/blake/OneDrive/Documents/mythRL/hololoom/web_dashboard/template_gallery.html
 ```
 
 Or open in browser:
 ```bash
 # Windows
-start HoloLoom/web_dashboard/template_gallery.html
+start hololoom/web_dashboard/template_gallery.html
 
 # Mac/Linux
-open HoloLoom/web_dashboard/template_gallery.html
+open hololoom/web_dashboard/template_gallery.html
 ```
 
 ### From Workflow Builder
@@ -141,7 +141,7 @@ Add a "Browse Templates" link in `workflow_builder.html`:
 
 ### Local Development Server
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python -m http.server 8000
 # Visit: http://localhost:8000/template_gallery.html
 ```

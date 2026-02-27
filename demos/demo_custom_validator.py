@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
-from HoloLoom.prompting.validation.pipeline import (
+from hololoom.prompting.validation.pipeline import (
     ValidationPipeline,
     ValidationPhase,
     ValidationContext,
@@ -27,7 +27,7 @@ from HoloLoom.prompting.validation.pipeline import (
     QualityValidator,
     PipelineResults,
 )
-from HoloLoom.prompting.validation.swarm import (
+from hololoom.prompting.validation.swarm import (
     MoonshotSwarm,
     SwarmAgent,
     SwarmDimension,

@@ -6,7 +6,7 @@ verification system, enabling automatic verification of test responses and
 quality analysis of detected contradictions.
 
 Status: ✅ Production Ready (December 2025)
-Location: HoloLoom/prompting/testing/verification_bridge.py
+Location: hololoom/prompting/testing/verification_bridge.py
 Lines: ~200
 """
 
@@ -15,13 +15,13 @@ from typing import Dict, List, Optional, Any
 from collections import Counter
 import logging
 
-from HoloLoom.prompting.testing.protocol import PromptTestCase, PromptTestResult
-from HoloLoom.prompting.testing.metrics_collector import MetricsCollector, MetricType
+from hololoom.prompting.testing.protocol import PromptTestCase, PromptTestResult
+from hololoom.prompting.testing.metrics_collector import MetricsCollector, MetricType
 
 # Try to import verification module with graceful fallback
 try:
-    from HoloLoom.verification.protocol import VerificationResult, VerificationStatus
-    from HoloLoom.verification.chain import VerificationChain
+    from hololoom.verification.protocol import VerificationResult, VerificationStatus
+    from hololoom.verification.chain import VerificationChain
     VERIFICATION_AVAILABLE = True
 except ImportError:
     VERIFICATION_AVAILABLE = False

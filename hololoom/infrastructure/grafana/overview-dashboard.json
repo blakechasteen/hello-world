@@ -1,6 +1,6 @@
 {
   "dashboard": {
-    "title": "HoloLoom Overview",
+    "title": "hololoom Overview",
     "tags": ["hololoom", "production", "overview"],
     "timezone": "browser",
     "editable": true,
@@ -17,7 +17,7 @@
         {
           "datasource": "Prometheus",
           "enable": true,
-          "expr": "ALERTS{alertname=~\"HoloLoom.*\",severity=\"critical\"}",
+          "expr": "ALERTS{alertname=~\"hololoom.*\",severity=\"critical\"}",
           "iconColor": "red",
           "name": "Critical Alerts",
           "tagKeys": "alertname,pod",

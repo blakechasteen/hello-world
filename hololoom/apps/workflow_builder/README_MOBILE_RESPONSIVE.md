@@ -165,7 +165,7 @@ See the Testing section for a comprehensive testing checklist.
 ### Key File Locations
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── workflow_builder.html (MODIFIED - +609 CSS lines)
 ├── workflow_builder.js (MODIFIED - +220 JS lines)
 ├── MOBILE_RESPONSIVE_FEATURES.md (NEW - 800+ lines)

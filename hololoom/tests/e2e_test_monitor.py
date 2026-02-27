@@ -13,14 +13,14 @@ Features:
 
 Usage:
     # Option 1: Run with pytest plugin (automatic)
-    pytest HoloLoom/tests/e2e/ -v --tb=short
+    pytest hololoom/tests/e2e/ -v --tb=short
 
     # Option 2: Standalone monitoring (manual parsing)
-    python HoloLoom/tests/e2e_test_monitor.py
+    python hololoom/tests/e2e_test_monitor.py
 
     # Option 3: pytest-json-report plugin
     pip install pytest-json-report
-    pytest HoloLoom/tests/e2e/ --json-report --json-report-file=test_results.json
+    pytest hololoom/tests/e2e/ --json-report --json-report-file=test_results.json
 """
 
 import time
@@ -346,10 +346,10 @@ def main():
 
     Usage:
         # Generate JSON report first
-        pytest HoloLoom/tests/e2e/ --json-report --json-report-file=test_results.json
+        pytest hololoom/tests/e2e/ --json-report --json-report-file=test_results.json
 
         # Then display dashboard
-        python HoloLoom/tests/e2e_test_monitor.py
+        python hololoom/tests/e2e_test_monitor.py
     """
     # Check for JSON report
     json_file = Path("test_results.json")
@@ -362,8 +362,8 @@ def main():
         print("No test results found.")
         print("\nTo generate test results:")
         print("1. Install pytest-json-report: pip install pytest-json-report")
-        print("2. Run tests: pytest HoloLoom/tests/e2e/ --json-report --json-report-file=test_results.json")
-        print("3. View dashboard: python HoloLoom/tests/e2e_test_monitor.py")
+        print("2. Run tests: pytest hololoom/tests/e2e/ --json-report --json-report-file=test_results.json")
+        print("3. View dashboard: python hololoom/tests/e2e_test_monitor.py")
 
 
 if __name__ == "__main__":

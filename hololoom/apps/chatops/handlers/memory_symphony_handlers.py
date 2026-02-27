@@ -13,7 +13,7 @@ Commands:
 - !memory help - Memory symphony command help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.memory_symphony_handlers import register_memory_symphony_handlers
+    from hololoom.apps.chatops.handlers.memory_symphony_handlers import register_memory_symphony_handlers
 
     # In run_chatops.py:
     register_memory_symphony_handlers(bot, conductor)
@@ -25,8 +25,8 @@ import logging
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.memory.symphony.conductor import MemoryConductor
-    from HoloLoom.memory.symphony.protocol import MemoryStrategy
+    from hololoom.memory.symphony.conductor import MemoryConductor
+    from hololoom.memory.symphony.protocol import MemoryStrategy
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -36,8 +36,8 @@ except ImportError:
 
 # Memory Symphony imports
 try:
-    from HoloLoom.memory.symphony.conductor import MemoryConductor
-    from HoloLoom.memory.symphony.protocol import (
+    from hololoom.memory.symphony.conductor import MemoryConductor
+    from hololoom.memory.symphony.protocol import (
         MemoryStrategy,
         MemorySystem,
         MemoryQuery,
@@ -54,7 +54,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -465,7 +465,7 @@ class MemorySymphonyHandlers:
     Decorator-based ChatOps handlers for Memory Symphony.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.memory_symphony_handlers import MemorySymphonyHandlers
+        from hololoom.apps.chatops.handlers.memory_symphony_handlers import MemorySymphonyHandlers
 
         handlers = MemorySymphonyHandlers(conductor=memory_conductor)
         registry.register_instance(handlers)

@@ -16,7 +16,7 @@ Commands:
 - !ingest help - Ingestion help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.ingestion_handlers import register_ingestion_handlers
+    from hololoom.apps.chatops.handlers.ingestion_handlers import register_ingestion_handlers
 
     # In run_chatops.py:
     register_ingestion_handlers(bot, memory_backend)
@@ -42,7 +42,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -51,44 +51,44 @@ except ImportError:
 
 # SpinningWheel imports (graceful degradation)
 try:
-    from HoloLoom.spinningWheel.auto import spin, spin_batch, spin_url
+    from hololoom.spinningWheel.auto import spin, spin_batch, spin_url
     SPIN_AVAILABLE = True
 except ImportError:
     SPIN_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.protocol import SpinResult, SpinnerCapabilities
+    from hololoom.spinningWheel.protocol import SpinResult, SpinnerCapabilities
     PROTOCOL_AVAILABLE = True
 except ImportError:
     PROTOCOL_AVAILABLE = False
 
 # Specific spinners (optional)
 try:
-    from HoloLoom.spinningWheel.youtube import YouTubeSpinner
+    from hololoom.spinningWheel.youtube import YouTubeSpinner
     YOUTUBE_AVAILABLE = True
 except ImportError:
     YOUTUBE_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.pdf_extractor import PDFSpinner
+    from hololoom.spinningWheel.pdf_extractor import PDFSpinner
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.url import URLSpinner
+    from hololoom.spinningWheel.url import URLSpinner
     URL_AVAILABLE = True
 except ImportError:
     URL_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.git_parser import GitSpinner
+    from hololoom.spinningWheel.git_parser import GitSpinner
     GIT_AVAILABLE = True
 except ImportError:
     GIT_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.image import ImageSpinner
+    from hololoom.spinningWheel.image import ImageSpinner
     IMAGE_AVAILABLE = True
 except ImportError:
     IMAGE_AVAILABLE = False
@@ -776,7 +776,7 @@ class IngestionHandlers:
     Decorator-based ChatOps handlers for data ingestion.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.ingestion_handlers import IngestionHandlers
+        from hololoom.apps.chatops.handlers.ingestion_handlers import IngestionHandlers
 
         handlers = IngestionHandlers(memory=memory_backend)
         registry.register_instance(handlers)

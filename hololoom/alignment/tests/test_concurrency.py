@@ -21,14 +21,14 @@ from typing import List, Dict, Any
 import pytest
 
 # Core alignment modules
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     RiskLevel,
     ActionCategory,
     ActionRequest,
     OutcomeType,
 )
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     DeceptionDetector,
     BehavioralProbe,
     GoalTransparency,
@@ -36,23 +36,23 @@ from HoloLoom.alignment.deception_detection import (
     ActionObservation,
     ProbeType,
 )
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
     AutonomyLimit,
     ResourceBounds,
     ResourceType,
 )
-from HoloLoom.alignment.audit_trail import (
+from hololoom.alignment.audit_trail import (
     AuditTrail,
     DecisionType,
     OutcomeType as AuditOutcomeType,
 )
-from HoloLoom.alignment.monitoring import (
+from hololoom.alignment.monitoring import (
     AlignmentMonitor,
     get_global_monitor,
     set_global_monitor,
 )
-from HoloLoom.alignment.alerting import (
+from hololoom.alignment.alerting import (
     AlertDispatcher,
     AlertConfig,
     AlertSeverity,

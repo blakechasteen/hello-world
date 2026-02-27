@@ -141,7 +141,7 @@ class Shuttle:
     def __init__(self):
         self.ts_sampler = ThompsonSampler()
         self.mcts = MCTS()
-        from HoloLoom.eggroll.math_crusher import DifferentialEvolution
+        from hololoom.eggroll.math_crusher import DifferentialEvolution
         self.de = DifferentialEvolution()
         self.last_selected_arm = None
         self.last_selected_pattern = None

@@ -173,7 +173,7 @@ for finding in results.findings:
 
 HOLOLOOM INTEGRATION:
 ```python
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 
 qa = get_department("quality_assurance")
 result = await qa.process({

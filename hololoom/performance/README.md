@@ -1,7 +1,7 @@
 # HoloLoom Performance Module
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/performance/`
+**Location**: `hololoom/performance/`
 **Total Code**: ~3,800 lines across 13 Python files
 **Date**: December 2025
 
@@ -22,7 +22,7 @@ The module brings together **three distinct optimization layers**:
 ### Basic Metrics Collection
 
 ```python
-from HoloLoom.performance import MetricsCollector, Profiler
+from hololoom.performance import MetricsCollector, Profiler
 
 # Track latency and throughput
 metrics = MetricsCollector(window_size=1000)
@@ -44,7 +44,7 @@ print(f"Cache hit rate: {stats['hit_rate']:.1%}")
 ### Production-Grade Profiling
 
 ```python
-from HoloLoom.performance import Profiler, ProfilerRegistry
+from hololoom.performance import Profiler, ProfilerRegistry
 
 # Profile nested operations
 async with Profiler("weaving_cycle") as main_prof:
@@ -72,7 +72,7 @@ print(main_prof.summary())
 ### Three-Tier Compositional Caching
 
 ```python
-from HoloLoom.performance import CompositionalCache
+from hololoom.performance import CompositionalCache
 
 # Create three-tier cache
 cache = CompositionalCache(
@@ -101,13 +101,13 @@ print(cache.stats)
 ### Real-Time Prometheus Metrics
 
 ```python
-from HoloLoom.performance import start_metrics_server
+from hololoom.performance import start_metrics_server
 
 # Start metrics endpoint on port 8001
 start_metrics_server(port=8001)
 
 # Track query completion
-from HoloLoom.performance.prometheus_metrics import metrics
+from hololoom.performance.prometheus_metrics import metrics
 
 metrics.track_query(
     pattern='FUSED',
@@ -132,7 +132,7 @@ metrics.track_query(
 
 ```bash
 # Start interactive terminal dashboard
-python -m HoloLoom.performance.dashboard
+python -m hololoom.performance.dashboard
 
 # Features:
 # - Real-time query latency (current, p50, p95, p99)
@@ -350,7 +350,7 @@ Production-grade Prometheus metrics for dashboards and alerting.
 
 **Usage**:
 ```python
-from HoloLoom.performance.prometheus_metrics import metrics, start_metrics_server
+from hololoom.performance.prometheus_metrics import metrics, start_metrics_server
 
 # Start metrics endpoint
 start_metrics_server(port=8001)
@@ -391,10 +391,10 @@ Live terminal UI for real-time performance monitoring (requires Rich library).
 **Usage**:
 ```bash
 # Run dashboard
-python -m HoloLoom.performance.dashboard
+python -m hololoom.performance.dashboard
 
 # Or programmatically
-from HoloLoom.performance.dashboard import PerformanceDashboard
+from hololoom.performance.dashboard import PerformanceDashboard
 
 dashboard = PerformanceDashboard()
 asyncio.run(dashboard.run())
@@ -414,10 +414,10 @@ Comprehensive benchmarking for comparing configurations and identifying bottlene
 **Usage**:
 ```bash
 # Run all benchmarks
-python -m HoloLoom.performance.benchmark --mode all --queries 100
+python -m hololoom.performance.benchmark --mode all --queries 100
 
 # Specific mode
-python -m HoloLoom.performance.benchmark --mode fast --queries 50
+python -m hololoom.performance.benchmark --mode fast --queries 50
 
 # Output: BenchmarkResult with latency percentiles, throughput, memory
 ```
@@ -475,8 +475,8 @@ python -m HoloLoom.performance.benchmark --mode fast --queries 50
 The Performance Module integrates automatically with HoloLoom's core systems:
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 
 # Performance monitoring automatically enabled
 config = Config.fused()
@@ -495,7 +495,7 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 For fine-grained control:
 
 ```python
-from HoloLoom.performance import (
+from hololoom.performance import (
     Profiler, MetricsCollector, CompositionalCache,
     start_metrics_server
 )
@@ -521,8 +521,8 @@ start_metrics_server(port=8001)
 Performance metrics integrate with safety monitoring:
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.performance import Profiler
+from hololoom.alignment import SafetyGuardrails
+from hololoom.performance import Profiler
 
 guardrails = SafetyGuardrails()
 
@@ -588,10 +588,10 @@ export HOLOLOOM_PROFILING_LOG_CHILDREN=true
 ### Programmatic Configuration
 
 ```python
-from HoloLoom.performance import (
+from hololoom.performance import (
     MetricsCollector, CompositionalCache, start_metrics_server
 )
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # Config-based
 config = Config.fused()
@@ -669,16 +669,16 @@ Run performance tests:
 
 ```bash
 # Benchmark suite
-PYTHONPATH=. python -m HoloLoom.performance.benchmark --mode all --queries 100
+PYTHONPATH=. python -m hololoom.performance.benchmark --mode all --queries 100
 
 # Specific mode
-PYTHONPATH=. python -m HoloLoom.performance.benchmark --mode fast --queries 50
+PYTHONPATH=. python -m hololoom.performance.benchmark --mode fast --queries 50
 
 # Routing benchmarks
-PYTHONPATH=. python -m HoloLoom.performance.routing_benchmarks
+PYTHONPATH=. python -m hololoom.performance.routing_benchmarks
 
 # Unit tests
-pytest HoloLoom/performance/tests/ -v
+pytest hololoom/performance/tests/ -v
 ```
 
 ## Performance Tips
@@ -711,8 +711,8 @@ pytest HoloLoom/performance/tests/ -v
 
 ## See Also
 
-- [HoloLoom/memory/SPRING_DYNAMICS.md](../memory/SPRING_DYNAMICS.md) - Physics-based memory activation
-- [HoloLoom/memory/MULTI_WAVE_ENGINE.md](../memory/MULTI_WAVE_ENGINE.md) - Brain wave consolidation
+- [hololoom/memory/SPRING_DYNAMICS.md](../memory/SPRING_DYNAMICS.md) - Physics-based memory activation
+- [hololoom/memory/MULTI_WAVE_ENGINE.md](../memory/MULTI_WAVE_ENGINE.md) - Brain wave consolidation
 - [PHASE_5_UG_COMPOSITIONAL_CACHE.md](../prompting/PHASE_5_UG_COMPOSITIONAL_CACHE.md) - Universal Grammar caching
 - [PERFORMANCE_SUMMARY.md](./PERFORMANCE_SUMMARY.md) - Executive summary
 - [POLISH_COMPLETE.md](./POLISH_COMPLETE.md) - Polish and refinement details

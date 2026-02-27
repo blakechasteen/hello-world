@@ -11,7 +11,7 @@ NOTE: Renamed "policies" to "trajectories" to avoid collision with HoloLoom's
 existing policy system (tool selection policies in policy/unified.py).
 
 Quick Start:
-    from HoloLoom.shuttle import create_hololoom_shuttle
+    from hololoom.shuttle import create_hololoom_shuttle
 
     shuttle = create_hololoom_shuttle()
     result = shuttle.intersect("What's blocking us?")

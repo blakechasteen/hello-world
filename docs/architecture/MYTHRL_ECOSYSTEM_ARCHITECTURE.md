@@ -121,7 +121,7 @@ Every component learns:
 ```
 mythRL/
 │
-├─ HoloLoom/                           # 🔧 Core Library
+├─ hololoom/                           # 🔧 Core Library
 │   ├─ semantic_calculus/              # Semantic analysis engine
 │   │   ├─ analyzer.py                 # Semantic state analysis
 │   │   ├─ dimensions.py               # 244D semantic space
@@ -497,7 +497,7 @@ The dashboard is **NOT** a traditional UI - it's an **intelligent agent** that:
 
 ```python
 # backend/smart_agent/intent_analyzer.py
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
 
 class DashboardIntentAnalyzer:
     """
@@ -549,7 +549,7 @@ User Action → Semantic Analysis → Intent Detection → App Selection → Vie
 
 ```python
 # backend/smart_agent/insight_generator.py
-from HoloLoom.warp.math.meaning_synthesizer import MeaningSynthesizer
+from hololoom.warp.math.meaning_synthesizer import MeaningSynthesizer
 from darkTrace.analyzers import TrajectoryPredictor
 
 class SmartInsightGenerator:
@@ -642,7 +642,7 @@ class SmartInsightGenerator:
 
 ```python
 # backend/smart_agent/layout_optimizer.py
-from HoloLoom.reflection.buffer import ReflectionBuffer
+from hololoom.reflection.buffer import ReflectionBuffer
 
 class SmartLayoutOptimizer:
     """
@@ -772,8 +772,8 @@ User clicks "Compare" → Instant load! (already prepared)
 
 ```python
 # backend/reflection/user_patterns.py
-from HoloLoom.reflection.buffer import ReflectionBuffer
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.reflection.buffer import ReflectionBuffer
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 
 class DashboardLearningLoop:
     """

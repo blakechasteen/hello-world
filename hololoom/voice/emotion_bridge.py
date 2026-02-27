@@ -242,7 +242,7 @@ class NodeJSBridge:
         # Try common locations
         possible_paths = [
             Path(__file__).parent.parent / "voice_ux" / "milestone3" / "complete_emotional_pipeline.js",
-            Path("HoloLoom/voice_ux/milestone3/complete_emotional_pipeline.js"),
+            Path("hololoom/voice_ux/milestone3/complete_emotional_pipeline.js"),
             Path("voice_ux/milestone3/complete_emotional_pipeline.js")
         ]
 
@@ -539,8 +539,8 @@ async def enhance_voice_agent_with_emotions(voice_agent, emotion_config: Optiona
         emotion_config: Emotion bridge configuration
 
     Example:
-        from HoloLoom.voice import VoiceAgent
-        from HoloLoom.voice.emotion_bridge import enhance_voice_agent_with_emotions
+        from hololoom.voice import VoiceAgent
+        from hololoom.voice.emotion_bridge import enhance_voice_agent_with_emotions
 
         agent = VoiceAgent(orchestrator=orchestrator)
         await enhance_voice_agent_with_emotions(agent)
@@ -641,9 +641,9 @@ async def example_voice_agent_integration():
 
     # Import voice agent (if available)
     try:
-        from HoloLoom.voice import VoiceAgent
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.voice import VoiceAgent
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
     except ImportError:
         print("HoloLoom not available - skipping example")
         return

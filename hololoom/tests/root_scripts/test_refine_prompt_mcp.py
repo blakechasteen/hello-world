@@ -17,8 +17,8 @@ if sys.platform == 'win32':
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.config import Config
-from HoloLoom.prompting.metaprompt import create_metaprompt_auto, enhance_request
+from hololoom.config import Config
+from hololoom.prompting.metaprompt import create_metaprompt_auto, enhance_request
 
 
 async def test_refine_prompt():

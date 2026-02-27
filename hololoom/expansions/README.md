@@ -14,8 +14,8 @@ HoloLoom's core config provides sensible defaults that work out of the box. Expa
 ## Quick Start
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.expansions.physics import PhysicsConfig
+from hololoom.config import Config
+from hololoom.expansions.physics import PhysicsConfig
 
 # Start with a preset
 config = Config.research()
@@ -24,7 +24,7 @@ config = Config.research()
 config.load_expansion(PhysicsConfig(use_gp_bandits=True))
 
 # Or use a preset from the expansion
-from HoloLoom.expansions.physics import gp_thompson
+from hololoom.expansions.physics import gp_thompson
 config.load_expansion(gp_thompson())
 ```
 
@@ -37,7 +37,7 @@ config.load_expansion(gp_thompson())
 Gaussian Process optimization and physics-based semantic evolution.
 
 ```python
-from HoloLoom.expansions.physics import (
+from hololoom.expansions.physics import (
     PhysicsConfig,
     gp_thompson,      # Thompson Sampling acquisition
     gp_ucb,           # UCB acquisition
@@ -95,7 +95,7 @@ config.load_expansion(PhysicsConfig(
 Bayesian uncertainty quantification for the neural policy.
 
 ```python
-from HoloLoom.expansions.bayesian import (
+from hololoom.expansions.bayesian import (
     BayesianConfig,
     bayesian_default,
     bayesian_high_confidence,
@@ -132,7 +132,7 @@ config.load_expansion(BayesianConfig(
 Non-Euclidean geometry for embeddings: hyperbolic (hierarchies), spherical (clusters).
 
 ```python
-from HoloLoom.expansions.geometry import (
+from hololoom.expansions.geometry import (
     GeometryConfig,
     hyperbolic_only,
     spherical_only,
@@ -180,7 +180,7 @@ config.load_expansion(GeometryConfig(
 Multi-scale spectral analysis for frequency decomposition and manifold geometry.
 
 ```python
-from HoloLoom.expansions.advanced_spectral import (
+from hololoom.expansions.advanced_spectral import (
     AdvancedSpectralConfig,
     wavelets_only,
     diffusion_maps_only,
@@ -244,10 +244,10 @@ pip install hololoom[research]
 ## Loading Multiple Expansions
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.expansions.physics import gp_thompson
-from HoloLoom.expansions.geometry import product_manifold
-from HoloLoom.expansions.bayesian import bayesian_default
+from hololoom.config import Config
+from hololoom.expansions.physics import gp_thompson
+from hololoom.expansions.geometry import product_manifold
+from hololoom.expansions.bayesian import bayesian_default
 
 config = Config.research()
 config.load_expansion(gp_thompson())
@@ -268,7 +268,7 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 try:
-    from HoloLoom.config import ExpansionBundle
+    from hololoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:
@@ -298,7 +298,7 @@ config.load_expansion(MyCustomConfig(enable_my_feature=True))
 Get available expansions programmatically:
 
 ```python
-from HoloLoom.expansions import list_expansions, get_expansion
+from hololoom.expansions import list_expansions, get_expansion
 
 # List all registered expansions
 expansions = list_expansions()
@@ -347,7 +347,7 @@ config.use_gp_bandits = True
 config.gp_acquisition = "thompson"
 
 # New way (recommended)
-from HoloLoom.expansions.physics import gp_thompson
+from hololoom.expansions.physics import gp_thompson
 config = Config.research()
 config.load_expansion(gp_thompson())
 ```

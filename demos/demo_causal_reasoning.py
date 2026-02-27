@@ -12,7 +12,7 @@ Example: Medical treatment scenario
 import sys
 sys.path.insert(0, '.')
 
-from HoloLoom.causal import (
+from hololoom.causal import (
     CausalNode, CausalEdge, CausalDAG, NodeType,
     CausalQuery, QueryType,
     InterventionEngine, CounterfactualEngine

@@ -18,8 +18,8 @@ on:
       - main
       - master
     paths:
-      - 'HoloLoom/redteam/sandbox/**'
-      - 'HoloLoom/redteam/deploy/**'
+      - 'hololoom/redteam/sandbox/**'
+      - 'hololoom/redteam/deploy/**'
       - 'infra/docker/Dockerfile.sandbox'
       - 'infra/kubernetes/sandbox/**'
       - '.github/workflows/sandbox-deployment.yml'
@@ -28,8 +28,8 @@ on:
       - main
       - master
     paths:
-      - 'HoloLoom/redteam/sandbox/**'
-      - 'HoloLoom/redteam/deploy/**'
+      - 'hololoom/redteam/sandbox/**'
+      - 'hololoom/redteam/deploy/**'
   workflow_dispatch:
     inputs:
       environment:
@@ -78,14 +78,14 @@ jobs:
       - name: Run sandbox tests
         if: ${{ github.event.inputs.skip_tests != 'true' }}
         run: |
-          PYTHONPATH=. pytest HoloLoom/redteam/sandbox/tests/ -v --tb=short
+          PYTHONPATH=. pytest hololoom/redteam/sandbox/tests/ -v --tb=short
         continue-on-error: false
 
       - name: Run deploy tests
         if: ${{ github.event.inputs.skip_tests != 'true' }}
         run: |
           PYTHONPATH=. python -c "
-          from HoloLoom.redteam.deploy import DeploymentConfig
+          from hololoom.redteam.deploy import DeploymentConfig
           config = DeploymentConfig.for_dev()
           assert config.name == 'carts-sandbox-dev'
           print('Deploy config tests passed')

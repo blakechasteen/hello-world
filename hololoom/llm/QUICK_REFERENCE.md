@@ -24,7 +24,7 @@ export GOOGLE_API_KEY="..."
 ## Basic Usage
 
 ```python
-from HoloLoom.llm import UnifiedLLMClient
+from hololoom.llm import UnifiedLLMClient
 
 # Simple (uses defaults)
 client = UnifiedLLMClient.create_default()
@@ -38,7 +38,7 @@ print(f"Cost: ${response.cost_estimate.total_cost_usd:.4f}")
 ## Custom Configuration
 
 ```python
-from HoloLoom.llm import UnifiedLLMClient, LLMConfig
+from hololoom.llm import UnifiedLLMClient, LLMConfig
 
 primary = LLMConfig(provider="anthropic", model="claude-3-5-sonnet-20241022")
 fallback = LLMConfig(provider="ollama", model="llama3.2:3b")
@@ -145,7 +145,7 @@ model = "ollama/llama3.2:3b" if simple else "anthropic/claude-3-5-sonnet"
 
 ```bash
 # Test suite
-PYTHONPATH=. python HoloLoom/llm/test_llm_client.py
+PYTHONPATH=. python hololoom/llm/test_llm_client.py
 
 # Demo
 PYTHONPATH=. python demos/demo_llm_multi_model.py
@@ -175,6 +175,6 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 ## Full Documentation
 
-- **README**: `HoloLoom/llm/README.md`
-- **Dashboard Integration**: `HoloLoom/llm/DASHBOARD_INTEGRATION.md`
+- **README**: `hololoom/llm/README.md`
+- **Dashboard Integration**: `hololoom/llm/DASHBOARD_INTEGRATION.md`
 - **CLAUDE.md**: Main documentation (Multi-Model LLM section)

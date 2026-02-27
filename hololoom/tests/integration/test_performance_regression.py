@@ -34,9 +34,9 @@ from pathlib import Path
 from typing import List, Dict, Any
 from datetime import datetime
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config, ExecutionMode
+from hololoom.protocols.types import Query, MemoryShard
 
 
 # ============================================================================

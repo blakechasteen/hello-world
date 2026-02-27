@@ -26,8 +26,8 @@ if TYPE_CHECKING:
 
 # Import HoloLoom prompt refinement (graceful degradation if not available)
 try:
-    from HoloLoom.prompting.metaprompt import create_metaprompt_auto
-    from HoloLoom.config import Config
+    from hololoom.prompting.metaprompt import create_metaprompt_auto
+    from hololoom.config import Config
     REFINEMENT_AVAILABLE = True
 except ImportError:
     REFINEMENT_AVAILABLE = False

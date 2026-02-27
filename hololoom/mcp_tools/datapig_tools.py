@@ -20,7 +20,7 @@ except ImportError:
 
 # DATAPIG imports
 try:
-    from HoloLoom.datapig import (
+    from hololoom.datapig import (
         DataPigDetector,
         DataQualityIssue,
         Severity,
@@ -28,7 +28,7 @@ try:
         engage_warp_validation,
         analyze_dataset
     )
-    from HoloLoom.datapig.config import create_config, DetectorConfig
+    from hololoom.datapig.config import create_config, DetectorConfig
     DATAPIG_AVAILABLE = True
 except ImportError:
     DATAPIG_AVAILABLE = False
@@ -310,7 +310,7 @@ def _format_issue(issue: DataQualityIssue) -> Dict[str, Any]:
 
 def _dict_to_issue(issue_dict: Dict) -> DataQualityIssue:
     """Convert dict to DataQualityIssue (for fix_data_quality)"""
-    from HoloLoom.datapig.detector import DataQualityIssue, IssueType, Severity
+    from hololoom.datapig.detector import DataQualityIssue, IssueType, Severity
 
     return DataQualityIssue(
         issue_type=IssueType[issue_dict["type"]],

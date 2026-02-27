@@ -24,10 +24,10 @@ from typing import Any, Dict, List, Optional, Tuple
 import logging
 import re
 
-from HoloLoom.core.loom.base_loom import BaseLoom
-from HoloLoom.core.loom.protocol import REFLECT, CorrectionInsight, PatternInsight
-from HoloLoom.core.fabric.fabric import Fabric
-from HoloLoom.core.protocols.department import (
+from hololoom.core.loom.base_loom import BaseLoom
+from hololoom.core.loom.protocol import REFLECT, CorrectionInsight, PatternInsight
+from hololoom.core.fabric.fabric import Fabric
+from hololoom.core.protocols.department import (
     DepartmentRequest,
     DepartmentResponse,
     ConfidenceMetadata,

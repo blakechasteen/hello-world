@@ -21,7 +21,7 @@ from typing import Callable, Optional, TypeVar, Any
 from dataclasses import dataclass
 from enum import Enum
 
-from HoloLoom.context.error_handling import CircuitBreakerOpenError
+from hololoom.context.error_handling import CircuitBreakerOpenError
 
 
 # ============================================================================

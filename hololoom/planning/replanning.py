@@ -23,7 +23,7 @@ from copy import deepcopy
 import time
 
 # Import Layer 2 core
-from HoloLoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action
+from hololoom.planning.planner import HierarchicalPlanner, Plan, Goal, Action
 
 logger = logging.getLogger(__name__)
 

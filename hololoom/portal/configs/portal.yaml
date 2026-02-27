@@ -1,5 +1,5 @@
 # Portal Server Configuration
-# Control plane for HoloLoom distributed compute
+# Control plane for hololoom distributed compute
 
 loom_id: "loom-blake"
 host: "0.0.0.0"

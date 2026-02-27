@@ -125,4 +125,4 @@ if __name__ == "__main__":
     print("Counterfactual Generator - What-If Analysis for HoloLoom")
     print("=" * 70)
     print("\nGenerates minimal changes that would flip decisions")
-    print("Usage: from HoloLoom.alignment.counterfactual_generator import MinimalCounterfactualGenerator")
+    print("Usage: from hololoom.alignment.counterfactual_generator import MinimalCounterfactualGenerator")

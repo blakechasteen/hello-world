@@ -11,7 +11,7 @@ Three-layer architecture:
 3. Meta-Awareness - Recursive self-reflection
 
 Usage:
-    from HoloLoom.awareness import (
+    from hololoom.awareness import (
         CompositionalAwarenessLayer,
         DualStreamGenerator,
         MetaAwarenessLayer
@@ -33,7 +33,7 @@ Usage:
     )
 """
 
-# Use relative imports (moved to HoloLoom/memory/awareness/ in Dec 2025)
+# Use relative imports (moved to hololoom/memory/awareness/ in Dec 2025)
 from .compositional_awareness import (
     CompositionalAwarenessLayer,
     UnifiedAwarenessContext,

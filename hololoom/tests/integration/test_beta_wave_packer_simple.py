@@ -9,11 +9,11 @@ import asyncio
 import numpy as np
 from dataclasses import dataclass, field
 
-from HoloLoom.awareness.beta_wave_packer import (
+from hololoom.awareness.beta_wave_packer import (
     BetaWaveContextPacker,
     TokenBudget
 )
-from HoloLoom.memory.spring_dynamics_engine import (
+from hololoom.memory.spring_dynamics_engine import (
     SpringDynamicsEngine,
     SpringEngineConfig
 )

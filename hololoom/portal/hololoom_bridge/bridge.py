@@ -42,7 +42,7 @@ class LoomQuery(BaseModel):
 
 
 class LoomResult(BaseModel):
-    """Result from HoloLoom."""
+    """Result from hololoom."""
 
     success: bool = Field(description="Query succeeded")
     data: Any = Field(description="Response data")

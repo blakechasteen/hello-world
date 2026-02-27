@@ -29,7 +29,7 @@ class TestInformationTheory:
 
     def test_entropy_uniform(self):
         """Uniform distribution has maximum entropy."""
-        from HoloLoom.warp.math.information import entropy
+        from hololoom.warp.math.information import entropy
 
         # Uniform distribution over 8 outcomes
         p = np.ones(8) / 8
@@ -40,7 +40,7 @@ class TestInformationTheory:
 
     def test_entropy_deterministic(self):
         """Deterministic distribution has zero entropy."""
-        from HoloLoom.warp.math.information import entropy
+        from hololoom.warp.math.information import entropy
 
         p = np.array([1.0, 0.0, 0.0, 0.0])
         H = entropy(p)
@@ -49,7 +49,7 @@ class TestInformationTheory:
 
     def test_kl_divergence_positive(self):
         """KL divergence is always non-negative."""
-        from HoloLoom.warp.math.information import kl_divergence
+        from hololoom.warp.math.information import kl_divergence
 
         p = np.array([0.5, 0.3, 0.2])
         q = np.array([0.33, 0.33, 0.34])
@@ -59,7 +59,7 @@ class TestInformationTheory:
 
     def test_kl_divergence_zero_same(self):
         """KL divergence is zero for identical distributions."""
-        from HoloLoom.warp.math.information import kl_divergence
+        from hololoom.warp.math.information import kl_divergence
 
         p = np.array([0.5, 0.3, 0.2])
         kl = kl_divergence(p, p)
@@ -68,7 +68,7 @@ class TestInformationTheory:
 
     def test_mutual_information_bounds(self):
         """Mutual information is bounded by entropies."""
-        from HoloLoom.warp.math.information import mutual_information, entropy, DistributionPair
+        from hololoom.warp.math.information import mutual_information, entropy, DistributionPair
 
         # Joint distribution
         pxy = np.array([
@@ -90,7 +90,7 @@ class TestInformationTheory:
 
     def test_conditional_entropy(self):
         """H(X|Y) = H(X,Y) - H(Y) - conditional entropy implementation."""
-        from HoloLoom.warp.math.information import conditional_entropy, entropy, DistributionPair
+        from hololoom.warp.math.information import conditional_entropy, entropy, DistributionPair
 
         pxy = np.array([
             [0.2, 0.1],
@@ -118,10 +118,10 @@ class TestCorrelatedEquilibria:
 
     def test_prisoners_dilemma_ce_exists(self):
         """Prisoner's Dilemma has correlated equilibria."""
-        from HoloLoom.warp.math.decision.correlated_equilibria import (
+        from hololoom.warp.math.decision.correlated_equilibria import (
             CorrelatedEquilibrium
         )
-        from HoloLoom.warp.math.decision.game_theory import NormalFormGame
+        from hololoom.warp.math.decision.game_theory import NormalFormGame
 
         # Payoffs: (C, C) = (3,3), (C, D) = (0,5), (D, C) = (5,0), (D, D) = (1,1)
         payoffs_1 = np.array([
@@ -143,10 +143,10 @@ class TestCorrelatedEquilibria:
 
     def test_ce_is_valid_distribution(self):
         """CE distribution is valid probability distribution."""
-        from HoloLoom.warp.math.decision.correlated_equilibria import (
+        from hololoom.warp.math.decision.correlated_equilibria import (
             CorrelatedEquilibrium
         )
-        from HoloLoom.warp.math.decision.game_theory import NormalFormGame
+        from hololoom.warp.math.decision.game_theory import NormalFormGame
 
         payoffs_1 = np.array([[2, 0], [3, 1]])
         payoffs_2 = np.array([[2, 3], [0, 1]])
@@ -162,10 +162,10 @@ class TestCorrelatedEquilibria:
 
     def test_coordination_game(self):
         """Coordination game has multiple equilibria."""
-        from HoloLoom.warp.math.decision.correlated_equilibria import (
+        from hololoom.warp.math.decision.correlated_equilibria import (
             CorrelatedEquilibrium
         )
-        from HoloLoom.warp.math.decision.game_theory import NormalFormGame
+        from hololoom.warp.math.decision.game_theory import NormalFormGame
 
         # Matching Pennies - test for feasibility
         payoffs_1 = np.array([[1, -1], [-1, 1]])
@@ -188,7 +188,7 @@ class TestRegretMinimization:
 
     def test_hedge_distribution_sums_to_one(self):
         """Hedge maintains valid probability distribution."""
-        from HoloLoom.warp.math.decision.regret_minimization import Hedge
+        from hololoom.warp.math.decision.regret_minimization import Hedge
 
         hedge = Hedge(n_actions=4, time_horizon=100)
 
@@ -198,7 +198,7 @@ class TestRegretMinimization:
 
     def test_hedge_learns_best_action(self):
         """Hedge converges to best action."""
-        from HoloLoom.warp.math.decision.regret_minimization import Hedge
+        from hololoom.warp.math.decision.regret_minimization import Hedge
 
         np.random.seed(42)
         hedge = Hedge(n_actions=3, time_horizon=500)
@@ -218,7 +218,7 @@ class TestRegretMinimization:
 
     def test_hedge_sublinear_regret(self):
         """Hedge achieves sublinear regret O(sqrt(T))."""
-        from HoloLoom.warp.math.decision.regret_minimization import Hedge
+        from hololoom.warp.math.decision.regret_minimization import Hedge
 
         np.random.seed(42)
         T = 1000
@@ -239,7 +239,7 @@ class TestRegretMinimization:
 
     def test_exp3_exploration(self):
         """EXP3 explores all actions."""
-        from HoloLoom.warp.math.decision.regret_minimization import EXP3
+        from hololoom.warp.math.decision.regret_minimization import EXP3
 
         np.random.seed(42)
         exp3 = EXP3(n_actions=3, time_horizon=100)
@@ -263,7 +263,7 @@ class TestSpectralClustering:
 
     def test_laplacian_symmetric(self):
         """Laplacian matrix is symmetric."""
-        from HoloLoom.warp.math.graph.spectral_clustering import (
+        from hololoom.warp.math.graph.spectral_clustering import (
             compute_laplacian, LaplacianType
         )
 
@@ -279,7 +279,7 @@ class TestSpectralClustering:
 
     def test_laplacian_zero_row_sum(self):
         """Unnormalized Laplacian has zero row sums."""
-        from HoloLoom.warp.math.graph.spectral_clustering import (
+        from hololoom.warp.math.graph.spectral_clustering import (
             compute_laplacian, LaplacianType
         )
 
@@ -297,7 +297,7 @@ class TestSpectralClustering:
 
     def test_fiedler_vector(self):
         """Fiedler vector is second smallest eigenvector."""
-        from HoloLoom.warp.math.graph.spectral_clustering import (
+        from hololoom.warp.math.graph.spectral_clustering import (
             fiedler_vector, compute_laplacian, LaplacianType
         )
 
@@ -324,7 +324,7 @@ class TestSpectralClustering:
 
     def test_spectral_clustering_two_clusters(self):
         """Spectral clustering produces valid clustering."""
-        from HoloLoom.warp.math.graph.spectral_clustering import (
+        from hololoom.warp.math.graph.spectral_clustering import (
             SpectralClustering, LaplacianType
         )
 
@@ -377,7 +377,7 @@ class TestCausalInference:
 
     def test_causal_graph_ancestors(self):
         """Ancestors are correctly computed."""
-        from HoloLoom.warp.math.causal.causal_inference import CausalGraph
+        from hololoom.warp.math.causal.causal_inference import CausalGraph
 
         # X → Y → Z
         cg = CausalGraph()
@@ -389,7 +389,7 @@ class TestCausalInference:
 
     def test_causal_graph_descendants(self):
         """Descendants are correctly computed."""
-        from HoloLoom.warp.math.causal.causal_inference import CausalGraph
+        from hololoom.warp.math.causal.causal_inference import CausalGraph
 
         cg = CausalGraph()
         cg.add_edges([('X', 'Y'), ('Y', 'Z'), ('X', 'W')])
@@ -400,7 +400,7 @@ class TestCausalInference:
 
     def test_do_operator_removes_edges(self):
         """do() operator removes incoming edges."""
-        from HoloLoom.warp.math.causal.causal_inference import CausalGraph
+        from hololoom.warp.math.causal.causal_inference import CausalGraph
 
         # X → Y → Z
         cg = CausalGraph()
@@ -414,7 +414,7 @@ class TestCausalInference:
 
     def test_adjustment_set_backdoor(self):
         """Find valid adjustment set for backdoor criterion."""
-        from HoloLoom.warp.math.causal.causal_inference import CausalGraph
+        from hololoom.warp.math.causal.causal_inference import CausalGraph
 
         # Confounding: X ← Z → Y and X → Y
         cg = CausalGraph()
@@ -428,7 +428,7 @@ class TestCausalInference:
 
     def test_scm_intervention(self):
         """SCM intervention changes distribution correctly."""
-        from HoloLoom.warp.math.causal.causal_inference import StructuralCausalModel
+        from hololoom.warp.math.causal.causal_inference import StructuralCausalModel
 
         # Y = 2X + ε
         scm = StructuralCausalModel()
@@ -453,7 +453,7 @@ class TestCausalInference:
 
     def test_counterfactual(self):
         """Counterfactual query computes correctly."""
-        from HoloLoom.warp.math.causal.causal_inference import StructuralCausalModel
+        from hololoom.warp.math.causal.causal_inference import StructuralCausalModel
 
         # Simple linear model
         scm = StructuralCausalModel()
@@ -491,7 +491,7 @@ class TestDifferentialPrivacy:
 
     def test_laplace_mechanism_adds_noise(self):
         """Laplace mechanism adds noise to true value."""
-        from HoloLoom.warp.math.advanced.differential_privacy import laplace_mechanism
+        from hololoom.warp.math.advanced.differential_privacy import laplace_mechanism
 
         np.random.seed(42)
         true_value = 100
@@ -506,7 +506,7 @@ class TestDifferentialPrivacy:
 
     def test_gaussian_mechanism_adds_noise(self):
         """Gaussian mechanism adds noise to true value."""
-        from HoloLoom.warp.math.advanced.differential_privacy import gaussian_mechanism
+        from hololoom.warp.math.advanced.differential_privacy import gaussian_mechanism
 
         np.random.seed(42)
         true_value = 100
@@ -524,7 +524,7 @@ class TestDifferentialPrivacy:
 
     def test_privacy_budget_tracks_queries(self):
         """Privacy budget correctly tracks expenditure."""
-        from HoloLoom.warp.math.advanced.differential_privacy import DifferentialPrivacy
+        from hololoom.warp.math.advanced.differential_privacy import DifferentialPrivacy
 
         dp = DifferentialPrivacy(epsilon=1.0, delta=1e-5)
 
@@ -538,7 +538,7 @@ class TestDifferentialPrivacy:
     def test_privacy_budget_exhaustion(self):
         """Cannot exceed privacy budget."""
         import pytest
-        from HoloLoom.warp.math.advanced.differential_privacy import DifferentialPrivacy
+        from hololoom.warp.math.advanced.differential_privacy import DifferentialPrivacy
 
         dp = DifferentialPrivacy(epsilon=0.5, delta=1e-5)
 
@@ -554,7 +554,7 @@ class TestDifferentialPrivacy:
 
     def test_exponential_mechanism_selects(self):
         """Exponential mechanism prefers high utility."""
-        from HoloLoom.warp.math.advanced.differential_privacy import exponential_mechanism
+        from hololoom.warp.math.advanced.differential_privacy import exponential_mechanism
 
         np.random.seed(42)
         candidates = ['A', 'B', 'C']
@@ -575,7 +575,7 @@ class TestDifferentialPrivacy:
 
     def test_private_vector_mean(self):
         """Private vector mean is close to true mean."""
-        from HoloLoom.warp.math.advanced.differential_privacy import PrivateVectorMean
+        from hololoom.warp.math.advanced.differential_privacy import PrivateVectorMean
 
         np.random.seed(42)
         pvm = PrivateVectorMean(dimension=10, epsilon=2.0, clip_norm=1.0)
@@ -604,7 +604,7 @@ class TestTopologicalAnalysis:
 
     def test_persistence_diagram_creation(self):
         """Persistence diagram correctly stores intervals."""
-        from HoloLoom.warp.math.advanced.topological_analysis import PersistenceDiagram
+        from hololoom.warp.math.advanced.topological_analysis import PersistenceDiagram
 
         dgm = PersistenceDiagram(dimension=0)
         dgm.add(0.0, 1.0)
@@ -616,7 +616,7 @@ class TestTopologicalAnalysis:
 
     def test_persistence_two_clusters(self):
         """Two clusters produce one significant H0 interval."""
-        from HoloLoom.warp.math.advanced.topological_analysis import compute_persistence
+        from hololoom.warp.math.advanced.topological_analysis import compute_persistence
 
         np.random.seed(42)
 
@@ -634,7 +634,7 @@ class TestTopologicalAnalysis:
 
     def test_circle_has_loop(self):
         """Circle should have persistent H1 feature."""
-        from HoloLoom.warp.math.advanced.topological_analysis import compute_persistence
+        from hololoom.warp.math.advanced.topological_analysis import compute_persistence
 
         # Points on a circle
         theta = np.linspace(0, 2 * np.pi, 20, endpoint=False)
@@ -647,7 +647,7 @@ class TestTopologicalAnalysis:
 
     def test_bottleneck_distance_same_diagram(self):
         """Bottleneck distance to self is zero."""
-        from HoloLoom.warp.math.advanced.topological_analysis import (
+        from hololoom.warp.math.advanced.topological_analysis import (
             PersistenceDiagram, bottleneck_distance
         )
 
@@ -660,7 +660,7 @@ class TestTopologicalAnalysis:
 
     def test_wasserstein_distance_same_diagram(self):
         """Wasserstein distance to self is zero."""
-        from HoloLoom.warp.math.advanced.topological_analysis import (
+        from hololoom.warp.math.advanced.topological_analysis import (
             PersistenceDiagram, wasserstein_distance
         )
 
@@ -673,7 +673,7 @@ class TestTopologicalAnalysis:
 
     def test_embedding_analyzer(self):
         """Embedding topology analyzer works."""
-        from HoloLoom.warp.math.advanced.topological_analysis import (
+        from hololoom.warp.math.advanced.topological_analysis import (
             EmbeddingTopologyAnalyzer
         )
 
@@ -695,7 +695,7 @@ class TestTopologicalAnalysis:
 
     def test_betti_numbers(self):
         """Betti numbers correctly computed."""
-        from HoloLoom.warp.math.advanced.topological_analysis import BettiNumbers
+        from hololoom.warp.math.advanced.topological_analysis import BettiNumbers
 
         betti = BettiNumbers(betti_0=3, betti_1=2, betti_2=1)
 
@@ -715,37 +715,37 @@ class TestMathModuleIntegration:
     def test_all_modules_import(self):
         """All math modules can be imported."""
         # Information Theory
-        from HoloLoom.warp.math.information import (
+        from hololoom.warp.math.information import (
             entropy, mutual_information, kl_divergence
         )
 
         # Correlated Equilibria
-        from HoloLoom.warp.math.decision.correlated_equilibria import (
+        from hololoom.warp.math.decision.correlated_equilibria import (
             CorrelatedEquilibrium
         )
 
         # Regret Minimization
-        from HoloLoom.warp.math.decision.regret_minimization import (
+        from hololoom.warp.math.decision.regret_minimization import (
             Hedge, EXP3, AdaptiveStrategySelector
         )
 
         # Spectral Clustering
-        from HoloLoom.warp.math.graph.spectral_clustering import (
+        from hololoom.warp.math.graph.spectral_clustering import (
             SpectralClustering, KnowledgeGraphClusterer
         )
 
         # Causal Inference
-        from HoloLoom.warp.math.causal.causal_inference import (
+        from hololoom.warp.math.causal.causal_inference import (
             StructuralCausalModel, CausalGraph
         )
 
         # Differential Privacy
-        from HoloLoom.warp.math.advanced.differential_privacy import (
+        from hololoom.warp.math.advanced.differential_privacy import (
             DifferentialPrivacy, laplace_mechanism
         )
 
         # Topological Analysis
-        from HoloLoom.warp.math.advanced.topological_analysis import (
+        from hololoom.warp.math.advanced.topological_analysis import (
             PersistentHomology, EmbeddingTopologyAnalyzer
         )
 
@@ -753,8 +753,8 @@ class TestMathModuleIntegration:
 
     def test_regret_info_theory_connection(self):
         """Regret and information theory can work together."""
-        from HoloLoom.warp.math.information import entropy
-        from HoloLoom.warp.math.decision.regret_minimization import Hedge
+        from hololoom.warp.math.information import entropy
+        from hololoom.warp.math.decision.regret_minimization import Hedge
 
         hedge = Hedge(n_actions=4, time_horizon=100)
 
@@ -774,8 +774,8 @@ class TestMathModuleIntegration:
 
     def test_causal_scm_with_privacy(self):
         """Can apply DP to causal query results."""
-        from HoloLoom.warp.math.causal.causal_inference import StructuralCausalModel
-        from HoloLoom.warp.math.advanced.differential_privacy import laplace_mechanism
+        from hololoom.warp.math.causal.causal_inference import StructuralCausalModel
+        from hololoom.warp.math.advanced.differential_privacy import laplace_mechanism
 
         scm = StructuralCausalModel()
         scm.add_equation(

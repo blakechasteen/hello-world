@@ -22,7 +22,7 @@ from typing import Dict, List, Any, Optional
 
 from .strategies import AttackStrategy, AttackPayload, STRATEGY_CATEGORIES, AttackCategory
 
-logger = logging.getLogger("HoloLoom.redteam.executor")
+logger = logging.getLogger("hololoom.redteam.executor")
 
 
 class AttackOutcome(Enum):

@@ -238,7 +238,7 @@ cp skills/dist/your_skill_name-1.0.0.skill .claude/skills/
 
 ## HoloLoom Integration
 
-Many domain skills benefit from HoloLoom integration:
+Many domain skills benefit from hololoom integration:
 
 ### Memory System Integration
 

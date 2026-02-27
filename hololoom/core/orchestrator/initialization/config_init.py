@@ -31,13 +31,13 @@ import warnings
 from typing import Dict, List, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.config import ExecutionMode
-from HoloLoom.core.loom.command import PatternCard
-from HoloLoom.core.protocols import ComplexityLevel
-from HoloLoom.alignment import create_guardrails
-from HoloLoom.alignment.audit_trail import AuditTrail
+from hololoom.config import ExecutionMode
+from hololoom.core.loom.command import PatternCard
+from hololoom.core.protocols import ComplexityLevel
+from hololoom.alignment import create_guardrails
+from hololoom.alignment.audit_trail import AuditTrail
 
 
 logger = logging.getLogger(__name__)

@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 # Graceful imports with fallback
 try:
-    from HoloLoom.verification import (
+    from hololoom.verification import (
         VerificationChain,
         VerificationResult,
         VerificationStatus,

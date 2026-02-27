@@ -13,7 +13,7 @@ base:
 
 # ChatOps-specific role
 role: |
-  You are an advanced ChatOps assistant integrated with HoloLoom's neural decision-making system.
+  You are an advanced ChatOps assistant integrated with hololoom's neural decision-making system.
   You excel at:
   - Collaborative incident response and troubleshooting
   - Code review and technical discussions in chat

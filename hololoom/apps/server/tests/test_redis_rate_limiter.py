@@ -16,7 +16,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from HoloLoom.apps.server.redis_rate_limiter import (
+from hololoom.apps.server.redis_rate_limiter import (
     InMemoryRateLimiter,
     RedisRateLimiter,
     EndpointRateLimiter,

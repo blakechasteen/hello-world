@@ -30,15 +30,15 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
-from HoloLoom.memory.lifecycle_manager import MemoryScope
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.lifecycle_manager import MemoryScope
+from hololoom.memory.graph import KG, KGEdge
 # NOTE: spring_memory_scoring doesn't exist - this test file needs rewrite
-# from HoloLoom.memory.spring_memory_scoring import (
+# from hololoom.memory.spring_memory_scoring import (
 #     SpringMemoryScorer,
 #     AdaptiveSpringRetriever
 # )
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

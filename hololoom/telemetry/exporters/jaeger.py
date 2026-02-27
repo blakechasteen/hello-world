@@ -11,7 +11,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from HoloLoom.telemetry.protocol import SpanData, SpanProcessorProtocol
+from hololoom.telemetry.protocol import SpanData, SpanProcessorProtocol
 
 logger = logging.getLogger(__name__)
 

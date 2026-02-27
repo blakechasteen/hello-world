@@ -27,7 +27,7 @@ from typing import Optional, Callable, Dict, Any
 
 # Prometheus metrics
 try:
-    from HoloLoom.performance.prometheus_metrics import metrics
+    from hololoom.performance.prometheus_metrics import metrics
     METRICS_ENABLED = True
 except ImportError:
     METRICS_ENABLED = False
@@ -422,7 +422,7 @@ class ChronoTrigger:
 
         # Track Prometheus metrics
         if METRICS_ENABLED:
-            from HoloLoom.performance.prometheus_metrics import metrics as prom_metrics
+            from hololoom.performance.prometheus_metrics import metrics as prom_metrics
             prom_metrics.track_breathing('inhale')
 
         metrics = {
@@ -463,7 +463,7 @@ class ChronoTrigger:
 
         # Track Prometheus metrics
         if METRICS_ENABLED:
-            from HoloLoom.performance.prometheus_metrics import metrics as prom_metrics
+            from hololoom.performance.prometheus_metrics import metrics as prom_metrics
             prom_metrics.track_breathing('exhale')
 
         metrics = {
@@ -510,7 +510,7 @@ class ChronoTrigger:
 
         # Track Prometheus metrics
         if METRICS_ENABLED:
-            from HoloLoom.performance.prometheus_metrics import metrics as prom_metrics
+            from hololoom.performance.prometheus_metrics import metrics as prom_metrics
             prom_metrics.track_breathing('rest')
 
         metrics = {
@@ -618,7 +618,7 @@ if __name__ == "__main__":
         print("="*80 + "\n")
 
         # Create chrono trigger
-        from holoLoom.config import Config
+        from hololoom.config import Config
         config = Config.fused()
         chrono = ChronoTrigger(config)
 

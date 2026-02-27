@@ -16,7 +16,7 @@ Date: December 2025 (Math Module Upgrade)
 
 import numpy as np
 import pytest
-from HoloLoom.warp.math.decision.game_theory import (
+from hololoom.warp.math.decision.game_theory import (
     Strategy, NormalFormGame, NashEquilibrium, MechanismDesign,
     AuctionTheory, CooperativeGame, EvolutionaryGame
 )

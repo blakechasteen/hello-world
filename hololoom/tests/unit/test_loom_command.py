@@ -2,7 +2,7 @@
 Test Loom Command - Pattern Card Selector
 ==========================================
 
-Tests for HoloLoom/loom/command.py - Pattern card selection and configuration.
+Tests for hololoom/loom/command.py - Pattern card selection and configuration.
 
 Coverage:
 - Pattern selection (BARE/FAST/FUSED/SEMANTIC_FLOW)
@@ -17,7 +17,7 @@ Coverage:
 import pytest
 from unittest.mock import Mock, patch
 
-from HoloLoom.loom.command import (
+from hololoom.loom.command import (
     LoomCommand,
     PatternCard,
     PatternSpec,
@@ -27,7 +27,7 @@ from HoloLoom.loom.command import (
     SEMANTIC_FLOW_PATTERN,
     create_loom_command
 )
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     ActionRequest,
     SafetyDecision,

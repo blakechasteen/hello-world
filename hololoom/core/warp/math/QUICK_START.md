@@ -21,7 +21,7 @@ python  # Ensure you can import
 ### Analysis
 
 ```python
-from HoloLoom.warp.math.analysis import (
+from hololoom.warp.math.analysis import (
     MetricSpace,           # Real analysis
     ComplexFunction,       # Complex analysis
     HilbertSpace,         # Functional analysis
@@ -36,7 +36,7 @@ from HoloLoom.warp.math.analysis import (
 ### Algebra
 
 ```python
-from HoloLoom.warp.math.algebra import (
+from hololoom.warp.math.algebra import (
     Group,                # Groups (cyclic, symmetric, dihedral)
     Ring,                 # Rings and ideals
     Field,                # Fields (finite, extensions)
@@ -49,7 +49,7 @@ from HoloLoom.warp.math.algebra import (
 ### Geometry & Physics
 
 ```python
-from HoloLoom.warp.math.geometry import (
+from hololoom.warp.math.geometry import (
     SmoothManifold,       # Differential geometry
     RiemannianMetric,     # Riemannian geometry
     Geodesic,             # Geodesics on manifolds
@@ -62,7 +62,7 @@ from HoloLoom.warp.math.geometry import (
 ### Decision & Information
 
 ```python
-from HoloLoom.warp.math.decision import (
+from hololoom.warp.math.decision import (
     Entropy,              # Shannon entropy
     MutualInformation,    # Information theory
     NormalFormGame,       # Game theory
@@ -75,7 +75,7 @@ from HoloLoom.warp.math.decision import (
 ### Logic & Foundations
 
 ```python
-from HoloLoom.warp.math.logic import (
+from hololoom.warp.math.logic import (
     PropositionalLogic,   # Boolean logic
     FirstOrderLogic,      # Predicate logic
     GodelTheorems,        # Incompleteness
@@ -91,7 +91,7 @@ from HoloLoom.warp.math.logic import (
 ### 1. Feature Selection via Mutual Information
 
 ```python
-from HoloLoom.warp.math.decision import MutualInformation
+from hololoom.warp.math.decision import MutualInformation
 import numpy as np
 
 # Your data
@@ -113,7 +113,7 @@ print(f"Top {k} features: {top_features}")
 ### 2. Riemannian Optimization
 
 ```python
-from HoloLoom.warp.math.geometry import RiemannianMetric, Geodesic
+from hololoom.warp.math.geometry import RiemannianMetric, Geodesic
 import numpy as np
 
 # Define manifold (e.g., sphere)
@@ -136,7 +136,7 @@ print(f"Geodesic computed: {len(path)} points")
 ### 3. Multi-Agent Nash Equilibrium
 
 ```python
-from HoloLoom.warp.math.decision import NormalFormGame, NashEquilibrium
+from hololoom.warp.math.decision import NormalFormGame, NashEquilibrium
 
 # Define 2-player game (Prisoner's Dilemma)
 game = NormalFormGame.prisoners_dilemma()
@@ -153,7 +153,7 @@ is_nash = NashEquilibrium.verify_equilibrium(game, strategies)
 ### 4. Stochastic Differential Equations
 
 ```python
-from HoloLoom.warp.math.analysis import SDESolver
+from hololoom.warp.math.analysis import SDESolver
 import numpy as np
 
 # Geometric Brownian motion: dS = μS dt + σS dW
@@ -181,7 +181,7 @@ print(f"Final price: {paths[-1]:.2f}")
 ### 5. Network Flow Optimization
 
 ```python
-from HoloLoom.warp.math.decision import NetworkFlows
+from hololoom.warp.math.decision import NetworkFlows
 
 # Create network
 network = NetworkFlows(n_nodes=6)
@@ -203,7 +203,7 @@ print(f"Maximum flow: {max_flow}")
 ### 6. Error Correction with Hamming Codes
 
 ```python
-from HoloLoom.warp.math.decision import ErrorCorrection
+from hololoom.warp.math.decision import ErrorCorrection
 import numpy as np
 
 # Encode 4 bits to 7 bits
@@ -224,7 +224,7 @@ print(f"Decoded: {decoded}, Error corrected: {error_corrected}")
 ### 7. Dynamic Programming (Knapsack)
 
 ```python
-from HoloLoom.warp.math.decision import DynamicProgramming
+from hololoom.warp.math.decision import DynamicProgramming
 import numpy as np
 
 # Items: (value, weight)
@@ -249,7 +249,7 @@ print(f"Items selected: {items_selected}")
 ### Entropy
 
 ```python
-from HoloLoom.warp.math.decision import Entropy
+from hololoom.warp.math.decision import Entropy
 
 # Shannon entropy
 probs = np.array([0.5, 0.3, 0.2])
@@ -268,7 +268,7 @@ h_empirical = Entropy.from_samples(samples)
 ### Riemannian Metrics
 
 ```python
-from HoloLoom.warp.math.geometry import RiemannianMetric
+from hololoom.warp.math.geometry import RiemannianMetric
 
 # Euclidean metric
 euclidean = RiemannianMetric.euclidean(dim=3)
@@ -289,7 +289,7 @@ inner = hyperbolic.inner_product(point, v, w)
 ### Manifolds
 
 ```python
-from HoloLoom.warp.math.geometry import SmoothManifold
+from hololoom.warp.math.geometry import SmoothManifold
 
 # Circle S¹
 S1 = SmoothManifold.circle()
@@ -304,7 +304,7 @@ T2 = SmoothManifold.torus()
 ### Lagrangian Mechanics
 
 ```python
-from HoloLoom.warp.math.geometry import LagrangianMechanics
+from hololoom.warp.math.geometry import LagrangianMechanics
 import numpy as np
 
 # Simple harmonic oscillator
@@ -322,7 +322,7 @@ print(f"Lagrangian: {L}")
 ### Game Theory
 
 ```python
-from HoloLoom.warp.math.decision import (
+from hololoom.warp.math.decision import (
     NormalFormGame,
     Strategy,
     NashEquilibrium
@@ -345,7 +345,7 @@ print(f"Pure equilibria: {pure_eq}")  # [] (none exist)
 ### Gödel's Incompleteness
 
 ```python
-from HoloLoom.warp.math.logic import GodelTheorems
+from hololoom.warp.math.logic import GodelTheorems
 
 # First incompleteness theorem
 print(GodelTheorems.first_incompleteness())
@@ -359,7 +359,7 @@ print(GodelTheorems.second_incompleteness())
 ### Halting Problem
 
 ```python
-from HoloLoom.warp.math.logic import HaltingProblem
+from hololoom.warp.math.logic import HaltingProblem
 
 # Undecidability proof
 print(HaltingProblem.undecidability_proof())
@@ -372,7 +372,7 @@ print(HaltingProblem.semi_decidable())
 ### Turing Machines
 
 ```python
-from HoloLoom.warp.math.logic import TuringMachine
+from hololoom.warp.math.logic import TuringMachine
 
 # Binary increment TM
 tm = TuringMachine.binary_increment()
@@ -388,7 +388,7 @@ print(f"Result: {final_tape}")  # "110" (binary 6)
 ### Complexity Classes
 
 ```python
-from HoloLoom.warp.math.logic import ComplexityClasses
+from hololoom.warp.math.logic import ComplexityClasses
 
 # P vs NP problem
 print(ComplexityClasses.P_vs_NP())
@@ -404,7 +404,7 @@ print(hierarchy["Relations"])
 ## 📚 Module Organization
 
 ```
-HoloLoom/warp/math/
+hololoom/warp/math/
 ├── analysis/          # Real, complex, functional, measure, fourier, stochastic
 ├── algebra/           # Groups, rings, fields, Galois, modules, homology
 ├── geometry/          # Differential, Riemannian, mathematical physics
@@ -419,7 +419,7 @@ HoloLoom/warp/math/
 ### Combining Geometry + Physics
 
 ```python
-from HoloLoom.warp.math.geometry import (
+from hololoom.warp.math.geometry import (
     RiemannianMetric,
     HamiltonianMechanics
 )
@@ -446,8 +446,8 @@ print(f"Energy conserved: {np.abs(E_final - E_initial) < 1e-3}")
 ### Information Theory + Probability
 
 ```python
-from HoloLoom.warp.math.analysis import RandomVariable
-from HoloLoom.warp.math.decision import Entropy, MutualInformation
+from hololoom.warp.math.analysis import RandomVariable
+from hololoom.warp.math.decision import Entropy, MutualInformation
 
 # Create random variables
 samples = np.random.randn(1000)
@@ -480,14 +480,14 @@ import sys
 sys.path.insert(0, '/path/to/mythRL')  # Adjust to your path
 
 # Then imports should work
-from HoloLoom.warp.math.analysis import MetricSpace
+from hololoom.warp.math.analysis import MetricSpace
 ```
 
 ### Numerical Issues
 
 ```python
 # For numerical stability, some methods have tolerance parameters
-from HoloLoom.warp.math.analysis import SequenceAnalyzer
+from hololoom.warp.math.analysis import SequenceAnalyzer
 
 sequence = [1/n for n in range(1, 101)]
 is_convergent = SequenceAnalyzer.is_convergent(

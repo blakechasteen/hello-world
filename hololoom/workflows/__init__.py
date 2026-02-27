@@ -15,7 +15,7 @@ Features:
 - Workflow templates and marketplace
 
 Quick Start:
-    from HoloLoom.workflows import WorkflowExecutor, WorkflowDefinition
+    from hololoom.workflows import WorkflowExecutor, WorkflowDefinition
 
     # Load workflow from JSON
     workflow = WorkflowDefinition.from_json(json_str)
@@ -32,22 +32,22 @@ Author: HoloLoom Team
 Date: November 2025
 """
 
-from HoloLoom.workflows.schema import (
+from hololoom.workflows.schema import (
     NodeType,
     WorkflowNode,
     WorkflowDefinition,
     WorkflowResult,
     ExecutionTrace,
 )
-from HoloLoom.workflows.executor import WorkflowExecutor
-from HoloLoom.workflows.state import (
+from hololoom.workflows.executor import WorkflowExecutor
+from hololoom.workflows.state import (
     StateBackend,
     InMemoryState,
     SQLiteState,
     RedisState,
     CheckpointManager,
 )
-from HoloLoom.workflows.templates import WorkflowTemplates
+from hololoom.workflows.templates import WorkflowTemplates
 
 __all__ = [
     "NodeType",

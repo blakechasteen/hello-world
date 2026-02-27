@@ -7,7 +7,7 @@
 ## Directory Layout
 
 ```
-HoloLoom/chatops/
+hololoom/chatops/
 ├── __init__.py                 # Main module exports
 ├── config.yaml                 # Configuration template
 ├── requirements.txt            # Python dependencies
@@ -146,7 +146,7 @@ HoloLoom/chatops/
 ### Minimal (Core Only)
 
 ```python
-from HoloLoom.chatops import (
+from hololoom.chatops import (
     MatrixBot,
     MatrixBotConfig,
     ChatOpsOrchestrator,
@@ -162,7 +162,7 @@ bot = MatrixBot(config)
 ### With Handlers
 
 ```python
-from HoloLoom.chatops import (
+from hololoom.chatops import (
     MatrixBot,
     ChatOpsOrchestrator,
     MultimodalHandler,    # Optional
@@ -174,7 +174,7 @@ from HoloLoom.chatops import (
 ### Full-Featured
 
 ```python
-from HoloLoom.chatops import ChatOpsRunner
+from hololoom.chatops import ChatOpsRunner
 
 # All-in-one runner handles everything
 config = {...}
@@ -310,7 +310,7 @@ ChatOpsOrchestrator (chatops_bridge.py)
 
 ### Old Structure (Flat)
 ```
-HoloLoom/chatops/
+hololoom/chatops/
 ├── matrix_bot.py
 ├── chatops_bridge.py
 ├── conversation_memory.py
@@ -323,7 +323,7 @@ HoloLoom/chatops/
 
 ### New Structure (Organized)
 ```
-HoloLoom/chatops/
+hololoom/chatops/
 ├── core/              # Essential (4 files)
 ├── handlers/          # Optional (5 files)
 ├── examples/          # Examples (1+ files)
@@ -334,17 +334,17 @@ HoloLoom/chatops/
 ### Import Updates
 **Old:**
 ```python
-from HoloLoom.apps.chatops.matrix_bot import MatrixBot
-from HoloLoom.apps.chatops.chatops_skills import ChatOpsSkills
+from hololoom.apps.chatops.matrix_bot import MatrixBot
+from hololoom.apps.chatops.chatops_skills import ChatOpsSkills
 ```
 
 **New (still works!):**
 ```python
 # Top-level imports (recommended)
-from HoloLoom.chatops import MatrixBot, ChatOpsSkills
+from hololoom.chatops import MatrixBot, ChatOpsSkills
 
 # Or explicit
-from HoloLoom.apps.chatops.core import MatrixBot, ChatOpsSkills
+from hololoom.apps.chatops.core import MatrixBot, ChatOpsSkills
 ```
 
 **Backward compatibility maintained!**

@@ -4,8 +4,8 @@
 
 ### 1. Import the Handler Class
 ```python
-from HoloLoom.apps.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
-from HoloLoom.redteam.orchestrator import RedTeamConfig
+from hololoom.apps.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
+from hololoom.redteam.orchestrator import RedTeamConfig
 ```
 
 ### 2. Create and Register
@@ -236,8 +236,8 @@ AttackStats(
 ### With HoloLoom ChatOps Bot
 
 ```python
-from HoloLoom.apps.chatops.core.matrix_bot import MatrixBot
-from HoloLoom.apps.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
+from hololoom.apps.chatops.core.matrix_bot import MatrixBot
+from hololoom.apps.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
 
 async def main():
     bot = MatrixBot(config)
@@ -247,7 +247,7 @@ async def main():
     redteam_handlers.register_all()
 
     # Also register other handlers
-    from HoloLoom.apps.chatops.handlers.hololoom_handlers import HoloLoomMatrixHandlers
+    from hololoom.apps.chatops.handlers.hololoom_handlers import HoloLoomMatrixHandlers
     hololoom_handlers = HoloLoomMatrixHandlers(bot)
     hololoom_handlers.register_all()
 

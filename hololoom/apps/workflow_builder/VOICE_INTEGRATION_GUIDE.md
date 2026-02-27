@@ -38,12 +38,12 @@
 
 ### Step 1: Add Voice to Server Startup
 
-Edit `HoloLoom/web_dashboard/agentic_server.py`:
+Edit `hololoom/web_dashboard/agentic_server.py`:
 
 ```python
 # Add import at top (around line 70)
-from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
-from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
+from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # Add global variable (around line 106)
 voice_integration = None
@@ -52,8 +52,8 @@ voice_integration = None
 # Initialize Voice Integration
 logger.info("Initializing Voice Integration...")
 try:
-    from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
-    from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+    from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
+    from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
     voice_integration = await create_voice_integration(
         tts_backend="bark",  # or "elevenlabs" or "pyttsx3"
@@ -79,7 +79,7 @@ except Exception as e:
 Start the server:
 ```bash
 cd c:\Users\blake\OneDrive\Documents\mythRL
-python HoloLoom/web_dashboard/agentic_server.py
+python hololoom/web_dashboard/agentic_server.py
 ```
 
 Test transcription endpoint:
@@ -344,8 +344,8 @@ Here's the complete code to add to `agentic_server.py`:
 # ============================================================================
 
 # 1. Add imports at top (around line 70)
-from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
-from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
+from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 
 # 2. Add global variable (around line 106)
 voice_integration = None

@@ -79,14 +79,14 @@ sys_modules_patch = {
 }
 
 with patch.dict('sys.modules', sys_modules_patch):
-    from HoloLoom.spinningWheel.matrix_spinner import (
+    from hololoom.spinningWheel.matrix_spinner import (
         MatrixSpinner,
         MatrixParser,
         MatrixMessage,
         spin_matrix_room,
         create_matrix_scorer
     )
-    from HoloLoom.spinningWheel.protocol import SpinnerCheckpoint
+    from hololoom.spinningWheel.protocol import SpinnerCheckpoint
 
 
 # Fixtures

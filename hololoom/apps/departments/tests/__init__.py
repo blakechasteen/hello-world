@@ -9,8 +9,8 @@ Test Organization:
 - Additional test files for other departments (planned)
 
 Running Tests:
-    pytest HoloLoom/departments/tests/ -v
-    pytest HoloLoom/departments/tests/test_rag_department.py -v
+    pytest hololoom/departments/tests/ -v
+    pytest hololoom/departments/tests/test_rag_department.py -v
 
 Date: November 2025
 """

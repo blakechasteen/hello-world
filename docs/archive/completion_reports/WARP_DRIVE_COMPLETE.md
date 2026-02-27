@@ -44,7 +44,7 @@ Threads  | Total Time
 50       | 87ms
 ```
 
-### 2. Advanced Operations (`HoloLoom/warp/advanced.py`)
+### 2. Advanced Operations (`hololoom/warp/advanced.py`)
 
 **New Mathematical Frameworks:**
 
@@ -108,7 +108,7 @@ nat_grad = FisherInformationGeometry.natural_gradient(
 # Adapts to parameter space curvature!
 ```
 
-### 3. Performance Optimizations (`HoloLoom/warp/optimized.py`)
+### 3. Performance Optimizations (`hololoom/warp/optimized.py`)
 
 **High-Performance Features:**
 
@@ -214,7 +214,7 @@ pool.release(tensor)
 
 ### 5. Documentation
 
-#### A. Comprehensive README (`HoloLoom/warp/README.md`)
+#### A. Comprehensive README (`hololoom/warp/README.md`)
 - **Sections:**
   - Overview & architecture
   - Core components
@@ -337,27 +337,27 @@ pool.release(tensor)
 ### New Files (11)
 
 1. `test_warp_drive_complete.py` - Comprehensive test suite (9 tests)
-2. `HoloLoom/warp/advanced.py` - Advanced mathematical operations (700+ lines)
-3. `HoloLoom/warp/optimized.py` - Performance optimizations (600+ lines)
+2. `hololoom/warp/advanced.py` - Advanced mathematical operations (700+ lines)
+3. `hololoom/warp/optimized.py` - Performance optimizations (600+ lines)
 4. `demos/warp_drive_showcase.py` - 6 integration demos (700+ lines)
-5. `HoloLoom/warp/README.md` - Full documentation (800+ lines)
+5. `hololoom/warp/README.md` - Full documentation (800+ lines)
 6. `WARP_DRIVE_QUICKSTART.md` - Quick start guide (500+ lines)
 7. `WARP_DRIVE_COMPLETE.md` - This summary
 
 ### Modified Files (1)
 
-8. `HoloLoom/warp/__init__.py` - Updated exports for new modules
+8. `hololoom/warp/__init__.py` - Updated exports for new modules
 
 ### Existing Files (Already Implemented)
 
-9. `HoloLoom/warp/space.py` - Core WarpSpace (384 lines) ✅
-10. `HoloLoom/chrono/trigger.py` - Temporal control (425 lines) ✅
-11. `HoloLoom/loom/command.py` - Pattern cards (458 lines) ✅
-12. `HoloLoom/resonance/shed.py` - Feature extraction (390 lines) ✅
-13. `HoloLoom/convergence/engine.py` - Decision collapse (422 lines) ✅
-14. `HoloLoom/fabric/spacetime.py` - Output fabric (571 lines) ✅
-15. `HoloLoom/weaving_orchestrator.py` - Full integration (200+ lines) ✅
-16. `HoloLoom/unified_api.py` - Unified API (150+ lines) ✅
+9. `hololoom/warp/space.py` - Core WarpSpace (384 lines) ✅
+10. `hololoom/chrono/trigger.py` - Temporal control (425 lines) ✅
+11. `hololoom/loom/command.py` - Pattern cards (458 lines) ✅
+12. `hololoom/resonance/shed.py` - Feature extraction (390 lines) ✅
+13. `hololoom/convergence/engine.py` - Decision collapse (422 lines) ✅
+14. `hololoom/fabric/spacetime.py` - Output fabric (571 lines) ✅
+15. `hololoom/weaving_orchestrator.py` - Full integration (200+ lines) ✅
+16. `hololoom/unified_api.py` - Unified API (150+ lines) ✅
 
 **Total:** 5000+ lines of new code + documentation
 
@@ -421,13 +421,13 @@ All 6 demos completed successfully!
 
 2. **Integrate into your workflows:**
    ```python
-   from HoloLoom.warp import WarpSpace
-   from HoloLoom.warp.advanced import RiemannianManifold
+   from hololoom.warp import WarpSpace
+   from hololoom.warp.advanced import RiemannianManifold
    ```
 
 3. **Optimize for production:**
    ```python
-   from HoloLoom.warp.optimized import GPUWarpSpace
+   from hololoom.warp.optimized import GPUWarpSpace
    ```
 
 ### Future Enhancements
@@ -538,12 +538,12 @@ python test_warp_drive_complete.py
 python demos/warp_drive_showcase.py
 
 # Try individual modules
-python HoloLoom/warp/space.py
-python HoloLoom/warp/advanced.py
-python HoloLoom/warp/optimized.py
+python hololoom/warp/space.py
+python hololoom/warp/advanced.py
+python hololoom/warp/optimized.py
 
 # Read the docs
-cat HoloLoom/warp/README.md
+cat hololoom/warp/README.md
 cat WARP_DRIVE_QUICKSTART.md
 ```
 

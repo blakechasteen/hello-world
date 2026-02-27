@@ -11,7 +11,7 @@ We need a flexible, modular architecture that makes room for solving the 6 commo
 ### What We Have Now
 
 ```
-HoloLoom/promptly/
+hololoom/promptly/
 ├── workflow_store.py                    # Workflow persistence
 ├── dspy_bridge.py                       # DSPy integration
 ├── dspy_workflow_adapter.py             # Multi-step workflows
@@ -106,7 +106,7 @@ New architecture extends existing, doesn't replace.
 **Purpose**: Connect Promptly to HoloLoom's infrastructure
 
 ```python
-# HoloLoom/promptly/foundation/
+# hololoom/promptly/foundation/
 ├── __init__.py
 ├── config.py                  # Promptly-specific config
 ├── integration.py             # HoloLoom bridge
@@ -145,7 +145,7 @@ class HoloLoomIntegration:
 **Purpose**: Shared types, protocols, utilities used by all layers
 
 ```python
-# HoloLoom/promptly/core/
+# hololoom/promptly/core/
 ├── __init__.py
 ├── types.py                   # Core data types
 ├── protocols.py               # Interface definitions
@@ -196,7 +196,7 @@ class ContextOptimizer(Protocol):
 **Purpose**: Persistence, caching, versioning, history
 
 ```python
-# HoloLoom/promptly/state/
+# hololoom/promptly/state/
 ├── __init__.py
 ├── cache.py                   # Result caching
 ├── history.py                 # Revision history
@@ -250,7 +250,7 @@ class RevisionHistory:
 **Purpose**: Execute prompts through various providers (DSPy, direct LM, etc.)
 
 ```python
-# HoloLoom/promptly/execution/
+# hololoom/promptly/execution/
 ├── __init__.py
 ├── engine.py                  # Main execution engine
 ├── dspy_executor.py           # DSPy-based execution
@@ -312,7 +312,7 @@ class DSPyExecutor:
 This is the **core innovation layer**. Each problem gets its own module.
 
 ```python
-# HoloLoom/promptly/solvers/
+# hololoom/promptly/solvers/
 ├── __init__.py
 ├── schema/                    # Problem 1: Projection Trap
 │   ├── __init__.py
@@ -360,7 +360,7 @@ This is the **core innovation layer**. Each problem gets its own module.
 #### Module 1: Schema (Projection Trap)
 
 ```python
-# HoloLoom/promptly/solvers/schema/builder.py
+# hololoom/promptly/solvers/schema/builder.py
 
 class SchemaBuilder:
     """Build output schemas visually or programmatically"""
@@ -408,7 +408,7 @@ prompt = schema.to_prompt()
 #### Module 2: Surgical (Revision Loop)
 
 ```python
-# HoloLoom/promptly/solvers/surgical/editor.py
+# hololoom/promptly/solvers/surgical/editor.py
 
 class SurgicalEditor:
     """Perform precise edits without full rewrites"""
@@ -457,7 +457,7 @@ class SurgicalEditor:
 #### Module 3: Staged (Planning Illusion)
 
 ```python
-# HoloLoom/promptly/solvers/staged/workflow.py
+# hololoom/promptly/solvers/staged/workflow.py
 
 class StagedWorkflow:
     """Multi-stage reasoning with validation gates"""
@@ -520,7 +520,7 @@ class StagedWorkflow:
 #### Module 4: Confidence (Confidence Illusion)
 
 ```python
-# HoloLoom/promptly/solvers/confidence/tracker.py
+# hololoom/promptly/solvers/confidence/tracker.py
 
 class ConfidenceTracker:
     """Track and enforce confidence requirements"""
@@ -590,7 +590,7 @@ class ConfidenceTracker:
 #### Module 5: Consistency (Drift Problem)
 
 ```python
-# HoloLoom/promptly/solvers/consistency/enforcer.py
+# hololoom/promptly/solvers/consistency/enforcer.py
 
 class ConsistencyEnforcer:
     """Enforce deterministic, consistent outputs"""
@@ -641,7 +641,7 @@ class ConsistencyEnforcer:
 #### Module 6: Context (Cognitive Bandwidth Trap)
 
 ```python
-# HoloLoom/promptly/solvers/context/optimizer.py
+# hololoom/promptly/solvers/context/optimizer.py
 
 class ContextOptimizer:
     """Optimize context for quality and efficiency"""
@@ -713,7 +713,7 @@ class ContextOptimizer:
 **Purpose**: Compose problem solvers into complete workflows
 
 ```python
-# HoloLoom/promptly/orchestration/
+# hololoom/promptly/orchestration/
 ├── __init__.py
 ├── orchestrator.py            # Main orchestrator
 ├── pipeline.py                # Pipeline builder
@@ -790,7 +790,7 @@ class PromptlyOrchestrator:
 **Purpose**: Multiple interfaces for different users
 
 ```python
-# HoloLoom/promptly/interfaces/
+# hololoom/promptly/interfaces/
 ├── __init__.py
 ├── cli/                       # Command-line interface
 │   ├── __init__.py
@@ -877,7 +877,7 @@ print(f"Summary: {result.outputs['summary']}")
 
 ```python
 # Backward compatibility
-from HoloLoom.promptly import DSPyHoloLoom, DSPyWorkflowAdapter
+from hololoom.promptly import DSPyHoloLoom, DSPyWorkflowAdapter
 
 # Old API still works
 bridge = DSPyHoloLoom(config=Config.fused())
@@ -893,7 +893,7 @@ result = await orchestrator.execute(
 )
 
 # Old workflows work in new system
-from HoloLoom.promptly import load_workflow
+from hololoom.promptly import load_workflow
 workflow = await load_workflow("qa_workflow.yaml")
 
 # Enhance with new solvers
@@ -930,7 +930,7 @@ promptly_config = PromptlyConfig(
 ### Complete Directory Layout
 
 ```
-HoloLoom/promptly/
+hololoom/promptly/
 ├── __init__.py                          # Public API exports
 ├── README.md                            # Main documentation
 │
@@ -1200,7 +1200,7 @@ result = validator.validate(data, schema)
 
 ```python
 # Old way (still works)
-from HoloLoom.promptly import DSPyHoloLoom
+from hololoom.promptly import DSPyHoloLoom
 bridge = DSPyHoloLoom(config)
 result = await bridge.execute(signature, **inputs)
 

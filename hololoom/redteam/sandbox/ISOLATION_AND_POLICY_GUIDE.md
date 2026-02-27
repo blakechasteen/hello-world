@@ -1,7 +1,7 @@
 # Process Isolation and Network Policy Guide
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/redteam/sandbox/`
+**Location**: `hololoom/redteam/sandbox/`
 **Components**: 450 lines (process_isolation.py) + 350 lines (network_policy.py)
 **Platform Support**: Linux (cgroups/seccomp), Windows (job objects), macOS (pf), All (fallback)
 
@@ -64,7 +64,7 @@ Enforces allowlist-based network access control:
 ### Process Isolation
 
 ```python
-from HoloLoom.redteam.sandbox.process_isolation import (
+from hololoom.redteam.sandbox.process_isolation import (
     ProcessIsolator,
     ProcessIsolationConfig
 )
@@ -94,7 +94,7 @@ await isolator.cleanup()
 ### Network Policy
 
 ```python
-from HoloLoom.redteam.sandbox.network_policy import (
+from hololoom.redteam.sandbox.network_policy import (
     NetworkPolicy,
     NetworkPolicyConfig,
     NetworkEndpoint
@@ -353,11 +353,11 @@ status = policy.get_policy_status()
 ### Complete Sandbox Execution
 
 ```python
-from HoloLoom.redteam.sandbox.process_isolation import (
+from hololoom.redteam.sandbox.process_isolation import (
     ProcessIsolator,
     ProcessIsolationConfig
 )
-from HoloLoom.redteam.sandbox.network_policy import (
+from hololoom.redteam.sandbox.network_policy import (
     NetworkPolicy,
     NetworkPolicyConfig,
     NetworkEndpoint
@@ -545,13 +545,13 @@ When used together:
 Run test suite:
 
 ```bash
-pytest HoloLoom/redteam/sandbox/tests/test_isolation_and_policy.py -v
+pytest hololoom/redteam/sandbox/tests/test_isolation_and_policy.py -v
 
 # Run specific test
-pytest HoloLoom/redteam/sandbox/tests/test_isolation_and_policy.py::TestProcessIsolator::test_simple_command_execution -v
+pytest hololoom/redteam/sandbox/tests/test_isolation_and_policy.py::TestProcessIsolator::test_simple_command_execution -v
 
 # With coverage
-pytest HoloLoom/redteam/sandbox/tests/test_isolation_and_policy.py --cov=HoloLoom.redteam.sandbox
+pytest hololoom/redteam/sandbox/tests/test_isolation_and_policy.py --cov=hololoom.redteam.sandbox
 ```
 
 ## Platform Notes

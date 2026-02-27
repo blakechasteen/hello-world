@@ -1,7 +1,7 @@
 # HoloLoom Shuttle: MCTS-Powered Warp↔Yarn Intersection
 
 **Status**: ✅ Production Ready (v2.0.0 - December 2025)
-**Location**: `HoloLoom/shuttle/`
+**Location**: `hololoom/shuttle/`
 **Total Lines**: ~3,200+ lines of production code and tests
 **Integration**: HoloLoom WeavingOrchestrator Step 3 (Thread Selection)
 
@@ -33,7 +33,7 @@ Shuttle uses **Trajectory Strategies** (different graph traversal approaches) co
 ### Basic Usage
 
 ```python
-from HoloLoom.shuttle import create_hololoom_shuttle
+from hololoom.shuttle import create_hololoom_shuttle
 
 # Create a shuttle instance (auto-selects best available backend)
 shuttle = create_hololoom_shuttle()
@@ -57,8 +57,8 @@ print(f"Time: {result.search_time_ms:.1f}ms")
 ### Integration with WeavingOrchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.shuttle import create_shuttle_stage
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.shuttle import create_shuttle_stage
 
 config = Config.fused()
 shards = create_memory_shards()
@@ -80,7 +80,7 @@ async with WeavingOrchestrator(
 Shuttle supports three operation modes with automatic degradation:
 
 ```python
-from HoloLoom.shuttle import ShuttleConfig, ShuttleMode, create_hololoom_shuttle
+from hololoom.shuttle import ShuttleConfig, ShuttleMode, create_hololoom_shuttle
 
 # Production (Neo4j + Qdrant + MCTS)
 config = ShuttleConfig.for_mode(ShuttleMode.FULL)
@@ -219,7 +219,7 @@ class MCTSState:
 Three extraction strategies with automatic fallback:
 
 ```python
-from HoloLoom.shuttle import EntityExtractionFactory
+from hololoom.shuttle import EntityExtractionFactory
 
 # Automatic selection based on availability
 extractor = EntityExtractionFactory.create("auto")
@@ -246,7 +246,7 @@ def extract(
 ### Thompson Sampling (Trajectory Bandit)
 
 ```python
-from HoloLoom.shuttle import TrajectoryBandit
+from hololoom.shuttle import TrajectoryBandit
 
 bandit = TrajectoryBandit(
     trajectory_names=[
@@ -279,7 +279,7 @@ stats = bandit.get_statistics()
 ### Configuration
 
 ```python
-from HoloLoom.shuttle import ShuttleConfig, ShuttleMode
+from hololoom.shuttle import ShuttleConfig, ShuttleMode
 
 config = ShuttleConfig(
     # Operation mode
@@ -324,7 +324,7 @@ shuttle = create_hololoom_shuttle(config)
 
 **Preset Configurations**:
 ```python
-from HoloLoom.shuttle.config import (
+from hololoom.shuttle.config import (
     default_config,      # AUTO mode (recommended)
     production_config,   # FULL mode, optimized for quality
     development_config,  # LITE mode, optimized for speed
@@ -438,14 +438,14 @@ Step 9: Reflection Buffer (learning)
 
 **HoloLoomWarpAdapter**: Wraps HoloLoom's retriever for semantic search
 ```python
-from HoloLoom.shuttle.weaving_integration import HoloLoomWarpAdapter
+from hololoom.shuttle.weaving_integration import HoloLoomWarpAdapter
 
 warp = HoloLoomWarpAdapter(retriever=hololoom.memory_backend.retriever)
 ```
 
 **HoloLoomYarnAdapter**: Wraps HoloLoom's KG for graph traversal
 ```python
-from HoloLoom.shuttle.weaving_integration import HoloLoomYarnAdapter
+from hololoom.shuttle.weaving_integration import HoloLoomYarnAdapter
 
 yarn = HoloLoomYarnAdapter(kg=hololoom.memory_backend.kg)
 ```
@@ -455,8 +455,8 @@ yarn = HoloLoomYarnAdapter(kg=hololoom.memory_backend.kg)
 Shuttle works with all HoloLoom memory backends:
 
 ```python
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.shuttle import create_hololoom_shuttle
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.shuttle import create_hololoom_shuttle
 
 # INMEMORY (development)
 memory = await create_memory_backend(Config.bare())
@@ -515,7 +515,7 @@ shuttle = create_hololoom_shuttle()
 ### Example 1: Basic Query
 
 ```python
-from HoloLoom.shuttle import create_hololoom_shuttle
+from hololoom.shuttle import create_hololoom_shuttle
 
 shuttle = create_hololoom_shuttle()
 
@@ -532,7 +532,7 @@ print(f"Structural claims: {result.structural_claims[:200]}...")
 ### Example 2: Custom Trajectory
 
 ```python
-from HoloLoom.shuttle import create_hololoom_shuttle, TRAJECTORY_BY_NAME
+from hololoom.shuttle import create_hololoom_shuttle, TRAJECTORY_BY_NAME
 
 shuttle = create_hololoom_shuttle()
 
@@ -546,7 +546,7 @@ result = shuttle.intersect(
 ### Example 3: Learning and Statistics
 
 ```python
-from HoloLoom.shuttle import create_hololoom_shuttle
+from hololoom.shuttle import create_hololoom_shuttle
 
 shuttle = create_hololoom_shuttle()
 
@@ -581,7 +581,7 @@ shuttle.save_bandit_state("./shuttle_state.json")
 ### Example 4: Configuration Tuning
 
 ```python
-from HoloLoom.shuttle import ShuttleConfig, ShuttleMode, create_hololoom_shuttle
+from hololoom.shuttle import ShuttleConfig, ShuttleMode, create_hololoom_shuttle
 
 # Production: quality over speed
 config = ShuttleConfig.for_mode(
@@ -607,7 +607,7 @@ shuttle = create_hololoom_shuttle(config)
 ### Example 5: Error Handling
 
 ```python
-from HoloLoom.shuttle import (
+from hololoom.shuttle import (
     create_hololoom_shuttle,
     ShuttleError,
     ConfigurationError,
@@ -635,19 +635,19 @@ except ShuttleError as e:
 
 ```bash
 # Unit tests (15 tests, <5s)
-pytest HoloLoom/shuttle/tests/ -v
+pytest hololoom/shuttle/tests/ -v
 
 # Integration tests (with real backends)
-pytest HoloLoom/shuttle/tests/ -v -m integration
+pytest hololoom/shuttle/tests/ -v -m integration
 
 # Benchmarks
-python HoloLoom/shuttle/benchmarks/weaving_performance.py
+python hololoom/shuttle/benchmarks/weaving_performance.py
 ```
 
 ### Testing Trajectory Selection
 
 ```python
-from HoloLoom.shuttle import TrajectoryBandit
+from hololoom.shuttle import TrajectoryBandit
 
 bandit = TrajectoryBandit([
     "project_blockers",
@@ -739,7 +739,7 @@ config.max_graph_depth = 3
 
 ```python
 # Check entity extraction
-from HoloLoom.shuttle import EntityExtractionFactory
+from hololoom.shuttle import EntityExtractionFactory
 
 extractor = EntityExtractionFactory.create("spacy")
 anchors = extractor.extract(warp_results)
@@ -775,4 +775,4 @@ config = ShuttleConfig.for_mode(ShuttleMode.LITE)
 
 Shuttle brings intelligent, adaptive context retrieval to HoloLoom by combining semantic search (Warp) with structured traversal (Yarn), using MCTS to find optimal expansion paths and Thompson Sampling to learn which strategies work best. It's production-ready with graceful degradation across three operation modes, comprehensive error handling, and deep integration with HoloLoom's memory systems.
 
-For questions or integration help, refer to `HoloLoom/shuttle/weaving_integration.py` for WeavingOrchestrator integration or `HoloLoom/shuttle/hololoom_adapters.py` for HoloLoom-specific adapters.
+For questions or integration help, refer to `hololoom/shuttle/weaving_integration.py` for WeavingOrchestrator integration or `hololoom/shuttle/hololoom_adapters.py` for HoloLoom-specific adapters.

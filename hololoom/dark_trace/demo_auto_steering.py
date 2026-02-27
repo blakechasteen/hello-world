@@ -1,9 +1,9 @@
 import time
 import torch
 import torch.nn as nn
-from HoloLoom.eggroll.mirror_core import MirrorCoreAgent
-from HoloLoom.dark_trace.auto_probe import AutoProbe
-from HoloLoom.dark_trace.steering_policy import ConsistencyGuard
+from hololoom.eggroll.mirror_core import MirrorCoreAgent
+from hololoom.dark_trace.auto_probe import AutoProbe
+from hololoom.dark_trace.steering_policy import ConsistencyGuard
 
 def demo_auto_steering():
     print("🌑 AUTO-STEERING DEMO: The Neural Firewall")

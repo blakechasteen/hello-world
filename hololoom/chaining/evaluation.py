@@ -10,9 +10,9 @@ Features:
 - Integration with existing ABTest infrastructure
 
 Usage:
-    from HoloLoom.chaining.evaluation import ChainEvaluator, LLMJudge, EvalPresets
-    from HoloLoom.chaining.patterns import ChainPatterns
-    from HoloLoom.prompting.analytics import create_ab_test
+    from hololoom.chaining.evaluation import ChainEvaluator, LLMJudge, EvalPresets
+    from hololoom.chaining.patterns import ChainPatterns
+    from hololoom.prompting.analytics import create_ab_test
 
     # Create evaluator
     judge = LLMJudge(provider="ollama", model="llama3.2:3b")
@@ -643,7 +643,7 @@ class ChainEvaluator:
                 # Log to A/B test if available
                 if self.ab_test:
                     try:
-                        from HoloLoom.prompting.analytics import ABGroup
+                        from hololoom.prompting.analytics import ABGroup
 
                         # Determine group
                         group = ABGroup.TREATMENT if variant_name == "treatment" else ABGroup.CONTROL

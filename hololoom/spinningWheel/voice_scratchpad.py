@@ -24,8 +24,8 @@ from datetime import datetime
 import asyncio
 import re
 
-from HoloLoom.spinningWheel.live_scratchpad import LiveScratchpad, TemplateField
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel, ActionCategory
+from hololoom.spinningWheel.live_scratchpad import LiveScratchpad, TemplateField
+from hololoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel, ActionCategory
 
 
 # ============================================================================
@@ -403,7 +403,7 @@ class VoiceScratchpad(LiveScratchpad):
             category, description = domain_risks[self.active_domain]
 
             # Use safety guardrails
-            from HoloLoom.alignment.safety_guardrails import ActionRequest
+            from hololoom.alignment.safety_guardrails import ActionRequest
             request = ActionRequest(
                 action=f"save_{self.active_domain}",
                 category=category,
@@ -417,7 +417,7 @@ class VoiceScratchpad(LiveScratchpad):
             return decision
 
         # Default: low risk
-        from HoloLoom.alignment.safety_guardrails import SafetyDecision
+        from hololoom.alignment.safety_guardrails import SafetyDecision
         return SafetyDecision(
             allowed=True,
             risk_level=RiskLevel.LOW,

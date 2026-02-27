@@ -1,4 +1,4 @@
-# HoloLoom ServiceMonitor
+# hololoom ServiceMonitor
 # Part 5: Production Hardening - Day 25
 #
 # Prometheus monitoring configuration:
@@ -77,7 +77,7 @@ spec:
             severity: warning
             component: performance
           annotations:
-            summary: "HoloLoom high query latency"
+            summary: "hololoom high query latency"
             description: "P95 latency is {{ $value }}s (> 1s threshold)"
 
         # Alert: Very high query latency
@@ -88,7 +88,7 @@ spec:
             severity: critical
             component: performance
           annotations:
-            summary: "HoloLoom very high query latency"
+            summary: "hololoom very high query latency"
             description: "P95 latency is {{ $value }}s (> 2s threshold)"
 
         # Alert: High error rate
@@ -99,7 +99,7 @@ spec:
             severity: warning
             component: reliability
           annotations:
-            summary: "HoloLoom high error rate"
+            summary: "hololoom high error rate"
             description: "Error rate is {{ $value | humanizePercentage }} (> 10% threshold)"
 
         # Alert: Very high error rate
@@ -110,7 +110,7 @@ spec:
             severity: critical
             component: reliability
           annotations:
-            summary: "HoloLoom very high error rate"
+            summary: "hololoom very high error rate"
             description: "Error rate is {{ $value | humanizePercentage }} (> 20% threshold)"
 
         # Alert: Low cache hit rate
@@ -121,7 +121,7 @@ spec:
             severity: warning
             component: cache
           annotations:
-            summary: "HoloLoom low cache hit rate"
+            summary: "hololoom low cache hit rate"
             description: "Cache hit rate is {{ $value | humanizePercentage }} (< 30% threshold)"
 
     - name: hololoom.availability
@@ -135,8 +135,8 @@ spec:
             severity: critical
             component: availability
           annotations:
-            summary: "HoloLoom service is down"
-            description: "HoloLoom service {{ $labels.instance }} is down"
+            summary: "hololoom service is down"
+            description: "hololoom service {{ $labels.instance }} is down"
 
         # Alert: Circuit breaker open
         - alert: HoloLoomCircuitBreakerOpen
@@ -146,7 +146,7 @@ spec:
             severity: warning
             component: reliability
           annotations:
-            summary: "HoloLoom circuit breaker open"
+            summary: "hololoom circuit breaker open"
             description: "Circuit breaker for {{ $labels.backend }} is open"
 
         # Alert: Rate limiting active
@@ -157,7 +157,7 @@ spec:
             severity: warning
             component: traffic
           annotations:
-            summary: "HoloLoom rate limiting active"
+            summary: "hololoom rate limiting active"
             description: "Rate limiter rejecting {{ $value }} requests/sec"
 
     - name: hololoom.resources
@@ -171,7 +171,7 @@ spec:
             severity: warning
             component: resources
           annotations:
-            summary: "HoloLoom high memory usage"
+            summary: "hololoom high memory usage"
             description: "Memory usage is {{ $value | humanizePercentage }} (> 85% threshold)"
 
         # Alert: Very high memory usage
@@ -182,7 +182,7 @@ spec:
             severity: critical
             component: resources
           annotations:
-            summary: "HoloLoom very high memory usage"
+            summary: "hololoom very high memory usage"
             description: "Memory usage is {{ $value | humanizePercentage }} (> 95% threshold)"
 
         # Alert: High CPU usage
@@ -193,7 +193,7 @@ spec:
             severity: warning
             component: resources
           annotations:
-            summary: "HoloLoom high CPU usage"
+            summary: "hololoom high CPU usage"
             description: "CPU usage is {{ $value }}% (> 80% threshold)"
 
         # Alert: Pod restart loop
@@ -204,7 +204,7 @@ spec:
             severity: warning
             component: stability
           annotations:
-            summary: "HoloLoom pod restarting"
+            summary: "hololoom pod restarting"
             description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in 15m"
 
 ---
@@ -244,7 +244,7 @@ data:
   hololoom-overview.json: |
     {
       "dashboard": {
-        "title": "HoloLoom Overview",
+        "title": "hololoom Overview",
         "tags": ["hololoom", "production"],
         "timezone": "browser",
         "panels": [

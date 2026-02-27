@@ -21,7 +21,7 @@ from enum import Enum
 # Import from Layer 1 (causal reasoning)
 import sys
 sys.path.insert(0, '..')
-from HoloLoom.causal import CausalDAG
+from hololoom.causal import CausalDAG
 
 logger = logging.getLogger(__name__)
 

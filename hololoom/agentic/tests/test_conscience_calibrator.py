@@ -15,14 +15,14 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from datetime import datetime, timedelta
 
-from HoloLoom.agentic.conscience_calibrator import (
+from hololoom.agentic.conscience_calibrator import (
     ConscienceCalibrator,
     CalibrationPrior,
     CalibrationEvent,
     DriftAlert,
     create_conscience_calibrator,
 )
-from HoloLoom.protocols.conscience import (
+from hololoom.protocols.conscience import (
     ConscienceDecision,
     StepType,
     RiskLevel,

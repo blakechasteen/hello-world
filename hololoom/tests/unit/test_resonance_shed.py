@@ -2,7 +2,7 @@
 Test Resonance Shed - Feature Interference Zone
 ================================================
 
-Tests for HoloLoom/resonance/shed.py - Multi-modal feature extraction.
+Tests for hololoom/resonance/shed.py - Multi-modal feature extraction.
 
 Coverage:
 - Feature thread lifting (motif, embedding, spectral, semantic_flow)
@@ -19,12 +19,12 @@ import numpy as np
 from unittest.mock import Mock, AsyncMock, patch
 from typing import List, Any
 
-from HoloLoom.resonance.shed import (
+from hololoom.resonance.shed import (
     ResonanceShed,
     FeatureThread,
     create_resonance_shed
 )
-from HoloLoom.protocols.types import Motif
+from hololoom.protocols.types import Motif
 
 
 # ============================================================================

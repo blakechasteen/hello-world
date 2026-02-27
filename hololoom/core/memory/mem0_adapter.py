@@ -21,11 +21,11 @@ import numpy as np
 
 # HoloLoom imports
 try:
-    from holoLoom.documentation.types import Query, Context, Features, MemoryShard
-    from holoLoom.memory.cache import MemoryManager, RetrieverMS
-    from holoLoom.memory.graph import KG, KGEdge
+    from hololoom.documentation.types import Query, Context, Features, MemoryShard
+    from hololoom.memory.cache import MemoryManager, RetrieverMS
+    from hololoom.memory.graph import KG, KGEdge
 except ImportError as e:
-    print(f"Warning: Could not import HoloLoom modules: {e}")
+    print(f"Warning: Could not import hololoom modules: {e}")
     print("Make sure you're running from the repository root")
 
 # Mem0 import (optional dependency)
@@ -470,7 +470,7 @@ class HybridMemoryManager:
         - Remove duplicates (by text similarity)
         
         Args:
-            hololoom_context: Context from HoloLoom retrieval
+            hololoom_context: Context from hololoom retrieval
             mem0_shards: Shards from mem0 with scores
             query: Original query
             
@@ -630,9 +630,9 @@ if __name__ == "__main__":
         
         # Pseudo-code for actual demo:
         """
-        from holoLoom.memory.cache import create_memory_manager
-        from holoLoom.embedding.spectral import MatryoshkaEmbeddings
-        from holoLoom.memory.graph import KG
+        from hololoom.memory.cache import create_memory_manager
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.memory.graph import KG
         
         # Create components
         shards = [...]  # Sample shards

@@ -15,13 +15,13 @@ import logging
 import time
 from typing import Dict, List, Any, Optional, TYPE_CHECKING
 
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.protocols import ComplexityLevel
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.protocols import ComplexityLevel
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.config import Config
 
 # Import stage implementations
-from HoloLoom.orchestrator.stages import (
+from hololoom.orchestrator.stages import (
     PatternSelectionStage,
     TemporalControlStage,
     FeatureExtractionStage,
@@ -30,27 +30,27 @@ from HoloLoom.orchestrator.stages import (
 )
 
 # Import strategies
-from HoloLoom.orchestrator.strategies import create_strategy
+from hololoom.orchestrator.strategies import create_strategy
 
 # Import components for stage creation
-from HoloLoom.loom.command import LoomCommand, PatternCard
-from HoloLoom.chrono.trigger import ChronoTrigger
-from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy
-from HoloLoom.policy.unified import create_policy
-from HoloLoom.tools import ToolExecutor
+from hololoom.loom.command import LoomCommand, PatternCard
+from hololoom.chrono.trigger import ChronoTrigger
+from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
+from hololoom.policy.unified import create_policy
+from hololoom.tools import ToolExecutor
 
 # Import initialization functions (already extracted)
-from HoloLoom.orchestrator.initialization import (
+from hololoom.orchestrator.initialization import (
     initialize_config_and_memory,
     initialize_components,
     initialize_reflection_and_caching,
 )
 
 # Import core functions (already extracted)
-from HoloLoom.orchestrator.core import assess_complexity_level
+from hololoom.orchestrator.core import assess_complexity_level
 
 if TYPE_CHECKING:
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
 logging.basicConfig(level=logging.INFO)
 

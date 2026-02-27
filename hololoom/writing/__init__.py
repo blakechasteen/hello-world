@@ -6,7 +6,7 @@ Universal content generation - memory becomes prose.
 Philosophy: "Great writing isn't written, it's refined."
 
 Ruthlessly Elegant API:
-    from HoloLoom.writing import write
+    from hololoom.writing import write
 
     # Generate content from memory
     content = await write(query, memories)
@@ -14,10 +14,10 @@ Ruthlessly Elegant API:
     # Automatic mode detection, refinement, and formatting
 
 Advanced API:
-    from HoloLoom.writing import Writer, Composer
-    from HoloLoom.writing.core import WritingContext, WritingMode
-    from HoloLoom.writing.refinement import EleganceRefiner
-    from HoloLoom.writing.modes import NarrativeWriter
+    from hololoom.writing import Writer, Composer
+    from hololoom.writing.core import WritingContext, WritingMode
+    from hololoom.writing.refinement import EleganceRefiner
+    from hololoom.writing.modes import NarrativeWriter
 
     # Custom configuration
     writer = Writer(
@@ -79,8 +79,8 @@ async def write(
         Generated content
 
     Example:
-        >>> from HoloLoom.writing import write
-        >>> from HoloLoom.protocols.types import MemoryShard
+        >>> from hololoom.writing import write
+        >>> from hololoom.protocols.types import MemoryShard
         >>>
         >>> memories = [
         ...     MemoryShard(

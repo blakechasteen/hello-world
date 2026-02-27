@@ -12,7 +12,7 @@
       }
     ]
   },
-  "description": "HoloLoom SaaS Toolkit - Health & Feature Monitoring",
+  "description": "hololoom SaaS Toolkit - Health & Feature Monitoring",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -293,7 +293,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "HoloLoom SaaS Health",
+  "title": "hololoom SaaS Health",
   "uid": "hololoom-saas-health",
   "version": 1,
   "weekStart": ""

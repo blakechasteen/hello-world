@@ -1,7 +1,7 @@
 # Quality Trajectory Tracking System - Complete Guide
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/redteam/refinement/`
+**Location**: `hololoom/redteam/refinement/`
 **Performance**: <5ms per quality record, <50ms for full analysis
 **Test Coverage**: 28+ comprehensive tests
 
@@ -74,7 +74,7 @@ print(f"Confidence: {pattern.confidence:.1%}")
 Main class for tracking attack quality evolution.
 
 ```python
-from HoloLoom.redteam.refinement import QualityTrajectoryTracker
+from hololoom.redteam.refinement import QualityTrajectoryTracker
 
 tracker = QualityTrajectoryTracker(
     plateau_threshold=0.01,           # Min change to not be plateau
@@ -234,7 +234,7 @@ for rec in analysis['recommendations']:
 ### Basic Quality Tracking
 
 ```python
-from HoloLoom.redteam.refinement import QualityTrajectoryTracker
+from hololoom.redteam.refinement import QualityTrajectoryTracker
 
 # Initialize tracker
 tracker = QualityTrajectoryTracker()
@@ -438,8 +438,8 @@ tracker = QualityTrajectoryTracker(
 ## Integration with Refinement Pipeline
 
 ```python
-from HoloLoom.redteam.refinement import QualityTrajectoryTracker
-from HoloLoom.recursive.advanced_refinement import AdvancedRefiner
+from hololoom.redteam.refinement import QualityTrajectoryTracker
+from hololoom.recursive.advanced_refinement import AdvancedRefiner
 
 # Initialize systems
 tracker = QualityTrajectoryTracker()
@@ -559,7 +559,7 @@ async def monitoring_loop(tracker: QualityTrajectoryTracker):
 
 ```python
 import pytest
-from HoloLoom.redteam.refinement import QualityTrajectoryTracker
+from hololoom.redteam.refinement import QualityTrajectoryTracker
 
 def test_quality_tracking():
     """Test basic quality recording and retrieval."""

@@ -19,15 +19,15 @@ import asyncio
 import time
 from typing import List, Dict
 
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.memory.interleaved_generation import (
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.memory.interleaved_generation import (
     InterleavedStreamManager,
     GenerationToken,
     StreamMetadata,
     StreamMode,
     MockLLM
 )
-from HoloLoom.memory.streaming_expansion import ContextChunk
+from hololoom.memory.streaming_expansion import ContextChunk
 
 
 # ============================================================================

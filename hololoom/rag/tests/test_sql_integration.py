@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Dict, List, Any
 
 # Import SQL integration components
-from HoloLoom.rag.sql_integration import (
+from hololoom.rag.sql_integration import (
     SQLAdapter,
     TextToSQLTranslator,
     SQLRAGMixin,

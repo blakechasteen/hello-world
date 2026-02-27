@@ -341,7 +341,7 @@ RETURN hive.hive_id, hive.inspector_id
 ### 1.3 File Structure
 
 ```
-HoloLoom/
+hololoom/
 └── infrastructure/
     ├── mcp_server.py                    # EXISTING - MCP server framework
     ├── neo4j_backend.py                 # EXISTING - Graph backend
@@ -363,7 +363,7 @@ HoloLoom/
 **New Tool: `query_sql`**
 
 ```python
-# HoloLoom/infrastructure/mcp_server.py
+# hololoom/infrastructure/mcp_server.py
 
 from mcp.server import Server
 from mcp.types import Tool, TextContent
@@ -614,7 +614,7 @@ class BackendBandit:
     """
 
     def __init__(self):
-        from HoloLoom.policy.unified import ThompsonBandit
+        from hololoom.policy.unified import ThompsonBandit
 
         # Initialize bandit with 3 backends as "tools"
         self.bandit = ThompsonBandit(
@@ -918,16 +918,16 @@ async def verified_query(self, hive_id: str) -> VerifiedResult:
 
 ### 2.5 Integration with WeavingOrchestrator
 
-**File Location:** `HoloLoom/context/query_router.py` (NEW)
+**File Location:** `hololoom/context/query_router.py` (NEW)
 
 **Integration Point:** Modify `WeavingOrchestrator.weave()`
 
 ```python
-# HoloLoom/context/query_router.py
+# hololoom/context/query_router.py
 
 from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
-from HoloLoom.documentation.types import Query, Spacetime
+from hololoom.documentation.types import Query, Spacetime
 
 @dataclass
 class RoutingDecision:
@@ -1099,7 +1099,7 @@ class QueryRouter:
 **Modify WeavingOrchestrator:**
 
 ```python
-# HoloLoom/context/weaving_orchestrator.py
+# hololoom/context/weaving_orchestrator.py
 
 class WeavingOrchestrator:
     """Existing orchestrator - ADD routing integration"""
@@ -1111,7 +1111,7 @@ class WeavingOrchestrator:
         # ... existing setup ...
 
         # NEW: Add query router
-        from HoloLoom.context.query_router import QueryRouter
+        from hololoom.context.query_router import QueryRouter
         self.query_router = QueryRouter(infrastructure_mcp_client=self._get_infrastructure_client())
         self.enable_routing = cfg.enable_hybrid_routing  # NEW config flag
 
@@ -1195,7 +1195,7 @@ This section defines how departments communicate via MCP and how the system lear
 **Infrastructure Department MCP Server:**
 
 ```python
-# HoloLoom/infrastructure/mcp_server.py
+# hololoom/infrastructure/mcp_server.py
 
 from mcp.server import Server
 from mcp.types import Tool, TextContent
@@ -1407,7 +1407,7 @@ ReflectionBuffer (learning from session_123)
 **Implementation:**
 
 ```python
-# HoloLoom/context/query_router.py
+# hololoom/context/query_router.py
 
 class QueryRouter:
     async def route_and_execute(
@@ -1482,7 +1482,7 @@ Orchestration (user-facing errors)
 **Implementation:**
 
 ```python
-# HoloLoom/infrastructure/sql_backend.py
+# hololoom/infrastructure/sql_backend.py
 
 class SQLBackend:
     async def execute(
@@ -1530,7 +1530,7 @@ class SQLBackend:
 ```
 
 ```python
-# HoloLoom/context/query_router.py
+# hololoom/context/query_router.py
 
 class QueryRouter:
     async def route_and_execute(
@@ -1587,7 +1587,7 @@ class QueryRouter:
 **Error Response to User:**
 
 ```python
-# HoloLoom/orchestration/orchestrator.py
+# hololoom/orchestration/orchestrator.py
 
 class WeavingOrchestrator:
     async def weave(self, query: Query) -> Spacetime:
@@ -1620,7 +1620,7 @@ class WeavingOrchestrator:
 
 ### 3.4 ReflectionBuffer Integration
 
-**ReflectionBuffer** (`HoloLoom/reflection/buffer.py`) learns from routing outcomes to improve future decisions.
+**ReflectionBuffer** (`hololoom/reflection/buffer.py`) learns from routing outcomes to improve future decisions.
 
 **Learning Signals:**
 
@@ -1636,9 +1636,9 @@ class WeavingOrchestrator:
 **Integration:**
 
 ```python
-# HoloLoom/context/learning_tracker.py
+# hololoom/context/learning_tracker.py
 
-from HoloLoom.reflection.buffer import ReflectionBuffer
+from hololoom.reflection.buffer import ReflectionBuffer
 
 class LearningTracker:
     """Tracks routing decisions for learning"""
@@ -1703,7 +1703,7 @@ class LearningTracker:
 **ReflectionBuffer Usage:**
 
 ```python
-# HoloLoom/context/query_router.py
+# hololoom/context/query_router.py
 
 class QueryRouter:
     def __init__(self, infrastructure_mcp_client, reflection_buffer: ReflectionBuffer):
@@ -1762,7 +1762,7 @@ class QueryRouter:
 **Calibration Metrics:**
 
 ```python
-# HoloLoom/context/calibration.py
+# hololoom/context/calibration.py
 
 class ConfidenceCalibrator:
     """Calibrates confidence predictions vs. actual outcomes"""
@@ -1845,7 +1845,7 @@ class ConfidenceCalibrator:
 **Using Calibration:**
 
 ```python
-# HoloLoom/context/query_router.py
+# hololoom/context/query_router.py
 
 class QueryRouter:
     def __init__(self, infrastructure_mcp_client, reflection_buffer: ReflectionBuffer):
@@ -1917,7 +1917,7 @@ class QueryRouter:
 **Implementation:**
 
 ```python
-# HoloLoom/context/strategy_updater.py
+# hololoom/context/strategy_updater.py
 
 class StrategyUpdater:
     """Adjusts routing strategy based on learning signals"""
@@ -1991,7 +1991,7 @@ class StrategyUpdater:
 **QueryRouter Integration:**
 
 ```python
-# HoloLoom/context/query_router.py
+# hololoom/context/query_router.py
 
 class QueryRouter:
     def __init__(self, infrastructure_mcp_client, reflection_buffer: ReflectionBuffer):
@@ -2097,9 +2097,9 @@ This section provides a concrete 3-phase rollout plan with testing strategy, exa
 **Day 1-2: SQL Backend**
 ```bash
 # Create files
-touch HoloLoom/infrastructure/sql_backend.py
-touch HoloLoom/infrastructure/mcp_server.py
-touch HoloLoom/infrastructure/schemas/beekeeping_schema.sql
+touch hololoom/infrastructure/sql_backend.py
+touch hololoom/infrastructure/mcp_server.py
+touch hololoom/infrastructure/schemas/beekeeping_schema.sql
 
 # Write SQL backend
 # Write MCP server with query_sql tool
@@ -2109,12 +2109,12 @@ touch HoloLoom/infrastructure/schemas/beekeeping_schema.sql
 **Day 3-4: Classification Logic**
 ```bash
 # Create files
-touch HoloLoom/context/query_classifier.py
-touch HoloLoom/context/query_router.py
+touch hololoom/context/query_classifier.py
+touch hololoom/context/query_router.py
 
 # Implement 7-rule classifier
 # Write unit tests
-pytest HoloLoom/tests/unit/test_query_classifier.py -v
+pytest hololoom/tests/unit/test_query_classifier.py -v
 ```
 
 **Day 5-7: Integration**
@@ -2124,7 +2124,7 @@ pytest HoloLoom/tests/unit/test_query_classifier.py -v
 # Wire QueryRouter into weaving cycle
 
 # Integration tests
-pytest HoloLoom/tests/integration/test_hybrid_routing.py -v
+pytest hololoom/tests/integration/test_hybrid_routing.py -v
 ```
 
 **Day 8-10: E2E Testing + Documentation**
@@ -2162,40 +2162,40 @@ python demos/demo_hybrid_routing_phase1.py
 **Day 1-3: Thompson Sampling**
 ```bash
 # Implement BackendBandit
-touch HoloLoom/context/backend_bandit.py
+touch hololoom/context/backend_bandit.py
 
 # Integrate into QueryRouter
 # Unit tests for bandit updates
-pytest HoloLoom/tests/unit/test_backend_bandit.py -v
+pytest hololoom/tests/unit/test_backend_bandit.py -v
 ```
 
 **Day 4-6: Calibration + Learning**
 ```bash
 # Implement ConfidenceCalibrator
-touch HoloLoom/context/calibration.py
+touch hololoom/context/calibration.py
 
 # Implement LearningTracker
-touch HoloLoom/context/learning_tracker.py
+touch hololoom/context/learning_tracker.py
 
 # Wire into QueryRouter
 # Tests for calibration curve
-pytest HoloLoom/tests/unit/test_calibration.py -v
+pytest hololoom/tests/unit/test_calibration.py -v
 ```
 
 **Day 7-9: Strategy Updates**
 ```bash
 # Implement StrategyUpdater
-touch HoloLoom/context/strategy_updater.py
+touch hololoom/context/strategy_updater.py
 
 # Add periodic update checks
 # Tests for strategy adjustments
-pytest HoloLoom/tests/unit/test_strategy_updater.py -v
+pytest hololoom/tests/unit/test_strategy_updater.py -v
 ```
 
 **Day 10-14: Integration + Validation**
 ```bash
 # Full integration tests with learning enabled
-pytest HoloLoom/tests/integration/test_learning_routing.py -v
+pytest hololoom/tests/integration/test_learning_routing.py -v
 
 # Run 1000-query learning simulation
 python experiments/routing_learning_experiment.py
@@ -2230,7 +2230,7 @@ python experiments/routing_learning_experiment.py
 **Day 1-3: Monitoring**
 ```bash
 # Add Prometheus metrics
-touch HoloLoom/context/metrics.py
+touch hololoom/context/metrics.py
 
 # Routing accuracy gauge
 # Latency histogram
@@ -2244,14 +2244,14 @@ touch monitoring/dashboards/hybrid_routing.json
 **Day 4-6: Multi-Domain Support**
 ```bash
 # Create schema templates
-touch HoloLoom/infrastructure/schemas/healthcare_schema.sql
-touch HoloLoom/infrastructure/schemas/finance_schema.sql
+touch hololoom/infrastructure/schemas/healthcare_schema.sql
+touch hololoom/infrastructure/schemas/finance_schema.sql
 
 # Domain registry
-touch HoloLoom/infrastructure/domain_registry.py
+touch hololoom/infrastructure/domain_registry.py
 
 # Schema migration tool
-touch HoloLoom/infrastructure/migrate_domain.py
+touch hololoom/infrastructure/migrate_domain.py
 ```
 
 **Day 7-10: Production Deployment**
@@ -2807,7 +2807,7 @@ Result: ⚠️ Fallback worked, but SQL failure logged for investigation
 **Prometheus Metrics:**
 
 ```python
-# HoloLoom/context/metrics.py
+# hololoom/context/metrics.py
 
 from prometheus_client import Counter, Histogram, Gauge, Enum
 
@@ -3041,20 +3041,20 @@ PYTHONPATH=. python setup.py install
 **Step 2: Schema Migration (Week 1)**
 ```bash
 # Create SQL schema (new)
-psql -U hololoom_user -d hololoom_staging < HoloLoom/infrastructure/schemas/production_schema.sql
+psql -U hololoom_user -d hololoom_staging < hololoom/infrastructure/schemas/production_schema.sql
 
 # Migrate ground truth data from Neo4j → SQL
-python HoloLoom/infrastructure/migrate_ground_truth.py \
+python hololoom/infrastructure/migrate_ground_truth.py \
   --neo4j-uri bolt://localhost:7687 \
   --postgres-uri postgresql://localhost:5432/hololoom_staging \
   --domain beekeeping \
   --dry-run
 
 # Verify migration
-python HoloLoom/infrastructure/validate_migration.py
+python hololoom/infrastructure/validate_migration.py
 
 # Execute migration (if validation passed)
-python HoloLoom/infrastructure/migrate_ground_truth.py \
+python hololoom/infrastructure/migrate_ground_truth.py \
   --neo4j-uri bolt://localhost:7687 \
   --postgres-uri postgresql://localhost:5432/hololoom_staging \
   --domain beekeeping
@@ -3092,7 +3092,7 @@ config.rollout_percentage = 100.0
 **Step 5: Cleanup (Week 6)**
 ```bash
 # Remove duplicate data from Neo4j (now in SQL)
-python HoloLoom/infrastructure/cleanup_migrated_data.py \
+python hololoom/infrastructure/cleanup_migrated_data.py \
   --neo4j-uri bolt://localhost:7687 \
   --confirm
 

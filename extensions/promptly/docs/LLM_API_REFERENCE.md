@@ -373,7 +373,7 @@ Find prompts below quality threshold.
 
 ### 6. hololoom_enhance_prompt
 
-Enhance a prompt with RAG context from HoloLoom memory.
+Enhance a prompt with RAG context from hololoom memory.
 
 **Input Schema:**
 ```json

@@ -37,8 +37,8 @@ pygls 2.0.0 has a different module structure than earlier versions. The correct 
 ```python
 @server.feature("initialized")
 async def on_initialized(params):
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.config import Config
 
     config = Config.fast()  # Use FAST mode for balanced performance
     server.hololoom = HoloLoom(config=config)
@@ -67,7 +67,7 @@ Ensures proper cleanup of HoloLoom resources on server shutdown.
 #### A. `textDocument/completion` - Code Completion
 
 **Input**: Cursor position in document
-**Output**: List of CompletionItems from HoloLoom memories
+**Output**: List of CompletionItems from hololoom memories
 
 **Implementation**:
 1. Extract word before cursor using regex `r'([\w.]+)$'`
@@ -174,7 +174,7 @@ All handlers meet or approach performance targets.
 #### Server Startup Test
 
 ```bash
-timeout 5 python -m HoloLoom.lsp.server --log-level DEBUG
+timeout 5 python -m hololoom.lsp.server --log-level DEBUG
 ```
 
 **Result**: ✅ Server starts successfully
@@ -282,7 +282,7 @@ timeout 5 python -m HoloLoom.lsp.server --log-level DEBUG
 
 ## Files Modified
 
-- `/home/user/hello-world/HoloLoom/lsp/server.py` - Main implementation (734 lines)
+- `/home/user/hello-world/hololoom/lsp/server.py` - Main implementation (734 lines)
   - Added HoloLoom initialization
   - Implemented 4 core handlers
   - Added 3 helper functions

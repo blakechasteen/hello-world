@@ -9,7 +9,7 @@ Architecture:
 - Model Adapters - Optional enhancements for specific LLMs
 
 Example:
-    >>> from HoloLoom.prompting import create_adapter
+    >>> from hololoom.prompting import create_adapter
     >>> adapter = create_adapter(llm_provider="anthropic")
     >>> enhanced = adapter.enhance(core_prompt, features={'thinking_tags': True})
 """
@@ -131,7 +131,7 @@ class ModelAdapter(ABC):
         Returns:
             Template content
         """
-        # Navigate from HoloLoom/prompting/adapters.py -> promptly_skills/meta_prompt/adapters/
+        # Navigate from hololoom/prompting/adapters.py -> promptly_skills/meta_prompt/adapters/
         repo_root = Path(__file__).parent.parent.parent
         template_path = repo_root / "promptly_skills" / "meta_prompt" / "adapters" / template_name
 
@@ -595,7 +595,7 @@ def create_adapter(llm_provider: str) -> ModelAdapter:
 # Convenience function for getting adapter from config
 def create_adapter_from_config(config) -> Optional[ModelAdapter]:
     """
-    Create adapter from HoloLoom Config object.
+    Create adapter from hololoom Config object.
 
     Args:
         config: HoloLoom Config instance with llm_provider set
@@ -604,7 +604,7 @@ def create_adapter_from_config(config) -> Optional[ModelAdapter]:
         Adapter instance or None if no provider specified
 
     Example:
-        >>> from HoloLoom.config import Config
+        >>> from hololoom.config import Config
         >>> config = Config.fused()
         >>> config.llm_provider = "anthropic"
         >>> adapter = create_adapter_from_config(config)

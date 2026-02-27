@@ -24,7 +24,7 @@ from collections import defaultdict
 
 # Import alerting system (optional - graceful degradation if not available)
 try:
-    from HoloLoom.alignment.alerting import (
+    from hololoom.alignment.alerting import (
         alert_deception_detected,
         alert_convergence_violation,
         alert_high_risk_action
@@ -33,7 +33,7 @@ try:
 except ImportError:
     ALERTING_AVAILABLE = False
 
-logger = logging.getLogger("HoloLoom.apps.server.safety_websocket")
+logger = logging.getLogger("hololoom.apps.server.safety_websocket")
 
 
 @dataclass
@@ -513,7 +513,7 @@ class SafetyWebSocketManager:
             Metrics dictionary
         """
         try:
-            from HoloLoom.alignment import get_global_monitor
+            from hololoom.alignment import get_global_monitor
             monitor = get_global_monitor()
             if monitor:
                 return monitor.get_alignment_summary()
@@ -549,7 +549,7 @@ async def setup_safety_websocket(app):
 
     Usage:
         from fastapi import FastAPI
-        from HoloLoom.apps.server.safety_websocket import setup_safety_websocket
+        from hololoom.apps.server.safety_websocket import setup_safety_websocket
 
         app = FastAPI()
         await setup_safety_websocket(app)

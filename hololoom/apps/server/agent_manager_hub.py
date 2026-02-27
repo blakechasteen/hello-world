@@ -338,7 +338,7 @@ class AgentManagerHub:
         # Initialize git store if enabled
         if self._enable_git:
             try:
-                from HoloLoom.apps.server.agent_git_store import AgentGitStore
+                from hololoom.apps.server.agent_git_store import AgentGitStore
                 self._git_repo_path.mkdir(parents=True, exist_ok=True)
                 self._git_store = AgentGitStore(str(self._git_repo_path))
                 logger.info(f"Git versioning enabled at {self._git_repo_path}")
@@ -1158,7 +1158,7 @@ class AgentManagerHub:
             return
 
         try:
-            from HoloLoom.apps.server.agent_git_store import StepCommit
+            from hololoom.apps.server.agent_git_store import StepCommit
             import time
 
             commit = StepCommit(

@@ -12,9 +12,9 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from typing import Optional
 
-from HoloLoom.agentic.core import AgenticOrchestrator, CONSCIENCE_AVAILABLE
-from HoloLoom.protocols.conscience import ConscienceDecision, StepType
-from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+from hololoom.agentic.core import AgenticOrchestrator, CONSCIENCE_AVAILABLE
+from hololoom.protocols.conscience import ConscienceDecision, StepType
+from hololoom.alignment.audit_trail import DecisionType, OutcomeType
 
 
 # =============================================================================
@@ -485,7 +485,7 @@ class TestConscienceAvailableFlag:
 
     def test_step_type_is_importable(self):
         """Test that StepType enum is importable."""
-        from HoloLoom.protocols.conscience import StepType
+        from hololoom.protocols.conscience import StepType
 
         assert hasattr(StepType, 'VERIFICATION')
         assert hasattr(StepType, 'RESEARCH')

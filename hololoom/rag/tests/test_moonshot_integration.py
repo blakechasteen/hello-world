@@ -25,26 +25,26 @@ import time
 from unittest.mock import Mock, patch, AsyncMock
 from typing import List, Dict, Any
 
-from HoloLoom.config import Config
-from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
-from HoloLoom.rag.streaming import QueryStream, StreamToken
-from HoloLoom.rag.embedding_plugins import (
+from hololoom.config import Config
+from hololoom.rag.simple_rag import SimpleRAG, RAGResult
+from hololoom.rag.streaming import QueryStream, StreamToken
+from hololoom.rag.embedding_plugins import (
     MatryoshkaEmbedding,
     create_embedding_provider,
 )
-from HoloLoom.rag.reranking import (
+from hololoom.rag.reranking import (
     NoOpReranker,
     create_reranker,
 )
-from HoloLoom.rag.sql_integration import (
+from hololoom.rag.sql_integration import (
     TextToSQL,
     SQLRAGMixin,
 )
-from HoloLoom.rag.multihop_reasoning import (
+from hololoom.rag.multihop_reasoning import (
     MultiHopReasoningMixin,
     ReasoningPath,
 )
-from HoloLoom.rag.multiagent_rag import (
+from hololoom.rag.multiagent_rag import (
     MultiAgentRAG,
     ConsensusMethod,
 )

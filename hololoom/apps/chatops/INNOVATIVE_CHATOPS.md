@@ -396,12 +396,12 @@ docs = miner.generate_docs("api_design")
 ```python
 # chatops_bridge.py
 
-from HoloLoom.apps.chatops.innovative_features import (
+from hololoom.apps.chatops.innovative_features import (
     WorkflowEngine,
     IncidentManager,
     ChatDashboard
 )
-from HoloLoom.apps.chatops.advanced_chatops import (
+from hololoom.apps.chatops.advanced_chatops import (
     CodeReviewAssistant,
     ContextAwareAgent,
     KnowledgeMiner
@@ -538,7 +538,7 @@ def register_innovative_commands(bot, chatops):
 
 ```bash
 # Enable innovative features in config
-vi HoloLoom/chatops/config.yaml
+vi hololoom/chatops/config.yaml
 ```
 
 ```yaml

@@ -10,8 +10,8 @@ This guide shows how to integrate the Code Execution ability into Proto's abilit
 ### 1. Register with AbilityRegistry
 
 ```python
-from HoloLoom.apps.departments.proto.abilities.registry import AbilityRegistry
-from HoloLoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+from hololoom.apps.departments.proto.abilities.registry import AbilityRegistry
+from hololoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
 
 # Create registry (typically done once at startup)
 registry = AbilityRegistry(max_trust_level=AbilityTrustLevel.VERIFIED)
@@ -44,9 +44,9 @@ result = await ability.execute({"code": "print('hello')"}, context)
 ### 3. Full Workflow
 
 ```python
-from HoloLoom.apps.departments.proto.abilities.registry import AbilityRegistry
-from HoloLoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
-from HoloLoom.apps.departments.proto.abilities.protocol import AbilityContext, AbilityTrustLevel
+from hololoom.apps.departments.proto.abilities.registry import AbilityRegistry
+from hololoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+from hololoom.apps.departments.proto.abilities.protocol import AbilityContext, AbilityTrustLevel
 
 # Setup
 registry = AbilityRegistry()
@@ -91,7 +91,7 @@ print(f"Verified: {verification.verified}")
 To make the ability discoverable, add to your package's `__init__.py`:
 
 ```python
-# HoloLoom/departments/proto/abilities/core/__init__.py
+# hololoom/departments/proto/abilities/core/__init__.py
 
 from .code_execution import (
     CodeExecutionAbility,
@@ -112,7 +112,7 @@ __all__ = [
 For automatic registration of all core abilities:
 
 ```python
-# HoloLoom/departments/proto/abilities/loader.py
+# hololoom/departments/proto/abilities/loader.py
 
 from typing import List
 from .protocol import Ability
@@ -141,7 +141,7 @@ def create_default_registry(max_trust_level=AbilityTrustLevel.VERIFIED):
 ### Custom Configuration
 
 ```python
-from HoloLoom.apps.departments.proto.abilities.core.code_execution import (
+from hololoom.apps.departments.proto.abilities.core.code_execution import (
     CodeExecutionAbility,
     CodeExecutionConfig
 )
@@ -162,7 +162,7 @@ registry.register(ability)
 
 ```python
 import os
-from HoloLoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+from hololoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
 
 registry = AbilityRegistry()
 
@@ -184,9 +184,9 @@ registry.register(ability)
 ### Integration with Safety Guardrails
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
-from HoloLoom.apps.departments.proto.abilities.protocol import AbilityContext
+from hololoom.alignment import SafetyGuardrails
+from hololoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+from hololoom.apps.departments.proto.abilities.protocol import AbilityContext
 
 guardrails = SafetyGuardrails()
 ability = CodeExecutionAbility()
@@ -231,8 +231,8 @@ async def safe_execute(code: str, user_id: str):
 ### Integration with Audit Trail
 
 ```python
-from HoloLoom.alignment import AuditTrail
-from HoloLoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+from hololoom.alignment import AuditTrail
+from hololoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
 
 audit_trail = AuditTrail()
 ability = CodeExecutionAbility()
@@ -277,8 +277,8 @@ async def logged_execute(code: str, user_id: str):
 # tests/test_code_execution_registry.py
 
 import pytest
-from HoloLoom.apps.departments.proto.abilities.registry import AbilityRegistry
-from HoloLoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
+from hololoom.apps.departments.proto.abilities.registry import AbilityRegistry
+from hololoom.apps.departments.proto.abilities.core.code_execution import CodeExecutionAbility
 
 @pytest.fixture
 def registry():
@@ -316,7 +316,7 @@ async def test_registry_execute(registry):
 # tests/mocks/mock_code_execution.py
 
 from unittest.mock import AsyncMock
-from HoloLoom.apps.departments.proto.abilities.protocol import AbilityResult
+from hololoom.apps.departments.proto.abilities.protocol import AbilityResult
 
 def create_mock_code_execution():
     """Create mock code execution ability."""

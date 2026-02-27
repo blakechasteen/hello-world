@@ -74,7 +74,7 @@ Monitors MCTS iterations for breakthrough conditions.
 
 **Usage**:
 ```python
-from HoloLoom.agents.mcts_breakthrough import BreakthroughDetector
+from hololoom.agents.mcts_breakthrough import BreakthroughDetector
 
 detector = BreakthroughDetector(
     reward_improvement_threshold=2.0,  # 2σ above baseline
@@ -101,7 +101,7 @@ Broadcasts breakthroughs to parallel MCTS searches.
 
 **Usage**:
 ```python
-from HoloLoom.agents.mcts_breakthrough import FeedForwardBroadcaster
+from hololoom.agents.mcts_breakthrough import FeedForwardBroadcaster
 
 broadcaster = FeedForwardBroadcaster()
 
@@ -176,8 +176,8 @@ where:
 ### Example 1: Basic Breakthrough Detection
 
 ```python
-from HoloLoom.agents.mcts_core import MCTSEngine
-from HoloLoom.agents.mcts_breakthrough import BreakthroughDetector
+from hololoom.agents.mcts_core import MCTSEngine
+from hololoom.agents.mcts_breakthrough import BreakthroughDetector
 
 # Create detector
 detector = BreakthroughDetector(
@@ -208,7 +208,7 @@ for bt in top:
 ### Example 2: Parallel Searches with Broadcasting
 
 ```python
-from HoloLoom.agents.mcts_breakthrough import (
+from hololoom.agents.mcts_breakthrough import (
     BreakthroughDetector,
     FeedForwardBroadcaster
 )
@@ -335,8 +335,8 @@ detector = BreakthroughDetector(
 ### Agent System Integration
 
 ```python
-from HoloLoom.agents.orchestrator_mcts import create_mcts_agent
-from HoloLoom.agents.mcts_breakthrough import BreakthroughDetector
+from hololoom.agents.orchestrator_mcts import create_mcts_agent
+from hololoom.agents.mcts_breakthrough import BreakthroughDetector
 
 # Create detector
 detector = BreakthroughDetector()
@@ -360,8 +360,8 @@ async with create_mcts_agent(
 ### Background Learning Integration
 
 ```python
-from HoloLoom.agents.background_learner import create_agent_pool
-from HoloLoom.agents.mcts_breakthrough import BreakthroughDetector
+from hololoom.agents.background_learner import create_agent_pool
+from hololoom.agents.mcts_breakthrough import BreakthroughDetector
 
 # Shared detector across all agents
 detector = BreakthroughDetector(max_breakthrough_memory=200)

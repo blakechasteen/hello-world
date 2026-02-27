@@ -19,8 +19,8 @@ import json
 
 # Will integrate with HoloLoom
 try:
-    from HoloLoom.spinningWheel.audio import AudioSpinner
-    from HoloLoom.rag import SimpleRAG
+    from hololoom.spinningWheel.audio import AudioSpinner
+    from hololoom.rag import SimpleRAG
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False
@@ -119,7 +119,7 @@ class VoiceSOPEditor:
             return
 
         try:
-            from HoloLoom.rag import SimpleRAG
+            from hololoom.rag import SimpleRAG
 
             self.rag = SimpleRAG()
 

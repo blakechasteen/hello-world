@@ -8,7 +8,7 @@ and adversarial learning patterns using Tufte principles:
 - Zero external dependencies (pure HTML/CSS/SVG)
 
 Example:
-    >>> from HoloLoom.redteam.visualization import render_attack_trajectory
+    >>> from hololoom.redteam.visualization import render_attack_trajectory
     >>>
     >>> strategies = ["prompt_injection", "jailbreak", "context_overflow"]
     >>> success_rates = [0.65, 0.42, 0.28]

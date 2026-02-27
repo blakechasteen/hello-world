@@ -16,8 +16,8 @@ Tests:
 
 import pytest
 import numpy as np
-from HoloLoom.memory.cache import MemoryShard, RetrieverMS
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.memory.cache import MemoryShard, RetrieverMS
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 
 class TestMemoryShardDataClass:

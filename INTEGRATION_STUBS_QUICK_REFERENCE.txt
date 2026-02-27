@@ -11,19 +11,19 @@ OVERALL INTEGRATION MATURITY: 92% (9.2/10)
 
 CATEGORY              | STATUS | WORKING | PARTIAL | STUB | LOCATION
 ----------------------+--------+---------+---------+------+---------------------------
-LLM Providers         | 95%    | 3/4     | 1       | 0    | HoloLoom/llm/providers/
+LLM Providers         | 95%    | 3/4     | 1       | 0    | hololoom/llm/providers/
   - Ollama           | ✅     | YES     | -       | -    | ollama_provider.py
   - Anthropic        | ✅     | YES     | -       | -    | anthropic_provider.py
   - OpenAI           | ✅     | YES     | -       | -    | openai_provider.py
   - Gemini           | ⚠️     | NO      | PARTIAL | -    | gemini_provider.py
 
-Vector Stores         | 90%    | 3 core  | 8+      | 0    | HoloLoom/memory/stores/
+Vector Stores         | 90%    | 3 core  | 8+      | 0    | hololoom/memory/stores/
   - Qdrant           | ✅     | YES     | -       | -    | qdrant_store.py (869L)
   - Neo4j            | ✅     | YES     | -       | -    | neo4j_store.py (352L)
   - Hybrid           | ✅     | YES     | -       | -    | hybrid_neo4j_qdrant.py
   - LangChain (8+)   | ✅     | YES     | -       | -    | integrations/langchain/
 
-Server APIs           | 93%    | 13      | 0       | 1    | HoloLoom/server/
+Server APIs           | 93%    | 13      | 0       | 1    | hololoom/server/
   - Agentic API      | ✅     | YES     | -       | -    | agentic_api.py (61 KB)
   - AR API           | ✅     | YES     | -       | -    | ar_api.py (52 KB)
   - RAG API          | ✅     | YES     | -       | -    | rag_api.py (20 KB)
@@ -39,24 +39,24 @@ Server APIs           | 93%    | 13      | 0       | 1    | HoloLoom/server/
   - Security Monitor | ✅     | YES     | -       | -    | security_monitor.py (35 KB)
   - WAF Middleware   | ❌     | NO      | PARTIAL | -    | waf_middleware.py (100L)
 
-ChatOps Integration   | 100%   | 38 ✅   | 0       | 0    | HoloLoom/chatops/
+ChatOps Integration   | 100%   | 38 ✅   | 0       | 0    | hololoom/chatops/
   - Matrix Bot       | ✅     | YES     | -       | -    | core/matrix_bot.py
   - 38 Handlers      | ✅     | ALL     | -       | -    | handlers/*.py
   - Scratchpad       | ✅     | YES     | -       | -    | scratchpad/ (4 files)
   - Metrics          | ✅     | YES     | -       | -    | handlers/prometheus_metrics.py
 
-MCP Integration       | 80%    | 1       | 1       | 1    | HoloLoom/integrations/mcp/
+MCP Integration       | 80%    | 1       | 1       | 1    | hololoom/integrations/mcp/
   - Primary Server   | ✅     | YES     | -       | -    | mcp_server.py (715 L)
   - ExpertLoom       | ✅     | YES     | -       | -    | expertloom_server.py
   - Jira Server      | ❌     | NO      | -       | STUB | jira_server.py
 
-LangChain Integration | 100%   | 3       | 0       | 0    | HoloLoom/integrations/langchain/
+LangChain Integration | 100%   | 3       | 0       | 0    | hololoom/integrations/langchain/
   - LLM Providers    | ✅     | 20+     | -       | -    | llm_providers.py (454 L)
   - Document Loaders | ✅     | 100+    | -       | -    | document_loaders.py (427 L)
   - Vector Stores    | ✅     | 8+      | -       | -    | vector_stores.py
   - Demos            | ✅     | 3 demos | -       | -    | demos/
 
-Dark Trace (XAI)      | 100%   | 10      | 0       | 0    | HoloLoom/integrations/
+Dark Trace (XAI)      | 100%   | 10      | 0       | 0    | hololoom/integrations/
   - Phases 1-10      | ✅     | ALL     | -       | -    | dark_trace_integration.py (48 KB)
 
 ================================================================================
@@ -64,7 +64,7 @@ Dark Trace (XAI)      | 100%   | 10      | 0       | 0    | HoloLoom/integration
 ================================================================================
 
 STUB #1: GEMINI LLM PROVIDER
-  Location: HoloLoom/llm/providers/gemini_provider.py
+  Location: hololoom/llm/providers/gemini_provider.py
   Status: ⚠️ PARTIAL (50 lines, ~20% complete)
   Missing:
     - generate() method implementation
@@ -75,7 +75,7 @@ STUB #1: GEMINI LLM PROVIDER
   Impact: LOW (3/4 providers working)
 
 STUB #2: WAF MIDDLEWARE
-  Location: HoloLoom/server/waf_middleware.py
+  Location: hololoom/server/waf_middleware.py
   Status: ❌ INCOMPLETE (100 lines, ~40% complete)
   Missing:
     - Path traversal detection complete
@@ -88,7 +88,7 @@ STUB #2: WAF MIDDLEWARE
   Impact: LOW (Other security measures in place)
 
 STUB #3: JIRA MCP SERVER
-  Location: HoloLoom/integrations/mcp/jira_server.py
+  Location: hololoom/integrations/mcp/jira_server.py
   Status: ❌ STUB (Minimal skeleton)
   Missing:
     - Jira API integration

@@ -14,14 +14,14 @@ import logging
 from typing import Optional, Callable
 from dataclasses import dataclass
 
-from HoloLoom.core.protocols.types import Query, Features
-from HoloLoom.core.fabric.spacetime import Spacetime
-from HoloLoom.core.convergence.engine import ConvergenceEngine, CollapseStrategy
-from HoloLoom.core.convergence.recursive_reasoner import (
+from hololoom.core.protocols.types import Query, Features
+from hololoom.core.fabric.spacetime import Spacetime
+from hololoom.core.convergence.engine import ConvergenceEngine, CollapseStrategy
+from hololoom.core.convergence.recursive_reasoner import (
     BaseRecursiveReasoner,
     create_recursive_reasoner
 )
-from HoloLoom.core.protocols.recursive_reasoning import (
+from hololoom.core.protocols.recursive_reasoning import (
     RecursiveConfig,
     ReasoningStrategy,
     ReasoningJournal,

@@ -16,7 +16,7 @@ Endpoints:
 - WS /ws/dark-trace/stream - Real-time activation streaming
 
 Usage:
-    from HoloLoom.dark_trace.visualization.dashboard_api import (
+    from hololoom.dark_trace.visualization.dashboard_api import (
         DarkTraceDashboardAPI,
         create_dashboard_api,
     )
@@ -60,8 +60,8 @@ except ImportError:
     BaseModel = object
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.engine import DarkTraceEngine
-    from HoloLoom.dark_trace.visualization.streaming_server import (
+    from hololoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.dark_trace.visualization.streaming_server import (
         DarkTraceStreamingServer,
     )
 

@@ -8,7 +8,7 @@ Available backends:
 - SqliteTapestryBackend: SQLite for durability (optional)
 
 Usage:
-    from HoloLoom.tapestry.backends import JsonTapestryBackend
+    from hololoom.tapestry.backends import JsonTapestryBackend
 
     backend = JsonTapestryBackend(".hololoom/tapestry.json")
     await backend.save(tapestry)
@@ -17,7 +17,7 @@ Usage:
 Created: December 2025
 """
 
-from HoloLoom.tapestry.backends.json_backend import JsonTapestryBackend
+from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
 
 __all__ = [
     "JsonTapestryBackend",
@@ -26,6 +26,6 @@ __all__ = [
 # Lazy import for optional SQLite backend
 def __getattr__(name):
     if name == "SqliteTapestryBackend":
-        from HoloLoom.tapestry.backends.sqlite_backend import SqliteTapestryBackend
+        from hololoom.tapestry.backends.sqlite_backend import SqliteTapestryBackend
         return SqliteTapestryBackend
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

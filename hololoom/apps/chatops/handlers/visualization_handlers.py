@@ -13,7 +13,7 @@ Commands:
 - !dashboard help - Show dashboard command help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.visualization_handlers import register_visualization_handlers
+    from hololoom.apps.chatops.handlers.visualization_handlers import register_visualization_handlers
 
     # In run_chatops.py:
     register_visualization_handlers(bot, orchestrator)
@@ -25,7 +25,7 @@ import logging
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -35,35 +35,35 @@ except ImportError:
 
 # Visualization imports
 try:
-    from HoloLoom.visualization.confidence_trajectory import render_confidence_trajectory
+    from hololoom.visualization.confidence_trajectory import render_confidence_trajectory
     CONFIDENCE_AVAILABLE = True
 except ImportError:
     CONFIDENCE_AVAILABLE = False
     render_confidence_trajectory = None
 
 try:
-    from HoloLoom.visualization.cache_gauge import render_cache_gauge
+    from hololoom.visualization.cache_gauge import render_cache_gauge
     CACHE_GAUGE_AVAILABLE = True
 except ImportError:
     CACHE_GAUGE_AVAILABLE = False
     render_cache_gauge = None
 
 try:
-    from HoloLoom.visualization.stage_waterfall import render_pipeline_waterfall
+    from hololoom.visualization.stage_waterfall import render_pipeline_waterfall
     WATERFALL_AVAILABLE = True
 except ImportError:
     WATERFALL_AVAILABLE = False
     render_pipeline_waterfall = None
 
 try:
-    from HoloLoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
+    from hololoom.visualization.knowledge_graph import render_knowledge_graph_from_kg
     KNOWLEDGE_GRAPH_AVAILABLE = True
 except ImportError:
     KNOWLEDGE_GRAPH_AVAILABLE = False
     render_knowledge_graph_from_kg = None
 
 try:
-    from HoloLoom.visualization.rag_dashboard import RAGDashboard
+    from hololoom.visualization.rag_dashboard import RAGDashboard
     RAG_DASHBOARD_AVAILABLE = True
 except ImportError:
     RAG_DASHBOARD_AVAILABLE = False
@@ -71,7 +71,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -517,7 +517,7 @@ async def handle_dashboard_rag(
 
     try:
         # Convert to RAGResult format
-        from HoloLoom.visualization.rag_dashboard import RAGResult
+        from hololoom.visualization.rag_dashboard import RAGResult
 
         results = []
         for r in metrics.rag_results:
@@ -689,7 +689,7 @@ class VisualizationHandlers:
     Decorator-based ChatOps handlers for visualizations.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.visualization_handlers import VisualizationHandlers
+        from hololoom.apps.chatops.handlers.visualization_handlers import VisualizationHandlers
 
         handlers = VisualizationHandlers(orchestrator=orchestrator)
         registry.register_instance(handlers)

@@ -28,7 +28,7 @@ Philosophy:
     - Domain-specific optimization
 
 Usage:
-    >>> from HoloLoom.core.orchestrator.protocols import PatternSelectorProtocol
+    >>> from hololoom.core.orchestrator.protocols import PatternSelectorProtocol
     >>>
     >>> class MyPatternSelector:
     ...     def select_pattern(self, query_text, user_preference=None):
@@ -47,12 +47,12 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable, Optional, List, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.core.orchestrator.context import WeavingContext
-    from HoloLoom.core.loom.protocol import PatternSpec
-    from HoloLoom.core.chrono.trigger import TemporalWindow
-    from HoloLoom.core.protocols.types import Query, MemoryShard
-    from HoloLoom.core.convergence.engine import CollapseResult
-    from HoloLoom.core.fabric.spacetime import Spacetime
+    from hololoom.core.orchestrator.context import WeavingContext
+    from hololoom.core.loom.protocol import PatternSpec
+    from hololoom.core.chrono.trigger import TemporalWindow
+    from hololoom.core.protocols.types import Query, MemoryShard
+    from hololoom.core.convergence.engine import CollapseResult
+    from hololoom.core.fabric.spacetime import Spacetime
 
 
 # ============================================================================

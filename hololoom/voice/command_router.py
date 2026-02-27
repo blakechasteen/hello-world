@@ -15,7 +15,7 @@ from typing import List, Optional, Dict, Any
 from enum import Enum
 import re
 
-from HoloLoom.voice.ar_context import ARContext, ARObjectType
+from hololoom.voice.ar_context import ARContext, ARObjectType
 
 
 # ============================================================================
@@ -506,7 +506,7 @@ class CommandRouter:
 
 async def test_command_router():
     """Test command router with sample commands."""
-    from HoloLoom.voice.ar_context import create_test_context
+    from hololoom.voice.ar_context import create_test_context
 
     router = CommandRouter()
     context = create_test_context()

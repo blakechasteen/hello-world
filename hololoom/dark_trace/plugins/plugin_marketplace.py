@@ -19,17 +19,17 @@ import shutil
 import tempfile
 import logging
 
-from HoloLoom.dark_trace.plugins.plugin_protocol import (
+from hololoom.dark_trace.plugins.plugin_protocol import (
     PluginMetadata,
     PluginCategory,
     PluginRating,
 )
-from HoloLoom.dark_trace.plugins.plugin_signing import (
+from hololoom.dark_trace.plugins.plugin_signing import (
     PluginVerifier,
     SignedManifest,
     create_verifier,
 )
-from HoloLoom.dark_trace.plugins.plugin_loader import (
+from hololoom.dark_trace.plugins.plugin_loader import (
     PluginLoader,
     LoadedPlugin,
 )

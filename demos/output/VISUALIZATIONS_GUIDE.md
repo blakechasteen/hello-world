@@ -301,7 +301,7 @@ text = "Your text here..."
 words = text.split()
 
 # Create analyzer
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
 analyzer = create_semantic_analyzer(embed_fn)
 
 # Analyze
@@ -313,7 +313,7 @@ result = analyzer.analyze_text(text)
 ## Further Reading
 
 - [Semantic Calculus Docs](../../docs/SEMANTIC_CALCULUS_EXPOSURE.md)
-- [Pattern Cards Guide](../../HoloLoom/cards/README.md)
+- [Pattern Cards Guide](../../hololoom/cards/README.md)
 - [Demo Code](../semantic_analysis_visualizations.py)
 - [Test Suite](../../tests/test_semantic_calculus_mcp.py)
 

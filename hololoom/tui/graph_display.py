@@ -109,7 +109,7 @@ class GraphDisplay:
             self.nodes[target].degree += 1
 
     def from_kg(self, kg):
-        """Import from HoloLoom KG object."""
+        """Import from hololoom KG object."""
         # Get all nodes
         if hasattr(kg, 'get_all_nodes'):
             for node_id in kg.get_all_nodes():

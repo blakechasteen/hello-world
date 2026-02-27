@@ -13,7 +13,7 @@ Phases:
 - Phase 5: Benchmark Suite Integration (MTEB, RAFT)
 
 Usage:
-    from HoloLoom.model_extension.eval import (
+    from hololoom.model_extension.eval import (
         RetrievalEvaluator,
         CalibrationEvaluator,
         LearningEvaluator,

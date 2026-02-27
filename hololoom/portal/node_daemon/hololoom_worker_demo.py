@@ -4,7 +4,7 @@ HoloLoom Worker Demo
 Shows how to use HoloLoomWorker for local distributed intelligence.
 
 Run from repo root:
-    PYTHONPATH=. python HoloLoom/portal/node_daemon/hololoom_worker_demo.py
+    PYTHONPATH=. python hololoom/portal/node_daemon/hololoom_worker_demo.py
 """
 
 import asyncio

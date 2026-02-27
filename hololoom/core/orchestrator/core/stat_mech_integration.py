@@ -30,13 +30,13 @@ from datetime import datetime
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.core.protocols.types import MemoryShard
+from hololoom.core.protocols.types import MemoryShard
 
 # Check if statistical mechanics is available
 try:
-    from HoloLoom.physics.statistical_mechanics import Microstate, Macrostate
+    from hololoom.physics.statistical_mechanics import Microstate, Macrostate
     STATISTICAL_MECHANICS_AVAILABLE = True
 except ImportError:
     STATISTICAL_MECHANICS_AVAILABLE = False

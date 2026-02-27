@@ -1,4 +1,4 @@
-# Kustomize configuration for HoloLoom
+# Kustomize configuration for hololoom
 # Part 5: Production Hardening - Day 25
 #
 # Deploy with: kubectl apply -k .

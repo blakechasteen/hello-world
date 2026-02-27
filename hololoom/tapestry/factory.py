@@ -14,8 +14,8 @@ Created: December 2025
 import logging
 from typing import Optional
 
-from HoloLoom.tapestry.protocol import TapestryBackend
-from HoloLoom.tapestry.backends.json_backend import JsonTapestryBackend
+from hololoom.tapestry.protocol import TapestryBackend
+from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ async def create_tapestry_backend(
         # SQLite backend (optional, for future durability needs)
         sqlite_path = path.replace('.json', '.db')
         try:
-            from HoloLoom.tapestry.backends.sqlite_backend import SqliteTapestryBackend
+            from hololoom.tapestry.backends.sqlite_backend import SqliteTapestryBackend
             logger.info(f"Creating SQLite backend at {sqlite_path}")
             return SqliteTapestryBackend(sqlite_path)
         except ImportError:

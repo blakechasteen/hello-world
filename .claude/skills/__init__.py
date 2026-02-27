@@ -8,7 +8,7 @@ Skills Package - Unified Skills Meta-System
 This package unifies three skill systems:
 1. **Meta-Skills** (skills/meta/) - Self-improving skills about skills
 2. **Domain Skills** (skills/domain/) - Task-focused domain expertise
-3. **HoloLoom Agentic Skills** (HoloLoom/agentic/) - Production YAML skills
+3. **HoloLoom Agentic Skills** (hololoom/agentic/) - Production YAML skills
 
 Integration with Zero-G:
 - Skills are "apps" in the App Orbit Layer
@@ -77,7 +77,7 @@ TEMPLATES_DIR = SKILLS_ROOT / "templates"
 
 # Check for HoloLoom integration
 try:
-    from HoloLoom.agentic.skill_agents import (
+    from hololoom.agentic.skill_agents import (
         SkillRegistry as HoloLoomSkillRegistry,
         execute_skill as hololoom_execute_skill,
         SkillTemplate,
@@ -281,7 +281,7 @@ class SkillRegistry:
                     "version": skill.version,
                     "description": skill.description,
                     "tags": skill.metadata.tags if hasattr(skill.metadata, 'tags') else [],
-                    "source": "HoloLoom/agentic"
+                    "source": "hololoom/agentic"
                 })
 
         return results

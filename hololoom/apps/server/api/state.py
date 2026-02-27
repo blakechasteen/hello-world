@@ -10,12 +10,12 @@ orchestrator, memory backend, alignment framework, and monitoring.
 
 from typing import Optional, List, Any
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.alignment.audit_trail import AuditTrail
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-from HoloLoom.alignment.deception_detection import DeceptionDetector
-from HoloLoom.agentic.ml_logic_detector import MLLogicDetector
-from HoloLoom.config import Config
+from hololoom.protocols.types import MemoryShard
+from hololoom.alignment.audit_trail import AuditTrail
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.alignment.deception_detection import DeceptionDetector
+from hololoom.agentic.ml_logic_detector import MLLogicDetector
+from hololoom.config import Config
 
 from .middleware import RateLimiter, ServerStats
 

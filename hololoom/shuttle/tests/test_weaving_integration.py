@@ -15,19 +15,19 @@ from datetime import datetime, timedelta
 from typing import List
 
 # HoloLoom types
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.chrono.trigger import TemporalWindow
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config, ExecutionMode
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.chrono.trigger import TemporalWindow
 
 # Shuttle components
-from HoloLoom.shuttle.weaving_integration import (
+from hololoom.shuttle.weaving_integration import (
     HoloLoomWarpAdapter,
     HoloLoomYarnAdapter,
     ShuttleStage,
     create_shuttle_stage
 )
-from HoloLoom.shuttle.config import ShuttleConfig, ShuttleMode
+from hololoom.shuttle.config import ShuttleConfig, ShuttleMode
 
 
 # ============================================================================

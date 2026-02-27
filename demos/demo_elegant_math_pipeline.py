@@ -22,12 +22,12 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from HoloLoom.warp.math_pipeline_elegant import (
+from hololoom.warp.math_pipeline_elegant import (
     ElegantMathPipeline,
     analyze,
     analyze_sync
 )
-from HoloLoom.warp.math_dashboard_generator import generate_math_dashboard
+from hololoom.warp.math_dashboard_generator import generate_math_dashboard
 
 
 async def demo_fluent_api():

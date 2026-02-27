@@ -11,7 +11,7 @@ Date: December 2025
 import pytest
 from typing import List, Dict
 
-from HoloLoom.model_extension.eval.retrieval_metrics import (
+from hololoom.model_extension.eval.retrieval_metrics import (
     RetrievalMetrics,
     RetrievalQuery,
     RetrievalResult,

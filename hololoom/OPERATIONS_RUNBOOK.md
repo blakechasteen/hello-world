@@ -520,7 +520,7 @@ Import dashboard JSON: `GRAFANA_DASHBOARD.json`
 kubectl exec -it -n hololoom hololoom-pod-xyz -- python
 
 # Reset circuit breaker
-from HoloLoom.weaving_orchestrator import orchestrator
+from hololoom.weaving_orchestrator import orchestrator
 orchestrator.breaker_registry.reset_all()
 ```
 

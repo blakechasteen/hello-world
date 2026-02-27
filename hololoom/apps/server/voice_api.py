@@ -38,8 +38,8 @@ except ImportError:
 
 # Import HoloLoom components
 try:
-    from HoloLoom.spinningWheel.modalities.audio import AudioSpinner
-    from HoloLoom.unified_api import HoloLoom
+    from hololoom.spinningWheel.modalities.audio import AudioSpinner
+    from hololoom.unified_api import hololoom
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:
     HOLOLOOM_AVAILABLE = False

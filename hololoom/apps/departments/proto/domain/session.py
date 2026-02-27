@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from HoloLoom.apps.departments.proto.domain.entities import (
+from hololoom.apps.departments.proto.domain.entities import (
     CodeContext,
     ProtoIntent,
     ProtoResponse,

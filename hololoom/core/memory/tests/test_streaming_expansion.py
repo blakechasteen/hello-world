@@ -19,13 +19,13 @@ import pytest
 import asyncio
 from typing import Dict, List
 
-from HoloLoom.core.memory.streaming_expansion import (
+from hololoom.core.memory.streaming_expansion import (
     StreamingContextBuilder,
     ContextChunk,
     ChunkYieldStrategy,
     stream_context_expansion
 )
-from HoloLoom.core.memory.graph import KG, KGEdge
+from hololoom.core.memory.graph import KG, KGEdge
 
 
 # ============================================================================

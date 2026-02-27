@@ -24,7 +24,7 @@ from ..judgment import Concern
 from .base import BaseLens
 
 
-logger = logging.getLogger("HoloLoom.conscience.lenses.harm")
+logger = logging.getLogger("hololoom.conscience.lenses.harm")
 
 
 # =============================================================================
@@ -211,7 +211,7 @@ class HarmLens(BaseLens):
 
         try:
             # Import here to avoid circular dependency
-            from HoloLoom.alignment.safety_guardrails import (
+            from hololoom.alignment.safety_guardrails import (
                 ActionRequest,
                 ActionCategory,
                 RiskLevel,

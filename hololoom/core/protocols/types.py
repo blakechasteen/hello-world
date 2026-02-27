@@ -407,7 +407,7 @@ class ToolResult:
 
 @dataclass
 class Response:
-    """Response from HoloLoom."""
+    """Response from hololoom."""
     text: str
     confidence: float
     metadata: Dict[str, Any] = field(default_factory=dict)

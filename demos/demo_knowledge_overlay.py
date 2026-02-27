@@ -4,7 +4,7 @@ Demo: Knowledge Overlay System
 ================================
 
 Interactive demo showing HoloLoom's Phase 4 AR knowledge overlay visualization:
-- Create knowledge overlays from HoloLoom memory
+- Create knowledge overlays from hololoom memory
 - Apply different layout algorithms
 - Memory Palace room creation
 - Visibility mode switching
@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Knowledge overlay imports
-from HoloLoom.spatial.knowledge_overlay import (
+from hololoom.spatial.knowledge_overlay import (
     KnowledgeOverlayManager,
     KnowledgeNodeOverlay,
     KnowledgeEdgeOverlay,
@@ -35,7 +35,7 @@ from HoloLoom.spatial.knowledge_overlay import (
     VisibilityMode,
     create_knowledge_overlay_manager
 )
-from HoloLoom.spatial.math_types import Vector3, Color
+from hololoom.spatial.math_types import Vector3, Color
 
 
 def print_header(title: str):

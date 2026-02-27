@@ -2,7 +2,7 @@
 
 **Status**: ✅ Production Ready (November 2025)
 **Version**: 1.0.0
-**Location**: `HoloLoom/spinningWheel/codebase_spinner.py`
+**Location**: `hololoom/spinningWheel/codebase_spinner.py`
 **Lines**: 712 lines
 **Test Coverage**: 20/20 tests passing
 
@@ -431,7 +431,7 @@ python -m spacy download en_core_web_sm
 ### Verification
 
 ```python
-from HoloLoom.spinningWheel.codebase_spinner import CodebaseSpinner
+from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
 
 spinner = CodebaseSpinner()
 print(spinner.is_available())  # Should print True (always)
@@ -444,7 +444,7 @@ print(spinner.is_available())  # Should print True (always)
 ### Basic Single File
 
 ```python
-from HoloLoom.spinningWheel.codebase_spinner import CodebaseSpinner
+from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
 from pathlib import Path
 
 # Create spinner
@@ -713,7 +713,7 @@ for module, count in most_common:
 ### Pattern 5: Custom Domain Scoring
 
 ```python
-from HoloLoom.spinningWheel.codebase_spinner import create_codebase_scorer
+from hololoom.spinningWheel.codebase_spinner import create_codebase_scorer
 
 # Create custom scorer for ML/AI codebases
 scorer = create_codebase_scorer()
@@ -842,8 +842,8 @@ if len(complex_files) > 0:
 ### Integration with HoloLoom Memory
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.spinningWheel.codebase_spinner import CodebaseSpinner
+from hololoom import hololoom
+from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
 from pathlib import Path
 
 # Create spinner
@@ -872,9 +872,9 @@ async with HoloLoom() as loom:
 ### Integration with WeavingOrchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.spinningWheel.codebase_spinner import CodebaseSpinner
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
+from hololoom.config import Config
 
 # Spin codebase
 spinner = CodebaseSpinner()
@@ -891,7 +891,7 @@ async with WeavingOrchestrator(cfg=config, shards=result.shards) as orchestrator
 ### Integration with FileUploadSpinner
 
 ```python
-from HoloLoom.spinningWheel.file_upload_spinner import FileUploadSpinner
+from hololoom.spinningWheel.file_upload_spinner import FileUploadSpinner
 
 # FileUploadSpinner automatically routes .py to CodebaseSpinner
 upload_spinner = FileUploadSpinner(importance_threshold=0.3)
@@ -907,7 +907,7 @@ result = await upload_spinner.spin(Path("./module.py"))
 
 ### Test Suite
 
-Location: `HoloLoom/tests/unit/test_codebase_spinner.py`
+Location: `hololoom/tests/unit/test_codebase_spinner.py`
 Tests: 20/20 passing
 Coverage: ~95%
 
@@ -947,13 +947,13 @@ Coverage: ~95%
 
 ```bash
 # All codebase spinner tests
-pytest HoloLoom/tests/unit/test_codebase_spinner.py -v
+pytest hololoom/tests/unit/test_codebase_spinner.py -v
 
 # Specific test
-pytest HoloLoom/tests/unit/test_codebase_spinner.py::test_codebase_spinner_score_importance -v
+pytest hololoom/tests/unit/test_codebase_spinner.py::test_codebase_spinner_score_importance -v
 
 # With coverage
-pytest HoloLoom/tests/unit/test_codebase_spinner.py --cov=HoloLoom.spinningWheel.codebase_spinner
+pytest hololoom/tests/unit/test_codebase_spinner.py --cov=hololoom.spinningWheel.codebase_spinner
 ```
 
 ---
@@ -1086,5 +1086,5 @@ CodebaseSpinner is a production-ready system for ingesting source code into Holo
 - Multi-language support coming soon
 
 For examples, see `demos/codebase_spinner_example.py`.
-For tests, see `HoloLoom/tests/unit/test_codebase_spinner.py`.
+For tests, see `hololoom/tests/unit/test_codebase_spinner.py`.
 For issues, see [GitHub Issues](https://github.com/anthropics/claude-code/issues).

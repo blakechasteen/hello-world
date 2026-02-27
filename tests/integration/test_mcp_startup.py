@@ -18,7 +18,7 @@ async def test_startup():
     
     try:
         print("\n1️⃣ Importing memory system...")
-        from HoloLoom.memory.protocol import create_unified_memory
+        from hololoom.memory.protocol import create_unified_memory
         print("   ✅ Import successful")
         
         print("\n2️⃣ Initializing unified memory...")
@@ -35,7 +35,7 @@ async def test_startup():
         print(f"   ✅ Health: {health}")
         
         print("\n4️⃣ Testing MCP server import...")
-        import HoloLoom.memory.mcp_server as mcp_server
+        import hololoom.memory.mcp_server as mcp_server
         print("   ✅ MCP server module loaded")
         
         print("\n" + "="*60)

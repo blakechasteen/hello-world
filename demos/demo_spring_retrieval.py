@@ -21,15 +21,15 @@ from typing import List, Dict
 from dataclasses import dataclass
 
 # HoloLoom imports
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.memory.spring_dynamics import SpringConfig, SpringDynamics
-from HoloLoom.memory.retrieval_strategies import (
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.memory.spring_dynamics import SpringConfig, SpringDynamics
+from hololoom.memory.retrieval_strategies import (
     StaticRetrieval,
     SpringActivationRetrieval,
     create_retrieval_strategy
 )
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
 
 
 # ============================================================================

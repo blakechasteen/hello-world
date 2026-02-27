@@ -26,9 +26,9 @@ Memory Symphony is a unified memory coordination layer that automatically select
 ## Quick Start
 
 ```python
-from HoloLoom.memory_symphony import MemoryConductor, MemoryQuery, MemoryStrategy
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.config import Config
+from hololoom.memory_symphony import MemoryConductor, MemoryQuery, MemoryStrategy
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config
 
 # Create memory backend
 config = Config.fast()
@@ -325,11 +325,11 @@ class MemoryPerformanceMetrics:
 Memory Symphony integrates seamlessly with HoloLoom's memory system:
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.memory_symphony import create_memory_conductor, MemoryQuery
+from hololoom import hololoom
+from hololoom.memory_symphony import create_memory_conductor, MemoryQuery
 
 async with HoloLoom() as loom:
-    # Get memory backend from HoloLoom
+    # Get memory backend from hololoom
     memory = loom.memory_backend
 
     # Create conductor
@@ -377,7 +377,7 @@ for system, count in metrics.system_usage.items():
 ## Running the Demo
 
 ```bash
-PYTHONPATH=. python HoloLoom/memory_symphony/demo_memory_symphony.py
+PYTHONPATH=. python hololoom/memory_symphony/demo_memory_symphony.py
 ```
 
 Demonstrates:

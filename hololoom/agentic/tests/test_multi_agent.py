@@ -19,7 +19,7 @@ import asyncio
 from typing import List
 from datetime import datetime, timedelta
 
-from HoloLoom.agentic.multi_agent import (
+from hololoom.agentic.multi_agent import (
     # Enums
     AgentCapability,
     MessageType,
@@ -42,7 +42,7 @@ from HoloLoom.agentic.multi_agent import (
     create_code_agent,
 )
 
-from HoloLoom.agentic.context_handoff import ContextItem
+from hololoom.agentic.context_handoff import ContextItem
 
 
 # ============================================================================

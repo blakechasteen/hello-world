@@ -19,8 +19,8 @@ import time
 from typing import Dict, Any
 
 # Import Pytest Runner Skill
-from HoloLoom.skills.testing.pytest_runner import PytestRunnerSkill
-from HoloLoom.skills.base import SkillInput, SkillStatus
+from hololoom.skills.testing.pytest_runner import PytestRunnerSkill
+from hololoom.skills.base import SkillInput, SkillStatus
 
 
 def print_section(title: str, emoji: str = "[*]"):
@@ -72,7 +72,7 @@ async def demo_run_all():
 
     print("Input:")
     print("  Operation: run_all")
-    print("  Path: HoloLoom/tests/unit/")
+    print("  Path: hololoom/tests/unit/")
 
     # Create skill
     skill = PytestRunnerSkill()
@@ -81,7 +81,7 @@ async def demo_run_all():
     skill_input = SkillInput(
         operation="run_all",
         parameters={
-            "path": "HoloLoom/tests/unit/"
+            "path": "hololoom/tests/unit/"
         }
     )
 
@@ -110,7 +110,7 @@ async def demo_run_with_coverage():
 
     print("Input:")
     print("  Operation: run_with_coverage")
-    print("  Path: HoloLoom/policy/")
+    print("  Path: hololoom/policy/")
     print("  Min Coverage: 70%")
 
     # Create skill
@@ -120,7 +120,7 @@ async def demo_run_with_coverage():
     skill_input = SkillInput(
         operation="run_with_coverage",
         parameters={
-            "path": "HoloLoom/tests/unit/test_unified_policy.py",
+            "path": "hololoom/tests/unit/test_unified_policy.py",
             "min_coverage": 70
         }
     )
@@ -157,7 +157,7 @@ async def demo_run_specific():
 
     print("Input:")
     print("  Operation: run_specific")
-    print("  Path: HoloLoom/tests/unit/test_unified_policy.py")
+    print("  Path: hololoom/tests/unit/test_unified_policy.py")
 
     # Create skill
     skill = PytestRunnerSkill()
@@ -166,7 +166,7 @@ async def demo_run_specific():
     skill_input = SkillInput(
         operation="run_specific",
         parameters={
-            "path": "HoloLoom/tests/unit/test_unified_policy.py"
+            "path": "hololoom/tests/unit/test_unified_policy.py"
         }
     )
 
@@ -192,7 +192,7 @@ async def demo_run_marker():
     print("Input:")
     print("  Operation: run_marker")
     print("  Marker: unit")
-    print("  Path: HoloLoom/tests/")
+    print("  Path: hololoom/tests/")
 
     # Create skill
     skill = PytestRunnerSkill()
@@ -201,7 +201,7 @@ async def demo_run_marker():
     skill_input = SkillInput(
         operation="run_marker",
         parameters={
-            "path": "HoloLoom/tests/",
+            "path": "hololoom/tests/",
             "marker": "unit"
         }
     )

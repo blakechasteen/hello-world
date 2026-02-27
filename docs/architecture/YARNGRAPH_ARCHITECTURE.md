@@ -276,8 +276,8 @@ client.upsert(
 
 ### Step 5: Query via HoloLoom
 ```python
-from HoloLoom.orchestrator import Orchestrator
-from HoloLoom.config import Config
+from hololoom.orchestrator import Orchestrator
+from hololoom.config import Config
 
 # Initialize orchestrator (it connects to Neo4j + Qdrant)
 config = Config.fused()

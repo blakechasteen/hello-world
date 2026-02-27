@@ -23,7 +23,7 @@ class TestMatryoshkaEmbeddingsInit:
 
     def test_init_with_default_scales(self):
         """Default initialization should use [768] scale."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings()
 
@@ -34,7 +34,7 @@ class TestMatryoshkaEmbeddingsInit:
 
     def test_init_with_custom_scales(self):
         """Should accept custom scales in ascending order."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
 
@@ -45,7 +45,7 @@ class TestMatryoshkaEmbeddingsInit:
 
     def test_init_validates_ascending_order(self):
         """Sizes must be in ascending order."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         # Should raise assertion error for non-ascending sizes
         with pytest.raises(AssertionError):
@@ -53,7 +53,7 @@ class TestMatryoshkaEmbeddingsInit:
 
     def test_init_creates_projection_matrices(self):
         """Initialization should create projection matrices."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96, 192])
 
@@ -64,7 +64,7 @@ class TestMatryoshkaEmbeddingsInit:
 
     def test_init_with_external_heads(self):
         """Should accept external projection heads."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         def custom_head(x):
             return x[:, :64]
@@ -83,7 +83,7 @@ class TestEncoding:
 
     def test_encode_single_text(self):
         """encode() should work with single-item list."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         result = embedder.encode(["Test text"])
@@ -95,7 +95,7 @@ class TestEncoding:
 
     def test_encode_multiple_texts(self):
         """encode() should work with multiple texts."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         result = embedder.encode(["Text 1", "Text 2", "Text 3"])
@@ -105,7 +105,7 @@ class TestEncoding:
 
     def test_encode_returns_correct_dimension(self):
         """encode() should return embeddings at largest scale."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         for size in [96, 192, 384]:
             embedder = MatryoshkaEmbeddings(sizes=[size])
@@ -115,7 +115,7 @@ class TestEncoding:
 
     def test_encode_with_mixed_scales(self):
         """encode() with multiple scales should return largest."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
         result = embedder.encode(["Test"])
@@ -124,7 +124,7 @@ class TestEncoding:
 
     def test_encode_empty_list(self):
         """encode() should handle empty list gracefully."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         result = embedder.encode([])
@@ -139,7 +139,7 @@ class TestEncodeBase:
 
     def test_encode_base_returns_correct_shape(self):
         """encode_base() should return base dimension."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         # Force model loading to set base_dim
@@ -152,7 +152,7 @@ class TestEncodeBase:
 
     def test_encode_base_normalizes_vectors(self):
         """encode_base() should return unit-normalized vectors."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         result = embedder.encode_base(["Test"])
@@ -163,7 +163,7 @@ class TestEncodeBase:
 
     def test_encode_base_uses_cache(self):
         """encode_base() should cache results."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
 
@@ -182,7 +182,7 @@ class TestEncodeScales:
 
     def test_encode_scales_all(self):
         """encode_scales() should return all scales when size=None."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
         result = embedder.encode_scales(["Test text"])
@@ -194,7 +194,7 @@ class TestEncodeScales:
 
     def test_encode_scales_specific(self):
         """encode_scales() should return specific scale when size specified."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
         result = embedder.encode_scales(["Test text"], size=192)
@@ -204,7 +204,7 @@ class TestEncodeScales:
 
     def test_encode_scales_correct_dimensions(self):
         """encode_scales() should return correct dimensions."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
         result = embedder.encode_scales(["Test 1", "Test 2"])
@@ -215,7 +215,7 @@ class TestEncodeScales:
 
     def test_encode_scales_empty_input(self):
         """encode_scales() should handle empty input."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96, 192])
         result = embedder.encode_scales([])
@@ -230,7 +230,7 @@ class TestProjectionMatrices:
 
     def test_build_projection_deterministic(self):
         """Projection matrices should be deterministic with same seed."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder1 = MatryoshkaEmbeddings(sizes=[96])
         embedder1._ensure_model_loaded()
@@ -246,7 +246,7 @@ class TestProjectionMatrices:
 
     def test_projection_orthogonal(self):
         """Projection matrices should be orthonormal."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         embedder._ensure_model_loaded()
@@ -260,7 +260,7 @@ class TestProjectionMatrices:
 
     def test_refresh_runtime_qr(self):
         """refresh_runtime_qr() should update projections based on corpus."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         embedder._ensure_model_loaded()
@@ -281,7 +281,7 @@ class TestCaching:
 
     def test_caching_enabled(self):
         """Embeddings should be cached."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
 
@@ -294,7 +294,7 @@ class TestCaching:
 
     def test_cache_hit_performance(self):
         """Cached embeddings should be reused."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
 
@@ -313,7 +313,7 @@ class TestErrorHandling:
 
     def test_empty_text_list(self):
         """Should handle empty text list gracefully."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         result = embedder.encode([])
@@ -323,7 +323,7 @@ class TestErrorHandling:
 
     def test_empty_string_in_list(self):
         """Should handle empty strings in list."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         result = embedder.encode(["", "non-empty", ""])
@@ -333,7 +333,7 @@ class TestErrorHandling:
 
     def test_very_long_text(self):
         """Should handle very long texts."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         long_text = "word " * 10000  # 10k words
@@ -348,7 +348,7 @@ class TestGracefulDegradation:
 
     def test_fallback_without_sentence_transformers(self):
         """Should use fallback when sentence-transformers unavailable."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         embedder._ensure_model_loaded()
@@ -362,7 +362,7 @@ class TestGracefulDegradation:
 
     def test_deterministic_fallback(self):
         """Fallback embeddings should be deterministic."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder1 = MatryoshkaEmbeddings(sizes=[96])
         embedder1._model = None  # Force fallback
@@ -383,7 +383,7 @@ class TestModelLoading:
 
     def test_lazy_loading(self):
         """Model should not load until first encode."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
 
@@ -392,7 +392,7 @@ class TestModelLoading:
 
     def test_model_loads_on_first_encode(self):
         """Model should load on first encode."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(sizes=[96])
         embedder.encode(["Test"])
@@ -402,7 +402,7 @@ class TestModelLoading:
 
     def test_custom_model_name(self):
         """Should accept custom model name."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings(
             sizes=[96],
@@ -417,7 +417,7 @@ class TestExternalHeads:
 
     def test_external_head_used(self):
         """External head should be used if provided."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         def custom_head(x):
             # Custom projection: just take first 64 dims
@@ -435,7 +435,7 @@ class TestExternalHeads:
 
     def test_multiple_external_heads(self):
         """Should handle multiple external heads."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         def head_96(x):
             return x[:, :96]

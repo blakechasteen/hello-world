@@ -23,10 +23,10 @@ from dataclasses import dataclass, field
 import json
 from datetime import datetime
 
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.memory.graph import KG, KGEdge
 
 from . import (
     WorldEntity,
@@ -94,8 +94,8 @@ class DreamWeaver:
 
     Usage:
         ```python
-        from HoloLoom.dreamweaving import DreamWeaver, DreamWeaverConfig
-        from HoloLoom.config import Config
+        from hololoom.dreamweaving import DreamWeaver, DreamWeaverConfig
+        from hololoom.config import Config
 
         config = DreamWeaverConfig(world_id="my_fantasy_world")
         holo_config = Config.fused()

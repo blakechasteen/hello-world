@@ -36,7 +36,7 @@ def create_classifier(config):
 
     if routing_classifier == "moonshot":
         try:
-            from HoloLoom.routing.query_classifier_moonshot import MoonshotQueryClassifier
+            from hololoom.routing.query_classifier_moonshot import MoonshotQueryClassifier
 
             enable_semantic = getattr(config, 'enable_semantic_tier', False)
             enable_learning = getattr(config, 'enable_adaptive_learning', True)
@@ -55,11 +55,11 @@ def create_classifier(config):
             )
         except ImportError as e:
             logger.warning(f"⚠️  Moonshot classifier unavailable: {e}. Falling back to baseline.")
-            from HoloLoom.routing.query_classifier import QueryClassifier
+            from hololoom.routing.query_classifier import QueryClassifier
             return QueryClassifier()
     else:
         logger.info("✅ Baseline classifier loaded")
-        from HoloLoom.routing.query_classifier import QueryClassifier
+        from hololoom.routing.query_classifier import QueryClassifier
         return QueryClassifier()
 
 
@@ -77,7 +77,7 @@ def create_fast_path_router(orchestrator, config):
     if not getattr(config, 'enable_smart_routing', True):
         return None
 
-    from HoloLoom.routing.fast_paths import FastPathRouter
+    from hololoom.routing.fast_paths import FastPathRouter
 
     logger.info("✅ Fast path router initialized")
     return FastPathRouter(orchestrator=orchestrator)

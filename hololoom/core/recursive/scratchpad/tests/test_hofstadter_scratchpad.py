@@ -14,7 +14,7 @@ from datetime import datetime
 import tempfile
 import os
 
-from HoloLoom.scratchpad import (
+from hololoom.scratchpad import (
     RecursiveScratchpad,
     Thought,
     ThoughtType,

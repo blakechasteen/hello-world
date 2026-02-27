@@ -232,7 +232,7 @@ await system.queue_task(
 ### Example 1: Just Monitoring (Lightweight)
 
 ```python
-from HoloLoom.agents.managerial_agents import PerformanceMonitor
+from hololoom.agents.managerial_agents import PerformanceMonitor
 
 # Create monitor
 monitor = PerformanceMonitor()
@@ -252,7 +252,7 @@ for agent in system.agents.values():
 ### Example 2: Quality Control (Medium Weight)
 
 ```python
-from HoloLoom.agents.managerial_agents import QualityController
+from hololoom.agents.managerial_agents import QualityController
 
 # Create controller
 qc = QualityController(min_confidence_threshold=0.6)
@@ -275,7 +275,7 @@ if not validation['passed']:
 ### Example 3: Full Managerial System (Heavy Weight)
 
 ```python
-from HoloLoom.agents.managerial_agents import ManagerialSystem
+from hololoom.agents.managerial_agents import ManagerialSystem
 
 # Create full system
 managerial = ManagerialSystem(orchestration_system)

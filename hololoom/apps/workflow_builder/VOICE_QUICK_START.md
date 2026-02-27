@@ -32,12 +32,12 @@ ffmpeg -version
 
 ### Step 2: Integrate Backend (10 minutes)
 
-Open `HoloLoom/web_dashboard/agentic_server.py` and make these changes:
+Open `hololoom/web_dashboard/agentic_server.py` and make these changes:
 
 #### 2.1 Add Imports (around line 70)
 ```python
-from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
-from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
+from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 ```
 
 #### 2.2 Add Global Variable (around line 106)
@@ -76,7 +76,7 @@ voice_integration = None
 
 ### Step 3: Integrate Frontend (15 minutes)
 
-Open `HoloLoom/web_dashboard/agentic_dashboard.html`:
+Open `hololoom/web_dashboard/agentic_dashboard.html`:
 
 #### 3.1 Add CSS (in `<style>` section, around line 2156)
 
@@ -137,7 +137,7 @@ Find the `addAssistantMessage()` function and add this at the end (before the cl
 
 ```bash
 cd c:\Users\blake\OneDrive\Documents\mythRL
-PYTHONPATH=. python HoloLoom/web_dashboard/agentic_server.py
+PYTHONPATH=. python hololoom/web_dashboard/agentic_server.py
 ```
 
 Look for this in the logs:

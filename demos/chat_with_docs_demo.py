@@ -22,10 +22,10 @@ if sys.platform == 'win32':
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.terminal_ui import TerminalUI
-from HoloLoom.protocols.types import MemoryShard, Query
+from hololoom.config import Config, MemoryBackend
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.terminal_ui import TerminalUI
+from hololoom.protocols.types import MemoryShard, Query
 
 
 def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]:

@@ -9,7 +9,7 @@ Demonstrates the complete pipeline:
 """
 
 import asyncio
-from HoloLoom.search.web_crawler_integration import (
+from hololoom.search.web_crawler_integration import (
     WebCrawlerSearch,
     WebCrawlerSearchConfig,
     search_and_crawl_web

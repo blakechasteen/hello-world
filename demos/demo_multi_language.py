@@ -21,7 +21,7 @@ import sys
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.voice.language import (
+from hololoom.voice.language import (
     LanguageManager,
     create_language_manager,
     detect_language
@@ -467,8 +467,8 @@ async def main():
     print()
     print("Next steps:")
     print("  1. Install langdetect: pip install langdetect")
-    print("  2. Run tests: pytest HoloLoom/voice/tests/test_language.py -v")
-    print("  3. Read docs: HoloLoom/voice/MULTILANGUAGE_README.md")
+    print("  2. Run tests: pytest hololoom/voice/tests/test_language.py -v")
+    print("  3. Read docs: hololoom/voice/MULTILANGUAGE_README.md")
     print()
 
 

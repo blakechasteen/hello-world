@@ -6,7 +6,7 @@ LLM Client Test Script
 Test multi-model LLM support with various providers.
 
 Usage:
-    PYTHONPATH=. python HoloLoom/llm/test_llm_client.py
+    PYTHONPATH=. python hololoom/llm/test_llm_client.py
 
 Created: 2025-01-20
 """
@@ -14,7 +14,7 @@ Created: 2025-01-20
 import asyncio
 import logging
 import os
-from HoloLoom.llm import UnifiedLLMClient, LLMConfig
+from hololoom.llm import UnifiedLLMClient, LLMConfig
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

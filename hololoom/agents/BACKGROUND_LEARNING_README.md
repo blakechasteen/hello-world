@@ -56,7 +56,7 @@ Manages multiple specialized agents with shared knowledge graph and embeddings.
 
 **Usage**:
 ```python
-from HoloLoom.agents.background_learner import create_agent_pool
+from hololoom.agents.background_learner import create_agent_pool
 
 async with await create_agent_pool(
     kg=kg,
@@ -224,8 +224,8 @@ Content-Type: application/json
 ### Example 1: Simple Query
 
 ```python
-from HoloLoom.agents.background_learner import create_agent_pool
-from HoloLoom.documentation.types import Query
+from hololoom.agents.background_learner import create_agent_pool
+from hololoom.documentation.types import Query
 
 async with await create_agent_pool(kg, emb) as pool:
     result = await pool.query('budget', Query(text="What is Q4 profit?"))
@@ -302,7 +302,7 @@ python demos/demo_background_learning.py
 
 ```bash
 # Start agentic server with background learning
-python HoloLoom/web_dashboard/agentic_server.py
+python hololoom/web_dashboard/agentic_server.py
 
 # Server starts at http://localhost:8002
 # Background learning automatically enabled
@@ -414,7 +414,7 @@ curl http://localhost:8002/api/agent/stats
 **Solution**:
 ```bash
 # Check server logs
-python HoloLoom/web_dashboard/agentic_server.py
+python hololoom/web_dashboard/agentic_server.py
 
 # Look for:
 # "Agent Pool initialized with background learning"

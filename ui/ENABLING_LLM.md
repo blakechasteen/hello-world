@@ -76,7 +76,7 @@ ollama serve
 ```
 
 ### 4. Configure HoloLoom
-Edit `HoloLoom/awareness/dual_stream.py` if needed, or just make sure Ollama is running - the chat interface will auto-detect it!
+Edit `hololoom/awareness/dual_stream.py` if needed, or just make sure Ollama is running - the chat interface will auto-detect it!
 
 ### 5. Launch Chat
 ```powershell
@@ -100,8 +100,8 @@ export OPENAI_API_KEY=your-key-here
 The chat interface tries Ollama first, but you can modify `consciousness_chat.py` to use Anthropic/OpenAI:
 
 ```python
-from HoloLoom.awareness.dual_stream import DualStreamGenerator
-from HoloLoom.awareness.llm_backends import AnthropicLLM  # or OpenAILLM
+from hololoom.awareness.dual_stream import DualStreamGenerator
+from hololoom.awareness.llm_backends import AnthropicLLM  # or OpenAILLM
 
 llm = AnthropicLLM(model="claude-3-haiku-20240307")
 llm_generator = DualStreamGenerator(awareness_layer=self.awareness, llm=llm)
@@ -128,7 +128,7 @@ Just use the chat as-is!
 
 # 4. Generation (with real LLM!)
 try:
-    from HoloLoom.awareness.dual_stream import DualStreamGenerator
+    from hololoom.awareness.dual_stream import DualStreamGenerator
     llm_generator = DualStreamGenerator(awareness_layer=self.awareness)
     llm_response = await llm_generator.generate(
         message, 

@@ -3,8 +3,8 @@
 **Status**: ✅ Production Ready
 **Created**: November 2025
 **Updated**: November 8, 2025
-**Location**: `HoloLoom/search/web_crawler_integration.py`
-**Agentic Integration**: `HoloLoom/agentic/web_researcher.py`
+**Location**: `hololoom/search/web_crawler_integration.py`
+**Agentic Integration**: `hololoom/agentic/web_researcher.py`
 
 ## Overview
 
@@ -54,7 +54,7 @@ With the optional dependencies installed:
 
 ### Simple Search (No Crawling)
 ```python
-from HoloLoom.search.web_crawler_integration import search_and_crawl_web
+from hololoom.search.web_crawler_integration import search_and_crawl_web
 
 # Fast search-only mode
 result = await search_and_crawl_web(
@@ -114,7 +114,7 @@ Breakdown:
 
 ### Custom Configuration
 ```python
-from HoloLoom.search.web_crawler_integration import (
+from hololoom.search.web_crawler_integration import (
     WebCrawlerSearch,
     WebCrawlerSearchConfig
 )
@@ -286,8 +286,8 @@ result = await search_and_crawl_web(
 
 ### With WebResearchOrchestrator
 ```python
-from HoloLoom.agentic.web_research import WebResearchOrchestrator
-from HoloLoom.search.web_crawler_integration import WebCrawlerSearch
+from hololoom.agentic.web_research import WebResearchOrchestrator
+from hololoom.search.web_crawler_integration import WebCrawlerSearch
 
 # Use as search backend
 config = Config.fast()
@@ -308,8 +308,8 @@ async with await WebResearchOrchestrator.create(
 
 ### With WeavingOrchestrator
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.search.web_crawler_integration import search_and_crawl_web
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.search.web_crawler_integration import search_and_crawl_web
 
 # Enrich memory with crawled content
 result = await search_and_crawl_web(
@@ -340,8 +340,8 @@ python test_web_crawler_integration.py
 
 ### Unit Tests
 ```bash
-# (Add to HoloLoom/search/tests/)
-pytest HoloLoom/search/tests/test_web_crawler_integration.py -v
+# (Add to hololoom/search/tests/)
+pytest hololoom/search/tests/test_web_crawler_integration.py -v
 ```
 
 ## Configuration Reference
@@ -413,7 +413,7 @@ pytest HoloLoom/search/tests/test_web_crawler_integration.py -v
 
 **New in November 2025**: Autonomous multi-step research agent built on top of this integration.
 
-See [HoloLoom/agentic/web_researcher.py](../agentic/web_researcher.py) for:
+See [hololoom/agentic/web_researcher.py](../agentic/web_researcher.py) for:
 - **Query decomposition**: Breaks complex queries into sub-queries
 - **Multi-step execution**: Autonomous exploration with QUICK/STANDARD/COMPREHENSIVE/EXPLORATORY strategies
 - **Verification**: Consistency checking across multiple sources
@@ -422,7 +422,7 @@ See [HoloLoom/agentic/web_researcher.py](../agentic/web_researcher.py) for:
 
 Usage:
 ```python
-from HoloLoom.agentic.web_researcher import AgenticWebResearcher, ResearchStrategy, research_web
+from hololoom.agentic.web_researcher import AgenticWebResearcher, ResearchStrategy, research_web
 
 # Quick research (no crawling)
 result = await research_web(

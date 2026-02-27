@@ -13,14 +13,14 @@ from typing import Dict, List, Any
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Import directly from input module
-from HoloLoom.input.protocol import (
+from hololoom.input.protocol import (
     ModalityType, ProcessedInput, TextFeatures, ImageFeatures, 
     AudioFeatures, StructuredFeatures
 )
-from HoloLoom.input.text_processor import TextProcessor
-from HoloLoom.input.structured_processor import StructuredDataProcessor
-from HoloLoom.input.fusion import MultiModalFusion
-from HoloLoom.input.router import InputRouter
+from hololoom.input.text_processor import TextProcessor
+from hololoom.input.structured_processor import StructuredDataProcessor
+from hololoom.input.fusion import MultiModalFusion
+from hololoom.input.router import InputRouter
 
 
 def test_text_processor():

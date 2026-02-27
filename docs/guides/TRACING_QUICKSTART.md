@@ -78,7 +78,7 @@ All benchmarks: ✓ PASS
 ## Run Tests (when pytest available)
 
 ```bash
-pytest HoloLoom/voice/tests/test_tracing.py -v
+pytest hololoom/voice/tests/test_tracing.py -v
 ```
 
 **Expected**: 35/35 tests passing
@@ -100,12 +100,12 @@ pytest HoloLoom/voice/tests/test_tracing.py -v
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `HoloLoom/voice/tracing.py` | 678 | Core TracingManager implementation |
-| `HoloLoom/voice/tests/test_tracing.py` | 623 | Test suite (35 tests) |
+| `hololoom/voice/tracing.py` | 678 | Core TracingManager implementation |
+| `hololoom/voice/tests/test_tracing.py` | 623 | Test suite (35 tests) |
 | `demos/demo_tracing_analysis.py` | 502 | 6 demo scenarios |
 | `demos/benchmark_tracing_overhead.py` | 241 | Performance benchmarks |
-| `HoloLoom/voice/TRACING_README.md` | 1,224 | Comprehensive documentation |
-| `HoloLoom/voice/TRACING_IMPLEMENTATION_SUMMARY.md` | 485 | Implementation summary |
+| `hololoom/voice/TRACING_README.md` | 1,224 | Comprehensive documentation |
+| `hololoom/voice/TRACING_IMPLEMENTATION_SUMMARY.md` | 485 | Implementation summary |
 | `docker-compose.tracing.yml` | 134 | Jaeger infrastructure |
 | `config/jaeger-sampling.json` | 30 | Sampling strategies |
 | **Total** | **3,917** | **8 files** |
@@ -115,7 +115,7 @@ pytest HoloLoom/voice/tests/test_tracing.py -v
 ## Integration Example
 
 ```python
-from HoloLoom.voice.tracing import TracingManager, TracingConfig
+from hololoom.voice.tracing import TracingManager, TracingConfig
 
 # Initialize tracing
 config = TracingConfig(
@@ -209,7 +209,7 @@ class VoiceAgent:
 curl http://localhost:16686
 
 # Check tracing is enabled
-python -c "from HoloLoom.voice.tracing import TracingConfig; print(TracingConfig().enable_tracing)"
+python -c "from hololoom.voice.tracing import TracingConfig; print(TracingConfig().enable_tracing)"
 
 # Check logs
 docker logs hololoom-jaeger

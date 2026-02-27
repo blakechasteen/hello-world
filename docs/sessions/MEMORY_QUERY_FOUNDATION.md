@@ -12,7 +12,7 @@ The memory system is the **foundation** of HoloLoom. The loom can't weave withou
 
 ## 📦 What We Have (Implemented)
 
-### 1. **Protocol Layer** (`HoloLoom/memory/protocol.py`)
+### 1. **Protocol Layer** (`hololoom/memory/protocol.py`)
 ✅ **COMPLETE** - Clean protocol-based architecture
 
 ```python

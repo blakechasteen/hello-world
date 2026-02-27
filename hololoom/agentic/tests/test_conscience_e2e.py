@@ -18,21 +18,21 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import asyncio
 
-from HoloLoom.agentic.core import (
+from hololoom.agentic.core import (
     AgenticOrchestrator,
     ReasoningMode,
     AgenticResult,
     CONSCIENCE_AVAILABLE,
 )
-from HoloLoom.agentic.conscience_adapter import (
+from hololoom.agentic.conscience_adapter import (
     AgenticConscienceAdapter,
     create_conscience_adapter,
     create_null_adapter,
     CALIBRATOR_AVAILABLE,
 )
-from HoloLoom.protocols.conscience import ConscienceDecision, StepType, RiskLevel
-from HoloLoom.protocols.types import Query
-from HoloLoom.alignment.audit_trail import AuditTrail
+from hololoom.protocols.conscience import ConscienceDecision, StepType, RiskLevel
+from hololoom.protocols.types import Query
+from hololoom.alignment.audit_trail import AuditTrail
 
 
 # =============================================================================

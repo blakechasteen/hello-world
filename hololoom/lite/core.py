@@ -10,7 +10,7 @@ The lightweight entry point for HoloLoom with:
 - SafetyGuardrails enabled by default
 
 Usage:
-    from HoloLoom import HoloLoomLite
+    from hololoom import HoloLoomLite
 
     async with HoloLoomLite() as loom:
         # Store memories
@@ -41,11 +41,11 @@ import warnings
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.config import Config
-    from HoloLoom.memory.protocol import Memory
-    from HoloLoom.agentic.core import AgenticResult
-    from HoloLoom.rag.simple_rag import RAGResult
-    from HoloLoom.alignment.safety_guardrails import SafetyResult
+    from hololoom.config import Config
+    from hololoom.memory.protocol import Memory
+    from hololoom.agentic.core import AgenticResult
+    from hololoom.rag.simple_rag import RAGResult
+    from hololoom.alignment.safety_guardrails import SafetyResult
 
 
 @dataclass
@@ -118,11 +118,11 @@ class HoloLoomLite:
             >>> loom = HoloLoomLite(persist=True)
             >>>
             >>> # Or with custom config
-            >>> from HoloLoom.config import Config
+            >>> from hololoom.config import Config
             >>> loom = HoloLoomLite(config=Config.lite())
         """
         # Lazy import to avoid circular dependencies
-        from HoloLoom.config import Config, MemoryBackend
+        from hololoom.config import Config, MemoryBackend
 
         # Use lite config by default
         self.config = config or Config.lite()
@@ -153,9 +153,9 @@ class HoloLoomLite:
 
         # Import core dependencies
         import networkx as nx
-        from HoloLoom.memory.awareness_graph import AwarenessGraph
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-        from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+        from hololoom.memory.awareness_graph import AwarenessGraph
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
         # Create embedder
         self._embedder = MatryoshkaEmbeddings(sizes=self.config.scales)
@@ -170,7 +170,7 @@ class HoloLoomLite:
         if self._persist:
             # Use persistent backend (Neo4j + Qdrant) with auto-fallback
             try:
-                from HoloLoom.memory.backend_factory import create_memory_backend
+                from hololoom.memory.backend_factory import create_memory_backend
                 self._backend = await create_memory_backend(self.config)
 
                 # Check if we got a persistent backend or fell back to in-memory
@@ -239,7 +239,7 @@ class HoloLoomLite:
         """
         await self._initialize()
 
-        from HoloLoom.memory.protocol import Memory
+        from hololoom.memory.protocol import Memory
 
         # Perceive and remember
         perception = await self._memory.perceive(content)
@@ -277,7 +277,7 @@ class HoloLoomLite:
         """
         await self._initialize()
 
-        from HoloLoom.memory.awareness_types import ActivationStrategy
+        from hololoom.memory.awareness_types import ActivationStrategy
 
         # Perceive query
         perception = await self._memory.perceive(query)
@@ -350,7 +350,7 @@ class HoloLoomLite:
         """
         await self._initialize()
 
-        from HoloLoom.memory.protocol import Memory
+        from hololoom.memory.protocol import Memory
 
         graph = self._memory.graph
 
@@ -442,7 +442,7 @@ class HoloLoomLite:
             )
 
         # Map mode string to enum
-        from HoloLoom.agentic.core import ReasoningMode
+        from hololoom.agentic.core import ReasoningMode
         mode_map = {
             "direct": ReasoningMode.DIRECT,
             "verify": ReasoningMode.VERIFY,
@@ -452,7 +452,7 @@ class HoloLoomLite:
         reasoning_mode = mode_map.get(mode.lower(), ReasoningMode.DIRECT)
 
         # Create query object
-        from HoloLoom.protocols.types import Query
+        from hololoom.protocols.types import Query
         query_obj = Query(text=query)
 
         # Execute reasoning
@@ -567,8 +567,8 @@ class HoloLoomLite:
             return self._agentic
 
         try:
-            from HoloLoom.agentic.core import AgenticOrchestrator, create_agentic_orchestrator
-            from HoloLoom.memory.graph import KG
+            from hololoom.agentic.core import AgenticOrchestrator, create_agentic_orchestrator
+            from hololoom.memory.graph import KG
 
             # Create minimal shards for agentic
             shards = []
@@ -578,7 +578,7 @@ class HoloLoomLite:
                 for node_id in self._memory.graph.nodes():
                     node_data = self._memory.graph.nodes[node_id]
                     if 'text' in node_data:
-                        from HoloLoom.protocols.types import MemoryShard
+                        from hololoom.protocols.types import MemoryShard
                         shards.append(MemoryShard(
                             id=node_id,
                             content=node_data['text'],
@@ -604,7 +604,7 @@ class HoloLoomLite:
             return self._rag
 
         try:
-            from HoloLoom.rag.simple_rag import SimpleRAG
+            from hololoom.rag.simple_rag import SimpleRAG
 
             self._rag = SimpleRAG(config=self.config)
             # Initialize the RAG instance (required before use)
@@ -624,7 +624,7 @@ class HoloLoomLite:
             return self._guardrails
 
         try:
-            from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+            from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
             self._guardrails = SafetyGuardrails()
             return self._guardrails

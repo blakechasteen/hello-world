@@ -29,7 +29,7 @@ HoloLoom's departments use **two different protocols**:
 
 **Key Types**:
 ```python
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     DepartmentRequest,      # task_type, parameters, context, constraints
     DepartmentResponse,     # result, confidence (ConfidenceMetadata), metadata
     VerificationResult,     # verified, checks, overall_score
@@ -556,17 +556,17 @@ qa_stats_response = await qa_dept.execute(qa_stats_request)
 
 ## Running the Tests
 
-All 7 workflows are fully tested in `HoloLoom/departments/tests/test_workflows.py`:
+All 7 workflows are fully tested in `hololoom/departments/tests/test_workflows.py`:
 
 ```bash
 # Run all workflow tests
-pytest HoloLoom/departments/tests/test_workflows.py -v
+pytest hololoom/departments/tests/test_workflows.py -v
 
 # Run specific workflow
-pytest HoloLoom/departments/tests/test_workflows.py::TestWorkflow1_CodeAnalysisPipeline -v
+pytest hololoom/departments/tests/test_workflows.py::TestWorkflow1_CodeAnalysisPipeline -v
 
 # Run with detailed output
-pytest HoloLoom/departments/tests/test_workflows.py -v -s
+pytest hololoom/departments/tests/test_workflows.py -v -s
 ```
 
 **Expected Results**: 28 tests passing (all workflows validated)
@@ -676,7 +676,7 @@ xterm_request.context["requesting_confidence"] = holo_conf
 
 - **[PLANNING_DEPARTMENT_TESTS_COMPLETE.md](PLANNING_DEPARTMENT_TESTS_COMPLETE.md)** - Planning Department tests
 - **[QA_DEPARTMENT_TESTS_COMPLETE.md](QA_DEPARTMENT_TESTS_COMPLETE.md)** - QA Department tests
-- **[HoloLoom/departments/protocol.py](HoloLoom/departments/protocol.py)** - HoloLoom protocol definition
+- **[hololoom/departments/protocol.py](hololoom/departments/protocol.py)** - HoloLoom protocol definition
 - **[xterminator/department_protocol.py](xterminator/department_protocol.py)** - xTerminator protocol definition
 
 ---

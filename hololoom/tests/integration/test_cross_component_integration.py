@@ -16,8 +16,8 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 from typing import Dict, Any, List
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config, MemoryBackend
+from hololoom.protocols.types import Query, MemoryShard
 
 
 # ============================================================================
@@ -32,8 +32,8 @@ class TestRAGMemoryIntegration:
     async def test_rag_uses_unified_memory_recall(self):
         """RAG.query() should use UnifiedMemory.recall() under the hood."""
         # Import here to avoid circular dependencies
-        from HoloLoom.rag import SimpleRAG
-        from HoloLoom.memory.unified import UnifiedMemory
+        from hololoom.rag import SimpleRAG
+        from hololoom.memory.unified import UnifiedMemory
 
         # Create RAG with async context manager
         async with SimpleRAG() as rag:
@@ -54,7 +54,7 @@ class TestRAGMemoryIntegration:
     @pytest.mark.asyncio
     async def test_awareness_graph_coherence_flows_to_rag_confidence(self):
         """Awareness graph coherence should influence RAG confidence scores."""
-        from HoloLoom.rag import SimpleRAG
+        from hololoom.rag import SimpleRAG
 
         async with SimpleRAG() as rag:
             # Ingest related content (should create high coherence)
@@ -85,7 +85,7 @@ class TestRAGMemoryIntegration:
     @pytest.mark.asyncio
     async def test_query_cache_shared_between_rag_and_memory(self):
         """Query cache should be shared between RAG and UnifiedMemory."""
-        from HoloLoom.rag import SimpleRAG
+        from hololoom.rag import SimpleRAG
 
         async with SimpleRAG(enable_caching=True) as rag:
             # Ingest content
@@ -118,9 +118,9 @@ class TestRoutingOrchestratorIntegration:
     @pytest.mark.asyncio
     async def test_query_complexity_determines_execution_mode(self):
         """Query complexity should determine orchestrator execution mode."""
-        from HoloLoom.routing.query_classifier import QueryClassifier, QueryComplexity
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.routing.query_classifier import QueryClassifier, QueryComplexity
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.fast()
         classifier = QueryClassifier()
@@ -148,8 +148,8 @@ class TestRoutingOrchestratorIntegration:
     @pytest.mark.asyncio
     async def test_fast_path_routing_bypasses_full_orchestration(self):
         """Fast path routing should bypass full weaving for simple queries."""
-        from HoloLoom.routing.query_classifier import QueryClassifier, QueryComplexity
-        from HoloLoom.routing.fast_paths import FastPathRouter
+        from hololoom.routing.query_classifier import QueryClassifier, QueryComplexity
+        from hololoom.routing.fast_paths import FastPathRouter
 
         classifier = QueryClassifier()
         router = FastPathRouter()
@@ -171,7 +171,7 @@ class TestRoutingOrchestratorIntegration:
     @pytest.mark.asyncio
     async def test_pattern_mining_affects_future_routing(self):
         """Pattern mining should update routing decisions over time."""
-        from HoloLoom.routing.learning import PatternMiner
+        from hololoom.routing.learning import PatternMiner
 
         # Create pattern miner
         miner = PatternMiner()
@@ -202,8 +202,8 @@ class TestPolicyMemoryIntegration:
     @pytest.mark.asyncio
     async def test_tool_selection_based_on_memory_backend_availability(self):
         """Policy should adapt tool selection based on memory backend availability."""
-        from HoloLoom.policy.unified import create_policy
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.policy.unified import create_policy
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
         import numpy as np
 
         # Create policy
@@ -233,8 +233,8 @@ class TestPolicyMemoryIntegration:
     @pytest.mark.asyncio
     async def test_thompson_sampling_updates_from_memory_operations(self):
         """Thompson Sampling bandit should update from memory success/failure."""
-        from HoloLoom.policy.unified import create_policy
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.policy.unified import create_policy
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
         import numpy as np
 
         emb = MatryoshkaEmbeddings()
@@ -264,8 +264,8 @@ class TestPolicyMemoryIntegration:
     @pytest.mark.asyncio
     async def test_bandit_priors_adapt_when_backend_changes(self):
         """Bandit priors should adapt when memory backend changes."""
-        from HoloLoom.policy.unified import create_policy
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.policy.unified import create_policy
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
         import numpy as np
 
         emb = MatryoshkaEmbeddings()
@@ -298,7 +298,7 @@ class TestErrorPropagation:
     @pytest.mark.asyncio
     async def test_memory_backend_failure_graceful_degradation(self):
         """Memory backend failure should trigger graceful degradation."""
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.memory.backend_factory import create_memory_backend
 
         # Create config with HYBRID backend (may not be available)
         config = Config.fast()
@@ -317,8 +317,8 @@ class TestErrorPropagation:
     @pytest.mark.asyncio
     async def test_policy_engine_failure_fallback_tool_selection(self):
         """Policy engine failure should fall back to default tool selection."""
-        from HoloLoom.policy.unified import create_policy
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.policy.unified import create_policy
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
         import numpy as np
 
         emb = MatryoshkaEmbeddings()
@@ -348,8 +348,8 @@ class TestErrorPropagation:
     @pytest.mark.asyncio
     async def test_layer_failure_partial_result_with_provenance(self):
         """Layer failure should return partial result with error provenance."""
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.bare()  # Minimal config
         backend = await create_memory_backend(config)
@@ -379,8 +379,8 @@ class TestErrorPropagation:
     @pytest.mark.asyncio
     async def test_error_metadata_preserved_across_layers(self):
         """Error metadata should be preserved as it propagates up layers."""
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.bare()
         backend = await create_memory_backend(config)
@@ -414,7 +414,7 @@ class TestConfigurationPropagation:
     @pytest.mark.asyncio
     async def test_config_changes_flow_through_all_components(self):
         """Config changes should affect all components consistently."""
-        from HoloLoom.config import ExecutionMode
+        from hololoom.config import ExecutionMode
 
         # Test BARE mode
         config_bare = Config.bare()
@@ -435,9 +435,9 @@ class TestConfigurationPropagation:
     @pytest.mark.asyncio
     async def test_mode_switching_affects_all_layers(self):
         """Mode switching (BARE→FUSED) should update all layers."""
-        from HoloLoom.config import ExecutionMode
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.config import ExecutionMode
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.memory.backend_factory import create_memory_backend
 
         # Start with BARE
         config = Config.bare()
@@ -463,7 +463,7 @@ class TestConfigurationPropagation:
     @pytest.mark.asyncio
     async def test_rag_configuration_inherited_from_global_config(self):
         """RAG should inherit configuration from global Config."""
-        from HoloLoom.rag import SimpleRAG
+        from hololoom.rag import SimpleRAG
 
         # Create RAG with custom config
         config = Config.fast()
@@ -479,7 +479,7 @@ class TestConfigurationPropagation:
     @pytest.mark.asyncio
     async def test_memory_backend_configuration_consistency(self):
         """Memory backend should respect configuration consistently."""
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.memory.backend_factory import create_memory_backend
 
         # Test INMEMORY
         config_inmemory = Config.bare()
@@ -509,8 +509,8 @@ class TestEndToEndIntegration:
     @pytest.mark.asyncio
     async def test_full_pipeline_query_to_response(self):
         """Test complete pipeline from query to response."""
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.fast()
         backend = await create_memory_backend(config)

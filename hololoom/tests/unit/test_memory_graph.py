@@ -16,7 +16,7 @@ Tests:
 
 import pytest
 from datetime import datetime, UTC
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.graph import KG, KGEdge
 import networkx as nx
 
 

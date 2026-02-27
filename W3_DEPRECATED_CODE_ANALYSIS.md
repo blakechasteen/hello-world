@@ -18,7 +18,7 @@ HoloLoom's codebase contains several deprecated patterns and duplicate implement
 4. **Unused/Legacy Code** - Files with "legacy" or "old" prefixes still in main codebase
 5. **Excessive Integration Points** - Some features have adapters/bridges that may indicate poor design
 
-**Archive Status**: 70% complete - Most old code properly archived, but some deprecated items remain in `/HoloLoom/`
+**Archive Status**: 70% complete - Most old code properly archived, but some deprecated items remain in `/hololoom/`
 
 ---
 
@@ -26,7 +26,7 @@ HoloLoom's codebase contains several deprecated patterns and duplicate implement
 
 ### CRITICAL: Compatibility Shim Creating Import Confusion
 
-**File**: `HoloLoom/weaving_shuttle.py` (48 lines)
+**File**: `hololoom/weaving_shuttle.py` (48 lines)
 - **Status**: ✅ Properly marked as deprecated
 - **Issue**: Alias pattern `WeavingShuttle = WeavingOrchestrator` hides true origin
 - **Imports**: Used by 11 files (test, handler, benchmark files)
@@ -38,24 +38,24 @@ HoloLoom's codebase contains several deprecated patterns and duplicate implement
 
 **Importing Files**:
 ```
-HoloLoom/chatops/handlers/hololoom_handlers.py
-HoloLoom/tests/integration/test_enhanced_shuttle.py
-HoloLoom/tests/unit/test_orchestrator_refactoring.py
-HoloLoom/tests/unit/test_weaving_shuttle.py
-HoloLoom/tests/integration/test_shuttle_integration.py
-HoloLoom/tests/integration/test_complexity_tuning.py
-HoloLoom/tests/e2e/test_fused_mode_e2e.py
-HoloLoom/tests/e2e/test_full_pipeline.py
-HoloLoom/tests/e2e/test_fast_mode_e2e.py
-HoloLoom/tests/e2e/test_bare_mode_e2e.py
-HoloLoom/performance/benchmark.py
+hololoom/chatops/handlers/hololoom_handlers.py
+hololoom/tests/integration/test_enhanced_shuttle.py
+hololoom/tests/unit/test_orchestrator_refactoring.py
+hololoom/tests/unit/test_weaving_shuttle.py
+hololoom/tests/integration/test_shuttle_integration.py
+hololoom/tests/integration/test_complexity_tuning.py
+hololoom/tests/e2e/test_fused_mode_e2e.py
+hololoom/tests/e2e/test_full_pipeline.py
+hololoom/tests/e2e/test_fast_mode_e2e.py
+hololoom/tests/e2e/test_bare_mode_e2e.py
+hololoom/performance/benchmark.py
 ```
 
 ---
 
 ### HIGH: Duplicate Quality Trajectory Implementations
 
-**Location**: `HoloLoom/redteam/refinement/`
+**Location**: `hololoom/redteam/refinement/`
 
 **Files**:
 1. `quality_trajectory.py` (30 KB, 714 lines) - Original
@@ -80,7 +80,7 @@ HoloLoom/performance/benchmark.py
 
 ### HIGH: Refactored Orchestrator Not Integrated
 
-**File**: `HoloLoom/weaving_orchestrator_refactored.py` (500+ lines)
+**File**: `hololoom/weaving_orchestrator_refactored.py` (500+ lines)
 - **Status**: Marked as "clean implementation" with modular approach
 - **Issue**: Exists alongside `weaving_orchestrator.py` (canonical)
 - **Last Modified**: 2025-01-21 (future-dated, likely placeholder)
@@ -95,10 +95,10 @@ HoloLoom/performance/benchmark.py
 ### HIGH: Multiple Shuttle Implementations
 
 **Files**:
-1. `HoloLoom/shuttle/orchestrator_v2.py` - "v2 with Error Handling" (2025-01-21)
-2. `HoloLoom/shuttle/weaving_integration.py` - Integration bridge
-3. `HoloLoom/weaving_shuttle.py` - Deprecated compatibility shim
-4. `HoloLoom/weaving_orchestrator.py` - Canonical implementation
+1. `hololoom/shuttle/orchestrator_v2.py` - "v2 with Error Handling" (2025-01-21)
+2. `hololoom/shuttle/weaving_integration.py` - Integration bridge
+3. `hololoom/weaving_shuttle.py` - Deprecated compatibility shim
+4. `hololoom/weaving_orchestrator.py` - Canonical implementation
 
 **Issue**: Four different shuttle/orchestrator implementations with unclear relationships
 - `orchestrator_v2.py` dated Jan 21, 2025 (future date - data anomaly)
@@ -117,13 +117,13 @@ HoloLoom/performance/benchmark.py
 
 ### Well-Marked Deprecations (2 files - GOOD):
 
-1. **HoloLoom/weaving_shuttle.py**
+1. **hololoom/weaving_shuttle.py**
    - ✅ Clear deprecation notice
    - ✅ Migration path documented
    - ✅ Forward compatibility maintained
    - ❌ Still used by 11 files
 
-2. **HoloLoom/dark_trace/sae/legacy.py**
+2. **hololoom/dark_trace/sae/legacy.py**
    - ✅ Marked as "legacy implementation"
    - ✅ Migration guide provided
    - Status: Backward compatibility maintained
@@ -132,15 +132,15 @@ HoloLoom/performance/benchmark.py
 
 **Likely Deprecated but Not Clearly Marked**:
 
-1. `HoloLoom/config.py` - Contains deprecated references
-2. `HoloLoom/weaving_orchestrator.py` - References deprecated patterns
-3. `HoloLoom/memory/__init__.py` - Mixed deprecated/current API
-4. `HoloLoom/memory/neo4j_graph.py` - Backend variant (unclear if used)
-5. `HoloLoom/memory/hyperspace_backend.py` - Research-only backend
-6. `HoloLoom/spinningWheel/codebase_spinner.py` - Unclear status
-7. `HoloLoom/spinningWheel/git_spinner.py` - May be superseded
-8. `HoloLoom/recursive/advanced_refinement.py` - Advanced variant
-9. `HoloLoom/protocols/core.py` - Protocol migrations ongoing
+1. `hololoom/config.py` - Contains deprecated references
+2. `hololoom/weaving_orchestrator.py` - References deprecated patterns
+3. `hololoom/memory/__init__.py` - Mixed deprecated/current API
+4. `hololoom/memory/neo4j_graph.py` - Backend variant (unclear if used)
+5. `hololoom/memory/hyperspace_backend.py` - Research-only backend
+6. `hololoom/spinningWheel/codebase_spinner.py` - Unclear status
+7. `hololoom/spinningWheel/git_spinner.py` - May be superseded
+8. `hololoom/recursive/advanced_refinement.py` - Advanced variant
+9. `hololoom/protocols/core.py` - Protocol migrations ongoing
 
 ---
 
@@ -149,18 +149,18 @@ HoloLoom/performance/benchmark.py
 These files reference legacy/backward compatibility patterns. Top offenders:
 
 **Memory System Files**:
-- `HoloLoom/memory/unified.py` - Contains legacy adapter
-- `HoloLoom/memory/graph.py` - Contains `LegacyShardsAdapter` class
-- `HoloLoom/memory/weaving_adapter.py` - Pure adapter/bridge file
+- `hololoom/memory/unified.py` - Contains legacy adapter
+- `hololoom/memory/graph.py` - Contains `LegacyShardsAdapter` class
+- `hololoom/memory/weaving_adapter.py` - Pure adapter/bridge file
 
 **Adapter/Bridge Files** (29 found - indicates loose coupling issues):
 ```
-HoloLoom/memory/weaving_adapter.py
-HoloLoom/agentic/safety_adapter.py
-HoloLoom/agentic/conscience_adapter.py
-HoloLoom/shuttle/weaving_integration.py
-HoloLoom/prompting/adapters.py
-HoloLoom/promptly/dspy_workflow_adapter.py
+hololoom/memory/weaving_adapter.py
+hololoom/agentic/safety_adapter.py
+hololoom/agentic/conscience_adapter.py
+hololoom/shuttle/weaving_integration.py
+hololoom/prompting/adapters.py
+hololoom/promptly/dspy_workflow_adapter.py
 + 23 more adapter/bridge files
 ```
 
@@ -175,10 +175,10 @@ HoloLoom/promptly/dspy_workflow_adapter.py
 ### Pattern 1: Unused Alternative Implementations
 
 **Files**:
-- `HoloLoom/weaving_orchestrator_refactored.py` - Alternative orchestrator
-- `HoloLoom/shuttle/orchestrator_v2.py` - Alternative shuttle
-- `HoloLoom/prompting/testing/golden_dataset.py` - Test data variant
-- `HoloLoom/prompting/testing/golden_chains.py` - Test data variant
+- `hololoom/weaving_orchestrator_refactored.py` - Alternative orchestrator
+- `hololoom/shuttle/orchestrator_v2.py` - Alternative shuttle
+- `hololoom/prompting/testing/golden_dataset.py` - Test data variant
+- `hololoom/prompting/testing/golden_chains.py` - Test data variant
 
 **Issue**: Alternatives exist but unclear which is used
 **Recommendation**: Audit imports to determine if used; archive if not
@@ -186,8 +186,8 @@ HoloLoom/promptly/dspy_workflow_adapter.py
 ### Pattern 2: Future-Dated Files (Data Anomaly)
 
 **Files with suspicious dates** (e.g., Jan 21, 2025 when current is Dec 31, 2025):
-- `HoloLoom/shuttle/orchestrator_v2.py` - "Created: 2025-01-21"
-- `HoloLoom/lite/core.py` - "Date: December 2025"
+- `hololoom/shuttle/orchestrator_v2.py` - "Created: 2025-01-21"
+- `hololoom/lite/core.py` - "Date: December 2025"
 
 **Issue**: Date anomaly suggests incomplete or placeholder files
 **Recommendation**: Verify content and intent
@@ -199,18 +199,18 @@ HoloLoom/promptly/dspy_workflow_adapter.py
 **Multiple test files for same component**:
 
 1. **Orchestrator tests** (6 files):
-   - `HoloLoom/tests/unit/test_orchestrator_refactoring.py`
-   - `HoloLoom/tests/integration/test_orchestrator.py`
-   - `HoloLoom/tests/e2e/test_orchestrator_9_step_cycle.py`
-   - `HoloLoom/tests/e2e/test_orchestrator_warp_space.py`
-   - `HoloLoom/tests/root_scripts/test_orchestrator_diagnostic.py`
-   - `HoloLoom/agentic/tests/test_orchestrator_conscience.py`
+   - `hololoom/tests/unit/test_orchestrator_refactoring.py`
+   - `hololoom/tests/integration/test_orchestrator.py`
+   - `hololoom/tests/e2e/test_orchestrator_9_step_cycle.py`
+   - `hololoom/tests/e2e/test_orchestrator_warp_space.py`
+   - `hololoom/tests/root_scripts/test_orchestrator_diagnostic.py`
+   - `hololoom/agentic/tests/test_orchestrator_conscience.py`
 
 2. **Shuttle tests** (4 files):
-   - `HoloLoom/tests/unit/test_weaving_shuttle.py`
-   - `HoloLoom/tests/integration/test_enhanced_shuttle.py`
-   - `HoloLoom/tests/integration/test_shuttle_integration.py`
-   - `HoloLoom/tests/integration/test_complexity_tuning.py` (includes shuttle)
+   - `hololoom/tests/unit/test_weaving_shuttle.py`
+   - `hololoom/tests/integration/test_enhanced_shuttle.py`
+   - `hololoom/tests/integration/test_shuttle_integration.py`
+   - `hololoom/tests/integration/test_complexity_tuning.py` (includes shuttle)
 
 **Issue**: 10 orchestrator/shuttle tests suggest:
 - Tests for multiple versions of same component
@@ -226,7 +226,7 @@ HoloLoom/promptly/dspy_workflow_adapter.py
 
 ## Component Legacy Imports (Most Problematic)
 
-### HoloLoom/memory/ - Highest Concentration
+### hololoom/memory/ - Highest Concentration
 
 **Files with backward compat**:
 1. `unified.py` - "UnifiedMemory" with legacy adapter support
@@ -254,13 +254,13 @@ HoloLoom/promptly/dspy_workflow_adapter.py
 
 **Files** (12 files):
 ```
-HoloLoom/lite/core.py
-HoloLoom/lite/__init__.py
-HoloLoom/lite/memory.py
-HoloLoom/lite/reasoning.py
-HoloLoom/lite/openai_tools.py
-HoloLoom/lite/mcp_server.py
-HoloLoom/lite/ui/...  (4 UI variants)
+hololoom/lite/core.py
+hololoom/lite/__init__.py
+hololoom/lite/memory.py
+hololoom/lite/reasoning.py
+hololoom/lite/openai_tools.py
+hololoom/lite/mcp_server.py
+hololoom/lite/ui/...  (4 UI variants)
 ```
 
 **Status**: ✅ Not deprecated, maintained alternative
@@ -275,13 +275,13 @@ HoloLoom/lite/ui/...  (4 UI variants)
 
 **Files** (9 files):
 ```
-HoloLoom/promptly/__init__.py
-HoloLoom/promptly/migrate.py              <- migration helper
-HoloLoom/promptly/metrics_system.py
-HoloLoom/promptly/dspy_bridge.py
-HoloLoom/promptly/workflow_store.py
-HoloLoom/promptly/demo_beginner_workflow.py
-HoloLoom/promptly/dspy_workflow_adapter.py
+hololoom/promptly/__init__.py
+hololoom/promptly/migrate.py              <- migration helper
+hololoom/promptly/metrics_system.py
+hololoom/promptly/dspy_bridge.py
+hololoom/promptly/workflow_store.py
+hololoom/promptly/demo_beginner_workflow.py
+hololoom/promptly/dspy_workflow_adapter.py
 + examples/
 ```
 
@@ -460,12 +460,12 @@ HoloLoom/promptly/dspy_workflow_adapter.py
 
 **Move to `.archive/` folder**:
 
-1. `HoloLoom/weaving_orchestrator_refactored.py` (if refactoring incomplete)
-2. `HoloLoom/shuttle/orchestrator_v2.py` (if not used)
-3. `HoloLoom/redteam/refinement/quality_trajectory_updated.py` (if duplicate)
-4. `HoloLoom/redteam/refinement/quality_trajectory_extensions.py` (if low usage)
+1. `hololoom/weaving_orchestrator_refactored.py` (if refactoring incomplete)
+2. `hololoom/shuttle/orchestrator_v2.py` (if not used)
+3. `hololoom/redteam/refinement/quality_trajectory_updated.py` (if duplicate)
+4. `hololoom/redteam/refinement/quality_trajectory_extensions.py` (if low usage)
 5. Unused memory backend implementations (if consolidating)
-6. `HoloLoom/prompting/testing/golden_dataset.py` and `golden_chains.py` (if redundant)
+6. `hololoom/prompting/testing/golden_dataset.py` and `golden_chains.py` (if redundant)
 7. Deprecated shuttle variant test files (if consolidating)
 
 ---
@@ -474,11 +474,11 @@ HoloLoom/promptly/dspy_workflow_adapter.py
 
 **Core, non-deprecated**:
 
-1. ✅ `HoloLoom/weaving_orchestrator.py` - Canonical orchestrator
-2. ✅ `HoloLoom/memory/unified.py` - Current memory API
-3. ✅ `HoloLoom/weaving_shuttle.py` - Compatibility shim (v1.x)
-4. ✅ `HoloLoom/dark_trace/sae/legacy.py` - Properly marked legacy
-5. ✅ `HoloLoom/lite/` - Maintained lightweight alternative
+1. ✅ `hololoom/weaving_orchestrator.py` - Canonical orchestrator
+2. ✅ `hololoom/memory/unified.py` - Current memory API
+3. ✅ `hololoom/weaving_shuttle.py` - Compatibility shim (v1.x)
+4. ✅ `hololoom/dark_trace/sae/legacy.py` - Properly marked legacy
+5. ✅ `hololoom/lite/` - Maintained lightweight alternative
 6. ✅ Current test files (after consolidation)
 
 ---
@@ -526,28 +526,28 @@ HoloLoom/promptly/dspy_workflow_adapter.py
 ### Deprecated/Compatibility Files (Properly Marked)
 
 ```
-HoloLoom/weaving_shuttle.py                          ← Compatibility shim
-HoloLoom/dark_trace/sae/legacy.py                    ← Legacy SAE
-HoloLoom/memory/weaving_adapter.py                   ← Compatibility bridge
+hololoom/weaving_shuttle.py                          ← Compatibility shim
+hololoom/dark_trace/sae/legacy.py                    ← Legacy SAE
+hololoom/memory/weaving_adapter.py                   ← Compatibility bridge
 ```
 
 ### Unclear Status (May Be Deprecated)
 
 ```
-HoloLoom/weaving_orchestrator_refactored.py          ← Refactored but not used?
-HoloLoom/shuttle/orchestrator_v2.py                  ← v2 with error handling
-HoloLoom/redteam/refinement/quality_trajectory_updated.py    ← Duplicate?
-HoloLoom/prompting/testing/golden_dataset.py         ← Test data variant
+hololoom/weaving_orchestrator_refactored.py          ← Refactored but not used?
+hololoom/shuttle/orchestrator_v2.py                  ← v2 with error handling
+hololoom/redteam/refinement/quality_trajectory_updated.py    ← Duplicate?
+hololoom/prompting/testing/golden_dataset.py         ← Test data variant
 ```
 
 ### High Legacy/Adapter Count
 
 ```
-HoloLoom/memory/                                     ← 5+ legacy adapters
-HoloLoom/dark_trace/models/                          ← 3 model adapters
-HoloLoom/agentic/                                    ← 2+ adapters
-HoloLoom/shuttle/                                    ← Multiple implementations
-HoloLoom/redteam/refinement/                         ← Multiple trajectory files
+hololoom/memory/                                     ← 5+ legacy adapters
+hololoom/dark_trace/models/                          ← 3 model adapters
+hololoom/agentic/                                    ← 2+ adapters
+hololoom/shuttle/                                    ← Multiple implementations
+hololoom/redteam/refinement/                         ← Multiple trajectory files
 ```
 
 ### Test Duplication
@@ -561,6 +561,6 @@ Total redundant tests: 10+
 ---
 
 **Report Date**: 2025-12-31
-**Analysis Scope**: HoloLoom/ directory only (2,026 Python files)
+**Analysis Scope**: hololoom/ directory only (2,026 Python files)
 **Methodology**: Grep for deprecated patterns + architecture analysis
 **Confidence**: HIGH (findings well-supported by file analysis)

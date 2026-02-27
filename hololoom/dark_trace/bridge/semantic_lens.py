@@ -19,7 +19,7 @@ from typing import Dict, List, Optional, Any, Callable
 import numpy as np
 import torch
 
-from HoloLoom.dark_trace.protocol import (
+from hololoom.dark_trace.protocol import (
     TraceLens,
     BaseLens,
     LensType,
@@ -32,7 +32,7 @@ from HoloLoom.dark_trace.protocol import (
 
 # Import semantic dimensions
 try:
-    from HoloLoom.semantic_calculus.dimensions import (
+    from hololoom.semantic_calculus.dimensions import (
         SemanticDimension,
         SemanticSpectrum,
         STANDARD_DIMENSIONS,

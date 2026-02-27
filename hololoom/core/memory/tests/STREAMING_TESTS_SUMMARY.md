@@ -2,7 +2,7 @@
 
 **Status**: ✅ All 24 tests passing (100%)
 **Date**: 2025-12-01
-**Location**: `HoloLoom/memory/tests/test_streaming_systems.py`
+**Location**: `hololoom/memory/tests/test_streaming_systems.py`
 
 ## Overview
 
@@ -101,19 +101,19 @@ thompson_sampling
 
 Run all tests:
 ```bash
-python -m pytest HoloLoom/memory/tests/test_streaming_systems.py -v
+python -m pytest hololoom/memory/tests/test_streaming_systems.py -v
 ```
 
 Run specific test category:
 ```bash
 # Streaming builder tests only
-python -m pytest HoloLoom/memory/tests/test_streaming_systems.py::test_streaming_builder_initialization -v
+python -m pytest hololoom/memory/tests/test_streaming_systems.py::test_streaming_builder_initialization -v
 
 # Interleaved manager tests only
-python -m pytest HoloLoom/memory/tests/test_streaming_systems.py -k interleaved -v
+python -m pytest hololoom/memory/tests/test_streaming_systems.py -k interleaved -v
 
 # Edge case tests only
-python -m pytest HoloLoom/memory/tests/test_streaming_systems.py -k "empty or zero or nonexistent" -v
+python -m pytest hololoom/memory/tests/test_streaming_systems.py -k "empty or zero or nonexistent" -v
 ```
 
 ## Next Steps
@@ -129,9 +129,9 @@ Potential additional tests for future expansion:
 
 ## Related Files
 
-- **Implementation**: `HoloLoom/memory/streaming_expansion.py` (~650 lines)
-- **Implementation**: `HoloLoom/memory/interleaved_generation.py` (~740 lines)
-- **Implementation**: `HoloLoom/memory/adaptive_expansion.py` (~620 lines)
-- **Tests**: `HoloLoom/memory/tests/test_streaming_systems.py` (~730 lines)
+- **Implementation**: `hololoom/memory/streaming_expansion.py` (~650 lines)
+- **Implementation**: `hololoom/memory/interleaved_generation.py` (~740 lines)
+- **Implementation**: `hololoom/memory/adaptive_expansion.py` (~620 lines)
+- **Tests**: `hololoom/memory/tests/test_streaming_systems.py` (~730 lines)
 
 **Total test coverage**: 730 lines of tests for ~2,010 lines of implementation (36% test-to-code ratio)

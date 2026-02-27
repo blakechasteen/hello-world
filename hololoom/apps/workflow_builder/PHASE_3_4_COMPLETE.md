@@ -405,7 +405,7 @@ Render visualizations:
 
 ## File Modifications
 
-### 1. HoloLoom/web_dashboard/js/analytics_monitor.js (Created - 850 lines)
+### 1. hololoom/web_dashboard/js/analytics_monitor.js (Created - 850 lines)
 
 **Purpose**: Core analytics engine with 4 visualization features.
 
@@ -427,7 +427,7 @@ Render visualizations:
 
 ---
 
-### 2. HoloLoom/web_dashboard/control_panel.html (Modified - ~200 lines added)
+### 2. hololoom/web_dashboard/control_panel.html (Modified - ~200 lines added)
 
 **Changes**:
 1. **Navigation Tab** (line 946):
@@ -473,7 +473,7 @@ Render visualizations:
 
 ---
 
-### 3. HoloLoom/web_dashboard/test_phase3_4.py (Created - 300 lines)
+### 3. hololoom/web_dashboard/test_phase3_4.py (Created - 300 lines)
 
 **Purpose**: Automated test suite for Phase 3.4 features.
 
@@ -488,10 +488,10 @@ Render visualizations:
 **Usage**:
 ```bash
 # Start server
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 
 # Run tests
-python HoloLoom/web_dashboard/test_phase3_4.py
+python hololoom/web_dashboard/test_phase3_4.py
 ```
 
 **Expected Output**:
@@ -639,7 +639,7 @@ Users can now:
 
 1. **Start Server**:
    ```bash
-   PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+   PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
    ```
 
 2. **Open Dashboard**:
@@ -649,7 +649,7 @@ Users can now:
 3. **Generate Test Data**:
    ```bash
    # Run automated test (generates 20 diverse queries)
-   python HoloLoom/web_dashboard/test_phase3_4.py
+   python hololoom/web_dashboard/test_phase3_4.py
    ```
 
 4. **Verify Visualizations**:
@@ -668,7 +668,7 @@ Users can now:
 
 **Run Test Suite**:
 ```bash
-python HoloLoom/web_dashboard/test_phase3_4.py
+python hololoom/web_dashboard/test_phase3_4.py
 ```
 
 **Expected Output**: All 6 tests pass

@@ -4,7 +4,7 @@ Tests for Federation Alignment Verification Layers.
 Tests L1 (local), L2 (response), and L3 (consensus) verification
 with various trust scenarios.
 
-Run with: pytest HoloLoom/federation/alignment/tests/ -v
+Run with: pytest hololoom/federation/alignment/tests/ -v
 """
 
 import asyncio
@@ -14,7 +14,7 @@ from typing import List
 from unittest.mock import AsyncMock, MagicMock, patch
 
 # Import alignment module
-from HoloLoom.federation.alignment import (
+from hololoom.federation.alignment import (
     # Protocol and enums
     AlignmentLayer,
     AlignmentStatus,
@@ -43,7 +43,7 @@ from HoloLoom.federation.alignment import (
 )
 
 # Import federation types
-from HoloLoom.federation.types import Query, Response
+from hololoom.federation.types import Query, Response
 
 
 # ═══════════════════════════════════════════════════════════════════════════

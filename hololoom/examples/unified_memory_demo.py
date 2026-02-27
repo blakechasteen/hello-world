@@ -23,36 +23,36 @@ import logging
 from datetime import datetime
 
 # Protocol and stores
-from HoloLoom.memory.protocol import (
+from hololoom.memory.protocol import (
     Memory,
     Strategy,
     create_unified_memory
 )
-from HoloLoom.memory.unified import UnifiedMemory
+from hololoom.memory.unified import UnifiedMemory
 
-from HoloLoom.memory.stores import InMemoryStore
+from hololoom.memory.stores import InMemoryStore
 
 # Optional: Try to import production backends
 try:
-    from HoloLoom.memory.stores.mem0_store import Mem0MemoryStore
+    from hololoom.memory.stores.mem0_store import Mem0MemoryStore
     _HAVE_MEM0 = True
 except ImportError:
     _HAVE_MEM0 = False
 
 try:
-    from HoloLoom.memory.stores.neo4j_store import Neo4jMemoryStore
+    from hololoom.memory.stores.neo4j_store import Neo4jMemoryStore
     _HAVE_NEO4J = True
 except ImportError:
     _HAVE_NEO4J = False
 
 try:
-    from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
+    from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
     _HAVE_QDRANT = True
 except ImportError:
     _HAVE_QDRANT = False
 
 try:
-    from HoloLoom.memory.stores.hybrid_store import HybridMemoryStore, BackendConfig
+    from hololoom.memory.stores.hybrid_store import HybridMemoryStore, BackendConfig
     _HAVE_HYBRID = True
 except ImportError:
     _HAVE_HYBRID = False

@@ -31,7 +31,7 @@ from ..judgment import Concern
 from .base import BaseLens
 
 
-logger = logging.getLogger("HoloLoom.conscience.lenses.power")
+logger = logging.getLogger("hololoom.conscience.lenses.power")
 
 
 # =============================================================================
@@ -336,7 +336,7 @@ class PowerLens(BaseLens):
 
         try:
             # Import here to avoid circular dependency
-            from HoloLoom.alignment.instrumental_convergence import ViolationType
+            from hololoom.alignment.instrumental_convergence import ViolationType
 
             # Check for violations
             if hasattr(self._convergence_guard, "check_action"):

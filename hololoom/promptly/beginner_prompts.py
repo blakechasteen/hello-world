@@ -56,7 +56,7 @@ Please show your work for each step so I can see the optimization process.
 HOLOLOOM_QA_OPTIMIZATION_PROMPT = """
 I need to create a self-optimizing prompt system for question-answering using HoloLoom's knowledge base.
 
-**My Task**: Answer technical questions accurately using retrieved context from HoloLoom memory.
+**My Task**: Answer technical questions accurately using retrieved context from hololoom memory.
 
 **My Examples**:
 

@@ -217,7 +217,7 @@ Phase 3 delivers **2 advanced monitoring dashboards** (1,100+ lines) that provid
 ### File Structure
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── control_panel.html          # Main dashboard (1,620 lines, +360 from Wave 2)
 ├── js/
 │   ├── learning_dashboard.js   # 350 lines (Wave 2)
@@ -241,7 +241,7 @@ HoloLoom/web_dashboard/
 
 1. **Server Running**:
    ```bash
-   PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+   PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
    ```
 
 2. **Browser**: Chrome, Firefox, or Edge (latest version)
@@ -736,17 +736,17 @@ These limitations are **intentional** for Phase 3 (rapid delivery):
 ```bash
 # Terminal 1: Start server
 cd mythRL
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 
 # Terminal 2: Open dashboard
 # (Windows)
-start HoloLoom/web_dashboard/control_panel.html
+start hololoom/web_dashboard/control_panel.html
 
 # (macOS)
-open HoloLoom/web_dashboard/control_panel.html
+open hololoom/web_dashboard/control_panel.html
 
 # (Linux)
-xdg-open HoloLoom/web_dashboard/control_panel.html
+xdg-open hololoom/web_dashboard/control_panel.html
 
 # Terminal 3: Test Phase 3
 # Make queries and watch System Monitor tab

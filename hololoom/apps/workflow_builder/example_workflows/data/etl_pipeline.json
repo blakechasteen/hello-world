@@ -3,7 +3,7 @@
   "name": "Intelligent Data Pipeline (ETL)",
   "description": "A comprehensive ETL workflow for data ingestion, schema detection, quality validation, parallel transformations (cleaning, enrichment, normalization), error quarantine, and destination loading. Includes quality gates, data lineage tracking, and detailed processing metrics.",
   "tags": ["etl", "data-pipeline", "ingestion", "transformation", "quality", "lineage", "batch-processing"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-28",
   "nodes": [
     {

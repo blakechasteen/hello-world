@@ -18,8 +18,8 @@ import asyncio
 import logging
 from pathlib import Path
 
-from HoloLoom.infrastructure.sql import SQLConfig, create_sql_backend, load_mock_data
-from HoloLoom.infrastructure.mcp import (
+from hololoom.infrastructure.sql import SQLConfig, create_sql_backend, load_mock_data
+from hololoom.infrastructure.mcp import (
     MCPServer,
     MCPRequest,
     MCPResponse,

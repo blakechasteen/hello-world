@@ -298,8 +298,8 @@ class ThreadMerger:
 
         # Enhance with metaprompt (if available)
         try:
-            from HoloLoom.prompting import create_metaprompt
-            from HoloLoom.config import Config
+            from hololoom.prompting import create_metaprompt
+            from hololoom.config import Config
 
             config = Config.fast()
             config.llm_provider = "anthropic"  # Or configured provider
@@ -449,7 +449,7 @@ Format your response as a clear synthesis that captures the essential insights f
             return
 
         try:
-            from HoloLoom.memory.graph import KGEdge
+            from hololoom.memory.graph import KGEdge
 
             for source_id in source_ids:
                 edge = KGEdge(

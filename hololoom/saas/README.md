@@ -20,9 +20,9 @@ The SaaS toolkit is designed to be:
 
 ```python
 from fastapi import FastAPI, Depends
-from HoloLoom.saas import SaaSBackend, SaaSConfig, create_saas_backend
-from HoloLoom.saas.auth import validate_api_key, AuthContext
-from HoloLoom.saas.routes import customers_router, api_keys_router
+from hololoom.saas import SaaSBackend, SaaSConfig, create_saas_backend
+from hololoom.saas.auth import validate_api_key, AuthContext
+from hololoom.saas.routes import customers_router, api_keys_router
 
 app = FastAPI()
 
@@ -83,7 +83,7 @@ pip install stripe
 The `SaaSBackend` handles all database operations.
 
 ```python
-from HoloLoom.saas import SaaSBackend, SaaSConfig, create_saas_backend
+from hololoom.saas import SaaSBackend, SaaSConfig, create_saas_backend
 
 # Development (SQLite)
 config = SaaSConfig(
@@ -117,7 +117,7 @@ async with backend:
 Pydantic models for request/response validation.
 
 ```python
-from HoloLoom.saas import (
+from hololoom.saas import (
     # Requests
     SignupRequest,
     LoginRequest,
@@ -150,7 +150,7 @@ async def signup(request: SignupRequest):
 FastAPI dependency for protecting endpoints.
 
 ```python
-from HoloLoom.saas.auth import validate_api_key, AuthContext
+from hololoom.saas.auth import validate_api_key, AuthContext
 
 @app.get("/protected")
 async def protected(auth: AuthContext = Depends(validate_api_key)):
@@ -176,7 +176,7 @@ async def protected(auth: AuthContext = Depends(validate_api_key)):
 Pre-built FastAPI routers for common operations.
 
 ```python
-from HoloLoom.saas.routes import customers_router, api_keys_router, health_router
+from hololoom.saas.routes import customers_router, api_keys_router, health_router
 
 # Mount all routes
 app.include_router(customers_router, prefix="/api/v1/customers")
@@ -208,7 +208,7 @@ app.include_router(health_router)  # No prefix - standard paths
 ### SaaSConfig Options
 
 ```python
-from HoloLoom.saas import SaaSConfig
+from hololoom.saas import SaaSConfig
 
 config = SaaSConfig(
     # PostgreSQL settings
@@ -238,7 +238,7 @@ config = SaaSConfig(
 Default plans are defined in `models.py`:
 
 ```python
-from HoloLoom.saas import PLAN_CONFIGS, get_plan_config
+from hololoom.saas import PLAN_CONFIGS, get_plan_config
 
 # View available plans
 for plan_id, config in PLAN_CONFIGS.items():
@@ -265,9 +265,9 @@ For apps that don't need billing - just authentication and rate limiting.
 
 ```python
 from fastapi import FastAPI, Depends
-from HoloLoom.saas import create_saas_backend
-from HoloLoom.saas.auth import validate_api_key, AuthContext
-from HoloLoom.saas.routes import customers_router, api_keys_router
+from hololoom.saas import create_saas_backend
+from hololoom.saas.auth import validate_api_key, AuthContext
+from hololoom.saas.routes import customers_router, api_keys_router
 
 app = FastAPI()
 backend = create_saas_backend()
@@ -324,8 +324,8 @@ async def get_usage(auth: AuthContext = Depends(validate_api_key)):
 Complete billing integration (requires Stripe account).
 
 ```python
-# See HoloLoom/saas/stripe_client.py (coming soon)
-# and HoloLoom/saas/routes/billing.py
+# See hololoom/saas/stripe_client.py (coming soon)
+# and hololoom/saas/routes/billing.py
 ```
 
 ## Ecosystem Integration
@@ -338,10 +338,10 @@ Add authentication to HoloLoom Lite for hosted deployments:
 
 ```python
 from fastapi import FastAPI, Depends
-from HoloLoom.lite import HoloLoomLite
-from HoloLoom.saas import create_saas_backend
-from HoloLoom.saas.auth import validate_api_key, AuthContext
-from HoloLoom.saas.routes import customers_router, api_keys_router
+from hololoom.lite import HoloLoomLite
+from hololoom.saas import create_saas_backend
+from hololoom.saas.auth import validate_api_key, AuthContext
+from hololoom.saas.routes import customers_router, api_keys_router
 
 app = FastAPI()
 backend = create_saas_backend()
@@ -396,10 +396,10 @@ For multi-node deployments with community verification:
 
 ```python
 from fastapi import FastAPI
-from HoloLoom import HoloLoom
-from HoloLoom.federation import FederationNode, FederationConfig
-from HoloLoom.saas import create_saas_backend, SaaSConfig
-from HoloLoom.saas.routes import customers_router, api_keys_router, health_router
+from hololoom import hololoom
+from hololoom.federation import FederationNode, FederationConfig
+from hololoom.saas import create_saas_backend, SaaSConfig
+from hololoom.saas.routes import customers_router, api_keys_router, health_router
 
 app = FastAPI()
 
@@ -616,7 +616,7 @@ api_key, secret = await backend.create_api_key(
 For sensitive operations, use HMAC-SHA256 signing:
 
 ```python
-from HoloLoom.saas.auth import verify_request_signature
+from hololoom.saas.auth import verify_request_signature
 
 @app.post("/sensitive-operation")
 async def sensitive(request: Request, auth: AuthContext = Depends(validate_api_key)):
@@ -680,26 +680,26 @@ cd /path/to/mythRL
 export POSTGRES_PASSWORD=your_secure_password_here
 
 # Start PostgreSQL + SaaS API
-docker-compose -f HoloLoom/saas/docker-compose.yml up -d
+docker-compose -f hololoom/saas/docker-compose.yml up -d
 
 # Check status
-docker-compose -f HoloLoom/saas/docker-compose.yml ps
+docker-compose -f hololoom/saas/docker-compose.yml ps
 
 # View logs
-docker-compose -f HoloLoom/saas/docker-compose.yml logs -f api
+docker-compose -f hololoom/saas/docker-compose.yml logs -f api
 
 # Access API
 curl http://localhost:8000/health
 curl http://localhost:8000/health/detailed
 
 # Stop services
-docker-compose -f HoloLoom/saas/docker-compose.yml down
+docker-compose -f hololoom/saas/docker-compose.yml down
 ```
 
 4. **Build standalone Docker image**:
 ```bash
 # Build image
-docker build -t hololoom-saas -f HoloLoom/saas/Dockerfile .
+docker build -t hololoom-saas -f hololoom/saas/Dockerfile .
 
 # Run with SQLite (development)
 docker run -p 8000:8000 hololoom-saas
@@ -729,7 +729,7 @@ docker run -p 8000:8000 \
 
 ## Examples
 
-See `HoloLoom/saas/examples/` for complete examples:
+See `hololoom/saas/examples/` for complete examples:
 
 - `auth_only_app.py` - Minimal auth-only setup
 - `usage_tracking_app.py` - Auth + usage analytics
@@ -751,4 +751,4 @@ MIT License - Use freely in your HoloLoom ecosystem apps.
 
 - **Issues**: [GitHub Issues](https://github.com/anthropics/claude-code/issues)
 - **Documentation**: This file + inline docstrings
-- **Examples**: `HoloLoom/saas/examples/`
+- **Examples**: `hololoom/saas/examples/`

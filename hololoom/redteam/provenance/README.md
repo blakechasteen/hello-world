@@ -71,7 +71,7 @@ AttackScratchpad (collection)
 ### Basic Attack Tracking
 
 ```python
-from HoloLoom.redteam.provenance import AttackScratchpad, AttackStrategy, DefenseLayer
+from hololoom.redteam.provenance import AttackScratchpad, AttackStrategy, DefenseLayer
 
 scratchpad = AttackScratchpad()
 
@@ -377,7 +377,7 @@ print("Most Exploitable Strategy: ", summary['most_effective_strategy'])
 Run the test suite:
 
 ```bash
-pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v
+pytest hololoom/redteam/provenance/test_attack_scratchpad.py -v
 ```
 
 **Test Coverage:**
@@ -394,7 +394,7 @@ pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v
 Run the comprehensive demonstration:
 
 ```bash
-cd HoloLoom/redteam/provenance
+cd hololoom/redteam/provenance
 python demo_attack_provenance.py
 ```
 
@@ -422,8 +422,8 @@ Demonstrates:
 The Attack Scratchpad integrates with CARTS red team system:
 
 ```python
-from HoloLoom.redteam.carts import CARTSOrchestrator
-from HoloLoom.redteam.provenance import AttackScratchpad
+from hololoom.redteam.carts import CARTSOrchestrator
+from hololoom.redteam.provenance import AttackScratchpad
 
 orchestrator = CARTSOrchestrator()
 provenance = AttackScratchpad()

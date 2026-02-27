@@ -16,8 +16,8 @@ A **protocol-based memory system** that combines:
 
 ```python
 import asyncio
-from HoloLoom.memory.protocol import UnifiedMemoryInterface, Strategy
-from HoloLoom.memory.stores import InMemoryStore
+from hololoom.memory.protocol import UnifiedMemoryInterface, Strategy
+from hololoom.memory.stores import InMemoryStore
 
 async def main():
     # Create in-memory store (pure Python, no deps)
@@ -76,11 +76,11 @@ docker run -p 6333:6333 qdrant/qdrant
 
 ```python
 import asyncio
-from HoloLoom.memory.protocol import UnifiedMemoryInterface, Strategy
-from HoloLoom.memory.stores.mem0_store import Mem0MemoryStore
-from HoloLoom.memory.stores.neo4j_store import Neo4jMemoryStore
-from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
-from HoloLoom.memory.stores.hybrid_store import HybridMemoryStore, BackendConfig
+from hololoom.memory.protocol import UnifiedMemoryInterface, Strategy
+from hololoom.memory.stores.mem0_store import Mem0MemoryStore
+from hololoom.memory.stores.neo4j_store import Neo4jMemoryStore
+from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
+from hololoom.memory.stores.hybrid_store import HybridMemoryStore, BackendConfig
 
 async def main():
     # Create backends
@@ -168,7 +168,7 @@ memory = UnifiedMemoryInterface(store=store)  # Same API!
 ### 2. **Graceful Degradation** (Auto-Fallback)
 
 ```python
-from HoloLoom.memory.protocol import create_unified_memory
+from hololoom.memory.protocol import create_unified_memory
 
 # Factory tries backends in order, falls back to in-memory
 memory = await create_unified_memory(user_id="blake")
@@ -188,7 +188,7 @@ health = await memory.health_check()
 ### 4. **Multi-Strategy Retrieval**
 
 ```python
-from HoloLoom.memory.protocol import Strategy
+from hololoom.memory.protocol import Strategy
 
 # Different strategies for different needs
 recent = await memory.recall("query", strategy=Strategy.TEMPORAL)  # Recent
@@ -202,7 +202,7 @@ fused = await memory.recall("query", strategy=Strategy.FUSED)  # Combined
 ## 📁 **File Structure**
 
 ```
-HoloLoom/memory/
+hololoom/memory/
 ├── protocol.py              # Protocols + UnifiedMemoryInterface
 ├── stores/
 │   ├── __init__.py
@@ -213,7 +213,7 @@ HoloLoom/memory/
 │   └── hybrid_store.py      # Fusion logic
 └── ...
 
-HoloLoom/examples/
+hololoom/examples/
 └── unified_memory_demo.py   # Complete working examples
 ```
 
@@ -353,7 +353,7 @@ The system gracefully degrades to InMemoryStore if all backends fail. Check logs
 
 1. **Run the demo**:
    ```bash
-   python HoloLoom/examples/unified_memory_demo.py
+   python hololoom/examples/unified_memory_demo.py
    ```
 
 2. **Try simple example** (no dependencies):

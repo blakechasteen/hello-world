@@ -10,7 +10,7 @@ Predicts which queries will need retries and proactively adjusts:
 - Early warning for low-quality responses
 
 Usage:
-    from HoloLoom.apps.chatops.predictive_quality import PredictiveQualitySystem
+    from hololoom.apps.chatops.predictive_quality import PredictiveQualitySystem
 
     system = PredictiveQualitySystem()
 

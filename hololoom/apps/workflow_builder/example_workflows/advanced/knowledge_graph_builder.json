@@ -3,7 +3,7 @@
   "name": "Knowledge Graph Builder",
   "description": "Progressive knowledge graph construction from unstructured content. Extracts entities, relationships, and builds queryable graph structure with iterative enrichment.",
   "tags": ["graph", "entity-extraction", "progressive", "knowledge-base"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-23",
 
   "nodes": [

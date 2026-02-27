@@ -2,7 +2,7 @@
                     HOLOLOOM WORKER MODULE FILES
 ================================================================================
 
-Location: HoloLoom/portal/node_daemon/
+Location: hololoom/portal/node_daemon/
 Created: 2025-12-03 22:44 UTC
 
 ================================================================================

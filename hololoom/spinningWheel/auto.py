@@ -7,7 +7,7 @@ Everything is a memory operation.
 Philosophy: "If you need to configure it, we failed."
 
 Usage:
-    from HoloLoom.spinningWheel import spin
+    from hololoom.spinningWheel import spin
 
     # Ingest anything into memory
     memory = await spin("My thoughts on bee survival...")
@@ -63,7 +63,7 @@ async def spin(
         Memory backend with data ingested (or shards if return_shards=True)
 
     Examples:
-        >>> from HoloLoom.spinningWheel import spin
+        >>> from hololoom.spinningWheel import spin
 
         # Text
         >>> memory = await spin("My research notes on bee colonies...")
@@ -93,7 +93,7 @@ async def spin(
     except Exception as e:
         print(f"[spin] Warning: Processing failed: {e}")
         # Create minimal error shard
-        from HoloLoom.protocols.types import MemoryShard
+        from hololoom.protocols.types import MemoryShard
         shards = [MemoryShard(
             id=f"error_{hash(str(source)[:100])}",
             text=f"Error processing input: {str(e)}",
@@ -123,8 +123,8 @@ async def spin(
 async def _create_auto_memory():
     """Create automatic in-memory backend."""
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
-        from HoloLoom.config import Config, MemoryBackend
+        from hololoom.memory.backend_factory import create_memory_backend
+        from hololoom.config import Config, MemoryBackend
 
         # Create INMEMORY backend (always works, no dependencies)
         config = Config.bare()
@@ -153,7 +153,7 @@ async def _ingest_shards(memory, shards):
 
     # Try KG graph backend (HoloLoom.memory.graph.KG)
     if hasattr(memory, 'add_edge') and hasattr(memory, 'G'):
-        from HoloLoom.memory.graph import KGEdge
+        from hololoom.memory.graph import KGEdge
 
         for shard in shards:
             shard_id = f"shard_{shard.id}"
@@ -386,7 +386,7 @@ async def spin_directory(
 
 
 # ============================================================================
-# Query Extraction (from HoloLoom queries)
+# Query Extraction (from hololoom queries)
 # ============================================================================
 
 async def spin_from_query(
@@ -415,14 +415,14 @@ async def spin_from_query(
     """
     # Create orchestrator if needed
     if orchestrator is None:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
 
         config = Config.fast()
         orchestrator = WeavingOrchestrator(cfg=config)
 
     # Execute query
-    from HoloLoom.protocols.types import Query
+    from hololoom.protocols.types import Query
     spacetime = await orchestrator.weave(Query(text=query_text))
 
     # Extract response as text to ingest

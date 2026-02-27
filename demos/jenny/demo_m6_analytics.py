@@ -18,7 +18,7 @@ from demos.jenny import register_demo, demo_phase
 
 # Jenny imports
 try:
-    from HoloLoom.visualization.jenny_analytics import (
+    from hololoom.visualization.jenny_analytics import (
         JennyAnalytics,
         RenderEvent,
         CompileEvent,

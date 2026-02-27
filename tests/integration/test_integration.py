@@ -21,9 +21,9 @@ def test_file_memory_store():
     print("="*60)
 
     try:
-        from HoloLoom.memory.stores.file_store import FileMemoryStore
-        from HoloLoom.memory.protocol import Memory
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.memory.stores.file_store import FileMemoryStore
+        from hololoom.memory.protocol import Memory
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         # Create embedder
         print("  Creating embedder...")
@@ -70,7 +70,7 @@ def test_file_memory_store():
         print("  Testing retrieval...")
 
         async def test_retrieval():
-            from HoloLoom.memory.protocol import MemoryQuery, Strategy
+            from hololoom.memory.protocol import MemoryQuery, Strategy
             query = MemoryQuery(text="What is Python?", limit=2)
             result = await store.retrieve(query, strategy=Strategy.FUSED)
             return result
@@ -105,7 +105,7 @@ def test_hybrid_memory():
     print("="*60)
 
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
 
         print("  Initializing weaving orchestrator...")
         weaver = WeavingOrchestrator(
@@ -166,7 +166,7 @@ def test_weaving_orchestrator():
     print("="*60)
 
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
 
         print("  Creating orchestrator...")
         weaver = WeavingOrchestrator(

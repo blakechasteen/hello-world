@@ -9,7 +9,7 @@ import time
 # Import EGGROLL components
 # Note: In a real app, we'd run the integration in a separate thread/process
 # and communicate via queues. For this demo, we'll simulate the loop steps.
-from HoloLoom.eggroll.integration import EggrollIntegration
+from hololoom.eggroll.integration import EggrollIntegration
 
 class DreamCatcherApp(App):
     """EGGROLL Dream Catcher TUI"""

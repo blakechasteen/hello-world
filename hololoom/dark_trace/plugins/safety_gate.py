@@ -25,7 +25,7 @@ Research Foundation:
 - Defense in depth (multiple validation layers)
 
 Usage:
-    from HoloLoom.dark_trace.plugins.safety_gate import (
+    from hololoom.dark_trace.plugins.safety_gate import (
         PluginSafetyGate,
         TrustLevel,
         PluginCapability,
@@ -52,9 +52,9 @@ from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.plugins.interface import DarkTracePlugin, PluginMetadata
+    from hololoom.dark_trace.plugins.interface import DarkTracePlugin, PluginMetadata
 
-logger = logging.getLogger("HoloLoom.dark_trace.plugins.safety_gate")
+logger = logging.getLogger("hololoom.dark_trace.plugins.safety_gate")
 
 
 # =============================================================================
@@ -653,7 +653,7 @@ class PluginSafetyGate:
 
         try:
             # Create an action request for the guardrails
-            from HoloLoom.alignment import ActionRequest, ActionCategory
+            from hololoom.alignment import ActionRequest, ActionCategory
 
             request = ActionRequest(
                 action=f"register_plugin:{metadata.name}",
@@ -729,7 +729,7 @@ class PluginSafetyGate:
         # Optional runtime check via guardrails
         if self._guardrails is not None:
             try:
-                from HoloLoom.alignment import ActionRequest, ActionCategory
+                from hololoom.alignment import ActionRequest, ActionCategory
 
                 # Map capability to action category
                 category_map = {

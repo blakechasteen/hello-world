@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 # Run with SQLite backend (everything in-memory/local)
 PYTHONPATH=. python -c "
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 import asyncio
 
 async def main():
@@ -58,7 +58,7 @@ curl http://localhost:8000/health
 Best for: Local development, testing, demos
 
 ```python
-from HoloLoom.saas import SaaSConfig, create_saas_backend
+from hololoom.saas import SaaSConfig, create_saas_backend
 
 # Zero dependencies - just works
 config = SaaSConfig.auth_only(
@@ -82,7 +82,7 @@ Best for: Small to medium deployments, single-server setups
 
 ```bash
 # Start all services
-docker-compose -f HoloLoom/docker-compose.yml up -d
+docker-compose -f hololoom/docker-compose.yml up -d
 
 # Check health
 docker-compose ps
@@ -133,7 +133,7 @@ kubectl get pods -n hololoom
 ### SaaS Backend Configuration
 
 ```python
-from HoloLoom.saas import SaaSConfig, create_saas_backend
+from hololoom.saas import SaaSConfig, create_saas_backend
 
 # Development (SQLite, auth only)
 config = SaaSConfig.auth_only(
@@ -164,7 +164,7 @@ backend = create_saas_backend(config)
 ### Memory Backend Configuration
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 # In-memory (development)
 config = Config.fast()
@@ -401,10 +401,10 @@ Import the SaaS health dashboard:
 
 ```bash
 # SaaS-specific dashboard
-HoloLoom/saas/dashboards/saas_health.json
+hololoom/saas/dashboards/saas_health.json
 
 # ChatOps job monitoring
-HoloLoom/chatops/dashboards/hololoom_jobs.json
+hololoom/chatops/dashboards/hololoom_jobs.json
 ```
 
 **Dashboard Panels:**
@@ -471,7 +471,7 @@ docker restart hololoom-qdrant
 export PYTHONPATH=/path/to/hololoom
 
 # Or run with explicit path
-PYTHONPATH=. python -m HoloLoom.server.agentic_api
+PYTHONPATH=. python -m hololoom.server.agentic_api
 ```
 
 ### Memory issues

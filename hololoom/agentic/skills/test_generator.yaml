@@ -9,7 +9,7 @@ description: "Generate comprehensive test cases with high coverage"
 metadata:
   category: "development"
   tags: ["testing", "test-cases", "coverage", "quality-assurance"]
-  author: "HoloLoom Agent System"
+  author: "hololoom Agent System"
   created: "2025-11-16"
 
 # Recursive reasoning configuration

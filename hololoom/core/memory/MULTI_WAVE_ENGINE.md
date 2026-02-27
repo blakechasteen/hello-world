@@ -1,7 +1,7 @@
 # Multi-Wave Memory Engine - Brain Wave Inspired Consolidation
 
 **Status**: Production Ready (October 2025)
-**Location**: `HoloLoom/memory/multi_wave_engine.py` (623 lines)
+**Location**: `hololoom/memory/multi_wave_engine.py` (623 lines)
 **Modes**: 5 brain wave states (Beta, Alpha, Theta, Delta, REM)
 
 Brain wave-inspired memory consolidation system that automatically switches modes based on system activity.
@@ -25,7 +25,7 @@ This enables automatic memory optimization without explicit garbage collection o
 ## Quick Start
 
 ```python
-from HoloLoom.memory.multi_wave_engine import MultiWaveMemoryEngine, BrainWaveMode
+from hololoom.memory.multi_wave_engine import MultiWaveMemoryEngine, BrainWaveMode
 import numpy as np
 
 # Create engine
@@ -223,7 +223,7 @@ class MultiWaveMemoryEngine(SpringDynamicsEngine):
 Ingest data from SpinningWheel sources while maintaining BETA mode:
 
 ```python
-from HoloLoom.spinningWheel import YouTubeSpinner
+from hololoom.spinningWheel import YouTubeSpinner
 
 # Create async shard stream
 async def shard_generator():
@@ -290,7 +290,7 @@ Multi-Wave Engine is used internally by:
 You typically don't interact with it directly:
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     # Multi-wave engine runs in background

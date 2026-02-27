@@ -17,7 +17,7 @@ import logging
 import math
 import uuid
 
-from HoloLoom.spatial.math_types import Vector3, Quaternion, Color, Transform, BoundingBox
+from hololoom.spatial.math_types import Vector3, Quaternion, Color, Transform, BoundingBox
 
 logger = logging.getLogger(__name__)
 
@@ -690,7 +690,7 @@ class KnowledgeOverlayManager:
         relationships: List[Dict[str, Any]]
     ) -> Tuple[List[KnowledgeNodeOverlay], List[KnowledgeEdgeOverlay]]:
         """
-        Create overlays from HoloLoom knowledge graph data.
+        Create overlays from hololoom knowledge graph data.
 
         Args:
             knowledge_nodes: List of knowledge node dictionaries with:

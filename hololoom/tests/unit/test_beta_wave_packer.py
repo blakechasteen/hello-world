@@ -22,13 +22,13 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from HoloLoom.memory.awareness.beta_wave_packer import (
+from hololoom.memory.awareness.beta_wave_packer import (
     BetaWaveContextPacker,
     TokenBudget,
     ContextElement,
     PackedContext
 )
-from HoloLoom.memory.spring_dynamics_engine import (
+from hololoom.memory.spring_dynamics_engine import (
     SpringDynamicsEngine,
     SpringEngineConfig,
     MemoryNode,
@@ -454,7 +454,7 @@ class TestCompressionStrategies:
 
     def test_compression_reduces_size(self):
         """Compression should reduce token count"""
-        from HoloLoom.awareness.beta_wave_packer import BetaWaveContextPacker
+        from hololoom.awareness.beta_wave_packer import BetaWaveContextPacker
 
         packer = BetaWaveContextPacker(None, None)  # Don't need engine for this test
 
@@ -467,7 +467,7 @@ class TestCompressionStrategies:
 
     def test_compression_ratio_respected(self):
         """Different ratios should produce different sizes"""
-        from HoloLoom.awareness.beta_wave_packer import BetaWaveContextPacker
+        from hololoom.awareness.beta_wave_packer import BetaWaveContextPacker
 
         packer = BetaWaveContextPacker(None, None)
 

@@ -14,7 +14,7 @@ Features:
 - Workspace symbol search
 
 Quick Start:
-    from HoloLoom.lsp import server
+    from hololoom.lsp import server
     server.main()
 
 Or run as module:

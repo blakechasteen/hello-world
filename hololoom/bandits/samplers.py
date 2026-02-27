@@ -9,7 +9,7 @@ Single entry point for creating any Thompson Sampling model:
 - Deep Kernel GP-TS (neural embedding + GP)
 
 Example:
-    >>> from HoloLoom.bandits import create_thompson_sampler
+    >>> from hololoom.bandits import create_thompson_sampler
     >>>
     >>> # Discrete MAB
     >>> sampler = create_thompson_sampler("discrete", n_arms=5)
@@ -25,9 +25,9 @@ Example:
 """
 
 from typing import Literal, Any
-from HoloLoom.bandits.models.discrete_bernoulli import DiscreteBernoulliTS, create_discrete_ts
-from HoloLoom.bandits.models.bayes_linear import BayesianLinearTS, create_bayesian_linear_ts
-from HoloLoom.bandits.models.gp_ts import GaussianProcessTS, create_gp_ts
+from hololoom.bandits.models.discrete_bernoulli import DiscreteBernoulliTS, create_discrete_ts
+from hololoom.bandits.models.bayes_linear import BayesianLinearTS, create_bayesian_linear_ts
+from hololoom.bandits.models.gp_ts import GaussianProcessTS, create_gp_ts
 
 
 def create_thompson_sampler(
@@ -143,7 +143,7 @@ def create_thompson_sampler(
 
     elif sampler_type == "neural":
         # Neural bandit uses existing HoloLoom.bandits
-        from HoloLoom.bandits.config import BanditConfig, create_neural_ts_policy
+        from hololoom.bandits.config import BanditConfig, create_neural_ts_policy
 
         config = BanditConfig(**kwargs)
         return create_neural_ts_policy(config)

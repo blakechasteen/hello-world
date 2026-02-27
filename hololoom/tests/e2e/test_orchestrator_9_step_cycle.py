@@ -31,9 +31,9 @@ import asyncio
 from typing import List
 from datetime import datetime
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.protocols.types import Query, MemoryShard, Spacetime
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config, ExecutionMode
+from hololoom.protocols.types import Query, MemoryShard, Spacetime
 
 
 # ============================================================================

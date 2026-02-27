@@ -398,7 +398,7 @@ async def run_bootstrap():
     # Save RL state
     if orchestrator.math_pipeline:
         orchestrator.math_pipeline.selector._save_state()
-        print(f"RL state saved to: HoloLoom/warp/math/.smart_selector_state.json")
+        print(f"RL state saved to: hololoom/warp/math/.smart_selector_state.json")
 
     print()
     print("="*80)

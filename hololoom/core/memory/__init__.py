@@ -26,11 +26,11 @@ ReflectionBuffer = MemoryManager  # Learning loop - stores outcomes for improvem
 # Backward Compatibility Re-exports (December 2025 Consolidation)
 # =============================================================================
 # These directories were consolidated into memory/:
-#   - HoloLoom/awareness/ → HoloLoom/memory/awareness/
-#   - HoloLoom/memory_symphony/ → HoloLoom/memory/symphony/
-#   - HoloLoom/yarn/ → HoloLoom/memory/yarn/
+#   - hololoom/awareness/ → hololoom/memory/awareness/
+#   - hololoom/memory_symphony/ → hololoom/memory/symphony/
+#   - hololoom/yarn/ → hololoom/memory/yarn/
 #
-# Old import paths still work via HoloLoom/__init__.py shims.
+# Old import paths still work via hololoom/__init__.py shims.
 # =============================================================================
 
 # Re-export awareness module

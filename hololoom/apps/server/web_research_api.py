@@ -30,10 +30,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from HoloLoom.agentic import WebResearchOrchestrator, ReasoningMode
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.alignment.audit_trail import AuditTrail
+from hololoom.agentic import WebResearchOrchestrator, ReasoningMode
+from hololoom.config import Config
+from hololoom.protocols.types import MemoryShard
+from hololoom.alignment.audit_trail import AuditTrail
 
 
 logging.basicConfig(level=logging.INFO)
@@ -468,7 +468,7 @@ if __name__ == "__main__":
 
     logger.info("Starting HoloLoom Web Research API (development mode)...")
     uvicorn.run(
-        "HoloLoom.apps.server.web_research_api:app",
+        "hololoom.apps.server.web_research_api:app",
         host="0.0.0.0",
         port=8000,
         reload=True,

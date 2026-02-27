@@ -1,7 +1,7 @@
 # Chain of Verification (CoVe) Integration with MRF
 
 **Status**: ✅ Integration Guide (December 2025)
-**Location**: `HoloLoom/prompting/verification_integration.py`
+**Location**: `hololoom/prompting/verification_integration.py`
 **Purpose**: Enable Chain of Verification as an MRF refinement strategy
 
 ## Overview
@@ -19,8 +19,8 @@ When integrated with MRF (Metaprompting Refinement Framework), CoVe provides a p
 Add CoVe as an MRF refinement strategy:
 
 ```python
-from HoloLoom.prompting.verification_integration import enable_cove_for_mrf
-from HoloLoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategy
+from hololoom.prompting.verification_integration import enable_cove_for_mrf
+from hololoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategy
 
 # Create MRF engine
 mrf = UnifiedMRF(model_provider="claude")
@@ -44,7 +44,7 @@ print(f"Strategy: {result['strategy_used']}")  # Will be "cove" for verify mode
 Control when CoVe verification is triggered:
 
 ```python
-from HoloLoom.prompting.verification_integration import (
+from hololoom.prompting.verification_integration import (
     VerificationMRFBridge,
     VerificationConfig
 )
@@ -74,8 +74,8 @@ print(f"Quality improvement: {result.quality_improvement:.1%}")
 Track CoVe effectiveness in real-time:
 
 ```python
-from HoloLoom.prompting.analytics import create_dashboard
-from HoloLoom.prompting.verification_integration import create_verification_bridge
+from hololoom.prompting.analytics import create_dashboard
+from hololoom.prompting.verification_integration import create_verification_bridge
 
 # Create dashboard with verification tracking
 dashboard = create_dashboard(enable_learning=True)
@@ -110,7 +110,7 @@ dashboard.save_report("verification_dashboard.html")
 Compare CoVe verification with standard VERIFY refinement:
 
 ```python
-from HoloLoom.prompting.analytics import create_dashboard
+from hololoom.prompting.analytics import create_dashboard
 
 dashboard = create_dashboard(enable_ab_testing=True)
 
@@ -238,7 +238,7 @@ result = mrf.refine(
 ## Configuration Reference
 
 ```python
-from HoloLoom.prompting.verification_integration import VerificationConfig
+from hololoom.prompting.verification_integration import VerificationConfig
 
 # All configuration options
 config = VerificationConfig(
@@ -265,6 +265,6 @@ bridge = VerificationMRFBridge(config=config)
 
 ## Further Reading
 
-- **[HoloLoom/prompting/verification.py](HoloLoom/prompting/verification.py)** - Core CoVe implementation
-- **[HoloLoom/prompting/unified_mrf.py](HoloLoom/prompting/unified_mrf.py)** - MRF engine
+- **[hololoom/prompting/verification.py](hololoom/prompting/verification.py)** - Core CoVe implementation
+- **[hololoom/prompting/unified_mrf.py](hololoom/prompting/unified_mrf.py)** - MRF engine
 - **[demos/demo_cove_integration.py](demos/demo_cove_integration.py)** - Complete example

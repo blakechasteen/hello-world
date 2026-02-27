@@ -8,7 +8,7 @@ Tests Qdrant initialization to diagnose the issue.
 import sys
 sys.path.insert(0, 'c:/Users/blake/Documents/mythRL')
 
-from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
+from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
 
 print("\n" + "="*70)
 print("  QDRANT DIRECT CONNECTION TEST")

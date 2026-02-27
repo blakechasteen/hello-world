@@ -18,7 +18,7 @@ Directory structure:
         {node_id}.key  # Per-node private keys
 
 Usage:
-    from HoloLoom.portal.shared.pki import PKIManager
+    from hololoom.portal.shared.pki import PKIManager
 
     pki = PKIManager(certs_dir=Path("./certs"))
 

@@ -6,7 +6,7 @@ Self-constructing dashboards from Spacetime fabrics.
 Like Wolfram Alpha: Every query auto-generates its optimal visualization.
 
 Ruthlessly Elegant API:
-    from HoloLoom.visualization import auto
+    from hololoom.visualization import auto
 
     # One function. Zero configuration. Perfect dashboard.
     dashboard = auto(spacetime)

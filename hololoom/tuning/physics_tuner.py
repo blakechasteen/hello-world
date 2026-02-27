@@ -25,7 +25,7 @@ from collections import deque, defaultdict
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
-from HoloLoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
+from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
 
 # Parameter value ranges (5 arms each for continuous params)
 STIFFNESS_VALUES = [0.10, 0.40, 0.70, 1.00, 1.30]  # Spring stiffness

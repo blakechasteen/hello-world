@@ -750,9 +750,9 @@ class DefenseInDepth:
 ### Creating Your First Safe Agent
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails, AuditTrail
-from HoloLoom.agents import VerifiedAgent  # MANDATORY base class
-from HoloLoom.agentic import AgentCapability
+from hololoom.alignment import SafetyGuardrails, AuditTrail
+from hololoom.agents import VerifiedAgent  # MANDATORY base class
+from hololoom.agentic import AgentCapability
 
 # 1. Define your agent with capabilities
 # MUST inherit from VerifiedAgent (not AgentProtocol)
@@ -793,7 +793,7 @@ class MyAgent(VerifiedAgent):
         return result
 
 # 2. Register with ENFORCED policies
-from HoloLoom.agents import register_enforced_agent
+from hololoom.agents import register_enforced_agent
 
 @register_enforced_agent(
     capabilities={AgentCapability.CODE_ASSISTANCE, AgentCapability.QUALITY_ASSURANCE},
@@ -815,7 +815,7 @@ class MyProductionAgent(VerifiedAgent):
     pass
 
 # 3. Use via capability-based routing
-from HoloLoom.agents import get_agent_for_capability
+from hololoom.agents import get_agent_for_capability
 
 agent = get_agent_for_capability(AgentCapability.CODE_ASSISTANCE)
 result = await agent.execute(request)  # All checks happen automatically
@@ -826,7 +826,7 @@ result = await agent.execute(request)  # All checks happen automatically
 Every agent decision is logged with complete provenance. **Logs cannot be modified by agents.**
 
 ```python
-from HoloLoom.alignment import AuditTrail, DecisionType
+from hololoom.alignment import AuditTrail, DecisionType
 
 audit = AuditTrail()
 
@@ -967,28 +967,28 @@ The 4-layer alignment stack adds minimal overhead:
 ## Key Files
 
 ### Alignment (Foundation)
-- `HoloLoom/alignment/safety_guardrails.py` - Risk gating
-- `HoloLoom/alignment/deception_detection.py` - Goal transparency
-- `HoloLoom/alignment/instrumental_convergence.py` - Power-seeking prevention
-- `HoloLoom/alignment/audit_trail.py` - Complete provenance
-- `HoloLoom/alignment/kill_switch.py` - Emergency shutdown
-- `HoloLoom/alignment/circuit_breaker.py` - Failure containment
+- `hololoom/alignment/safety_guardrails.py` - Risk gating
+- `hololoom/alignment/deception_detection.py` - Goal transparency
+- `hololoom/alignment/instrumental_convergence.py` - Power-seeking prevention
+- `hololoom/alignment/audit_trail.py` - Complete provenance
+- `hololoom/alignment/kill_switch.py` - Emergency shutdown
+- `hololoom/alignment/circuit_breaker.py` - Failure containment
 
 ### Agent Infrastructure
-- `HoloLoom/agents/orchestrator.py` - MCTS orchestration
-- `HoloLoom/agents/working_memory.py` - Trinity substrate
-- `HoloLoom/agents/verified_agent.py` - Mandatory base class
-- `HoloLoom/agents/authenticator.py` - Zero-trust auth
+- `hololoom/agents/orchestrator.py` - MCTS orchestration
+- `hololoom/agents/working_memory.py` - Trinity substrate
+- `hololoom/agents/verified_agent.py` - Mandatory base class
+- `hololoom/agents/authenticator.py` - Zero-trust auth
 
 ### Capability Routing
 - `.claude/skills/domain/ritual/agent_registration.py` - Capability registry
-- `HoloLoom/agentic/core.py` - Agentic reasoning
-- `HoloLoom/agentic/capability_enforcer.py` - Runtime enforcement
+- `hololoom/agentic/core.py` - Agentic reasoning
+- `hololoom/agentic/capability_enforcer.py` - Runtime enforcement
 
 ### MRF (Prompt Enhancement)
-- `HoloLoom/prompting/unified_mrf.py` - 7-component framework
-- `HoloLoom/prompting/sanitizer.py` - Injection defense
-- `HoloLoom/prompting/adapters.py` - Model-specific optimization
+- `hololoom/prompting/unified_mrf.py` - 7-component framework
+- `hololoom/prompting/sanitizer.py` - Injection defense
+- `hololoom/prompting/adapters.py` - Model-specific optimization
 
 ---
 

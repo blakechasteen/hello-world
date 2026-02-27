@@ -10,7 +10,7 @@ Coordinate multiple specialized bots for complex tasks:
 - Consensus building
 
 Usage:
-    from HoloLoom.apps.chatops.multi_agent import MultiAgentSystem, AgentRole
+    from hololoom.apps.chatops.multi_agent import MultiAgentSystem, AgentRole
 
     system = MultiAgentSystem()
 

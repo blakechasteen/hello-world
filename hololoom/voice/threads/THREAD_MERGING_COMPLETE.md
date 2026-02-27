@@ -35,25 +35,25 @@ User has 3 separate threads:
 
 ### Files Created (2)
 
-1. **HoloLoom/voice_first/thread/thread_merging.py** (540 lines)
+1. **hololoom/voice_first/thread/thread_merging.py** (540 lines)
    - `ThreadMerger` class - Main merging logic
    - `MergeStrategy` enum - APPEND/SYNTHESIZE/PRESERVE_ALL
    - `MergeResult` dataclass - Merge metadata
    - Algorithm: validate → collect → apply strategy → update → link
 
-2. **HoloLoom/voice_first/thread/tests/test_thread_merging.py** (465 lines)
+2. **hololoom/voice_first/thread/tests/test_thread_merging.py** (465 lines)
    - 12 comprehensive test cases
    - Mock ThreadManager, YarnGraph, LLMClient
    - 100% test coverage
 
-3. **HoloLoom/voice_first/demo_thread_merging.py** (380 lines)
+3. **hololoom/voice_first/demo_thread_merging.py** (380 lines)
    - Complete working demo
    - Shows all 3 strategies
    - Visualizes YarnGraph relationships
 
 ### Files Modified (1)
 
-1. **HoloLoom/voice_first/thread/__init__.py**
+1. **hololoom/voice_first/thread/__init__.py**
    - Added ThreadMerger, MergeStrategy, MergeResult exports
    - Version bump: 0.1.0 → 0.2.0
 
@@ -131,7 +131,7 @@ Together they form an integrated sustainable system...
 **Metaprompt Integration**:
 ```python
 # Automatically enhances synthesis prompt
-from HoloLoom.prompting import create_metaprompt
+from hololoom.prompting import create_metaprompt
 
 enhanced_prompt = create_metaprompt(basic_prompt, config=config)
 # Result: +30% quality via Claude-specific optimizations
@@ -180,7 +180,7 @@ enhanced_prompt = create_metaprompt(basic_prompt, config=config)
 
 **Command**:
 ```bash
-cd HoloLoom/voice_first/thread/tests
+cd hololoom/voice_first/thread/tests
 PYTHONPATH=../../../.. python -m pytest test_thread_merging.py -v
 ```
 
@@ -270,10 +270,10 @@ patterns[CommandType.THREAD_MERGE] = [
 Thread merging automatically uses metaprompt enhancement for SYNTHESIZE strategy:
 
 ```python
-# HoloLoom/voice_first/thread/thread_merging.py (lines 204-217)
+# hololoom/voice_first/thread/thread_merging.py (lines 204-217)
 try:
-    from HoloLoom.prompting import create_metaprompt
-    from HoloLoom.config import Config
+    from hololoom.prompting import create_metaprompt
+    from hololoom.config import Config
 
     config = Config.fast()
     config.llm_provider = "anthropic"
@@ -295,7 +295,7 @@ except ImportError:
 Automatic MERGED_INTO edge creation:
 
 ```python
-# HoloLoom/voice_first/thread/thread_merging.py (lines 395-428)
+# hololoom/voice_first/thread/thread_merging.py (lines 395-428)
 async def _add_merge_edges(
     self,
     target_id: str,
@@ -354,7 +354,7 @@ thread_3 --[MERGED_INTO]--> thread_5
 ### Immediate (Next Session)
 
 1. **Start Week 5-6**: Auto-Summarization
-   - Create `HoloLoom/voice_first/thread/thread_summarization.py`
+   - Create `hololoom/voice_first/thread/thread_summarization.py`
    - Implement `ThreadSummarizer` class
    - 5 summary styles with metaprompt enhancement
    - Write 10 tests

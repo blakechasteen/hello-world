@@ -110,15 +110,15 @@ The HoloLoom Red Team Swarm System is a **multi-agent offensive security platfor
 
 ```bash
 # Ensure you're in the repository root
-cd HoloLoom/redteam/swarm
+cd hololoom/redteam/swarm
 ```
 
 ### Create Agent
 
 ```python
-from HoloLoom.redteam.swarm.agent_base import BaseAgent
-from HoloLoom.redteam.swarm.communication import MessageBus
-from HoloLoom.redteam.swarm.protocols import AgentRole, AgentTask
+from hololoom.redteam.swarm.agent_base import BaseAgent
+from hololoom.redteam.swarm.communication import MessageBus
+from hololoom.redteam.swarm.protocols import AgentRole, AgentTask
 
 # Create message bus
 bus = MessageBus()
@@ -154,7 +154,7 @@ async with agent:
 ## Files & Structure
 
 ```
-HoloLoom/redteam/swarm/
+hololoom/redteam/swarm/
 ├── protocols.py                              # Wave 1: Interfaces & data
 ├── communication.py                          # Wave 1: MessageBus
 ├── agent_base.py                             # Wave 2: Agent base class ✅
@@ -291,13 +291,13 @@ metrics = agent.get_metrics()
 
 ```bash
 # Run all tests with verbose output
-pytest HoloLoom/redteam/swarm/tests/ -v
+pytest hololoom/redteam/swarm/tests/ -v
 
 # Run specific test
-pytest HoloLoom/redteam/swarm/tests/test_agent_base.py::test_agent_lifecycle -v
+pytest hololoom/redteam/swarm/tests/test_agent_base.py::test_agent_lifecycle -v
 
 # Run with coverage report
-pytest HoloLoom/redteam/swarm/tests/ --cov --cov-report=html
+pytest hololoom/redteam/swarm/tests/ --cov --cov-report=html
 
 # Expected: 30+ tests PASSED
 ```

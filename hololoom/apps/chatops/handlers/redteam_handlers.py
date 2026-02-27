@@ -42,9 +42,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Red team components
 try:
-    from HoloLoom.redteam.orchestrator import RedTeamOrchestrator, RedTeamConfig
-    from HoloLoom.redteam.executor import AttackExecutor, AttackResult, AttackStrategy
-    from HoloLoom.redteam.bandit import RedTeamBandit, BanditStatistics
+    from hololoom.redteam.orchestrator import RedTeamOrchestrator, RedTeamConfig
+    from hololoom.redteam.executor import AttackExecutor, AttackResult, AttackStrategy
+    from hololoom.redteam.bandit import RedTeamBandit, BanditStatistics
     REDTEAM_AVAILABLE = True
 except ImportError:
     REDTEAM_AVAILABLE = False
@@ -57,15 +57,15 @@ except ImportError:
     BanditStatistics = None
 
 # Handler registry
-from HoloLoom.apps.chatops.handlers.handler_registry import (
+from hololoom.apps.chatops.handlers.handler_registry import (
     HandlerRegistry, HandlerCategory, chatops_handler
 )
 
 # Alignment framework imports (graceful degradation if unavailable)
 try:
-    from HoloLoom.alignment import create_guardrails, create_audit_trail
-    from HoloLoom.alignment.safety_guardrails import ActionRequest, ActionCategory
-    from HoloLoom.alignment.audit_trail import DecisionType, OutcomeType
+    from hololoom.alignment import create_guardrails, create_audit_trail
+    from hololoom.alignment.safety_guardrails import ActionRequest, ActionCategory
+    from hololoom.alignment.audit_trail import DecisionType, OutcomeType
     ALIGNMENT_AVAILABLE = True
 except ImportError:
     ALIGNMENT_AVAILABLE = False
@@ -924,8 +924,8 @@ Features:
 - Automatic learning and strategy optimization
 
 To use:
-    from HoloLoom.apps.chatops.core.matrix_bot import MatrixBot
-    from HoloLoom.apps.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
+    from hololoom.apps.chatops.core.matrix_bot import MatrixBot
+    from hololoom.apps.chatops.handlers.redteam_handlers import RedTeamMatrixHandlers
 
     bot = MatrixBot(config)
     handlers = RedTeamMatrixHandlers(bot)

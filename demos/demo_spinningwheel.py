@@ -68,7 +68,7 @@ def print_shard_summary(shards):
 
 async def demo_text_spinner():
     """Demo: TextSpinner - Process plain text documents."""
-    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
+    from hololoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     print_section("TextSpinner Demo: Plain Text Processing")
 
@@ -105,7 +105,7 @@ async def demo_text_spinner():
 
 async def demo_website_spinner():
     """Demo: WebsiteSpinner - Scrape web content."""
-    from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+    from hololoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
 
     print_section("WebsiteSpinner Demo: Web Content Extraction")
 
@@ -140,7 +140,7 @@ async def demo_website_spinner():
 
 async def demo_pdf_spinner():
     """Demo: PDFSpinner - Extract text from PDFs."""
-    from HoloLoom.spinning_wheel.pdf import PDFSpinner, PDFSpinnerConfig
+    from hololoom.spinning_wheel.pdf import PDFSpinner, PDFSpinnerConfig
 
     print_section("PDFSpinner Demo: PDF Document Processing")
 
@@ -167,7 +167,7 @@ async def demo_pdf_spinner():
 
 async def demo_youtube_spinner():
     """Demo: YouTubeSpinner - Extract video transcripts."""
-    from HoloLoom.spinning_wheel.youtube import YouTubeSpinner, YouTubeSpinnerConfig
+    from hololoom.spinning_wheel.youtube import YouTubeSpinner, YouTubeSpinnerConfig
 
     print_section("YouTubeSpinner Demo: Video Transcript Extraction")
 
@@ -195,7 +195,7 @@ async def demo_youtube_spinner():
 
 async def demo_batch_ingestion():
     """Demo: Batch ingestion utilities."""
-    from HoloLoom.spinning_wheel.batch_utils import batch_ingest_urls, BatchConfig
+    from hololoom.spinning_wheel.batch_utils import batch_ingest_urls, BatchConfig
 
     print_section("Batch Ingestion Demo: Parallel Processing")
 
@@ -235,7 +235,7 @@ async def demo_batch_ingestion():
 
 async def demo_performance_benchmark():
     """Demo: Performance benchmarking."""
-    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
+    from hololoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     print_section("Performance Benchmark")
 
@@ -261,9 +261,9 @@ async def demo_orchestrator_integration():
     print_info("Example: End-to-end pipeline (Spinner → Memory → Orchestrator)")
 
     try:
-        from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.memory.protocol import shards_to_memories
+        from hololoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.memory.protocol import shards_to_memories
 
         print_info("Step 1: Generate shards from text")
         spinner = TextSpinner(TextSpinnerConfig())
@@ -326,9 +326,9 @@ async def run_all_demos():
     print_info("  - Integration with HoloLoom orchestrator")
     print_info("  - High-performance throughput (20K+ items/sec)")
     print_info("\nNext Steps:")
-    print_info("  - Try running individual spinners: see HoloLoom/spinningWheel/examples/")
-    print_info("  - Explore batch utilities: HoloLoom/spinningWheel/batch_utils.py")
-    print_info("  - Integration tests: python HoloLoom/spinningWheel/tests/test_integration.py")
+    print_info("  - Try running individual spinners: see hololoom/spinningWheel/examples/")
+    print_info("  - Explore batch utilities: hololoom/spinningWheel/batch_utils.py")
+    print_info("  - Integration tests: python hololoom/spinningWheel/tests/test_integration.py")
 
 
 if __name__ == '__main__':

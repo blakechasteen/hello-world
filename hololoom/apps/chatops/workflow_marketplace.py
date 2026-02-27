@@ -11,7 +11,7 @@ Platform for sharing and discovering reusable workflow templates:
 - Community contributions
 
 Usage:
-    from HoloLoom.apps.chatops.workflow_marketplace import WorkflowMarketplace
+    from hololoom.apps.chatops.workflow_marketplace import WorkflowMarketplace
 
     marketplace = WorkflowMarketplace()
 

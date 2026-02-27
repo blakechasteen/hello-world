@@ -20,16 +20,16 @@ from datetime import datetime
 from typing import List, Dict
 
 # Core imports
-from HoloLoom.warp.space import WarpSpace
-from HoloLoom.warp.advanced import (
+from hololoom.warp.space import WarpSpace
+from hololoom.warp.advanced import (
     RiemannianManifold,
     TensorDecomposer,
     QuantumWarpOperations,
     FisherInformationGeometry
 )
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -230,7 +230,7 @@ async def demo_3_gpu_chat():
 
     # Check GPU availability
     try:
-        from HoloLoom.warp.optimized import GPUWarpSpace
+        from hololoom.warp.optimized import GPUWarpSpace
         import torch
 
         if torch.cuda.is_available():

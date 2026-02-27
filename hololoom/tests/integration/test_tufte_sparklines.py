@@ -12,8 +12,8 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Dict, List
 
-from HoloLoom.visualization.constructor import DashboardConstructor
-from HoloLoom.visualization.html_renderer import save_dashboard
+from hololoom.visualization.constructor import DashboardConstructor
+from hololoom.visualization.html_renderer import save_dashboard
 
 
 @dataclass
@@ -189,7 +189,7 @@ def test_sparkline_html_rendering():
     constructor = DashboardConstructor()
     dashboard = constructor.construct(spacetime)
 
-    from HoloLoom.visualization.html_renderer import HTMLRenderer
+    from hololoom.visualization.html_renderer import HTMLRenderer
     renderer = HTMLRenderer()
     html = renderer.render(dashboard)
 
@@ -223,7 +223,7 @@ def test_sparkline_svg_generation():
     print('\n[TEST 5] SVG Path Generation')
     print('=' * 70)
 
-    from HoloLoom.visualization.html_renderer import HTMLRenderer
+    from hololoom.visualization.html_renderer import HTMLRenderer
     renderer = HTMLRenderer()
 
     # Test with sample data
@@ -251,7 +251,7 @@ def test_sparkline_empty_trend():
     print('\n[TEST 6] Sparkline Omitted When No Trend')
     print('=' * 70)
 
-    from HoloLoom.visualization.html_renderer import HTMLRenderer
+    from hololoom.visualization.html_renderer import HTMLRenderer
     renderer = HTMLRenderer()
 
     # Test with empty list

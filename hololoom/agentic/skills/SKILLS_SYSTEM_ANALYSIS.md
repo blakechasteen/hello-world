@@ -2,7 +2,7 @@
 
 **Date**: 2025-11-22
 **Framework**: 10-Step Metaprompting Framework for Strategic Decision-Making
-**Context**: User opened `HoloLoom/agentic/skills/__init__.py` - discovered broken imports
+**Context**: User opened `hololoom/agentic/skills/__init__.py` - discovered broken imports
 
 ---
 
@@ -56,13 +56,13 @@
 **Two Competing Designs**:
 
 1. **Design A**: `skill_agents.py` (Complete, Working)
-   - Location: `HoloLoom/agentic/skill_agents.py`
+   - Location: `hololoom/agentic/skill_agents.py`
    - API: `SkillRegistry`, `SkillExecutor`, `execute_skill()`
    - Status: ✅ Production-ready
    - Integration: RecursiveWeavingOrchestrator
 
 2. **Design B**: `skills/__init__.py` (Broken, Aspirational)
-   - Location: `HoloLoom/agentic/skills/__init__.py`
+   - Location: `hololoom/agentic/skills/__init__.py`
    - API: `SkillLoader`, `PackageManager`, `quick_export()`
    - Status: ❌ Imports don't exist
    - Integration: AgenticOrchestrator (referenced but not implemented)
@@ -83,7 +83,7 @@
 
 1. **Broken Import Chain**
    - `skills/__init__.py` imports 3 non-existent modules
-   - Cannot `from HoloLoom.agentic.skills import SkillLoader`
+   - Cannot `from hololoom.agentic.skills import SkillLoader`
    - Package is unusable in current state
 
 2. **Architectural Confusion**
@@ -92,7 +92,7 @@
    - No migration path documented
 
 3. **Missing Integration**
-   - Skills not exposed in `HoloLoom.agentic.__init__.py`
+   - Skills not exposed in `hololoom.agentic.__init__.py`
    - No clear API for external users
    - No usage examples or demos
 
@@ -238,7 +238,7 @@
 
 **Example**:
 ```python
-# HoloLoom/agentic/skills/__init__.py (FIXED)
+# hololoom/agentic/skills/__init__.py (FIXED)
 """HoloLoom Skills System - Re-exports from skill_agents"""
 
 from ..skill_agents import (
@@ -305,7 +305,7 @@ __all__ = [
 
 ### 🔴 P0: Fix Broken Imports (30 minutes)
 
-**Goal**: Make `HoloLoom.agentic.skills` importable
+**Goal**: Make `hololoom.agentic.skills` importable
 
 **Tasks**:
 1. **Rewrite skills/__init__.py** (15 min)
@@ -316,8 +316,8 @@ __all__ = [
 
 2. **Test imports** (5 min)
    ```python
-   from HoloLoom.agentic.skills import execute_skill
-   from HoloLoom.agentic.skills import SkillRegistry
+   from hololoom.agentic.skills import execute_skill
+   from hololoom.agentic.skills import SkillRegistry
    ```
 
 3. **Update parent agentic/__init__.py** (10 min)
@@ -329,7 +329,7 @@ __all__ = [
 
 **Success Criteria**:
 - No import errors
-- Can execute: `from HoloLoom.agentic.skills import execute_skill`
+- Can execute: `from hololoom.agentic.skills import execute_skill`
 - YAML files load successfully
 
 ---
@@ -456,7 +456,7 @@ __all__ = [
 4. ✅ Create simple usage example
 
 **Success Criteria**:
-- `from HoloLoom.agentic.skills import execute_skill` works
+- `from hololoom.agentic.skills import execute_skill` works
 - All 13 YAMLs loadable
 - At least one demo executes successfully
 
@@ -497,7 +497,7 @@ This analysis used the **10-step strategic decision framework**:
 ## Appendix A: Fixed __init__.py
 
 ```python
-# HoloLoom/agentic/skills/__init__.py (FIXED VERSION)
+# hololoom/agentic/skills/__init__.py (FIXED VERSION)
 """
 HoloLoom Skills System
 ======================
@@ -513,8 +513,8 @@ Production-ready skill execution using YAML templates.
 Quick Start:
 -----------
 ```python
-from HoloLoom.agentic.skills import execute_skill
-from HoloLoom.config import Config
+from hololoom.agentic.skills import execute_skill
+from hololoom.config import Config
 
 # Execute a skill
 result = await execute_skill(
@@ -576,8 +576,8 @@ __status__ = "Production"
 ```python
 # tests/test_imports.py
 def test_can_import_skills():
-    from HoloLoom.agentic.skills import execute_skill
-    from HoloLoom.agentic.skills import SkillRegistry
+    from hololoom.agentic.skills import execute_skill
+    from hololoom.agentic.skills import SkillRegistry
     assert execute_skill is not None
     assert SkillRegistry is not None
 ```
@@ -586,7 +586,7 @@ def test_can_import_skills():
 ```python
 # tests/test_skill_loading.py
 import pytest
-from HoloLoom.agentic.skills import get_registry
+from hololoom.agentic.skills import get_registry
 
 @pytest.mark.asyncio
 async def test_load_all_skills():
@@ -602,8 +602,8 @@ async def test_load_all_skills():
 ```python
 # tests/test_execution.py
 import pytest
-from HoloLoom.agentic.skills import execute_skill
-from HoloLoom.config import Config
+from hololoom.agentic.skills import execute_skill
+from hololoom.config import Config
 
 @pytest.mark.asyncio
 async def test_execute_code_reviewer():
@@ -627,7 +627,7 @@ async def test_execute_code_reviewer():
 
 ### Example 1: Review Code
 ```python
-from HoloLoom.agentic.skills import execute_skill
+from hololoom.agentic.skills import execute_skill
 
 code = """
 def calculate_total(items):
@@ -647,7 +647,7 @@ print(result.output)  # Review comments
 
 ### Example 2: Generate Tests
 ```python
-from HoloLoom.agentic.skills import execute_skill
+from hololoom.agentic.skills import execute_skill
 
 result = await execute_skill(
     "test_generator",
@@ -663,7 +663,7 @@ print(result.output)  # Generated test code
 
 ### Example 3: Custom Skill
 ```yaml
-# HoloLoom/agentic/skills/my_skill.yaml
+# hololoom/agentic/skills/my_skill.yaml
 name: my_custom_skill
 version: 1.0.0
 description: My custom skill

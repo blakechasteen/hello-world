@@ -4,7 +4,7 @@ This module provides quality trajectory tracking for adversarial attack refineme
 enabling detection of plateaus, regressions, and successful patterns.
 
 **Status**: Production Ready (November 2025)
-**Location**: `HoloLoom/redteam/refinement/`
+**Location**: `hololoom/redteam/refinement/`
 **Performance**: <5ms per quality record
 
 Key Classes (Quality Trajectory):

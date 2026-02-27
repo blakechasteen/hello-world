@@ -5,10 +5,10 @@ from datetime import datetime
 
 import pytest  # type: ignore[import]
 
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.memory.protocol import Memory, MemoryQuery
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.protocol import Memory, MemoryQuery
 
 
 def run_sync(awaitable):

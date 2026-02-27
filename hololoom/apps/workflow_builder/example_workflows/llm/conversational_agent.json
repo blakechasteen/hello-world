@@ -3,7 +3,7 @@
   "name": "Multi-Turn Conversational Agent",
   "description": "A stateful chatbot workflow with session persistence, intent classification, context compression for long conversations, and memory extraction. Routes queries through specialized handlers (questions, commands, clarifications, greetings) with confidence-based fallback handling.",
   "tags": ["chatbot", "conversation", "multi-turn", "memory", "intent", "session", "dialogue"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-28",
   "nodes": [
     {

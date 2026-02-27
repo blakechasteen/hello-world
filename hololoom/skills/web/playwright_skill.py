@@ -3,7 +3,7 @@
 import asyncio
 import time
 from typing import Dict, Any, Optional
-from HoloLoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
+from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
                                    SkillCategory, SkillStatus)
 
 # Check for playwright availability
@@ -272,5 +272,5 @@ class PlaywrightSkill(BaseSkill):
             }
 
 
-from HoloLoom.skills.base import register_skill
+from hololoom.skills.base import register_skill
 register_skill(PlaywrightSkill())

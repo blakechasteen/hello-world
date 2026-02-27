@@ -2,7 +2,7 @@
 Test Agentic Core Reasoning System
 ===================================
 
-Tests for HoloLoom/agentic/core.py - critical multi-query reasoning engine.
+Tests for hololoom/agentic/core.py - critical multi-query reasoning engine.
 
 Coverage:
 - All 4 reasoning modes (DIRECT, VERIFY, RESEARCH, PLAN_EXECUTE)
@@ -17,14 +17,14 @@ import asyncio
 from unittest.mock import Mock, AsyncMock, patch
 from typing import List
 
-from HoloLoom.agentic.core import (
+from hololoom.agentic.core import (
     AgenticOrchestrator,
     ReasoningMode,
     AgenticResult,
     VerificationResult,
 )
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
 from dataclasses import dataclass, field
 from typing import List, Any, Dict, Optional
 
@@ -89,7 +89,7 @@ def mock_shards():
 @pytest.fixture
 async def orchestrator(mock_config, mock_shards):
     """Create agentic orchestrator."""
-    from HoloLoom.agentic.core import AgenticOrchestrator
+    from hololoom.agentic.core import AgenticOrchestrator
 
     # Mock the learning engine
     mock_learning_engine = AsyncMock()

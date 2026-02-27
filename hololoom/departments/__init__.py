@@ -16,10 +16,10 @@ import sys
 class _DeprecatedFinder:
     """Meta-path finder that redirects HoloLoom.departments.* imports."""
 
-    _PREFIX = "HoloLoom.departments."
+    _PREFIX = "hololoom.departments."
 
     def find_module(self, fullname, path=None):
-        if fullname == "HoloLoom.departments" or fullname.startswith(
+        if fullname == "hololoom.departments" or fullname.startswith(
             self._PREFIX
         ):
             return self
@@ -29,7 +29,7 @@ class _DeprecatedFinder:
         if fullname in sys.modules:
             return sys.modules[fullname]
         new_name = fullname.replace(
-            "HoloLoom.departments", "HoloLoom.apps.departments", 1
+            "hololoom.departments", "hololoom.apps.departments", 1
         )
         warnings.warn(
             f"Importing from {fullname} is deprecated. "

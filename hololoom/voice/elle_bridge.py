@@ -19,16 +19,16 @@ import time
 
 # HoloLoom imports
 try:
-    from HoloLoom.protocols.types import Query, ModalityType
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.protocols.types import Query, ModalityType
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False
 
 # Voice module imports
-from HoloLoom.voice.ar_context import ARContext, AREvent, AREventType
-from HoloLoom.voice.command_router import CommandRouter, Intent, ElleAction
-from HoloLoom.voice.spatial_audio import SpatialAudioHandler, SpatialAudioConfig
+from hololoom.voice.ar_context import ARContext, AREvent, AREventType
+from hololoom.voice.command_router import CommandRouter, Intent, ElleAction
+from hololoom.voice.spatial_audio import SpatialAudioHandler, SpatialAudioConfig
 
 
 # ============================================================================
@@ -532,7 +532,7 @@ class ElleBridge:
 
 async def test_elle_bridge():
     """Test Elle Bridge with sample scenarios."""
-    from HoloLoom.voice.ar_context import create_test_context
+    from hololoom.voice.ar_context import create_test_context
 
     print("Testing Elle Bridge")
     print("=" * 60)

@@ -593,7 +593,7 @@ Rate limits are too permissive, allowing abusive traffic through.
 2. **Implement stricter per-IP limits**:
    ```python
    # Add IP-based rate limiting
-   from HoloLoom.context import IPRateLimiter
+   from hololoom.context import IPRateLimiter
 
    ip_limiter = IPRateLimiter(
        rate_per_ip=10.0,  # 10 QPS per IP
@@ -1107,8 +1107,8 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Or specific modules
-logging.getLogger('HoloLoom.weaving_orchestrator').setLevel(logging.DEBUG)
-logging.getLogger('HoloLoom.context').setLevel(logging.DEBUG)
+logging.getLogger('hololoom.weaving_orchestrator').setLevel(logging.DEBUG)
+logging.getLogger('hololoom.context').setLevel(logging.DEBUG)
 ```
 
 ### Capture Full Stack Traces
@@ -1282,8 +1282,8 @@ orchestrator.breaker_registry.get_or_create("neo4j").force_open()
 - **Operations Runbook**: `OPERATIONS_RUNBOOK.md` (deployment, monitoring, incident response)
 - **Production Integration Guide**: `PRODUCTION_INTEGRATION_COMPLETE.md` (usage examples)
 - **Performance Tuning Guide**: `PERFORMANCE_TUNING_GUIDE.md` (optimization strategies)
-- **API Reference**: `HoloLoom/context/README.md` (API documentation)
-- **Test Suite**: `HoloLoom/context/test_integration_e2e.py` (end-to-end tests)
+- **API Reference**: `hololoom/context/README.md` (API documentation)
+- **Test Suite**: `hololoom/context/test_integration_e2e.py` (end-to-end tests)
 
 ---
 

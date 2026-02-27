@@ -31,7 +31,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-logger = logging.getLogger("HoloLoom.alignment.human_in_loop")
+logger = logging.getLogger("hololoom.alignment.human_in_loop")
 
 
 class FeedbackType(Enum):

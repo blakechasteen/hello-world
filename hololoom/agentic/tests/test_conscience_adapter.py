@@ -24,7 +24,7 @@ from unittest.mock import Mock, AsyncMock, MagicMock, patch
 from typing import Optional, Dict, Any
 
 # Import the components we're testing
-from HoloLoom.protocols.conscience import (
+from hololoom.protocols.conscience import (
     ConscienceProtocol,
     ConscienceDecision,
     StepType,
@@ -33,7 +33,7 @@ from HoloLoom.protocols.conscience import (
     create_allowed_decision,
     create_blocked_decision,
 )
-from HoloLoom.agentic.conscience_adapter import (
+from hololoom.agentic.conscience_adapter import (
     AgenticConscienceAdapter,
     create_conscience_adapter,
     create_null_adapter,

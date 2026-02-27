@@ -3,7 +3,7 @@
   "name": "Multi-Agent Research Council",
   "description": "Specialized agents (Researcher, Critic, Synthesizer, Fact-Checker) collaborate in a structured debate to produce thoroughly vetted research answers with minority opinions preserved.",
   "tags": ["multi-agent", "debate", "research", "consensus", "collaborative"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-25",
 
   "nodes": [

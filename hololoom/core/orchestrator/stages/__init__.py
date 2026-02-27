@@ -20,8 +20,8 @@ Philosophy:
     Stages are pure functions with explicit dependencies.
 
 Example:
-    >>> from HoloLoom.core.orchestrator.context import create_weaving_context
-    >>> from HoloLoom.core.orchestrator.stages import (
+    >>> from hololoom.core.orchestrator.context import create_weaving_context
+    >>> from hololoom.core.orchestrator.stages import (
     ...     execute_step0_meta_prompt,
     ...     execute_step1_pattern_selection,
     ...     execute_step2_chrono_trigger,
@@ -77,7 +77,7 @@ from .steps_7_9 import (
     execute_step9_spacetime_fabric,
 )
 
-# Merged from HoloLoom.weaving.stages (Wave 2 consolidation, 2026-02-27)
+# Merged from hololoom.weaving.stages (Wave 2 consolidation, 2026-02-27)
 from .pattern_selection import PatternSelectionStage
 from .temporal_control import TemporalControlStage
 from .feature_extraction import FeatureExtractionStage
@@ -108,7 +108,7 @@ __all__ = [
     'execute_step8_tool_execution',
     'execute_step9_spacetime_fabric',
 
-    # Weaving stage classes (merged from HoloLoom.weaving.stages)
+    # Weaving stage classes (merged from hololoom.weaving.stages)
     'PatternSelectionStage',
     'TemporalControlStage',
     'FeatureExtractionStage',

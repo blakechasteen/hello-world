@@ -9,8 +9,8 @@
 
 ```python
 import asyncio
-from HoloLoom.memory.protocol import UnifiedMemoryInterface, Strategy
-from HoloLoom.memory.stores import InMemoryStore
+from hololoom.memory.protocol import UnifiedMemoryInterface, Strategy
+from hololoom.memory.stores import InMemoryStore
 
 async def main():
     # Create
@@ -89,7 +89,7 @@ Strategy.FUSED     # Combined (best)
 ## 🏃 Run Demo
 
 ```bash
-python HoloLoom/examples/unified_memory_demo.py
+python hololoom/examples/unified_memory_demo.py
 ```
 
 **Output**: 3 examples (in-memory, hybrid, factory)
@@ -164,7 +164,7 @@ Hybrid:  ~150ms   (all three combined)
 
 ```bash
 cd ~/Documents/mythRL
-python HoloLoom/examples/unified_memory_demo.py
+python hololoom/examples/unified_memory_demo.py
 ```
 
 **That's it!** 🚀

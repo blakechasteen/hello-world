@@ -28,7 +28,7 @@ Backward-Compatible Components (for scratchpad_integration.py):
 - ScratchpadEntry: Single reasoning step
 
 Usage:
-    from HoloLoom.scratchpad import RecursiveScratchpad
+    from hololoom.scratchpad import RecursiveScratchpad
 
     async with RecursiveScratchpad() as scratchpad:
         # Initial thought
@@ -51,26 +51,26 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from enum import Enum
 
-from HoloLoom.core.recursive.scratchpad.recursive_scratchpad import (
+from hololoom.core.recursive.scratchpad.recursive_scratchpad import (
     RecursiveScratchpad,
     Thought,
     ThoughtType,
     DialogueTree,
 )
 
-from HoloLoom.core.recursive.scratchpad.internal_dialogue import (
+from hololoom.core.recursive.scratchpad.internal_dialogue import (
     InternalDialogue,
     DialogueStep,
     DialogueMode,
 )
 
-from HoloLoom.core.recursive.scratchpad.strange_loops import (
+from hololoom.core.recursive.scratchpad.strange_loops import (
     StrangeLoop,
     LoopDetector,
     LevelCrossing,
 )
 
-from HoloLoom.core.recursive.scratchpad.persistence import (
+from hololoom.core.recursive.scratchpad.persistence import (
     ThoughtPersistence,
     SessionManager,
 )

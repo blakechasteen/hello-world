@@ -25,7 +25,7 @@ from typing import List, Optional, Dict, Any, Callable
 import asyncio
 import re
 
-from HoloLoom.core.recursive.scratchpad.recursive_scratchpad import (
+from hololoom.core.recursive.scratchpad.recursive_scratchpad import (
     Thought,
     ThoughtType,
     DialogueTree,

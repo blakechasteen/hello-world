@@ -10,13 +10,13 @@
 pip install hololoom
 
 # Start interactive REPL
-python -m HoloLoom.lite repl
+python -m hololoom.lite repl
 ```
 
 Or in Python:
 
 ```python
-from HoloLoom.lite import HoloLoomLite
+from hololoom.lite import HoloLoomLite
 
 async with HoloLoomLite() as loom:
     # Learn something
@@ -68,16 +68,16 @@ Run Lite in different interfaces:
 
 ```bash
 # Interactive REPL (default)
-python -m HoloLoom.lite repl
+python -m hololoom.lite repl
 
 # Rich terminal UI
-python -m HoloLoom.lite terminal
+python -m hololoom.lite terminal
 
 # Web interface (requires fastapi, uvicorn)
-python -m HoloLoom.lite web
+python -m hololoom.lite web
 
 # Desktop app (requires tkinter)
-python -m HoloLoom.lite desktop
+python -m hololoom.lite desktop
 ```
 
 ## Claude Desktop Integration (MCP)
@@ -86,7 +86,7 @@ HoloLoom Lite includes an MCP server for Claude Desktop:
 
 ```bash
 # Start MCP server
-python -m HoloLoom.lite.mcp_server
+python -m hololoom.lite.mcp_server
 ```
 
 Add to Claude Desktop config (`~/.claude/config.json`):
@@ -96,7 +96,7 @@ Add to Claude Desktop config (`~/.claude/config.json`):
   "mcpServers": {
     "hololoom": {
       "command": "python",
-      "args": ["-m", "HoloLoom.lite.mcp_server"]
+      "args": ["-m", "hololoom.lite.mcp_server"]
     }
   }
 }
@@ -113,7 +113,7 @@ Add to Claude Desktop config (`~/.claude/config.json`):
 Use Lite as tools in your AI applications:
 
 ```python
-from HoloLoom.lite import get_tools_for_openai, execute_tool
+from hololoom.lite import get_tools_for_openai, execute_tool
 
 # Get tool definitions
 tools = get_tools_for_openai()
@@ -129,7 +129,7 @@ if tool_call.function.name.startswith("hololoom_"):
 ## Configuration
 
 ```python
-from HoloLoom.lite import HoloLoomLite, LiteConfig
+from hololoom.lite import HoloLoomLite, LiteConfig
 
 config = LiteConfig(
     # Memory settings
@@ -188,13 +188,13 @@ When you need more power, upgrade to full HoloLoom:
 
 ```python
 # Lite
-from HoloLoom.lite import HoloLoomLite
+from hololoom.lite import HoloLoomLite
 
 async with HoloLoomLite(persist=True) as loom:
     await loom.experience("My knowledge")
 
 # Full HoloLoom (uses same data!)
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     # Your memories are here
@@ -209,7 +209,7 @@ async with HoloLoom() as loom:
 ### Pattern 1: Personal Assistant
 
 ```python
-from HoloLoom.lite import HoloLoomLite
+from hololoom.lite import HoloLoomLite
 
 async with HoloLoomLite() as loom:
     # Learn from conversations
@@ -229,9 +229,9 @@ async with HoloLoomLite() as loom:
 
 ```python
 from fastapi import FastAPI, Depends
-from HoloLoom.lite import HoloLoomLite
-from HoloLoom.saas import create_saas_backend
-from HoloLoom.saas.auth import validate_api_key
+from hololoom.lite import HoloLoomLite
+from hololoom.saas import create_saas_backend
+from hololoom.saas.auth import validate_api_key
 
 app = FastAPI()
 loom = HoloLoomLite(persist=True)
@@ -252,7 +252,7 @@ See [Integration Strategy](../../docs/INTEGRATION_STRATEGY.md) for more patterns
 
 Use Lite as persistent memory for Claude Desktop:
 
-1. Start MCP server: `python -m HoloLoom.lite.mcp_server`
+1. Start MCP server: `python -m hololoom.lite.mcp_server`
 2. Add to Claude Desktop config
 3. Claude can now remember across conversations!
 

@@ -38,7 +38,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlparse
 import warnings
 
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
@@ -46,7 +46,7 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceSignals,
     ImportanceScore
 )
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 # =============================================================================

@@ -29,9 +29,9 @@ try:
 except ImportError:
     RICH_AVAILABLE = False
 
-from HoloLoom.tui.pipeline_display import PipelineDisplay, CompactPipelineDisplay, StageStatus
-from HoloLoom.tui.graph_display import GraphDisplay, SourceAttributionDisplay
-from HoloLoom.tui.metrics_panel import MetricsPanel
+from hololoom.tui.pipeline_display import PipelineDisplay, CompactPipelineDisplay, StageStatus
+from hololoom.tui.graph_display import GraphDisplay, SourceAttributionDisplay
+from hololoom.tui.metrics_panel import MetricsPanel
 
 
 @dataclass
@@ -129,7 +129,7 @@ class HoloLoomTUI:
         self.metrics.set_metric("thompson_answer_beta", 5.0)
 
         # Sample graph
-        self.graph.add_node("hololoom", "HoloLoom", activation=0.9)
+        self.graph.add_node("hololoom", "hololoom", activation=0.9)
         self.graph.add_node("thompson", "Thompson Sampling", activation=0.8)
         self.graph.add_node("memory", "Memory System", activation=0.7)
         self.graph.add_node("weaving", "Weaving Cycle", activation=0.6)
@@ -192,7 +192,7 @@ class HoloLoomTUI:
             if self.orchestrator:
                 # Real query
                 try:
-                    from HoloLoom.protocols.types import Query
+                    from hololoom.protocols.types import Query
                     spacetime = await self.orchestrator.weave(Query(text=query))
 
                     # Update pipeline stages from trace

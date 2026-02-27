@@ -35,15 +35,15 @@ import numpy as np
 
 # Import math pipeline components
 try:
-    from HoloLoom.core.warp.math.operation_selector import (
+    from hololoom.core.warp.math.operation_selector import (
         MathOperationSelector,
         QueryIntent,
         OperationPlan
     )
-    from HoloLoom.core.warp.math.smart_operation_selector import (
+    from hololoom.core.warp.math.smart_operation_selector import (
         SmartMathOperationSelector
     )
-    from HoloLoom.core.warp.math.meaning_synthesizer import (
+    from hololoom.core.warp.math.meaning_synthesizer import (
         MeaningSynthesizer,
         MeaningResult
     )

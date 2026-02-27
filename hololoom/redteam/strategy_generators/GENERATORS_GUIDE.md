@@ -330,7 +330,7 @@ for level, payloads in sorted(by_meta_level.items()):
 Both generators provide convenience factory functions:
 
 ```python
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     create_context_overflow_generator,
     create_hierarchy_bypass_generator
 )
@@ -349,7 +349,7 @@ bypass_gen = create_hierarchy_bypass_generator(seed=42)
 ## Integration Example
 
 ```python
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     ContextOverflowGenerator,
     HierarchyBypassGenerator
 )
@@ -509,7 +509,7 @@ print(f"Generated {len(all_payloads)} payloads for {len(targets)} targets")
 Run the test suite:
 
 ```bash
-cd HoloLoom/redteam/strategy_generators
+cd hololoom/redteam/strategy_generators
 pytest test_new_generators.py -v
 ```
 
@@ -533,7 +533,7 @@ These generators integrate with:
 - **Orchestrator:** Coordinates comprehensive red team campaigns
 
 ```python
-from HoloLoom.redteam.orchestrator import RedTeamOrchestrator
+from hololoom.redteam.orchestrator import RedTeamOrchestrator
 
 orchestrator = RedTeamOrchestrator()
 

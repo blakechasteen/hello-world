@@ -22,18 +22,18 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.agentic.core import (
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.agentic.core import (
     AgenticOrchestrator,
     ReasoningMode,
     AgenticResult,
     VerificationResult,
     create_agentic_orchestrator,
 )
-from HoloLoom.recursive import FullLearningEngine
-from HoloLoom.alignment.audit_trail import AuditTrail
-from HoloLoom.fabric.spacetime import Spacetime
+from hololoom.recursive import FullLearningEngine
+from hololoom.alignment.audit_trail import AuditTrail
+from hololoom.fabric.spacetime import Spacetime
 
 
 # ============================================================================
@@ -148,7 +148,7 @@ async def create_mock_spacetime(
     query_text: str = "Mock query"
 ) -> Spacetime:
     """Create mock spacetime result."""
-    from HoloLoom.fabric.spacetime import WeavingTrace
+    from hololoom.fabric.spacetime import WeavingTrace
 
     # Create mock trace
     trace = WeavingTrace(
@@ -670,7 +670,7 @@ async def test_safety_integration_blocks_high_risk(mock_config, mock_memory_shar
     """Test safety adapter blocks high-risk queries."""
     # Skip if safety not available
     try:
-        from HoloLoom.agentic.safety_adapter import create_safety_adapter
+        from hololoom.agentic.safety_adapter import create_safety_adapter
     except ImportError:
         pytest.skip("Safety adapter not available")
 
@@ -692,7 +692,7 @@ async def test_safety_integration_blocks_high_risk(mock_config, mock_memory_shar
         # Mock safety adapter to block
         class MockSafetyAdapter:
             async def gate_reasoning(self, query_text, reasoning_mode, **kwargs):
-                from HoloLoom.protocols.safety import SafetyGateDecision, SafetyRiskLevel
+                from hololoom.protocols.safety import SafetyGateDecision, SafetyRiskLevel
                 return SafetyGateDecision(
                     allowed=False,
                     risk_level=SafetyRiskLevel.HIGH,

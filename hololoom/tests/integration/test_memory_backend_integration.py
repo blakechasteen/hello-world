@@ -25,11 +25,11 @@ import time
 from typing import List
 from pathlib import Path
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.memory.cache import MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.protocols.types import Query
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.cache import MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query
 
 
 # ============================================================================

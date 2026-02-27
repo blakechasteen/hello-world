@@ -167,10 +167,10 @@ git commit -m "feat: Add new feature"
 
 ```bash
 # 1. Make changes
-# vim HoloLoom/my_feature.py
+# vim hololoom/my_feature.py
 
 # 2. Commit (pre-commit runs automatically)
-git add HoloLoom/my_feature.py
+git add hololoom/my_feature.py
 git commit -m "feat(embeddings): Add new feature"
 
 # 3. Pre-commit auto-fixes issues, if needed:
@@ -193,7 +193,7 @@ Type checking is slow, so it's manual by default:
 pre-commit run mypy --hook-stage manual --all-files
 
 # Or with specific files
-mypy HoloLoom/my_feature.py --ignore-missing-imports
+mypy hololoom/my_feature.py --ignore-missing-imports
 ```
 
 ### Run Security Checks
@@ -205,7 +205,7 @@ Security checking is slow, so it's manual by default:
 pre-commit run bandit --hook-stage manual --all-files
 
 # Or with specific rules
-bandit HoloLoom/ -ll  # Only medium/high severity
+bandit hololoom/ -ll  # Only medium/high severity
 ```
 
 ### Fix All Files at Once
@@ -264,26 +264,26 @@ git commit -m "wip"
 **Line length**: 100 characters
 **Indentation**: 4 spaces
 **Quotes**: Double quotes (")
-**Run**: `black HoloLoom/ --line-length 100`
+**Run**: `black hololoom/ --line-length 100`
 
 ### Ruff (Linter)
 
 **Rules**: F, E, W, I, C, UP, B, A
 **Line length**: 100 characters
-**Auto-fix**: `ruff check --fix HoloLoom/`
-**Check only**: `ruff check HoloLoom/`
+**Auto-fix**: `ruff check --fix hololoom/`
+**Check only**: `ruff check hololoom/`
 
 ### isort (Import Sorter)
 
 **Profile**: Black-compatible
 **Line length**: 100 characters
-**Run**: `isort HoloLoom/ --profile black`
+**Run**: `isort hololoom/ --profile black`
 
 ### mypy (Type Checker)
 
 **Target**: Python 3.10+
 **Settings**: No implicit optional, warn on return_any
-**Run**: `mypy HoloLoom/ --ignore-missing-imports`
+**Run**: `mypy hololoom/ --ignore-missing-imports`
 
 ### Markdownlint
 
@@ -392,8 +392,8 @@ time pre-commit run
 # PyCharm: Built-in (enable in Settings)
 
 # Or format file before committing
-black HoloLoom/file.py
-isort HoloLoom/file.py
+black hololoom/file.py
+isort hololoom/file.py
 ```
 
 ### Commit message rejected
@@ -424,7 +424,7 @@ pre-commit run mypy --hook-stage manual --all-files
 pre-commit run bandit --hook-stage manual --all-files
 
 # 4. Run tests
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 
 # 5. Push
 git push origin feature-branch
@@ -450,7 +450,7 @@ git push origin feature-branch
 ## Configuration Files at a Glance
 
 ```
-HoloLoom/
+hololoom/
 ├── .pre-commit-config.yaml      # Main pre-commit hooks (257 lines)
 ├── pyproject.toml               # Tool configs (252 lines)
 ├── .markdownlintrc              # Markdown rules (65 lines)

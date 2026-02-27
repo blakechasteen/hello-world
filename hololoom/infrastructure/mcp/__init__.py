@@ -9,7 +9,7 @@ Public API:
 - create_mcp_server: Factory function
 """
 
-from HoloLoom.infrastructure.mcp.protocol import (
+from hololoom.infrastructure.mcp.protocol import (
     # Request/Response
     MCPRequest,
     MCPResponse,
@@ -35,7 +35,7 @@ from HoloLoom.infrastructure.mcp.protocol import (
     validate_query_sql_params
 )
 
-from HoloLoom.infrastructure.mcp.server import (
+from hololoom.infrastructure.mcp.server import (
     MCPServer,
     create_mcp_server
 )

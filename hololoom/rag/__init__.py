@@ -5,7 +5,7 @@ Simple RAG - Retrieval-Augmented Generation API
 Zero-config RAG wrapper for HoloLoom.
 
 Quick start:
-    from HoloLoom.rag import SimpleRAG
+    from hololoom.rag import SimpleRAG
 
     async with SimpleRAG() as rag:
         # Ingest
@@ -20,9 +20,9 @@ Quick start:
         print(result.confidence)    # 0.0-1.0
 """
 
-from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
-from HoloLoom.rag.streaming import StreamToken
-from HoloLoom.rag.sql_integration import (
+from hololoom.rag.simple_rag import SimpleRAG, RAGResult
+from hololoom.rag.streaming import StreamToken
+from hololoom.rag.sql_integration import (
     SQLRAGMixin,
     SQLRAGResult,
     SQLAdapter,
@@ -30,12 +30,12 @@ from HoloLoom.rag.sql_integration import (
     QueryIntent,
     SQLQueryMode
 )
-from HoloLoom.rag.multihop_reasoning import (
+from hololoom.rag.multihop_reasoning import (
     MultiHopRAGMixin,
     MultiHopRAGResult,
     ReasoningPath,
 )
-from HoloLoom.rag.multiagent_rag import (
+from hololoom.rag.multiagent_rag import (
     MultiAgentRAG,
     MultiAgentRAGResult,
     AgentResponse,

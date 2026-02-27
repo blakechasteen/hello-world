@@ -16,7 +16,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from HoloLoom.ml.config import (
+from hololoom.ml.config import (
     DataConfig,
     LinearRegressionConfig,
     MLSystemConfig,
@@ -24,7 +24,7 @@ from HoloLoom.ml.config import (
     TrainingConfig,
     ValidationConfig,
 )
-from HoloLoom.ml.protocol import (
+from hololoom.ml.protocol import (
     DataSplit,
     EvaluationResult,
     ModelStatus,
@@ -32,7 +32,7 @@ from HoloLoom.ml.protocol import (
     PredictionResult,
     TrainingResult,
 )
-from HoloLoom.ml.registry import ModelRegistry
+from hololoom.ml.registry import ModelRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +121,7 @@ class MLTrainerSkill:
         """Register available trainer classes."""
         # Import trainers lazily to avoid circular imports
         try:
-            from HoloLoom.ml.trainers.linear_regression import LinearRegressionTrainer
+            from hololoom.ml.trainers.linear_regression import LinearRegressionTrainer
 
             self._trainer_registry[ModelType.LINEAR_REGRESSION] = LinearRegressionTrainer
         except ImportError:
@@ -407,8 +407,8 @@ class MLTrainerSkill:
 
         # Load and validate data
         try:
-            from HoloLoom.ml.integration.datapig_adapter import DataPigMLAdapter
-            from HoloLoom.ml.integration.spinningwheel_adapter import SpinningWheelMLAdapter
+            from hololoom.ml.integration.datapig_adapter import DataPigMLAdapter
+            from hololoom.ml.integration.spinningwheel_adapter import SpinningWheelMLAdapter
 
             # Ingest data
             data_adapter = SpinningWheelMLAdapter(self.config.data)
@@ -587,7 +587,7 @@ class MLTrainerSkill:
             )
 
         try:
-            from HoloLoom.ml.integration.spinningwheel_adapter import SpinningWheelMLAdapter
+            from hololoom.ml.integration.spinningwheel_adapter import SpinningWheelMLAdapter
             import numpy as np
 
             # Load data (use first column as dummy target)
@@ -856,8 +856,8 @@ class MLTrainerSkill:
             )
 
         try:
-            from HoloLoom.ml.integration.datapig_adapter import DataPigMLAdapter
-            from HoloLoom.ml.integration.spinningwheel_adapter import SpinningWheelMLAdapter
+            from hololoom.ml.integration.datapig_adapter import DataPigMLAdapter
+            from hololoom.ml.integration.spinningwheel_adapter import SpinningWheelMLAdapter
             import numpy as np
 
             # Load data

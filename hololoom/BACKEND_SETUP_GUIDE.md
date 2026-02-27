@@ -38,7 +38,7 @@ pip install neo4j qdrant-client sentence-transformers
 ### 5. Test Connection
 
 ```python
-from HoloLoom.memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant
+from hololoom.memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant
 
 # Initialize hybrid store
 store = HybridNeo4jQdrant(
@@ -175,7 +175,7 @@ EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 from dotenv import load_dotenv
 load_dotenv()
 
-from HoloLoom.memory.neo4j_graph import Neo4jConfig
+from hololoom.memory.neo4j_graph import Neo4jConfig
 config = Neo4jConfig.from_env()
 ```
 
@@ -186,7 +186,7 @@ config = Neo4jConfig.from_env()
 ### 1. Neo4j Only (Graph Relationships)
 
 ```python
-from HoloLoom.memory.stores.neo4j_store import Neo4jMemoryStore
+from hololoom.memory.stores.neo4j_store import Neo4jMemoryStore
 
 store = Neo4jMemoryStore(
     uri="bolt://localhost:7687",
@@ -214,7 +214,7 @@ results = store.search(
 ### 2. Qdrant Only (Semantic Search)
 
 ```python
-from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
+from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
 
 store = QdrantMemoryStore(
     url="http://localhost:6333",
@@ -238,7 +238,7 @@ results = store.search(
 ### 3. Hybrid (Best of Both)
 
 ```python
-from HoloLoom.memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant
+from hololoom.memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant
 
 store = HybridNeo4jQdrant(
     neo4j_uri="bolt://localhost:7687",
@@ -268,7 +268,7 @@ results = store.search(
 ### 4. Unified Memory (Full HoloLoom)
 
 ```python
-from HoloLoom.memory.unified import UnifiedMemory
+from hololoom.memory.unified import UnifiedMemory
 
 # Auto-detects and uses all available backends
 memory = UnifiedMemory(user_id="blake")
@@ -372,7 +372,7 @@ curl http://localhost:6333/collections
 pip install neo4j qdrant-client sentence-transformers torch
 
 # Or use HoloLoom requirements
-pip install -r HoloLoom/requirements.txt
+pip install -r hololoom/requirements.txt
 ```
 
 ---

@@ -10,13 +10,13 @@ import sys
 from pathlib import Path
 
 # Add the HoloLoom directory to Python path
-sys.path.insert(0, str(Path(__file__).parent / "HoloLoom"))
+sys.path.insert(0, str(Path(__file__).parent / "hololoom"))
 
-from HoloLoom.memory.protocol import MemoryStore, Memory, MemoryQuery, Strategy
-from HoloLoom.memory.stores.neo4j_store import Neo4jMemoryStore
-from HoloLoom.memory.stores.mem0_store import Mem0MemoryStore  
-from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
-from HoloLoom.memory.stores.in_memory_store import InMemoryStore
+from hololoom.memory.protocol import MemoryStore, Memory, MemoryQuery, Strategy
+from hololoom.memory.stores.neo4j_store import Neo4jMemoryStore
+from hololoom.memory.stores.mem0_store import Mem0MemoryStore  
+from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
+from hololoom.memory.stores.in_memory_store import InMemoryStore
 from datetime import datetime
 import logging
 

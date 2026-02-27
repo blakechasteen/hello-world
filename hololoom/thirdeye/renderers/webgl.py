@@ -10,9 +10,9 @@ Author: HoloLoom Team
 
 from typing import Dict, Any, List, Optional
 
-from HoloLoom.thirdeye.concept import Concept, ConceptType
-from HoloLoom.thirdeye.transition import Transition, TransitionType
-from HoloLoom.thirdeye.renderer_protocol import (
+from hololoom.thirdeye.concept import Concept, ConceptType
+from hololoom.thirdeye.transition import Transition, TransitionType
+from hololoom.thirdeye.renderer_protocol import (
     BaseConceptRenderer,
     RenderCommand,
     RenderConfig,

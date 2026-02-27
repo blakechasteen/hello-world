@@ -12,8 +12,8 @@ from dataclasses import dataclass, field
 from threading import Lock
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from HoloLoom.telemetry.protocol import MetricsProtocol, MetricType, HistogramBuckets
-from HoloLoom.telemetry.config import MetricsConfig
+from hololoom.telemetry.protocol import MetricsProtocol, MetricType, HistogramBuckets
+from hololoom.telemetry.config import MetricsConfig
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

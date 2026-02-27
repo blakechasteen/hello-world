@@ -15,14 +15,14 @@ from typing import List, Optional, Dict, Any, AsyncGenerator, TYPE_CHECKING
 import logging
 import time
 
-from HoloLoom.hololoom import HoloLoom
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
-from HoloLoom.rag.reranking import create_reranker, Reranker
+from hololoom.hololoom import hololoom
+from hololoom.config import Config
+from hololoom.protocols.types import Query
+from hololoom.rag.reranking import create_reranker, Reranker
 
 # Custom embedding plugins (graceful degradation if unavailable)
 try:
-    from HoloLoom.rag.embedding_plugins import (
+    from hololoom.rag.embedding_plugins import (
         EmbeddingProvider,
         MatryoshkaEmbedding,
         validate_embedding_provider,
@@ -36,17 +36,17 @@ except ImportError:
 
 # LLM integration (graceful degradation if unavailable)
 try:
-    from HoloLoom.weaving_orchestrator_llm import WeavingOrchestrator
+    from hololoom.weaving_orchestrator_llm import WeavingOrchestrator
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
 
 if TYPE_CHECKING:
-    from HoloLoom.rag.embedding_plugins import EmbeddingProvider
+    from hololoom.rag.embedding_plugins import EmbeddingProvider
 
 # Streaming support
 try:
-    from HoloLoom.rag.streaming import StreamingRAGMixin, StreamToken
+    from hololoom.rag.streaming import StreamingRAGMixin, StreamToken
     STREAMING_AVAILABLE = True
 except ImportError:
     STREAMING_AVAILABLE = False
@@ -156,7 +156,7 @@ class SimpleRAG(StreamingRAGMixin):
             rag = SimpleRAG(enable_reranking=True, rerank_top_k=20)
 
             # With custom embeddings
-            from HoloLoom.rag.embedding_plugins import HuggingFaceEmbedding
+            from hololoom.rag.embedding_plugins import HuggingFaceEmbedding
             embedding = HuggingFaceEmbedding("all-mpnet-base-v2")
             rag = SimpleRAG(embedding_provider=embedding)
         """
@@ -557,7 +557,7 @@ class SimpleRAG(StreamingRAGMixin):
         Get system metrics for monitoring.
 
         Returns:
-            Dictionary with metrics from HoloLoom, cache stats, reranking stats, and embedding info
+            Dictionary with metrics from hololoom, cache stats, reranking stats, and embedding info
 
         Example:
             metrics = rag.get_metrics()

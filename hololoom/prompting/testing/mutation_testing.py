@@ -13,11 +13,11 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, Dict, List, Optional, Any
-from HoloLoom.prompting.testing.protocol import PromptTestConfig, PromptTestResult
+from hololoom.prompting.testing.protocol import PromptTestConfig, PromptTestResult
 
 # LLM Judge integration (December 2025)
 try:
-    from HoloLoom.chaining.evaluation import (
+    from hololoom.chaining.evaluation import (
         LLMJudge,
         JudgeCriteria,
         JudgeConfig,

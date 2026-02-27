@@ -16,9 +16,9 @@ Created: 2025-11-25
 
 import asyncio
 import logging
-from HoloLoom.tools.executor import ToolExecutor
-from HoloLoom.tools.skills_bridge import get_skills_bridge
-from HoloLoom.protocols.types import Query, Context
+from hololoom.tools.executor import ToolExecutor
+from hololoom.tools.skills_bridge import get_skills_bridge
+from hololoom.protocols.types import Query, Context
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')

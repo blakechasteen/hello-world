@@ -62,7 +62,7 @@
 
 ### Code (3 Working Demos)
 
-1. **[HoloLoom/memory/stores/hybrid_neo4j_qdrant.py](HoloLoom/memory/stores/hybrid_neo4j_qdrant.py)**
+1. **[hololoom/memory/stores/hybrid_neo4j_qdrant.py](hololoom/memory/stores/hybrid_neo4j_qdrant.py)**
    - Production hybrid memory store
    - Dual-write, 4 strategies, health checks
    - ~500 lines, fully functional
@@ -426,7 +426,7 @@
 
 ### Working Code
 ```
-HoloLoom/
+hololoom/
 ├── loom/
 │   └── command.py                      # Pattern card selection
 ├── memory/

@@ -12,10 +12,10 @@ import asyncio
 import sys
 sys.path.insert(0, 'c:/Users/blake/Documents/mythRL')
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.memory.protocol import Memory, MemoryQuery
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.protocol import Memory, MemoryQuery
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 from datetime import datetime
 import numpy as np
 
@@ -124,8 +124,8 @@ async def test_chat_archiving():
     print("  Chat Archiving with Embeddings Test")
     print("="*70 + "\n")
 
-    from HoloLoom.apps.workflow_builder.thread_manager import ThreadManager, Message
-    from HoloLoom.awareness import CompositionalAwarenessLayer, DualStreamGenerator, OllamaLLM
+    from hololoom.apps.workflow_builder.thread_manager import ThreadManager, Message
+    from hololoom.awareness import CompositionalAwarenessLayer, DualStreamGenerator, OllamaLLM
 
     # Initialize components
     print("[1/3] Initializing components...")

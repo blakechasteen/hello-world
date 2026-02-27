@@ -1,4 +1,4 @@
-# Pre-commit hooks configuration for HoloLoom
+# Pre-commit hooks configuration for hololoom
 # Automated code quality checks on every commit
 #
 # Setup instructions:
@@ -120,7 +120,7 @@ repos:
           - --no-implicit-optional
           - --warn-redundant-casts
           - --warn-unused-ignores
-        exclude: ^(tests/|setup.py|HoloLoom/tests/)
+        exclude: ^(tests/|setup.py|hololoom/tests/)
         stages: [manual]  # Run manually or in CI: pre-commit run --hook-stage manual
 
   # ============================================================================
@@ -135,7 +135,7 @@ repos:
           - -ll  # Only report medium/high severity issues
           - --skip
           - B101  # Skip assert_used (common in tests)
-        exclude: ^(tests/|setup.py|HoloLoom/tests/)
+        exclude: ^(tests/|setup.py|hololoom/tests/)
         stages: [manual]  # Run manually or in CI
 
   # ============================================================================

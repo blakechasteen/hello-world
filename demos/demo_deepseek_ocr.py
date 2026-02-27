@@ -29,7 +29,7 @@ async def demo_backend_chain():
     print("Demo 1: OCR Backend Chain with Automatic Fallback")
     print("=" * 70)
 
-    from HoloLoom.spinningWheel.ocr_backends import get_all_available_backends
+    from hololoom.spinningWheel.ocr_backends import get_all_available_backends
 
     # Get chain of all available backends
     chain = get_all_available_backends()
@@ -56,8 +56,8 @@ async def demo_extract_image():
     print("Demo 2: Extract Text from Image")
     print("=" * 70)
 
-    from HoloLoom.spinningWheel.ocr_backends import get_best_available_backend
-    from HoloLoom.spinningWheel.ocr_protocol import OCROutputFormat
+    from hololoom.spinningWheel.ocr_backends import get_best_available_backend
+    from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
     from PIL import Image, ImageDraw, ImageFont
 
     # Create sample image with text
@@ -124,7 +124,7 @@ async def demo_batch_processing():
     print("Demo 3: Batch Processing")
     print("=" * 70)
 
-    from HoloLoom.spinningWheel.ocr_backends import get_best_available_backend
+    from hololoom.spinningWheel.ocr_backends import get_best_available_backend
     from PIL import Image, ImageDraw, ImageFont
     import time
 
@@ -181,7 +181,7 @@ async def demo_spinner_integration():
     print("Demo 4: DeepSeek OCR Spinner Integration")
     print("=" * 70)
 
-    from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
+    from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
     from PIL import Image, ImageDraw, ImageFont
 
     # Create sample document
@@ -252,8 +252,8 @@ async def demo_memory_integration():
     print("Demo 5: HoloLoom Memory Integration")
     print("=" * 70)
 
-    from HoloLoom import HoloLoom
-    from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
+    from hololoom import hololoom
+    from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
     from PIL import Image, ImageDraw, ImageFont
 
     # Create sample documents

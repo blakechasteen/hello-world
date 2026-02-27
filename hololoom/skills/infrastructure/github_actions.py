@@ -20,7 +20,7 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from enum import Enum
 
-from HoloLoom.skills.base import (
+from hololoom.skills.base import (
     BaseSkill,
     SkillInput,
     SkillOutput,
@@ -435,5 +435,5 @@ class GitHubActionsSkill(BaseSkill):
 
 
 # Register skill
-from HoloLoom.skills.base import register_skill
+from hololoom.skills.base import register_skill
 register_skill(GitHubActionsSkill())

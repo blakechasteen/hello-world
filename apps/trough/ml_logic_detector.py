@@ -28,7 +28,7 @@ Uses a hybrid approach:
 - Control flow analysis for logic errors
 
 Usage:
-    from HoloLoom.agentic.ml_logic_detector import MLLogicDetector
+    from hololoom.agentic.ml_logic_detector import MLLogicDetector
 
     detector = MLLogicDetector()
     errors = await detector.detect(code, language="python")

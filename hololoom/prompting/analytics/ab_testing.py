@@ -14,7 +14,7 @@ Features:
 - Real-time monitoring
 
 Usage:
-    from HoloLoom.prompting.analytics import ABTest
+    from hololoom.prompting.analytics import ABTest
 
     # Create A/B test
     test = ABTest(

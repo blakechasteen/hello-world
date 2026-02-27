@@ -113,15 +113,15 @@ Optional:
 🔗 HoloLoom Integration
 ------------------------
 # Option 1: As memory shards
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.documentation.types import MemoryShard
 shards = [MemoryShard(text=transcript, source="bee_inspection")]
 
 # Option 2: Direct embeddings
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 embedder = MatryoshkaEmbeddings(sizes=[768])
 
 # Option 3: Recursive learning
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.recursive import FullLearningEngine
 # System learns patterns across inspections!
 
 ⚡ Performance

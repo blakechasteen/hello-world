@@ -222,22 +222,22 @@ spacetime = await engine.weave(query)
 ### Created Files (6):
 
 1. **test_performance_regression.py** (466 lines)
-   - Location: `HoloLoom/tests/integration/test_performance_regression.py`
+   - Location: `hololoom/tests/integration/test_performance_regression.py`
    - Tests: 15
    - Focus: Regression detection, baselines, budgets
 
 2. **test_memory_backend_integration.py** (678 lines)
-   - Location: `HoloLoom/tests/integration/test_memory_backend_integration.py`
+   - Location: `hololoom/tests/integration/test_memory_backend_integration.py`
    - Tests: 18
    - Focus: INMEMORY, HYBRID, HYPERSPACE, fallback
 
 3. **test_alignment_workflows.py** (581 lines)
-   - Location: `HoloLoom/tests/integration/test_alignment_workflows.py`
+   - Location: `hololoom/tests/integration/test_alignment_workflows.py`
    - Tests: 13
    - Focus: Research, adversarial, power-seeking, audit
 
 4. **test_recursive_learning_workflows.py** (644 lines)
-   - Location: `HoloLoom/tests/integration/test_recursive_learning_workflows.py`
+   - Location: `hololoom/tests/integration/test_recursive_learning_workflows.py`
    - Tests: 15
    - Focus: 5 phases, refinement, Thompson Sampling
 
@@ -327,34 +327,34 @@ spacetime = await engine.weave(query)
 
 ```bash
 # Performance regression tests
-pytest HoloLoom/tests/integration/test_performance_regression.py -v
+pytest hololoom/tests/integration/test_performance_regression.py -v
 
 # Memory backend integration
-pytest HoloLoom/tests/integration/test_memory_backend_integration.py -v
+pytest hololoom/tests/integration/test_memory_backend_integration.py -v
 
 # Alignment workflows
-pytest HoloLoom/tests/integration/test_alignment_workflows.py -v
+pytest hololoom/tests/integration/test_alignment_workflows.py -v
 
 # Recursive learning workflows
-pytest HoloLoom/tests/integration/test_recursive_learning_workflows.py -v
+pytest hololoom/tests/integration/test_recursive_learning_workflows.py -v
 ```
 
 ### All New Integration Tests
 
 ```bash
-pytest HoloLoom/tests/integration/test_performance_regression.py \
-       HoloLoom/tests/integration/test_memory_backend_integration.py \
-       HoloLoom/tests/integration/test_alignment_workflows.py \
-       HoloLoom/tests/integration/test_recursive_learning_workflows.py -v
+pytest hololoom/tests/integration/test_performance_regression.py \
+       hololoom/tests/integration/test_memory_backend_integration.py \
+       hololoom/tests/integration/test_alignment_workflows.py \
+       hololoom/tests/integration/test_recursive_learning_workflows.py -v
 ```
 
 ### With Coverage
 
 ```bash
-pytest HoloLoom/tests/integration/test_performance_regression.py \
-       HoloLoom/tests/integration/test_memory_backend_integration.py \
-       HoloLoom/tests/integration/test_alignment_workflows.py \
-       HoloLoom/tests/integration/test_recursive_learning_workflows.py \
+pytest hololoom/tests/integration/test_performance_regression.py \
+       hololoom/tests/integration/test_memory_backend_integration.py \
+       hololoom/tests/integration/test_alignment_workflows.py \
+       hololoom/tests/integration/test_recursive_learning_workflows.py \
        --cov=HoloLoom --cov-report=html -v
 ```
 

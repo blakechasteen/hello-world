@@ -34,39 +34,39 @@ User discussing orchard planning...
 
 ### Files Created (7)
 
-1. **HoloLoom/voice_first/thread/__init__.py** (12 lines)
+1. **hololoom/voice_first/thread/__init__.py** (12 lines)
    - Package exports for thread management
 
-2. **HoloLoom/voice_first/thread/thread_branching.py** (377 lines)
+2. **hololoom/voice_first/thread/thread_branching.py** (377 lines)
    - `ThreadBrancher` class - Main branching logic
    - `ThreadBranch` dataclass - Branch metadata
    - `BranchContext` dataclass - Inherited context
    - Algorithm: validate → extract → create → link → return
 
-3. **HoloLoom/voice_first/thread/tests/__init__.py** (6 lines)
+3. **hololoom/voice_first/thread/tests/__init__.py** (6 lines)
    - Test package marker
 
-4. **HoloLoom/voice_first/thread/tests/test_thread_branching.py** (465 lines)
+4. **hololoom/voice_first/thread/tests/test_thread_branching.py** (465 lines)
    - 15 comprehensive test cases
    - Mock ThreadManager and YarnGraph
    - 100% test coverage
 
-5. **HoloLoom/voice_first/demo_thread_branching.py** (290 lines)
+5. **hololoom/voice_first/demo_thread_branching.py** (290 lines)
    - Complete working demo
    - Shows natural conversation flow
    - Visualizes YarnGraph relationships
 
 ### Files Modified (4)
 
-1. **HoloLoom/voice_first/README.md**
+1. **hololoom/voice_first/README.md**
    - Updated status to show thread branching complete
    - Added Milestone 1 features section
 
-2. **HoloLoom/voice_first/grammar/voice_grammar.py**
+2. **hololoom/voice_first/grammar/voice_grammar.py**
    - Thread branching patterns already present (lines 126-131)
    - Patterns: "fork this into [topic]", "new branch: [topic]"
 
-3. **HoloLoom/voice_first/core/voice_router.py**
+3. **hololoom/voice_first/core/voice_router.py**
    - Already handles THREAD_BRANCH routing (lines 117-126)
    - No changes needed (forward-compatible design)
 
@@ -186,7 +186,7 @@ async def _extract_context(parent, lookback_seconds):
 
 **Command**:
 ```bash
-cd HoloLoom/voice_first/thread/tests
+cd hololoom/voice_first/thread/tests
 PYTHONPATH=../../../.. python -m pytest test_thread_branching.py -v
 ```
 
@@ -278,7 +278,7 @@ patterns[CommandType.THREAD_BRANCH] = [
 Thread branching is already integrated into VoiceRouter:
 
 ```python
-# HoloLoom/voice_first/core/voice_router.py (lines 117-126)
+# hololoom/voice_first/core/voice_router.py (lines 117-126)
 elif intent.command_type in {
     CommandType.THREAD_CREATE,
     CommandType.THREAD_SWITCH,
@@ -345,7 +345,7 @@ async def _handle_branch_command(self, intent, context):
 ### Immediate (Next Session)
 
 1. **Start Week 3-4**: Thread Merging
-   - Create `HoloLoom/voice_first/thread/thread_merging.py`
+   - Create `hololoom/voice_first/thread/thread_merging.py`
    - Implement `ThreadMerger` class
    - 3 merge strategies (APPEND, SYNTHESIZE, PRESERVE_ALL)
    - Write 12 tests

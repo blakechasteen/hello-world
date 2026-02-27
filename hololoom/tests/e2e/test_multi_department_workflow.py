@@ -10,7 +10,7 @@ Tests complete workflows involving all departments:
 - Performance and optimization validation
 
 Run with:
-    pytest HoloLoom/tests/e2e/test_multi_department_workflow.py -v
+    pytest hololoom/tests/e2e/test_multi_department_workflow.py -v
 """
 
 import pytest
@@ -20,16 +20,16 @@ import tempfile
 from pathlib import Path
 from typing import List, Dict, Any
 
-from HoloLoom.departments import (
+from hololoom.departments import (
     DepartmentRequest,
     DepartmentRegistry
 )
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.apps.departments.context import ContextDepartment
-from HoloLoom.apps.departments.beekeeping import MasterWeaverDepartment
-from HoloLoom.apps.departments.infrastructure import InfrastructureDepartment
-from HoloLoom.apps.departments.verification import VerificationDepartment
-from HoloLoom.apps.departments.orchestration import OrchestrationDepartment
+from hololoom.protocols.types import MemoryShard
+from hololoom.apps.departments.context import ContextDepartment
+from hololoom.apps.departments.beekeeping import MasterWeaverDepartment
+from hololoom.apps.departments.infrastructure import InfrastructureDepartment
+from hololoom.apps.departments.verification import VerificationDepartment
+from hololoom.apps.departments.orchestration import OrchestrationDepartment
 
 
 # ============================================================================

@@ -18,7 +18,7 @@ Complete the mathematical foundation with specialized advanced topics that exten
 
 ### New Modules Created (3 modules, ~2,800 lines)
 
-**Location**: `HoloLoom/warp/math/extensions/`
+**Location**: `hololoom/warp/math/extensions/`
 
 1. **advanced_combinatorics.py** (900 lines)
    - Generating functions (OGF, EGF, Fibonacci, Catalan)
@@ -259,9 +259,9 @@ Complete the mathematical foundation with specialized advanced topics that exten
 
 All modules include self-tests:
 ```bash
-python HoloLoom/warp/math/extensions/advanced_combinatorics.py
-python HoloLoom/warp/math/extensions/multivariable_calculus.py
-python HoloLoom/warp/math/extensions/advanced_curvature.py
+python hololoom/warp/math/extensions/advanced_combinatorics.py
+python hololoom/warp/math/extensions/multivariable_calculus.py
+python hololoom/warp/math/extensions/advanced_curvature.py
 ```
 
 Results:
@@ -278,7 +278,7 @@ Results:
 ## 📁 File Organization
 
 ```
-HoloLoom/warp/math/
+hololoom/warp/math/
 ├── extensions/                    ← NEW Sprint 7
 │   ├── __init__.py
 │   ├── advanced_combinatorics.py  (900 lines)

@@ -23,20 +23,20 @@ def load_module(name, path):
     return module
 
 # Load protocol first
-protocol_path = os.path.join(project_root, "HoloLoom", "input", "protocol.py")
+protocol_path = os.path.join(project_root, "hololoom", "input", "protocol.py")
 protocol = load_module("protocol", protocol_path)
 
 # Load processors
-text_path = os.path.join(project_root, "HoloLoom", "input", "text_processor.py")
+text_path = os.path.join(project_root, "hololoom", "input", "text_processor.py")
 text_module = load_module("text_processor", text_path)
 
-structured_path = os.path.join(project_root, "HoloLoom", "input", "structured_processor.py")
+structured_path = os.path.join(project_root, "hololoom", "input", "structured_processor.py")
 structured_module = load_module("structured_processor", structured_path)
 
-fusion_path = os.path.join(project_root, "HoloLoom", "input", "fusion.py")
+fusion_path = os.path.join(project_root, "hololoom", "input", "fusion.py")
 fusion_module = load_module("fusion", fusion_path)
 
-router_path = os.path.join(project_root, "HoloLoom", "input", "router.py")
+router_path = os.path.join(project_root, "hololoom", "input", "router.py")
 router_module = load_module("router", router_path)
 
 

@@ -22,7 +22,7 @@ import json
 import threading
 import numpy as np
 
-from HoloLoom.dark_trace.protocol import (
+from hololoom.dark_trace.protocol import (
     Feature,
     FeatureSource,
     SafetyFlag,
@@ -554,7 +554,7 @@ class FeatureRegistry:
 
         Example:
             # After running autolabeling
-            from HoloLoom.dark_trace.sae.labeler import FeatureLabeler
+            from hololoom.dark_trace.sae.labeler import FeatureLabeler
 
             labeler = FeatureLabeler(llm_provider="anthropic")
             labels = await labeler.label_features(sae, [0, 1, 2, 3, 4])
@@ -643,7 +643,7 @@ class FeatureRegistry:
             Number of correlations registered
 
         Example:
-            from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+            from hololoom.dark_trace.multilayer.correlation_tracker import (
                 CorrelationTracker,
             )
 

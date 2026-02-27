@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from collections import defaultdict
 
-logger = logging.getLogger("HoloLoom.alignment.deception_detection")
+logger = logging.getLogger("hololoom.alignment.deception_detection")
 
 
 class ProbeType(Enum):

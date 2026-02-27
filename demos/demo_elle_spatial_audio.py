@@ -20,9 +20,9 @@ Date: November 2025
 
 import asyncio
 import math
-from HoloLoom.voice.ar_context import create_test_context, Vector3
-from HoloLoom.voice.spatial_audio import SpatialAudioHandler, SpatialAudioConfig
-from HoloLoom.voice.elle_bridge import ElleBridge
+from hololoom.voice.ar_context import create_test_context, Vector3
+from hololoom.voice.spatial_audio import SpatialAudioHandler, SpatialAudioConfig
+from hololoom.voice.elle_bridge import ElleBridge
 
 
 async def demo_spatial_audio():

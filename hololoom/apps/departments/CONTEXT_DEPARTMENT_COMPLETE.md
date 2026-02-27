@@ -14,18 +14,18 @@ Successfully implemented the Context Department following the established Depart
 
 ### Files Created
 
-1. **HoloLoom/departments/context_department.py** (984 lines)
+1. **hololoom/departments/context_department.py** (984 lines)
    - Complete Context Department implementation
    - 6 core context types (ContextEnvelope, SessionState, PrivacyConstraint, etc.)
    - 5 supported task types (enrich_request, track_session, enforce_privacy, retrieve_context, update_preferences)
    - Full integration with existing HoloLoom context system
 
-2. **HoloLoom/departments/tests/test_context_integration.py** (869 lines)
+2. **hololoom/departments/tests/test_context_integration.py** (869 lines)
    - Comprehensive integration tests
    - 33 tests covering all protocol methods and integration scenarios
    - 100% test coverage across all major features
 
-3. **HoloLoom/protocols/types.py** (Modified)
+3. **hololoom/protocols/types.py** (Modified)
    - Added `BanditStrategy` enum (EPSILON_GREEDY, BAYESIAN_BLEND, PURE_THOMPSON)
    - Required for Config.py imports
 
@@ -232,7 +232,7 @@ Successfully implemented the Context Department following the established Depart
 ## Integration Points
 
 ### 1. Existing Context System
-**Location**: `HoloLoom/context/`
+**Location**: `hololoom/context/`
 **Components Integrated**:
 - `QueryRouter` - Multi-backend query routing
 - `QueryClassifier` - 7-rule decision tree
@@ -415,7 +415,7 @@ Planning Dept → Context Dept (track) → Session Update → Planning Execution
 
 ### Default Configuration
 ```python
-from HoloLoom.apps.departments.context_department import create_context_department
+from hololoom.apps.departments.context_department import create_context_department
 
 dept = create_context_department(
     config=Config.fast(),
@@ -446,8 +446,8 @@ dept = ContextDepartment(
 
 ### 1. Basic Context Enrichment
 ```python
-from HoloLoom.apps.departments.context_department import create_context_department
-from HoloLoom.apps.departments.protocol import create_simple_request
+from hololoom.apps.departments.context_department import create_context_department
+from hololoom.apps.departments.protocol import create_simple_request
 
 async with create_context_department() as dept:
     request = create_simple_request(
@@ -516,8 +516,8 @@ async with create_context_department() as dept:
 ### 4. Cross-Department Integration
 ```python
 # RAG Department uses Context Department
-from HoloLoom.apps.departments.rag_department import RAGDepartment
-from HoloLoom.apps.departments.context_department import ContextDepartment
+from hololoom.apps.departments.rag_department import RAGDepartment
+from hololoom.apps.departments.context_department import ContextDepartment
 
 async with ContextDepartment() as context_dept, RAGDepartment() as rag_dept:
     # 1. Enrich request with context
@@ -638,11 +638,11 @@ async with ContextDepartment() as context_dept, RAGDepartment() as rag_dept:
 ## Files Created/Modified
 
 ### Created (2 files)
-1. `HoloLoom/departments/context_department.py` (984 lines)
-2. `HoloLoom/departments/tests/test_context_integration.py` (869 lines)
+1. `hololoom/departments/context_department.py` (984 lines)
+2. `hololoom/departments/tests/test_context_integration.py` (869 lines)
 
 ### Modified (1 file)
-1. `HoloLoom/protocols/types.py` (+19 lines)
+1. `hololoom/protocols/types.py` (+19 lines)
    - Added `BanditStrategy` enum
 
 **Total Lines**: 1,872 lines (implementation + tests + modifications)

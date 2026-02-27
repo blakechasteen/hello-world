@@ -1,6 +1,6 @@
 {
   "dashboard": {
-    "title": "HoloLoom System Performance",
+    "title": "hololoom System Performance",
     "uid": "hololoom-system-performance",
     "timezone": "browser",
     "schemaVersion": 27,
@@ -17,7 +17,7 @@
           {
             "expr": "up{job='hololoom-api'}",
             "refId": "A",
-            "legendFormat": "HoloLoom API"
+            "legendFormat": "hololoom API"
           },
           {
             "expr": "up{job='emotion-intelligence'}",
@@ -69,7 +69,7 @@
       },
       {
         "id": 2,
-        "title": "HoloLoom API - Request Rate",
+        "title": "hololoom API - Request Rate",
         "type": "graph",
         "gridPos": {"h": 8, "w": 12, "x": 0, "y": 3},
         "targets": [
@@ -114,7 +114,7 @@
       },
       {
         "id": 3,
-        "title": "HoloLoom API - Latency",
+        "title": "hololoom API - Latency",
         "type": "graph",
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 3},
         "targets": [
@@ -204,7 +204,7 @@
           {
             "expr": "hololoom_memory_usage_mb",
             "refId": "A",
-            "legendFormat": "HoloLoom API"
+            "legendFormat": "hololoom API"
           },
           {
             "expr": "emotion_memory_usage_mb",
@@ -340,7 +340,7 @@
           {
             "expr": "rate(hololoom_errors_total[5m])",
             "refId": "A",
-            "legendFormat": "HoloLoom API Errors/s"
+            "legendFormat": "hololoom API Errors/s"
           },
           {
             "expr": "rate(emotion_requests_failed[5m])",

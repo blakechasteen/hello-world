@@ -39,7 +39,7 @@ Text → Semantic Calculus → Semantic State
 
 ### 1. Policy Input Enhancement
 ```python
-# Current (in HoloLoom/policy/unified.py):
+# Current (in hololoom/policy/unified.py):
 def forward(self, motifs, embeddings, context_memory):
     # Uses: motifs (regex), embeddings (384D), memory
 
@@ -334,7 +334,7 @@ class SemanticOptimizer:
 ### Step 1: Create SemanticState dataclass
 
 ```python
-# HoloLoom/semantic_calculus/semantic_state.py
+# hololoom/semantic_calculus/semantic_state.py
 
 @dataclass
 class SemanticState:
@@ -380,7 +380,7 @@ class SemanticState:
 ### Step 2: Integrate with WeavingOrchestrator
 
 ```python
-# HoloLoom/weaving_orchestrator.py
+# hololoom/weaving_orchestrator.py
 
 class WeavingOrchestrator:
     def __init__(self, cfg, shards=None, memory=None):
@@ -388,7 +388,7 @@ class WeavingOrchestrator:
 
         # NEW: Optional semantic calculus
         if cfg.enable_semantic_awareness:
-            from HoloLoom.semantic_calculus.matryoshka_streaming import (
+            from hololoom.semantic_calculus.matryoshka_streaming import (
                 MatryoshkaSemanticCalculus
             )
             self.semantic_calculus = MatryoshkaSemanticCalculus(
@@ -429,7 +429,7 @@ class WeavingOrchestrator:
 ### Step 3: Enhance Policy to Use Semantic State
 
 ```python
-# HoloLoom/policy/unified.py
+# hololoom/policy/unified.py
 
 class NeuralCore(nn.Module):
     def __init__(self, ..., use_semantic_state=False):
@@ -462,7 +462,7 @@ class NeuralCore(nn.Module):
 ### Step 4: Semantic-Aware Tool Selection
 
 ```python
-# HoloLoom/policy/semantic_tools.py
+# hololoom/policy/semantic_tools.py
 
 class SemanticToolSelector:
     """Select tools based on semantic state."""
@@ -552,7 +552,7 @@ MEASURED → ACTIONABLE → OPTIMIZABLE
 
 ```bash
 # You were in: apps/mythy
-# Need to be in: HoloLoom/semantic_calculus
+# Need to be in: hololoom/semantic_calculus
 
 cd C:\Users\blake\Documents\mythRL\HoloLoom\semantic_calculus
 

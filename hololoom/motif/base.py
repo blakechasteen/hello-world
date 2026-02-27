@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import List, Optional
 import re
 
-from HoloLoom.protocols.types import Motif
+from hololoom.protocols.types import Motif
 
 
 class MotifDetector:

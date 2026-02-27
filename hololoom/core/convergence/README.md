@@ -1,7 +1,7 @@
 # Convergence Engine - Decision Collapse
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/convergence/`
+**Location**: `hololoom/convergence/`
 **Code**: 832 lines across 3 files
 
 ---
@@ -19,7 +19,7 @@ The **Convergence Engine** collapses continuous probability distributions from t
 ### File Structure
 
 ```
-HoloLoom/convergence/
+hololoom/convergence/
 ├── __init__.py          # 17 lines - Public exports
 ├── engine.py            # 406 lines - Main convergence engine
 └── mcts_engine.py       # 409 lines - MCTS-based planning
@@ -81,7 +81,7 @@ graph TD
 **Most Confident**: Select tool with highest probability.
 
 ```python
-from HoloLoom.convergence import ConvergenceEngine, CollapseStrategy
+from hololoom.convergence import ConvergenceEngine, CollapseStrategy
 
 engine = ConvergenceEngine(strategy=CollapseStrategy.ARGMAX)
 
@@ -116,7 +116,7 @@ chosen_idx = engine.collapse(tool_probs)
 **Blend Neural + Thompson Sampling**: Combine neural probs with bandit priors.
 
 ```python
-from HoloLoom.policy.thompson_sampling import TSBandit
+from hololoom.policy.thompson_sampling import TSBandit
 
 # Create bandit with priors
 bandit = TSBandit(n_arms=4)
@@ -155,7 +155,7 @@ chosen_idx = engine.collapse(tool_probs)
 **Monte Carlo Tree Search**: Plan ahead with lookahead.
 
 ```python
-from HoloLoom.convergence.mcts_engine import MCTSEngine
+from hololoom.convergence.mcts_engine import MCTSEngine
 
 # Create MCTS engine
 engine = MCTSEngine(
@@ -181,7 +181,7 @@ chosen_idx = await engine.plan(
 ### Example 1: Basic Collapse
 
 ```python
-from HoloLoom.convergence import ConvergenceEngine, CollapseStrategy
+from hololoom.convergence import ConvergenceEngine, CollapseStrategy
 import numpy as np
 
 # Create engine
@@ -228,7 +228,7 @@ print(Counter(choices))
 ### Example 3: Bayesian Blend
 
 ```python
-from HoloLoom.policy.thompson_sampling import TSBandit
+from hololoom.policy.thompson_sampling import TSBandit
 
 # Create bandit with history
 bandit = TSBandit(n_arms=4)
@@ -250,7 +250,7 @@ chosen = engine.collapse(tool_probs)
 ### Example 4: MCTS Planning
 
 ```python
-from HoloLoom.convergence.mcts_engine import MCTSEngine
+from hololoom.convergence.mcts_engine import MCTSEngine
 
 # Create MCTS engine
 mcts = MCTSEngine(
@@ -284,8 +284,8 @@ print(f"MCTS chose: {tools[chosen]}")
 ## Integration with Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.convergence import ConvergenceEngine, CollapseStrategy
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.convergence import ConvergenceEngine, CollapseStrategy
 
 # Create convergence engine
 engine = ConvergenceEngine(strategy=CollapseStrategy.ARGMAX)
@@ -326,7 +326,7 @@ UCT(node) = exploitation + exploration
 
 **Usage**:
 ```python
-from HoloLoom.convergence.mcts_engine import MCTSEngine, MCTSConfig
+from hololoom.convergence.mcts_engine import MCTSEngine, MCTSConfig
 
 # Configure MCTS
 config = MCTSConfig(
@@ -424,8 +424,8 @@ class CollapseStrategy(Enum):
 
 **Internal**:
 ```python
-from HoloLoom.policy.thompson_sampling import TSBandit
-from HoloLoom.documentation.types import ActionPlan
+from hololoom.policy.thompson_sampling import TSBandit
+from hololoom.documentation.types import ActionPlan
 ```
 
 **External**:
@@ -444,7 +444,7 @@ from typing import Optional, Callable, Dict, Any
 
 **1. Deterministic Collapse (ARGMAX)**
 ```python
-from HoloLoom.convergence import ConvergenceEngine, CollapseStrategy
+from hololoom.convergence import ConvergenceEngine, CollapseStrategy
 
 engine = ConvergenceEngine(strategy=CollapseStrategy.ARGMAX)
 chosen_idx = engine.collapse(tool_probs)
@@ -462,7 +462,7 @@ chosen_idx = engine.collapse(tool_probs)
 
 **3. Bayesian Blend (Recommended)**
 ```python
-from HoloLoom.policy.thompson_sampling import TSBandit
+from hololoom.policy.thompson_sampling import TSBandit
 
 bandit = TSBandit(n_arms=4)
 engine = ConvergenceEngine(
@@ -557,7 +557,7 @@ stats = engine.bandit.get_stats()
 ### MCTS Planning (Advanced)
 
 ```python
-from HoloLoom.convergence.mcts_engine import MCTSEngine
+from hololoom.convergence.mcts_engine import MCTSEngine
 
 # Create MCTS engine
 mcts = MCTSEngine(
@@ -620,9 +620,9 @@ chosen_idx = await mcts.plan(
 ### Integration Example
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.convergence import ConvergenceEngine, CollapseStrategy
-from HoloLoom.policy.thompson_sampling import TSBandit
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.convergence import ConvergenceEngine, CollapseStrategy
+from hololoom.policy.thompson_sampling import TSBandit
 
 # Create convergence engine with bandit
 bandit = TSBandit(n_arms=4)  # 4 tools

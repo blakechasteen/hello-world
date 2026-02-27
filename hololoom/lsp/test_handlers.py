@@ -12,9 +12,9 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config
-from HoloLoom.lsp.server import (
+from hololoom import hololoom
+from hololoom.config import Config
+from hololoom.lsp.server import (
     extract_word_at_position,
     extract_symbol_at_position,
     format_memory_as_markdown,
@@ -32,7 +32,7 @@ async def test_helper_functions():
     pos = 18  # After "recall"
     word = extract_word_at_position(line, pos)
     print(f"✓ extract_word_at_position: '{line}' @ {pos} → '{word}'")
-    assert word == "HoloLoom.memory.recall", f"Expected 'HoloLoom.memory.recall', got '{word}'"
+    assert word == "hololoom.memory.recall", f"Expected 'hololoom.memory.recall', got '{word}'"
 
     # Test extract_symbol_at_position
     line = "  my_function(arg1, arg2)"

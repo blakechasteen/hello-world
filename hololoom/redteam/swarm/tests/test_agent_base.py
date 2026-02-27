@@ -16,9 +16,9 @@ import asyncio
 import pytest
 from typing import Optional
 
-from HoloLoom.redteam.swarm.agent_base import BaseAgent, AgentMetrics
-from HoloLoom.redteam.swarm.communication import MessageBus
-from HoloLoom.redteam.swarm.protocols import (
+from hololoom.redteam.swarm.agent_base import BaseAgent, AgentMetrics
+from hololoom.redteam.swarm.communication import MessageBus
+from hololoom.redteam.swarm.protocols import (
     AgentMessage,
     AgentRole,
     AgentState,

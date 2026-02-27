@@ -16,7 +16,7 @@ SQL Integration for HoloLoom RAG has been successfully implemented, enabling hyb
 
 ## Deliverables
 
-### 1. Core Implementation (`HoloLoom/rag/sql_integration.py`)
+### 1. Core Implementation (`hololoom/rag/sql_integration.py`)
 
 **Lines**: 971
 **Status**: ✅ Complete
@@ -62,7 +62,7 @@ SQL Integration for HoloLoom RAG has been successfully implemented, enabling hyb
 
 ---
 
-### 2. Comprehensive Test Suite (`HoloLoom/rag/tests/test_sql_integration.py`)
+### 2. Comprehensive Test Suite (`hololoom/rag/tests/test_sql_integration.py`)
 
 **Lines**: 736
 **Status**: ✅ 13/13 passing (16 skipped due to missing SQLAlchemy)
@@ -153,7 +153,7 @@ python demos/demo_rag_sql.py
 
 ---
 
-### 4. Documentation (`HoloLoom/rag/SQL_INTEGRATION_README.md`)
+### 4. Documentation (`hololoom/rag/SQL_INTEGRATION_README.md`)
 
 **Lines**: 591
 **Status**: ✅ Complete
@@ -187,12 +187,12 @@ python demos/demo_rag_sql.py
 
 ### 5. Integration Updates
 
-#### `HoloLoom/rag/__init__.py`
+#### `hololoom/rag/__init__.py`
 **Status**: ✅ Updated
 
 Added exports:
 ```python
-from HoloLoom.rag.sql_integration import (
+from hololoom.rag.sql_integration import (
     SQLRAGMixin,
     SQLRAGResult,
     SQLAdapter,
@@ -297,7 +297,7 @@ SQLResult + SemanticResult → LLM Synthesis → Natural Language Answer
 ### Example 1: Basic Usage
 
 ```python
-from HoloLoom.rag.sql_integration import SQLRAGMixin
+from hololoom.rag.sql_integration import SQLRAGMixin
 
 class MyRAG(SQLRAGMixin):
     """Your RAG with SQL capabilities."""
@@ -397,12 +397,12 @@ Test Execution Time: ~13.2s
 
 ### Created Files (4):
 
-1. **`HoloLoom/rag/sql_integration.py`** (971 lines)
+1. **`hololoom/rag/sql_integration.py`** (971 lines)
    - Core implementation
    - SQLAdapter, TextToSQLTranslator, SQLRAGMixin
    - Data structures and protocols
 
-2. **`HoloLoom/rag/tests/test_sql_integration.py`** (736 lines)
+2. **`hololoom/rag/tests/test_sql_integration.py`** (736 lines)
    - Comprehensive test suite
    - 29 tests covering all components
    - Security, performance, integration tests
@@ -412,13 +412,13 @@ Test Execution Time: ~13.2s
    - Sample database creation
    - All query modes demonstrated
 
-4. **`HoloLoom/rag/SQL_INTEGRATION_README.md`** (591 lines)
+4. **`hololoom/rag/SQL_INTEGRATION_README.md`** (591 lines)
    - Complete documentation
    - API reference, examples, troubleshooting
 
 ### Modified Files (1):
 
-1. **`HoloLoom/rag/__init__.py`** (+18 lines)
+1. **`hololoom/rag/__init__.py`** (+18 lines)
    - Added SQL integration exports
    - Updated __all__ list
 

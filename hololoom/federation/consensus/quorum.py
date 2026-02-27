@@ -22,7 +22,7 @@ from datetime import datetime
 from difflib import SequenceMatcher
 from typing import Any, Dict, FrozenSet, List, Optional, Set
 
-from HoloLoom.federation.types import Response
+from hololoom.federation.types import Response
 
 from .protocol import (
     ConsensusProtocol,

@@ -28,7 +28,7 @@ Architecture:
     - Uses abilities (code_execution, git_operations, test_runner, security_scan)
 
 Usage:
-    from HoloLoom.apps.departments.proto.adapters.matrix import (
+    from hololoom.apps.departments.proto.adapters.matrix import (
         ProtoMatrixHandlers,
         create_proto_handlers,
     )

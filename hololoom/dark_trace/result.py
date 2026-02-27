@@ -20,7 +20,7 @@ import json
 
 import torch
 
-from HoloLoom.dark_trace.protocol import (
+from hololoom.dark_trace.protocol import (
     Feature,
     FeatureActivation,
     SteeringVector,

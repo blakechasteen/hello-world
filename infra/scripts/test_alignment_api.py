@@ -1,5 +1,5 @@
 """Quick test of ActionObservation API fix."""
-from HoloLoom.alignment.deception_detection import ActionObservation, create_detector
+from hololoom.alignment.deception_detection import ActionObservation, create_detector
 
 # Test ActionObservation creation with corrected API
 action_obs = ActionObservation(

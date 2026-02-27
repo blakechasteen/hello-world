@@ -14,37 +14,37 @@ Fixed **3 blocking import/variable errors** that prevented Shuttle integration t
 
 ## Fix 1: create_retriever Import Path (component_init.py)
 
-**Error**: `ImportError: cannot import name 'create_retriever' from 'HoloLoom.memory.backend_factory'`
+**Error**: `ImportError: cannot import name 'create_retriever' from 'hololoom.memory.backend_factory'`
 
 **Root Cause**: `create_retriever` function is defined in `memory.base`, not `memory.backend_factory`
 
-**Files Modified**: `HoloLoom/orchestrator/initialization/component_init.py`
+**Files Modified**: `hololoom/orchestrator/initialization/component_init.py`
 
 **Changes**:
 - **Line 152** (Shuttle retriever initialization):
   ```python
   # BEFORE (incorrect):
-  from HoloLoom.memory.backend_factory import create_retriever
+  from hololoom.memory.backend_factory import create_retriever
 
   # AFTER (correct):
-  from HoloLoom.memory.base import create_retriever
+  from hololoom.memory.base import create_retriever
   ```
 
 - **Line 272** (Legacy retriever initialization):
   ```python
   # BEFORE (incorrect):
-  from HoloLoom.memory.backend_factory import create_retriever
+  from hololoom.memory.backend_factory import create_retriever
 
   # AFTER (correct):
-  from HoloLoom.memory.base import create_retriever
+  from hololoom.memory.base import create_retriever
   ```
 
 **Verification**:
 ```bash
-grep -n "from HoloLoom.memory" component_init.py | grep create_retriever
+grep -n "from hololoom.memory" component_init.py | grep create_retriever
 # Result:
-# 152:            from HoloLoom.memory.base import create_retriever
-# 272:        from HoloLoom.memory.base import create_retriever
+# 152:            from hololoom.memory.base import create_retriever
+# 272:        from hololoom.memory.base import create_retriever
 ```
 
 **Impact**: Allows WeavingOrchestrator initialization to complete successfully
@@ -57,7 +57,7 @@ grep -n "from HoloLoom.memory" component_init.py | grep create_retriever
 
 **Root Cause**: Local variable assignment at line 772 (`metrics = self.awareness_layer.get_metrics()`) shadowed the global `metrics` module import at line 179, causing UnboundLocalError when cache tracking tried to use the global `metrics` before reaching line 772.
 
-**File Modified**: `HoloLoom/weaving_orchestrator.py`
+**File Modified**: `hololoom/weaving_orchestrator.py`
 
 **Changes**:
 - **Line 772** (renamed local variable to avoid shadowing):
@@ -87,13 +87,13 @@ grep -n "from HoloLoom.memory" component_init.py | grep create_retriever
   ```
 
 **Context**:
-- **Line 179**: Global import `from HoloLoom.performance.prometheus_metrics import metrics`
+- **Line 179**: Global import `from hololoom.performance.prometheus_metrics import metrics`
 - **Lines 838/843**: Cache tracking uses `metrics.track_cache_hit()` and `metrics.track_cache_miss()`
 - Python scoping rule: Local assignment anywhere in function makes variable local for entire function scope
 
 **Verification**:
 ```bash
-python -m py_compile HoloLoom/weaving_orchestrator.py
+python -m py_compile hololoom/weaving_orchestrator.py
 # No output = syntax valid
 ```
 
@@ -103,29 +103,29 @@ python -m py_compile HoloLoom/weaving_orchestrator.py
 
 ## Fix 3: Spacetime Import Path (physics_integration.py)
 
-**Error**: `ImportError: cannot import name 'Spacetime' from 'HoloLoom.protocols.types'`
+**Error**: `ImportError: cannot import name 'Spacetime' from 'hololoom.protocols.types'`
 
-**Root Cause**: `Spacetime` class is defined in `HoloLoom.fabric.spacetime`, not `HoloLoom.protocols.types`
+**Root Cause**: `Spacetime` class is defined in `hololoom.fabric.spacetime`, not `hololoom.protocols.types`
 
-**File Modified**: `HoloLoom/orchestrator/physics/physics_integration.py`
+**File Modified**: `hololoom/orchestrator/physics/physics_integration.py`
 
 **Changes**:
 - **Line 30** (split incorrect import):
   ```python
   # BEFORE (incorrect):
-  from HoloLoom.protocols.types import Query, Spacetime
+  from hololoom.protocols.types import Query, Spacetime
 
   # AFTER (correct):
-  from HoloLoom.protocols.types import Query
-  from HoloLoom.fabric.spacetime import Spacetime
+  from hololoom.protocols.types import Query
+  from hololoom.fabric.spacetime import Spacetime
   ```
 
 **Verification**:
 ```bash
 find HoloLoom -name "*.py" -exec grep -l "class Spacetime" {} \;
-# Result: HoloLoom/fabric/spacetime.py (correct location)
+# Result: hololoom/fabric/spacetime.py (correct location)
 
-python -m py_compile HoloLoom/orchestrator/physics/physics_integration.py
+python -m py_compile hololoom/orchestrator/physics/physics_integration.py
 # No output = syntax valid
 ```
 

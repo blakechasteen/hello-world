@@ -28,7 +28,7 @@ async def main():
     print_banner("xTERMINATOR AUTO-FIXER DEMONSTRATION", "=")
 
     print("Watch as xTerminator fixes code issues automatically!")
-    print("Target: HoloLoom/config.py (47 issues detected)")
+    print("Target: hololoom/config.py (47 issues detected)")
     print()
 
     await asyncio.sleep(0.5)
@@ -36,7 +36,7 @@ async def main():
     # Read target file
     print_banner("PHASE 1: Load Target File", "-")
 
-    target_file = "HoloLoom/config.py"
+    target_file = "hololoom/config.py"
     print(f">>> Loading {target_file}...")
 
     try:

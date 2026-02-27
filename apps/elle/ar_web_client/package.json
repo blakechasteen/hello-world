@@ -1,7 +1,7 @@
 {
   "name": "elle-ar-client",
   "version": "1.0.0",
-  "description": "WebXR AR client for Elle + HoloLoom integration",
+  "description": "WebXR AR client for Elle + hololoom integration",
   "type": "module",
   "scripts": {
     "dev": "vite",

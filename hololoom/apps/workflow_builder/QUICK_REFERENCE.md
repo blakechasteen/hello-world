@@ -249,7 +249,7 @@ closeModal('templatesModal')
 ## Files to Know
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── workflow_builder.html          ← Modified (added 210 lines)
 ├── template_gallery.html          ← Modified (added 20 lines)
 ├── workflow_builder.js            ← Unchanged

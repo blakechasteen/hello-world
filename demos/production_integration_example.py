@@ -13,8 +13,8 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import json
 
-from HoloLoom.analytical_orchestrator import create_analytical_orchestrator
-from HoloLoom.config import Config
+from hololoom.analytical_orchestrator import create_analytical_orchestrator
+from hololoom.config import Config
 
 # Configure logging
 logging.basicConfig(

@@ -19,7 +19,7 @@ import asyncio
 from datetime import datetime
 
 # Import protocol types directly
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -28,7 +28,7 @@ from HoloLoom.apps.departments.protocol import (
 )
 
 # Import Orchestration Department
-from HoloLoom.apps.departments.orchestration_department import (
+from hololoom.apps.departments.orchestration_department import (
     OrchestrationDepartment,
     AggregationStrategy,
     RoutingStrategy,
@@ -68,7 +68,7 @@ class MockRAGDepartment:
 
     async def verify(self, response: DepartmentResponse) -> VerificationResult:
         """Verify response."""
-        from HoloLoom.apps.departments.protocol import VerificationCheck, VerificationStatus
+        from hololoom.apps.departments.protocol import VerificationCheck, VerificationStatus
 
         checks = [
             VerificationCheck(
@@ -146,7 +146,7 @@ class MockPlanningDepartment:
 
     async def verify(self, response: DepartmentResponse) -> VerificationResult:
         """Verify response."""
-        from HoloLoom.apps.departments.protocol import VerificationCheck, VerificationStatus
+        from hololoom.apps.departments.protocol import VerificationCheck, VerificationStatus
 
         checks = [
             VerificationCheck(

@@ -16,8 +16,8 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.alignment.monitoring import AlignmentMonitor
-from HoloLoom.alignment.live_monitor import LiveDashboard
+from hololoom.alignment.monitoring import AlignmentMonitor
+from hololoom.alignment.live_monitor import LiveDashboard
 
 
 async def simulate_queries(monitor: AlignmentMonitor, count: int = 100):

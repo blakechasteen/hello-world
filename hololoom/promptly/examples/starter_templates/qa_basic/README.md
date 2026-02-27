@@ -186,11 +186,11 @@ trainset = [dspy.Example(**ex).with_inputs("question", "context") for ex in exam
 optimized_program = optimizer.compile(program, trainset=trainset)
 ```
 
-### 3. Optimize from HoloLoom Memory
+### 3. Optimize from hololoom Memory
 
 ```python
-from HoloLoom.promptly import DSPyHoloLoom
-from HoloLoom.config import Config
+from hololoom.promptly import DSPyHoloLoom
+from hololoom.config import Config
 
 # Create bridge
 bridge = DSPyHoloLoom(config=Config.fused())
@@ -211,7 +211,7 @@ result = optimized(question=question, context=context)
 ### Add Custom Metrics
 
 ```python
-from HoloLoom.promptly.metrics_system import MetricsEvaluator, MetricType
+from hololoom.promptly.metrics_system import MetricsEvaluator, MetricType
 
 # Create evaluator
 evaluator = MetricsEvaluator(
@@ -239,8 +239,8 @@ print(f"Passed: {result.passed}")
 ### Use HoloLoom's Memory System
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config
+from hololoom import hololoom
+from hololoom.config import Config
 
 # Create HoloLoom instance
 async with HoloLoom(config=Config.fused()) as loom:
@@ -259,8 +259,8 @@ async with HoloLoom(config=Config.fused()) as loom:
 ### Use HoloLoom's Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import Query
 
 async with WeavingOrchestrator(cfg=config, shards=KNOWLEDGE_BASE) as orchestrator:
     # Full weaving cycle
@@ -301,7 +301,7 @@ steps:
 Run with workflow adapter:
 
 ```python
-from HoloLoom.promptly import DSPyWorkflowAdapter
+from hololoom.promptly import DSPyWorkflowAdapter
 
 adapter = DSPyWorkflowAdapter(config=Config.fast())
 workflow = await adapter.load_workflow("qa_workflow.yaml")

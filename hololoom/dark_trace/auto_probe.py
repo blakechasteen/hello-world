@@ -2,10 +2,10 @@ import threading
 import time
 import torch
 from typing import Optional, Dict, TYPE_CHECKING
-from HoloLoom.dark_trace.probe import MindProbe
+from hololoom.dark_trace.probe import MindProbe
 
 if TYPE_CHECKING:
-    from HoloLoom.eggroll.mirror_core import MirrorCoreAgent
+    from hololoom.eggroll.mirror_core import MirrorCoreAgent
 
 class AutoProbe:
     """

@@ -154,7 +154,7 @@ Statistics:
 2. `docs/FUNCTIONAL_SYSTEM_COMPLETE.md` - This file
 
 ### Modified
-1. `HoloLoom/weaving_orchestrator.py`
+1. `hololoom/weaving_orchestrator.py`
    - Added `_init_memory()` method
    - Added `add_knowledge()` method
    - Added `_retrieve_context()` method

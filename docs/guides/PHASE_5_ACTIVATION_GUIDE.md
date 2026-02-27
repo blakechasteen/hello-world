@@ -69,8 +69,8 @@ Phase 5 is **already integrated** into `WeavingOrchestrator`. Just enable it in 
 ### Option 1: Enable compositional cache only (recommended)
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Create config
 config = Config.fused()
@@ -314,10 +314,10 @@ config.merge_cache_size = 5000   # From 50000
 
 ## References
 
-- **Implementation**: [`HoloLoom/performance/compositional_cache.py`](../../HoloLoom/performance/compositional_cache.py) (658 lines)
-- **Gate integration**: [`HoloLoom/embedding/linguistic_matryoshka_gate.py`](../../HoloLoom/embedding/linguistic_matryoshka_gate.py) (800+ lines)
+- **Implementation**: [`hololoom/performance/compositional_cache.py`](../../hololoom/performance/compositional_cache.py) (658 lines)
+- **Gate integration**: [`hololoom/embedding/linguistic_matryoshka_gate.py`](../../hololoom/embedding/linguistic_matryoshka_gate.py) (800+ lines)
 - **Tests**: [`test_phase5_integration.py`](../../test_phase5_integration.py) (400+ lines)
-- **Orchestrator**: [`HoloLoom/weaving_orchestrator.py`](../../HoloLoom/weaving_orchestrator.py) (lines 518-572)
+- **Orchestrator**: [`hololoom/weaving_orchestrator.py`](../../hololoom/weaving_orchestrator.py) (lines 518-572)
 
 ---
 

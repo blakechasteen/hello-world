@@ -1,7 +1,7 @@
-# HoloLoom SaaS API Dockerfile
+# hololoom SaaS API Dockerfile
 #
 # Build:
-#   docker build -t hololoom-saas -f HoloLoom/saas/Dockerfile .
+#   docker build -t hololoom-saas -f hololoom/saas/Dockerfile .
 #
 # Run (SQLite, development):
 #   docker run -p 8000:8000 hololoom-saas
@@ -56,7 +56,7 @@ COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 # Copy application code
-COPY HoloLoom /app/HoloLoom
+COPY hololoom /app/hololoom
 
 # Set Python path
 ENV PYTHONPATH=/app
@@ -82,4 +82,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 EXPOSE ${PORT}
 
 # Run the application
-CMD ["sh", "-c", "uvicorn HoloLoom.saas.app:app --host $HOST --port $PORT --workers $WORKERS"]
+CMD ["sh", "-c", "uvicorn hololoom.saas.app:app --host $HOST --port $PORT --workers $WORKERS"]

@@ -18,7 +18,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from HoloLoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
+from hololoom.prompting.unified_mrf import UnifiedMRF, ModelProvider, MetapromptConfig
 
 
 class PromptVariant(Enum):

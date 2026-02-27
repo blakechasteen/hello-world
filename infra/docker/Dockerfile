@@ -1,4 +1,4 @@
-# HoloLoom Production Dockerfile
+# hololoom Production Dockerfile
 # Multi-stage build for optimized image size
 
 # Stage 1: Builder
@@ -37,7 +37,7 @@ COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 # Copy application code
-COPY HoloLoom /app/HoloLoom
+COPY hololoom /app/hololoom
 COPY demos /app/demos
 
 # Set Python path
@@ -51,4 +51,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 EXPOSE 8000
 
 # Run API server
-CMD ["uvicorn", "HoloLoom.apps.server.agentic_api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["uvicorn", "hololoom.apps.server.agentic_api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

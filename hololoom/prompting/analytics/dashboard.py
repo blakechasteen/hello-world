@@ -18,7 +18,7 @@ Features:
 - Prometheus metrics export (production monitoring)
 
 Usage:
-    from HoloLoom.prompting.analytics import MRFDashboard
+    from hololoom.prompting.analytics import MRFDashboard
 
     # Create dashboard with learning and A/B testing enabled
     dashboard = MRFDashboard(
@@ -91,7 +91,7 @@ logger = logging.getLogger(__name__)
 
 # Import learning and A/B testing modules (optional)
 try:
-    from HoloLoom.prompting.analytics.learning import ThompsonLearner
+    from hololoom.prompting.analytics.learning import ThompsonLearner
     LEARNING_AVAILABLE = True
 except ImportError:
     ThompsonLearner = None
@@ -99,7 +99,7 @@ except ImportError:
     logger.warning("Thompson Sampling learner not available")
 
 try:
-    from HoloLoom.prompting.analytics.ab_testing import ABTest, ABGroup
+    from hololoom.prompting.analytics.ab_testing import ABTest, ABGroup
     AB_TESTING_AVAILABLE = True
 except ImportError:
     ABTest = None

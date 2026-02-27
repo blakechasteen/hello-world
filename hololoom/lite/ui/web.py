@@ -70,7 +70,7 @@ def create_app():
     async def startup():
         """Initialize HoloLoom on startup."""
         global _loom
-        from HoloLoom.lite import HoloLoomLite
+        from hololoom.lite import HoloLoomLite
         _loom = HoloLoomLite()
         await _loom._initialize()
 

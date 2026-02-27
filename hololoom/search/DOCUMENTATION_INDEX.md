@@ -294,7 +294,7 @@ Step-by-step guide with code example
 2. **Search for keywords** in any file
 3. **Look at code examples** in Quick Start
 4. **Check API Reference** for method signatures
-5. **Look at test files** in HoloLoom/search/tests/
+5. **Look at test files** in hololoom/search/tests/
 
 ### If you find errors:
 - Update the relevant documentation file

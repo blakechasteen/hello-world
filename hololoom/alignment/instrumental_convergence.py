@@ -24,7 +24,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-logger = logging.getLogger("HoloLoom.alignment.instrumental_convergence")
+logger = logging.getLogger("hololoom.alignment.instrumental_convergence")
 
 
 class ResourceType(Enum):

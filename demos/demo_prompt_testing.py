@@ -26,7 +26,7 @@ from typing import List, Dict, Any
 # Add project root to path
 sys.path.insert(0, ".")
 
-from HoloLoom.prompting.testing import (
+from hololoom.prompting.testing import (
     PromptTestConfig,
     PromptTestCase,
     PromptTestResult,
@@ -630,8 +630,8 @@ async def main():
     print("  3. Create test cases for your prompts")
     print("  4. Run test suite with create_test_suite()")
     print()
-    print("Documentation: HoloLoom/prompting/testing/README.md")
-    print("Golden Datasets: HoloLoom/prompting/testing/golden_chains.py")
+    print("Documentation: hololoom/prompting/testing/README.md")
+    print("Golden Datasets: hololoom/prompting/testing/golden_chains.py")
 
 
 if __name__ == "__main__":

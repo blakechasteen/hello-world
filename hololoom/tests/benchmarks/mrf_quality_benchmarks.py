@@ -580,7 +580,7 @@ class MRFQualityBenchmarks:
 
         # Save JSON report
         report = self.generate_summary_report()
-        output_path = Path("HoloLoom/tests/benchmarks/mrf_quality_report.json")
+        output_path = Path("hololoom/tests/benchmarks/mrf_quality_report.json")
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, 'w') as f:
             json.dump(report, f, indent=2)

@@ -1,7 +1,7 @@
 # SwarmCoordinator: Multi-Agent Orchestration System
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/redteam/swarm/coordinator.py`
+**Location**: `hololoom/redteam/swarm/coordinator.py`
 **Lines**: 600+
 **Performance Target**: 20%+ improvement over single-agent baseline
 
@@ -66,8 +66,8 @@ Speedup: 8-10x for parallelizable workloads
 ### Initialization
 
 ```python
-from HoloLoom.redteam.swarm.coordinator import SwarmCoordinator
-from HoloLoom.redteam.swarm.communication import MessageBus
+from hololoom.redteam.swarm.coordinator import SwarmCoordinator
+from hololoom.redteam.swarm.communication import MessageBus
 
 # Create message bus and coordinator
 bus = MessageBus(max_queue_size=10000)
@@ -124,7 +124,7 @@ print(f"Agent contributions: {result.agent_contributions}")
 
 ```python
 # Manually distribute task
-from HoloLoom.redteam.swarm.protocols import AgentTask, MessagePriority
+from hololoom.redteam.swarm.protocols import AgentTask, MessagePriority
 
 task = AgentTask(
     task_type="probe_surface",
@@ -436,7 +436,7 @@ async with SwarmCoordinator(message_bus) as coordinator:
 ### Custom Task Distribution
 
 ```python
-from HoloLoom.redteam.swarm.protocols import AgentTask, MessagePriority
+from hololoom.redteam.swarm.protocols import AgentTask, MessagePriority
 
 async with SwarmCoordinator(message_bus) as coordinator:
     # Create custom task
@@ -485,7 +485,7 @@ async def monitor_campaign():
 
 ### Unit Tests
 
-See `HoloLoom/redteam/swarm/tests/test_coordinator.py` for:
+See `hololoom/redteam/swarm/tests/test_coordinator.py` for:
 
 - Agent initialization and startup
 - Campaign phase execution

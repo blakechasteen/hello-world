@@ -24,12 +24,12 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Set
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from HoloLoom.federation.types import (
+from hololoom.federation.types import (
     Capability,
     FederationNode,
     GuildTrustLevel,
 )
-from HoloLoom.federation.agentic_rag import (
+from hololoom.federation.agentic_rag import (
     FederatedRAG,
     FederatedRAGConfig,
     FederatedRAGResult,
@@ -38,7 +38,7 @@ from HoloLoom.federation.agentic_rag import (
     DEFAULT_FEDERATION_THRESHOLD,
     RAG_RECALL_METHOD,
 )
-from HoloLoom.federation.result_merger import (
+from hololoom.federation.result_merger import (
     RAGResultMerger,
     NodeRAGResult,
     MergedRAGResult,
@@ -900,7 +900,7 @@ class TestResultConversion:
         )
 
         # Mock the import
-        with patch.dict('sys.modules', {'HoloLoom.rag.simple_rag': MagicMock()}):
+        with patch.dict('sys.modules', {'hololoom.rag.simple_rag': MagicMock()}):
             # Create mock RAGResult class
             mock_module = MagicMock()
             mock_module.RAGResult = MockRAGResult

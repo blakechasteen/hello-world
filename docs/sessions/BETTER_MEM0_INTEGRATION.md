@@ -22,7 +22,7 @@ print(context)  # Relevant memories
 
 ### The Problem with Complex Integration
 
-The full HoloLoom + mem0 hybrid system ([HoloLoom/memory/mem0_adapter.py](HoloLoom/memory/mem0_adapter.py)) is:
+The full HoloLoom + mem0 hybrid system ([hololoom/memory/mem0_adapter.py](hololoom/memory/mem0_adapter.py)) is:
 - **Heavy**: Requires PyTorch, NetworkX, embeddings, knowledge graphs
 - **Complex**: 575 lines of integration code
 - **Coupled**: Tightly integrated into HoloLoom's architecture
@@ -280,8 +280,8 @@ This is a known issue with certain Ollama model combinations. Solutions:
 
 - **[mem0_simple_integration.py](mem0_simple_integration.py)**: Main implementation
 - **[HOW_TO_USE_MEM0.md](HOW_TO_USE_MEM0.md)**: Full mem0 guide
-- **[HoloLoom/memory/mem0_adapter.py](HoloLoom/memory/mem0_adapter.py)**: Complex hybrid system (for reference)
-- **[HoloLoom/Documentation/MEM0_QUICKSTART.md](HoloLoom/Documentation/MEM0_QUICKSTART.md)**: Hybrid system quickstart
+- **[hololoom/memory/mem0_adapter.py](hololoom/memory/mem0_adapter.py)**: Complex hybrid system (for reference)
+- **[hololoom/Documentation/MEM0_QUICKSTART.md](hololoom/Documentation/MEM0_QUICKSTART.md)**: Hybrid system quickstart
 
 ## Bottom Line
 

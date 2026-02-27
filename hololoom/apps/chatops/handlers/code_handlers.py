@@ -14,7 +14,7 @@ Commands:
 - !code status - Check VS Code connection
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.code_handlers import register_code_handlers
+    from hololoom.apps.chatops.handlers.code_handlers import register_code_handlers
 
     # In run_chatops.py:
     register_code_handlers(bot, orchestrator, code_department)
@@ -24,9 +24,9 @@ import logging
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.apps.chatops.core.matrix_bot import MatrixBot
-    from HoloLoom.apps.chatops.core.chatops_bridge import ChatOpsOrchestrator
-    from HoloLoom.apps.departments.claude_code import ClaudeCodeDepartment
+    from hololoom.apps.chatops.core.matrix_bot import MatrixBot
+    from hololoom.apps.chatops.core.chatops_bridge import ChatOpsOrchestrator
+    from hololoom.apps.departments.claude_code import ClaudeCodeDepartment
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -485,7 +485,7 @@ def register_code_handlers(
 # ============================================================================
 
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -498,7 +498,7 @@ class CodeHandlers:
     Decorator-based ChatOps handlers for Claude Code integration.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.code_handlers import CodeHandlers
+        from hololoom.apps.chatops.handlers.code_handlers import CodeHandlers
 
         handlers = CodeHandlers(department=code_department)
         registry.register_instance(handlers)

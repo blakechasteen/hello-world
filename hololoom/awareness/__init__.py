@@ -6,14 +6,14 @@ This shim installs a ``sys.meta_path`` finder so that **any** import of
 ``HoloLoom.awareness`` or ``HoloLoom.awareness.*`` is transparently
 redirected to ``HoloLoom.memory.awareness``.
 
-The awareness modules were consolidated into ``HoloLoom/memory/awareness/``
+The awareness modules were consolidated into ``hololoom/memory/awareness/``
 in December 2025.  This redirect ensures backward compatibility for the
 40+ call-sites that still use the old path.
 
 Migration (one-line sed)::
 
     find . -name '*.py' -exec \\
-        sed -i 's/from HoloLoom\\.awareness/from HoloLoom.memory.awareness/g' {} +
+        sed -i 's/from hololoom\\.awareness/from hololoom.memory.awareness/g' {} +
 
 After all call-sites are updated this shim can be removed.
 
@@ -29,8 +29,8 @@ import warnings
 class _DeprecatedFinder:
     """Meta-path finder that redirects HoloLoom.awareness → HoloLoom.memory.awareness."""
 
-    _OLD = "HoloLoom.awareness"
-    _NEW = "HoloLoom.memory.awareness"
+    _OLD = "hololoom.awareness"
+    _NEW = "hololoom.memory.awareness"
 
     def find_module(self, fullname, path=None):
         if fullname == self._OLD or fullname.startswith(self._OLD + "."):

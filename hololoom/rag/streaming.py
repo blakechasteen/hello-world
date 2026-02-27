@@ -24,7 +24,7 @@ from typing import AsyncGenerator, Dict, Any, Optional, List, Tuple
 import time
 import logging
 
-from HoloLoom.protocols.types import Query
+from hololoom.protocols.types import Query
 
 logger = logging.getLogger(__name__)
 
@@ -260,7 +260,7 @@ class StreamingRAGMixin:
                 # Cache full response after streaming
                 if token.is_final and self.enable_caching:
                     cache_key = (question, mode)
-                    from HoloLoom.rag.simple_rag import RAGResult
+                    from hololoom.rag.simple_rag import RAGResult
                     result = RAGResult(
                         response=token.cumulative_text,
                         sources=sources,

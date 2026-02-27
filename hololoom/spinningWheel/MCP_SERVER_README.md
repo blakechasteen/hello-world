@@ -35,7 +35,7 @@ pip install beautifulsoup4 requests pillow
   "mcpServers": {
     "spinning-wheel": {
       "command": "python",
-      "args": ["-m", "HoloLoom.spinningWheel.mcp_server"],
+      "args": ["-m", "hololoom.spinningWheel.mcp_server"],
       "cwd": "C:/Users/YOUR_USERNAME/path/to/mythRL"
     }
   }
@@ -48,7 +48,7 @@ pip install beautifulsoup4 requests pillow
   "mcpServers": {
     "spinning-wheel": {
       "command": "python3",
-      "args": ["-m", "HoloLoom.spinningWheel.mcp_server"],
+      "args": ["-m", "hololoom.spinningWheel.mcp_server"],
       "cwd": "/path/to/mythRL"
     }
   }
@@ -152,7 +152,7 @@ For testing without Claude Desktop:
 
 ```bash
 cd /path/to/mythRL
-PYTHONPATH=. python -m HoloLoom.spinningWheel.mcp_server
+PYTHONPATH=. python -m hololoom.spinningWheel.mcp_server
 ```
 
 The server reads from stdin and writes to stdout using the MCP protocol.

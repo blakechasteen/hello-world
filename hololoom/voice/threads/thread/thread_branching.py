@@ -335,7 +335,7 @@ class ThreadBrancher:
 
         try:
             # Add edge: branch -> parent (BRANCHED_FROM)
-            from HoloLoom.memory.graph import KGEdge
+            from hololoom.memory.graph import KGEdge
 
             edge = KGEdge(
                 src=branch_id,

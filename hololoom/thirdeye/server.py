@@ -36,26 +36,26 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import uvicorn
 
-from HoloLoom.thirdeye.concept import Concept, ConceptWorld
-from HoloLoom.thirdeye.chat_bridge import (
+from hololoom.thirdeye.concept import Concept, ConceptWorld
+from hololoom.thirdeye.chat_bridge import (
     ChatBridge,
     ConceptExtraction,
     create_chat_bridge,
 )
-from HoloLoom.thirdeye.thoughtspace import (
+from hololoom.thirdeye.thoughtspace import (
     Thoughtspace,
     ThoughtspaceState,
     create_thoughtspace,
 )
-from HoloLoom.thirdeye.renderers.webgl import WebGLRenderer, create_webgl_renderer
-from HoloLoom.thirdeye.renderer_protocol import RenderConfig, RenderQuality
+from hololoom.thirdeye.renderers.webgl import WebGLRenderer, create_webgl_renderer
+from hololoom.thirdeye.renderer_protocol import RenderConfig, RenderQuality
 
 # Import the new scene composer
-from HoloLoom.thirdeye.visualizers import (
+from hololoom.thirdeye.visualizers import (
     VisualizationMode,
     detect_visualization_mode,
 )
-from HoloLoom.thirdeye.visualizers.scene_composer import (
+from hololoom.thirdeye.visualizers.scene_composer import (
     SceneComposer,
     get_composer,
     compose_scene,

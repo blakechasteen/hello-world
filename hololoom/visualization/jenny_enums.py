@@ -16,7 +16,7 @@ Panel-specific enums (PanelTypeJenny, PanelSizeJenny, LayoutHint)
 remain in jenny_spec.py as they are tightly coupled to panel definitions.
 
 Usage:
-    from HoloLoom.visualization.jenny_enums import (
+    from hololoom.visualization.jenny_enums import (
         LifecycleStage,
         BindingMode,
         DissolutionTrigger,

@@ -52,7 +52,7 @@ def show_mcp_config():
          "command": "python",
          "args": [
            "-m",
-           "HoloLoom.memory.mcp_server"
+           "hololoom.memory.mcp_server"
          ],
          "env": {
            "PYTHONPATH": "C:\\\\Users\\\\YOUR_USERNAME\\\\Documents\\\\mythRL"
@@ -100,7 +100,7 @@ def show_mcp_config():
     Claude: [Uses store_memory tool]
 
     You: "What do you remember about HoloLoom?"
-    Claude: [Uses search_memories tool with query "HoloLoom"]
+    Claude: [Uses search_memories tool with query "hololoom"]
 
     You: "Let's chat about the architecture"
     Claude: [Uses chat tool, which auto-stores important exchanges]
@@ -127,8 +127,8 @@ def show_mcp_config():
     Default: 'simple' (no external dependencies)
 
     To use Neo4j or Qdrant, see:
-      - HoloLoom/memory/NEO4J_README.md
-      - HoloLoom/memory/QUICKSTART.md
+      - hololoom/memory/NEO4J_README.md
+      - hololoom/memory/QUICKSTART.md
     """)
 
     print("\n[CONVERSATIONAL AUTO-SPIN]")
@@ -193,7 +193,7 @@ def show_mcp_config():
     print("  1. Configure Claude Desktop (see setup above)")
     print("  2. Restart Claude Desktop")
     print("  3. Try using memory tools in conversations")
-    print("  4. Check HoloLoom/memory/QUICKSTART.md for details")
+    print("  4. Check hololoom/memory/QUICKSTART.md for details")
     print("=" * 80)
 
 

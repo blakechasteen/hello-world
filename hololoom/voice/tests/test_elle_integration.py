@@ -20,18 +20,18 @@ import math
 from typing import List, Optional, Tuple
 
 # HoloLoom voice module imports
-from HoloLoom.voice.ar_context import (
+from hololoom.voice.ar_context import (
     ARContext, Vector3, Quaternion, ARObject, ARObjectType,
     AREvent, AREventType, SelectionEvent, NavigationEvent, GestureEvent,
     GestureType, create_test_context
 )
-from HoloLoom.voice.command_router import (
+from hololoom.voice.command_router import (
     CommandRouter, Intent, IntentType, ElleAction, ElleActionType
 )
-from HoloLoom.voice.spatial_audio import (
+from hololoom.voice.spatial_audio import (
     SpatialAudioHandler, SpatialAudioConfig, create_test_audio
 )
-from HoloLoom.voice.elle_bridge import (
+from hololoom.voice.elle_bridge import (
     ElleBridge, ResponseMode, ARVisualization, ElleResponse
 )
 
@@ -934,9 +934,9 @@ if __name__ == "__main__":
     Run the comprehensive integration test suite.
 
     To run:
-    - pytest HoloLoom/voice/tests/test_elle_integration.py -v
-    - pytest HoloLoom/voice/tests/test_elle_integration.py -v --tb=short
-    - pytest HoloLoom/voice/tests/test_elle_integration.py::TestARContext -v
+    - pytest hololoom/voice/tests/test_elle_integration.py -v
+    - pytest hololoom/voice/tests/test_elle_integration.py -v --tb=short
+    - pytest hololoom/voice/tests/test_elle_integration.py::TestARContext -v
 
     Expected Results:
     - Total Tests: 15+ (including edge cases and performance)

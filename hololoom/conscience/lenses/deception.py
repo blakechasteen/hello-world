@@ -29,7 +29,7 @@ from ..judgment import Concern
 from .base import BaseLens
 
 
-logger = logging.getLogger("HoloLoom.conscience.lenses.deception")
+logger = logging.getLogger("hololoom.conscience.lenses.deception")
 
 
 # =============================================================================
@@ -273,7 +273,7 @@ class DeceptionLens(BaseLens):
 
         try:
             # Import here to avoid circular dependency
-            from HoloLoom.alignment.deception_detection import (
+            from hololoom.alignment.deception_detection import (
                 DeceptionSignal,
             )
 

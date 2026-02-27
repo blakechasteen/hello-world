@@ -50,7 +50,7 @@ QDRANT_API_KEY=                 # Optional API key for authentication
 
 **Neo4j**:
 ```python
-from HoloLoom.memory.neo4j_graph import Neo4jConfig, Neo4jKG
+from hololoom.memory.neo4j_graph import Neo4jConfig, Neo4jKG
 
 config = Neo4jConfig(
     uri="bolt://localhost:7687",
@@ -67,7 +67,7 @@ kg = Neo4jKG(config)
 
 **Qdrant**:
 ```python
-from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
+from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
 
 store = QdrantMemoryStore(
     host="localhost",
@@ -195,15 +195,15 @@ Enable debug logging to see connection pool activity:
 ```python
 import logging
 
-logging.getLogger('HoloLoom.memory.neo4j_graph').setLevel(logging.DEBUG)
-logging.getLogger('HoloLoom.memory.stores.qdrant_store').setLevel(logging.DEBUG)
+logging.getLogger('hololoom.memory.neo4j_graph').setLevel(logging.DEBUG)
+logging.getLogger('hololoom.memory.stores.qdrant_store').setLevel(logging.DEBUG)
 ```
 
 ## Implementation Files
 
-- `HoloLoom/memory/neo4j_graph.py`: Neo4j connection pooling implementation
-- `HoloLoom/memory/stores/qdrant_store.py`: Qdrant connection pooling implementation
-- `HoloLoom/memory/backend_factory.py`: Factory with pooling configuration
+- `hololoom/memory/neo4j_graph.py`: Neo4j connection pooling implementation
+- `hololoom/memory/stores/qdrant_store.py`: Qdrant connection pooling implementation
+- `hololoom/memory/backend_factory.py`: Factory with pooling configuration
 
 ## Summary
 

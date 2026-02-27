@@ -18,13 +18,13 @@ import uvicorn
 try:
     import sys
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-    from HoloLoom.memory.repository_context import (
+    from hololoom.memory.repository_context import (
         create_repo_manager,
         RepositoryContextManager,
         AgentQueryContext,
         AccessLevel
     )
-    from HoloLoom.memory.mcp_rag_server import rag_query
+    from hololoom.memory.mcp_rag_server import rag_query
 except ImportError as e:
     print(f"Warning: Could not import RAG modules: {e}")
     RepositoryContextManager = None
@@ -32,14 +32,14 @@ except ImportError as e:
 
 # Import Eggroll
 try:
-    from HoloLoom.eggroll.integration import EggrollIntegration
+    from hololoom.eggroll.integration import EggrollIntegration
 except ImportError as e:
     print(f"Warning: Could not import Eggroll: {e}")
     EggrollIntegration = None
 
 # Import LLM
 try:
-    from HoloLoom.awareness.llm_integration import create_llm
+    from hololoom.awareness.llm_integration import create_llm
 except ImportError as e:
     print(f"Warning: Could not import LLM integration: {e}")
     create_llm = None

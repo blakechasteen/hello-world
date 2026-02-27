@@ -2,7 +2,7 @@
 Test Convergence Engine - Continuous to Discrete Collapse
 ==========================================================
 
-Tests for HoloLoom/convergence/engine.py - Decision collapse and Thompson Sampling.
+Tests for hololoom/convergence/engine.py - Decision collapse and Thompson Sampling.
 
 Coverage:
 - All 4 collapse strategies (ARGMAX, EPSILON_GREEDY, BAYESIAN_BLEND, PURE_THOMPSON)
@@ -16,7 +16,7 @@ import pytest
 import numpy as np
 from unittest.mock import Mock, patch
 
-from HoloLoom.convergence.engine import (
+from hololoom.convergence.engine import (
     ConvergenceEngine,
     ThompsonBandit,
     CollapseStrategy,

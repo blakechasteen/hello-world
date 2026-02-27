@@ -28,7 +28,7 @@ Available Workflows:
 
 Usage:
 ------
-    from HoloLoom.apps.departments.examples.workflow_examples import (
+    from hololoom.apps.departments.examples.workflow_examples import (
         research_workflow_example,
         deployment_workflow_example,
         intelligent_routing_workflow_example,
@@ -40,14 +40,14 @@ Usage:
     result = await research_workflow_example()
 
     # Or run all workflows
-    from HoloLoom.apps.departments.examples.workflow_examples import main
+    from hololoom.apps.departments.examples.workflow_examples import main
     results = await main()
 
 Author: HoloLoom B2B Framework
 Date: November 2025
 """
 
-from HoloLoom.apps.departments.examples.workflow_examples import (
+from hololoom.apps.departments.examples.workflow_examples import (
     research_workflow_example,
     deployment_workflow_example,
     intelligent_routing_workflow_example,

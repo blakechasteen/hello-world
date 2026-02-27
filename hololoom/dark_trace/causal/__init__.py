@@ -17,7 +17,7 @@ Research Basis:
 - EAP-IG: Integrated gradient-based causal attribution
 
 Usage:
-    from HoloLoom.dark_trace.causal import (
+    from hololoom.dark_trace.causal import (
         FeatureAblator,
         AblationResult,
         FeatureInjector,
@@ -56,7 +56,7 @@ Usage:
 """
 
 # Ablation testing
-from HoloLoom.dark_trace.causal.ablation import (
+from hololoom.dark_trace.causal.ablation import (
     FeatureAblator,
     AblationConfig,
     AblationResult,
@@ -65,7 +65,7 @@ from HoloLoom.dark_trace.causal.ablation import (
 )
 
 # Injection testing
-from HoloLoom.dark_trace.causal.injection import (
+from hololoom.dark_trace.causal.injection import (
     FeatureInjector,
     InjectionConfig,
     InjectionResult,
@@ -74,7 +74,7 @@ from HoloLoom.dark_trace.causal.injection import (
 )
 
 # Activation patching
-from HoloLoom.dark_trace.causal.patching import (
+from hololoom.dark_trace.causal.patching import (
     ActivationPatcher,
     PatchConfig,
     PatchResult,
@@ -83,7 +83,7 @@ from HoloLoom.dark_trace.causal.patching import (
 )
 
 # Causal validation
-from HoloLoom.dark_trace.causal.validator import (
+from hololoom.dark_trace.causal.validator import (
     CausalValidator,
     CausalHypothesis,
     ValidationResult,

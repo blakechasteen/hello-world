@@ -1,5 +1,5 @@
 """
-Unit tests for RAG Department at HoloLoom/departments/rag_department.py
+Unit tests for RAG Department at hololoom/departments/rag_department.py
 
 Comprehensive test coverage for all 7 Department protocol methods:
 1. execute(): Query processing with SimpleRAG
@@ -205,12 +205,12 @@ class Config:
 
 # Mock the imports that RAGDepartment needs
 import sys
-sys.modules['HoloLoom.config'] = MagicMock(Config=Config)
-sys.modules['HoloLoom.rag'] = MagicMock()
-sys.modules['HoloLoom.rag.simple_rag'] = MagicMock(RAGResult=RAGResult, SimpleRAG=AsyncMock)
+sys.modules['hololoom.config'] = MagicMock(Config=Config)
+sys.modules['hololoom.rag'] = MagicMock()
+sys.modules['hololoom.rag.simple_rag'] = MagicMock(RAGResult=RAGResult, SimpleRAG=AsyncMock)
 
 # Now we can import by mocking the actual implementation
-from HoloLoom.apps.departments.rag_department import RAGDepartment
+from hololoom.apps.departments.rag_department import RAGDepartment
 
 
 # ============================================================================

@@ -37,8 +37,8 @@ except ImportError:
     print("Warning: rich not installed - dashboard UI disabled")
     print("Install with: pip install rich")
 
-from HoloLoom.performance.metrics import get_global_metrics
-from HoloLoom.performance.profiler import get_global_registry
+from hololoom.performance.metrics import get_global_metrics
+from hololoom.performance.profiler import get_global_registry
 
 
 class PerformanceDashboard:

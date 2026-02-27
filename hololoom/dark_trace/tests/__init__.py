@@ -9,5 +9,5 @@ Test Modules:
 - test_pid_steering.py: PID-based steering controller tests
 
 Run tests:
-    pytest HoloLoom/dark_trace/tests/ -v
+    pytest hololoom/dark_trace/tests/ -v
 """

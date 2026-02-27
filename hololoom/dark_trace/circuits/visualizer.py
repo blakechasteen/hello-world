@@ -31,7 +31,7 @@ import math
 import json
 from datetime import datetime
 
-from HoloLoom.dark_trace.circuits.graph import (
+from hololoom.dark_trace.circuits.graph import (
     CircuitGraph,
     CircuitNode,
     CircuitEdge,

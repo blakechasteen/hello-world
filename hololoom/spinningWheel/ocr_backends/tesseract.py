@@ -10,7 +10,7 @@ Good baseline quality, works on CPU, widely available.
 from typing import Union, Any, List
 import warnings
 
-from HoloLoom.spinningWheel.ocr_protocol import (
+from hololoom.spinningWheel.ocr_protocol import (
     BaseOCRBackend,
     OCRResult,
     OCRQuality,

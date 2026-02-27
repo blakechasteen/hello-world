@@ -59,8 +59,8 @@ from collections import deque
 from enum import Enum
 import time
 
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.dimensions import SemanticSpectrum, EXTENDED_244_DIMENSIONS, STANDARD_DIMENSIONS
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.dimensions import SemanticSpectrum, EXTENDED_244_DIMENSIONS, STANDARD_DIMENSIONS
 
 
 # ============================================================================
@@ -141,7 +141,7 @@ class EmotionProjection:
     def __init__(self, embed_fn: Callable[[str], np.ndarray]):
         """Initialize emotion projection with core emotional dimensions."""
         # Plutchik's 8 core emotions + intensity variants + blends
-        from HoloLoom.semantic_calculus.dimensions import (
+        from hololoom.semantic_calculus.dimensions import (
             SemanticDimension,
             EMOTIONAL_DEPTH_DIMENSIONS,
             STANDARD_DIMENSIONS
@@ -184,7 +184,7 @@ class ArchetypalProjection:
     """32D archetypal projection (Jungian + Campbell)."""
 
     def __init__(self, embed_fn: Callable[[str], np.ndarray]):
-        from HoloLoom.semantic_calculus.dimensions import ARCHETYPAL_DIMENSIONS, NARRATIVE_DIMENSIONS
+        from hololoom.semantic_calculus.dimensions import ARCHETYPAL_DIMENSIONS, NARRATIVE_DIMENSIONS
 
         archetypal_dims = ARCHETYPAL_DIMENSIONS + NARRATIVE_DIMENSIONS
         self.spectrum = SemanticSpectrum(dimensions=archetypal_dims[:32])
@@ -433,7 +433,7 @@ async def demonstrate_multi_projection():
     print("=" * 80)
     print()
 
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     # Initialize embedder
     print("🔧 Initializing embedder...")

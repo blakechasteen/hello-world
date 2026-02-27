@@ -13,16 +13,16 @@ This demo:
 
 import asyncio
 import numpy as np
-from HoloLoom.tuning import (
+from hololoom.tuning import (
     MasterTuningCoordinator,
     TimeoutTuner,
     CacheTuner,
     ThresholdTuner,
     MemoryTuner,
 )
-from HoloLoom.tuning.cache_tuner import CacheMetrics
-from HoloLoom.tuning.threshold_tuner import QualityMetrics
-from HoloLoom.tuning.memory_tuner import RetrievalMetrics, QueryComplexity
+from hololoom.tuning.cache_tuner import CacheMetrics
+from hololoom.tuning.threshold_tuner import QualityMetrics
+from hololoom.tuning.memory_tuner import RetrievalMetrics, QueryComplexity
 
 # ANSI colors for terminal output
 class Colors:

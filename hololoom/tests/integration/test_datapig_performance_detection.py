@@ -9,7 +9,7 @@ Date: 2025-11-22
 
 import pytest
 import time
-from HoloLoom.datapig import DataPigDetector
+from hololoom.datapig import DataPigDetector
 
 
 # ============================================================================

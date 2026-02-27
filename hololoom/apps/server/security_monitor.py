@@ -501,7 +501,7 @@ class SecurityMonitor:
 
                 <hr>
                 <p style="font-size: 12px; color: #666;">
-                  This is an automated security alert from HoloLoom Security Monitor.
+                  This is an automated security alert from hololoom Security Monitor.
                 </p>
               </body>
             </html>

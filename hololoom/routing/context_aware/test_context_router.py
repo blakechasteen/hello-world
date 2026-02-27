@@ -8,7 +8,7 @@ Date: November 2025
 """
 
 import pytest
-from HoloLoom.routing.context_aware import (
+from hololoom.routing.context_aware import (
     ContextAwareRouter,
     UserContext,
     RoutingStrategy,

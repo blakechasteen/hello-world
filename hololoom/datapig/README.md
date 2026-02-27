@@ -1,7 +1,7 @@
 # DATAPIG: Data Analysis & Tactical Assessment Program for Integrity Governance
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/datapig/`
+**Location**: `hololoom/datapig/`
 **Total Code**: 7,843 lines across 6 Python modules
 **Last Updated**: 2025-11-22
 
@@ -26,7 +26,7 @@ Data quality is often the difference between ML success and failure, API reliabi
 ### Basic Validation
 
 ```python
-from HoloLoom.datapig import DataPigDetector, Severity
+from hololoom.datapig import DataPigDetector, Severity
 
 # Create detector
 detector = DataPigDetector(enable_verbose=True)
@@ -45,7 +45,7 @@ for issue in red_alerts:
 ### One-Line Validation
 
 ```python
-from HoloLoom.datapig import engage_warp_validation
+from hololoom.datapig import engage_warp_validation
 
 # Quick go/no-go check before ML training
 if engage_warp_validation(your_data):
@@ -57,7 +57,7 @@ else:
 ### Generate HTML Report
 
 ```python
-from HoloLoom.datapig.dashboard import render_quality_dashboard, QualityReport
+from hololoom.datapig.dashboard import render_quality_dashboard, QualityReport
 
 # Analyze datasets
 reports = []
@@ -124,7 +124,7 @@ detector.analyze_dataset(array)
 Main detection engine with 13 detection methods:
 
 ```python
-from HoloLoom.datapig import DataPigDetector, Severity, IssueType
+from hololoom.datapig import DataPigDetector, Severity, IssueType
 
 detector = DataPigDetector(
     enable_verbose=False,           # Print progress messages
@@ -165,7 +165,7 @@ issues = detector.analyze_dataset(data)
 ### DataQualityIssue
 
 ```python
-from HoloLoom.datapig import DataQualityIssue, Severity, IssueType
+from hololoom.datapig import DataQualityIssue, Severity, IssueType
 
 issue = DataQualityIssue(
     issue_type=IssueType.SCHEMA_DRIFT,
@@ -187,7 +187,7 @@ print(issue)  # Pretty-formatted with emoji
 ### Configuration System
 
 ```python
-from HoloLoom.datapig.config import create_config, PresetConfig
+from hololoom.datapig.config import create_config, PresetConfig
 
 # Use presets
 config = create_config("strict")      # Maximum detection, <5% false positives
@@ -205,7 +205,7 @@ config = create_config(
 )
 
 # Or create custom config
-from HoloLoom.datapig.config import DetectorConfig
+from hololoom.datapig.config import DetectorConfig
 
 config = DetectorConfig(
     stale_threshold_days=365,
@@ -233,7 +233,7 @@ config = DetectorConfig(
 ### Entropy-Based Detection
 
 ```python
-from HoloLoom.datapig.entropy_detection import (
+from hololoom.datapig.entropy_detection import (
     shannon_entropy,
     detect_pii_by_entropy,
     EntropyAnalysis
@@ -267,7 +267,7 @@ for analysis in analyses:
 ### Fuzzy Duplicate Detection
 
 ```python
-from HoloLoom.datapig.fuzzy_detection import (
+from hololoom.datapig.fuzzy_detection import (
     find_fuzzy_duplicates,
     find_fuzzy_duplicates_advanced,
     levenshtein_distance,
@@ -308,7 +308,7 @@ similarity = normalized_similarity("Smith", "Smyth")  # 0.8
 ### HTML Dashboard
 
 ```python
-from HoloLoom.datapig.dashboard import (
+from hololoom.datapig.dashboard import (
     render_quality_dashboard,
     render_small_multiples,
     render_density_table,
@@ -344,7 +344,7 @@ html = render_quality_dashboard(
 ### Helper Functions
 
 ```python
-from HoloLoom.datapig import analyze_dataset, engage_warp_validation
+from hololoom.datapig import analyze_dataset, engage_warp_validation
 
 # Convenience: Analyze with default settings
 issues = analyze_dataset(my_data, verbose=True)
@@ -378,8 +378,8 @@ safe = engage_warp_validation(my_data)
 DATAPIG integrates with HoloLoom's Quality Assurance Department:
 
 ```python
-from HoloLoom.departments import get_department
-from HoloLoom.datapig import DataPigDetector
+from hololoom.departments import get_department
+from hololoom.datapig import DataPigDetector
 
 # Use directly
 detector = DataPigDetector()
@@ -425,7 +425,7 @@ if result["status"] == "red_alert":
 ### ML Dataset Validation
 
 ```python
-from HoloLoom.datapig.config import create_config
+from hololoom.datapig.config import create_config
 
 config = create_config(
     "ml_validation",
@@ -495,19 +495,19 @@ Version follows USS Enterprise registry: `1.0.0-NCC-1701`
 
 ```bash
 # Run all DATAPIG tests
-pytest HoloLoom/datapig/tests/ -v
+pytest hololoom/datapig/tests/ -v
 
 # Run specific detector tests
-pytest HoloLoom/datapig/tests/test_detector.py -v
+pytest hololoom/datapig/tests/test_detector.py -v
 
 # Run entropy detection tests
-pytest HoloLoom/datapig/tests/test_entropy.py -v
+pytest hololoom/datapig/tests/test_entropy.py -v
 
 # Run fuzzy matching tests
-pytest HoloLoom/datapig/tests/test_fuzzy.py -v
+pytest hololoom/datapig/tests/test_fuzzy.py -v
 
 # Run dashboard tests
-pytest HoloLoom/datapig/tests/test_dashboard.py -v
+pytest hololoom/datapig/tests/test_dashboard.py -v
 ```
 
 ## Running Demos

@@ -3,7 +3,7 @@
   "name": "Strategic Goal Planner",
   "description": "Hierarchical goal decomposition with constraint satisfaction, resource allocation, risk assessment, and adaptive replanning using Thompson Sampling for decision optimization.",
   "tags": ["planning", "goals", "strategy", "resource-allocation", "risk-assessment", "optimization"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-25",
 
   "nodes": [

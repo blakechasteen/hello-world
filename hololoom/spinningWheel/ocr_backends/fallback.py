@@ -10,7 +10,7 @@ Always available, provides minimal information when no OCR is available.
 from typing import Union, Any
 from pathlib import Path
 
-from HoloLoom.spinningWheel.ocr_protocol import (
+from hololoom.spinningWheel.ocr_protocol import (
     BaseOCRBackend,
     OCRResult,
     OCRQuality,

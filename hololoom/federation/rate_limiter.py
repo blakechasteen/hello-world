@@ -29,8 +29,8 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import Any, Deque, Dict, Optional, Tuple
 
-from HoloLoom.federation.types import GuildTrustLevel
-from HoloLoom.federation.safety import SafetyCheckResult
+from hololoom.federation.types import GuildTrustLevel
+from hololoom.federation.safety import SafetyCheckResult
 
 
 # ============================================================================

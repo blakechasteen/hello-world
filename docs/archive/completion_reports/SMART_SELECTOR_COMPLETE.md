@@ -226,7 +226,7 @@ selector.record_feedback(
 ## Complete Usage Example
 
 ```python
-from HoloLoom.warp.math.smart_operation_selector import SmartMathOperationSelector
+from hololoom.warp.math.smart_operation_selector import SmartMathOperationSelector
 
 # Create smart selector
 selector = SmartMathOperationSelector(load_state=True)
@@ -431,7 +431,7 @@ The selector saves learned state to disk:
 }
 ```
 
-**Location**: `HoloLoom/warp/math/.smart_selector_state.json`
+**Location**: `hololoom/warp/math/.smart_selector_state.json`
 
 **Loading state**:
 ```python
@@ -442,8 +442,8 @@ selector = SmartMathOperationSelector(load_state=True)
 ## Integration with Weaving Architecture
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.warp.math.smart_operation_selector import SmartMathOperationSelector
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.warp.math.smart_operation_selector import SmartMathOperationSelector
 
 class SmartWeavingOrchestrator(WeavingOrchestrator):
     def __init__(self, **kwargs):

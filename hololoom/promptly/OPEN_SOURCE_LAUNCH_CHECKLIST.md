@@ -45,12 +45,12 @@ This checklist guides you through launching Promptly as an open source project f
 
 - [ ] Copy Promptly code to repository
   ```bash
-  # Copy from HoloLoom/promptly/ to promptly/
-  cp -r HoloLoom/promptly/* promptly/
+  # Copy from hololoom/promptly/ to promptly/
+  cp -r hololoom/promptly/* promptly/
 
   # Copy relevant HoloLoom dependencies
-  cp -r HoloLoom/config.py promptly/deps/
-  cp -r HoloLoom/documentation/types.py promptly/deps/
+  cp -r hololoom/config.py promptly/deps/
+  cp -r hololoom/documentation/types.py promptly/deps/
   ```
 
 - [ ] Set up `.gitignore`
@@ -421,8 +421,8 @@ This checklist guides you through launching Promptly as an open source project f
 
   **Create training_data_loader.py**:
   ```python
-  from HoloLoom import HoloLoom
-  from HoloLoom.documentation.types import MemoryShard
+  from hololoom import hololoom
+  from hololoom.documentation.types import MemoryShard
 
   async def load_training_data():
       """Load 20-30 HoloLoom Q&A examples into memory"""
@@ -433,7 +433,7 @@ This checklist guides you through launching Promptly as an open source project f
               "context": "Thompson Sampling is a Bayesian bandit...",
               "answer": "Thompson Sampling is a probabilistic approach..."
           },
-          # Add 20-30 examples from HoloLoom docs
+          # Add 20-30 examples from hololoom docs
       ]
 
       loom = HoloLoom()
@@ -497,8 +497,8 @@ This checklist guides you through launching Promptly as an open source project f
 
 - [ ] Create 7-layer directory structure
   ```bash
-  mkdir -p HoloLoom/promptly/{foundation,core,state,execution,solvers,orchestration,interfaces}
-  mkdir -p HoloLoom/promptly/solvers/{schema,surgical,staged,confidence,consistency,context}
+  mkdir -p hololoom/promptly/{foundation,core,state,execution,solvers,orchestration,interfaces}
+  mkdir -p hololoom/promptly/solvers/{schema,surgical,staged,confidence,consistency,context}
   ```
 
 - [ ] Define core types (`core/types.py`)

@@ -47,8 +47,8 @@ Open [http://localhost:7474](http://localhost:7474) in your browser.
 ### 3. Use Neo4j in Python
 
 ```python
-from HoloLoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
-from HoloLoom.memory.graph import KGEdge
+from hololoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
+from hololoom.memory.graph import KGEdge
 
 # Create Neo4j knowledge graph
 config = Neo4jConfig()
@@ -72,7 +72,7 @@ kg.close()
 ### 4. Configure HoloLoom to Use Neo4j
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 cfg = Config(
     memory_backend=MemoryBackend.HYBRID,  # Neo4j + Qdrant with auto-fallback
@@ -96,19 +96,19 @@ cfg = Config(
 ```bash
 # Export NetworkX graph to JSONL (if not already saved)
 python -c "
-from HoloLoom.memory.graph import KG
+from hololoom.memory.graph import KG
 kg = KG()
 # ... populate graph ...
 kg.save('my_graph.jsonl')
 "
 
 # Migrate to Neo4j
-python -m HoloLoom.memory.migrate_to_neo4j \
+python -m hololoom.memory.migrate_to_neo4j \
     --from-networkx my_graph.jsonl \
     --clear
 
 # Verify migration
-python -m HoloLoom.memory.migrate_to_neo4j \
+python -m hololoom.memory.migrate_to_neo4j \
     --verify my_graph.jsonl
 ```
 
@@ -116,7 +116,7 @@ python -m HoloLoom.memory.migrate_to_neo4j \
 
 ```bash
 # Export from Neo4j to JSONL
-python -m HoloLoom.memory.migrate_to_neo4j \
+python -m hololoom.memory.migrate_to_neo4j \
     --from-neo4j \
     --output exported_graph.jsonl
 ```
@@ -125,12 +125,12 @@ python -m HoloLoom.memory.migrate_to_neo4j \
 
 ```bash
 # Merge NetworkX graphs
-python -m HoloLoom.memory.migrate_to_neo4j \
+python -m hololoom.memory.migrate_to_neo4j \
     --merge graph1.jsonl graph2.jsonl graph3.jsonl \
     --output merged_graph.jsonl
 
 # Merge directly into Neo4j
-python -m HoloLoom.memory.migrate_to_neo4j \
+python -m hololoom.memory.migrate_to_neo4j \
     --merge graph1.jsonl graph2.jsonl \
     --to-neo4j \
     --clear
@@ -141,7 +141,7 @@ python -m HoloLoom.memory.migrate_to_neo4j \
 ### Custom Neo4j Configuration
 
 ```python
-from HoloLoom.memory.neo4j_graph import Neo4jConfig
+from hololoom.memory.neo4j_graph import Neo4jConfig
 
 config = Neo4jConfig(
     uri="bolt://production-server:7687",
@@ -165,7 +165,7 @@ export NEO4J_DATABASE="neo4j"
 ```
 
 ```python
-from HoloLoom.memory.neo4j_graph import Neo4jConfig
+from hololoom.memory.neo4j_graph import Neo4jConfig
 
 # Load from environment
 config = Neo4jConfig.from_env()
@@ -355,8 +355,8 @@ For production, consider:
 `Neo4jKG` implements the same `KGStore` protocol as `KG` (NetworkX), so it's a drop-in replacement:
 
 ```python
-from HoloLoom.memory.graph import KG
-from HoloLoom.memory.neo4j_graph import Neo4jKG
+from hololoom.memory.graph import KG
+from hololoom.memory.neo4j_graph import Neo4jKG
 
 # Both implement the same interface
 kg_networkx = KG()

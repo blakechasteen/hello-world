@@ -39,8 +39,8 @@ where git
 ### Basic Usage
 
 ```python
-from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
-from HoloLoom.apps.departments.proto.abilities.protocol import AbilityContext
+from hololoom.apps.departments.proto.abilities.core import GitOperationsAbility
+from hololoom.apps.departments.proto.abilities.protocol import AbilityContext
 
 # Create ability instance
 ability = GitOperationsAbility()
@@ -323,7 +323,7 @@ AbilityManifest(
 The Git Operations ability integrates seamlessly with Proto for code analysis:
 
 ```python
-from HoloLoom.apps.departments.proto import Proto
+from hololoom.apps.departments.proto import Proto
 
 proto = Proto()
 
@@ -344,8 +344,8 @@ Basic test example:
 
 ```python
 import asyncio
-from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
-from HoloLoom.apps.departments.proto.abilities.protocol import AbilityContext
+from hololoom.apps.departments.proto.abilities.core import GitOperationsAbility
+from hololoom.apps.departments.proto.abilities.protocol import AbilityContext
 
 async def test_git_operations():
     ability = GitOperationsAbility()

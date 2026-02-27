@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Tuple, Optional, Dict, Any
 
-logger = logging.getLogger("HoloLoom.redteam.sandbox.monitor")
+logger = logging.getLogger("hololoom.redteam.sandbox.monitor")
 
 # Graceful degradation: try psutil, fall back to manual /proc parsing
 try:

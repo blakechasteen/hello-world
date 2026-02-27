@@ -13,7 +13,7 @@ These assertions provide:
 - Structure validation
 
 Usage:
-    from HoloLoom.tests.integration.jenny_assertions import (
+    from hololoom.tests.integration.jenny_assertions import (
         assert_valid_html_output,
         assert_valid_react_props,
         assert_accessibility_compliant,

@@ -13,8 +13,8 @@ The HoloLoom Writing System transforms memory context into polished prose throug
 ### Simple API
 
 ```python
-from HoloLoom.writing import write
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.writing import write
+from hololoom.documentation.types import MemoryShard
 
 # Create memory context
 memories = [
@@ -57,10 +57,10 @@ exploration-exploitation tradeoff in decision-making systems.
 ### Advanced Usage
 
 ```python
-from HoloLoom.writing import Writer, Composer
-from HoloLoom.writing.core import WritingContext, WritingMode, StyleGuide
-from HoloLoom.writing.modes import NarrativeWriter
-from HoloLoom.writing.refinement import EleganceRefiner
+from hololoom.writing import Writer, Composer
+from hololoom.writing.core import WritingContext, WritingMode, StyleGuide
+from hololoom.writing.modes import NarrativeWriter
+from hololoom.writing.refinement import EleganceRefiner
 
 # Configure writer with custom settings
 mode_writers = {
@@ -239,9 +239,9 @@ Weights vary by mode:
 ### With Weaving Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.writing import write
-from HoloLoom.documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.writing import write
+from hololoom.documentation.types import Query
 
 async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
     # Retrieve memory context
@@ -262,8 +262,8 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### With Recursive Learning
 
 ```python
-from HoloLoom.recursive import FullLearningEngine
-from HoloLoom.writing import write
+from hololoom.recursive import FullLearningEngine
+from hololoom.writing import write
 
 async with FullLearningEngine(cfg=config, shards=shards) as engine:
     # Weave with learning
@@ -280,8 +280,8 @@ async with FullLearningEngine(cfg=config, shards=shards) as engine:
 ### With Synthesis (Training Data)
 
 ```python
-from HoloLoom.writing import write
-from HoloLoom.synthesis import DataSynthesizer
+from hololoom.writing import write
+from hololoom.synthesis import DataSynthesizer
 
 # Generate high-quality examples
 content = await write(query, memories, mode='narrative', refine=True)
@@ -405,8 +405,8 @@ class WritingResult:
 ### Example 1: Simple Explanation
 
 ```python
-from HoloLoom.writing import write
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.writing import write
+from hololoom.documentation.types import MemoryShard
 
 memories = [
     MemoryShard(

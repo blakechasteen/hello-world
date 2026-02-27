@@ -42,7 +42,7 @@ The Code Execution ability enables safe, sandboxed execution of Python code snip
 ### Creating the Ability
 
 ```python
-from HoloLoom.apps.departments.proto.abilities.core.code_execution import (
+from hololoom.apps.departments.proto.abilities.core.code_execution import (
     CodeExecutionAbility,
     CodeExecutionConfig,
     create_code_execution_ability
@@ -70,7 +70,7 @@ ability = create_code_execution_ability(config)
 Before execution, check if code execution is allowed:
 
 ```python
-from HoloLoom.apps.departments.proto.abilities.protocol import (
+from hololoom.apps.departments.proto.abilities.protocol import (
     AbilityContext,
     AbilityTrustLevel
 )
@@ -265,11 +265,11 @@ assert result.success
 ### Example 6: Full Integration
 
 ```python
-from HoloLoom.apps.departments.proto.abilities.core.code_execution import (
+from hololoom.apps.departments.proto.abilities.core.code_execution import (
     CodeExecutionAbility,
     CodeExecutionConfig
 )
-from HoloLoom.apps.departments.proto.abilities.protocol import (
+from hololoom.apps.departments.proto.abilities.protocol import (
     AbilityContext,
     AbilityTrustLevel
 )

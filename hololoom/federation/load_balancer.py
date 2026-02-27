@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional, Set
 
-from HoloLoom.federation.types import FederationNode, GuildTrustLevel
+from hololoom.federation.types import FederationNode, GuildTrustLevel
 
 logger = logging.getLogger(__name__)
 

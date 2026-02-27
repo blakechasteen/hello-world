@@ -14,7 +14,7 @@ Architecture:
 Usage:
     # With FastAPI
     from fastapi import FastAPI, WebSocket
-    from HoloLoom.apps.chatops.handlers.websocket_progress import (
+    from hololoom.apps.chatops.handlers.websocket_progress import (
         JobProgressManager, create_progress_router
     )
 
@@ -801,7 +801,7 @@ Subscription Patterns:
 
 FastAPI Integration:
     from fastapi import FastAPI
-    from HoloLoom.apps.chatops.handlers.websocket_progress import (
+    from hololoom.apps.chatops.handlers.websocket_progress import (
         JobProgressManager, create_progress_router
     )
 

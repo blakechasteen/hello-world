@@ -12,7 +12,7 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant, Memory, MemoryQuery, Strategy
+from hololoom.memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant, Memory, MemoryQuery, Strategy
 from datetime import datetime
 
 

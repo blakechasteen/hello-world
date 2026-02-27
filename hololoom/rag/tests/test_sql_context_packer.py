@@ -20,7 +20,7 @@ Date: 2025-12-09
 import pytest
 from typing import Dict, List, Any
 
-from HoloLoom.rag.sql_context_packer import (
+from hololoom.rag.sql_context_packer import (
     SQLContextPacker,
     PackedSQLContext,
     PackingStrategy,

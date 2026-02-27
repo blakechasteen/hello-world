@@ -13,9 +13,9 @@ Usage:
 
 import asyncio
 import logging
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

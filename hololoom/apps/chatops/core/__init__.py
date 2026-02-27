@@ -9,10 +9,10 @@ Core modules for Matrix chatbot functionality:
 - chatops_skills: Command implementations
 """
 
-from HoloLoom.apps.chatops.core.matrix_bot import MatrixBot, MatrixBotConfig
-from HoloLoom.apps.chatops.core.chatops_bridge import ChatOpsOrchestrator, ConversationContext
-from HoloLoom.apps.chatops.core.conversation_memory import ConversationMemory, EntityType, RelationType
-from HoloLoom.apps.chatops.core.chatops_skills import ChatOpsSkills, SkillResult, ChatOpsSkill
+from hololoom.apps.chatops.core.matrix_bot import MatrixBot, MatrixBotConfig
+from hololoom.apps.chatops.core.chatops_bridge import ChatOpsOrchestrator, ConversationContext
+from hololoom.apps.chatops.core.conversation_memory import ConversationMemory, EntityType, RelationType
+from hololoom.apps.chatops.core.chatops_skills import ChatOpsSkills, SkillResult, ChatOpsSkill
 
 __all__ = [
     "MatrixBot",

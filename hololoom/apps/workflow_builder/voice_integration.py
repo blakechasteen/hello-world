@@ -11,7 +11,7 @@ Features:
 - WebSocket streaming for real-time voice
 
 Usage:
-    from HoloLoom.apps.workflow_builder.voice_integration import VoiceIntegration
+    from hololoom.apps.workflow_builder.voice_integration import VoiceIntegration
 
     voice = VoiceIntegration(tts_backend="bark")
     await voice.setup()
@@ -43,7 +43,7 @@ except ImportError:
 
 # Try importing Whisper
 try:
-    from HoloLoom.spinningWheel.whisper_spinner import WhisperSpinner, WHISPER_AVAILABLE
+    from hololoom.spinningWheel.whisper_spinner import WhisperSpinner, WHISPER_AVAILABLE
 except ImportError:
     WHISPER_AVAILABLE = False
     logger.warning("Whisper not available (install openai-whisper)")

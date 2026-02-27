@@ -273,11 +273,11 @@ async def research_workflow():
 
 ## References
 
-- **Implementation**: `HoloLoom/departments/`
-- **Protocol**: `HoloLoom/departments/protocol.py` (BaseDepartment)
-- **Registry**: `HoloLoom/departments/registry.py`
-- **Workflows**: `HoloLoom/departments/examples/workflow_examples.py` (730 lines, Moonshot Task 1)
-- **Documentation**: `HoloLoom/departments/MOONSHOT_TASK_1_COMPLETE.md`
+- **Implementation**: `hololoom/departments/`
+- **Protocol**: `hololoom/departments/protocol.py` (BaseDepartment)
+- **Registry**: `hololoom/departments/registry.py`
+- **Workflows**: `hololoom/departments/examples/workflow_examples.py` (730 lines, Moonshot Task 1)
+- **Documentation**: `hololoom/departments/MOONSHOT_TASK_1_COMPLETE.md`
 
 ---
 

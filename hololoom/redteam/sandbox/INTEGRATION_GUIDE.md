@@ -1,7 +1,7 @@
 # Sandbox Integration Guide
 
 **Status**: Production Ready (December 5, 2025)
-**Module**: `HoloLoom.redteam.sandbox`
+**Module**: `hololoom.redteam.sandbox`
 **Author**: CARTS Team
 
 Complete guide for integrating sandbox protocols and resource monitoring into CARTS red team attacks.
@@ -21,7 +21,7 @@ Complete guide for integrating sandbox protocols and resource monitoring into CA
 ### 1. Import Components
 
 ```python
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     SandboxMode,
     SandboxConfig,
     SandboxResult,
@@ -110,7 +110,7 @@ if not within_limits:
 
 ```python
 import asyncio
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     SandboxMode,
     SandboxConfig,
     ResourceMonitor
@@ -189,7 +189,7 @@ class AttackExecutor:
         """Execute command in sandbox (implementation varies by mode)."""
         # Placeholder - actual implementation depends on sandbox mode
         # This would call SubprocessIsolator, CGroupsIsolator, or DockerIsolator
-        from HoloLoom.redteam.sandbox import SandboxResult
+        from hololoom.redteam.sandbox import SandboxResult
         return SandboxResult(
             success=True,
             exit_code=0,

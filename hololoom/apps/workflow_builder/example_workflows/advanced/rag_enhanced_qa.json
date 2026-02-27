@@ -3,7 +3,7 @@
   "name": "RAG-Enhanced Q&A System",
   "description": "Sophisticated retrieval-augmented generation with multi-query expansion, hybrid search, reranking, confidence-aware answering, and source attribution.",
   "tags": ["rag", "retrieval", "qa", "hybrid-search", "reranking", "citations"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-25",
 
   "nodes": [

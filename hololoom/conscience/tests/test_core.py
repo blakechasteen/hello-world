@@ -12,7 +12,7 @@ import asyncio
 from typing import Dict, Any
 
 # Import the Conscience system
-from HoloLoom.conscience import (
+from hololoom.conscience import (
     # Core types
     Voice,
     Concern,

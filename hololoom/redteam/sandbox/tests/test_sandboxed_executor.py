@@ -19,7 +19,7 @@ import logging
 import pytest
 from typing import Optional
 
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     SandboxedExecutor,
     SandboxConfig,
     SandboxMode,
@@ -27,11 +27,11 @@ from HoloLoom.redteam.sandbox import (
     create_sandboxed_executor_sync,
     sandboxed_attack_execution,
 )
-from HoloLoom.redteam.executor import (
+from hololoom.redteam.executor import (
     AttackExecutor,
     AttackOutcome,
 )
-from HoloLoom.redteam.strategies import (
+from hololoom.redteam.strategies import (
     AttackStrategy,
     AttackPayload,
 )

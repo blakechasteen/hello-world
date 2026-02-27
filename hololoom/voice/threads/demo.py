@@ -13,7 +13,7 @@ Features shown:
 - Status queries
 
 Run:
-    PYTHONPATH=. python HoloLoom/voice_first/demo.py
+    PYTHONPATH=. python hololoom/voice_first/demo.py
 
 Or:
     python -m HoloLoom.voice.threads.demo
@@ -27,7 +27,7 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
-from HoloLoom.voice.threads import UnifiedVoiceAgent, VoiceMode
+from hololoom.voice.threads import UnifiedVoiceAgent, VoiceMode
 
 
 async def demo_basic_thread_management():
@@ -134,7 +134,7 @@ async def demo_intent_classification():
     print("=" * 80)
     print()
 
-    from HoloLoom.voice.threads.grammar import VoiceGrammar
+    from hololoom.voice.threads.grammar import VoiceGrammar
 
     grammar = VoiceGrammar()
 

@@ -364,14 +364,14 @@ def alignment_handlers(mock_guardrails, mock_audit_trail):
     """Import and configure alignment handlers."""
     # Patch the module-level imports
     with patch.dict('sys.modules', {
-        'HoloLoom.alignment.safety_guardrails': Mock(
+        'hololoom.alignment.safety_guardrails': Mock(
             SafetyGuardrails=MockSafetyGuardrails,
             ActionRequest=MockActionRequest,
             ActionCategory=MockActionCategory,
             RiskLevel=MockRiskLevel,
             SafetyDecision=MockSafetyDecision
         ),
-        'HoloLoom.alignment.audit_trail': Mock(
+        'hololoom.alignment.audit_trail': Mock(
             AuditTrail=MockAuditTrail,
             DecisionLog=MockDecisionLog,
             DecisionType=MockDecisionType,
@@ -379,7 +379,7 @@ def alignment_handlers(mock_guardrails, mock_audit_trail):
         ),
     }):
         # Import after patching
-        from HoloLoom.apps.chatops.handlers import alignment_handlers as ah
+        from hololoom.apps.chatops.handlers import alignment_handlers as ah
 
         # Set global instances
         ah.set_guardrails(mock_guardrails)

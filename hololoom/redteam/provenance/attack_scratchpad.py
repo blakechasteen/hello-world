@@ -9,7 +9,7 @@ Tracks the complete provenance of adversarial attacks for:
 - Defense evaluation (how well guards perform)
 - Audit trails (complete record for security review)
 
-Follows the pattern from HoloLoom/recursive/scratchpad.py but specialized
+Follows the pattern from hololoom/recursive/scratchpad.py but specialized
 for red team attack tracking.
 """
 

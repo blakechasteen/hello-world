@@ -16,7 +16,7 @@ from typing import Dict, Any
 
 from fastapi import APIRouter, HTTPException
 
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 from ..state import state
 
@@ -54,7 +54,7 @@ async def add_memory(memory: Dict):
                 "memory_id": None
             }
 
-        from HoloLoom.memory.protocol import Memory
+        from hololoom.memory.protocol import Memory
 
         # Create Memory object
         new_memory = Memory(
@@ -130,7 +130,7 @@ async def api_remember(request: Dict[str, Any]):
         context = request.get("context", {})
 
         # Import HoloLoom unified API
-        from HoloLoom import HoloLoom
+        from hololoom import hololoom
 
         # Create HoloLoom instance with current config
         async with HoloLoom(config=state.config) as loom:
@@ -194,7 +194,7 @@ async def api_recall(request: Dict[str, Any]):
         k = request.get("k", 5)
 
         # Import HoloLoom unified API
-        from HoloLoom import HoloLoom
+        from hololoom import hololoom
 
         # Create HoloLoom instance with current config
         async with HoloLoom(config=state.config) as loom:

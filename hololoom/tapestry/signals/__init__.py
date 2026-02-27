@@ -12,7 +12,7 @@ Built-in signals (6 dimensions):
 - IntegrationSignal (0.15): Cross-system coherence
 
 Usage:
-    from HoloLoom.tapestry.signals import SignalRegistry
+    from hololoom.tapestry.signals import SignalRegistry
 
     # Get all registered signals
     signals = SignalRegistry.get_all()
@@ -27,10 +27,10 @@ Usage:
 Created: December 2025
 """
 
-from HoloLoom.tapestry.signals.registry import SignalRegistry
+from hololoom.tapestry.signals.registry import SignalRegistry
 
 # Import builtins to trigger registration
-from HoloLoom.tapestry.signals import builtins
+from hololoom.tapestry.signals import builtins
 
 __all__ = [
     "SignalRegistry",

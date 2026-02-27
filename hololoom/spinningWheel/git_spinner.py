@@ -27,8 +27,8 @@ from dataclasses import dataclass
 from datetime import datetime
 import time
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinnerCapabilities,
     SpinResult,
@@ -36,8 +36,8 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceSignals,
     ImportanceScore
 )
-from HoloLoom.spinningWheel.importance import ImportanceScorer
-from HoloLoom.spinningWheel.utils import create_source_id
+from hololoom.spinningWheel.importance import ImportanceScorer
+from hololoom.spinningWheel.utils import create_source_id
 
 
 # ============================================================================

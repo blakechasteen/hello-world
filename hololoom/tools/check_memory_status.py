@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant
+from hololoom.memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant
 
 
 async def quick_status():

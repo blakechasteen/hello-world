@@ -1,7 +1,7 @@
 {
   "name": "@hololoom/api-client",
   "version": "0.1.0",
-  "description": "TypeScript API client for HoloLoom backend",
+  "description": "TypeScript API client for hololoom backend",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

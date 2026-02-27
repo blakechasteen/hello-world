@@ -32,10 +32,10 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 # Import from canonical protocols
-from HoloLoom.core.protocols import MemoryStore, MemoryNavigator
-from HoloLoom.config import Config
-from HoloLoom.core.memory.protocol import Memory, MemoryQuery, RetrievalResult, Strategy
-from HoloLoom.core.memory.graph import KG as NetworkXKG  # Base storage
+from hololoom.core.protocols import MemoryStore, MemoryNavigator
+from hololoom.config import Config
+from hololoom.core.memory.protocol import Memory, MemoryQuery, RetrievalResult, Strategy
+from hololoom.core.memory.graph import KG as NetworkXKG  # Base storage
 
 logger = logging.getLogger(__name__)
 

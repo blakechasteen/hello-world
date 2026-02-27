@@ -15,7 +15,7 @@ Commands:
 - !workflow help - Show help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.workflow_handlers import register_workflow_handlers
+    from hololoom.apps.chatops.handlers.workflow_handlers import register_workflow_handlers
 
     # In run_chatops.py:
     register_workflow_handlers(registry)
@@ -45,7 +45,7 @@ except ImportError:
 
 # Workflow generator for NLP synthesis
 try:
-    from HoloLoom.apps.workflow_builder.workflow_generator import WorkflowGenerator
+    from hololoom.apps.workflow_builder.workflow_generator import WorkflowGenerator
     GENERATOR_AVAILABLE = True
 except ImportError:
     GENERATOR_AVAILABLE = False
@@ -53,7 +53,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -307,7 +307,7 @@ async def handle_workflow_status(
         return f"❌ {str(e)}"
     except Exception as e:
         logger.error(f"Error checking executor status: {e}")
-        return f"⚠️ **Workflow Executor Offline**\n\nCannot reach executor at {get_executor_url()}\n\nStart with: `python HoloLoom/web_dashboard/workflow_executor.py`\n\nError: {str(e)}"
+        return f"⚠️ **Workflow Executor Offline**\n\nCannot reach executor at {get_executor_url()}\n\nStart with: `python hololoom/web_dashboard/workflow_executor.py`\n\nError: {str(e)}"
 
 
 async def handle_workflow_validate(
@@ -596,11 +596,11 @@ async def handle_workflow_help(
 ```
 
 **Workflow Builder:**
-Open `HoloLoom/web_dashboard/workflow_builder.html` in a browser for the visual editor.
+Open `hololoom/web_dashboard/workflow_builder.html` in a browser for the visual editor.
 
 **Start Executor:**
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 ```
 
@@ -707,7 +707,7 @@ class WorkflowHandlers:
     Container for Workflow handlers.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.workflow_handlers import WorkflowHandlers
+        from hololoom.apps.chatops.handlers.workflow_handlers import WorkflowHandlers
 
         handlers = WorkflowHandlers()
         registry.register_instance(handlers)

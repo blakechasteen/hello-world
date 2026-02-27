@@ -17,35 +17,35 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List
 
 # Session module
-from HoloLoom.collaboration.session import (
+from hololoom.collaboration.session import (
     Session, SessionManager, Participant, SessionSettings, JoinRequest,
     SessionState, SessionType, ParticipantRole,
     create_session_manager
 )
 
 # Presence module
-from HoloLoom.collaboration.presence import (
+from hololoom.collaboration.presence import (
     PresenceManager, UserPresence, CursorPosition, SelectionState, TypingIndicator,
     ActivityStatus, FocusType,
     create_presence_manager
 )
 
 # Sync module
-from HoloLoom.collaboration.sync import (
+from hololoom.collaboration.sync import (
     StateSynchronizer, Operation, Conflict, SyncState, OperationBuffer,
     OperationType, ConflictResolution,
     create_state_synchronizer
 )
 
 # Attribution module
-from HoloLoom.collaboration.attribution import (
+from hololoom.collaboration.attribution import (
     AttributionManager, Contribution, UserContributionStats, AttributionContext,
     ContributionType, QualityRating,
     create_attribution_manager
 )
 
 # Voice module
-from HoloLoom.collaboration.voice import (
+from hololoom.collaboration.voice import (
     VoiceRoom, VoiceManager, VoiceRoomParticipant, VoiceRoomSettings,
     PeerConnection, MediaTrack, SignalingMessage,
     MediaType, StreamQuality, ConnectionState, SignalingType,

@@ -20,7 +20,7 @@ from unittest.mock import Mock, AsyncMock, patch
 from typing import List
 from datetime import datetime
 
-from HoloLoom.memory.unified import (
+from hololoom.memory.unified import (
     UnifiedMemory,
     RecallStrategy,
     Memory
@@ -72,7 +72,7 @@ def mock_conductor():
 @pytest.fixture
 def mock_coordination_result():
     """Create mock MemoryCoordinationResult."""
-    from HoloLoom.memory.symphony.protocol import (
+    from hololoom.memory.symphony.protocol import (
         MemoryCoordinationResult,
         MemoryResult,
         MemoryStrategy,
@@ -146,7 +146,7 @@ class TestConductorInitialization:
 
     def test_conductor_graceful_fallback_on_import_error(self, mock_backend):
         """Test graceful fallback if memory_symphony import fails."""
-        with patch('HoloLoom.memory.symphony.MemoryConductor', side_effect=ImportError):
+        with patch('hololoom.memory.symphony.MemoryConductor', side_effect=ImportError):
             memory = UnifiedMemory(backend=mock_backend, enable_conductor=True)
             # Should fall back gracefully
             assert memory._conductor is None or memory._conductor_available is False
@@ -161,35 +161,35 @@ class TestStrategyMapping:
 
     def test_map_recent_to_fast(self, unified_memory_with_conductor):
         """Test RECENT → FAST mapping."""
-        from HoloLoom.memory.symphony.protocol import MemoryStrategy as MS
+        from hololoom.memory.symphony.protocol import MemoryStrategy as MS
 
         result = unified_memory_with_conductor._map_strategy(RecallStrategy.RECENT)
         assert result == MS.FAST
 
     def test_map_similar_to_fast(self, unified_memory_with_conductor):
         """Test SIMILAR → FAST mapping."""
-        from HoloLoom.memory.symphony.protocol import MemoryStrategy as MS
+        from hololoom.memory.symphony.protocol import MemoryStrategy as MS
 
         result = unified_memory_with_conductor._map_strategy(RecallStrategy.SIMILAR)
         assert result == MS.FAST
 
     def test_map_connected_to_balanced(self, unified_memory_with_conductor):
         """Test CONNECTED → BALANCED mapping."""
-        from HoloLoom.memory.symphony.protocol import MemoryStrategy as MS
+        from hololoom.memory.symphony.protocol import MemoryStrategy as MS
 
         result = unified_memory_with_conductor._map_strategy(RecallStrategy.CONNECTED)
         assert result == MS.BALANCED
 
     def test_map_resonant_to_deep(self, unified_memory_with_conductor):
         """Test RESONANT → DEEP mapping."""
-        from HoloLoom.memory.symphony.protocol import MemoryStrategy as MS
+        from hololoom.memory.symphony.protocol import MemoryStrategy as MS
 
         result = unified_memory_with_conductor._map_strategy(RecallStrategy.RESONANT)
         assert result == MS.DEEP
 
     def test_map_balanced_to_auto(self, unified_memory_with_conductor):
         """Test BALANCED → AUTO mapping."""
-        from HoloLoom.memory.symphony.protocol import MemoryStrategy as MS
+        from hololoom.memory.symphony.protocol import MemoryStrategy as MS
 
         result = unified_memory_with_conductor._map_strategy(RecallStrategy.BALANCED)
         assert result == MS.AUTO
@@ -212,7 +212,7 @@ class TestResultConversion:
     @pytest.mark.asyncio
     async def test_convert_single_result(self, unified_memory_with_conductor):
         """Test converting a single MemoryResult."""
-        from HoloLoom.memory.symphony.protocol import (
+        from hololoom.memory.symphony.protocol import (
             MemoryCoordinationResult,
             MemoryResult,
             MemoryStrategy,
@@ -272,7 +272,7 @@ class TestResultConversion:
     @pytest.mark.asyncio
     async def test_convert_empty_results(self, unified_memory_with_conductor):
         """Test converting empty results."""
-        from HoloLoom.memory.symphony.protocol import (
+        from hololoom.memory.symphony.protocol import (
             MemoryCoordinationResult,
             MemoryStrategy,
             MemorySystem
@@ -388,7 +388,7 @@ class TestConductorIntegrationEndToEnd:
 
     def test_full_integration_flow(self, mock_backend):
         """Test complete flow: init → recall → convert."""
-        from HoloLoom.memory.symphony.protocol import (
+        from hololoom.memory.symphony.protocol import (
             MemoryCoordinationResult,
             MemoryResult,
             MemoryStrategy,

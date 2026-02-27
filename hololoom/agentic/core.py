@@ -24,15 +24,15 @@ from enum import Enum
 from datetime import datetime
 import uuid
 
-from HoloLoom.protocols.types import Query, Context, MemoryShard
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.recursive import FullLearningEngine, ActionItemTracker, ActionStatus
-from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
+from hololoom.protocols.types import Query, Context, MemoryShard
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.recursive import FullLearningEngine, ActionItemTracker, ActionStatus
+from hololoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 
 # Deception Detection (Dec 2025) - E1.3 Alignment Enrichment
 try:
-    from HoloLoom.alignment.deception_detection import (
+    from hololoom.alignment.deception_detection import (
         DeceptionDetector,
         BehavioralProbe,
         ProbeType,
@@ -52,7 +52,7 @@ except ImportError:
 
 # Instrumental Convergence Prevention (Dec 2025) - E1.4 Alignment Enrichment
 try:
-    from HoloLoom.alignment.instrumental_convergence import (
+    from hololoom.alignment.instrumental_convergence import (
         InstrumentalConvergenceGuard,
         ResourceType,
         ResourceBounds,
@@ -74,7 +74,7 @@ except ImportError:
 
 # Agent Monitoring (Nov 2025)
 try:
-    from HoloLoom.agentic.monitoring import AgentMonitor, AgentStatus
+    from hololoom.agentic.monitoring import AgentMonitor, AgentStatus
     MONITORING_AVAILABLE = True
 except ImportError:
     MONITORING_AVAILABLE = False
@@ -83,8 +83,8 @@ except ImportError:
 
 # Safety Integration (Dec 2025) - MRF Safe Integration Phase
 try:
-    from HoloLoom.agentic.safety_adapter import AgenticSafetyAdapter, create_safety_adapter
-    from HoloLoom.protocols.safety import SafetyGateDecision, SafetyRiskLevel
+    from hololoom.agentic.safety_adapter import AgenticSafetyAdapter, create_safety_adapter
+    from hololoom.protocols.safety import SafetyGateDecision, SafetyRiskLevel
     SAFETY_AVAILABLE = True
 except ImportError:
     SAFETY_AVAILABLE = False
@@ -94,11 +94,11 @@ except ImportError:
 
 # Conscience Integration (Dec 2025) - Phase 2B Per-Step Gating
 try:
-    from HoloLoom.agentic.conscience_adapter import (
+    from hololoom.agentic.conscience_adapter import (
         AgenticConscienceAdapter,
         create_conscience_adapter,
     )
-    from HoloLoom.protocols.conscience import ConscienceDecision, StepType
+    from hololoom.protocols.conscience import ConscienceDecision, StepType
     CONSCIENCE_AVAILABLE = True
 except ImportError:
     CONSCIENCE_AVAILABLE = False

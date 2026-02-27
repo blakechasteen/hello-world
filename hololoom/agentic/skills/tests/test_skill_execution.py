@@ -17,14 +17,14 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from typing import Dict, Any
 
-from HoloLoom.agentic.skills import (
+from hololoom.agentic.skills import (
     SkillExecutor,
     SkillRegistry,
     SkillExecutionResult,
     execute_skill
 )
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 
 # Module-level fixtures available to all test classes
@@ -88,7 +88,7 @@ class TestSkillExecutor:
     @pytest.fixture
     def executor(self, mock_orchestrator, mock_config, mock_registry):
         """Create SkillExecutor with mocked dependencies."""
-        with patch('HoloLoom.agentic.skill_agents.RecursiveWeavingOrchestrator', return_value=mock_orchestrator):
+        with patch('hololoom.agentic.skill_agents.RecursiveWeavingOrchestrator', return_value=mock_orchestrator):
             executor = SkillExecutor(registry=mock_registry, config=mock_config, shards=[])
             executor.orchestrator = mock_orchestrator
             return executor
@@ -219,7 +219,7 @@ class TestExecuteSkillConvenience:
     @pytest.mark.asyncio
     async def test_execute_skill_convenience_function(self):
         """Test execute_skill() convenience function."""
-        with patch('HoloLoom.agentic.skill_agents.SkillExecutor') as MockExecutor:
+        with patch('hololoom.agentic.skill_agents.SkillExecutor') as MockExecutor:
             mock_instance = AsyncMock()
             mock_result = SkillExecutionResult(
                 skill_name="code_reviewer",
@@ -247,7 +247,7 @@ class TestExecuteSkillConvenience:
     @pytest.mark.asyncio
     async def test_execute_skill_passes_config(self):
         """Test that execute_skill() passes config to executor."""
-        with patch('HoloLoom.agentic.skill_agents.SkillExecutor') as MockExecutor:
+        with patch('hololoom.agentic.skill_agents.SkillExecutor') as MockExecutor:
             mock_instance = AsyncMock()
             mock_result = SkillExecutionResult(
                 skill_name="test",

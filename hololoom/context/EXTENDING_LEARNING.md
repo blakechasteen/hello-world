@@ -21,7 +21,7 @@ The learning system has 5 main extension points:
 **Example: Track query complexity**
 
 ```python
-from HoloLoom.context import LearningTracker, RoutingEvent
+from hololoom.context import LearningTracker, RoutingEvent
 from dataclasses import dataclass, field
 from typing import Dict, Any
 
@@ -131,7 +131,7 @@ print(f"Complexity-latency correlation: {stats['correlation']:.2f}")
 **Example: Alert on performance degradation**
 
 ```python
-from HoloLoom.context import StrategyUpdater
+from hololoom.context import StrategyUpdater
 from typing import Callable, List
 
 class CallbackStrategyUpdater(StrategyUpdater):
@@ -213,7 +213,7 @@ updater.on_degradation(alert_degradation)
 **Example: Time-of-day routing**
 
 ```python
-from HoloLoom.context import StrategyUpdater
+from hololoom.context import StrategyUpdater
 from datetime import datetime, time
 
 class TimeAwareStrategyUpdater(StrategyUpdater):
@@ -278,7 +278,7 @@ updater = TimeAwareStrategyUpdater(
 **Example: Exponential smoothing calibration**
 
 ```python
-from HoloLoom.context import ConfidenceCalibrator, CalibrationCurve
+from hololoom.context import ConfidenceCalibrator, CalibrationCurve
 from typing import Dict
 
 class SmoothingCalibrator(ConfidenceCalibrator):
@@ -352,7 +352,7 @@ print(f"Smoothed adjustment: 0.85 → {adjusted:.2f}")
 **Example: Prometheus metrics**
 
 ```python
-from HoloLoom.context import LearningTracker
+from hololoom.context import LearningTracker
 from prometheus_client import Counter, Histogram, Gauge
 import asyncio
 
@@ -425,7 +425,7 @@ tracker = PrometheusLearningTracker()
 ```python
 import logging
 import json
-from HoloLoom.context import LearningTracker
+from hololoom.context import LearningTracker
 
 class StructuredLoggingTracker(LearningTracker):
     """Learning tracker with structured logging"""
@@ -486,9 +486,9 @@ tracker = StructuredLoggingTracker()
 
 ```python
 import asyncio
-from HoloLoom.infrastructure.sql import SQLConfig
-from HoloLoom.infrastructure.mcp import create_mcp_server, generate_session_id
-from HoloLoom.context import QueryRouter, QueryClassifier, ThompsonBandit
+from hololoom.infrastructure.sql import SQLConfig
+from hololoom.infrastructure.mcp import create_mcp_server, generate_session_id
+from hololoom.context import QueryRouter, QueryClassifier, ThompsonBandit
 
 # Use custom components
 from my_extensions import (

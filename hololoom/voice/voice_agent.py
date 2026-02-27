@@ -59,9 +59,9 @@ except ImportError:
 
 # HoloLoom imports
 try:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.protocols.types import Query, ModalityType
-    from HoloLoom.memory.graph import KG, KGEdge
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.protocols.types import Query, ModalityType
+    from hololoom.memory.graph import KG, KGEdge
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False
@@ -874,7 +874,7 @@ async def example_hololoom_integration():
         print("HoloLoom not available - skipping example")
         return
 
-    from HoloLoom.config import Config
+    from hololoom.config import Config
 
     # Create HoloLoom orchestrator
     config = Config.fast()

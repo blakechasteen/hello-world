@@ -3,7 +3,7 @@
   "name": "Event Stream Processing & Alerting",
   "description": "A real-time event processing workflow with sliding window aggregation, parallel anomaly detection across multiple dimensions, alert classification with severity routing, deduplication to prevent alert storms, and multi-channel notification delivery with runbook suggestions.",
   "tags": ["streaming", "events", "alerting", "monitoring", "anomaly-detection", "real-time", "observability"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-28",
   "nodes": [
     {

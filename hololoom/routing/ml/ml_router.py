@@ -95,7 +95,7 @@ class MLRouter:
         Returns:
             RoutingPrediction with department and confidence
         """
-        from HoloLoom.routing.ml import RoutingFeatureExtractor
+        from hololoom.routing.ml import RoutingFeatureExtractor
 
         # Extract features
         extractor = RoutingFeatureExtractor()

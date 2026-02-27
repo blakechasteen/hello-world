@@ -211,10 +211,10 @@ source /opt/federation-env/bin/activate
 
 # Install dependencies
 pip install --upgrade pip
-pip install -r HoloLoom/federation/requirements.txt
+pip install -r hololoom/federation/requirements.txt
 
 # Verify installation
-python3 -c "from HoloLoom.federation import Federation; print('✓ Federation installed')"
+python3 -c "from hololoom.federation import Federation; print('✓ Federation installed')"
 ```
 
 ### Week 2.3: Node Configuration
@@ -223,7 +223,7 @@ python3 -c "from HoloLoom.federation import Federation; print('✓ Federation in
 # Generate node identity (Ed25519 keypair)
 
 python3 << 'EOF'
-from HoloLoom.federation.identity import Identity
+from hololoom.federation.identity import Identity
 import json
 
 # Generate new identity
@@ -282,7 +282,7 @@ certbot renew --dry-run
 
 ```bash
 python3 << 'EOF'
-from HoloLoom.federation import Federation, FederationConfig
+from hololoom.federation import Federation, FederationConfig
 import asyncio
 
 async def test_startup():
@@ -313,7 +313,7 @@ EOF
 
 ```bash
 python3 << 'EOF'
-from HoloLoom.federation import Federation, FederationConfig, Query
+from hololoom.federation import Federation, FederationConfig, Query
 import asyncio
 
 async def test_query():
@@ -370,7 +370,7 @@ EOF
 
 ```bash
 python3 << 'EOF'
-from HoloLoom.federation import Federation, FederationConfig
+from hololoom.federation import Federation, FederationConfig
 import asyncio
 
 async def join_network():
@@ -414,7 +414,7 @@ Wants=network-online.target
 Type=simple
 User=federation
 WorkingDirectory=/opt/federation
-ExecStart=/opt/federation-env/bin/python3 -m HoloLoom.federation.run_node
+ExecStart=/opt/federation-env/bin/python3 -m hololoom.federation.run_node
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -643,7 +643,7 @@ sleep 10
 
 # Step 3: Verify network membership
 python3 << 'PYTHON'
-from HoloLoom.federation import Federation
+from hololoom.federation import Federation
 import asyncio
 
 async def verify_join():
@@ -687,7 +687,7 @@ curl https://seed-bootstrap-us-w1.federation.hololoom.dev/verification/next \
 
 # Step 2: Conduct verification (locally)
 python3 << 'EOF'
-from HoloLoom.federation import Verifier
+from hololoom.federation import Verifier
 
 verifier = Verifier()
 
@@ -791,7 +791,7 @@ journalctl -u federation-node -n 50 --no-pager
 # - Invalid configuration file
 
 # Debug: Try starting manually
-/opt/federation-env/bin/python3 -m HoloLoom.federation.run_node --config /opt/federation/node-config.json
+/opt/federation-env/bin/python3 -m hololoom.federation.run_node --config /opt/federation/node-config.json
 ```
 
 ### Problem: Cannot connect to bootstrap

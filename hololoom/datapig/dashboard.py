@@ -16,7 +16,7 @@ Follows Edward Tufte's principles: maximize data-ink ratio, minimize chartjunk.
 **Star Trek Theme**: Quality metrics represented as "ship systems status"
 
 **Usage**:
-    from HoloLoom.datapig.dashboard import render_quality_dashboard
+    from hololoom.datapig.dashboard import render_quality_dashboard
 
     # After analyzing multiple datasets
     reports = []
@@ -45,7 +45,7 @@ from collections import Counter
 
 # DATAPIG imports
 try:
-    from HoloLoom.datapig.detector import DataQualityIssue, IssueType, Severity
+    from hololoom.datapig.detector import DataQualityIssue, IssueType, Severity
     DATAPIG_AVAILABLE = True
 except ImportError:
     DATAPIG_AVAILABLE = False

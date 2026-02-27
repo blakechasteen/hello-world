@@ -12,8 +12,8 @@ Features:
 - Searchable by topic, entities, or conversation metadata
 
 Usage:
-    from HoloLoom.spinningWheel.chat_history import ChatHistorySpinner
-    from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager
+    from hololoom.spinningWheel.chat_history import ChatHistorySpinner
+    from hololoom.apps.workflow_builder.conversation_manager import ConversationManager
 
     # Ingest all conversations
     conv_mgr = ConversationManager("./data/conversations.db")
@@ -39,10 +39,10 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from dataclasses import dataclass
 
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 try:
-    from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager, Message, Conversation
+    from hololoom.apps.workflow_builder.conversation_manager import ConversationManager, Message, Conversation
 except ImportError:
     ConversationManager = None  # type: ignore[assignment,misc]
     Message = None  # type: ignore[assignment,misc]
@@ -468,9 +468,9 @@ class ChatHistoryAutoCapture:
     as they happen, keeping HoloLoom's memory in sync with chat history.
 
     Usage:
-        from HoloLoom import HoloLoom
-        from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager
-        from HoloLoom.spinningWheel.chat_history import ChatHistoryAutoCapture
+        from hololoom import hololoom
+        from hololoom.apps.workflow_builder.conversation_manager import ConversationManager
+        from hololoom.spinningWheel.chat_history import ChatHistoryAutoCapture
 
         conv_mgr = ConversationManager()
         loom = await HoloLoom().__aenter__()

@@ -19,13 +19,13 @@ from __future__ import annotations
 import logging
 from typing import Callable, Optional, TYPE_CHECKING
 
-from HoloLoom.core.orchestrator.protocols import BaseStageExecutor
+from hololoom.core.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
-    from HoloLoom.core.orchestrator.context import WeavingContext
-    from HoloLoom.tools.executor import ToolExecutor
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
-    from HoloLoom.alignment.audit_trail import AuditTrail
+    from hololoom.core.orchestrator.context import WeavingContext
+    from hololoom.tools.executor import ToolExecutor
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.alignment.audit_trail import AuditTrail
 
 
 class ToolExecutionExecutor(BaseStageExecutor):
@@ -98,7 +98,7 @@ class ToolExecutionExecutor(BaseStageExecutor):
         start = self._start_timing()
 
         # Import and delegate to pure function
-        from HoloLoom.core.orchestrator.stages.steps_7_9 import execute_step8_tool_execution
+        from hololoom.core.orchestrator.stages.steps_7_9 import execute_step8_tool_execution
 
         ctx = await execute_step8_tool_execution(
             ctx=ctx,

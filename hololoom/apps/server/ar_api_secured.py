@@ -28,21 +28,21 @@ from collections import defaultdict, deque
 import os
 
 # Import security modules
-from HoloLoom.apps.server.waf_middleware import WAFMiddleware, WAFRule
-from HoloLoom.apps.server.request_signing import SignatureValidator, APIKey, validate_api_request
-from HoloLoom.apps.server.security_monitor import (
+from hololoom.apps.server.waf_middleware import WAFMiddleware, WAFRule
+from hololoom.apps.server.request_signing import SignatureValidator, APIKey, validate_api_request
+from hololoom.apps.server.security_monitor import (
     SecurityMonitor,
     SecurityEventType,
     AlertSeverity
 )
 
 # HoloLoom imports
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query, MemoryShard
 
 # Vision tools imports (Phase 2)
-from HoloLoom.vision import (
+from hololoom.vision import (
     create_object_detector,
     create_scene_analyzer,
     create_hand_tracker,

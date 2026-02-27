@@ -42,8 +42,8 @@ pip install openai anthropic  # Or your preferred provider
 ### Basic Usage
 
 ```python
-from HoloLoom.dreamweaving import DreamWeaver, DreamWeaverConfig
-from HoloLoom.config import Config
+from hololoom.dreamweaving import DreamWeaver, DreamWeaverConfig
+from hololoom.config import Config
 
 # Configure DreamWeaver
 config = DreamWeaverConfig(
@@ -501,10 +501,10 @@ async with DreamWeaver(config, Config.fused()) as weaver:
 
 ```bash
 # Unit tests (Phase 1+)
-pytest HoloLoom/dreamweaving/tests/unit/ -v
+pytest hololoom/dreamweaving/tests/unit/ -v
 
 # Integration tests (Phase 1+)
-pytest HoloLoom/dreamweaving/tests/integration/ -v
+pytest hololoom/dreamweaving/tests/integration/ -v
 
 # Run demo
 PYTHONPATH=. python demos/demo_dreamweaver.py

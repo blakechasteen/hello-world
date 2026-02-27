@@ -36,7 +36,7 @@
 Open your terminal and run:
 
 ```bash
-cd HoloLoom/promptly
+cd hololoom/promptly
 python beginner_prompts.py
 ```
 
@@ -152,7 +152,7 @@ LLM: [Returns high-quality structured answer]
 Integrate into HoloLoom:
 
 ```python
-from HoloLoom.promptly import create_signature
+from hololoom.promptly import create_signature
 
 qa_sig = create_signature(
     "OptimizedQA",
@@ -467,7 +467,7 @@ Result: 80% more users can now optimize prompts
 **Ready to try?**
 
 ```bash
-cd HoloLoom/promptly
+cd hololoom/promptly
 python beginner_prompts.py
 ```
 

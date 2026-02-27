@@ -67,7 +67,7 @@ class PortalBridgeVerifier:
         try:
             # Try primary import path first
             try:
-                from HoloLoom.portal.shared.types import (
+                from hololoom.portal.shared.types import (
                     NodeCapabilities, NodeStatus, NodeRecord,
                     JobRequest, JobResult, LoomStatus
                 )

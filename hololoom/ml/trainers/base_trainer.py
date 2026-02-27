@@ -20,7 +20,7 @@ from typing import Any, Dict, Optional, Callable
 
 import numpy as np
 
-from HoloLoom.ml.protocol import (
+from hololoom.ml.protocol import (
     ArrayLike,
     DataSplit,
     EvaluationResult,

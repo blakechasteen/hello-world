@@ -1,7 +1,7 @@
 # DarkTrace: Sparse Autoencoder-Based Model Interpretability & Control
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/dark_trace/`
+**Location**: `hololoom/dark_trace/`
 **Total Implementation**: ~27 KB (8 Python files)
 **Date**: December 2025
 
@@ -24,7 +24,7 @@ Unlike black-box interpretability methods, DarkTrace works by training Sparse Au
 ### Basic Mind Reading (3 lines)
 
 ```python
-from HoloLoom.dark_trace.probe import MindProbe
+from hololoom.dark_trace.probe import MindProbe
 import torch
 
 # Create probe on a model layer
@@ -60,8 +60,8 @@ probe.clear_steering()
 ### Automated Safety Enforcement
 
 ```python
-from HoloLoom.dark_trace.auto_probe import AutoProbe
-from HoloLoom.dark_trace.steering_policy import ConsistencyGuard
+from hololoom.dark_trace.auto_probe import AutoProbe
+from hololoom.dark_trace.steering_policy import ConsistencyGuard
 
 # Attach automated probe to agent
 auto_probe = AutoProbe(agent, layer_name="recursive_block")
@@ -345,8 +345,8 @@ pid.reset()
 ### With Eggroll Agents
 
 ```python
-from HoloLoom.eggroll.mirror_core import MirrorCoreAgent
-from HoloLoom.dark_trace.auto_probe import AutoProbe
+from hololoom.eggroll.mirror_core import MirrorCoreAgent
+from hololoom.dark_trace.auto_probe import AutoProbe
 
 # Create agent with introspection
 agent = MirrorCoreAgent(
@@ -381,8 +381,8 @@ DarkTrace doesn't directly integrate with HoloLoom's memory (graph, vector store
 ### With Alignment Framework
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.dark_trace.steering_policy import ConsistencyGuard
+from hololoom.alignment import SafetyGuardrails
+from hololoom.dark_trace.steering_policy import ConsistencyGuard
 
 # Combine dual safety layers
 guardrails = SafetyGuardrails()  # High-level safety
@@ -466,8 +466,8 @@ dark_guard.enforce()  # Also check semantic safety
 ### Example 1: Mind Reading Demo
 
 ```python
-from HoloLoom.dark_trace.probe import MindProbe
-from HoloLoom.eggroll.architectures import get_model
+from hololoom.dark_trace.probe import MindProbe
+from hololoom.eggroll.architectures import get_model
 import torch
 
 # Load model and attach probe
@@ -533,7 +533,7 @@ Features shown:
 ## File Structure
 
 ```
-HoloLoom/dark_trace/
+hololoom/dark_trace/
 ├── sae.py                    # Sparse Autoencoder + Trainer
 ├── probe.py                  # MindProbe (hook + steering)
 ├── auto_probe.py             # AutoProbe (threaded background)
@@ -567,7 +567,7 @@ HoloLoom/dark_trace/
 Run unit tests:
 
 ```bash
-PYTHONPATH=. python -m pytest HoloLoom/dark_trace/test_pid_steering.py -v
+PYTHONPATH=. python -m pytest hololoom/dark_trace/test_pid_steering.py -v
 ```
 
 **Test Coverage**:
@@ -579,13 +579,13 @@ Run demos:
 
 ```bash
 # Mind reading example
-PYTHONPATH=. python HoloLoom/dark_trace/demo_mind_reading.py
+PYTHONPATH=. python hololoom/dark_trace/demo_mind_reading.py
 
 # Steering example
-PYTHONPATH=. python HoloLoom/dark_trace/demo_steering.py
+PYTHONPATH=. python hololoom/dark_trace/demo_steering.py
 
 # Automated safety
-PYTHONPATH=. python HoloLoom/dark_trace/demo_auto_steering.py
+PYTHONPATH=. python hololoom/dark_trace/demo_auto_steering.py
 ```
 
 ## References
@@ -599,8 +599,8 @@ PYTHONPATH=. python HoloLoom/dark_trace/demo_auto_steering.py
 - Hubinger et al., "Activation Patching" (2024)
 
 **Safety & Interpretability**:
-- HoloLoom Alignment Framework: `HoloLoom/alignment/`
-- HoloLoom Semantic Calculus: `HoloLoom/semantic_calculus/`
+- HoloLoom Alignment Framework: `hololoom/alignment/`
+- HoloLoom Semantic Calculus: `hololoom/semantic_calculus/`
 
 ## Known Limitations
 

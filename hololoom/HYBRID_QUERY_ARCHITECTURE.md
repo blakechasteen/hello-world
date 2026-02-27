@@ -365,7 +365,7 @@ def assign_latency_gate(query_complexity: str, route: str) -> LatencyGate:
 ### 3.1 Query Router Architecture
 
 ```python
-# HoloLoom/infrastructure/query_router.py
+# hololoom/infrastructure/query_router.py
 
 from dataclasses import dataclass
 from enum import Enum
@@ -708,7 +708,7 @@ class AgenticQueryRouter:
 
     async def _execute_graph(self, query_text: str):
         """Execute graph query."""
-        from HoloLoom.memory.protocol import MemoryQuery
+        from hololoom.memory.protocol import MemoryQuery
 
         query = MemoryQuery(text=query_text)
         result = await self.graph.recall(query, limit=10)
@@ -739,7 +739,7 @@ class AgenticQueryRouter:
 ### 4.1 Outcome Tracking
 
 ```python
-# HoloLoom/infrastructure/routing_learner.py
+# hololoom/infrastructure/routing_learner.py
 
 @dataclass
 class QueryOutcome:
@@ -892,7 +892,7 @@ class RoutingLearner:
 ### 5.1 Zero-Copy Coordinator
 
 ```python
-# HoloLoom/infrastructure/zero_copy_coordinator.py
+# hololoom/infrastructure/zero_copy_coordinator.py
 
 class ZeroCopyCoordinator:
     """
@@ -1055,7 +1055,7 @@ class ZeroCopyCoordinator:
 ### 5.2 Backend Factory Integration
 
 ```python
-# HoloLoom/memory/backend_factory.py (additions)
+# hololoom/memory/backend_factory.py (additions)
 
 async def create_hybrid_with_sql(
     config: Config,
@@ -1137,7 +1137,7 @@ async def create_sql_engine(config: Config):
 async def _run_sql_migrations(engine):
     """Run SQL migrations to create tables."""
     # Import schemas
-    from HoloLoom.infrastructure.sql_schema import Base
+    from hololoom.infrastructure.sql_schema import Base
 
     # Create all tables
     async with engine.begin() as conn:
@@ -1184,7 +1184,7 @@ Add to `mcp_department_registry.py`:
 ### 6.2 MCP Server Implementation
 
 ```python
-# HoloLoom/infrastructure/mcp_server.py
+# hololoom/infrastructure/mcp_server.py
 
 from mcp import MCPServer
 

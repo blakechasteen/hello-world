@@ -1,14 +1,14 @@
 """
 Feature engineering for contextual bandits.
 
-Combines context (from HoloLoom embeddings) and action features into
+Combines context (from hololoom embeddings) and action features into
 input vectors for the reward model.
 """
 
 import numpy as np
 import numpy.typing as npt
 from typing import Callable
-from HoloLoom.bandits.neural_ts.types import Context, Action
+from hololoom.bandits.neural_ts.types import Context, Action
 
 
 class ContextActionFeaturizer:

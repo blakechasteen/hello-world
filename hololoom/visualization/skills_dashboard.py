@@ -13,8 +13,8 @@ Features:
 - Zero dependencies (pure HTML/CSS/SVG)
 
 Usage:
-    from HoloLoom.visualization.skills_dashboard import render_dashboard
-    from HoloLoom.skills.metrics import get_tracker
+    from hololoom.visualization.skills_dashboard import render_dashboard
+    from hololoom.skills.metrics import get_tracker
 
     tracker = get_tracker()
     html = render_dashboard(tracker.export_json())

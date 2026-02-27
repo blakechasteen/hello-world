@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 
-from HoloLoom.skills.base import (
+from hololoom.skills.base import (
     BaseSkill,
     SkillInput,
     SkillOutput,
@@ -391,5 +391,5 @@ class PytestRunnerSkill(BaseSkill):
 
 
 # Register skill
-from HoloLoom.skills.base import register_skill
+from hololoom.skills.base import register_skill
 register_skill(PytestRunnerSkill())

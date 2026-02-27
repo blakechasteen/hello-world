@@ -9,7 +9,7 @@ Provides comprehensive telemetry capabilities:
 
 Quick Start:
     # Tracing
-    from HoloLoom.telemetry import get_tracer, span
+    from hololoom.telemetry import get_tracer, span
 
     tracer = get_tracer()
     with tracer.trace("my_operation") as s:
@@ -22,7 +22,7 @@ Quick Start:
         return await do_work(query)
 
     # Metrics
-    from HoloLoom.telemetry import get_registry, counter, histogram
+    from hololoom.telemetry import get_registry, counter, histogram
 
     queries = counter("queries_total", "Total queries", ["mode"])
     queries.inc(labels={"mode": "fast"})
@@ -32,13 +32,13 @@ Quick Start:
         process_query()
 
     # Pre-defined collectors
-    from HoloLoom.telemetry import get_collector
+    from hololoom.telemetry import get_collector
 
     collector = get_collector()
     collector.record_query(mode="fast", latency_seconds=0.15, confidence=0.92)
 
     # Start metrics server
-    from HoloLoom.telemetry import start_metrics_server
+    from hololoom.telemetry import start_metrics_server
 
     server = start_metrics_server(port=9090)
     # Metrics available at http://localhost:9090/metrics
@@ -48,7 +48,7 @@ Quick Start:
 #  PROTOCOL TYPES
 # ═══════════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.telemetry.protocol import (
+from hololoom.telemetry.protocol import (
     # Protocols
     TracingProtocol,
     MetricsProtocol,
@@ -72,7 +72,7 @@ from HoloLoom.telemetry.protocol import (
 #  CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.telemetry.config import (
+from hololoom.telemetry.config import (
     TelemetryConfig,
     TracingConfig,
     MetricsConfig,
@@ -84,7 +84,7 @@ from HoloLoom.telemetry.config import (
 #  TRACING
 # ═══════════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.telemetry.tracing import (
+from hololoom.telemetry.tracing import (
     # Tracer
     OTelTracer,
     create_tracer,
@@ -113,7 +113,7 @@ from HoloLoom.telemetry.tracing import (
 #  METRICS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.telemetry.metrics import (
+from hololoom.telemetry.metrics import (
     # Registry
     PrometheusRegistry,
     create_registry,
@@ -137,7 +137,7 @@ from HoloLoom.telemetry.metrics import (
 #  EXPORTERS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.telemetry.exporters import (
+from hololoom.telemetry.exporters import (
     # Jaeger
     JaegerExporter,
     create_jaeger_exporter,
@@ -151,7 +151,7 @@ from HoloLoom.telemetry.exporters import (
 #  CONVENIENCE: GLOBAL COLLECTOR
 # ═══════════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.telemetry.metrics.collectors import get_collector
+from hololoom.telemetry.metrics.collectors import get_collector
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  PUBLIC API

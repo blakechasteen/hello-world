@@ -18,7 +18,7 @@ import yaml
 from pathlib import Path
 from typing import Dict, Any
 
-from HoloLoom.agentic.skills import (
+from hololoom.agentic.skills import (
     SkillRegistry,
     SkillTemplate,
     SkillParameter,

@@ -308,7 +308,7 @@ function showTemplatePanel() {
 ## File Locations
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── template_gallery.html          ← Gallery UI
 ├── template_gallery.js            ← Gallery features
 ├── workflow_builder.html          ← Builder (add integration)

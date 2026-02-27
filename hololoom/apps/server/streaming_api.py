@@ -23,15 +23,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # HoloLoom imports
 try:
-    from HoloLoom.config import Config
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.protocols.types import Query as HoloLoomQuery
-    from HoloLoom.memory.streaming_expansion import (
+    from hololoom.config import Config
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.protocols.types import Query as HoloLoomQuery
+    from hololoom.memory.streaming_expansion import (
         stream_context_expansion,
         ContextChunk,
         ChunkYieldStrategy,
     )
-    from HoloLoom.memory.interleaved_generation import (
+    from hololoom.memory.interleaved_generation import (
         stream_interleaved_expansion_generation,
         StreamMode,
         GenerationToken,

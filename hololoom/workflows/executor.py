@@ -21,17 +21,17 @@ import uuid
 from typing import Dict, List, Any, Optional, Set
 from datetime import datetime
 
-from HoloLoom.workflows.schema import (
+from hololoom.workflows.schema import (
     WorkflowDefinition,
     WorkflowNode,
     WorkflowResult,
     ExecutionTrace,
     NodeType,
 )
-from HoloLoom.workflows.state import StateBackend, InMemoryState, CheckpointManager
-from HoloLoom.workflows.integrations import ChainExecutor, RecursiveExecutor
-from HoloLoom.config import Config
-from HoloLoom.departments import get_department
+from hololoom.workflows.state import StateBackend, InMemoryState, CheckpointManager
+from hololoom.workflows.integrations import ChainExecutor, RecursiveExecutor
+from hololoom.config import Config
+from hololoom.departments import get_department
 
 logger = logging.getLogger(__name__)
 
@@ -421,7 +421,7 @@ class WorkflowExecutor:
         max_sources = node.params.get("max_sources", 5)
 
         dept = await self._get_department("rag")
-        from HoloLoom.protocols.department import DepartmentRequest
+        from hololoom.protocols.department import DepartmentRequest
 
         request = DepartmentRequest(
             department_id="rag",
@@ -458,7 +458,7 @@ class WorkflowExecutor:
 
     async def _execute_verify_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Verify response using DS-STAR."""
-        from HoloLoom.protocols.department import DepartmentResponse, ConfidenceMetadata
+        from hololoom.protocols.department import DepartmentResponse, ConfidenceMetadata
 
         # Create mock response for verification
         response = DepartmentResponse(
@@ -535,7 +535,7 @@ class WorkflowExecutor:
 
     async def _execute_safety_node(self, node: WorkflowNode, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """Safety guardrails check."""
-        from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+        from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
         guardrails = SafetyGuardrails()
         action = inputs.get("action", str(inputs))

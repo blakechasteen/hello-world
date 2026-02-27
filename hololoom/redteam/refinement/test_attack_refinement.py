@@ -20,14 +20,14 @@ import pytest
 import asyncio
 from unittest.mock import Mock, AsyncMock, patch
 
-from HoloLoom.redteam.refinement.attack_refinement import (
+from hololoom.redteam.refinement.attack_refinement import (
     AttackRefiner,
     AttackRefinementStrategy,
     AttackQualityMetrics,
     AttackRefinementResult
 )
-from HoloLoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
-from HoloLoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
+from hololoom.redteam.provenance.attack_scratchpad import AttackScratchpad, DefenseLayer
+from hololoom.redteam.refinement.quality_trajectory import QualityTrajectoryTracker
 
 
 @pytest.fixture

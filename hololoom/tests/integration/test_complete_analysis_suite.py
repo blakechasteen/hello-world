@@ -16,7 +16,7 @@ print("="*70 + "\n")
 print("REAL ANALYSIS")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import (
+from hololoom.warp.math.analysis import (
     MetricSpace, SequenceAnalyzer, ContinuityChecker,
     Differentiator, RiemannIntegrator
 )
@@ -69,7 +69,7 @@ print("\n" + "="*70)
 print("COMPLEX ANALYSIS")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import (
+from hololoom.warp.math.analysis import (
     ComplexFunction, ContourIntegrator, ResidueCalculator,
     ConformalMapper, SeriesExpansion
 )
@@ -127,7 +127,7 @@ print("\n" + "="*70)
 print("FUNCTIONAL ANALYSIS")
 print("-"*70)
 
-from HoloLoom.warp.math.analysis import (
+from hololoom.warp.math.analysis import (
     HilbertSpace, BoundedOperator, SpectralAnalyzer,
     SobolevSpace, CompactOperator
 )

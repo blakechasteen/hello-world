@@ -25,7 +25,7 @@ Updated: 2025-11-22 (Phase 4-5)
 """
 
 # Phase 2: Core protocols and tools
-from HoloLoom.vision.protocol import (
+from hololoom.vision.protocol import (
     VisionProcessor,
     DetectedObject,
     SceneUnderstanding,
@@ -41,25 +41,25 @@ from HoloLoom.vision.protocol import (
     MapPoint,
 )
 
-from HoloLoom.vision.object_detector import (
+from hololoom.vision.object_detector import (
     ObjectDetector,
     create_object_detector,
 )
 
-from HoloLoom.vision.scene_analyzer import (
+from hololoom.vision.scene_analyzer import (
     SceneAnalyzer,
     SpatialRelationship,
     create_scene_analyzer,
 )
 
-from HoloLoom.vision.hand_tracker import (
+from hololoom.vision.hand_tracker import (
     HandTracker,
     Gesture,
     create_hand_tracker,
 )
 
 # Phase 4: Depth estimation and marker detection
-from HoloLoom.vision.depth_estimator import (
+from hololoom.vision.depth_estimator import (
     DepthEstimator,
     create_depth_estimator,
     get_depth_at_point,
@@ -67,7 +67,7 @@ from HoloLoom.vision.depth_estimator import (
     create_point_cloud,
 )
 
-from HoloLoom.vision.marker_detector import (
+from hololoom.vision.marker_detector import (
     MarkerDetector,
     MarkerType,
     create_marker_detector,
@@ -76,7 +76,7 @@ from HoloLoom.vision.marker_detector import (
 )
 
 # Phase 5: Semantic segmentation, pose estimation, SLAM
-from HoloLoom.vision.semantic_segmenter import (
+from hololoom.vision.semantic_segmenter import (
     SemanticSegmenter,
     SegmentationModel,
     SegmentationDataset,
@@ -85,7 +85,7 @@ from HoloLoom.vision.semantic_segmenter import (
     get_class_distribution,
 )
 
-from HoloLoom.vision.pose_estimator import (
+from hololoom.vision.pose_estimator import (
     PoseEstimator,
     create_pose_estimator,
     draw_pose_skeleton,
@@ -94,7 +94,7 @@ from HoloLoom.vision.pose_estimator import (
     get_body_orientation,
 )
 
-from HoloLoom.vision.slam_processor import (
+from hololoom.vision.slam_processor import (
     SLAMProcessor,
     create_slam_processor,
     create_camera_matrix,

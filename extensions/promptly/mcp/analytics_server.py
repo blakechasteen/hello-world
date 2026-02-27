@@ -314,7 +314,7 @@ async def list_tools() -> list[Tool]:
         # ========== HoloLoom Integration Tools ==========
         Tool(
             name="promptly_hololoom_enhance",
-            description="Enhance a prompt with contextual information from HoloLoom memory using RAG (Retrieval-Augmented Generation).",
+            description="Enhance a prompt with contextual information from hololoom memory using RAG (Retrieval-Augmented Generation).",
             inputSchema={
                 "type": "object",
                 "properties": {

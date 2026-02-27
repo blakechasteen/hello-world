@@ -15,8 +15,8 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.awareness.compositional_awareness import CompositionalAwarenessLayer
-from HoloLoom.awareness.context_packer import (
+from hololoom.awareness.compositional_awareness import CompositionalAwarenessLayer
+from hololoom.awareness.context_packer import (
     SmartContextPacker,
     TokenBudget,
     ContextElement,
@@ -174,7 +174,7 @@ async def demo_4_importance_scoring():
     """Demo 4: Importance-based element selection"""
     print_section("Demo 4: Importance-Based Selection")
     
-    from HoloLoom.awareness.context_packer import ContextElement, ContextImportance
+    from hololoom.awareness.context_packer import ContextElement, ContextImportance
     
     # Create mock elements at different importance levels
     elements = [

@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from HoloLoom.physics import (
+from hololoom.physics import (
     GradientFlowEngine,
     RouteDecision,
     Target,
@@ -18,7 +18,7 @@ from HoloLoom.physics import (
     load_loss,
     latency_loss
 )
-from HoloLoom.routing import (
+from hololoom.routing import (
     FlowRouter,
     ServerRouter,
     ToolRouter,

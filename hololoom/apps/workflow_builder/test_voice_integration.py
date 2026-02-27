@@ -67,7 +67,7 @@ async def test_voice_integration():
     print("-" * 60)
 
     try:
-        from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
+        from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
         print("  ✓ voice_integration.py imported successfully")
     except ImportError as e:
         print(f"  ✗ Failed to import voice_integration: {e}")
@@ -82,7 +82,7 @@ async def test_voice_integration():
     print("-" * 60)
 
     try:
-        from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+        from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
         print("  ✓ voice_endpoints.py imported successfully")
     except ImportError as e:
         print(f"  ✗ Failed to import voice_endpoints: {e}")

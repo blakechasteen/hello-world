@@ -61,7 +61,7 @@ async def get_todos(workspace_id: Optional[str] = None, limit: int = 50):
         }
     """
     try:
-        from HoloLoom import HoloLoom
+        from hololoom import hololoom
 
         # Create HoloLoom instance
         async with HoloLoom(config=state.config) as loom:
@@ -197,8 +197,8 @@ async def ingest_workspace(
         }
     """
     try:
-        from HoloLoom.spinningWheel.workspace import WorkspaceSpinner
-        from HoloLoom import HoloLoom
+        from hololoom.spinningWheel.workspace import WorkspaceSpinner
+        from hololoom import hololoom
 
         logger.info(f"Starting workspace ingestion: {workspace_path}")
 
@@ -263,7 +263,7 @@ async def ingest_workspace_legacy(
         if not state.codebase_indexer:
             raise HTTPException(status_code=500, detail="Codebase indexer not initialized")
 
-        from HoloLoom.agentic.codebase_indexer import CodeLanguage
+        from hololoom.agentic.codebase_indexer import CodeLanguage
 
         # Convert language strings to Language enum
         lang_map = {
@@ -297,7 +297,7 @@ async def ingest_workspace_legacy(
 
         # If persistent backend available, store shards
         if state.memory_backend:
-            from HoloLoom.memory.protocol import Memory
+            from hololoom.memory.protocol import Memory
             memories = []
             for shard in code_shards:
                 memory = Memory(
@@ -357,7 +357,7 @@ async def ingest_file(file_path: str, language: str, content: Optional[str] = No
         if not state.codebase_indexer:
             raise HTTPException(status_code=500, detail="Codebase indexer not initialized")
 
-        from HoloLoom.agentic.codebase_indexer import CodeLanguage
+        from hololoom.agentic.codebase_indexer import CodeLanguage
 
         # Map language string to enum
         lang_map = {

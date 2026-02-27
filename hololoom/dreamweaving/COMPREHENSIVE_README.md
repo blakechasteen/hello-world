@@ -1,7 +1,7 @@
 # DreamWeaver: Creative Generation & World Building System
 
 **Status**: ✅ Experimental (Phase 0 Architecture) - **December 2025**
-**Location**: `HoloLoom/dreamweaving/`
+**Location**: `hololoom/dreamweaving/`
 **Total Code**: 1,143 lines (343 data structures + 800 core orchestrator)
 **Version**: 0.1.0
 
@@ -22,9 +22,9 @@ The system seamlessly integrates HoloLoom's 9-layer weaving architecture with do
 ### Basic Usage
 
 ```python
-from HoloLoom.dreamweaving import DreamWeaver, DreamWeaverConfig
-from HoloLoom.dreamweaving import GenerationMode, ConsistencyLevel
-from HoloLoom.config import Config
+from hololoom.dreamweaving import DreamWeaver, DreamWeaverConfig
+from hololoom.dreamweaving import GenerationMode, ConsistencyLevel
+from hololoom.config import Config
 
 # Configure world building
 config = DreamWeaverConfig(
@@ -64,7 +64,7 @@ async with DreamWeaver(config, holo_config) as weaver:
 ### Generating World Elements
 
 ```python
-from HoloLoom.dreamweaving import EntityType, EventType
+from hololoom.dreamweaving import EntityType, EventType
 
 # Generate a character
 protagonist = await weaver.generate_entity(

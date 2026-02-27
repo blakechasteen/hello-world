@@ -17,50 +17,50 @@ import logging
 import uuid
 
 # Import spatial modules
-from HoloLoom.spatial.math_types import Vector3, Quaternion, Color, Transform, BoundingBox
-from HoloLoom.spatial.avatar_system import (
+from hololoom.spatial.math_types import Vector3, Quaternion, Color, Transform, BoundingBox
+from hololoom.spatial.avatar_system import (
     AvatarManager, Avatar, AvatarPresets, StatusType as AvatarStatusType,
     Expression, ExpressionType, AnimationState, IKState
 )
-from HoloLoom.spatial.whiteboard_3d import (
+from hololoom.spatial.whiteboard_3d import (
     WhiteboardManager, Whiteboard3D, Stroke, Shape3D, TextAnnotation, StickyNote
 )
-from HoloLoom.spatial.physics_objects import (
+from hololoom.spatial.physics_objects import (
     PhysicsWorld, PhysicsBody, CollisionShape, BodyType as PhysicsBodyType
 )
-from HoloLoom.spatial.environment_mapping import (
+from hololoom.spatial.environment_mapping import (
     EnvironmentMapper, Plane, SceneSnapshot, SurfaceType
 )
-from HoloLoom.spatial.hand_tracking import HandTracker, HandGesture, GestureType
-from HoloLoom.spatial.spatial_audio import SpatialAudioManager, AudioSource
-from HoloLoom.spatial.spatial_notifications import (
+from hololoom.spatial.hand_tracking import HandTracker, HandGesture, GestureType
+from hololoom.spatial.spatial_audio import SpatialAudioManager, AudioSource
+from hololoom.spatial.spatial_notifications import (
     SpatialNotificationManager, Notification, NotificationType, NotificationPriority
 )
-from HoloLoom.spatial.gaze_tracking import GazeTracker, GazeRay
+from hololoom.spatial.gaze_tracking import GazeTracker, GazeRay
 
 # Import collaboration modules
-from HoloLoom.collaboration.session import (
+from hololoom.collaboration.session import (
     Session, SessionManager, SessionState, SessionType, Participant, ParticipantRole
 )
-from HoloLoom.collaboration.presence import (
+from hololoom.collaboration.presence import (
     PresenceManager, UserPresence, ActivityStatus, FocusType, CursorPosition
 )
-from HoloLoom.collaboration.sync import (
+from hololoom.collaboration.sync import (
     StateSynchronizer, Operation, OperationType, ConflictResolution
 )
-from HoloLoom.collaboration.attribution import (
+from hololoom.collaboration.attribution import (
     AttributionManager, Contribution, ContributionType,
     RefinementAwareAttributionManager, create_refinement_aware_attribution_manager
 )
-from HoloLoom.collaboration.voice import (
+from hololoom.collaboration.voice import (
     VoiceManager, VoiceRoom, VoiceRoomSettings
 )
 
 # Import MRF-powered learning modules (Phase 3)
-from HoloLoom.collaboration.ux_learning import (
+from hololoom.collaboration.ux_learning import (
     CollaborationUXLearner, UXFeature, LearningContext, LearningDecision
 )
-from HoloLoom.collaboration.annotation_refinement import (
+from hololoom.collaboration.annotation_refinement import (
     AnnotationRefiner, AnnotationType, RefinementStrategy, RefinementResult
 )
 
@@ -920,7 +920,7 @@ class CollaborativeSpatialSession:
         self.avatar_manager.avatars[avatar.avatar_id] = avatar
         self.avatar_manager.animators[avatar.avatar_id] = self.avatar_manager.animators.get(
             avatar.avatar_id,
-            __import__('HoloLoom.spatial.avatar_system', fromlist=['AvatarAnimator']).AvatarAnimator()
+            __import__('hololoom.spatial.avatar_system', fromlist=['AvatarAnimator']).AvatarAnimator()
         )
 
         # Initialize context

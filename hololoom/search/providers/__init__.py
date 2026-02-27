@@ -10,7 +10,7 @@ Available providers:
 - Mock: Testing/development provider
 
 Usage:
-    from HoloLoom.search.providers import create_provider
+    from hololoom.search.providers import create_provider
 
     provider = await create_provider("serpapi", api_key="...")
     results = await provider.search("What is Thompson Sampling?")

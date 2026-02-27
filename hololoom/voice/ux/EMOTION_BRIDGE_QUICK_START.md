@@ -35,7 +35,7 @@ node --version  # Should show v16+ or v18+
 ### 2. Basic Usage
 
 ```python
-from HoloLoom.voice.emotion_bridge import EmotionBridge, EmotionBridgeConfig
+from hololoom.voice.emotion_bridge import EmotionBridge, EmotionBridgeConfig
 import asyncio
 
 async def main():
@@ -66,10 +66,10 @@ Suggested: Suggest taking a break
 ### 3. Voice Agent Integration
 
 ```python
-from HoloLoom.voice import VoiceAgent
-from HoloLoom.voice.emotion_bridge import enhance_voice_agent_with_emotions
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.voice import VoiceAgent
+from hololoom.voice.emotion_bridge import enhance_voice_agent_with_emotions
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 
 async def main():
     # Create orchestrator
@@ -393,7 +393,7 @@ async with EmotionBridge(config) as bridge:
 ### Custom Configuration
 
 ```python
-from HoloLoom.voice.emotion_bridge import (
+from hololoom.voice.emotion_bridge import (
     EmotionBridgeConfig,
     FusionStrategy,
     MetaMode,
@@ -487,13 +487,13 @@ Run the test suite:
 
 ```bash
 # Run all emotion bridge tests
-pytest HoloLoom/voice/tests/test_emotion_bridge.py -v
+pytest hololoom/voice/tests/test_emotion_bridge.py -v
 
 # Run with coverage
-pytest HoloLoom/voice/tests/test_emotion_bridge.py --cov=HoloLoom.voice.emotion_bridge
+pytest hololoom/voice/tests/test_emotion_bridge.py --cov=hololoom.voice.emotion_bridge
 
 # Run specific test
-pytest HoloLoom/voice/tests/test_emotion_bridge.py::test_emotion_bridge_basic_analysis -v
+pytest hololoom/voice/tests/test_emotion_bridge.py::test_emotion_bridge_basic_analysis -v
 ```
 
 ---
@@ -566,7 +566,7 @@ config = EmotionBridgeConfig(
 
 ```bash
 # Verify script exists
-ls HoloLoom/voice_ux/milestone3/complete_emotional_pipeline.js
+ls hololoom/voice_ux/milestone3/complete_emotional_pipeline.js
 
 # Or specify path explicitly
 config = EmotionBridgeConfig(
@@ -588,7 +588,7 @@ config = EmotionBridgeConfig(
 Ensure all JavaScript dependencies exist:
 ```bash
 # Check if module exists
-ls HoloLoom/voice_ux/milestone3/
+ls hololoom/voice_ux/milestone3/
 
 # Should show:
 # - complete_emotional_pipeline.js
@@ -634,7 +634,7 @@ Now that you have the emotion bridge integrated:
 - **[API_REFERENCE.md](API_REFERENCE.md)** - JavaScript API documentation
 - **[QUICK_START.md](QUICK_START.md)** - JavaScript quick start guide
 - **[demos/demo_emotion_bridge.py](../demos/demo_emotion_bridge.py)** - Complete demo suite
-- **[HoloLoom/voice/tests/test_emotion_bridge.py](../HoloLoom/voice/tests/test_emotion_bridge.py)** - Test suite
+- **[hololoom/voice/tests/test_emotion_bridge.py](../hololoom/voice/tests/test_emotion_bridge.py)** - Test suite
 
 ---
 

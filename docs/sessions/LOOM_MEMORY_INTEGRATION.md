@@ -257,8 +257,8 @@ TOTAL CYCLE: ~1770 tokens
 ### Modified LoomCommand
 
 ```python
-from HoloLoom.loom.command import LoomCommand, PatternCard, Mode
-from HoloLoom.memory.protocol import UnifiedMemoryInterface, Strategy
+from hololoom.loom.command import LoomCommand, PatternCard, Mode
+from hololoom.memory.protocol import UnifiedMemoryInterface, Strategy
 
 class AdaptiveMemoryLoom:
     """

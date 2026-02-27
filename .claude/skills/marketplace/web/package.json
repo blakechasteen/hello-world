@@ -1,7 +1,7 @@
 {
   "name": "hololoom-skill-marketplace",
   "version": "1.0.0",
-  "description": "HoloLoom Skill Marketplace Web UI",
+  "description": "hololoom Skill Marketplace Web UI",
   "private": true,
   "scripts": {
     "dev": "vite",

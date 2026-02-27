@@ -7,20 +7,20 @@ from pathlib import Path
 # Ensure project root is in path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
-from HoloLoom.fabric.materializer import Materializer
-from HoloLoom.fabric.spacetime import Spacetime, Artifact, ArtifactType
-from HoloLoom.memory.unified import UnifiedMemory
-from HoloLoom.memory.stores.in_memory_store import InMemoryStore
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.protocols.types import Query
+from hololoom.fabric.materializer import Materializer
+from hololoom.fabric.spacetime import Spacetime, Artifact, ArtifactType
+from hololoom.memory.unified import UnifiedMemory
+from hololoom.memory.stores.in_memory_store import InMemoryStore
 
 async def main():
     print("Initializing HoloLoom Expanded Maker Demo...")
     
     # 1. Setup
     config = Config()
-    demo_dir = Path("c:/Users/blake/OneDrive/Documents/mythRL/HoloLoom/demo_expanded")
+    demo_dir = Path("c:/Users/blake/OneDrive/Documents/mythRL/hololoom/demo_expanded")
     
     # Clean up previous run
     import shutil

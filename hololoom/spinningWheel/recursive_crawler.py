@@ -17,18 +17,18 @@ from urllib.parse import urljoin, urlparse
 from datetime import datetime
 import hashlib
 
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
     ImportanceSignals,
     ImportanceScore,
 )
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.documentation.types import MemoryShard
 
 # Import WebsiteSpinner for page fetching
 try:
-    from HoloLoom.spinningWheel.website import WebsiteSpinner, WebPageContent
+    from hololoom.spinningWheel.website import WebsiteSpinner, WebPageContent
     WEBSITE_SPINNER_AVAILABLE = True
 except ImportError:
     WEBSITE_SPINNER_AVAILABLE = False

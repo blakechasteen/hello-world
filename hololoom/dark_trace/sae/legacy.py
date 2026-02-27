@@ -7,12 +7,12 @@ use ResearchSAE from the core module instead.
 
 Migration Guide:
     # Old (basic SAE):
-    from HoloLoom.dark_trace.sae import SparseAutoEncoder, DarkSaeTrainer
+    from hololoom.dark_trace.sae import SparseAutoEncoder, DarkSaeTrainer
     sae = SparseAutoEncoder(input_dim=384)
     trainer = DarkSaeTrainer(sae)
 
     # New (research-grade SAE):
-    from HoloLoom.dark_trace.sae import ResearchSAE, ResearchTrainer, TrainingConfig
+    from hololoom.dark_trace.sae import ResearchSAE, ResearchTrainer, TrainingConfig
     sae = ResearchSAE(input_dim=384, expansion_factor=16)
     config = TrainingConfig(l1_warmup_steps=1000, enable_ghost_gradients=True)
     trainer = ResearchTrainer(sae, config)

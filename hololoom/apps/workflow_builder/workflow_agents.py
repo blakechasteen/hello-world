@@ -60,12 +60,12 @@ class WorkflowAgentExecutor:
 
         try:
             # Import HoloLoom components
-            from HoloLoom.config import Config
-            from HoloLoom.memory.backend_factory import create_memory_backend
-            from HoloLoom.memory.unified import UnifiedMemory
-            from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-            from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-            from HoloLoom.policy.thompson_sampling import TSBandit, BanditStrategy
+            from hololoom.config import Config
+            from hololoom.memory.backend_factory import create_memory_backend
+            from hololoom.memory.unified import UnifiedMemory
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.embedding.spectral import MatryoshkaEmbeddings
+            from hololoom.policy.thompson_sampling import TSBandit, BanditStrategy
 
             # Use FAST config for balanced performance
             self._config = Config.fast()
@@ -144,7 +144,7 @@ class WorkflowAgentExecutor:
 
         try:
             if self._orchestrator:
-                from HoloLoom.protocols.types import Query
+                from hololoom.protocols.types import Query
 
                 # Configure pattern if specified
                 pattern = config.get("pattern", "fast")
@@ -211,7 +211,7 @@ class WorkflowAgentExecutor:
 
         try:
             if self._memory:
-                from HoloLoom.memory.unified import RecallStrategy
+                from hololoom.memory.unified import RecallStrategy
 
                 strategy = config.get("strategy", "similar")
                 recall_strategy = {
@@ -286,7 +286,7 @@ class WorkflowAgentExecutor:
 
             results = []
             if self._orchestrator:
-                from HoloLoom.protocols.types import Query
+                from hololoom.protocols.types import Query
 
                 async with self._orchestrator as orch:
                     for sub_q in sub_queries:
@@ -487,7 +487,7 @@ class WorkflowAgentExecutor:
 
         try:
             if self._orchestrator:
-                from HoloLoom.protocols.types import Query
+                from hololoom.protocols.types import Query
 
                 refined = response
                 quality = 0.5
@@ -623,7 +623,7 @@ class WorkflowAgentExecutor:
 
         try:
             if self._memory:
-                from HoloLoom.memory.unified import RecallStrategy
+                from hololoom.memory.unified import RecallStrategy
 
                 memories = await self._memory.recall(
                     query=query,
@@ -849,7 +849,7 @@ class WorkflowAgentExecutor:
             )
 
         try:
-            from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy
+            from hololoom.convergence.engine import ConvergenceEngine, CollapseStrategy
 
             strategy_map = {
                 "argmax": CollapseStrategy.ARGMAX,
@@ -928,7 +928,7 @@ class WorkflowAgentExecutor:
             )
 
         try:
-            from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+            from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
             guardrails = SafetyGuardrails()
             result = await guardrails.gate_action(action or content, context)

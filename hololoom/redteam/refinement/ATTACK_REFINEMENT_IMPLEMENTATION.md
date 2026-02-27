@@ -1,7 +1,7 @@
 # Attack Refinement Engine - CARTS Wave 2
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/redteam/refinement/attack_refinement.py`
+**Location**: `hololoom/redteam/refinement/attack_refinement.py`
 **Integration**: Wave 1 (Attack Scratchpad) + Quality Trajectory Tracking
 **Total Code**: ~450 lines (core) + tests + demos
 **Performance**: <50ms per refinement, multi-pass optimization
@@ -520,16 +520,16 @@ print(f"Best strategy: {stats['best_strategy']}")
 
 ```bash
 # All tests (with pytest)
-pytest HoloLoom/redteam/refinement/test_attack_refinement_standalone.py -v
+pytest hololoom/redteam/refinement/test_attack_refinement_standalone.py -v
 
 # Specific test class
-pytest HoloLoom/redteam/refinement/test_attack_refinement_standalone.py::TestRefinementStrategies -v
+pytest hololoom/redteam/refinement/test_attack_refinement_standalone.py::TestRefinementStrategies -v
 
 # Single test
-pytest HoloLoom/redteam/refinement/test_attack_refinement_standalone.py::TestRefinement::test_refine_basic -v
+pytest hololoom/redteam/refinement/test_attack_refinement_standalone.py::TestRefinement::test_refine_basic -v
 
 # With coverage
-pytest HoloLoom/redteam/refinement/test_attack_refinement_standalone.py --cov=HoloLoom.redteam.refinement.attack_refinement
+pytest hololoom/redteam/refinement/test_attack_refinement_standalone.py --cov=hololoom.redteam.refinement.attack_refinement
 ```
 
 ## Demo Scripts
@@ -538,7 +538,7 @@ pytest HoloLoom/redteam/refinement/test_attack_refinement_standalone.py --cov=Ho
 
 ```bash
 cd /c/Users/blake/OneDrive/Documents/mythRL
-python HoloLoom/redteam/refinement/demo_attack_refinement.py
+python hololoom/redteam/refinement/demo_attack_refinement.py
 ```
 
 ### Demo Components

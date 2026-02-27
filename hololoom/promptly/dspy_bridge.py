@@ -5,7 +5,7 @@ DSPy Bridge for HoloLoom
 Integrates DSPy's systematic prompt engineering with HoloLoom's knowledge system.
 
 Key Features:
-- DSPy signature definitions from HoloLoom patterns
+- DSPy signature definitions from hololoom patterns
 - Automatic optimization using HoloLoom's memory as training data
 - Compositional cache integration for faster execution
 - Semantic grounding via Matryoshka embeddings
@@ -16,7 +16,7 @@ Architecture:
     Promptly Workflows → DSPy Programs → Responses
 
 Usage:
-    from HoloLoom.promptly.dspy_bridge import DSPyHoloLoom, create_signature
+    from hololoom.promptly.dspy_bridge import DSPyHoloLoom, create_signature
 
     # Create bridge
     bridge = DSPyHoloLoom(config=Config.fused())
@@ -28,7 +28,7 @@ Usage:
         outputs=["answer", "confidence"]
     )
 
-    # Optimize from HoloLoom memory
+    # Optimize from hololoom memory
     optimized = await bridge.optimize_from_memory(
         signature=sig,
         memory_query="question answering examples",
@@ -47,9 +47,9 @@ from pathlib import Path
 import json
 
 # Type imports
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.fabric.spacetime import Spacetime
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.fabric.spacetime import Spacetime
 
 # Optional DSPy import with graceful degradation
 try:
@@ -134,7 +134,7 @@ class DSPyHoloLoom:
     Bridge between DSPy and HoloLoom.
 
     Enables:
-    1. Creating DSPy signatures from HoloLoom patterns
+    1. Creating DSPy signatures from hololoom patterns
     2. Optimizing DSPy programs using HoloLoom memory as training data
     3. Executing DSPy programs with HoloLoom context
     4. Caching optimized prompts in compositional cache
@@ -199,8 +199,8 @@ class DSPyHoloLoom:
     async def _get_orchestrator(self):
         """Lazy-load HoloLoom orchestrator"""
         if self._orchestrator is None:
-            from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-            from HoloLoom.memory.backend_factory import create_memory_backend
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.memory.backend_factory import create_memory_backend
 
             # Create memory backend
             self._memory = await create_memory_backend(self.config)
@@ -250,7 +250,7 @@ class DSPyHoloLoom:
         limit: int = 50
     ) -> List[Dict[str, Any]]:
         """
-        Fetch training examples from HoloLoom memory.
+        Fetch training examples from hololoom memory.
 
         Args:
             query: Search query to find relevant examples
@@ -586,7 +586,7 @@ async def demo_dspy_hololoom():
     print(f"   Created: {sig.name} ({len(sig.inputs)} inputs → {len(sig.outputs)} outputs)\n")
 
     # 2. Optimize from memory
-    print("2️⃣  Optimizing from HoloLoom memory...")
+    print("2️⃣  Optimizing from hololoom memory...")
     try:
         program = await bridge.optimize_from_memory(
             signature=sig,

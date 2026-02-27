@@ -22,8 +22,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import uuid
 
-from HoloLoom.apps.departments.proto.core.config import ProtoConfig
-from HoloLoom.apps.departments.proto.domain import (
+from hololoom.apps.departments.proto.core.config import ProtoConfig
+from hololoom.apps.departments.proto.domain import (
     IntentType,
     CodeContext,
     ProtoIntent,
@@ -413,7 +413,7 @@ class ProtoEngine:
         context = parameters.get("context")
 
         # Use HoloLoom's agentic reasoning
-        from HoloLoom.protocols.types import Query
+        from hololoom.protocols.types import Query
         hololoom_query = Query(text=query)
 
         result = await self.agentic.reason(

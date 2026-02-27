@@ -1,7 +1,7 @@
 # HoloLoom Physics Engine: Helmholtz Free Energy Optimization
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/physics/`
+**Location**: `hololoom/physics/`
 **Total Code**: 4,053 lines across 11 files
 **Date**: November 20 - December 2025
 
@@ -37,7 +37,7 @@ Instead of ad-hoc heuristics, the physics engine provides **mathematically groun
 ### Phase 1: Gradient Flow Routing
 
 ```python
-from HoloLoom.physics import GradientFlowEngine, combined_loss
+from hololoom.physics import GradientFlowEngine, combined_loss
 
 # Define loss function (combine multiple objectives)
 loss_fn = combined_loss(
@@ -73,8 +73,8 @@ print(f"Gradient: {decision.gradient:.3f}")
 ### Phase 2: Fluid Dynamics Context Packing
 
 ```python
-from HoloLoom.physics import AdaptivePacker
-from HoloLoom.memory.graph import KG
+from hololoom.physics import AdaptivePacker
+from hololoom.memory.graph import KG
 
 # Create knowledge graph
 kg = KG()
@@ -107,7 +107,7 @@ print(f"Flow efficiency: {result.flow_efficiency:.2%}")
 ### Phase 3: Thermodynamics Exploration/Exploitation
 
 ```python
-from HoloLoom.physics import ThermodynamicOptimizer
+from hololoom.physics import ThermodynamicOptimizer
 
 # Create thermodynamic optimizer
 thermo = ThermodynamicOptimizer(
@@ -134,7 +134,7 @@ print(f"Entropy contribution: {action.entropy:.3f}")
 ### Phase 4: Wave Mechanics Pattern Detection
 
 ```python
-from HoloLoom.physics import WaveMechanicsEngine
+from hololoom.physics import WaveMechanicsEngine
 
 # Create wave engine
 wave = WaveMechanicsEngine(
@@ -171,7 +171,7 @@ for pattern in constructive[:3]:
 ### Phase 5: Statistical Mechanics Emergence
 
 ```python
-from HoloLoom.physics import StatisticalMechanicsEngine
+from hololoom.physics import StatisticalMechanicsEngine
 
 # Create statistical mechanics engine
 sm_engine = StatisticalMechanicsEngine(temperature=1.0)
@@ -197,7 +197,7 @@ print(f"Order parameter: {transition.order_parameter:.3f}")
 ### Unified Physics Engine
 
 ```python
-from HoloLoom.physics import UnifiedPhysicsEngine
+from hololoom.physics import UnifiedPhysicsEngine
 
 # Create unified physics engine (all phases integrated)
 physics = UnifiedPhysicsEngine(
@@ -449,8 +449,8 @@ print(f"Total duration: {result.duration_ms:.1f}ms")
 ### With Weaving Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.physics import UnifiedPhysicsEngine
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.physics import UnifiedPhysicsEngine
 
 config = Config.fused()
 config.enable_physics = True
@@ -470,8 +470,8 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### With Memory System
 
 ```python
-from HoloLoom.physics import AdaptivePacker
-from HoloLoom.memory.unified import UnifiedMemory
+from hololoom.physics import AdaptivePacker
+from hololoom.memory.unified import UnifiedMemory
 
 memory = UnifiedMemory(backend=backend)
 
@@ -489,8 +489,8 @@ memories = memory.recall("What is Thompson Sampling?", use_physics_packing=True)
 ### With Agentic Reasoning
 
 ```python
-from HoloLoom.agentic import AgenticOrchestrator
-from HoloLoom.physics import ThermodynamicOptimizer
+from hololoom.agentic import AgenticOrchestrator
+from hololoom.physics import ThermodynamicOptimizer
 
 async with AgenticOrchestrator(cfg=config, shards=shards) as orchestrator:
     # Thermodynamics balances exploration in research mode
@@ -505,8 +505,8 @@ async with AgenticOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### With Alignment Framework
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.physics import GradientFlowEngine
+from hololoom.alignment import SafetyGuardrails
+from hololoom.physics import GradientFlowEngine
 
 # Route to safest action using gradient flow
 guardrails = SafetyGuardrails()
@@ -617,7 +617,7 @@ assert guardrails.evaluate(decision.target).allowed
 ### Basic Configuration
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 config = Config.fused()
 
@@ -641,7 +641,7 @@ config.physics_max_latency_ms = 200     # Timeout for physics operations
 ### Per-Engine Configuration
 
 ```python
-from HoloLoom.physics import (
+from hololoom.physics import (
     GradientFlowEngine,
     AdaptivePacker,
     ThermodynamicOptimizer,
@@ -695,20 +695,20 @@ Run physics tests:
 
 ```bash
 # All physics tests
-pytest HoloLoom/physics/tests/ -v
+pytest hololoom/physics/tests/ -v
 
 # Specific component
-pytest HoloLoom/physics/tests/test_gradient_flow.py -v
-pytest HoloLoom/physics/tests/test_fluid_dynamics.py -v
-pytest HoloLoom/physics/tests/test_thermodynamics.py -v
-pytest HoloLoom/physics/tests/test_wave_mechanics.py -v
-pytest HoloLoom/physics/tests/test_statistical_mechanics.py -v
+pytest hololoom/physics/tests/test_gradient_flow.py -v
+pytest hololoom/physics/tests/test_fluid_dynamics.py -v
+pytest hololoom/physics/tests/test_thermodynamics.py -v
+pytest hololoom/physics/tests/test_wave_mechanics.py -v
+pytest hololoom/physics/tests/test_statistical_mechanics.py -v
 
 # Integration test (all phases)
-pytest HoloLoom/physics/tests/test_unified_physics.py -v
+pytest hololoom/physics/tests/test_unified_physics.py -v
 
 # Performance benchmarks
-pytest HoloLoom/physics/tests/test_physics_performance.py -v
+pytest hololoom/physics/tests/test_physics_performance.py -v
 ```
 
 ---
@@ -718,7 +718,7 @@ pytest HoloLoom/physics/tests/test_physics_performance.py -v
 ### Custom Loss Functions
 
 ```python
-from HoloLoom.physics import GradientFlowEngine
+from hololoom.physics import GradientFlowEngine
 
 def custom_loss(metrics):
     """Multi-objective loss combining cost, quality, and environmental impact."""
@@ -739,7 +739,7 @@ engine = GradientFlowEngine(loss_fn=custom_loss)
 ### Custom Cooling Schedules
 
 ```python
-from HoloLoom.physics import TemperatureScheduler
+from hololoom.physics import TemperatureScheduler
 
 class CustomCoolingSchedule:
     """Implement your own cooling schedule."""
@@ -762,7 +762,7 @@ class CustomCoolingSchedule:
 ### Custom Wave Patterns
 
 ```python
-from HoloLoom.physics import WaveMechanicsEngine
+from hololoom.physics import WaveMechanicsEngine
 
 # Create harmonic patterns
 wave = WaveMechanicsEngine(wave_speed=1.0, damping=0.01)
@@ -786,7 +786,7 @@ patterns = wave.get_interference_patterns()
 ### Statistical Mechanics Sampling
 
 ```python
-from HoloLoom.physics import StatisticalMechanicsEngine
+from hololoom.physics import StatisticalMechanicsEngine
 
 # Use importance sampling to handle large state spaces
 sm = StatisticalMechanicsEngine(temperature=0.5)

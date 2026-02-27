@@ -10,7 +10,7 @@ Continuous learning system that:
 - Learns from high-quality interactions
 
 Usage:
-    from HoloLoom.apps.chatops.self_improving_bot import SelfImprovingBot
+    from hololoom.apps.chatops.self_improving_bot import SelfImprovingBot
 
     bot = SelfImprovingBot()
 

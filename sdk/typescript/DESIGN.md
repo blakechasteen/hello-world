@@ -576,8 +576,8 @@ console.log(result.data.response);
 
 ### External References
 
-- Python Lite API: `HoloLoom/hololoom.py`
-- API server: `HoloLoom/server/agentic_api.py`
+- Python Lite API: `hololoom/hololoom.py`
+- API server: `hololoom/server/agentic_api.py`
 - Type definitions: `src/types/index.ts`
 
 ## Conclusion

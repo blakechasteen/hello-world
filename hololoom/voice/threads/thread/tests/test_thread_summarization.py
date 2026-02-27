@@ -4,7 +4,7 @@ Thread Summarization Tests
 Unit tests for ThreadSummarizer with 10 test cases.
 
 Run:
-    pytest HoloLoom/voice_first/thread/tests/test_thread_summarization.py -v
+    pytest hololoom/voice_first/thread/tests/test_thread_summarization.py -v
 """
 
 import pytest
@@ -153,7 +153,7 @@ class TestThreadSummarizerBasics:
     @pytest.mark.asyncio
     async def test_initialization(self, mock_thread_manager):
         """Test 1: ThreadSummarizer initialization"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
+        from hololoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
 
         summarizer = ThreadSummarizer(
             thread_manager=mock_thread_manager,
@@ -170,7 +170,7 @@ class TestThreadSummarizerBasics:
     @pytest.mark.asyncio
     async def test_basic_summarization(self, mock_thread_manager, mock_llm_client):
         """Test 2: Basic thread summarization"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
+        from hololoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
 
         summarizer = ThreadSummarizer(
             thread_manager=mock_thread_manager,
@@ -192,7 +192,7 @@ class TestThreadSummarizerBasics:
     @pytest.mark.asyncio
     async def test_thread_not_found(self, mock_thread_manager):
         """Test 3: Error when thread not found"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer
+        from hololoom.voice.threads.thread import ThreadSummarizer
 
         summarizer = ThreadSummarizer(thread_manager=mock_thread_manager)
 
@@ -202,7 +202,7 @@ class TestThreadSummarizerBasics:
     @pytest.mark.asyncio
     async def test_empty_thread(self, mock_thread_manager):
         """Test 4: Summarize empty thread"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
+        from hololoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
 
         # Create empty thread
         thread_id = mock_thread_manager.create_thread("empty thread")
@@ -223,7 +223,7 @@ class TestSummaryStyles:
     @pytest.mark.asyncio
     async def test_bullet_points_style(self, mock_thread_manager, mock_llm_client):
         """Test 5: BULLET_POINTS style"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
+        from hololoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
 
         summarizer = ThreadSummarizer(
             thread_manager=mock_thread_manager,
@@ -242,7 +242,7 @@ class TestSummaryStyles:
     @pytest.mark.asyncio
     async def test_narrative_style(self, mock_thread_manager, mock_llm_client):
         """Test 6: NARRATIVE style"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
+        from hololoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
 
         summarizer = ThreadSummarizer(
             thread_manager=mock_thread_manager,
@@ -261,7 +261,7 @@ class TestSummaryStyles:
     @pytest.mark.asyncio
     async def test_all_five_styles(self, mock_thread_manager, mock_llm_client):
         """Test 7: All 5 summary styles work"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
+        from hololoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
 
         summarizer = ThreadSummarizer(
             thread_manager=mock_thread_manager,
@@ -292,7 +292,7 @@ class TestCaching:
     @pytest.mark.asyncio
     async def test_cache_hit(self, mock_thread_manager, mock_llm_client):
         """Test 8: Cache hit on repeated query"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
+        from hololoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
 
         summarizer = ThreadSummarizer(
             thread_manager=mock_thread_manager,
@@ -324,7 +324,7 @@ class TestCaching:
     @pytest.mark.asyncio
     async def test_cache_management(self, mock_thread_manager, mock_llm_client):
         """Test 9: Cache clearing and stats"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
+        from hololoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
 
         summarizer = ThreadSummarizer(
             thread_manager=mock_thread_manager,
@@ -355,7 +355,7 @@ class TestGracefulDegradation:
     @pytest.mark.asyncio
     async def test_fallback_without_llm(self, mock_thread_manager):
         """Test 10: Fallback summary without LLM"""
-        from HoloLoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
+        from hololoom.voice.threads.thread import ThreadSummarizer, SummaryStyle
 
         summarizer = ThreadSummarizer(
             thread_manager=mock_thread_manager,

@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any
 from unittest.mock import Mock, AsyncMock, MagicMock
 
-from HoloLoom.agentic.monitoring import (
+from hololoom.agentic.monitoring import (
     AgentMonitor,
     AgentTreeBuilder,
     AgentStatus,

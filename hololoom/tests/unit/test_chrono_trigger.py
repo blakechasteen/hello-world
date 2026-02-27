@@ -2,7 +2,7 @@
 Test Chrono Trigger - Temporal Control System
 ==============================================
 
-Tests for HoloLoom/chrono/trigger.py - Temporal control and execution timing.
+Tests for hololoom/chrono/trigger.py - Temporal control and execution timing.
 
 Coverage:
 - Temporal window creation (BARE/FAST/FUSED modes)
@@ -22,13 +22,13 @@ import time
 from datetime import datetime, timedelta
 from unittest.mock import Mock, AsyncMock, patch
 
-from HoloLoom.chrono.trigger import (
+from hololoom.chrono.trigger import (
     ChronoTrigger,
     TemporalWindow,
     ExecutionLimits,
     BreathingRhythm
 )
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 
 # ============================================================================

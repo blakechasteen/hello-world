@@ -16,8 +16,8 @@ from datetime import datetime
 from unittest.mock import Mock, AsyncMock, MagicMock
 import networkx as nx
 
-from HoloLoom.memory.unified import UnifiedMemory, Memory, NavigationDirection, MemoryPattern
-from HoloLoom.config import Config
+from hololoom.memory.unified import UnifiedMemory, Memory, NavigationDirection, MemoryPattern
+from hololoom.config import Config
 
 
 @pytest.fixture

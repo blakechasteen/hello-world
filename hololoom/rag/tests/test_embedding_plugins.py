@@ -9,7 +9,7 @@ import numpy as np
 from unittest.mock import Mock, patch, MagicMock
 from typing import List
 
-from HoloLoom.rag.embedding_plugins import (
+from hololoom.rag.embedding_plugins import (
     EmbeddingProvider,
     MatryoshkaEmbedding,
     HuggingFaceEmbedding,
@@ -80,7 +80,7 @@ class TestMatryoshkaEmbedding:
 
     def test_initialization(self):
         """Test MatryoshkaEmbedding initialization."""
-        with patch('HoloLoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
+        with patch('hololoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
                    lambda x: None):
             provider = MatryoshkaEmbedding()
             provider._embedder = Mock()
@@ -89,7 +89,7 @@ class TestMatryoshkaEmbedding:
 
     def test_dimension_property(self):
         """Test dimension property."""
-        with patch('HoloLoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
+        with patch('hololoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
                    lambda x: None):
             provider = MatryoshkaEmbedding()
             provider.dimension = 384
@@ -98,7 +98,7 @@ class TestMatryoshkaEmbedding:
 
     def test_encode_shape(self):
         """Test encode returns correct shape."""
-        with patch('HoloLoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
+        with patch('hololoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
                    lambda x: None):
             provider = MatryoshkaEmbedding()
             provider.dimension = 384
@@ -112,7 +112,7 @@ class TestMatryoshkaEmbedding:
 
     def test_encode_query_shape(self):
         """Test encode_query returns correct shape."""
-        with patch('HoloLoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
+        with patch('hololoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
                    lambda x: None):
             provider = MatryoshkaEmbedding()
             provider.dimension = 384
@@ -126,7 +126,7 @@ class TestMatryoshkaEmbedding:
 
     def test_protocol_compliance(self):
         """Test MatryoshkaEmbedding satisfies protocol."""
-        with patch('HoloLoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
+        with patch('hololoom.rag.embedding_plugins.MatryoshkaEmbedding.__init__',
                    lambda x: None):
             provider = MatryoshkaEmbedding()
             provider.dimension = 384
@@ -146,7 +146,7 @@ class TestMatryoshkaEmbedding:
 class TestHuggingFaceEmbedding:
     """Test HuggingFaceEmbedding provider."""
 
-    @patch('HoloLoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
            lambda x, model_name=None: None)
     def test_initialization_defaults(self):
         """Test default initialization."""
@@ -159,7 +159,7 @@ class TestHuggingFaceEmbedding:
         assert provider.dimension == 384
         assert provider.model_name == "all-MiniLM-L6-v2"
 
-    @patch('HoloLoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
            lambda x, model_name="all-mpnet-base-v2": None)
     def test_initialization_custom_model(self):
         """Test initialization with custom model."""
@@ -171,7 +171,7 @@ class TestHuggingFaceEmbedding:
 
         assert provider.dimension == 768
 
-    @patch('HoloLoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
            lambda x, model_name=None: None)
     def test_encode_shape(self):
         """Test encode returns correct shape."""
@@ -185,7 +185,7 @@ class TestHuggingFaceEmbedding:
         embeddings = provider.encode(["text1", "text2"])
         assert embeddings.shape == (2, 384)
 
-    @patch('HoloLoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
            lambda x, model_name=None: None)
     def test_encode_query_shape(self):
         """Test encode_query returns correct shape."""
@@ -199,7 +199,7 @@ class TestHuggingFaceEmbedding:
         query_emb = provider.encode_query("test query")
         assert query_emb.shape == (384,)
 
-    @patch('HoloLoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.HuggingFaceEmbedding.__init__',
            lambda x, model_name=None: None)
     def test_protocol_compliance(self):
         """Test HuggingFaceEmbedding satisfies protocol."""
@@ -220,7 +220,7 @@ class TestHuggingFaceEmbedding:
 class TestOpenAIEmbedding:
     """Test OpenAIEmbedding provider."""
 
-    @patch('HoloLoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
            lambda x, model=None, api_key=None: None)
     def test_initialization_small_model(self):
         """Test initialization with small model."""
@@ -231,7 +231,7 @@ class TestOpenAIEmbedding:
 
         assert provider.dimension == 1536
 
-    @patch('HoloLoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
            lambda x, model="text-embedding-3-large", api_key=None: None)
     def test_initialization_large_model(self):
         """Test initialization with large model."""
@@ -242,7 +242,7 @@ class TestOpenAIEmbedding:
 
         assert provider.dimension == 3072
 
-    @patch('HoloLoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
            lambda x, model=None, api_key=None: None)
     def test_encode_shape(self):
         """Test encode returns correct shape."""
@@ -261,7 +261,7 @@ class TestOpenAIEmbedding:
         embeddings = provider.encode(["text1", "text2"])
         assert embeddings.shape == (2, 1536)
 
-    @patch('HoloLoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
            lambda x, model=None, api_key=None: None)
     def test_encode_query_shape(self):
         """Test encode_query returns correct shape."""
@@ -278,7 +278,7 @@ class TestOpenAIEmbedding:
         query_emb = provider.encode_query("test query")
         assert query_emb.shape == (1536,)
 
-    @patch('HoloLoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.OpenAIEmbedding.__init__',
            lambda x, model=None, api_key=None: None)
     def test_protocol_compliance(self):
         """Test OpenAIEmbedding satisfies protocol."""
@@ -301,7 +301,7 @@ class TestOpenAIEmbedding:
 class TestCohereEmbedding:
     """Test CohereEmbedding provider."""
 
-    @patch('HoloLoom.rag.embedding_plugins.CohereEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.CohereEmbedding.__init__',
            lambda x, model=None, api_key=None: None)
     def test_initialization_v3_model(self):
         """Test initialization with v3 model."""
@@ -312,7 +312,7 @@ class TestCohereEmbedding:
 
         assert provider.dimension == 1024
 
-    @patch('HoloLoom.rag.embedding_plugins.CohereEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.CohereEmbedding.__init__',
            lambda x, model="embed-english-v2.0", api_key=None: None)
     def test_initialization_v2_model(self):
         """Test initialization with v2 model."""
@@ -323,7 +323,7 @@ class TestCohereEmbedding:
 
         assert provider.dimension == 4096
 
-    @patch('HoloLoom.rag.embedding_plugins.CohereEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.CohereEmbedding.__init__',
            lambda x, model=None, api_key=None: None)
     def test_encode_shape(self):
         """Test encode returns correct shape."""
@@ -342,7 +342,7 @@ class TestCohereEmbedding:
         embeddings = provider.encode(["text1", "text2"])
         assert embeddings.shape == (2, 1024)
 
-    @patch('HoloLoom.rag.embedding_plugins.CohereEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.CohereEmbedding.__init__',
            lambda x, model=None, api_key=None: None)
     def test_encode_query_shape(self):
         """Test encode_query returns correct shape."""
@@ -358,7 +358,7 @@ class TestCohereEmbedding:
         query_emb = provider.encode_query("test query")
         assert query_emb.shape == (1024,)
 
-    @patch('HoloLoom.rag.embedding_plugins.CohereEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.CohereEmbedding.__init__',
            lambda x, model=None, api_key=None: None)
     def test_encode_query_uses_search_query(self):
         """Test encode_query uses search_query input type."""
@@ -380,7 +380,7 @@ class TestCohereEmbedding:
             input_type="search_query"
         )
 
-    @patch('HoloLoom.rag.embedding_plugins.CohereEmbedding.__init__',
+    @patch('hololoom.rag.embedding_plugins.CohereEmbedding.__init__',
            lambda x, model=None, api_key=None: None)
     def test_protocol_compliance(self):
         """Test CohereEmbedding satisfies protocol."""
@@ -486,7 +486,7 @@ class TestValidateEmbeddingProvider:
 class TestCreateEmbeddingProvider:
     """Test create_embedding_provider factory function."""
 
-    @patch('HoloLoom.rag.embedding_plugins.MatryoshkaEmbedding')
+    @patch('hololoom.rag.embedding_plugins.MatryoshkaEmbedding')
     def test_create_matryoshka(self, mock_matryoshka_class):
         """Test creating MatryoshkaEmbedding."""
         mock_provider = Mock(spec=EmbeddingProvider)
@@ -497,7 +497,7 @@ class TestCreateEmbeddingProvider:
         assert provider == mock_provider
         mock_matryoshka_class.assert_called_once()
 
-    @patch('HoloLoom.rag.embedding_plugins.HuggingFaceEmbedding')
+    @patch('hololoom.rag.embedding_plugins.HuggingFaceEmbedding')
     def test_create_huggingface(self, mock_hf_class):
         """Test creating HuggingFaceEmbedding."""
         mock_provider = Mock(spec=EmbeddingProvider)
@@ -511,7 +511,7 @@ class TestCreateEmbeddingProvider:
         assert provider == mock_provider
         mock_hf_class.assert_called_once_with(model_name="all-MiniLM-L6-v2")
 
-    @patch('HoloLoom.rag.embedding_plugins.OpenAIEmbedding')
+    @patch('hololoom.rag.embedding_plugins.OpenAIEmbedding')
     def test_create_openai(self, mock_openai_class):
         """Test creating OpenAIEmbedding."""
         mock_provider = Mock(spec=EmbeddingProvider)
@@ -522,7 +522,7 @@ class TestCreateEmbeddingProvider:
         assert provider == mock_provider
         mock_openai_class.assert_called_once_with(model="text-embedding-3-small")
 
-    @patch('HoloLoom.rag.embedding_plugins.CohereEmbedding')
+    @patch('hololoom.rag.embedding_plugins.CohereEmbedding')
     def test_create_cohere(self, mock_cohere_class):
         """Test creating CohereEmbedding."""
         mock_provider = Mock(spec=EmbeddingProvider)
@@ -540,7 +540,7 @@ class TestCreateEmbeddingProvider:
 
     def test_create_case_insensitive(self):
         """Test factory is case insensitive."""
-        with patch('HoloLoom.rag.embedding_plugins.MatryoshkaEmbedding'):
+        with patch('hololoom.rag.embedding_plugins.MatryoshkaEmbedding'):
             provider = create_embedding_provider("MATRYOSHKA")
             # Should not raise
 
@@ -555,7 +555,7 @@ class TestEmbeddingProviderIntegration:
     @pytest.mark.asyncio
     async def test_provider_in_simple_rag(self):
         """Test custom embedding provider works with SimpleRAG."""
-        from HoloLoom.rag import SimpleRAG
+        from hololoom.rag import SimpleRAG
 
         # Create a mock provider
         mock_provider = Mock(spec=EmbeddingProvider)
@@ -566,10 +566,10 @@ class TestEmbeddingProviderIntegration:
         rag = SimpleRAG(embedding_provider=mock_provider)
         assert rag is not None
 
-    @patch('HoloLoom.rag.embedding_plugins.MatryoshkaEmbedding')
+    @patch('hololoom.rag.embedding_plugins.MatryoshkaEmbedding')
     def test_fallback_to_matryoshka(self, mock_matryoshka_class):
         """Test fallback to MatryoshkaEmbedding on error."""
-        from HoloLoom.rag import SimpleRAG
+        from hololoom.rag import SimpleRAG
 
         # Create mock that raises error
         invalid_provider = Mock(spec=['dimension'])  # Missing methods

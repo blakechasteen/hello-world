@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, AsyncMock, patch, call
 from typing import AsyncIterator, List, Union
 import logging
 
-from HoloLoom.core.memory.interleaved_generation import (
+from hololoom.core.memory.interleaved_generation import (
     InterleavedStreamManager,
     StreamMode,
     ContextChunk,
@@ -19,7 +19,7 @@ from HoloLoom.core.memory.interleaved_generation import (
     StreamMetadata,
     stream_interleaved_expansion_generation
 )
-from HoloLoom.core.memory.streaming_expansion import ChunkYieldStrategy
+from hololoom.core.memory.streaming_expansion import ChunkYieldStrategy
 
 
 class TestConcurrentStreamingSecurity:
@@ -150,7 +150,7 @@ class TestConcurrentStreamingSecurity:
         )
 
         # Mock the timeout to be shorter for testing
-        with patch('HoloLoom.core.memory.interleaved_generation.InterleavedStreamManager._stream_concurrent') as mock_concurrent:
+        with patch('hololoom.core.memory.interleaved_generation.InterleavedStreamManager._stream_concurrent') as mock_concurrent:
             async def stream_with_timeout():
                 # Simulate timeout
                 await asyncio.sleep(0.1)
@@ -416,7 +416,7 @@ class TestConcurrentStreamingSecurity:
         """Test that timeout is properly configured (30s)."""
         # Access the actual timeout value used in the code
         import inspect
-        from HoloLoom.core.memory import interleaved_generation
+        from hololoom.core.memory import interleaved_generation
 
         # Get the source code
         source = inspect.getsource(interleaved_generation.InterleavedStreamManager._stream_concurrent)
@@ -468,7 +468,7 @@ class TestConcurrentStreamingSecurity:
         """Test that convenience function handles errors properly."""
         mock_graph = MagicMock()
 
-        with patch('HoloLoom.core.memory.streaming_expansion.stream_context_expansion') as mock_expansion:
+        with patch('hololoom.core.memory.streaming_expansion.stream_context_expansion') as mock_expansion:
             # Make expansion fail
             async def failing_expansion(**kwargs):
                 raise ValueError("Expansion failed")

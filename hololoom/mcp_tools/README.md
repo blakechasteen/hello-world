@@ -39,7 +39,7 @@ Add to your Claude Desktop config file:
       "command": "python",
       "args": [
         "-m",
-        "HoloLoom.mcp_tools.server"
+        "hololoom.mcp_tools.server"
       ],
       "env": {
         "PYTHONPATH": "/path/to/mythRL"
@@ -82,7 +82,7 @@ Store a new memory/experience in HoloLoom's knowledge graph.
 ---
 
 #### `hololoom_recall`
-Retrieve relevant memories from HoloLoom based on a query.
+Retrieve relevant memories from hololoom based on a query.
 
 **Parameters**:
 - `query` (string, required): The question or topic to recall
@@ -301,9 +301,9 @@ Claude Desktop
     ↓ MCP Protocol
 HoloLoom MCP Server
     ├─ Memory Tools
-    │  ├─ experience() → HoloLoom.experience()
-    │  ├─ recall() → HoloLoom.recall()
-    │  └─ metrics() → HoloLoom.get_metrics()
+    │  ├─ experience() → hololoom.experience()
+    │  ├─ recall() → hololoom.recall()
+    │  └─ metrics() → hololoom.get_metrics()
     │
     ├─ Reasoning Tools
     │  ├─ weave() → WeavingOrchestrator.weave()
@@ -336,7 +336,7 @@ Run the test suite:
 
 ```bash
 # Unit tests
-pytest HoloLoom/mcp_tools/tests/test_mcp_tools.py -v
+pytest hololoom/mcp_tools/tests/test_mcp_tools.py -v
 
 # Integration test with Claude Desktop
 python demos/demo_mcp_tools.py
@@ -361,7 +361,7 @@ export PYTHONPATH=/path/to/mythRL:$PYTHONPATH
 This is optional. Install with:
 ```bash
 # Agentic reasoning is part of HoloLoom
-# Ensure HoloLoom/agentic/ directory exists
+# Ensure hololoom/agentic/ directory exists
 ```
 
 ### Tools not showing in Claude Desktop
@@ -391,10 +391,10 @@ See [HoloLoom API Documentation](../../VISUAL_QUICK_START.md) for complete HoloL
 
 ```bash
 # Run server directly
-python -m HoloLoom.mcp_tools.server
+python -m hololoom.mcp_tools.server
 
 # Test with MCP inspector
-mcp inspect python -m HoloLoom.mcp_tools.server
+mcp inspect python -m hololoom.mcp_tools.server
 ```
 
 ---

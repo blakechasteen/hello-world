@@ -464,7 +464,7 @@ class CircuitPatternMatcher:
         pattern: KnownPattern
     ) -> Optional[PatternMatch]:
         """Match graph against a single pattern."""
-        from HoloLoom.dark_trace.circuits.graph import CircuitGraph
+        from hololoom.dark_trace.circuits.graph import CircuitGraph
 
         if not isinstance(graph, CircuitGraph):
             return None
@@ -660,7 +660,7 @@ class AnomalyDetector:
 
     def _detect_disconnected(self, graph: Any) -> List[Anomaly]:
         """Detect disconnected components."""
-        from HoloLoom.dark_trace.circuits.graph import CircuitGraph
+        from hololoom.dark_trace.circuits.graph import CircuitGraph
 
         if not isinstance(graph, CircuitGraph):
             return []
@@ -687,7 +687,7 @@ class AnomalyDetector:
 
     def _detect_excessive_depth(self, graph: Any) -> List[Anomaly]:
         """Detect unusually deep paths."""
-        from HoloLoom.dark_trace.circuits.graph import CircuitGraph
+        from hololoom.dark_trace.circuits.graph import CircuitGraph
 
         if not isinstance(graph, CircuitGraph):
             return []
@@ -728,7 +728,7 @@ class AnomalyDetector:
 
     def _detect_bottlenecks(self, graph: Any) -> List[Anomaly]:
         """Detect information bottlenecks."""
-        from HoloLoom.dark_trace.circuits.graph import CircuitGraph
+        from hololoom.dark_trace.circuits.graph import CircuitGraph
 
         if not isinstance(graph, CircuitGraph):
             return []
@@ -756,7 +756,7 @@ class AnomalyDetector:
 
     def _detect_circular(self, graph: Any) -> List[Anomaly]:
         """Detect circular dependencies."""
-        from HoloLoom.dark_trace.circuits.graph import CircuitGraph
+        from hololoom.dark_trace.circuits.graph import CircuitGraph
 
         if not isinstance(graph, CircuitGraph):
             return []
@@ -797,7 +797,7 @@ class AnomalyDetector:
 
     def _detect_dead_features(self, graph: Any) -> List[Anomaly]:
         """Detect features that never activate."""
-        from HoloLoom.dark_trace.circuits.graph import CircuitGraph, NodeType
+        from hololoom.dark_trace.circuits.graph import CircuitGraph, NodeType
 
         if not isinstance(graph, CircuitGraph):
             return []
@@ -823,7 +823,7 @@ class AnomalyDetector:
 
     def _detect_saturated(self, graph: Any) -> List[Anomaly]:
         """Detect always-on features."""
-        from HoloLoom.dark_trace.circuits.graph import CircuitGraph, NodeType
+        from hololoom.dark_trace.circuits.graph import CircuitGraph, NodeType
 
         if not isinstance(graph, CircuitGraph):
             return []
@@ -849,7 +849,7 @@ class AnomalyDetector:
 
     def _detect_hidden_paths(self, graph: Any) -> List[Anomaly]:
         """Detect potential hidden information paths (safety-relevant)."""
-        from HoloLoom.dark_trace.circuits.graph import CircuitGraph, EdgeType
+        from hololoom.dark_trace.circuits.graph import CircuitGraph, EdgeType
 
         if not isinstance(graph, CircuitGraph):
             return []

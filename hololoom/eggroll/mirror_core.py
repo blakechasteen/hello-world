@@ -2,14 +2,14 @@ import numpy as np
 import asyncio
 import os
 from typing import Optional, Tuple, Any
-from HoloLoom.awareness.llm_integration import create_llm, LLMProtocol
+from hololoom.awareness.llm_integration import create_llm, LLMProtocol
 
 # --- Imports & Conditional Dependencies ---
 try:
     import torch
     import torch.nn as nn
     from transformers import AutoModelForCausalLM, AutoTokenizer
-    from HoloLoom.eggroll.architectures import get_model
+    from hololoom.eggroll.architectures import get_model
     
     # Try importing PEFT optionally
     try:

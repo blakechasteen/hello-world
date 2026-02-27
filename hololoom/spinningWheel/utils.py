@@ -21,7 +21,7 @@ from pathlib import Path
 from dataclasses import dataclass
 import time
 
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 from .protocol import SpinnerCheckpoint
 
 

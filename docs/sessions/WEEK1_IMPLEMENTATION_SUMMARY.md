@@ -9,7 +9,7 @@
 ## What Was Implemented
 
 ### 1. Multi-Level Memory System ✅
-**File**: `HoloLoom/memory/lifecycle_manager.py` (450+ lines)
+**File**: `hololoom/memory/lifecycle_manager.py` (450+ lines)
 
 **Based on Research**:
 - Mem0: USER/SESSION/AGENT scoping
@@ -39,7 +39,7 @@ async with ContextStreamManager() as manager:
 ---
 
 ### 2. Bi-Temporal Model ✅
-**File**: `HoloLoom/memory/graph.py` (extended KGEdge + 3 new methods)
+**File**: `hololoom/memory/graph.py` (extended KGEdge + 3 new methods)
 
 **Based on Research**:
 - Graphiti: Bi-temporal tracking (event_time + ingestion_time)
@@ -61,7 +61,7 @@ async with ContextStreamManager() as manager:
 **Example Usage**:
 ```python
 from datetime import datetime
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.graph import KG, KGEdge
 
 kg = KG()
 
@@ -99,7 +99,7 @@ history = kg.get_edge_history("Blake", "Python", "USES")
 ---
 
 ### 4. Comprehensive Unit Tests ✅
-**File**: `HoloLoom/tests/unit/test_lifecycle_manager.py` (500+ lines, 33 tests)
+**File**: `hololoom/tests/unit/test_lifecycle_manager.py` (500+ lines, 33 tests)
 
 **Test Coverage**:
 - ✅ Lifecycle enums and mappings
@@ -115,7 +115,7 @@ history = kg.get_edge_history("Blake", "Python", "USES")
 
 **Run Tests**:
 ```bash
-PYTHONPATH=. pytest HoloLoom/tests/unit/test_lifecycle_manager.py -v
+PYTHONPATH=. pytest hololoom/tests/unit/test_lifecycle_manager.py -v
 ```
 
 ---
@@ -254,7 +254,7 @@ new_edges = kg.get_valid_edges(src="Blake", timestamp=datetime(2024, 7, 1))
 
 ### 1. Agent-Controlled Memory (LangMem approach)
 **Priority**: 🟠 HIGH
-**File**: `HoloLoom/agentic/memory_tools.py` (NEW)
+**File**: `hololoom/agentic/memory_tools.py` (NEW)
 
 **Goal**: Let agent decide what to store (not passive accumulation)
 
@@ -273,7 +273,7 @@ def search_memory(query: str, scopes: List[MemoryScope]):
 
 ### 2. Background Consolidation (LangMem approach)
 **Priority**: 🟠 HIGH
-**File**: `HoloLoom/memory/consolidation.py` (NEW)
+**File**: `hololoom/memory/consolidation.py` (NEW)
 
 **Goal**: Automatic episodic → semantic conversion
 
@@ -296,9 +296,9 @@ class MemoryConsolidator:
 **Priority**: 🟡 MEDIUM
 
 **Files to update**:
-- `HoloLoom/weaving_orchestrator.py` - Use ContextStreamManager
-- `HoloLoom/hololoom.py` - Expose multi-level memory API
-- `HoloLoom/memory/cache.py` - Integrate with lifecycle manager
+- `hololoom/weaving_orchestrator.py` - Use ContextStreamManager
+- `hololoom/hololoom.py` - Expose multi-level memory API
+- `hololoom/memory/cache.py` - Integrate with lifecycle manager
 
 ---
 
@@ -317,13 +317,13 @@ class MemoryConsolidator:
 ## Files Created/Modified
 
 ### Created
-1. `HoloLoom/memory/lifecycle_manager.py` (450 lines) - Multi-level memory system
-2. `HoloLoom/tests/unit/test_lifecycle_manager.py` (500 lines) - Unit tests
+1. `hololoom/memory/lifecycle_manager.py` (450 lines) - Multi-level memory system
+2. `hololoom/tests/unit/test_lifecycle_manager.py` (500 lines) - Unit tests
 3. `MEMORY_SYSTEMS_RESEARCH.md` (1,200+ lines) - Research findings
 4. `WEEK1_IMPLEMENTATION_SUMMARY.md` (this file)
 
 ### Modified
-1. `HoloLoom/memory/graph.py` (+200 lines) - Added bi-temporal support to KGEdge + 3 new methods
+1. `hololoom/memory/graph.py` (+200 lines) - Added bi-temporal support to KGEdge + 3 new methods
 
 ---
 

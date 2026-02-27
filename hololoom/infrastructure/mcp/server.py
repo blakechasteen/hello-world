@@ -20,8 +20,8 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 import hashlib
 
-from HoloLoom.infrastructure.sql import SQLBackend, SQLConfig, create_sql_backend
-from HoloLoom.infrastructure.mcp.protocol import (
+from hololoom.infrastructure.sql import SQLBackend, SQLConfig, create_sql_backend
+from hololoom.infrastructure.mcp.protocol import (
     MCPRequest,
     MCPResponse,
     MCPError,

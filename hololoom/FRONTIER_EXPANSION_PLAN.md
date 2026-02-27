@@ -53,7 +53,7 @@ Phase 4: The Holo-Mind (Week 9+)
 #### 1. Validated TRM (Tiny Recursive Model)
 *   **Action**: Create unit tests verifying gradient flow through 50+ recursion steps.
 *   **Optimization**: Implement "Gradient Checkpointing" for infinite depth without OOM.
-*   **File**: `HoloLoom/eggroll/architectures.py` (Enhancement)
+*   **File**: `hololoom/eggroll/architectures.py` (Enhancement)
 
 #### 2. Liquid Neural Network (LNN) Stability
 *   **Action**: Fix numerical instability in ODE solvers for long sequences.
@@ -75,14 +75,14 @@ Phase 4: The Holo-Mind (Week 9+)
 *   **Concept**: A probe that attaches to *every* agent born in the Eggroll hatchery.
 *   **Mechanism**:
     *   buffer activations -> mini-batch SAE train -> extract top features -> log to Yarn.
-*   **File**: `HoloLoom/dark_trace/auto_probe.py`
+*   **File**: `hololoom/dark_trace/auto_probe.py`
 
 #### 2. The Semantic Steering Loop (Auto-Alignment)
 *   **Concept**: If an agent deviates (low consistency), the system automatically:
     1.  Identifies the "Confusion" feature via SAE.
     2.  Injects a corrective Steering Vector (negative confusion).
     3.  Re-evaluates.
-*   **File**: `HoloLoom/dark_trace/steering_policy.py`
+*   **File**: `hololoom/dark_trace/steering_policy.py`
 
 #### 3. Thinking Budget Protocol
 *   **Concept**: Formalize `recur_depth` as a resource.
@@ -102,7 +102,7 @@ Phase 4: The Holo-Mind (Week 9+)
 *   **Solution**:
     *   **Master Node**: Runs `EggrollIntegration` (Evolution Strategy).
     *   **Worker Nodes**: 100s of Ray Actors running `LoomNode` + `MirrorCoreAgent`.
-*   **File**: `HoloLoom/eggroll/distributed_backend.py`
+*   **File**: `hololoom/eggroll/distributed_backend.py`
 
 #### 2. Sharded Large Model (The Teacher)
 *   **Concept**: A 70B+ model (Llama-3) sharded across 8 GPUs acting as the "Reference".

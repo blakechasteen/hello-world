@@ -24,7 +24,7 @@ class TestStreamingConfig:
 
     def test_default_config(self):
         """Test default configuration values."""
-        from HoloLoom.dark_trace.visualization.streaming_server import StreamingConfig
+        from hololoom.dark_trace.visualization.streaming_server import StreamingConfig
 
         config = StreamingConfig()
 
@@ -37,7 +37,7 @@ class TestStreamingConfig:
 
     def test_custom_config(self):
         """Test custom configuration."""
-        from HoloLoom.dark_trace.visualization.streaming_server import StreamingConfig
+        from hololoom.dark_trace.visualization.streaming_server import StreamingConfig
 
         config = StreamingConfig(
             host="0.0.0.0",
@@ -58,7 +58,7 @@ class TestStreamMessage:
     def test_message_creation(self):
         """Test message creation."""
         import time
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             StreamMessage,
             MessageType,
         )
@@ -77,7 +77,7 @@ class TestStreamMessage:
     def test_message_to_json_statistics(self):
         """Test message serialization via to_json."""
         import time
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             StreamMessage,
             MessageType,
         )
@@ -99,7 +99,7 @@ class TestStreamMessage:
     def test_message_to_json(self):
         """Test JSON serialization."""
         import time
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             StreamMessage,
             MessageType,
         )
@@ -123,7 +123,7 @@ class TestActivationStreamHandler:
     def test_snapshot_creation(self):
         """Test creating activation snapshot directly."""
         import time
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             ActivationSnapshot,
         )
 
@@ -145,7 +145,7 @@ class TestActivationStreamHandler:
     def test_format_for_broadcast(self):
         """Test snapshot to_dict formatting."""
         import time
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             ActivationSnapshot,
         )
 
@@ -166,7 +166,7 @@ class TestActivationStreamHandler:
 
     def test_filter_by_threshold(self):
         """Test filtering by activation threshold via format_activations."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             ActivationStreamHandler,
             StreamingConfig,
             ClientSubscription,
@@ -200,7 +200,7 @@ class TestActivationStreamHandler:
 
     def test_filter_top_k(self):
         """Test filtering top-k features via format_activations."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             ActivationStreamHandler,
             StreamingConfig,
             ClientSubscription,
@@ -231,7 +231,7 @@ class TestActivationStreamHandler:
 
     def test_filter_by_features(self):
         """Test filtering by specific features via format_activations."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             ActivationStreamHandler,
             StreamingConfig,
             ClientSubscription,
@@ -265,7 +265,7 @@ class TestClientSubscription:
 
     def test_subscription_creation(self):
         """Test subscription creation with required fields."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             ClientSubscription,
             SubscriptionType,
         )
@@ -282,7 +282,7 @@ class TestClientSubscription:
 
     def test_subscription_with_filters(self):
         """Test subscription with custom filters."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             ClientSubscription,
             SubscriptionType,
         )
@@ -298,7 +298,7 @@ class TestClientSubscription:
 
     def test_subscription_layer_filter(self):
         """Test LAYER subscription filter storage."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             ClientSubscription,
             SubscriptionType,
         )
@@ -318,7 +318,7 @@ class TestDarkTraceStreamingServer:
 
     def test_server_creation(self):
         """Test server instance creation."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             DarkTraceStreamingServer,
             StreamingConfig,
         )
@@ -332,7 +332,7 @@ class TestDarkTraceStreamingServer:
 
     def test_client_count(self):
         """Test client counting."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             DarkTraceStreamingServer,
             ClientSubscription,
             SubscriptionType,
@@ -352,7 +352,7 @@ class TestDarkTraceStreamingServer:
 
     def test_handler_format_activations_top_k(self):
         """Test handler formats activations with top-k filtering."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             DarkTraceStreamingServer,
             ClientSubscription,
             SubscriptionType,
@@ -384,7 +384,7 @@ class TestDarkTraceStreamingServer:
 
     def test_handler_format_activations_threshold(self):
         """Test handler formats activations with threshold filtering."""
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             DarkTraceStreamingServer,
             ClientSubscription,
             SubscriptionType,
@@ -425,7 +425,7 @@ class TestDashboardAPI:
 
     def test_api_creation(self):
         """Test API instance creation."""
-        from HoloLoom.dark_trace.visualization.dashboard_api import (
+        from hololoom.dark_trace.visualization.dashboard_api import (
             DarkTraceDashboardAPI,
             DashboardAPIConfig,
         )
@@ -438,7 +438,7 @@ class TestDashboardAPI:
 
     def test_record_activations(self):
         """Test recording activations."""
-        from HoloLoom.dark_trace.visualization.dashboard_api import (
+        from hololoom.dark_trace.visualization.dashboard_api import (
             DarkTraceDashboardAPI,
         )
 
@@ -462,7 +462,7 @@ class TestDashboardAPI:
 
     def test_get_statistics(self):
         """Test getting statistics."""
-        from HoloLoom.dark_trace.visualization.dashboard_api import (
+        from hololoom.dark_trace.visualization.dashboard_api import (
             DarkTraceDashboardAPI,
         )
 
@@ -495,7 +495,7 @@ class TestHookConfig:
 
     def test_default_config(self):
         """Test default configuration."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import HookConfig
+        from hololoom.dark_trace.visualization.orchestrator_hook import HookConfig
 
         config = HookConfig()
 
@@ -506,7 +506,7 @@ class TestHookConfig:
 
     def test_custom_config(self):
         """Test custom configuration."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import HookConfig
+        from hololoom.dark_trace.visualization.orchestrator_hook import HookConfig
 
         config = HookConfig(
             enable_streaming=False,
@@ -524,7 +524,7 @@ class TestDarkTraceOrchestratorHook:
 
     def test_hook_creation(self):
         """Test hook instance creation."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             DarkTraceOrchestratorHook,
             HookConfig,
         )
@@ -538,7 +538,7 @@ class TestDarkTraceOrchestratorHook:
     @pytest.mark.asyncio
     async def test_weave_lifecycle(self):
         """Test weave start/end lifecycle."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             DarkTraceOrchestratorHook,
             HookConfig,
         )
@@ -559,7 +559,7 @@ class TestDarkTraceOrchestratorHook:
     @pytest.mark.asyncio
     async def test_step_lifecycle(self):
         """Test step start/end lifecycle."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             DarkTraceOrchestratorHook,
             HookConfig,
         )
@@ -585,7 +585,7 @@ class TestDarkTraceOrchestratorHook:
     @pytest.mark.asyncio
     async def test_activation_filtering_by_layer(self):
         """Test activation filtering by monitored layers."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             DarkTraceOrchestratorHook,
             HookConfig,
         )
@@ -617,7 +617,7 @@ class TestDarkTraceOrchestratorHook:
     @pytest.mark.asyncio
     async def test_activation_threshold(self):
         """Test activation threshold filtering."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             DarkTraceOrchestratorHook,
             HookConfig,
         )
@@ -650,7 +650,7 @@ class TestDarkTraceOrchestratorHook:
     @pytest.mark.asyncio
     async def test_callback_registration(self):
         """Test callback registration and invocation."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             DarkTraceOrchestratorHook,
             HookConfig,
         )
@@ -688,7 +688,7 @@ class TestDarkTraceOrchestratorHook:
 
     def test_get_statistics(self):
         """Test getting hook statistics."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             DarkTraceOrchestratorHook,
             HookConfig,
         )
@@ -712,7 +712,7 @@ class TestHookFactoryFunctions:
 
     def test_create_orchestrator_hook(self):
         """Test creating hook with factory function."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             create_orchestrator_hook,
         )
 
@@ -728,7 +728,7 @@ class TestHookFactoryFunctions:
 
     def test_create_hook_config_presets(self):
         """Test creating hook config from presets."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             create_hook_config,
         )
 
@@ -749,7 +749,7 @@ class TestHookFactoryFunctions:
 
     def test_create_hook_config_with_overrides(self):
         """Test creating hook config with overrides."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             create_hook_config,
         )
 
@@ -766,7 +766,7 @@ class TestHookFactoryFunctions:
 
     def test_invalid_preset(self):
         """Test error for invalid preset."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             create_hook_config,
         )
 
@@ -784,11 +784,11 @@ class TestVisualizationIntegration:
     @pytest.mark.asyncio
     async def test_hook_with_streaming_server(self):
         """Test hook integration with streaming server."""
-        from HoloLoom.dark_trace.visualization.orchestrator_hook import (
+        from hololoom.dark_trace.visualization.orchestrator_hook import (
             DarkTraceOrchestratorHook,
             HookConfig,
         )
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             DarkTraceStreamingServer,
             StreamingConfig,
         )
@@ -822,10 +822,10 @@ class TestVisualizationIntegration:
     @pytest.mark.asyncio
     async def test_api_with_streaming_server(self):
         """Test API integration with streaming server."""
-        from HoloLoom.dark_trace.visualization.dashboard_api import (
+        from hololoom.dark_trace.visualization.dashboard_api import (
             DarkTraceDashboardAPI,
         )
-        from HoloLoom.dark_trace.visualization.streaming_server import (
+        from hololoom.dark_trace.visualization.streaming_server import (
             DarkTraceStreamingServer,
         )
 

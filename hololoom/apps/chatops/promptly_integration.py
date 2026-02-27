@@ -10,7 +10,7 @@ Integrates Promptly's advanced prompt engineering framework with Matrix.org chat
 - A/B testing for prompt optimization
 
 Usage:
-    from HoloLoom.apps.chatops.promptly_integration import PromptlyEnhancedBot
+    from hololoom.apps.chatops.promptly_integration import PromptlyEnhancedBot
 
     bot = PromptlyEnhancedBot(bot_config)
 

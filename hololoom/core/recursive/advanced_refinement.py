@@ -36,11 +36,11 @@ from enum import Enum
 from typing import List, Optional, Dict, Any, Callable, Union
 from datetime import datetime
 
-from HoloLoom.core.protocols.types import Query
-from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.core.recursive.scratchpad import Scratchpad, ScratchpadEntry
-from HoloLoom.prompting.unified_mrf import (
+from hololoom.core.protocols.types import Query
+from hololoom.core.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.core.recursive.scratchpad import Scratchpad, ScratchpadEntry
+from hololoom.prompting.unified_mrf import (
     UnifiedMRF,
     RefinementStrategyType,
     ModelProvider
@@ -57,11 +57,11 @@ class RefinementStrategy(Enum):
 
         Migration:
             # Old (deprecated)
-            from HoloLoom.core.recursive.advanced_refinement import RefinementStrategy
+            from hololoom.core.recursive.advanced_refinement import RefinementStrategy
             strategy = RefinementStrategy.REFINE
 
             # New (recommended)
-            from HoloLoom.prompting.unified_mrf import RefinementStrategyType
+            from hololoom.prompting.unified_mrf import RefinementStrategyType
             strategy = RefinementStrategyType.REFINE
 
     **DEPRECATED (Phase 1.4 - Nov 2025):** This enum conflicts with
@@ -80,8 +80,8 @@ class RefinementStrategy(Enum):
     def __init__(self, value):
         """Emit deprecation warning on initialization."""
         warnings.warn(
-            "RefinementStrategy from HoloLoom.core.recursive.advanced_refinement is deprecated. "
-            "Use RefinementStrategyType from HoloLoom.prompting.unified_mrf instead. "
+            "RefinementStrategy from hololoom.core.recursive.advanced_refinement is deprecated. "
+            "Use RefinementStrategyType from hololoom.prompting.unified_mrf instead. "
             "This enum will be removed in v2.0.0.",
             DeprecationWarning,
             stacklevel=3
@@ -681,7 +681,7 @@ async def refine_with_strategy(
 
     Example:
         # Recommended: Use RefinementStrategyType
-        from HoloLoom.prompting.unified_mrf import RefinementStrategyType
+        from hololoom.prompting.unified_mrf import RefinementStrategyType
 
         result = await refine_with_strategy(
             query=query,
@@ -692,7 +692,7 @@ async def refine_with_strategy(
         )
 
         # Deprecated: RefinementStrategy (emits warning)
-        from HoloLoom.core.recursive.advanced_refinement import RefinementStrategy
+        from hololoom.core.recursive.advanced_refinement import RefinementStrategy
 
         result = await refine_with_strategy(
             query=query,

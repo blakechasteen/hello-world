@@ -130,10 +130,10 @@ state.recent_traces.append(trace)
 **Usage**:
 ```bash
 # Start server first
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 
 # Run test
-python HoloLoom/web_dashboard/test_stage_tracking.py
+python hololoom/web_dashboard/test_stage_tracking.py
 ```
 
 ---
@@ -285,7 +285,7 @@ Callback errors are caught and logged, never breaking the pipeline.
 ### Automated Test
 
 ```bash
-python HoloLoom/web_dashboard/test_stage_tracking.py
+python hololoom/web_dashboard/test_stage_tracking.py
 ```
 
 **Expected Output**:
@@ -351,7 +351,7 @@ Failed: 0
 
 ### Manual Dashboard Test
 
-1. Start server: `PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000`
+1. Start server: `PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000`
 2. Open `control_panel.html` in browser
 3. Navigate to "System Monitor" tab
 4. Click "Orchestrator Pipeline" sub-tab
@@ -362,7 +362,7 @@ Failed: 0
 
 ## Files Modified
 
-### HoloLoom/weaving_orchestrator.py
+### hololoom/weaving_orchestrator.py
 - **Lines added**: ~50
 - **Changes**:
   - Added `stage_callback` parameter to `__init__`
@@ -370,14 +370,14 @@ Failed: 0
   - Added tracking calls to all 9 stages
   - Added completion signal (stage 0)
 
-### HoloLoom/server/unified_server.py
+### hololoom/server/unified_server.py
 - **Lines added**: ~25
 - **Changes**:
   - Added `stage_tracking_callback()` method to ServerState
   - Wired callback to WeavingOrchestrator
   - Updated query endpoint to capture real stage durations
 
-### HoloLoom/web_dashboard/test_stage_tracking.py (NEW)
+### hololoom/web_dashboard/test_stage_tracking.py (NEW)
 - **Lines**: 400
 - **Purpose**: Automated integration test for stage tracking
 

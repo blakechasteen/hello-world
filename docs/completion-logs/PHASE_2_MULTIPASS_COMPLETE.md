@@ -14,7 +14,7 @@
 
 ### HYPERSPACE Backend Architecture
 
-**File**: `HoloLoom/memory/hyperspace_backend.py` (492 lines)
+**File**: `hololoom/memory/hyperspace_backend.py` (492 lines)
 
 **Core Components**:
 
@@ -170,7 +170,7 @@ TEST SUMMARY
 
 ### Backend Factory
 
-**File**: `HoloLoom/memory/backend_factory.py`
+**File**: `hololoom/memory/backend_factory.py`
 
 **Updated**: Lines 453-467
 
@@ -181,7 +181,7 @@ raise NotImplementedError("HYPERSPACE backend not yet implemented...")
 
 # After:
 try:
-    from HoloLoom.memory.hyperspace_backend import create_hyperspace_backend
+    from hololoom.memory.hyperspace_backend import create_hyperspace_backend
     return create_hyperspace_backend(config)
 except ImportError:
     # Graceful fallback
@@ -191,7 +191,7 @@ except ImportError:
 ### Config Usage
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 # Enable HYPERSPACE backend
 config = Config.fused()
@@ -326,7 +326,7 @@ From test run:
 ## Files Modified/Created
 
 ### Created (2 files):
-1. **HoloLoom/memory/hyperspace_backend.py** (492 lines)
+1. **hololoom/memory/hyperspace_backend.py** (492 lines)
    - Full HYPERSPACE backend implementation
    - 4 complexity levels with Matryoshka thresholds
    - Multipass crawling with fusion
@@ -337,7 +337,7 @@ From test run:
    - Configuration validation
 
 ### Modified (2 files):
-1. **HoloLoom/memory/backend_factory.py**
+1. **hololoom/memory/backend_factory.py**
    - Added HYPERSPACE import
    - Graceful fallback to NETWORKX
 
@@ -367,7 +367,7 @@ From test run:
 
 ### Completed Tasks (6/9):
 
-1. ✅ **Protocol standardization**: 10 canonical protocols in HoloLoom/protocols/
+1. ✅ **Protocol standardization**: 10 canonical protocols in hololoom/protocols/
 2. ✅ **Backend consolidation**: 10→3 core backends (NETWORKX, NEO4J_QDRANT, HYPERSPACE)
 3. ✅ **Intelligent routing**: Auto-select complexity based on query analysis
 4. ✅ **Complex scenario testing**: 15+ tests passing across 6 scenarios

@@ -14,7 +14,7 @@ sys.path.insert(0, str(repo_root))
 
 import asyncio
 from datetime import time
-from HoloLoom.context import (
+from hololoom.context import (
     LearningTracker,
     StrategyUpdater,
     RoutingEvent

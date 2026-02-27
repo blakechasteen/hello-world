@@ -11,7 +11,7 @@
 
 ### Files Created
 
-1. **`HoloLoom/performance/semantic_cache.py`** (326 lines)
+1. **`hololoom/performance/semantic_cache.py`** (326 lines)
    - `AdaptiveSemanticCache` class with three-tier architecture
    - Hot tier preloading (100 default narrative patterns)
    - Warm tier LRU caching
@@ -229,7 +229,7 @@ Query: "quantum trickster rebellion" (second time)
 #### Option 1: Add to SemanticSpectrum (Recommended)
 
 ```python
-# HoloLoom/semantic_calculus/dimensions.py
+# hololoom/semantic_calculus/dimensions.py
 
 class SemanticSpectrum:
     def __init__(self, dimensions, enable_cache=True):
@@ -238,7 +238,7 @@ class SemanticSpectrum:
 
         # Add semantic cache
         if enable_cache:
-            from HoloLoom.performance.semantic_cache import AdaptiveSemanticCache
+            from hololoom.performance.semantic_cache import AdaptiveSemanticCache
             self._cache = None  # Lazy init after axes learned
 
     def learn_axes(self, embed_fn):
@@ -282,14 +282,14 @@ def project_text(self, text: str, embedder) -> Dict[str, float]:
 #### Option 2: Add to WeavingOrchestrator (Alternative)
 
 ```python
-# HoloLoom/weaving_orchestrator.py
+# hololoom/weaving_orchestrator.py
 
 class WeavingOrchestrator:
     def __init__(self, cfg, shards, enable_semantic_cache=True):
         # ... existing setup ...
 
         if enable_semantic_cache:
-            from HoloLoom.performance.semantic_cache import AdaptiveSemanticCache
+            from hololoom.performance.semantic_cache import AdaptiveSemanticCache
             self.semantic_cache = AdaptiveSemanticCache(
                 semantic_spectrum=self.spectrum,
                 embedder=self.emb
@@ -407,7 +407,7 @@ class WeavingOrchestrator:
 ---
 
 **Files:**
-- Implementation: `HoloLoom/performance/semantic_cache.py`
+- Implementation: `hololoom/performance/semantic_cache.py`
 - Demo: `test_semantic_cache.py`
 - Design doc: `SEMANTIC_CACHE_HYBRID_DESIGN.md`
 - Results: This file

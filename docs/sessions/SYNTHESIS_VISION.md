@@ -216,29 +216,29 @@ A: """
 
 ### ✅ COMPLETE
 
-1. **Signal Filtering** (`HoloLoom/conversational.py`)
+1. **Signal Filtering** (`hololoom/conversational.py`)
    - ImportanceScorer with SIGNAL/NOISE indicators
    - ConversationalAutoLoom with auto-spin
    - Stats tracking and history management
    - **Test Results**: 100% accuracy (12/12 test cases passed)
 
-2. **MCP Integration** (`HoloLoom/memory/mcp_server.py`)
+2. **MCP Integration** (`hololoom/memory/mcp_server.py`)
    - `chat` tool with auto-filtering
    - `conversation_stats` tool
    - Integrated with Claude Desktop
 
-3. **Memory Enrichment** (`HoloLoom/synthesis/enriched_memory.py`)
+3. **Memory Enrichment** (`hololoom/synthesis/enriched_memory.py`)
    - Entity extraction
    - Relationship mining
    - Reasoning type classification
    - Topic and keyword extraction
 
-4. **Pattern Extraction** (`HoloLoom/synthesis/pattern_extractor.py`)
+4. **Pattern Extraction** (`hololoom/synthesis/pattern_extractor.py`)
    - 7 pattern types (Q&A, reasoning, causal, decision, comparison, procedure, definition)
    - Confidence scoring
    - Source tracking
 
-5. **Data Synthesis** (`HoloLoom/synthesis/data_synthesizer.py`)
+5. **Data Synthesis** (`hololoom/synthesis/data_synthesizer.py`)
    - TrainingExample with Alpaca/ChatML conversion
    - JSONL export
    - Statistics and quality metrics
@@ -288,15 +288,15 @@ A: """
 ## Files Overview
 
 ### Core Synthesis Pipeline
-- `HoloLoom/synthesis/__init__.py` - Module exports
-- `HoloLoom/synthesis/enriched_memory.py` - Memory enrichment (entities, relationships, reasoning)
-- `HoloLoom/synthesis/pattern_extractor.py` - Pattern mining (Q&A, reasoning, causal, etc.)
-- `HoloLoom/synthesis/data_synthesizer.py` - Training data synthesis (Alpaca/ChatML)
-- `HoloLoom/synthesis/README.md` - Comprehensive documentation
+- `hololoom/synthesis/__init__.py` - Module exports
+- `hololoom/synthesis/enriched_memory.py` - Memory enrichment (entities, relationships, reasoning)
+- `hololoom/synthesis/pattern_extractor.py` - Pattern mining (Q&A, reasoning, causal, etc.)
+- `hololoom/synthesis/data_synthesizer.py` - Training data synthesis (Alpaca/ChatML)
+- `hololoom/synthesis/README.md` - Comprehensive documentation
 
 ### Conversational System
-- `HoloLoom/conversational.py` - ConversationalAutoLoom with signal filtering
-- `HoloLoom/memory/mcp_server.py` - MCP integration with chat tool
+- `hololoom/conversational.py` - ConversationalAutoLoom with signal filtering
+- `hololoom/memory/mcp_server.py` - MCP integration with chat tool
 - `CONVERSATIONAL_README.md` - Conversational system docs
 
 ### Examples and Tests
@@ -306,7 +306,7 @@ A: """
 - `test_e2e_conversational.py` - Comprehensive test suite (all passed)
 
 ### Documentation
-- `HoloLoom/synthesis/README.md` - Synthesis pipeline guide
+- `hololoom/synthesis/README.md` - Synthesis pipeline guide
 - `SYNTHESIS_VISION.md` - This vision document
 - `CONVERSATIONAL_README.md` - Conversational filtering guide
 
@@ -315,8 +315,8 @@ A: """
 ### Quick Start
 
 ```python
-from HoloLoom.conversational import conversational_loom
-from HoloLoom.synthesis import MemoryEnricher, PatternExtractor, DataSynthesizer
+from hololoom.conversational import conversational_loom
+from hololoom.synthesis import MemoryEnricher, PatternExtractor, DataSynthesizer
 
 # 1. Create conversational system
 loom = await conversational_loom("Initial knowledge...")

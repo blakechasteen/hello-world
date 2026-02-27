@@ -8,7 +8,7 @@
 
 ## Summary
 
-Successfully renamed all "policy" terminology to "trajectory" throughout the Shuttle module to disambiguate from HoloLoom's existing policy system (tool selection policies in `policy/unified.py`).
+Successfully renamed all "policy" terminology to "trajectory" throughout the Shuttle module to disambiguate from hololoom's existing policy system (tool selection policies in `policy/unified.py`).
 
 **Key Insight**:
 - HoloLoom policies = **tool selection** (which function to call)
@@ -141,7 +141,7 @@ Successfully renamed all "policy" terminology to "trajectory" throughout the Shu
 
 Old code like this:
 ```python
-from HoloLoom.shuttle import PolicyBandit, ALL_POLICIES, ProjectBlockersPolicy
+from hololoom.shuttle import PolicyBandit, ALL_POLICIES, ProjectBlockersPolicy
 
 bandit = PolicyBandit(policy_names=['project_blockers', 'timeline'])
 policy_name = bandit.choose_policy()
@@ -149,7 +149,7 @@ policy_name = bandit.choose_policy()
 
 Must be updated to:
 ```python
-from HoloLoom.shuttle import TrajectoryBandit, ALL_TRAJECTORIES, ProjectBlockersTrajectory
+from hololoom.shuttle import TrajectoryBandit, ALL_TRAJECTORIES, ProjectBlockersTrajectory
 
 bandit = TrajectoryBandit(trajectory_names=['project_blockers', 'timeline'])
 trajectory_name = bandit.choose_trajectory()
@@ -160,8 +160,8 @@ trajectory_name = bandit.choose_trajectory()
 For users upgrading from old code:
 
 1. **Search and replace** in your codebase:
-   - `from HoloLoom.shuttle.policies` → `from HoloLoom.shuttle.trajectories`
-   - `from HoloLoom.shuttle.bandits` → `from HoloLoom.shuttle.trajectory_bandit`
+   - `from hololoom.shuttle.policies` → `from hololoom.shuttle.trajectories`
+   - `from hololoom.shuttle.bandits` → `from hololoom.shuttle.trajectory_bandit`
    - `WeavePolicy` → `TrajectoryStrategy`
    - `ExpansionConfig` → `TraversalConfig`
    - `PolicyBandit` → `TrajectoryBandit`
@@ -198,7 +198,7 @@ For users upgrading from old code:
 
 **Next Steps** (Ready to start):
 1. Integrate Shuttle with WeavingOrchestrator as Step 3 (Yarn Graph replacement)
-2. Wire Shuttle config to HoloLoom.config
+2. Wire Shuttle config to hololoom.config
 3. Implement real Warp/Yarn adapters using existing Qdrant/Neo4j setup
 4. Test with BARE/FAST/FUSED modes
 5. End-to-end integration testing
@@ -212,7 +212,7 @@ For users upgrading from old code:
 
 ```python
 # Test that all new names import correctly
-from HoloLoom.shuttle import (
+from hololoom.shuttle import (
     # Trajectories
     TrajectoryStrategy,
     TraversalConfig,
@@ -246,7 +246,7 @@ print("✅ All imports successful!")
 ### Quick Functionality Test
 
 ```python
-from HoloLoom.shuttle import TrajectoryBandit, ALL_TRAJECTORIES
+from hololoom.shuttle import TrajectoryBandit, ALL_TRAJECTORIES
 
 # Create bandit with new terminology
 trajectory_names = [t.name for t in ALL_TRAJECTORIES]

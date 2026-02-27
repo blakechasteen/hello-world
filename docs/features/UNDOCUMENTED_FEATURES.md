@@ -27,7 +27,7 @@
 
 ## 1. Awareness Graph - Living Memory with Semantic Topology
 
-**Location**: `/home/user/hello-world/HoloLoom/memory/awareness_graph.py` (471 lines)
+**Location**: `/home/user/hello-world/hololoom/memory/awareness_graph.py` (471 lines)
 **Status**: ✅ Production-Ready (November 2025)
 **Documentation**: ❌ **COMPLETELY UNDOCUMENTED**
 
@@ -59,7 +59,7 @@ AwarenessGraph
 #### 1. Perceive (Multimodal)
 
 ```python
-from HoloLoom.memory.awareness_graph import AwarenessGraph
+from hololoom.memory.awareness_graph import AwarenessGraph
 
 awareness = AwarenessGraph(graph, semantic_calculus, vector_store)
 
@@ -67,7 +67,7 @@ awareness = AwarenessGraph(graph, semantic_calculus, vector_store)
 perception = await awareness.perceive("Thompson Sampling")
 
 # Multimodal perception (pre-computed embedding)
-from HoloLoom.input import InputRouter
+from hololoom.input import InputRouter
 router = InputRouter()
 processed = await router.process({"data": "structured"})
 perception = await awareness.perceive(processed)  # Falls forward!
@@ -102,7 +102,7 @@ memory_id = await awareness.remember(
 #### 3. Activate (Field-Based Retrieval)
 
 ```python
-from HoloLoom.memory.awareness_types import ActivationStrategy, ActivationBudget
+from hololoom.memory.awareness_types import ActivationStrategy, ActivationBudget
 
 # Activate memories via spreading activation
 memories = await awareness.activate(
@@ -126,7 +126,7 @@ memories = await awareness.activate(
 ### Edge Types
 
 ```python
-from HoloLoom.memory.awareness_types import EdgeType
+from hololoom.memory.awareness_types import EdgeType
 
 # Three edge types for different relationships:
 EdgeType.TEMPORAL           # Sequential memories (time-based)
@@ -203,9 +203,9 @@ It provides:
 ### Usage Example
 
 ```python
-from HoloLoom.memory.awareness_graph import AwarenessGraph
-from HoloLoom.memory.graph import KG
-from HoloLoom.semantic_calculus.integrator import MatryoshkaSemanticCalculus
+from hololoom.memory.awareness_graph import AwarenessGraph
+from hololoom.memory.graph import KG
+from hololoom.semantic_calculus.integrator import MatryoshkaSemanticCalculus
 import networkx as nx
 
 # Create components
@@ -242,7 +242,7 @@ print(f"Semantic shift: {metrics.shift_magnitude:.3f}")
 
 ## 2. Multi-Wave Memory Engine - Brain Wave-Inspired Retrieval
 
-**Location**: `/home/user/hello-world/HoloLoom/memory/multi_wave_engine.py` (624 lines)
+**Location**: `/home/user/hello-world/hololoom/memory/multi_wave_engine.py` (624 lines)
 **Status**: ✅ Production-Ready (October 2025)
 **Documentation**: ❌ **COMPLETELY UNDOCUMENTED**
 
@@ -372,7 +372,7 @@ bridges = await dreamer.dream_cycle(duration_seconds=10.0)
 
 ```python
 async def ingest_youtube_transcript():
-    from HoloLoom.spinningWheel import YouTubeSpinner
+    from hololoom.spinningWheel import YouTubeSpinner
 
     spinner = YouTubeSpinner()
     shards = await spinner.spin({'url': 'VIDEO_ID'})
@@ -432,7 +432,7 @@ Traditional memory systems are **always on** - constantly using CPU/memory even 
 ### Usage Example
 
 ```python
-from HoloLoom.memory.multi_wave_engine import MultiWaveMemoryEngine
+from hololoom.memory.multi_wave_engine import MultiWaveMemoryEngine
 
 engine = MultiWaveMemoryEngine()
 
@@ -461,7 +461,7 @@ await engine.stop()
 
 ## 3. Spring Dynamics - Hamiltonian Physics Model
 
-**Location**: `/home/user/hello-world/HoloLoom/memory/spring_dynamics_advanced.py` (530 lines)
+**Location**: `/home/user/hello-world/hololoom/memory/spring_dynamics_advanced.py` (530 lines)
 **Status**: ✅ Production-Ready (November 2025)
 **Documentation**: ❌ **COMPLETELY UNDOCUMENTED**
 
@@ -491,7 +491,7 @@ Where:
 ### Numerical Integrators
 
 ```python
-from HoloLoom.memory.integrators import IntegratorType
+from hololoom.memory.integrators import IntegratorType
 
 # Available integrators:
 IntegratorType.EULER              # Simple (not recommended)
@@ -531,7 +531,7 @@ k_effective = base_stiffness × edge_weight × edge_type_multiplier
 ### Stability Analysis
 
 ```python
-from HoloLoom.memory.spring_dynamics_advanced import AdvancedSpringDynamics
+from hololoom.memory.spring_dynamics_advanced import AdvancedSpringDynamics
 
 config = AdvancedSpringConfig(
     integrator=IntegratorType.VERLET,
@@ -615,11 +615,11 @@ state.q = np.clip(state.q, 0.0, 1.0)
 ### Usage Example
 
 ```python
-from HoloLoom.memory.spring_dynamics_advanced import (
+from hololoom.memory.spring_dynamics_advanced import (
     AdvancedSpringDynamics,
     AdvancedSpringConfig
 )
-from HoloLoom.memory.integrators import IntegratorType
+from hololoom.memory.integrators import IntegratorType
 
 # Configure with Verlet integrator
 config = AdvancedSpringConfig(
@@ -673,7 +673,7 @@ print(f"RL activation: {activation:.3f}")
 
 ## 4. Photo Token Memory - CLIP-Based Visual System
 
-**Location**: `/home/user/hello-world/HoloLoom/memory/photo_tokens.py` (661 lines)
+**Location**: `/home/user/hello-world/hololoom/memory/photo_tokens.py` (661 lines)
 **Status**: ✅ Production-Ready (November 2025)
 **Documentation**: ❌ **COMPLETELY UNDOCUMENTED**
 
@@ -735,7 +735,7 @@ class PhotoToken:
 ### Usage: Store Photos
 
 ```python
-from HoloLoom.memory.photo_tokens import PhotoTokenMemory
+from hololoom.memory.photo_tokens import PhotoTokenMemory
 
 async with PhotoTokenMemory("./photo_memory") as memory:
     # Store from file path
@@ -914,7 +914,7 @@ memory = PhotoTokenMemory(
 ### Usage Example: Complete Workflow
 
 ```python
-from HoloLoom.memory.photo_tokens import PhotoTokenMemory
+from hololoom.memory.photo_tokens import PhotoTokenMemory
 
 async def main():
     async with PhotoTokenMemory("./photos") as memory:
@@ -955,7 +955,7 @@ asyncio.run(main())
 
 ## 5. Bi-Temporal Knowledge Graph
 
-**Location**: `/home/user/hello-world/HoloLoom/memory/graph.py` (200+ lines of temporal logic)
+**Location**: `/home/user/hello-world/hololoom/memory/graph.py` (200+ lines of temporal logic)
 **Status**: ✅ Production-Ready (November 2025)
 **Documentation**: ⚠️ **MENTIONED BUT NOT EXPLAINED**
 
@@ -1145,7 +1145,7 @@ memory_id = await awareness.remember(
 
 ## 6. Breathing Rhythm System
 
-**Location**: `/home/user/hello-world/HoloLoom/chrono/trigger.py` (658 lines)
+**Location**: `/home/user/hello-world/hololoom/chrono/trigger.py` (658 lines)
 **Status**: ✅ Production-Ready (November 2025)
 **Documentation**: ⚠️ **MENTIONED ONCE, NEVER EXPLAINED**
 
@@ -1390,8 +1390,8 @@ if METRICS_ENABLED:
 ### Usage Example
 
 ```python
-from HoloLoom.chrono.trigger import ChronoTrigger, BreathingRhythm
-from HoloLoom.config import Config
+from hololoom.chrono.trigger import ChronoTrigger, BreathingRhythm
+from hololoom.config import Config
 
 config = Config.fused()
 chrono = ChronoTrigger(config, enable_breathing=True)
@@ -1424,7 +1424,7 @@ chrono.adjust_breathing_rate(1.5)  # 50% faster
 
 ## 7. 47 SpinningWheel Adapters (Only 2 Documented)
 
-**Location**: `/home/user/hello-world/HoloLoom/spinningWheel/` (29 Python files)
+**Location**: `/home/user/hello-world/hololoom/spinningWheel/` (29 Python files)
 **Status**: ✅ Many Production-Ready
 **Documentation**: ❌ **ONLY 2 DOCUMENTED (YouTube, Audio)**
 
@@ -1479,7 +1479,7 @@ The SpinningWheel subsystem contains **29 specialized input adapters** for conve
 # - Branch analysis
 
 # Likely usage:
-from HoloLoom.spinningWheel.git_spinner import GitSpinner
+from hololoom.spinningWheel.git_spinner import GitSpinner
 
 spinner = GitSpinner()
 shards = await spinner.spin({
@@ -1503,7 +1503,7 @@ shards = await spinner.spin({
 # - Documentation parsing
 
 # Likely usage:
-from HoloLoom.spinningWheel.codebase_spinner import CodebaseSpinner
+from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
 
 spinner = CodebaseSpinner()
 shards = await spinner.spin({
@@ -1526,7 +1526,7 @@ shards = await spinner.spin({
 # - Relationship detection
 
 # Likely usage:
-from HoloLoom.spinningWheel.spreadsheet_spinner import SpreadsheetSpinner
+from hololoom.spinningWheel.spreadsheet_spinner import SpreadsheetSpinner
 
 spinner = SpreadsheetSpinner()
 shards = await spinner.spin({
@@ -1549,7 +1549,7 @@ shards = await spinner.spin({
 # - Topic extraction
 
 # Likely usage:
-from HoloLoom.spinningWheel.email_spinner import EmailSpinner
+from hololoom.spinningWheel.email_spinner import EmailSpinner
 
 spinner = EmailSpinner()
 shards = await spinner.spin({
@@ -1572,7 +1572,7 @@ shards = await spinner.spin({
 # - Layout preservation
 
 # Likely usage:
-from HoloLoom.spinningWheel.handwritten_spinner import HandwrittenSpinner
+from hololoom.spinningWheel.handwritten_spinner import HandwrittenSpinner
 
 spinner = HandwrittenSpinner()
 shards = await spinner.spin({
@@ -1595,7 +1595,7 @@ shards = await spinner.spin({
 # - Vendor recognition
 
 # Likely usage:
-from HoloLoom.spinningWheel.schema_aware_receipt_spinner import SchemaAwareReceiptSpinner
+from hololoom.spinningWheel.schema_aware_receipt_spinner import SchemaAwareReceiptSpinner
 
 spinner = SchemaAwareReceiptSpinner()
 shards = await spinner.spin({
@@ -1614,7 +1614,7 @@ shards = await spinner.spin({
 
 ```python
 # Automatically selects appropriate spinner based on input
-from HoloLoom.spinningWheel.auto import AutoSpinner
+from hololoom.spinningWheel.auto import AutoSpinner
 
 auto = AutoSpinner()
 
@@ -1640,7 +1640,7 @@ shards = await auto.spin({
 # - Medical records → MedicalSpinner
 # - Financial reports → FinancialSpinner
 
-from HoloLoom.spinningWheel.domain_router import DomainRouter
+from hololoom.spinningWheel.domain_router import DomainRouter
 
 router = DomainRouter()
 shards = await router.spin({
@@ -1653,7 +1653,7 @@ shards = await router.spin({
 
 ## 8. Semantic Calculus - The Truth About Dimensions
 
-**Location**: `/home/user/hello-world/HoloLoom/semantic_calculus/dimensions.py`
+**Location**: `/home/user/hello-world/hololoom/semantic_calculus/dimensions.py`
 **Status**: ✅ Production-Ready
 **Documentation**: ❌ **WRONG DIMENSION COUNT (244D stated, actually 228D)**
 
@@ -1739,7 +1739,7 @@ The semantic calculus defines **16 interpretable axes** in embedding space:
 ### Geometric Integration
 
 ```python
-from HoloLoom.semantic_calculus.integrator import MatryoshkaSemanticCalculus
+from hololoom.semantic_calculus.integrator import MatryoshkaSemanticCalculus
 
 calc = MatryoshkaSemanticCalculus()
 
@@ -1755,7 +1755,7 @@ async for snapshot in calc.stream_analyze(word_stream()):
 
 ```python
 # Project trajectory onto interpretable dimensions
-from HoloLoom.semantic_calculus.dimensions import SemanticDimension
+from hololoom.semantic_calculus.dimensions import SemanticDimension
 
 warmth_dim = SemanticDimension(
     name="warmth",
@@ -1786,7 +1786,7 @@ The semantic calculus provides **interpretability** - instead of tracking raw 22
 
 ## 9. Zero-Copy Embeddings - 37.7x Speedup
 
-**Location**: `/home/user/hello-world/HoloLoom/embedding/zero_copy.py` (150+ lines)
+**Location**: `/home/user/hello-world/hololoom/embedding/zero_copy.py` (150+ lines)
 **Status**: ✅ Production-Ready (November 2025)
 **Documentation**: ✅ **DOCUMENTED BUT BENEFITS UNDERSTATED**
 
@@ -1852,7 +1852,7 @@ EmbeddingStore (Memory-Mapped)
 ### Usage
 
 ```python
-from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+from hololoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
 
 # Create embedder with zero-copy cache
 embedder = ZeroCopyMatryoshkaEmbeddings(
@@ -1888,7 +1888,7 @@ embed_96 = embedder.embed_at_scale("Thompson Sampling", scale=96)
 ### Configuration
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 config = Config.fast()  # Zero-copy enabled by default
 config.enable_zero_copy_embeddings = True
@@ -1905,7 +1905,7 @@ config.enable_zero_copy_embeddings = False
 
 ### Convergence Engine: Entropy Injection
 
-**Location**: `/home/user/hello-world/HoloLoom/convergence/engine.py`
+**Location**: `/home/user/hello-world/hololoom/convergence/engine.py`
 **Feature**: Entropy injection for exploration
 
 ```python
@@ -1937,7 +1937,7 @@ class ThompsonBandit:
 
 ### Warp Space: Sparsity Support
 
-**Location**: `/home/user/hello-world/HoloLoom/warp/space.py`
+**Location**: `/home/user/hello-world/hololoom/warp/space.py`
 **Feature**: Sparse tensor field computation
 
 ```python
@@ -1973,7 +1973,7 @@ class WarpSpace:
 
 ### Resonance Shed: Semantic Flow Thread
 
-**Location**: `/home/user/hello-world/HoloLoom/resonance/shed.py`
+**Location**: `/home/user/hello-world/hololoom/resonance/shed.py`
 **Feature**: Semantic flow analysis via MatryoshkaSemanticCalculus
 
 ```python

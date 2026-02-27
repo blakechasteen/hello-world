@@ -12,8 +12,8 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Dict, List
 
-from HoloLoom.visualization.constructor import DashboardConstructor
-from HoloLoom.visualization.html_renderer import save_dashboard
+from hololoom.visualization.constructor import DashboardConstructor
+from hololoom.visualization.html_renderer import save_dashboard
 
 
 @dataclass
@@ -224,7 +224,7 @@ def test_html_warning_rendering():
     dashboard = constructor.construct(spacetime)
 
     # Render to HTML
-    from HoloLoom.visualization.html_renderer import HTMLRenderer
+    from hololoom.visualization.html_renderer import HTMLRenderer
     renderer = HTMLRenderer()
     html = renderer.render(dashboard)
 

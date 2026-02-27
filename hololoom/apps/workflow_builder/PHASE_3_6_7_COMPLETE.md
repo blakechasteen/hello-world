@@ -205,7 +205,7 @@ templates = {
 
 ### analytics_monitor.js Enhancements
 
-**File**: `HoloLoom/web_dashboard/js/analytics_monitor.js`
+**File**: `hololoom/web_dashboard/js/analytics_monitor.js`
 **Lines Added**: ~500 lines
 **Version**: Updated from 3.5.0 → 3.7.0
 
@@ -351,7 +351,7 @@ async refreshQueryComparison() {
 
 ### control_panel.html Enhancements
 
-**File**: `HoloLoom/web_dashboard/control_panel.html`
+**File**: `hololoom/web_dashboard/control_panel.html`
 **Lines Added**: ~300 lines
 
 #### Phase 3.6 Filter Panel UI (~140 lines)
@@ -918,8 +918,8 @@ Phases 3.6 and 3.7 transform the HoloLoom analytics dashboard into a **fully cus
 ## Quick Reference
 
 **Files Modified**:
-- `HoloLoom/web_dashboard/js/analytics_monitor.js` (+500 lines)
-- `HoloLoom/web_dashboard/control_panel.html` (+300 lines)
+- `hololoom/web_dashboard/js/analytics_monitor.js` (+500 lines)
+- `hololoom/web_dashboard/control_panel.html` (+300 lines)
 
 **New Features (Phase 3.6)**:
 - Date range filter
@@ -939,10 +939,10 @@ Phases 3.6 and 3.7 transform the HoloLoom analytics dashboard into a **fully cus
 **Testing**:
 ```bash
 # Start server
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 
 # Run tests
-python HoloLoom/web_dashboard/test_phase3_4.py
+python hololoom/web_dashboard/test_phase3_4.py
 
 # Manual testing
 # 1. Open control_panel.html

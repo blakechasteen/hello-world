@@ -15,7 +15,7 @@ Provides:
 - Type-safe dataclass inheritance
 
 Usage:
-    from HoloLoom.visualization.jenny_config_base import BaseConfig
+    from hololoom.visualization.jenny_config_base import BaseConfig
 
     @dataclass
     class MyServiceConfig(BaseConfig):

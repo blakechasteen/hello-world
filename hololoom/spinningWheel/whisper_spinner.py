@@ -30,14 +30,14 @@ from dataclasses import dataclass, field
 import warnings
 from datetime import timedelta
 
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
     ImportanceScore
 )
-from HoloLoom.spinningWheel.importance import ImportanceScorer
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.importance import ImportanceScorer
+from hololoom.protocols.types import MemoryShard
 
 # Try to import whisper
 try:

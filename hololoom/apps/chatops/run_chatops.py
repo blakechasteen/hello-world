@@ -34,13 +34,13 @@ except ImportError:
 # Add repository root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from HoloLoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
-from HoloLoom.apps.chatops.chatops_bridge import ChatOpsOrchestrator
-from HoloLoom.apps.chatops.conversation_memory import ConversationMemory
+from hololoom.apps.chatops.matrix_bot import MatrixBot, MatrixBotConfig
+from hololoom.apps.chatops.chatops_bridge import ChatOpsOrchestrator
+from hololoom.apps.chatops.conversation_memory import ConversationMemory
 
 try:
-    from HoloLoom.apps.chatops import ChatOpsSkills
-    from HoloLoom.config import Config
+    from hololoom.apps.chatops import ChatOpsSkills
+    from hololoom.config import Config
     FULL_FEATURES = True
 except ImportError:
     FULL_FEATURES = False
@@ -48,8 +48,8 @@ except ImportError:
 
 # Claude Code integration
 try:
-    from HoloLoom.apps.departments.claude_code import ClaudeCodeDepartment
-    from HoloLoom.apps.chatops.handlers.code_handlers import register_code_handlers
+    from hololoom.apps.departments.claude_code import ClaudeCodeDepartment
+    from hololoom.apps.chatops.handlers.code_handlers import register_code_handlers
     CLAUDE_CODE_AVAILABLE = True
 except ImportError as e:
     CLAUDE_CODE_AVAILABLE = False
@@ -57,8 +57,8 @@ except ImportError as e:
 
 # Scratchpad integration
 try:
-    from HoloLoom.apps.chatops.scratchpad import ScratchPadManager, ScratchPadConfig
-    from HoloLoom.apps.chatops.handlers.scratchpad_handlers import (
+    from hololoom.apps.chatops.scratchpad import ScratchPadManager, ScratchPadConfig
+    from hololoom.apps.chatops.handlers.scratchpad_handlers import (
         register_scratchpad_handlers,
         set_scratchpad_manager,
         get_scratchpad_manager
@@ -70,7 +70,7 @@ except ImportError as e:
 
 # Semantic State integration (Phase 8 - December 2025)
 try:
-    from HoloLoom.apps.chatops.handlers.semantic_handlers import (
+    from hololoom.apps.chatops.handlers.semantic_handlers import (
         create_semantic_handlers,
         set_semantic_handlers
     )
@@ -592,7 +592,7 @@ def main():
     parser.add_argument(
         "--config",
         type=str,
-        default="HoloLoom/chatops/config.yaml",
+        default="hololoom/chatops/config.yaml",
         help="Path to configuration file"
     )
     parser.add_argument(

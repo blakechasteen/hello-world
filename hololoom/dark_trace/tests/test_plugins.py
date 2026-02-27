@@ -24,7 +24,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
 # Import plugin system components
-from HoloLoom.dark_trace.plugins.interface import (
+from hololoom.dark_trace.plugins.interface import (
     DarkTracePlugin,
     PluginMetadata,
     PluginType,
@@ -37,7 +37,7 @@ from HoloLoom.dark_trace.plugins.interface import (
     IntegrationPlugin,
     HookRegistry,
 )
-from HoloLoom.dark_trace.plugins.safety_gate import (
+from hololoom.dark_trace.plugins.safety_gate import (
     PluginSafetyGate,
     TrustLevel,
     PluginCapability,
@@ -46,14 +46,14 @@ from HoloLoom.dark_trace.plugins.safety_gate import (
     TRUST_CAPABILITIES,
     BlockedPluginsRegistry,
 )
-from HoloLoom.dark_trace.plugins.registry import (
+from hololoom.dark_trace.plugins.registry import (
     PluginRegistry,
     PluginEntry,
     RegistrationResult,
     RegistrationStatus,
     UnregistrationResult,
 )
-from HoloLoom.dark_trace.plugins.builtin import (
+from hololoom.dark_trace.plugins.builtin import (
     SafetyMonitorPlugin,
     AlignmentValidatorPlugin,
     MetricsExporterPlugin,

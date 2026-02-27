@@ -44,18 +44,18 @@ except ImportError:
 
 # HoloLoom imports
 try:
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
-    from HoloLoom.Documentation.types import Query, MemoryShard
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom import hololoom
+    from hololoom.config import Config
+    from hololoom.Documentation.types import Query, MemoryShard
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
     HOLOLOOM_AVAILABLE = True
 except ImportError:
-    print("ERROR: Could not import HoloLoom. Check installation.", file=sys.stderr)
+    print("ERROR: Could not import hololoom. Check installation.", file=sys.stderr)
     HOLOLOOM_AVAILABLE = False
 
 # Optional: Agentic reasoning
 try:
-    from HoloLoom.agentic.core import AgenticOrchestrator, ReasoningMode
+    from hololoom.agentic.core import AgenticOrchestrator, ReasoningMode
     AGENTIC_AVAILABLE = True
 except ImportError:
     print("WARNING: Agentic reasoning not available", file=sys.stderr)
@@ -63,7 +63,7 @@ except ImportError:
 
 # Optional: Recursive learning
 try:
-    from HoloLoom.recursive import FullLearningEngine
+    from hololoom.recursive import FullLearningEngine
     RECURSIVE_AVAILABLE = True
 except ImportError:
     print("WARNING: Recursive learning not available", file=sys.stderr)
@@ -182,7 +182,7 @@ if MCP_AVAILABLE:
             ),
             Tool(
                 name="hololoom_recall",
-                description="Retrieve relevant memories from HoloLoom based on a query. "
+                description="Retrieve relevant memories from hololoom based on a query. "
                            "Uses hybrid search (BM25 + semantic similarity + graph traversal).",
                 inputSchema={
                     "type": "object",
@@ -424,7 +424,7 @@ async def tool_experience(args: Dict[str, Any]) -> list[TextContent]:
 
 
 async def tool_recall(args: Dict[str, Any]) -> list[TextContent]:
-    """Retrieve relevant memories from HoloLoom."""
+    """Retrieve relevant memories from hololoom."""
     if not HOLOLOOM_AVAILABLE:
         return [TextContent(type="text", text="HoloLoom not available")]
 

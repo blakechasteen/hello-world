@@ -5,7 +5,7 @@ import json
 import time
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass, asdict
-from HoloLoom.skills.base import SkillOutput
+from hololoom.skills.base import SkillOutput
 
 
 @dataclass

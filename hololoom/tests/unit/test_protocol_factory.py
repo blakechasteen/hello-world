@@ -25,14 +25,14 @@ class TestOrchestratorComponents:
 
     def test_empty_components_not_complete(self):
         """Empty components should not be complete."""
-        from HoloLoom.orchestrator import OrchestratorComponents
+        from hololoom.orchestrator import OrchestratorComponents
 
         components = OrchestratorComponents()
         assert not components.is_complete()
 
     def test_empty_components_missing_all(self):
         """Empty components should report all 6 missing."""
-        from HoloLoom.orchestrator import OrchestratorComponents
+        from hololoom.orchestrator import OrchestratorComponents
 
         components = OrchestratorComponents()
         missing = components.missing_components()
@@ -46,7 +46,7 @@ class TestOrchestratorComponents:
 
     def test_partial_components_reports_missing(self):
         """Partial components should report only missing ones."""
-        from HoloLoom.orchestrator import OrchestratorComponents
+        from hololoom.orchestrator import OrchestratorComponents
 
         components = OrchestratorComponents(
             pattern_selector=MagicMock(),
@@ -59,7 +59,7 @@ class TestOrchestratorComponents:
 
     def test_full_components_complete(self):
         """Full components should be complete."""
-        from HoloLoom.orchestrator import OrchestratorComponents
+        from hololoom.orchestrator import OrchestratorComponents
 
         components = OrchestratorComponents(
             pattern_selector=MagicMock(),
@@ -74,7 +74,7 @@ class TestOrchestratorComponents:
 
     def test_validate_raises_for_incomplete(self):
         """validate() should raise ValueError for incomplete components."""
-        from HoloLoom.orchestrator import OrchestratorComponents
+        from hololoom.orchestrator import OrchestratorComponents
 
         components = OrchestratorComponents()
         with pytest.raises(ValueError) as exc_info:
@@ -83,7 +83,7 @@ class TestOrchestratorComponents:
 
     def test_validate_succeeds_for_complete(self):
         """validate() should succeed for complete components."""
-        from HoloLoom.orchestrator import OrchestratorComponents
+        from hololoom.orchestrator import OrchestratorComponents
 
         components = OrchestratorComponents(
             pattern_selector=MagicMock(),
@@ -106,7 +106,7 @@ class TestDefaultPatternSelector:
 
     def test_instantiation(self):
         """DefaultPatternSelector should instantiate with loom_command."""
-        from HoloLoom.orchestrator.protocols import DefaultPatternSelector
+        from hololoom.orchestrator.protocols import DefaultPatternSelector
 
         mock_loom = MagicMock()
         selector = DefaultPatternSelector(loom_command=mock_loom)
@@ -114,7 +114,7 @@ class TestDefaultPatternSelector:
 
     def test_select_pattern_delegates(self):
         """select_pattern should delegate to loom_command."""
-        from HoloLoom.orchestrator.protocols import DefaultPatternSelector
+        from hololoom.orchestrator.protocols import DefaultPatternSelector
 
         mock_pattern = MagicMock()
         mock_pattern.name = 'FAST'
@@ -133,7 +133,7 @@ class TestDefaultThreadSelector:
 
     def test_instantiation(self):
         """DefaultThreadSelector should instantiate with yarn_graph."""
-        from HoloLoom.orchestrator.protocols import DefaultThreadSelector
+        from hololoom.orchestrator.protocols import DefaultThreadSelector
 
         mock_graph = MagicMock()
         selector = DefaultThreadSelector(yarn_graph=mock_graph)
@@ -142,8 +142,8 @@ class TestDefaultThreadSelector:
     @pytest.mark.asyncio
     async def test_select_threads_returns_list(self):
         """select_threads should return list of threads."""
-        from HoloLoom.orchestrator.protocols import DefaultThreadSelector
-        from HoloLoom.protocols.types import Query
+        from hololoom.orchestrator.protocols import DefaultThreadSelector
+        from hololoom.protocols.types import Query
 
         mock_graph = MagicMock()
         mock_graph.get_recent_nodes = MagicMock(return_value=['node1', 'node2'])
@@ -163,7 +163,7 @@ class TestDefaultConvergence:
 
     def test_instantiation(self):
         """DefaultConvergence should instantiate with engine, n_tools, epsilon."""
-        from HoloLoom.orchestrator.protocols import DefaultConvergence
+        from hololoom.orchestrator.protocols import DefaultConvergence
 
         mock_engine = MagicMock()
         convergence = DefaultConvergence(engine=mock_engine, n_tools=4, epsilon=0.1)
@@ -173,7 +173,7 @@ class TestDefaultConvergence:
 
     def test_collapse_returns_result(self):
         """collapse should return a collapse result."""
-        from HoloLoom.orchestrator.protocols import DefaultConvergence
+        from hololoom.orchestrator.protocols import DefaultConvergence
         import numpy as np
 
         convergence = DefaultConvergence(engine=None, n_tools=4, epsilon=0.1)
@@ -190,7 +190,7 @@ class TestDefaultToolExecutor:
 
     def test_instantiation(self):
         """DefaultToolExecutor should instantiate with tool_executor."""
-        from HoloLoom.orchestrator.protocols import DefaultToolExecutor
+        from hololoom.orchestrator.protocols import DefaultToolExecutor
 
         mock_executor = MagicMock()
         executor = DefaultToolExecutor(tool_executor=mock_executor)
@@ -199,8 +199,8 @@ class TestDefaultToolExecutor:
     @pytest.mark.asyncio
     async def test_execute_without_guardrails(self):
         """execute should work without guardrails."""
-        from HoloLoom.orchestrator.protocols import DefaultToolExecutor
-        from HoloLoom.protocols.types import Query
+        from hololoom.orchestrator.protocols import DefaultToolExecutor
+        from hololoom.protocols.types import Query
 
         mock_executor = MagicMock()
         mock_executor.execute = AsyncMock(return_value={'result': 'success'})
@@ -219,7 +219,7 @@ class TestDefaultSpacetimeAssembler:
 
     def test_instantiation(self):
         """DefaultSpacetimeAssembler should instantiate with cfg."""
-        from HoloLoom.orchestrator.protocols import DefaultSpacetimeAssembler
+        from hololoom.orchestrator.protocols import DefaultSpacetimeAssembler
 
         mock_cfg = MagicMock()
         assembler = DefaultSpacetimeAssembler(cfg=mock_cfg)
@@ -227,7 +227,7 @@ class TestDefaultSpacetimeAssembler:
 
     def test_assemble_returns_spacetime(self):
         """assemble should return spacetime result."""
-        from HoloLoom.orchestrator.protocols import DefaultSpacetimeAssembler
+        from hololoom.orchestrator.protocols import DefaultSpacetimeAssembler
 
         mock_cfg = MagicMock()
         assembler = DefaultSpacetimeAssembler(cfg=mock_cfg)
@@ -258,7 +258,7 @@ class TestCreateComponentDefaults:
 
     def test_returns_complete_components(self):
         """create_component_defaults should return complete components."""
-        from HoloLoom.orchestrator import create_component_defaults, OrchestratorComponents
+        from hololoom.orchestrator import create_component_defaults, OrchestratorComponents
 
         # Create minimal mocks
         mock_cfg = MagicMock()
@@ -282,7 +282,7 @@ class TestCreateComponentDefaults:
 
     def test_accepts_optional_parameters(self):
         """create_component_defaults should accept optional parameters."""
-        from HoloLoom.orchestrator import create_component_defaults
+        from hololoom.orchestrator import create_component_defaults
 
         mock_cfg = MagicMock()
         mock_loom = MagicMock()
@@ -312,7 +312,7 @@ class TestCreateOrchestratorFromProtocols:
 
     def test_raises_for_incomplete_components(self):
         """create_orchestrator_from_protocols should raise for incomplete components."""
-        from HoloLoom.orchestrator import (
+        from hololoom.orchestrator import (
             create_orchestrator_from_protocols,
             OrchestratorComponents,
         )
@@ -325,7 +325,7 @@ class TestCreateOrchestratorFromProtocols:
 
     def test_returns_protocol_orchestrator(self):
         """create_orchestrator_from_protocols should return ProtocolOrchestrator."""
-        from HoloLoom.orchestrator import (
+        from hololoom.orchestrator import (
             create_orchestrator_from_protocols,
             OrchestratorComponents,
             ProtocolOrchestrator,
@@ -350,7 +350,7 @@ class TestCreatePipelineWithProtocols:
 
     def test_raises_for_incomplete_components(self):
         """create_pipeline_with_protocols should raise for incomplete components."""
-        from HoloLoom.orchestrator import (
+        from hololoom.orchestrator import (
             create_pipeline_with_protocols,
             OrchestratorComponents,
         )
@@ -363,7 +363,7 @@ class TestCreatePipelineWithProtocols:
 
     def test_returns_executor_pipeline(self):
         """create_pipeline_with_protocols should return ExecutorPipeline."""
-        from HoloLoom.orchestrator import (
+        from hololoom.orchestrator import (
             create_pipeline_with_protocols,
             create_component_defaults,
             ExecutorPipeline,
@@ -398,7 +398,7 @@ class TestProtocolOrchestrator:
 
     def test_has_required_attributes(self):
         """ProtocolOrchestrator should have required attributes."""
-        from HoloLoom.orchestrator import (
+        from hololoom.orchestrator import (
             ProtocolOrchestrator,
             OrchestratorComponents,
         )
@@ -421,7 +421,7 @@ class TestProtocolOrchestrator:
 
     def test_orchestrate_is_async(self):
         """orchestrate method should be async."""
-        from HoloLoom.orchestrator import ProtocolOrchestrator
+        from hololoom.orchestrator import ProtocolOrchestrator
         import inspect
 
         assert inspect.iscoroutinefunction(ProtocolOrchestrator.orchestrate)
@@ -436,7 +436,7 @@ class TestProtocolCompliance:
 
     def test_default_pattern_selector_protocol(self):
         """DefaultPatternSelector should implement PatternSelectorProtocol."""
-        from HoloLoom.orchestrator.protocols import (
+        from hololoom.orchestrator.protocols import (
             DefaultPatternSelector,
             PatternSelectorProtocol,
         )
@@ -447,7 +447,7 @@ class TestProtocolCompliance:
 
     def test_default_thread_selector_protocol(self):
         """DefaultThreadSelector should implement ThreadSelectorProtocol."""
-        from HoloLoom.orchestrator.protocols import (
+        from hololoom.orchestrator.protocols import (
             DefaultThreadSelector,
             ThreadSelectorProtocol,
         )
@@ -457,7 +457,7 @@ class TestProtocolCompliance:
 
     def test_default_feature_extractor_protocol(self):
         """DefaultFeatureExtractor should implement FeatureExtractorProtocol."""
-        from HoloLoom.orchestrator.protocols import (
+        from hololoom.orchestrator.protocols import (
             DefaultFeatureExtractor,
             FeatureExtractorProtocol,
         )
@@ -469,7 +469,7 @@ class TestProtocolCompliance:
 
     def test_default_convergence_protocol(self):
         """DefaultConvergence should implement ConvergenceProtocol."""
-        from HoloLoom.orchestrator.protocols import (
+        from hololoom.orchestrator.protocols import (
             DefaultConvergence,
             ConvergenceProtocol,
         )
@@ -481,7 +481,7 @@ class TestProtocolCompliance:
 
     def test_default_tool_executor_protocol(self):
         """DefaultToolExecutor should implement ToolExecutorProtocol."""
-        from HoloLoom.orchestrator.protocols import (
+        from hololoom.orchestrator.protocols import (
             DefaultToolExecutor,
             ToolExecutorProtocol,
         )
@@ -491,7 +491,7 @@ class TestProtocolCompliance:
 
     def test_default_spacetime_assembler_protocol(self):
         """DefaultSpacetimeAssembler should implement SpacetimeAssemblerProtocol."""
-        from HoloLoom.orchestrator.protocols import (
+        from hololoom.orchestrator.protocols import (
             DefaultSpacetimeAssembler,
             SpacetimeAssemblerProtocol,
         )
@@ -509,7 +509,7 @@ class TestImports:
 
     def test_import_from_orchestrator(self):
         """All Phase 3 exports should be importable from orchestrator."""
-        from HoloLoom.orchestrator import (
+        from hololoom.orchestrator import (
             # Protocols
             PatternSelectorProtocol,
             ThreadSelectorProtocol,
@@ -536,7 +536,7 @@ class TestImports:
 
     def test_import_from_protocols_package(self):
         """All exports should be importable from protocols package."""
-        from HoloLoom.orchestrator.protocols import (
+        from hololoom.orchestrator.protocols import (
             StageExecutorProtocol,
             BaseStageExecutor,
             PatternSelectorProtocol,

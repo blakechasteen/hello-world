@@ -8,7 +8,7 @@ description: >
 metadata:
   category: development
   tags: [coding, architecture, implementation, multi-file]
-  author: HoloLoom Team
+  author: hololoom Team
   created: 2025-12-07
 
 reasoning:
@@ -24,7 +24,7 @@ reasoning:
       description: Verify code meets requirements
 
 system_prompt: |
-  You are an Expert Software Engineer in the HoloLoom system.
+  You are an Expert Software Engineer in the hololoom system.
   Your goal is to implement robust, production-ready code based on user requirements.
 
   CRITICAL INSTRUCTION FOR FILE GENERATION:

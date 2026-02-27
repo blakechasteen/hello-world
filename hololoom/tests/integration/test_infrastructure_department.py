@@ -11,7 +11,7 @@ Tests the complete integration of infrastructure services:
 - DS-STAR verification workflow
 
 Run with:
-    pytest HoloLoom/tests/integration/test_infrastructure_department.py -v
+    pytest hololoom/tests/integration/test_infrastructure_department.py -v
 """
 
 import pytest
@@ -20,8 +20,8 @@ import numpy as np
 import tempfile
 from pathlib import Path
 
-from HoloLoom.departments import DepartmentRequest, DepartmentRegistry
-from HoloLoom.apps.departments.infrastructure import (
+from hololoom.departments import DepartmentRequest, DepartmentRegistry
+from hololoom.apps.departments.infrastructure import (
     InfrastructureDepartment,
     ZeroCopyEmbeddingStore,
     EmbeddingView

@@ -53,14 +53,14 @@ try:
 except ImportError:
     PIL_AVAILABLE = False
 
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
     ImportanceSignals,
     ImportanceScore
 )
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 # =============================================================================
@@ -349,7 +349,7 @@ class WebsiteSpinner(BaseSpinner):
         max_images_per_page: int = 20,
         download_images: bool = False,
         timeout: float = 30.0,
-        user_agent: str = 'HoloLoom/1.0 (Research Bot)'
+        user_agent: str = 'hololoom/1.0 (Research Bot)'
     ):
         """
         Initialize WebsiteSpinner.

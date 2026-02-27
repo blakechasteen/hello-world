@@ -25,9 +25,9 @@ logger = logging.getLogger(__name__)
 
 # Import Elle components
 try:
-    from HoloLoom.elle.engine import ElleEngine
-    from HoloLoom.elle.domain.scene import Scene, Intent
-    from HoloLoom.elle.domain.action import Action, ActionType
+    from hololoom.elle.engine import ElleEngine
+    from hololoom.elle.domain.scene import Scene, Intent
+    from hololoom.elle.domain.action import Action, ActionType
     ELLE_AVAILABLE = True
     logger.info("✓ Elle components loaded successfully")
 except ImportError as e:

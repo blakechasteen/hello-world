@@ -12,7 +12,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional, TypeVar
 
-from HoloLoom.telemetry.protocol import SpanContext, SpanData
+from hololoom.telemetry.protocol import SpanContext, SpanData
 
 T = TypeVar("T")
 

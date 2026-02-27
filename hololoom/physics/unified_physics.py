@@ -15,7 +15,7 @@ Architecture:
     4. Wave mechanics detects patterns via interference
 
 Usage:
-    from HoloLoom.physics import UnifiedPhysicsEngine
+    from hololoom.physics import UnifiedPhysicsEngine
 
     # Create unified engine
     physics = UnifiedPhysicsEngine()

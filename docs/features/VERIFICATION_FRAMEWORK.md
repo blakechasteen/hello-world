@@ -46,7 +46,7 @@
 
 ```python
 import pytest
-from HoloLoom.bosspig import (
+from hololoom.bosspig import (
     JargonDetector,
     BuzzwordDetector,
     PassiveVoiceDetector,
@@ -233,7 +233,7 @@ pytest tests/unit/test_bosspig_detectors.py -v
 
 ```python
 import pytest
-from HoloLoom.bosspig import BossPigDetector, DocumentAnalysis
+from hololoom.bosspig import BossPigDetector, DocumentAnalysis
 
 def test_full_document_analysis():
     """Test complete document analysis pipeline."""
@@ -348,7 +348,7 @@ def test_document_metadata():
 
 def test_formatter_text_output():
     """Test text formatter."""
-    from HoloLoom.bosspig import TextFormatter
+    from hololoom.bosspig import TextFormatter
 
     detector = BossPigDetector()
     formatter = TextFormatter()
@@ -366,7 +366,7 @@ def test_formatter_text_output():
 
 def test_formatter_json_output():
     """Test JSON formatter."""
-    from HoloLoom.bosspig import JSONFormatter
+    from hololoom.bosspig import JSONFormatter
     import json
 
     detector = BossPigDetector()
@@ -420,9 +420,9 @@ import pytest
 import asyncio
 from pathlib import Path
 
-from HoloLoom.bosspig import BossPigDetector
-from HoloLoom.bosspig.cli import BossPigCLI
-from HoloLoom import HoloLoom
+from hololoom.bosspig import BossPigDetector
+from hololoom.bosspig.cli import BossPigCLI
+from hololoom import hololoom
 
 @pytest.mark.asyncio
 @pytest.mark.slow
@@ -473,7 +473,7 @@ async def test_hololoom_memory_integration():
 @pytest.mark.slow
 async def test_full_analysis_workflow():
     """Test complete workflow: analyze → format → save → recall."""
-    from HoloLoom.bosspig import TextFormatter
+    from hololoom.bosspig import TextFormatter
     import tempfile
 
     detector = BossPigDetector()
@@ -527,7 +527,7 @@ pytest tests/system/test_bosspig_end_to_end.py -v -m slow
 ```python
 import pytest
 import numpy as np
-from HoloLoom.shuttle import MCTSShuttle, ShuttleConfig, ThompsonSampler
+from hololoom.shuttle import MCTSShuttle, ShuttleConfig, ThompsonSampler
 
 def test_thompson_sampler_initialization():
     """Test Thompson Sampler initialization."""
@@ -649,7 +649,7 @@ def test_intersection_logic():
 
 def test_mcts_node_expansion():
     """Test MCTS node expansion."""
-    from HoloLoom.shuttle.mcts import MCTSNode
+    from hololoom.shuttle.mcts import MCTSNode
 
     root = MCTSNode(state={"query": "test"})
 
@@ -668,7 +668,7 @@ def test_mcts_node_expansion():
 
 def test_mcts_uct_calculation():
     """Test UCT (Upper Confidence Bound for Trees) calculation."""
-    from HoloLoom.shuttle.mcts import MCTSNode
+    from hololoom.shuttle.mcts import MCTSNode
     import math
 
     root = MCTSNode(state={})
@@ -730,7 +730,7 @@ pytest tests/unit/test_mcts_shuttle.py -v
 ```python
 import pytest
 import asyncio
-from HoloLoom.shuttle import MCTSShuttle, ShuttleConfig
+from hololoom.shuttle import MCTSShuttle, ShuttleConfig
 
 @pytest.mark.asyncio
 @pytest.mark.requires_qdrant
@@ -1164,8 +1164,8 @@ pytest tests/unit/test_elle_components.py -v
 ```python
 import pytest
 import asyncio
-from HoloLoom import HoloLoom
-from HoloLoom.bosspig import BossPigDetector
+from hololoom import hololoom
+from hololoom.bosspig import BossPigDetector
 from elle.engine import ElleEngine
 
 @pytest.mark.asyncio
@@ -1297,7 +1297,7 @@ chmod +x scripts/run_verification.sh
 
 echo "Generating coverage report..."
 
-pytest tests/ --cov=HoloLoom.bosspig --cov=HoloLoom.shuttle --cov=elle \
+pytest tests/ --cov=hololoom.bosspig --cov=hololoom.shuttle --cov=elle \
        --cov-report=html --cov-report=term
 
 echo
@@ -1334,13 +1334,13 @@ repos:
 
       - id: type-check
         name: Type Checking
-        entry: mypy HoloLoom/bosspig HoloLoom/shuttle elle
+        entry: mypy hololoom/bosspig hololoom/shuttle elle
         language: system
         types: [python]
 
       - id: lint
         name: Linting
-        entry: pylint HoloLoom/bosspig HoloLoom/shuttle elle
+        entry: pylint hololoom/bosspig hololoom/shuttle elle
         language: system
         types: [python]
 ```

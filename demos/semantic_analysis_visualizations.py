@@ -25,11 +25,11 @@ from matplotlib.gridspec import GridSpec
 import asyncio
 
 # HoloLoom imports
-from HoloLoom.semantic_calculus.flow_calculus import SemanticFlowCalculus, analyze_text_flow
-from HoloLoom.semantic_calculus.dimensions import SemanticSpectrum, visualize_semantic_spectrum
-from HoloLoom.semantic_calculus.ethics import EthicalSemanticPolicy, COMPASSIONATE_COMMUNICATION
-from HoloLoom.embedding.spectral import create_embedder
-from HoloLoom.loom.card_loader import PatternCard
+from hololoom.semantic_calculus.flow_calculus import SemanticFlowCalculus, analyze_text_flow
+from hololoom.semantic_calculus.dimensions import SemanticSpectrum, visualize_semantic_spectrum
+from hololoom.semantic_calculus.ethics import EthicalSemanticPolicy, COMPASSIONATE_COMMUNICATION
+from hololoom.embedding.spectral import create_embedder
+from hololoom.loom.card_loader import PatternCard
 
 # Create output directory
 output_dir = Path(__file__).parent / "output"

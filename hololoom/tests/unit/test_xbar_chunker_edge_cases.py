@@ -13,7 +13,7 @@ Date: November 7, 2025 (Verification Track - Day 3)
 """
 
 import pytest
-from HoloLoom.motif.xbar_chunker import (
+from hololoom.motif.xbar_chunker import (
     UniversalGrammarChunker,
     XBarNode,
     Category,

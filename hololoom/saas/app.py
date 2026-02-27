@@ -35,17 +35,17 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from HoloLoom.saas import (
+from hololoom.saas import (
     SaaSBackend,
     SaaSConfig,
     create_saas_backend,
 )
-from HoloLoom.saas.routes import (
+from hololoom.saas.routes import (
     customers_router,
     api_keys_router,
     health_router,
 )
-from HoloLoom.saas.routes.health import increment_request_count, increment_error_count
+from hololoom.saas.routes.health import increment_request_count, increment_error_count
 
 # ============================================================================
 # Configuration from Environment
@@ -326,7 +326,7 @@ if __name__ == "__main__":
 """)
 
     uvicorn.run(
-        "HoloLoom.saas.app:app",
+        "hololoom.saas.app:app",
         host=host,
         port=port,
         workers=workers,

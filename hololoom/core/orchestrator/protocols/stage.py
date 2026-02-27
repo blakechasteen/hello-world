@@ -34,7 +34,7 @@ from abc import ABC, abstractmethod
 from typing import Protocol, runtime_checkable, Optional, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.core.orchestrator.context import WeavingContext
+    from hololoom.core.orchestrator.context import WeavingContext
 
 
 # ============================================================================

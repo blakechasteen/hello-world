@@ -12,7 +12,7 @@ import asyncio
 from typing import Dict, Any
 
 # Import easy API
-from HoloLoom.skills import (
+from hololoom.skills import (
     # Easy Launch API
     launch_skill,
     launch,
@@ -365,7 +365,7 @@ class TestRetryFunctionality:
     @pytest.mark.asyncio
     async def test_retry_config_import(self):
         """RetryConfig and RetryStrategy should be importable."""
-        from HoloLoom.skills import RetryConfig, RetryStrategy
+        from hololoom.skills import RetryConfig, RetryStrategy
 
         # Test default config
         config = RetryConfig()
@@ -375,7 +375,7 @@ class TestRetryFunctionality:
     @pytest.mark.asyncio
     async def test_retry_strategies(self):
         """All retry strategies should be available."""
-        from HoloLoom.skills import RetryStrategy
+        from hololoom.skills import RetryStrategy
 
         assert RetryStrategy.NONE is not None
         assert RetryStrategy.IMMEDIATE is not None
@@ -384,7 +384,7 @@ class TestRetryFunctionality:
     @pytest.mark.asyncio
     async def test_launch_with_retry_config(self):
         """Launch should accept retry configuration."""
-        from HoloLoom.skills import RetryConfig, RetryStrategy
+        from hololoom.skills import RetryConfig, RetryStrategy
 
         # Create a retry config
         config = RetryConfig(
@@ -402,7 +402,7 @@ class TestRetryFunctionality:
     @pytest.mark.asyncio
     async def test_retry_on_failure(self):
         """Retry should not change outcome for permanent failures."""
-        from HoloLoom.skills import RetryConfig, RetryStrategy
+        from hololoom.skills import RetryConfig, RetryStrategy
 
         config = RetryConfig(
             max_retries=2,
@@ -427,14 +427,14 @@ class TestContextManagers:
     @pytest.mark.asyncio
     async def test_skill_session_import(self):
         """skill_session should be importable."""
-        from HoloLoom.skills import skill_session, SkillSessionContext
+        from hololoom.skills import skill_session, SkillSessionContext
         assert skill_session is not None
         assert SkillSessionContext is not None
 
     @pytest.mark.asyncio
     async def test_skill_session_basic(self):
         """skill_session context manager should track results."""
-        from HoloLoom.skills import skill_session
+        from hololoom.skills import skill_session
 
         async with skill_session() as session:
             result1 = await launch("test_echo", message="session1")
@@ -451,7 +451,7 @@ class TestContextManagers:
     @pytest.mark.asyncio
     async def test_skill_session_with_failures(self):
         """skill_session should track failures correctly."""
-        from HoloLoom.skills import skill_session
+        from hololoom.skills import skill_session
 
         async with skill_session() as session:
             result1 = await launch("test_echo", message="ok")
@@ -467,7 +467,7 @@ class TestContextManagers:
     @pytest.mark.asyncio
     async def test_skill_session_summary(self):
         """skill_session summary should contain all metrics."""
-        from HoloLoom.skills import skill_session
+        from hololoom.skills import skill_session
 
         async with skill_session() as session:
             result = await launch("test_echo", message="summary_test")
@@ -484,13 +484,13 @@ class TestContextManagers:
     @pytest.mark.asyncio
     async def test_batch_launch_import(self):
         """batch_launch should be importable."""
-        from HoloLoom.skills import batch_launch
+        from hololoom.skills import batch_launch
         assert batch_launch is not None
 
     @pytest.mark.asyncio
     async def test_batch_launch_parallel(self):
         """batch_launch should execute skills in parallel."""
-        from HoloLoom.skills import batch_launch
+        from hololoom.skills import batch_launch
 
         specs = [
             {"skill_name": "test_echo", "parameters": {"message": "batch1"}},
@@ -505,7 +505,7 @@ class TestContextManagers:
     @pytest.mark.asyncio
     async def test_batch_launch_sequential(self):
         """batch_launch should execute skills sequentially when parallel=False."""
-        from HoloLoom.skills import batch_launch
+        from hololoom.skills import batch_launch
 
         specs = [
             {"skill_name": "test_echo", "parameters": {"message": "seq1"}},
@@ -527,7 +527,7 @@ class TestHealthChecks:
     @pytest.mark.asyncio
     async def test_health_check_import(self):
         """Health check functions should be importable."""
-        from HoloLoom.skills import (
+        from hololoom.skills import (
             check_skill_health,
             get_system_health,
             SkillHealthStatus,
@@ -541,7 +541,7 @@ class TestHealthChecks:
     @pytest.mark.asyncio
     async def test_check_skill_health_existing(self):
         """check_skill_health should return healthy for existing skills."""
-        from HoloLoom.skills import check_skill_health
+        from hololoom.skills import check_skill_health
 
         status = await check_skill_health("test_echo")
 
@@ -554,7 +554,7 @@ class TestHealthChecks:
     @pytest.mark.asyncio
     async def test_check_skill_health_nonexistent(self):
         """check_skill_health should return unhealthy for non-existent skills."""
-        from HoloLoom.skills import check_skill_health
+        from hololoom.skills import check_skill_health
 
         status = await check_skill_health("nonexistent_health_test")
 
@@ -565,7 +565,7 @@ class TestHealthChecks:
     @pytest.mark.asyncio
     async def test_skill_health_status_structure(self):
         """SkillHealthStatus should have correct structure."""
-        from HoloLoom.skills import check_skill_health
+        from hololoom.skills import check_skill_health
 
         status = await check_skill_health("test_echo")
 
@@ -579,7 +579,7 @@ class TestHealthChecks:
     @pytest.mark.asyncio
     async def test_get_system_health(self):
         """get_system_health should check all registered skills."""
-        from HoloLoom.skills import get_system_health
+        from hololoom.skills import get_system_health
 
         health = await get_system_health(timeout_per_skill=2.0)
 
@@ -592,7 +592,7 @@ class TestHealthChecks:
     @pytest.mark.asyncio
     async def test_system_health_rate(self):
         """SystemHealthStatus should calculate health_rate correctly."""
-        from HoloLoom.skills import get_system_health
+        from hololoom.skills import get_system_health
 
         health = await get_system_health()
 
@@ -606,7 +606,7 @@ class TestHealthChecks:
     @pytest.mark.asyncio
     async def test_system_health_parallel(self):
         """get_system_health should support parallel checking."""
-        from HoloLoom.skills import get_system_health
+        from hololoom.skills import get_system_health
 
         # Parallel should be faster for many skills
         health_parallel = await get_system_health(parallel=True)
@@ -615,7 +615,7 @@ class TestHealthChecks:
     @pytest.mark.asyncio
     async def test_system_health_sequential(self):
         """get_system_health should support sequential checking."""
-        from HoloLoom.skills import get_system_health
+        from hololoom.skills import get_system_health
 
         health_seq = await get_system_health(parallel=False)
         assert health_seq.total_skills > 0

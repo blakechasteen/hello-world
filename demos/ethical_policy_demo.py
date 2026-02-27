@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import numpy as np
 import matplotlib.pyplot as plt
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     SemanticFlowCalculus,
     SemanticSpectrum,
     EthicalSemanticPolicy,
@@ -25,7 +25,7 @@ from HoloLoom.semantic_calculus import (
     THERAPEUTIC_DIALOGUE,
     visualize_ethical_landscape
 )
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.embedding.spectral import create_embedder
 
 
 def demo_virtue_gradients():

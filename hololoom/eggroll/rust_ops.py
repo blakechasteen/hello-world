@@ -11,7 +11,7 @@ The Rust implementation provides:
 - Optimized silhouette score computation
 
 Usage:
-    from HoloLoom.eggroll.rust_ops import (
+    from hololoom.eggroll.rust_ops import (
         cosine_similarity_batch,
         normalize_batch,
         kmeans_cluster,

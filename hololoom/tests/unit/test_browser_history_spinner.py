@@ -26,7 +26,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 
 # Import test targets
-from HoloLoom.spinningWheel.browser_history import (
+from hololoom.spinningWheel.browser_history import (
     BrowserConfig,
     HistoryEntry,
     DomainStats,
@@ -40,7 +40,7 @@ from HoloLoom.spinningWheel.browser_history import (
     get_available_browsers,
     spin_browser_history
 )
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     SpinnerCapabilities,
     SpinnerCheckpoint,
     ImportanceSignals,

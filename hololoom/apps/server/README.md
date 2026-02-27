@@ -9,10 +9,10 @@ FastAPI server exposing HoloLoom's agentic intelligence to external clients (VS 
 pip install fastapi uvicorn
 
 # Development mode (with auto-reload)
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --reload --port 8000
 
 # Production mode
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --host 0.0.0.0 --port 8000 --workers 4
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ## Endpoints
@@ -143,7 +143,7 @@ async def startup():
 
 ```bash
 # Run with auto-reload
-uvicorn HoloLoom.server.agentic_api:app --reload
+uvicorn hololoom.server.agentic_api:app --reload
 
 # Test health
 curl http://localhost:8000/health
@@ -170,5 +170,5 @@ AgenticOrchestrator
 ## See Also
 
 - [AGENTIC_VSCODE_INTEGRATION.md](../../AGENTIC_VSCODE_INTEGRATION.md) - Full integration guide
-- [HoloLoom/agentic/](../agentic/) - Agentic reasoning implementation
+- [hololoom/agentic/](../agentic/) - Agentic reasoning implementation
 - [squad/src/HoloLoomBridge.ts](../../squad/src/HoloLoomBridge.ts) - TypeScript client

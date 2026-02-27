@@ -7,8 +7,8 @@ Skills Bridge Module
 Integrates the HoloLoom skills system with the weaving orchestrator.
 
 This module bridges the gap between:
-- Skills system (HoloLoom/skills/) - Modular external tool integrations
-- Tool executor (HoloLoom/tools/executor.py) - Orchestrator tool dispatch
+- Skills system (hololoom/skills/) - Modular external tool integrations
+- Tool executor (hololoom/tools/executor.py) - Orchestrator tool dispatch
 
 Key Features:
 - Automatic skill discovery and registration
@@ -25,13 +25,13 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional, TYPE_CHECKING
 
-from HoloLoom.protocols.types import Query, Context
-from HoloLoom.skills.base import get_registry, SkillInput, SkillStatus
-from HoloLoom.skills.executor import SkillExecutor
-from HoloLoom.skills.metrics import SkillMetricsTracker
+from hololoom.protocols.types import Query, Context
+from hololoom.skills.base import get_registry, SkillInput, SkillStatus
+from hololoom.skills.executor import SkillExecutor
+from hololoom.skills.metrics import SkillMetricsTracker
 
 if TYPE_CHECKING:
-    from HoloLoom.skills.base import BaseSkill
+    from hololoom.skills.base import BaseSkill
 
 
 class SkillsBridge:

@@ -2,7 +2,7 @@
 HoloLoom Lite - Simplified HoloLoom for quick startup and minimal dependencies.
 
 Elegant API (Recommended):
-    from HoloLoom.lite import Memory, ask, research
+    from hololoom.lite import Memory, ask, research
 
     async with Memory() as mem:
         # Memory: store, search, feedback, related
@@ -16,7 +16,7 @@ Elegant API (Recommended):
         analysis = await research("exploration strategies", mem)
 
 Legacy API (Backward Compatible):
-    from HoloLoom.lite import HoloLoomLite
+    from hololoom.lite import HoloLoomLite
 
     async with HoloLoomLite() as loom:
         await loom.experience("Thompson Sampling balances exploration")
@@ -38,17 +38,17 @@ Date: December 2025
 # =============================================================================
 # Elegant API (Separated Concerns)
 # =============================================================================
-from HoloLoom.lite.memory import Memory, MemoryItem
-from HoloLoom.lite.reasoning import ask, research, Answer, Analysis
+from hololoom.lite.memory import Memory, MemoryItem
+from hololoom.lite.reasoning import ask, research, Answer, Analysis
 
 # =============================================================================
 # Legacy API (Backward Compatible)
 # =============================================================================
-from HoloLoom.lite.core import HoloLoomLite, LiteResult, SimpleLoom
+from hololoom.lite.core import HoloLoomLite, LiteResult, SimpleLoom
 
 # Agent tool exports (lazy loaded to avoid import errors if dependencies missing)
 try:
-    from HoloLoom.lite.openai_tools import (
+    from hololoom.lite.openai_tools import (
         HOLOLOOM_LITE_TOOLS,
         execute_tool,
         get_tools_for_openai,
@@ -103,7 +103,7 @@ def main():
     mode = sys.argv[1].lower()
 
     try:
-        from HoloLoom.lite.ui import launch
+        from hololoom.lite.ui import launch
         launch(mode=mode)
     except ImportError as e:
         print(f"UI module not available: {e}")

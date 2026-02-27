@@ -10,7 +10,7 @@ This demo shows how to:
 3. Access execution results
 
 Usage:
-    PYTHONPATH=. python HoloLoom/agentic/skills/demo_skills.py
+    PYTHONPATH=. python hololoom/agentic/skills/demo_skills.py
 """
 
 import asyncio
@@ -20,8 +20,8 @@ from pathlib import Path
 # Add repository root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from HoloLoom.agentic import execute_skill, list_available_skills
-from HoloLoom.config import Config
+from hololoom.agentic import execute_skill, list_available_skills
+from hololoom.config import Config
 
 
 async def main():

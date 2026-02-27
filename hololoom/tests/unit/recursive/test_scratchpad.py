@@ -6,7 +6,7 @@ Tests scratchpad provenance tracking, entry management, and history retrieval.
 
 import pytest
 import time
-from HoloLoom.recursive.scratchpad import (
+from hololoom.recursive.scratchpad import (
     Scratchpad,
     ScratchpadEntry,
     LoopType,

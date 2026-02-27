@@ -1,7 +1,7 @@
-# HoloLoom API Service
+# hololoom API Service
 # Part 5: Production Hardening - Day 25
 #
-# Service for HoloLoom API:
+# Service for hololoom API:
 # - ClusterIP for internal communication
 # - HTTP and metrics ports
 # - Session affinity for sticky sessions

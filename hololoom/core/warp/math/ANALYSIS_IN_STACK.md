@@ -54,7 +54,7 @@ Layer 0: Linear Algebra
 - Uniform continuity vs pointwise continuity
 
 ```python
-from HoloLoom.warp.math.analysis import MetricSpace, SequenceAnalyzer
+from hololoom.warp.math.analysis import MetricSpace, SequenceAnalyzer
 
 # Metric space = rigorous notion of "distance"
 metric = MetricSpace.euclidean(dim=3)
@@ -86,7 +86,7 @@ is_cauchy = SequenceAnalyzer.is_cauchy(sequence)
 - Taylor/Laurent series (function expansion)
 
 ```python
-from HoloLoom.warp.math.analysis import ComplexFunction
+from hololoom.warp.math.analysis import ComplexFunction
 
 # Holomorphic = infinitely differentiable (amazing!)
 f = ComplexFunction(lambda z: z**2)
@@ -117,7 +117,7 @@ residues = ResidueCalculator.find_residues(f, poles)
 - Spectral theory (eigenvalues in infinite dimensions)
 
 ```python
-from HoloLoom.warp.math.analysis import HilbertSpace, BoundedOperator
+from hololoom.warp.math.analysis import HilbertSpace, BoundedOperator
 
 # Infinite-dimensional vector space
 H = HilbertSpace(dimension=float('inf'))
@@ -148,7 +148,7 @@ spectrum = operator.spectrum()  # Generalized eigenvalues
 - Convergence theorems (MCT, DCT, Fatou's lemma)
 
 ```python
-from HoloLoom.warp.math.analysis import SigmaAlgebra, LebesgueMeasure
+from hololoom.warp.math.analysis import SigmaAlgebra, LebesgueMeasure
 
 # σ-algebra = collection of measurable sets
 sigma_algebra = SigmaAlgebra.borel_sets()
@@ -178,7 +178,7 @@ integral = LebesgueMeasure.integrate(f, interval)
 - Spectral analysis (decompose signals)
 
 ```python
-from HoloLoom.warp.math.analysis import FourierTransform, WaveletTransform
+from hololoom.warp.math.analysis import FourierTransform, WaveletTransform
 
 # FFT (fast Fourier transform)
 freq_domain = FourierTransform.fft(signal)
@@ -208,7 +208,7 @@ spectrogram = FourierTransform.stft(signal)
 - Martingales (fair games)
 
 ```python
-from HoloLoom.warp.math.analysis import BrownianMotion, SDESolver
+from hololoom.warp.math.analysis import BrownianMotion, SDESolver
 
 # Brownian motion (Wiener process)
 W = BrownianMotion.standard(T=1.0, n_steps=1000)
@@ -239,7 +239,7 @@ X = SDESolver.euler_maruyama(drift, diffusion, X0, T)
 - Weak derivatives
 
 ```python
-from HoloLoom.warp.math.analysis import SchwartzSpace, DiracDelta
+from hololoom.warp.math.analysis import SchwartzSpace, DiracDelta
 
 # Dirac delta (not a function, but a distribution!)
 delta = DiracDelta()
@@ -268,7 +268,7 @@ weak_deriv = Distribution.weak_derivative(heaviside_step)
 - Interpolation (polynomial, spline)
 
 ```python
-from HoloLoom.warp.math.analysis import RootFinder, ODESolver, NumericalOptimization
+from hololoom.warp.math.analysis import RootFinder, ODESolver, NumericalOptimization
 
 # Find root: f(x) = 0
 root = RootFinder.newton_method(f, df, x0=1.0)

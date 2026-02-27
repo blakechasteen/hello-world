@@ -8,10 +8,10 @@ Simply swap imports to enable full LLM integration.
 
 Usage:
     # Before (stubs):
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
     # After (real LLMs):
-    from HoloLoom.weaving_orchestrator_llm import WeavingOrchestrator
+    from hololoom.weaving_orchestrator_llm import WeavingOrchestrator
 
 Installation:
     pip install ollama anthropic openai
@@ -20,8 +20,8 @@ Installation:
 import logging
 import re
 from typing import Dict, Optional, Any
-from HoloLoom.core.protocols.types import Query, Context
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator as BaseOrchestrator, ToolExecutor as BaseToolExecutor
+from hololoom.core.protocols.types import Query, Context
+from hololoom.weaving_orchestrator import WeavingOrchestrator as BaseOrchestrator, ToolExecutor as BaseToolExecutor
 
 
 # =============================================================================
@@ -113,7 +113,7 @@ def mask_sensitive(text: str) -> str:
 
 # LLM imports
 try:
-    from HoloLoom.awareness.llm_integration import OllamaLLM, AnthropicLLM, LLMProvider
+    from hololoom.awareness.llm_integration import OllamaLLM, AnthropicLLM, LLMProvider
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False

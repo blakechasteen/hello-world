@@ -20,7 +20,7 @@ Integration Points:
     - InstrumentalConvergenceGuard: Monitors for power-seeking patterns
 
 Usage:
-    from HoloLoom.dark_trace.plugins.alignment_bridge import (
+    from hololoom.dark_trace.plugins.alignment_bridge import (
         PluginAlignmentBridge,
         create_alignment_bridge
     )
@@ -51,11 +51,11 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.plugins.interface import DarkTracePlugin
-    from HoloLoom.dark_trace.plugins.safety_gate import TrustLevel, PluginCapability
-    from HoloLoom.dark_trace.result import TraceResult
+    from hololoom.dark_trace.plugins.interface import DarkTracePlugin
+    from hololoom.dark_trace.plugins.safety_gate import TrustLevel, PluginCapability
+    from hololoom.dark_trace.result import TraceResult
 
-logger = logging.getLogger("HoloLoom.dark_trace.plugins.alignment_bridge")
+logger = logging.getLogger("hololoom.dark_trace.plugins.alignment_bridge")
 
 
 # =============================================================================
@@ -331,7 +331,7 @@ class PluginAlignmentBridge:
     @staticmethod
     def _compare_trust_levels(a: "TrustLevel", b: "TrustLevel") -> int:
         """Compare trust levels. Returns -1 if a < b, 0 if equal, 1 if a > b."""
-        from HoloLoom.dark_trace.plugins.safety_gate import TrustLevel
+        from hololoom.dark_trace.plugins.safety_gate import TrustLevel
         order = [TrustLevel.SANDBOXED, TrustLevel.VERIFIED, TrustLevel.TRUSTED, TrustLevel.CORE]
         try:
             return order.index(a) - order.index(b)
@@ -530,7 +530,7 @@ class PluginAlignmentBridge:
                 confidence += 0.4
 
         # 2. If plugin claims specific functionality but does something else
-        from HoloLoom.dark_trace.plugins.safety_gate import PluginCapability
+        from hololoom.dark_trace.plugins.safety_gate import PluginCapability
         requested_caps = metadata.requested_capabilities
         if PluginCapability.STEER_MODEL in requested_caps or "steer_model" in requested_caps:
             if "steer" not in " ".join(observed_operations).lower():
@@ -603,7 +603,7 @@ class PluginAlignmentBridge:
         confidence = 0.0
 
         # Get capability strings for analysis
-        from HoloLoom.dark_trace.plugins.safety_gate import PluginCapability, TrustLevel
+        from hololoom.dark_trace.plugins.safety_gate import PluginCapability, TrustLevel
 
         cap_strings = [
             c.value if hasattr(c, 'value') else str(c)
@@ -798,7 +798,7 @@ def create_alignment_bridge(
 
     if auto_create_components:
         try:
-            from HoloLoom.alignment import (
+            from hololoom.alignment import (
                 create_guardrails,
                 create_audit_trail,
                 create_detector,
@@ -812,7 +812,7 @@ def create_alignment_bridge(
             deception_detector = create_detector()
             convergence_guard = create_guard()
         except ImportError:
-            logger.warning("HoloLoom.alignment not available, using minimal bridge")
+            logger.warning("hololoom.alignment not available, using minimal bridge")
 
     return PluginAlignmentBridge(
         guardrails=guardrails,

@@ -21,7 +21,7 @@ from pathlib import Path
 import tempfile
 import json
 
-from HoloLoom.dark_trace.sae.autolabel_engine import (
+from hololoom.dark_trace.sae.autolabel_engine import (
     AutoLabelConfig,
     AutoLabelEngine,
     LabelingStrategy,
@@ -31,7 +31,7 @@ from HoloLoom.dark_trace.sae.autolabel_engine import (
     create_autolabel_engine,
     label_sae_features,
 )
-from HoloLoom.dark_trace.sae.label_prompts import (
+from hololoom.dark_trace.sae.label_prompts import (
     LabelPromptBuilder,
     LabelPromptContext,
     LabelResponseParser,
@@ -39,7 +39,7 @@ from HoloLoom.dark_trace.sae.label_prompts import (
     SINGLE_FEATURE_PROMPT_TEMPLATE,
     BATCH_PROMPT_TEMPLATE,
 )
-from HoloLoom.dark_trace.sae.labeler import FeatureLabel
+from hololoom.dark_trace.sae.labeler import FeatureLabel
 
 
 # =============================================================================
@@ -676,7 +676,7 @@ class TestConvenienceFunctions:
             torch.randn(100, 10),
             sample_activations
         )):
-            with patch('HoloLoom.dark_trace.sae.autolabel_engine.AutoLabelEngine._call_llm',
+            with patch('hololoom.dark_trace.sae.autolabel_engine.AutoLabelEngine._call_llm',
                        new_callable=AsyncMock) as mock_llm:
                 mock_llm.return_value = "Description: Test.\nConfidence: 0.8"
 

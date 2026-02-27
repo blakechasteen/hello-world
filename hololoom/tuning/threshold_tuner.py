@@ -24,7 +24,7 @@ from typing import Dict, Any, List, Optional
 from collections import deque
 from dataclasses import dataclass
 import numpy as np
-from HoloLoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
+from hololoom.tuning.base import TuningAgent, ThompsonBandit, SafeParameter
 
 # Threshold value options (5 arms per threshold)
 THRESHOLD_VALUES = [0.5, 0.6, 0.7, 0.8, 0.9]  # 5 discrete levels

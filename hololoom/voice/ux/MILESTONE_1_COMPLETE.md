@@ -27,7 +27,7 @@ HoloLoom Voice UX Milestone 1 delivers a complete **conversational voice interfa
 ## Completed Tasks
 
 ### 1. ✅ Create voice module directory structure
-**Deliverable**: `HoloLoom/voice_ux/` directory with organized structure
+**Deliverable**: `hololoom/voice_ux/` directory with organized structure
 **Status**: Complete
 
 ### 2. ✅ Implement VoiceInputPipeline (STT + NLU)

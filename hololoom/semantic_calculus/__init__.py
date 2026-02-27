@@ -22,8 +22,8 @@ Mathematical Pillars:
     7. System Identification: learn dynamics from data (DE + Linear + Regression)
 
 Quick Start:
-    >>> from HoloLoom.semantic_calculus import SemanticFlowCalculus, SemanticSpectrum
-    >>> from HoloLoom.embedding.spectral import create_embedder
+    >>> from hololoom.semantic_calculus import SemanticFlowCalculus, SemanticSpectrum
+    >>> from hololoom.embedding.spectral import create_embedder
     >>>
     >>> # Create embedder and calculus engine
     >>> embed_model = create_embedder(sizes=[384])
@@ -153,7 +153,7 @@ except ImportError:
     # integration.py may not exist anymore, which is fine
     pass
 
-# === Clustering (merged from HoloLoom.clustering, 2026-02-27) ===
+# === Clustering (merged from hololoom.clustering, 2026-02-27) ===
 from .clustering_core import (
     cluster,
     smart_cluster,
@@ -242,7 +242,7 @@ __all__ = [
     "get_cache_stats",
     "format_semantic_summary",
     "extract_trajectory_metrics",
-    # Clustering (merged from HoloLoom.clustering)
+    # Clustering (merged from hololoom.clustering)
     "cluster",
     "smart_cluster",
     "auto_cluster",
@@ -262,13 +262,13 @@ __all__ = [
 # === Clean Imports (Recommended) ===
 # For new code, use the organized structure:
 #
-#   from HoloLoom.semantic_calculus import create_semantic_analyzer
-#   from HoloLoom.semantic_calculus.math import SemanticFlow, SemanticSpectrum
-#   from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+#   from hololoom.semantic_calculus import create_semantic_analyzer
+#   from hololoom.semantic_calculus.math import SemanticFlow, SemanticSpectrum
+#   from hololoom.semantic_calculus.config import SemanticCalculusConfig
 #
 # Legacy imports still work for backward compatibility:
 #
-#   from HoloLoom.semantic_calculus import SemanticFlowCalculus  # Still works!
+#   from hololoom.semantic_calculus import SemanticFlowCalculus  # Still works!
 #
 
 

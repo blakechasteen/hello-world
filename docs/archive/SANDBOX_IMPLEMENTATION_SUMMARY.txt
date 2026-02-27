@@ -14,11 +14,11 @@ DELIVERABLES
 
 Created Foundation Files (3 files, 869 lines):
 
-  1. HoloLoom/redteam/sandbox/__init__.py (96 lines)
+  1. hololoom/redteam/sandbox/__init__.py (96 lines)
      - Package initialization with public API exports
      - Status: [OK] Complete
 
-  2. HoloLoom/redteam/sandbox/protocols.py (337 lines)
+  2. hololoom/redteam/sandbox/protocols.py (337 lines)
      - SandboxMode enum (5 modes: NONE, SUBPROCESS, CGROUPS, DOCKER, AUTO)
      - SandboxConfig dataclass (comprehensive configuration)
      - SandboxResult dataclass (execution results)
@@ -26,7 +26,7 @@ Created Foundation Files (3 files, 869 lines):
      - Utility functions (validation, auto-detection, mode selection)
      - Status: [OK] Complete
 
-  3. HoloLoom/redteam/sandbox/monitor.py (416 lines)
+  3. hololoom/redteam/sandbox/monitor.py (416 lines)
      - ResourceSample dataclass (single measurement)
      - ResourceSummary dataclass (aggregated statistics)
      - ResourceMonitor class (continuous monitoring <5% overhead)
@@ -42,7 +42,7 @@ Supporting Documentation (2 files):
      - Security properties
      - Performance targets
 
-  2. HoloLoom/redteam/sandbox/QUICKSTART.md (400+ lines)
+  2. hololoom/redteam/sandbox/QUICKSTART.md (400+ lines)
      - Developer quick start guide
      - Configuration examples
      - Common patterns
@@ -201,13 +201,13 @@ FILES CREATED
 ================================================================================
 
 Code Files:
-  [OK] HoloLoom/redteam/sandbox/__init__.py
-  [OK] HoloLoom/redteam/sandbox/protocols.py
-  [OK] HoloLoom/redteam/sandbox/monitor.py
+  [OK] hololoom/redteam/sandbox/__init__.py
+  [OK] hololoom/redteam/sandbox/protocols.py
+  [OK] hololoom/redteam/sandbox/monitor.py
 
 Documentation Files:
   [OK] CARTS_PHASE2_SANDBOX_FOUNDATION.md
-  [OK] HoloLoom/redteam/sandbox/QUICKSTART.md
+  [OK] hololoom/redteam/sandbox/QUICKSTART.md
   [OK] SANDBOX_IMPLEMENTATION_SUMMARY.txt (this file)
 
 Total: 869 lines of production code + 1000+ lines documentation

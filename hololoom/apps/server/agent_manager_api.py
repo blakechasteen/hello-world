@@ -17,7 +17,7 @@ from datetime import datetime
 import asyncio
 import logging
 
-from HoloLoom.apps.server.agent_manager_hub import (
+from hololoom.apps.server.agent_manager_hub import (
     AgentManagerHub,
     ThreadConfig,
     SwarmConfig,

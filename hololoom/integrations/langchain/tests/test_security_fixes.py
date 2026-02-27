@@ -16,26 +16,26 @@ class TestLazyImportSecurity:
     def setup_method(self):
         """Clean up any cached imports before each test."""
         # Remove the module from sys.modules to ensure clean import
-        if 'HoloLoom.integrations.langchain' in sys.modules:
-            del sys.modules['HoloLoom.integrations.langchain']
+        if 'hololoom.integrations.langchain' in sys.modules:
+            del sys.modules['hololoom.integrations.langchain']
 
         # Also remove any submodules
         modules_to_remove = [
             key for key in sys.modules.keys()
-            if key.startswith('HoloLoom.integrations.langchain')
+            if key.startswith('hololoom.integrations.langchain')
         ]
         for module_name in modules_to_remove:
             del sys.modules[module_name]
 
     def test_lazy_import_document_loaders(self):
         """Test that document loader lazy imports work correctly."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         # Before accessing, the attribute shouldn't be in globals
         assert 'UniversalDocumentLoader' not in langchain.__dict__
 
         # Mock the document_loaders module to avoid actual import
-        with patch('HoloLoom.integrations.langchain.document_loaders') as mock_loaders:
+        with patch('hololoom.integrations.langchain.document_loaders') as mock_loaders:
             mock_loader_class = MagicMock()
             mock_loaders.UniversalDocumentLoader = mock_loader_class
 
@@ -48,13 +48,13 @@ class TestLazyImportSecurity:
 
     def test_lazy_import_llm_providers(self):
         """Test that LLM provider lazy imports work correctly."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         # Before accessing, the attribute shouldn't be in globals
         assert 'MultiProviderLLM' not in langchain.__dict__
 
         # Mock the llm_providers module
-        with patch('HoloLoom.integrations.langchain.llm_providers') as mock_providers:
+        with patch('hololoom.integrations.langchain.llm_providers') as mock_providers:
             mock_llm_class = MagicMock()
             mock_providers.MultiProviderLLM = mock_llm_class
 
@@ -67,11 +67,11 @@ class TestLazyImportSecurity:
 
     def test_lazy_import_vector_stores(self):
         """Test that vector store lazy imports work correctly."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         assert 'VectorStoreFactory' not in langchain.__dict__
 
-        with patch('HoloLoom.integrations.langchain.vector_stores') as mock_stores:
+        with patch('hololoom.integrations.langchain.vector_stores') as mock_stores:
             mock_store_class = MagicMock()
             mock_stores.VectorStoreFactory = mock_store_class
 
@@ -82,11 +82,11 @@ class TestLazyImportSecurity:
 
     def test_lazy_import_prototyping(self):
         """Test that prototyping lazy imports work correctly."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         assert 'QuickPrototype' not in langchain.__dict__
 
-        with patch('HoloLoom.integrations.langchain.prototyping') as mock_proto:
+        with patch('hololoom.integrations.langchain.prototyping') as mock_proto:
             mock_proto_class = MagicMock()
             mock_proto.QuickPrototype = mock_proto_class
 
@@ -97,9 +97,9 @@ class TestLazyImportSecurity:
 
     def test_lazy_import_caching(self):
         """Test that lazy imports are cached correctly."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
-        with patch('HoloLoom.integrations.langchain.document_loaders') as mock_loaders:
+        with patch('hololoom.integrations.langchain.document_loaders') as mock_loaders:
             mock_loader = MagicMock()
             mock_loaders.load_documents = mock_loader
 
@@ -114,7 +114,7 @@ class TestLazyImportSecurity:
 
     def test_invalid_attribute_raises_error(self):
         """Test that accessing invalid attributes raises AttributeError."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         with pytest.raises(AttributeError) as exc_info:
             _ = langchain.nonexistent_attribute
@@ -125,7 +125,7 @@ class TestLazyImportSecurity:
         """Test that the code doesn't use eval() which could be exploited."""
         # Read the actual source code
         import inspect
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         # Get the __getattr__ function source
         source = inspect.getsource(langchain.__getattr__)
@@ -140,10 +140,10 @@ class TestLazyImportSecurity:
 
     def test_locals_returns_correct_imports(self):
         """Test that locals() correctly captures imported names."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         # Test multiple imports work correctly
-        with patch('HoloLoom.integrations.langchain.document_loaders') as mock_loaders:
+        with patch('hololoom.integrations.langchain.document_loaders') as mock_loaders:
             mock_loader1 = MagicMock(name='load_github_repo')
             mock_loader2 = MagicMock(name='load_slack_workspace')
             mock_loaders.load_github_repo = mock_loader1
@@ -159,7 +159,7 @@ class TestLazyImportSecurity:
 
     def test_security_no_code_injection(self):
         """Test that malicious attribute names can't cause code injection."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         # Try various injection attempts that would work with eval()
         malicious_names = [
@@ -180,13 +180,13 @@ class TestLazyImportSecurity:
 
     def test_all_public_api_accessible(self):
         """Test that all items in __all__ are accessible via lazy import."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         # Mock all the submodules
-        with patch('HoloLoom.integrations.langchain.document_loaders') as mock_loaders, \
-             patch('HoloLoom.integrations.langchain.llm_providers') as mock_providers, \
-             patch('HoloLoom.integrations.langchain.vector_stores') as mock_stores, \
-             patch('HoloLoom.integrations.langchain.prototyping') as mock_proto:
+        with patch('hololoom.integrations.langchain.document_loaders') as mock_loaders, \
+             patch('hololoom.integrations.langchain.llm_providers') as mock_providers, \
+             patch('hololoom.integrations.langchain.vector_stores') as mock_stores, \
+             patch('hololoom.integrations.langchain.prototyping') as mock_proto:
 
             # Set up mock attributes
             for attr in ['UniversalDocumentLoader', 'load_documents', 'supported_document_types',
@@ -213,17 +213,17 @@ class TestLazyImportSecurity:
         self.setup_method()
 
         # Import main module
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
 
         # Check that submodules aren't imported yet
-        assert 'HoloLoom.integrations.langchain.document_loaders' not in sys.modules
-        assert 'HoloLoom.integrations.langchain.llm_providers' not in sys.modules
-        assert 'HoloLoom.integrations.langchain.vector_stores' not in sys.modules
-        assert 'HoloLoom.integrations.langchain.prototyping' not in sys.modules
+        assert 'hololoom.integrations.langchain.document_loaders' not in sys.modules
+        assert 'hololoom.integrations.langchain.llm_providers' not in sys.modules
+        assert 'hololoom.integrations.langchain.vector_stores' not in sys.modules
+        assert 'hololoom.integrations.langchain.prototyping' not in sys.modules
 
     def test_thread_safety_lazy_import(self):
         """Test that lazy imports are thread-safe."""
-        from HoloLoom.integrations import langchain
+        from hololoom.integrations import langchain
         import threading
         import time
 
@@ -231,7 +231,7 @@ class TestLazyImportSecurity:
 
         def access_attribute():
             """Access an attribute in a thread."""
-            with patch('HoloLoom.integrations.langchain.document_loaders') as mock_loaders:
+            with patch('hololoom.integrations.langchain.document_loaders') as mock_loaders:
                 mock_loaders.UniversalDocumentLoader = MagicMock()
                 try:
                     loader = langchain.UniversalDocumentLoader

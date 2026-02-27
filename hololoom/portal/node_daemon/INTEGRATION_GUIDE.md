@@ -284,7 +284,7 @@ async def execute_with_timeout(self, operation: str, params: dict, timeout_secon
 Run the demo:
 
 ```bash
-cd HoloLoom/portal/node_daemon
+cd hololoom/portal/node_daemon
 python hololoom_worker_demo.py
 ```
 
@@ -340,7 +340,7 @@ asyncio.run(test())
 ## References
 
 - **HoloLoom Documentation**: See [CLAUDE.md](../../../CLAUDE.md)
-- **HoloLoom API**: See [HoloLoom/hololoom.py](../../hololoom.py)
+- **HoloLoom API**: See [hololoom/hololoom.py](../../hololoom.py)
 - **Worker Implementation**: [hololoom_worker.py](./hololoom_worker.py)
 - **Demo Code**: [hololoom_worker_demo.py](./hololoom_worker_demo.py)
 - **Similar Pattern**: [wasm_runner.py](./wasm_runner.py)
@@ -351,6 +351,6 @@ For issues or questions:
 
 1. Check [HOLOLOOM_WORKER_README.md](./HOLOLOOM_WORKER_README.md) for API reference
 2. Run `hololoom_worker_demo.py` to verify installation
-3. Check HoloLoom availability: `python -c "from HoloLoom import HoloLoom; print('OK')"`
+3. Check HoloLoom availability: `python -c "from hololoom import hololoom; print('OK')"`
 4. Review error messages in Node Daemon logs
 5. Check Portal Server job status for detailed error context

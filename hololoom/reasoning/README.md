@@ -1,7 +1,7 @@
 # HoloLoom Reasoning Engines
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/reasoning/`
+**Location**: `hololoom/reasoning/`
 **Total Code**: ~84,671 lines across 5 core modules + 1 department integration
 **Updated**: 2025-12-11
 
@@ -20,7 +20,7 @@ Unlike simple retrieval systems, HoloLoom's reasoning is **symbolic yet grounded
 ### Deductive Reasoning (Logical Inference)
 
 ```python
-from HoloLoom.reasoning import (
+from hololoom.reasoning import (
     DeductiveReasoner, KnowledgeBase,
     create_fact, create_rule
 )
@@ -56,7 +56,7 @@ if proof:
 ### Abductive Reasoning (Best Explanation)
 
 ```python
-from HoloLoom.reasoning import (
+from hololoom.reasoning import (
     AbductiveReasoner,
     create_causal_rule, create_observation
 )
@@ -89,7 +89,7 @@ print(f"Score: {best.score():.3f}")
 ### Analogical Reasoning (Knowledge Transfer)
 
 ```python
-from HoloLoom.reasoning import (
+from hololoom.reasoning import (
     AnalogicalReasoner,
     create_domain, create_entity, create_relation
 )
@@ -301,7 +301,7 @@ transferred_domain = reasoner.transfer_knowledge(solar_system, mapping)
 
 ### Department Integration Module
 
-**Reasoning Department** (`HoloLoom/departments/reasoning/reasoning.py`)
+**Reasoning Department** (`hololoom/departments/reasoning/reasoning.py`)
 - Advanced multi-hop reasoning as a department service
 - Provides 4 main task types:
 
@@ -364,8 +364,8 @@ transferred_domain = reasoner.transfer_knowledge(solar_system, mapping)
 Reasoning integrates with HoloLoom's 11 specialized memory systems:
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.reasoning import DeductiveReasoner, KnowledgeBase
+from hololoom import hololoom
+from hololoom.reasoning import DeductiveReasoner, KnowledgeBase
 
 async with HoloLoom() as loom:
     # Retrieve facts from memory
@@ -394,8 +394,8 @@ async with HoloLoom() as loom:
 Reasoning is automatically invoked in complex weaving cycles:
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 
 # FULL/RESEARCH modes enable reasoning
 config = Config.fused()
@@ -414,7 +414,7 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 Reasoning powers multi-query exploration:
 
 ```python
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
 
 agent = await create_agentic_orchestrator(config, shards)
 
@@ -435,8 +435,8 @@ for step in result.steps_taken:
 Reasoning informs safety decisions:
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.reasoning import DeductiveReasoner, KnowledgeBase
+from hololoom.alignment import SafetyGuardrails
+from hololoom.reasoning import DeductiveReasoner, KnowledgeBase
 
 guardrails = SafetyGuardrails()
 
@@ -554,19 +554,19 @@ Run the test suite:
 
 ```bash
 # Test deductive reasoning
-pytest HoloLoom/tests/unit/test_deductive.py -v
+pytest hololoom/tests/unit/test_deductive.py -v
 
 # Test abductive reasoning
-pytest HoloLoom/tests/unit/test_abductive.py -v
+pytest hololoom/tests/unit/test_abductive.py -v
 
 # Test analogical reasoning
-pytest HoloLoom/tests/unit/test_analogical.py -v
+pytest hololoom/tests/unit/test_analogical.py -v
 
 # Test integration
-pytest HoloLoom/tests/integration/test_reasoning_integration.py -v
+pytest hololoom/tests/integration/test_reasoning_integration.py -v
 
 # Test department
-pytest HoloLoom/tests/integration/test_reasoning_department.py -v
+pytest hololoom/tests/integration/test_reasoning_department.py -v
 ```
 
 Expected Results: **100+ tests passing**, covering:
@@ -666,8 +666,8 @@ for chain in response.result['reasoning_chains']:
 
 ## References
 
-- **Module**: `HoloLoom/reasoning/`
-- **Tests**: `HoloLoom/tests/unit/test_*.py` and `HoloLoom/tests/integration/`
+- **Module**: `hololoom/reasoning/`
+- **Tests**: `hololoom/tests/unit/test_*.py` and `hololoom/tests/integration/`
 - **Demos**: `demos/demo_reasoning_*.py`
-- **Integration**: `HoloLoom/departments/reasoning/reasoning.py`
+- **Integration**: `hololoom/departments/reasoning/reasoning.py`
 

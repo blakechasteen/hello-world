@@ -9,7 +9,7 @@ Provides clean architecture for ChatOps command handlers with:
 - Auth requirements per handler
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
 

@@ -14,14 +14,14 @@ from pathlib import Path
 
 # Files that need fixing (from grep search)
 FILES_TO_FIX = [
-    "HoloLoom/convergence/recursive_engine.py",
-    "HoloLoom/convergence/recursive_reasoner.py",
-    "HoloLoom/mcp_server_promptly.py",
-    "HoloLoom/protocols/recursive_reasoning.py",
-    "HoloLoom/spinningWheel/workspace.py",
-    "HoloLoom/voice/elle_bridge.py",
-    "HoloLoom/voice/voice_agent.py",
-    "HoloLoom/voice_first/core/unified_agent.py",
+    "hololoom/convergence/recursive_engine.py",
+    "hololoom/convergence/recursive_reasoner.py",
+    "hololoom/mcp_server_promptly.py",
+    "hololoom/protocols/recursive_reasoning.py",
+    "hololoom/spinningWheel/workspace.py",
+    "hololoom/voice/elle_bridge.py",
+    "hololoom/voice/voice_agent.py",
+    "hololoom/voice_first/core/unified_agent.py",
 ]
 
 def fix_file(filepath):
@@ -36,9 +36,9 @@ def fix_file(filepath):
 
     original = content
 
-    # Pattern 1: from HoloLoom.documentation.types import X, Y, Z
+    # Pattern 1: from hololoom.documentation.types import X, Y, Z
     # Need to split based on what's imported
-    pattern = r'from HoloLoom\.documentation\.types import ([^\n]+)'
+    pattern = r'from hololoom\.documentation\.types import ([^\n]+)'
 
     def replace_import(match):
         imports = match.group(1).strip()
@@ -62,9 +62,9 @@ def fix_file(filepath):
         # Build replacement
         lines = []
         if protocol_imports:
-            lines.append(f"from HoloLoom.protocols.types import {', '.join(protocol_imports)}")
+            lines.append(f"from hololoom.protocols.types import {', '.join(protocol_imports)}")
         if spacetime_imports:
-            lines.append(f"from HoloLoom.fabric.spacetime import {', '.join(spacetime_imports)}")
+            lines.append(f"from hololoom.fabric.spacetime import {', '.join(spacetime_imports)}")
 
         return '\n'.join(lines)
 

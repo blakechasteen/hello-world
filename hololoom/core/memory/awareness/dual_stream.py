@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict, Any
 import time
 
-# Use relative imports (moved to HoloLoom/memory/awareness/ in Dec 2025)
+# Use relative imports (moved to hololoom/memory/awareness/ in Dec 2025)
 from .compositional_awareness import (
     CompositionalAwarenessLayer,
     UnifiedAwarenessContext,

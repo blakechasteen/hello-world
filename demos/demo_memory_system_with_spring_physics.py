@@ -20,13 +20,13 @@ from typing import List, Dict
 import time
 
 # Memory System v1.0
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
-from HoloLoom.memory.lifecycle_manager import MemoryScope
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.lifecycle_manager import MemoryScope
+from hololoom.documentation.types import MemoryShard
 
 # Spring physics
-from HoloLoom.memory.spring_dynamics import SpringDynamics, SpringConfig
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.spring_dynamics import SpringDynamics, SpringConfig
+from hololoom.memory.graph import KG, KGEdge
 
 
 # ============================================================================
@@ -331,7 +331,7 @@ async def demo_advanced_features():
 
     # Load advanced features
     try:
-        from HoloLoom.memory.spring_dynamics_advanced import (
+        from hololoom.memory.spring_dynamics_advanced import (
             AdvancedSpringActivation,
             TemperatureSchedule
         )

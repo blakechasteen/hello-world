@@ -15,10 +15,10 @@ from typing import List, Dict, Optional, Tuple, Any
 import numpy as np
 
 try:
-    from HoloLoom.motif.xbar_chunker import UniversalGrammarChunker, XBarPhrase
-    from HoloLoom.core.warp.merge import MergeOperator
-    from HoloLoom.performance.compositional_cache import CompositionalCache
-    from HoloLoom.core.memory.awareness_graph import AwarenessGraph
+    from hololoom.motif.xbar_chunker import UniversalGrammarChunker, XBarPhrase
+    from hololoom.core.warp.merge import MergeOperator
+    from hololoom.performance.compositional_cache import CompositionalCache
+    from hololoom.core.memory.awareness_graph import AwarenessGraph
     UG_AVAILABLE = True
 except ImportError:
     UG_AVAILABLE = False

@@ -20,11 +20,11 @@ from typing import Optional
 import sys
 
 try:
-    from holoLoom.memory.graph import KG
-    from holoLoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
+    from hololoom.memory.graph import KG
+    from hololoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
 except ImportError:
-    from HoloLoom.memory.graph import KG
-    from HoloLoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
+    from hololoom.memory.graph import KG
+    from hololoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
 
 
 def migrate_networkx_to_neo4j(

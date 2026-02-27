@@ -7,7 +7,7 @@
 ## What Was Built
 
 ### 1. Workflow Examples (730 lines)
-**File**: `HoloLoom/departments/examples/workflow_examples.py`
+**File**: `hololoom/departments/examples/workflow_examples.py`
 
 Created 5 comprehensive workflow examples:
 
@@ -32,7 +32,7 @@ Created 5 comprehensive workflow examples:
    - All 5 departments working together
 
 ### 2. Tests (250 lines)
-**File**: `HoloLoom/departments/examples/test_workflow_examples.py`
+**File**: `hololoom/departments/examples/test_workflow_examples.py`
 
 Created 9 integration tests:
 - Structural validation for each workflow
@@ -45,7 +45,7 @@ Created 9 integration tests:
 ### 3. Documentation (850 lines)
 
 **Main README** (800 lines):
-`HoloLoom/departments/examples/WORKFLOW_EXAMPLES_README.md`
+`hololoom/departments/examples/WORKFLOW_EXAMPLES_README.md`
 
 - Detailed workflow descriptions
 - Architecture patterns (sequential, parallel, routing, aggregation)
@@ -54,7 +54,7 @@ Created 9 integration tests:
 - FAQ and troubleshooting
 
 **Completion Report** (50 lines):
-`HoloLoom/departments/examples/CROSS_DEPARTMENT_WORKFLOWS_COMPLETE.md`
+`hololoom/departments/examples/CROSS_DEPARTMENT_WORKFLOWS_COMPLETE.md`
 
 - Summary of implementation
 - Known issues and resolutions
@@ -136,7 +136,7 @@ enriched_request_obj = enrichment.enriched_request
 ### Run Individual Workflow
 ```python
 import asyncio
-from HoloLoom.apps.departments.examples import research_workflow_example
+from hololoom.apps.departments.examples import research_workflow_example
 
 async def main():
     result = await research_workflow_example()
@@ -147,13 +147,13 @@ asyncio.run(main())
 
 ### Run All Workflows
 ```bash
-PYTHONPATH=. python HoloLoom/departments/examples/workflow_examples.py
+PYTHONPATH=. python hololoom/departments/examples/workflow_examples.py
 ```
 
 ## Files Created
 
 ```
-HoloLoom/departments/examples/
+hololoom/departments/examples/
 ├── workflow_examples.py              (730 lines) - Main workflows
 ├── test_workflow_examples.py         (250 lines) - Tests
 ├── __init__.py                       (50 lines)  - Package init

@@ -56,8 +56,8 @@ class TestModeComplexityMatrix:
     @pytest.mark.asyncio
     async def test_mode_handles_complexity(self, mode, query, expected_complexity):
         """Each mode should handle each complexity level."""
-        from HoloLoom.config import Config
-        from HoloLoom.routing.query_classifier import QueryClassifier
+        from hololoom.config import Config
+        from hololoom.routing.query_classifier import QueryClassifier
 
         # Get config for mode
         config = getattr(Config, mode)()
@@ -75,7 +75,7 @@ class TestModeComplexityMatrix:
     @pytest.mark.asyncio
     async def test_config_mode_attribute(self, mode):
         """Each mode should set correct ExecutionMode."""
-        from HoloLoom.config import Config, ExecutionMode
+        from hololoom.config import Config, ExecutionMode
 
         config = getattr(Config, mode)()
 
@@ -98,7 +98,7 @@ class TestBanditStrategyMatrix:
     @pytest.mark.parametrize("n_tools", [2, 3, 5, 10])
     def test_strategy_with_different_tool_counts(self, strategy, n_tools):
         """Each strategy should work with different numbers of tools."""
-        from HoloLoom.policy.unified import TSBandit, BanditStrategy
+        from hololoom.policy.unified import TSBandit, BanditStrategy
 
         bandit = TSBandit(n_arms=n_tools)
         probs = np.ones(n_tools) / n_tools  # Uniform probs
@@ -117,7 +117,7 @@ class TestBanditStrategyMatrix:
     @pytest.mark.parametrize("epsilon", [0.0, 0.1, 0.2, 0.5])
     def test_strategy_with_different_epsilon_values(self, strategy, epsilon):
         """Strategies should work with different epsilon settings."""
-        from HoloLoom.policy.unified import TSBandit, BanditStrategy
+        from hololoom.policy.unified import TSBandit, BanditStrategy
 
         n_tools = 4
         strategy_enum = BanditStrategy[strategy.upper()]
@@ -132,7 +132,7 @@ class TestBanditStrategyMatrix:
     @pytest.mark.parametrize("strategy", ["epsilon_greedy", "bayesian_blend", "pure_thompson"])
     def test_bandit_update_affects_future_selections(self, strategy):
         """Updates should influence future selections."""
-        from HoloLoom.policy.unified import TSBandit, BanditStrategy
+        from hololoom.policy.unified import TSBandit, BanditStrategy
 
         n_tools = 3
         strategy_enum = BanditStrategy[strategy.upper()]
@@ -163,8 +163,8 @@ class TestPolicyDimensionMatrix:
     @pytest.mark.parametrize("n_layers", [1, 2, 3])
     def test_policy_creation_with_dimensions(self, mem_dim, n_layers):
         """Policy should initialize with various dimension and layer combinations."""
-        from HoloLoom.policy.unified import create_policy
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.policy.unified import create_policy
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
         scales = [96, 192, 384][:min(3, mem_dim // 96)]
@@ -185,8 +185,8 @@ class TestPolicyDimensionMatrix:
     @pytest.mark.parametrize("n_heads", [2, 4, 8])
     def test_policy_structure_with_configurations(self, mem_dim, n_heads):
         """Policy should create with various configuration combinations."""
-        from HoloLoom.policy.unified import create_policy
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.policy.unified import create_policy
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
 
@@ -217,8 +217,8 @@ class TestMemoryOperationMatrix:
     @pytest.mark.asyncio
     async def test_backend_operations(self, backend_type, operation):
         """Each backend should support basic operations."""
-        from HoloLoom.config import Config, MemoryBackend
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.config import Config, MemoryBackend
+        from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.fast()
         config.memory_backend = MemoryBackend[backend_type]
@@ -263,7 +263,7 @@ class TestClassifierPatternMatrix:
     ])
     def test_classifier_pattern_recognition(self, pattern, expected_category):
         """Classifier should recognize common query patterns."""
-        from HoloLoom.routing.query_classifier import QueryClassifier
+        from hololoom.routing.query_classifier import QueryClassifier
 
         classifier = QueryClassifier()
         result = classifier.classify(pattern)
@@ -282,7 +282,7 @@ class TestClassifierPatternMatrix:
     @pytest.mark.parametrize("query_length", [1, 5, 10, 20, 50])
     def test_classifier_with_different_lengths(self, query_length):
         """Classifier should handle queries of various lengths."""
-        from HoloLoom.routing.query_classifier import QueryClassifier
+        from hololoom.routing.query_classifier import QueryClassifier
 
         classifier = QueryClassifier()
 
@@ -312,7 +312,7 @@ class TestConfigFeatureMatrix:
     ])
     def test_config_flag_combinations(self, mode, flag):
         """Config flags should work across modes."""
-        from HoloLoom.config import Config
+        from hololoom.config import Config
 
         config = getattr(Config, mode)()
 
@@ -334,7 +334,7 @@ class TestEmbeddingScaleMatrix:
     @pytest.mark.parametrize("scale", [96, 192, 384])
     def test_matryoshka_scale_extraction(self, scale):
         """Matryoshka embeddings should work at each scale."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
 
@@ -351,7 +351,7 @@ class TestEmbeddingScaleMatrix:
     @pytest.mark.parametrize("scale", [96, 384])
     def test_batch_embedding_at_scale(self, n_queries, scale):
         """Batch embedding should work at different scales."""
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         emb = MatryoshkaEmbeddings(sizes=[96, 192, 384])
 
@@ -381,8 +381,8 @@ class TestIntegrationScenarioMatrix:
     @pytest.mark.asyncio
     async def test_mode_query_type_combinations(self, mode, query_type):
         """Test mode × query type matrix."""
-        from HoloLoom.config import Config
-        from HoloLoom.routing.query_classifier import QueryClassifier
+        from hololoom.config import Config
+        from hololoom.routing.query_classifier import QueryClassifier
 
         queries = {
             "factual": "What is Python?",
@@ -403,7 +403,7 @@ class TestIntegrationScenarioMatrix:
     @pytest.mark.parametrize("exploration_rate", [0.0, 0.1, 0.3, 0.5])
     def test_strategy_exploration_combinations(self, strategy, exploration_rate):
         """Test strategy × exploration rate matrix."""
-        from HoloLoom.policy.unified import TSBandit, BanditStrategy
+        from hololoom.policy.unified import TSBandit, BanditStrategy
 
         n_tools = 4
         strategy_enum = BanditStrategy[strategy.upper()]
@@ -442,7 +442,7 @@ class TestStressParametrized:
     @pytest.mark.parametrize("n_iterations", [10, 50, 100])
     def test_bandit_many_updates(self, n_iterations):
         """Bandit should handle many updates."""
-        from HoloLoom.policy.unified import TSBandit
+        from hololoom.policy.unified import TSBandit
 
         bandit = TSBandit(n_arms=4)
 
@@ -471,7 +471,7 @@ class TestStressParametrized:
     @pytest.mark.parametrize("query_count", [5, 20, 50])
     def test_classifier_many_queries(self, query_count):
         """Classifier should handle many queries efficiently."""
-        from HoloLoom.routing.query_classifier import QueryClassifier
+        from hololoom.routing.query_classifier import QueryClassifier
 
         classifier = QueryClassifier()
 

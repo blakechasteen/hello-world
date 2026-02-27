@@ -259,7 +259,7 @@ From integration tests:
 ### Basic Usage
 
 ```python
-from HoloLoom.rag import MultiAgentRAG
+from hololoom.rag import MultiAgentRAG
 
 async with MultiAgentRAG(
     n_agents=5,
@@ -356,14 +356,14 @@ python demos/demo_rag_multiagent.py
 
 ### Created
 
-1. **HoloLoom/rag/multiagent_rag.py** (770 lines)
+1. **hololoom/rag/multiagent_rag.py** (770 lines)
    - MultiAgentRAG orchestrator
    - AgentResponse, MultiAgentRAGResult classes
    - ConsensusMethod enum
    - 4 consensus mechanisms
    - Agreement scoring and disagreement detection
 
-2. **HoloLoom/rag/tests/test_multiagent_rag.py** (577 lines)
+2. **hololoom/rag/tests/test_multiagent_rag.py** (577 lines)
    - 30+ comprehensive tests
    - Unit, integration, performance tests
    - Edge case coverage
@@ -373,18 +373,18 @@ python demos/demo_rag_multiagent.py
    - Rich terminal visualizations
    - Performance comparisons
 
-4. **HoloLoom/rag/MULTIAGENT_RAG_COMPLETE.md** (this file)
+4. **hololoom/rag/MULTIAGENT_RAG_COMPLETE.md** (this file)
    - Complete documentation
    - Architecture overview
    - API examples
 
 ### Modified
 
-1. **HoloLoom/rag/__init__.py**
+1. **hololoom/rag/__init__.py**
    - Added MultiAgentRAG, MultiAgentRAGResult exports
    - Added AgentResponse, ConsensusMethod exports
 
-2. **HoloLoom/rag/README.md**
+2. **hololoom/rag/README.md**
    - Added 125-line "Multi-Agent RAG" section
    - Basic usage examples
    - Consensus methods explanation

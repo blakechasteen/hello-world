@@ -15,7 +15,7 @@ Usage:
 
 import asyncio
 from pathlib import Path
-from HoloLoom.prompting.analytics import (
+from hololoom.prompting.analytics import (
     create_dashboard,
     LEARNING_AVAILABLE,
     AB_TESTING_AVAILABLE

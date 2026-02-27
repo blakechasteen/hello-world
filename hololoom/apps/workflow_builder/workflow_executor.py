@@ -36,10 +36,10 @@ except ImportError:
     raise
 
 try:
-    from HoloLoom.unified_api import HoloLoom
-    from HoloLoom.config import Config
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel
-    from HoloLoom.recursive.full_learning_loop import FullLearningEngine
+    from hololoom.unified_api import hololoom
+    from hololoom.config import Config
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails, RiskLevel
+    from hololoom.recursive.full_learning_loop import FullLearningEngine
 except ImportError as e:
     print(f"HoloLoom imports failed: {e}")
     print("Make sure PYTHONPATH is set to repository root")
@@ -47,7 +47,7 @@ except ImportError as e:
 
 # Import new production components (persistence, auth, CRDT, agents)
 try:
-    from HoloLoom.apps.workflow_builder.workflow_persistence import (
+    from hololoom.apps.workflow_builder.workflow_persistence import (
         WorkflowPersistence, WorkflowRecord, VersionRecord, ExecutionRecord
     )
     PERSISTENCE_AVAILABLE = True
@@ -56,7 +56,7 @@ except ImportError as e:
     PERSISTENCE_AVAILABLE = False
 
 try:
-    from HoloLoom.apps.workflow_builder.workflow_auth import (
+    from hololoom.apps.workflow_builder.workflow_auth import (
         get_auth_context, require_permission, AuthContext,
         is_multi_user_enabled, get_current_mode
     )
@@ -66,7 +66,7 @@ except ImportError as e:
     AUTH_AVAILABLE = False
 
 try:
-    from HoloLoom.apps.workflow_builder.workflow_crdt import (
+    from hololoom.apps.workflow_builder.workflow_crdt import (
         WorkflowCRDTState, CRDTStateManager, OperationType, Operation
     )
     CRDT_V2_AVAILABLE = True
@@ -75,7 +75,7 @@ except ImportError as e:
     CRDT_V2_AVAILABLE = False
 
 try:
-    from HoloLoom.apps.workflow_builder.workflow_agents import (
+    from hololoom.apps.workflow_builder.workflow_agents import (
         WorkflowAgentExecutor, AgentResult, execute_agent as execute_real_agent
     )
     REAL_AGENTS_AVAILABLE = True
@@ -85,7 +85,7 @@ except ImportError as e:
 
 # Import LLM agent executor
 try:
-    from HoloLoom.apps.workflow_builder.llm_executor import execute_llm_agent
+    from hololoom.apps.workflow_builder.llm_executor import execute_llm_agent
     LLM_AGENTS_AVAILABLE = True
 except ImportError as e:
     logger.warning(f"LLM agents not available: {e}")
@@ -102,7 +102,7 @@ except ImportError as e:
 
 # Import optimization engine
 try:
-    from HoloLoom.apps.workflow_builder.optimization_engine import ThompsonOptimizer
+    from hololoom.apps.workflow_builder.optimization_engine import ThompsonOptimizer
     optimizer = ThompsonOptimizer()
     OPTIMIZATION_AVAILABLE = True
 except ImportError as e:
@@ -1295,7 +1295,7 @@ async def execute_workflow(request: ExecutionRequest):
     owner_id = "default"
     if AUTH_AVAILABLE:
         try:
-            from HoloLoom.apps.workflow_builder.workflow_auth import get_auth_context_sync
+            from hololoom.apps.workflow_builder.workflow_auth import get_auth_context_sync
             auth = get_auth_context_sync()
             if "execute" not in auth.permissions:
                 raise HTTPException(status_code=403, detail="Execute permission required")
@@ -1535,7 +1535,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     # Handle based on CRDT version
                     if crdt_version == 'v2' and CRDT_V2_AVAILABLE:
                         # CRDT v2: Create proper operation with vector clock
-                        from HoloLoom.apps.workflow_builder.workflow_crdt import OperationType, Operation
+                        from hololoom.apps.workflow_builder.workflow_crdt import OperationType, Operation
 
                         op_type_str = operation_data.get('type', 'update_node')
                         op_type_map = {
@@ -1602,7 +1602,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     crdt_version = session.get('crdt_version', 'v1')
 
                     if crdt_version == 'v2' and CRDT_V2_AVAILABLE:
-                        from HoloLoom.apps.workflow_builder.workflow_crdt import Operation
+                        from hololoom.apps.workflow_builder.workflow_crdt import Operation
 
                         remote_ops = message.get('operations', [])
                         applied_count = 0
@@ -1871,7 +1871,7 @@ async def save_workflow_version(request: SaveVersionRequest):
     if AUTH_AVAILABLE:
         try:
             # In multi-user mode, this would require proper auth headers
-            from HoloLoom.apps.workflow_builder.workflow_auth import get_auth_context_sync
+            from hololoom.apps.workflow_builder.workflow_auth import get_auth_context_sync
             auth = get_auth_context_sync()
             owner_id = auth.user_id
         except Exception as e:
@@ -2087,7 +2087,7 @@ async def ingest_file(file: UploadFile = File(...)):
         warning = None
 
         try:
-            from HoloLoom.spinningWheel import spin
+            from hololoom.spinningWheel import spin
             shards = await spin(content, filename=file.filename)
             shards_created = len(shards) if shards else 0
             logger.info(f"File {file.filename} ingested: {shards_created} shards created (job: {job_id})")
@@ -2138,7 +2138,7 @@ async def ingest_url(request: URLIngestRequest):
 
         # Try to use SpinningWheel for URL processing
         try:
-            from HoloLoom.spinningWheel import spin
+            from hololoom.spinningWheel import spin
             shards = await spin(request.url, **request.options)
             shards_created = len(shards) if shards else 0
             logger.info(f"URL {request.url} ingested: {shards_created} shards created (job: {job_id})")

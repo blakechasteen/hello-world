@@ -265,4 +265,4 @@ curl -X POST http://localhost:9091/jobs \
 4. Restart node daemons to pick up new modules
 
 For mock-only modules (development/testing), add the mock implementation to
-`HoloLoom/portal/node_daemon/wasm_runner.py` in the `_mock_execute()` method.
+`hololoom/portal/node_daemon/wasm_runner.py` in the `_mock_execute()` method.

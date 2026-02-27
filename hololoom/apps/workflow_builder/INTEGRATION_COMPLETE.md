@@ -48,7 +48,7 @@
 - **Total**: 69 lines of functional HTML
 
 ### 3. JavaScript Modules (1,300 lines)
-**Location**: `HoloLoom/web_dashboard/js/`
+**Location**: `hololoom/web_dashboard/js/`
 
 - ✅ `learning_dashboard.js` (350 lines)
 - ✅ `safety_dashboard.js` (320 lines)
@@ -66,7 +66,7 @@
 ## File Structure
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── control_panel.html          # Main dashboard (1,262 lines, +500 from Wave 1)
 ├── js/
 │   ├── learning_dashboard.js   # 350 lines
@@ -87,7 +87,7 @@ HoloLoom/web_dashboard/
 
 1. **Server Running**:
    ```bash
-   PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+   PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
    ```
 
 2. **Browser**: Chrome, Firefox, or Edge (latest version)
@@ -102,7 +102,7 @@ HoloLoom/web_dashboard/
 **Expected**: Page loads without errors
 
 ```
-1. Open HoloLoom/web_dashboard/control_panel.html in browser
+1. Open hololoom/web_dashboard/control_panel.html in browser
 2. Open browser console (F12)
 3. Check for:
    ✓ "[OK] Unified server imports successfully" (no JavaScript errors)
@@ -342,7 +342,7 @@ HoloLoom/web_dashboard/
 curl http://localhost:8000/health
 
 # If not, start it
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 ```
 
 ### Issue: "Failed to load module script"
@@ -350,7 +350,7 @@ PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
 **Solution**:
 ```bash
 # Verify js/ directory exists
-ls HoloLoom/web_dashboard/js/
+ls hololoom/web_dashboard/js/
 
 # Should show 4 files:
 # - learning_dashboard.js
@@ -447,17 +447,17 @@ pip install youtube-transcript-api
 ```bash
 # Terminal 1: Start server
 cd mythRL
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 
 # Terminal 2: Open dashboard
 # (Windows)
-start HoloLoom/web_dashboard/control_panel.html
+start hololoom/web_dashboard/control_panel.html
 
 # (macOS)
-open HoloLoom/web_dashboard/control_panel.html
+open hololoom/web_dashboard/control_panel.html
 
 # (Linux)
-xdg-open HoloLoom/web_dashboard/control_panel.html
+xdg-open hololoom/web_dashboard/control_panel.html
 
 # Terminal 3: Test API
 curl http://localhost:8000/health

@@ -15,14 +15,14 @@ Commands:
 from typing import Dict, Any, Optional
 from datetime import datetime
 
-from HoloLoom.memory.routing import (
+from hololoom.memory.routing import (
     RuleBasedRouter,
     LearnedRouter,
     RoutingExperiment,
     BackendType,
     QueryType
 )
-from HoloLoom.memory.routing.orchestrator import (
+from hololoom.memory.routing.orchestrator import (
     RoutingOrchestrator,
     OrchestratorExperiment
 )
@@ -126,7 +126,7 @@ class RoutingCommandHandler:
             return f"Unknown variant: {variant_b}. Options: {', '.join(strategy_map.keys())}"
 
         # Add variants
-        from HoloLoom.memory.routing.execution_patterns import (
+        from hololoom.memory.routing.execution_patterns import (
             FeedForwardEngine,
             RecursiveEngine,
             ExecutionPattern
@@ -208,7 +208,7 @@ Keep using !weave and reacting with 👍/👎
 
         Explain why router would choose a particular backend.
         """
-        from HoloLoom.memory.protocol import MemoryQuery
+        from hololoom.memory.protocol import MemoryQuery
 
         # Get routing decision (without executing)
         available = [
@@ -253,7 +253,7 @@ Keep using !weave and reacting with 👍/👎
                     response += f"  Total Trials: {backend_stats.get('total_trials', 0)}\n"
 
         # Execution pattern suggestion
-        from HoloLoom.memory.routing.execution_patterns import select_execution_pattern
+        from hololoom.memory.routing.execution_patterns import select_execution_pattern
 
         suggested_pattern = select_execution_pattern(
             MemoryQuery(text=query_text, limit=5),
@@ -362,7 +362,7 @@ class ReactionFeedbackHandler:
         relevance = reaction_scores.get(reaction, 0.7)  # Default neutral
 
         # Create routing outcome
-        from HoloLoom.memory.routing.protocol import RoutingOutcome
+        from hololoom.memory.routing.protocol import RoutingOutcome
 
         # Extract routing decision from spacetime metadata
         routing_meta = spacetime.metadata.get('routing_decision', {})

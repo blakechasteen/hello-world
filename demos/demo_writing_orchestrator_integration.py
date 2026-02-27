@@ -15,11 +15,11 @@ from typing import List
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')
 
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import MemoryShard, Query
-from HoloLoom.writing import write
-from HoloLoom.writing.export import HTMLExporter, MarkdownExporter
-from HoloLoom.writing.core.protocol import WritingResult, WritingMode, StyleGuide
+from hololoom.config import Config
+from hololoom.documentation.types import MemoryShard, Query
+from hololoom.writing import write
+from hololoom.writing.export import HTMLExporter, MarkdownExporter
+from hololoom.writing.core.protocol import WritingResult, WritingMode, StyleGuide
 
 
 def create_test_shards() -> List[MemoryShard]:

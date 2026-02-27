@@ -26,7 +26,7 @@ Metrics Categories:
    - hololoom_reflection_updates_total: Reflection loop updates
 
 Usage:
-    from HoloLoom.performance.prometheus_metrics import metrics, start_metrics_server
+    from hololoom.performance.prometheus_metrics import metrics, start_metrics_server
 
     # Track query metrics
     metrics.track_query(pattern='FUSED', complexity='FAST', duration=0.125)

@@ -14,7 +14,7 @@ print("=" * 80)
 print("TEST 1: Core Types Import")
 print("=" * 80)
 
-from HoloLoom.protocols.types import ComplexityLevel, ProvenceTrace, MythRLResult
+from hololoom.protocols.types import ComplexityLevel, ProvenceTrace, MythRLResult
 
 print("✅ ComplexityLevel imported")
 print(f"   Available levels: {[level.name for level in ComplexityLevel]}")
@@ -48,7 +48,7 @@ print("\n" + "=" * 80)
 print("TEST 2: Existing Protocols Import")
 print("=" * 80)
 
-from HoloLoom.protocols import (
+from hololoom.protocols import (
     Embedder,
     MotifDetector,
     PolicyEngine,
@@ -76,7 +76,7 @@ print("\n" + "=" * 80)
 print("TEST 3: mythRL Shuttle Protocols Import")
 print("=" * 80)
 
-from HoloLoom.protocols import (
+from hololoom.protocols import (
     PatternSelectionProtocol,
     FeatureExtractionProtocol,
     WarpSpaceProtocol,
@@ -93,7 +93,7 @@ new_protocols = [
 for protocol in new_protocols:
     print(f"✅ {protocol}")
 
-# Test 4: Verify dev/ imports from HoloLoom
+# Test 4: Verify dev/ imports from hololoom
 print("\n" + "=" * 80)
 print("TEST 4: dev/ Integration")
 print("=" * 80)
@@ -105,8 +105,8 @@ from dev.protocol_modules_mythrl import (
 )
 
 print("✅ MythRLShuttle imported from dev/")
-print("✅ ComplexityLevel imported from dev/ (actually from HoloLoom)")
-print("✅ ProvenceTrace imported from dev/ (actually from HoloLoom)")
+print("✅ ComplexityLevel imported from dev/ (actually from hololoom)")
+print("✅ ProvenceTrace imported from dev/ (actually from hololoom)")
 
 # Verify they're the same objects
 assert ComplexityLevel is DevComplexityLevel, "ComplexityLevel should be the same object!"
@@ -218,14 +218,14 @@ print("\n" + "=" * 80)
 print("PROTOCOL STANDARDIZATION TEST RESULTS")
 print("=" * 80)
 
-from HoloLoom.protocols import __all__
+from hololoom.protocols import __all__
 
 print(f"✅ Total Exports: {len(__all__)}")
 print(f"✅ Core Types: 3 (ComplexityLevel, ProvenceTrace, MythRLResult)")
 print(f"✅ Existing Protocols: 10")
 print(f"✅ New mythRL Protocols: 4")
-print(f"✅ Single Source of Truth: HoloLoom/protocols/__init__.py")
-print(f"✅ dev/ Integration: Working (imports from HoloLoom)")
+print(f"✅ Single Source of Truth: hololoom/protocols/__init__.py")
+print(f"✅ dev/ Integration: Working (imports from hololoom)")
 print(f"✅ MythRLShuttle: Compatible with new protocol system")
 print(f"✅ Backward Compatibility: Maintained")
 

@@ -24,7 +24,7 @@ from datetime import datetime
 from typing import List, Dict, Any
 
 # Jenny core types
-from HoloLoom.visualization.jenny_spec import (
+from hololoom.visualization.jenny_spec import (
     JennySpec,
     PanelTypeJenny,
     PanelSizeJenny,
@@ -33,20 +33,20 @@ from HoloLoom.visualization.jenny_spec import (
 )
 
 # M1: Renderer Registry
-from HoloLoom.visualization.jenny_renderer_registry import (
+from hololoom.visualization.jenny_renderer_registry import (
     RendererRegistry,
     RenderTarget,
 )
 
 # M2: Async LLM Client
-from HoloLoom.visualization.jenny_llm_client import (
+from hololoom.visualization.jenny_llm_client import (
     LLMClientConfig,
     LLMResponse,
     LLMError,
 )
 
 # M3: Accessibility
-from HoloLoom.visualization.jenny_accessibility import (
+from hololoom.visualization.jenny_accessibility import (
     AriaRole,
     AriaLive,
     AriaRelevant,
@@ -58,18 +58,18 @@ from HoloLoom.visualization.jenny_accessibility import (
 )
 
 # M4 & M5: Renderers
-from HoloLoom.visualization.jenny_renderer import (
+from hololoom.visualization.jenny_renderer import (
     HTMLRenderer,
     ReactRenderer,
     ARRenderer,
 )
-from HoloLoom.visualization.jenny_runtime import (
+from hololoom.visualization.jenny_runtime import (
     JennyRuntime,
     create_runtime,
 )
 
 # M6: Analytics
-from HoloLoom.visualization.jenny_analytics import (
+from hololoom.visualization.jenny_analytics import (
     MetricType,
     RenderEvent,
     CompileEvent,

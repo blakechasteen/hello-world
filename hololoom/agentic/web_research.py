@@ -10,7 +10,7 @@ Integrates MatryoshkaWebSearch for Perplexity-style research:
 - Complete provenance tracking
 
 Usage:
-    from HoloLoom.agentic.web_research import WebResearchOrchestrator
+    from hololoom.agentic.web_research import WebResearchOrchestrator
 
     orchestrator = await WebResearchOrchestrator.create(
         config=Config.fused(),
@@ -36,17 +36,17 @@ from typing import List, Dict, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config
-from HoloLoom.search import MatryoshkaWebSearch, SearchConfig, WebSearchResult
-from HoloLoom.agentic.core import (
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.search import MatryoshkaWebSearch, SearchConfig, WebSearchResult
+from hololoom.agentic.core import (
     AgenticOrchestrator,
     AgenticResult,
     AgenticIntent,
     ReasoningMode
 )
-from HoloLoom.recursive import FullLearningEngine
-from HoloLoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
+from hololoom.recursive import FullLearningEngine
+from hololoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 
 logger = logging.getLogger(__name__)
 

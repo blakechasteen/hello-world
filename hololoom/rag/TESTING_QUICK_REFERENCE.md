@@ -7,10 +7,10 @@ Quick reference for running tests on the complete Moonshot RAG system.
 ### Run All Tests
 ```bash
 # All Moonshot tests
-pytest HoloLoom/rag/tests/ -v
+pytest hololoom/rag/tests/ -v
 
 # Fast summary (quiet mode)
-pytest HoloLoom/rag/tests/ -q
+pytest hololoom/rag/tests/ -q
 ```
 
 ### Run by Feature
@@ -18,41 +18,41 @@ pytest HoloLoom/rag/tests/ -q
 #### Wave 3 Tests
 ```bash
 # Streaming
-pytest HoloLoom/rag/tests/test_streaming.py -v
+pytest hololoom/rag/tests/test_streaming.py -v
 
 # Custom Embeddings
-pytest HoloLoom/rag/tests/test_embedding_plugins.py -v
+pytest hololoom/rag/tests/test_embedding_plugins.py -v
 
 # Reranking
-pytest HoloLoom/rag/tests/test_reranking.py -v
+pytest hololoom/rag/tests/test_reranking.py -v
 ```
 
 #### Wave 4 Tests
 ```bash
 # SQL Integration
-pytest HoloLoom/rag/tests/test_sql_integration.py -v
+pytest hololoom/rag/tests/test_sql_integration.py -v
 
 # Multi-Hop Reasoning
-pytest HoloLoom/rag/tests/test_multihop_reasoning.py -v
+pytest hololoom/rag/tests/test_multihop_reasoning.py -v
 ```
 
 #### Wave 5 Tests
 ```bash
 # Multi-Agent RAG (may timeout in standard pytest)
 # Recommended: Use manual code review or custom runner
-pytest HoloLoom/rag/tests/test_multiagent_rag.py -v --timeout=30
+pytest hololoom/rag/tests/test_multiagent_rag.py -v --timeout=30
 ```
 
 #### Integration Tests
 ```bash
 # All integration scenarios
-pytest HoloLoom/rag/tests/test_moonshot_integration.py -v
+pytest hololoom/rag/tests/test_moonshot_integration.py -v
 ```
 
 #### Performance Tests
 ```bash
 # Benchmarks with detailed output
-pytest HoloLoom/rag/tests/test_moonshot_performance.py -v -s
+pytest hololoom/rag/tests/test_moonshot_performance.py -v -s
 ```
 
 ## Test Statistics
@@ -73,43 +73,43 @@ pytest HoloLoom/rag/tests/test_moonshot_performance.py -v -s
 ### Verify Single Feature
 ```bash
 # Test just streaming
-pytest HoloLoom/rag/tests/test_streaming.py -v
+pytest hololoom/rag/tests/test_streaming.py -v
 
 # View which tests are actually running
-pytest HoloLoom/rag/tests/test_streaming.py --collect-only -q
+pytest hololoom/rag/tests/test_streaming.py --collect-only -q
 ```
 
 ### Run Fast Tests Only (skip slow ones)
 ```bash
 # Skip performance benchmarks and slow integration tests
-pytest HoloLoom/rag/tests/test_streaming.py HoloLoom/rag/tests/test_embedding_plugins.py HoloLoom/rag/tests/test_reranking.py HoloLoom/rag/tests/test_multihop_reasoning.py -v
+pytest hololoom/rag/tests/test_streaming.py hololoom/rag/tests/test_embedding_plugins.py hololoom/rag/tests/test_reranking.py hololoom/rag/tests/test_multihop_reasoning.py -v
 ```
 
 ### Run with Detailed Output
 ```bash
 # Show print statements and detailed info
-pytest HoloLoom/rag/tests/ -v -s
+pytest hololoom/rag/tests/ -v -s
 
 # Show last 50 lines of output
-pytest HoloLoom/rag/tests/ -v 2>&1 | tail -50
+pytest hololoom/rag/tests/ -v 2>&1 | tail -50
 ```
 
 ### Run Specific Test
 ```bash
 # Single test function
-pytest HoloLoom/rag/tests/test_streaming.py::TestStreamToken::test_stream_token_creation -v
+pytest hololoom/rag/tests/test_streaming.py::TestStreamToken::test_stream_token_creation -v
 
 # All tests matching pattern
-pytest HoloLoom/rag/tests/ -k "streaming" -v
+pytest hololoom/rag/tests/ -k "streaming" -v
 ```
 
 ### Run with Minimal Output
 ```bash
 # Quiet mode - just summary
-pytest HoloLoom/rag/tests/ -q
+pytest hololoom/rag/tests/ -q
 
 # No output except final summary
-pytest HoloLoom/rag/tests/ --tb=no
+pytest hololoom/rag/tests/ --tb=no
 ```
 
 ## Test Configuration
@@ -117,7 +117,7 @@ pytest HoloLoom/rag/tests/ --tb=no
 ### pytest.ini Settings
 ```ini
 [pytest]
-testpaths = HoloLoom/rag/tests
+testpaths = hololoom/rag/tests
 asyncio_mode = auto
 timeout = 30  # 30-second timeout per test
 ```
@@ -128,7 +128,7 @@ timeout = 30  # 30-second timeout per test
 export PYTEST_DEBUG=1
 
 # Run tests in parallel (requires pytest-xdist)
-pytest HoloLoom/rag/tests/ -n auto
+pytest hololoom/rag/tests/ -n auto
 
 # Set custom timeout
 export PYTEST_TIMEOUT=60
@@ -139,10 +139,10 @@ export PYTEST_TIMEOUT=60
 ### Tests Timing Out
 ```bash
 # Increase timeout
-pytest HoloLoom/rag/tests/ --timeout=60
+pytest hololoom/rag/tests/ --timeout=60
 
 # Or skip slow tests
-pytest HoloLoom/rag/tests/ -k "not performance"
+pytest hololoom/rag/tests/ -k "not performance"
 ```
 
 ### Missing Dependencies
@@ -205,14 +205,14 @@ These skips are **expected and normal** - they represent optional features.
 
 ### Run All Integration Tests
 ```bash
-pytest HoloLoom/rag/tests/test_moonshot_integration.py -v
+pytest hololoom/rag/tests/test_moonshot_integration.py -v
 ```
 
 ### Verify Feature Combinations
 ```python
 # In Python REPL or script
-from HoloLoom.rag.simple_rag import SimpleRAG
-from HoloLoom.config import Config
+from hololoom.rag.simple_rag import SimpleRAG
+from hololoom.config import Config
 
 # Test with all features
 rag = SimpleRAG(
@@ -231,13 +231,13 @@ async with rag:
 
 ### Run All Benchmarks
 ```bash
-pytest HoloLoom/rag/tests/test_moonshot_performance.py -v -s
+pytest hololoom/rag/tests/test_moonshot_performance.py -v -s
 ```
 
 ### Create Custom Benchmark
 ```bash
 # Run and capture output
-pytest HoloLoom/rag/tests/test_moonshot_performance.py -v -s > benchmark_results.txt
+pytest hololoom/rag/tests/test_moonshot_performance.py -v -s > benchmark_results.txt
 
 # View results
 cat benchmark_results.txt
@@ -259,7 +259,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
-      - run: pytest HoloLoom/rag/tests/ -v
+      - run: pytest hololoom/rag/tests/ -v
 ```
 
 ## Debug Tips
@@ -267,31 +267,31 @@ jobs:
 ### Enable Verbose Output
 ```bash
 # Python debug info
-python -m pytest HoloLoom/rag/tests/ -vv
+python -m pytest hololoom/rag/tests/ -vv
 
 # With print statements
-python -m pytest HoloLoom/rag/tests/ -v -s
+python -m pytest hololoom/rag/tests/ -v -s
 
 # With traceback
-python -m pytest HoloLoom/rag/tests/ -v --tb=long
+python -m pytest hololoom/rag/tests/ -v --tb=long
 ```
 
 ### Check Test Collection
 ```bash
 # See all tests without running them
-pytest HoloLoom/rag/tests/ --collect-only -q
+pytest hololoom/rag/tests/ --collect-only -q
 
 # Count tests
-pytest HoloLoom/rag/tests/ --collect-only -q | wc -l
+pytest hololoom/rag/tests/ --collect-only -q | wc -l
 ```
 
 ### Profile Test Performance
 ```bash
 # Show slowest tests
-pytest HoloLoom/rag/tests/ -v --durations=10
+pytest hololoom/rag/tests/ -v --durations=10
 
 # With custom threshold
-pytest HoloLoom/rag/tests/ -v --durations=5 --durations-min=1.0
+pytest hololoom/rag/tests/ -v --durations=5 --durations-min=1.0
 ```
 
 ## Test Report Summary

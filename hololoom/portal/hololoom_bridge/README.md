@@ -18,7 +18,7 @@ The HoloLoom Bridge is an elegant async HTTP client that connects Portal's distr
 ## Quick Start
 
 ```python
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
+from hololoom.portal.hololoom_bridge import HoloLoomBridge
 
 bridge = HoloLoomBridge()
 
@@ -186,7 +186,7 @@ async def context(topic):
 ## Configuration
 
 ```python
-from HoloLoom.portal.hololoom_bridge import BridgeConfig, HoloLoomBridge
+from hololoom.portal.hololoom_bridge import BridgeConfig, HoloLoomBridge
 
 config = BridgeConfig(
     hololoom_url="http://localhost:8000",  # Server URL
@@ -223,7 +223,7 @@ else:
 
 ```python
 from unittest.mock import patch
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge, LoomResult
+from hololoom.portal.hololoom_bridge import HoloLoomBridge, LoomResult
 
 # Mock result
 result = LoomResult(success=True, data=["test"], confidence=0.9)

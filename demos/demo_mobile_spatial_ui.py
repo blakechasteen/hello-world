@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Mobile spatial UI imports
-from HoloLoom.spatial.mobile_spatial_ui import (
+from hololoom.spatial.mobile_spatial_ui import (
     MobileSpatialUIManager,
     TouchGestureRecognizer,
     create_mobile_ui_manager,

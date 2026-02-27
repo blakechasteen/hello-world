@@ -16,9 +16,9 @@ Date: 2025-11-03
 import pytest
 import numpy as np
 from typing import List, Dict, Tuple, Optional
-from HoloLoom.config import Config
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.warp.spectral_methods import (
+from hololoom.config import Config
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.warp.spectral_methods import (
     GraphLaplacian,
     LaplacianType,
     SpectralWavelet,
@@ -615,7 +615,7 @@ def test_basic_laplacian_still_works():
 
     This is the baseline feature (used before spectral methods).
     """
-    from HoloLoom.embedding.spectral import compute_spectral_features
+    from hololoom.embedding.spectral import compute_spectral_features
 
     A = np.array(
         [

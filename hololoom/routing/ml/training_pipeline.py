@@ -154,7 +154,7 @@ class OnlineTrainingPipeline:
         Returns:
             (X, y) feature matrix and labels
         """
-        from HoloLoom.routing.ml import RoutingFeatureExtractor
+        from hololoom.routing.ml import RoutingFeatureExtractor
 
         extractor = RoutingFeatureExtractor()
 

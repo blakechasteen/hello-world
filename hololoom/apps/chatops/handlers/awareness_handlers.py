@@ -15,7 +15,7 @@ Commands:
 - !aware help - Show awareness help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.awareness_handlers import register_awareness_handlers
+    from hololoom.apps.chatops.handlers.awareness_handlers import register_awareness_handlers
 
     # In run_chatops.py:
     register_awareness_handlers(bot, awareness_graph)
@@ -28,9 +28,9 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.memory.awareness_graph import AwarenessGraph
-    from HoloLoom.memory.spring_dynamics import SpringDynamics
-    from HoloLoom.memory.multi_wave_engine import MultiWaveMemoryEngine
+    from hololoom.memory.awareness_graph import AwarenessGraph
+    from hololoom.memory.spring_dynamics import SpringDynamics
+    from hololoom.memory.multi_wave_engine import MultiWaveMemoryEngine
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -42,8 +42,8 @@ except ImportError:
 
 # Awareness system imports with graceful degradation
 try:
-    from HoloLoom.memory.awareness_graph import AwarenessGraph
-    from HoloLoom.memory.awareness_types import (
+    from hololoom.memory.awareness_graph import AwarenessGraph
+    from hololoom.memory.awareness_types import (
         AwarenessMetrics,
         ActivationStrategy,
         ActivationBudget
@@ -57,7 +57,7 @@ except ImportError:
     ActivationBudget = None
 
 try:
-    from HoloLoom.memory.spring_dynamics import SpringDynamics, SpringConfig
+    from hololoom.memory.spring_dynamics import SpringDynamics, SpringConfig
     SPRING_AVAILABLE = True
 except ImportError:
     SPRING_AVAILABLE = False
@@ -65,7 +65,7 @@ except ImportError:
     SpringConfig = None
 
 try:
-    from HoloLoom.memory.multi_wave_engine import (
+    from hololoom.memory.multi_wave_engine import (
         MultiWaveMemoryEngine,
         BrainWaveMode,
         ThetaWaveConsolidator
@@ -79,7 +79,7 @@ except ImportError:
 
 # Meta-awareness (may not exist yet - graceful degradation)
 try:
-    from HoloLoom.awareness.meta_awareness import MetaConfidence, KnowledgeGapHypothesis
+    from hololoom.awareness.meta_awareness import MetaConfidence, KnowledgeGapHypothesis
     META_AWARENESS_AVAILABLE = True
 except ImportError:
     META_AWARENESS_AVAILABLE = False
@@ -88,7 +88,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True

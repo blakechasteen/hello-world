@@ -16,13 +16,13 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, AsyncMock, patch
 
-from HoloLoom.visualization.jenny_spec import (
+from hololoom.visualization.jenny_spec import (
     JennySpec,
     PanelTypeJenny,
     PanelSizeJenny,
     LifecycleStage,
 )
-from HoloLoom.visualization.jenny_mrf import (
+from hololoom.visualization.jenny_mrf import (
     PanelTypeLearner,
     PanelTypePrior,
     JennyMRFCompiler,
@@ -391,7 +391,7 @@ class TestJennyMRFCompiler:
         compiler = JennyMRFCompiler(include_why_panel=False)
 
         with patch.object(compiler, '_auto_select_strategy') as mock_strategy:
-            from HoloLoom.protocols.jenny import CompilationStrategy
+            from hololoom.protocols.jenny import CompilationStrategy
             mock_strategy.return_value = CompilationStrategy.MINIMAL
 
             specs = await compiler.compile(mock_spacetime)
@@ -512,7 +512,7 @@ class TestMRFIntegration:
     @pytest.mark.asyncio
     async def test_why_panel_uses_mrf_when_available(self, mock_spacetime, mock_analysis):
         """WHY panel is enhanced by MRF when available."""
-        from HoloLoom.prompting.unified_mrf import UnifiedMRF
+        from hololoom.prompting.unified_mrf import UnifiedMRF
 
         mrf = MagicMock(spec=UnifiedMRF)
         mrf.refine_prompt = AsyncMock(return_value={
@@ -530,7 +530,7 @@ class TestMRFIntegration:
     @pytest.mark.asyncio
     async def test_why_panel_falls_back_on_mrf_error(self, mock_spacetime, mock_analysis):
         """WHY panel falls back to rule-based on MRF error."""
-        from HoloLoom.prompting.unified_mrf import UnifiedMRF
+        from hololoom.prompting.unified_mrf import UnifiedMRF
 
         mrf = MagicMock(spec=UnifiedMRF)
         mrf.refine_prompt = AsyncMock(side_effect=Exception("MRF error"))
@@ -554,7 +554,7 @@ class TestActionLearningMap:
 
     def test_action_learning_map_exists(self):
         """ACTION_LEARNING_MAP is defined and populated."""
-        from HoloLoom.visualization.jenny_mrf import ACTION_LEARNING_MAP
+        from hololoom.visualization.jenny_mrf import ACTION_LEARNING_MAP
 
         assert "pin_panel" in ACTION_LEARNING_MAP
         assert "dismiss_panel" in ACTION_LEARNING_MAP
@@ -562,7 +562,7 @@ class TestActionLearningMap:
 
     def test_action_learning_map_pin_positive(self):
         """PIN action has high positive signal."""
-        from HoloLoom.visualization.jenny_mrf import ACTION_LEARNING_MAP
+        from hololoom.visualization.jenny_mrf import ACTION_LEARNING_MAP
 
         success, confidence = ACTION_LEARNING_MAP["pin_panel"]
         assert success is True
@@ -570,7 +570,7 @@ class TestActionLearningMap:
 
     def test_action_learning_map_dismiss_negative(self):
         """DISMISS action has low/negative signal."""
-        from HoloLoom.visualization.jenny_mrf import ACTION_LEARNING_MAP
+        from hololoom.visualization.jenny_mrf import ACTION_LEARNING_MAP
 
         success, confidence = ACTION_LEARNING_MAP["dismiss_panel"]
         assert success is False
@@ -578,7 +578,7 @@ class TestActionLearningMap:
 
     def test_action_learning_map_why_moderate(self):
         """WHY action has moderate positive signal."""
-        from HoloLoom.visualization.jenny_mrf import ACTION_LEARNING_MAP
+        from hololoom.visualization.jenny_mrf import ACTION_LEARNING_MAP
 
         success, confidence = ACTION_LEARNING_MAP["show_why_panel"]
         assert success is True
@@ -591,7 +591,7 @@ class TestCreateLearningCallback:
     @pytest.mark.asyncio
     async def test_create_learning_callback_returns_callable(self):
         """create_learning_callback returns an async callable."""
-        from HoloLoom.visualization.jenny_mrf import create_learning_callback
+        from hololoom.visualization.jenny_mrf import create_learning_callback
 
         compiler = JennyMRFCompiler(enable_learning=True)
         callback = await create_learning_callback(compiler)
@@ -601,8 +601,8 @@ class TestCreateLearningCallback:
     @pytest.mark.asyncio
     async def test_callback_updates_priors_on_pin(self):
         """Callback updates priors when PIN action succeeds."""
-        from HoloLoom.visualization.jenny_mrf import create_learning_callback
-        from HoloLoom.visualization.jenny_actions import ActionResult, ActionStatus
+        from hololoom.visualization.jenny_mrf import create_learning_callback
+        from hololoom.visualization.jenny_actions import ActionResult, ActionStatus
 
         compiler = JennyMRFCompiler(enable_learning=True)
         callback = await create_learning_callback(compiler)
@@ -639,8 +639,8 @@ class TestCreateLearningCallback:
     @pytest.mark.asyncio
     async def test_callback_updates_priors_on_dismiss(self):
         """Callback updates priors when DISMISS action occurs."""
-        from HoloLoom.visualization.jenny_mrf import create_learning_callback
-        from HoloLoom.visualization.jenny_actions import ActionResult, ActionStatus
+        from hololoom.visualization.jenny_mrf import create_learning_callback
+        from hololoom.visualization.jenny_actions import ActionResult, ActionStatus
 
         compiler = JennyMRFCompiler(enable_learning=True)
         callback = await create_learning_callback(compiler)
@@ -677,8 +677,8 @@ class TestCreateLearningCallback:
     @pytest.mark.asyncio
     async def test_callback_ignores_unknown_handlers(self):
         """Callback skips unknown action handlers."""
-        from HoloLoom.visualization.jenny_mrf import create_learning_callback
-        from HoloLoom.visualization.jenny_actions import ActionResult, ActionStatus
+        from hololoom.visualization.jenny_mrf import create_learning_callback
+        from hololoom.visualization.jenny_actions import ActionResult, ActionStatus
 
         compiler = JennyMRFCompiler(enable_learning=True)
         callback = await create_learning_callback(compiler)
@@ -708,8 +708,8 @@ class TestCreateLearningCallback:
     @pytest.mark.asyncio
     async def test_callback_uses_unknown_query_type_fallback(self):
         """Callback uses 'unknown' query_type when not in metadata."""
-        from HoloLoom.visualization.jenny_mrf import create_learning_callback
-        from HoloLoom.visualization.jenny_actions import ActionResult, ActionStatus
+        from hololoom.visualization.jenny_mrf import create_learning_callback
+        from hololoom.visualization.jenny_actions import ActionResult, ActionStatus
 
         compiler = JennyMRFCompiler(enable_learning=True)
         callback = await create_learning_callback(compiler)
@@ -742,7 +742,7 @@ class TestJennyRuntimeLearningIntegration:
     @pytest.mark.asyncio
     async def test_runtime_accepts_compiler(self):
         """JennyRuntime accepts optional compiler parameter."""
-        from HoloLoom.visualization.jenny_runtime import JennyRuntime
+        from hololoom.visualization.jenny_runtime import JennyRuntime
 
         compiler = JennyMRFCompiler(enable_learning=True)
         runtime = JennyRuntime(compiler=compiler)
@@ -752,7 +752,7 @@ class TestJennyRuntimeLearningIntegration:
     @pytest.mark.asyncio
     async def test_runtime_creates_learning_callback_on_start(self):
         """JennyRuntime creates learning callback when compiler has learning enabled."""
-        from HoloLoom.visualization.jenny_runtime import JennyRuntime
+        from hololoom.visualization.jenny_runtime import JennyRuntime
 
         compiler = JennyMRFCompiler(enable_learning=True)
 
@@ -763,7 +763,7 @@ class TestJennyRuntimeLearningIntegration:
     @pytest.mark.asyncio
     async def test_runtime_no_callback_when_learning_disabled(self):
         """JennyRuntime doesn't create callback when learning disabled."""
-        from HoloLoom.visualization.jenny_runtime import JennyRuntime
+        from hololoom.visualization.jenny_runtime import JennyRuntime
 
         compiler = JennyMRFCompiler(enable_learning=False)
 
@@ -774,7 +774,7 @@ class TestJennyRuntimeLearningIntegration:
     @pytest.mark.asyncio
     async def test_runtime_no_callback_when_no_compiler(self):
         """JennyRuntime doesn't create callback when no compiler provided."""
-        from HoloLoom.visualization.jenny_runtime import JennyRuntime
+        from hololoom.visualization.jenny_runtime import JennyRuntime
 
         async with JennyRuntime() as runtime:
             # Verify action handler has no learning callback
@@ -783,7 +783,7 @@ class TestJennyRuntimeLearningIntegration:
     @pytest.mark.asyncio
     async def test_end_to_end_learning_loop(self):
         """End-to-end test: action → learning callback → Thompson update."""
-        from HoloLoom.visualization.jenny_runtime import JennyRuntime
+        from hololoom.visualization.jenny_runtime import JennyRuntime
 
         compiler = JennyMRFCompiler(enable_learning=True)
 
@@ -798,7 +798,7 @@ class TestJennyRuntimeLearningIntegration:
             result = await runtime.act(panel, "pin")
 
             # Verify action succeeded
-            from HoloLoom.visualization.jenny_actions import ActionStatus
+            from hololoom.visualization.jenny_actions import ActionStatus
             assert result.status == ActionStatus.SUCCESS
 
             # Verify learning was updated
@@ -816,7 +816,7 @@ class TestJennySessionLearningIntegration:
     @pytest.mark.asyncio
     async def test_jenny_session_accepts_compiler(self):
         """jenny_session accepts compiler parameter."""
-        from HoloLoom.visualization.jenny_runtime import jenny_session
+        from hololoom.visualization.jenny_runtime import jenny_session
 
         compiler = JennyMRFCompiler(enable_learning=True)
 

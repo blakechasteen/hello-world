@@ -9,7 +9,7 @@ Makes models smarter without retraining through:
 - Personalization (per-user memory graphs)
 
 Quick Start:
-    from HoloLoom.model_extension import MemoryAugmentedLLM
+    from hololoom.model_extension import MemoryAugmentedLLM
 
     async with MemoryAugmentedLLM(provider="anthropic") as llm:
         # Ingest domain knowledge
@@ -64,7 +64,7 @@ from .governance import (
     is_safe_for_execution,
     requires_human_approval,
 )
-from HoloLoom.protocols import Memory
+from hololoom.protocols import Memory
 
 
 logger = logging.getLogger(__name__)
@@ -357,7 +357,7 @@ class MemoryAugmentedLLM:
             logger.warning(f"Failed to initialize provider: {e}")
             self._provider = get_best_available_provider()
 
-        # Initialize memory backend (try to import HoloLoom components)
+        # Initialize memory backend (try to import hololoom components)
         await self._initialize_memory()
 
         # Initialize governance engine
@@ -380,9 +380,9 @@ class MemoryAugmentedLLM:
     async def _initialize_memory(self) -> None:
         """Initialize HoloLoom memory components."""
         try:
-            # Try to import HoloLoom memory components
-            from HoloLoom.memory.backend_factory import create_memory_backend
-            from HoloLoom.config import Config
+            # Try to import hololoom memory components
+            from hololoom.memory.backend_factory import create_memory_backend
+            from hololoom.config import Config
 
             # Create memory backend
             holo_config = Config.fast()

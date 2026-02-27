@@ -15,7 +15,7 @@ Author: Claude Code (Elegance Pass Refactoring - Phase 6)
 Date: 2025-11-22
 """
 
-from HoloLoom.core.orchestrator.retrieval.multipass_retrieval import (
+from hololoom.core.orchestrator.retrieval.multipass_retrieval import (
     multipass_memory_crawl,
     query_memory_backend,
 )

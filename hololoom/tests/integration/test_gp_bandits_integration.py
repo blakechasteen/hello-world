@@ -16,8 +16,8 @@ import pytest
 import numpy as np
 from typing import List, Tuple, Dict, Optional
 from dataclasses import dataclass
-from HoloLoom.config import Config
-from HoloLoom.bandits.gaussian_process_bandits import (
+from hololoom.config import Config
+from hololoom.bandits.gaussian_process_bandits import (
     GaussianProcessBandit,
     GaussianProcessUCB,
     KernelType,

@@ -30,13 +30,13 @@ from typing import Callable, Optional, Any, Dict, List, Tuple, TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    from HoloLoom.core.orchestrator.context import WeavingContext
-    from HoloLoom.config import Config
-    from HoloLoom.core.loom.command import PatternSpec
-    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
-    from HoloLoom.core.resonance.shed import ResonanceShed
-    from HoloLoom.core.warp.space import WarpSpace
-    from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
+    from hololoom.core.orchestrator.context import WeavingContext
+    from hololoom.config import Config
+    from hololoom.core.loom.command import PatternSpec
+    from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.core.resonance.shed import ResonanceShed
+    from hololoom.core.warp.space import WarpSpace
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +75,9 @@ def create_resonance_shed(
     pattern_spec = ctx.pattern_spec
 
     # Import required components
-    from HoloLoom.core.resonance.motif_detector import create_motif_detector
-    from HoloLoom.core.resonance.spectral_fusion import SpectralFusion
-    from HoloLoom.core.resonance.shed import ResonanceShed
+    from hololoom.core.resonance.motif_detector import create_motif_detector
+    from hololoom.core.resonance.spectral_fusion import SpectralFusion
+    from hololoom.core.resonance.shed import ResonanceShed
 
     # Create components based on pattern spec
     motif_detector = create_motif_detector(mode=pattern_spec.motif_mode)
@@ -87,8 +87,8 @@ def create_resonance_shed(
     semantic_calculus = None
     if pattern_spec.enable_semantic_flow:
         try:
-            from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-            from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+            from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+            from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
             sem_config = SemanticCalculusConfig.from_pattern_spec(pattern_spec)
             embed_fn = lambda words: pattern_embedder.encode(words)
@@ -136,8 +136,8 @@ def create_warp_space(
     Returns:
         Configured WarpSpace instance
     """
-    from HoloLoom.core.resonance.spectral_fusion import SpectralFusion
-    from HoloLoom.core.warp.space import WarpSpace
+    from hololoom.core.resonance.spectral_fusion import SpectralFusion
+    from hololoom.core.warp.space import WarpSpace
 
     pattern_spec = ctx.pattern_spec
     spectral_fusion = SpectralFusion() if pattern_spec.enable_spectral else None
@@ -184,7 +184,7 @@ def select_pattern_embedder(
 
     # Zero-copy embeddings
     if cfg.enable_zero_copy_embeddings:
-        from HoloLoom.core.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+        from hololoom.core.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
         embedder = ZeroCopyMatryoshkaEmbeddings(
             sizes=pattern_spec.scales,
             base_model_name=cfg.base_model_name,
@@ -198,7 +198,7 @@ def select_pattern_embedder(
         return embedder
 
     # Standard matryoshka embeddings
-    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.core.embedding.spectral import MatryoshkaEmbeddings
     return MatryoshkaEmbeddings(
         sizes=pattern_spec.scales,
         base_model_name=cfg.base_model_name
@@ -601,7 +601,7 @@ async def execute_step6_5_beta_wave_packing(
     step_start = ctx.start_timer()
 
     try:
-        from HoloLoom.awareness.beta_wave_packer import (
+        from hololoom.awareness.beta_wave_packer import (
             BetaWaveContextPacker, TokenBudget
         )
 

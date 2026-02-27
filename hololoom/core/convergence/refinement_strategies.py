@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 from dataclasses import dataclass, field
 
-from HoloLoom.core.protocols.recursive_reasoning import (
+from hololoom.core.protocols.recursive_reasoning import (
     RefinementStrategy,
     RefinementStep,
     StrategyS electorProtocol

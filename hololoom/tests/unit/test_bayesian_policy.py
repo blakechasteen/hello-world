@@ -5,7 +5,7 @@ Unit Tests for Bayesian Policy Integration
 Tests Bayesian uncertainty quantification in HoloLoom's policy network.
 
 Run:
-    pytest HoloLoom/tests/unit/test_bayesian_policy.py -v
+    pytest hololoom/tests/unit/test_bayesian_policy.py -v
 
 Author: HoloLoom Probabilistic Reasoning Team
 Date: 2025-11-03
@@ -16,15 +16,15 @@ import numpy as np
 import torch
 import asyncio
 
-from HoloLoom.policy.bayesian_policy import (
+from hololoom.policy.bayesian_policy import (
     BayesianLinear,
     BayesianNeuralCore,
     BayesianUnifiedPolicy,
     create_bayesian_policy,
 )
-from HoloLoom.policy.unified import create_policy, NeuralCore
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.protocols.types import Features, Context
+from hololoom.policy.unified import create_policy, NeuralCore
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.protocols.types import Features, Context
 
 
 # ============================================================================
@@ -268,7 +268,7 @@ async def test_uncertainty_increases_with_complexity():
 
 def test_config_bayesian_fields():
     """Test that Config has Bayesian fields."""
-    from HoloLoom.config import Config
+    from hololoom.config import Config
 
     config = Config.fused()
 
@@ -288,7 +288,7 @@ def test_config_bayesian_fields():
 @pytest.mark.asyncio
 async def test_create_policy_with_config():
     """Test creating policy with Config settings."""
-    from HoloLoom.config import Config
+    from hololoom.config import Config
 
     # Enable Bayesian in config
     config = Config.fused()

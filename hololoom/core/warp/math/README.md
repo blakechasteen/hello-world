@@ -9,7 +9,7 @@ Advanced mathematical foundations for HoloLoom's decision-making and learning sy
 ## Module Organization
 
 ```
-HoloLoom/warp/math/
+hololoom/warp/math/
 ├── advanced/         # Differential privacy, topological data analysis
 ├── algebra/          # Abstract algebraic structures
 ├── analysis/         # Real, complex, functional analysis
@@ -30,7 +30,7 @@ HoloLoom/warp/math/
 Nash equilibria, mechanism design, and auction theory.
 
 ```python
-from HoloLoom.warp.math.decision.game_theory import (
+from hololoom.warp.math.decision.game_theory import (
     NormalFormGame, NashEquilibrium, MechanismDesign,
     AuctionTheory, CooperativeGame, EvolutionaryGame
 )
@@ -67,7 +67,7 @@ shapley = coop_game.shapley_value()
 Linear programming approach to correlated equilibria (generalization of Nash).
 
 ```python
-from HoloLoom.warp.math.decision.correlated_equilibria import (
+from hololoom.warp.math.decision.correlated_equilibria import (
     CorrelatedEquilibrium, find_correlated_equilibrium,
     find_social_optimal, find_egalitarian, CHICKEN_GAME
 )
@@ -92,7 +92,7 @@ egal_ce = find_egalitarian(CHICKEN_GAME)
 Online learning algorithms for repeated games.
 
 ```python
-from HoloLoom.warp.math.decision.regret_minimization import (
+from hololoom.warp.math.decision.regret_minimization import (
     RegretMinimizer, ExternalRegret, InternalRegret,
     regret_matching, regret_matching_plus
 )
@@ -117,7 +117,7 @@ print(f"Average regret: {rm.average_regret}")
 Shannon information theory for decision-making.
 
 ```python
-from HoloLoom.warp.math.decision.information_theory import (
+from hololoom.warp.math.decision.information_theory import (
     entropy, conditional_entropy, mutual_information,
     kl_divergence, jensen_shannon_divergence
 )
@@ -147,7 +147,7 @@ D = kl_divergence(p, q)
 Vector calculus with central finite differences for numerical accuracy.
 
 ```python
-from HoloLoom.warp.math.extensions.multivariable_calculus import (
+from hololoom.warp.math.extensions.multivariable_calculus import (
     VectorField, ScalarField, GradientCurlDiv
 )
 
@@ -181,7 +181,7 @@ identities = GradientCurlDiv.get_identities()
 Operator theory and function spaces.
 
 ```python
-from HoloLoom.warp.math.analysis.functional_analysis import (
+from hololoom.warp.math.analysis.functional_analysis import (
     BanachSpace, HilbertSpace, LinearOperator
 )
 ```
@@ -198,7 +198,7 @@ Convex optimization and gradient descent methods.
 Graph Laplacian-based clustering using spectral methods.
 
 ```python
-from HoloLoom.warp.math.graph.spectral_clustering import (
+from hololoom.warp.math.graph.spectral_clustering import (
     SpectralClustering, LaplacianType, SpectralEmbedding,
     compute_laplacian, fiedler_vector
 )
@@ -235,7 +235,7 @@ fiedler = fiedler_vector(A)
 Structural causal models and do-calculus.
 
 ```python
-from HoloLoom.warp.math.causal.causal_inference import (
+from hololoom.warp.math.causal.causal_inference import (
     CausalGraph, StructuralCausalModel,
     do_calculus, backdoor_adjustment, frontdoor_adjustment
 )
@@ -271,7 +271,7 @@ valid = graph.is_valid_adjustment_set(
 Privacy-preserving computations with rigorous guarantees.
 
 ```python
-from HoloLoom.warp.math.advanced.differential_privacy import (
+from hololoom.warp.math.advanced.differential_privacy import (
     DifferentialPrivacy, PrivacyBudget,
     laplace_mechanism, gaussian_mechanism, exponential_mechanism
 )
@@ -304,7 +304,7 @@ print(f"Remaining: ε={budget.remaining_epsilon:.2f}")
 Topological data analysis with persistent homology.
 
 ```python
-from HoloLoom.warp.math.advanced.topological_analysis import (
+from hololoom.warp.math.advanced.topological_analysis import (
     PersistentHomology, PersistenceDiagram, BettiNumbers,
     compute_persistence, bottleneck_distance
 )
@@ -372,12 +372,12 @@ Run all math module tests:
 
 ```bash
 # Core math tests (86 tests)
-PYTHONPATH=. python -m pytest HoloLoom/tests/unit/test_game_theory_complete.py -v
-PYTHONPATH=. python -m pytest HoloLoom/tests/unit/test_multivariable_calculus.py -v
-PYTHONPATH=. python -m pytest HoloLoom/tests/unit/test_thompson_sampling_math.py -v
+PYTHONPATH=. python -m pytest hololoom/tests/unit/test_game_theory_complete.py -v
+PYTHONPATH=. python -m pytest hololoom/tests/unit/test_multivariable_calculus.py -v
+PYTHONPATH=. python -m pytest hololoom/tests/unit/test_thompson_sampling_math.py -v
 
 # Math expansion tests (39 tests)
-PYTHONPATH=. python -m pytest HoloLoom/tests/unit/test_math_expansion.py -v
+PYTHONPATH=. python -m pytest hololoom/tests/unit/test_math_expansion.py -v
 ```
 
 **Test Coverage** (125 tests total):

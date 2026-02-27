@@ -72,7 +72,7 @@ The **Orchestration Department** is the third core department in the HoloLoom De
 ### File Structure
 
 ```
-HoloLoom/departments/
+hololoom/departments/
 ├── orchestration_department.py           # Main implementation (550 lines)
 └── tests/
     └── test_orchestration_integration.py # Integration tests (920 lines)
@@ -683,8 +683,8 @@ request = DepartmentRequest(
 ### Example 1: Simple Task Routing
 
 ```python
-from HoloLoom.apps.departments.orchestration_department import OrchestrationDepartment
-from HoloLoom.apps.departments.protocol import DepartmentRequest
+from hololoom.apps.departments.orchestration_department import OrchestrationDepartment
+from hololoom.apps.departments.protocol import DepartmentRequest
 
 # Create orchestration department with registry
 orchestration = OrchestrationDepartment(department_registry={

@@ -302,8 +302,8 @@ Conversation:
             Enhanced prompt
         """
         try:
-            from HoloLoom.prompting import create_metaprompt
-            from HoloLoom.config import Config
+            from hololoom.prompting import create_metaprompt
+            from hololoom.config import Config
 
             config = Config.fast()
             config.llm_provider = "anthropic"

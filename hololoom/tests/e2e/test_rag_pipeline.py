@@ -27,11 +27,11 @@ import time
 from unittest.mock import AsyncMock, MagicMock, patch
 from typing import List, Dict, Any
 
-from HoloLoom.rag import SimpleRAG, RAGResult
-from HoloLoom.rag.multimodal_rag import MultimodalRAG, MultimodalRAGResult
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
-from HoloLoom.hololoom import HoloLoom
+from hololoom.rag import SimpleRAG, RAGResult
+from hololoom.rag.multimodal_rag import MultimodalRAG, MultimodalRAGResult
+from hololoom.config import Config
+from hololoom.protocols.types import Query
+from hololoom.hololoom import hololoom
 
 
 # ============================================================================
@@ -425,7 +425,7 @@ async def test_llm_fallback():
     config.enable_zero_copy_embeddings = False
 
     # Mock LLM unavailability
-    with patch('HoloLoom.rag.simple_rag.LLM_AVAILABLE', False):
+    with patch('hololoom.rag.simple_rag.LLM_AVAILABLE', False):
         async with SimpleRAG(config=config, enable_caching=False) as rag:
             await rag.ingest("Thompson Sampling is Bayesian")
 

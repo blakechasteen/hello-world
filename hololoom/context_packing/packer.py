@@ -22,7 +22,7 @@ Author: Claude Code
 Date: 2025-11-22
 
 Usage:
-    >>> from HoloLoom.context_packing import ContextPacker, ContextPackerConfig
+    >>> from hololoom.context_packing import ContextPacker, ContextPackerConfig
     >>>
     >>> config = ContextPackerConfig.balanced()  # 40-60% savings
     >>> packer = ContextPacker(config)

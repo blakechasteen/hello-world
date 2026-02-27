@@ -3,7 +3,7 @@
 Thin wrappers around HoloLoom's 13 professional skills.
 
 Maps Proto ability names to HoloLoom skill templates (from
-HoloLoom/agentic/skills/templates.py). This is the simplest form
+hololoom/agentic/skills/templates.py). This is the simplest form
 of ability - direct delegation to HoloLoom's agentic orchestrator.
 
 Skill Categories:
@@ -168,7 +168,7 @@ class SkillWrapperAbility(ABC):
                 proto_name,
                 f"HoloLoom skill: {self._skill_name}"
             ),
-            author="HoloLoom",
+            author="hololoom",
             tier=AbilityTier.SKILL_MAPPING,
             trust_level=AbilityTrustLevel.CORE,
             tags=SKILL_TAGS.get(proto_name, [proto_name]),
@@ -276,7 +276,7 @@ class SkillWrapperAbility(ABC):
             params: Input parameters
 
         Returns:
-            Query string for HoloLoom/LLM processing
+            Query string for hololoom/LLM processing
         """
         code = params.get("code", "")
         query = params.get("query", "")
@@ -338,8 +338,8 @@ class SkillWrapperAbility(ABC):
             Dict with "response" and "confidence" keys
         """
         try:
-            from HoloLoom.protocols.types import Query
-            from HoloLoom.agentic.core import ReasoningMode
+            from hololoom.protocols.types import Query
+            from hololoom.agentic.core import ReasoningMode
 
             # Use VERIFY mode for code tasks (accuracy matters)
             result = await self._agentic.reason(

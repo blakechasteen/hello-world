@@ -6,7 +6,7 @@ Tests pattern extraction, pattern learning, and learning loop engine integration
 
 import pytest
 from unittest.mock import Mock, AsyncMock, MagicMock
-from HoloLoom.recursive.loop_integration import (
+from hololoom.recursive.loop_integration import (
     LearnedPattern,
     PatternExtractor,
     PatternLearner,
@@ -15,9 +15,9 @@ from HoloLoom.recursive.loop_integration import (
     LearningLoopEngine,
     weave_with_learning
 )
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config
+from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
 
 
 class TestLearnedPattern:

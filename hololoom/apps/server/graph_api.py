@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 
 # Import HoloLoom components
 try:
-    from HoloLoom.memory.graph import KG, KGEdge
-    from HoloLoom.visualization.knowledge_graph import render_knowledge_graph_from_kg, render_knowledge_graph_from_networkx
+    from hololoom.memory.graph import KG, KGEdge
+    from hololoom.visualization.knowledge_graph import render_knowledge_graph_from_kg, render_knowledge_graph_from_networkx
     import networkx as nx
     GRAPH_AVAILABLE = True
     logger.info("✓ GraphRAG components loaded successfully")

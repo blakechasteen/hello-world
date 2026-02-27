@@ -7,8 +7,8 @@ Comprehensive tests for SearchCache with TTL and LRU eviction.
 import pytest
 import time
 import asyncio
-from HoloLoom.search.cache import SearchCache, CacheEntry
-from HoloLoom.search.protocol import WebSearchResult
+from hololoom.search.cache import SearchCache, CacheEntry
+from hololoom.search.protocol import WebSearchResult
 
 
 class TestCacheEntry:

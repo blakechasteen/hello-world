@@ -115,7 +115,7 @@ sudo systemctl start redis
 ### Basic Usage
 
 ```python
-from HoloLoom.voice.tts_cache import TTSCache, CacheConfig
+from hololoom.voice.tts_cache import TTSCache, CacheConfig
 
 # Create cache
 config = CacheConfig(
@@ -156,8 +156,8 @@ async with TTSCache(config) as cache:
 ### Integration with Existing TTS
 
 ```python
-from HoloLoom.voice.voice_agent import OpenAITTS
-from HoloLoom.voice.tts_cache import TTSCache, CacheConfig
+from hololoom.voice.voice_agent import OpenAITTS
+from hololoom.voice.tts_cache import TTSCache, CacheConfig
 
 # Create TTS provider
 tts_provider = OpenAITTS()
@@ -217,7 +217,7 @@ class CacheConfig:
 
     # Warmup
     enable_warmup: bool = True
-    warmup_phrases_file: str = "HoloLoom/voice/common_phrases.yaml"
+    warmup_phrases_file: str = "hololoom/voice/common_phrases.yaml"
 ```
 
 ### Environment Variables
@@ -502,7 +502,7 @@ redis-cli ping  # Should return "PONG"
 ### Step 1: Create Cache
 
 ```python
-from HoloLoom.voice.tts_cache import TTSCache, CacheConfig
+from hololoom.voice.tts_cache import TTSCache, CacheConfig
 
 # Create cache config
 cache_config = CacheConfig(
@@ -773,7 +773,7 @@ redis-cli object idletime tts:a3f5b9c2:nova:en
 # Load common phrases
 import yaml
 
-with open('HoloLoom/voice/common_phrases.yaml') as f:
+with open('hololoom/voice/common_phrases.yaml') as f:
     data = yaml.safe_load(f)
 
 phrases = data['common_phrases']
@@ -865,13 +865,13 @@ config_prod = CacheConfig(redis_db=2)
 
 ```bash
 # Run all cache tests
-pytest HoloLoom/voice/tests/test_tts_cache.py -v
+pytest hololoom/voice/tests/test_tts_cache.py -v
 
 # Run specific test
-pytest HoloLoom/voice/tests/test_tts_cache.py::TestCacheKeyGeneration -v
+pytest hololoom/voice/tests/test_tts_cache.py::TestCacheKeyGeneration -v
 
 # Run with coverage
-pytest HoloLoom/voice/tests/test_tts_cache.py --cov=HoloLoom.voice.tts_cache
+pytest hololoom/voice/tests/test_tts_cache.py --cov=hololoom.voice.tts_cache
 ```
 
 ### Run Benchmark

@@ -8,10 +8,10 @@ from pathlib import Path
 from datetime import datetime
 
 # Mocking parts of the system for integration test without full LLM
-from HoloLoom.fabric.spacetime import Spacetime, Artifact, ArtifactType, WeavingTrace
-from HoloLoom.fabric.materializer import Materializer
-from HoloLoom.tools.executor import ToolExecutor
-from HoloLoom.protocols.types import Query, Context
+from hololoom.fabric.spacetime import Spacetime, Artifact, ArtifactType, WeavingTrace
+from hololoom.fabric.materializer import Materializer
+from hololoom.tools.executor import ToolExecutor
+from hololoom.protocols.types import Query, Context
 
 class TestMaterializationPipeline(unittest.TestCase):
     def setUp(self):

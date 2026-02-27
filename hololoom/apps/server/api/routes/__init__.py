@@ -15,7 +15,7 @@ Modules:
 
 Usage:
     from fastapi import FastAPI
-    from HoloLoom.apps.server.api.routes import include_all_routers
+    from hololoom.apps.server.api.routes import include_all_routers
 
     app = FastAPI()
     include_all_routers(app)

@@ -50,7 +50,7 @@ console = Console()
 # SEMANTIC DIMENSION DEFINITIONS
 # ============================================================================
 
-# 244D Semantic Space (from HoloLoom/semantic_calculus/dimensions.py)
+# 244D Semantic Space (from hololoom/semantic_calculus/dimensions.py)
 SEMANTIC_DIMENSIONS = {
     # Core dimensions for demo (16 most important)
     'Clarity': 'Logical precision and explainability',

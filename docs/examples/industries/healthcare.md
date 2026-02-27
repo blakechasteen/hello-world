@@ -38,8 +38,8 @@ Real-world implementation of HoloLoom for healthcare applications with HIPAA com
 ### 1. Privacy Configuration
 
 ```python
-from HoloLoom.departments import get_department
-from HoloLoom.apps.departments.protocol import PrivacyLevel, PrivacyEnvelope
+from hololoom.departments import get_department
+from hololoom.apps.departments.protocol import PrivacyLevel, PrivacyEnvelope
 
 # Configure Context Department with HIPAA privacy
 context_dept = get_department("context")
@@ -73,7 +73,7 @@ response = await context_dept.process(request)
 ### 2. RBAC (Role-Based Access Control)
 
 ```python
-from HoloLoom.apps.departments.context_department import ContextDepartment, UserContext
+from hololoom.apps.departments.context_department import ContextDepartment, UserContext
 
 # Define user roles
 physician_context = UserContext(
@@ -124,7 +124,7 @@ response = await context_dept.process(clerk_request)
 ### 3. Audit Trail (HIPAA Breach Notification Rule)
 
 ```python
-from HoloLoom.alignment import AuditTrail
+from hololoom.alignment import AuditTrail
 import asyncio
 
 async def main():
@@ -176,7 +176,7 @@ asyncio.run(main())
 ### 4. De-Identification for Research
 
 ```python
-from HoloLoom.apps.departments.context_department import deidentify_phi
+from hololoom.apps.departments.context_department import deidentify_phi
 
 # Original PHI
 phi_data = {
@@ -205,8 +205,8 @@ print(deidentified)
 ### 5. Complete Clinical Query Workflow
 
 ```python
-from HoloLoom.departments import get_department
-from HoloLoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel
+from hololoom.departments import get_department
+from hololoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel
 import asyncio
 
 async def clinical_decision_support(patient_id, query, user_context):
@@ -455,8 +455,8 @@ See [Production Deployment Guide](../../guides/production/deployment.md) for com
 
 ```python
 import pytest
-from HoloLoom.departments import get_department
-from HoloLoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel, UserContext
+from hololoom.departments import get_department
+from hololoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel, UserContext
 
 @pytest.mark.asyncio
 async def test_rbac_blocks_unauthorized_access():
@@ -485,7 +485,7 @@ async def test_rbac_blocks_unauthorized_access():
 @pytest.mark.asyncio
 async def test_audit_trail_logs_phi_access():
     """Test that all PHI access is logged"""
-    from HoloLoom.alignment import AuditTrail
+    from hololoom.alignment import AuditTrail
 
     audit_trail = AuditTrail()
 
@@ -504,7 +504,7 @@ async def test_audit_trail_logs_phi_access():
 @pytest.mark.asyncio
 async def test_deidentification_removes_phi():
     """Test that de-identification removes HIPAA identifiers"""
-    from HoloLoom.apps.departments.context_department import deidentify_phi
+    from hololoom.apps.departments.context_department import deidentify_phi
 
     phi = {
         "name": "John Doe",

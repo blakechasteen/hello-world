@@ -4,7 +4,7 @@ import time
 import os
 from pathlib import Path
 from typing import Dict, Any, Optional
-from HoloLoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
+from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
                                    SkillCategory, SkillStatus)
 
 # Check for diffusers availability
@@ -317,5 +317,5 @@ class StableDiffusionSkill(BaseSkill):
         }
 
 
-from HoloLoom.skills.base import register_skill
+from hololoom.skills.base import register_skill
 register_skill(StableDiffusionSkill())

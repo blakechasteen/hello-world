@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from hololoom_narrative.loop_engine import NarrativeLoopEngine, LoopMode, Priority
-from HoloLoom.cross_domain_adapter import CrossDomainAdapter
+from hololoom.cross_domain_adapter import CrossDomainAdapter
 import time
 
 

@@ -20,8 +20,8 @@ from .protocol import (
 
 # DATAPIG imports
 try:
-    from HoloLoom.datapig import DataPigDetector, Severity as DataPigSeverity
-    from HoloLoom.datapig.config import create_config
+    from hololoom.datapig import DataPigDetector, Severity as DataPigSeverity
+    from hololoom.datapig.config import create_config
     DATAPIG_AVAILABLE = True
 except ImportError:
     DATAPIG_AVAILABLE = False
@@ -413,7 +413,7 @@ class QualityAssuranceDepartment(BaseDepartment):
 
     def _dict_to_issue(self, issue_dict: Dict):
         """Convert dict back to DataQualityIssue"""
-        from HoloLoom.datapig.detector import DataQualityIssue, IssueType, Severity
+        from hololoom.datapig.detector import DataQualityIssue, IssueType, Severity
 
         return DataQualityIssue(
             issue_type=IssueType[issue_dict["type"]],

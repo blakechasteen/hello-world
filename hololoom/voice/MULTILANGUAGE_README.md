@@ -1,7 +1,7 @@
 # Multi-Language Support for HoloLoom VoiceAgent
 
 **Status**: ✅ Production Ready (Phase 4 - November 2025)
-**Location**: `HoloLoom/voice/language.py`
+**Location**: `hololoom/voice/language.py`
 **Performance**: <1ms language switching, >95% detection accuracy
 
 Complete multi-language support with automatic detection, voice mapping, and UI localization for 6+ languages.
@@ -33,7 +33,7 @@ pip install langdetect
 ### Basic Usage
 
 ```python
-from HoloLoom.voice.language import create_language_manager
+from hololoom.voice.language import create_language_manager
 
 # Create language manager
 manager = create_language_manager()
@@ -54,7 +54,7 @@ greeting = manager.get_ui_string('greeting', 'es')
 ### Conversation with Auto-Detection
 
 ```python
-from HoloLoom.voice.language import LanguageManager
+from hololoom.voice.language import LanguageManager
 
 manager = LanguageManager()
 
@@ -109,7 +109,7 @@ Uses the **langdetect** library (Google's language detection algorithm) for fast
 **Speed**: ~5-10ms per detection
 
 ```python
-from HoloLoom.voice.language import LanguageDetector
+from hololoom.voice.language import LanguageDetector
 
 detector = LanguageDetector()
 
@@ -134,7 +134,7 @@ Each language has a comprehensive profile (YAML format) containing:
 - Localized UI strings
 - Metadata (speakers, script type, direction)
 
-**Example**: `HoloLoom/voice/languages/spanish.yaml`
+**Example**: `hololoom/voice/languages/spanish.yaml`
 
 ```yaml
 code: es
@@ -459,8 +459,8 @@ lang = detect_language(text: str) -> str
 ### Basic Integration
 
 ```python
-from HoloLoom.voice.language import LanguageManager
-from HoloLoom.voice import VoiceAgent
+from hololoom.voice.language import LanguageManager
+from hololoom.voice import VoiceAgent
 
 # Create language manager
 lang_manager = LanguageManager()
@@ -531,7 +531,7 @@ class MultilingualVoiceAgent:
 
 ### Step 1: Create Language YAML
 
-Create a new YAML file in `HoloLoom/voice/languages/` (e.g., `italian.yaml`):
+Create a new YAML file in `hololoom/voice/languages/` (e.g., `italian.yaml`):
 
 ```yaml
 code: it
@@ -564,7 +564,7 @@ metadata:
 
 ### Step 2: Update LanguageCode Enum
 
-Add to `HoloLoom/voice/language.py`:
+Add to `hololoom/voice/language.py`:
 
 ```python
 class LanguageCode(Enum):
@@ -582,7 +582,7 @@ class LanguageCode(Enum):
 Test that langdetect can detect the new language:
 
 ```python
-from HoloLoom.voice.language import detect_language
+from hololoom.voice.language import detect_language
 
 text = "Ciao, come stai?"
 detected = detect_language(text)
@@ -642,13 +642,13 @@ Run comprehensive test suite:
 
 ```bash
 # All language tests
-pytest HoloLoom/voice/tests/test_language.py -v
+pytest hololoom/voice/tests/test_language.py -v
 
 # Specific test categories
-pytest HoloLoom/voice/tests/test_language.py::TestLanguageDetector -v
-pytest HoloLoom/voice/tests/test_language.py::TestLanguageManager -v
-pytest HoloLoom/voice/tests/test_language.py::TestVoiceMappings -v
-pytest HoloLoom/voice/tests/test_language.py::TestPerformance -v
+pytest hololoom/voice/tests/test_language.py::TestLanguageDetector -v
+pytest hololoom/voice/tests/test_language.py::TestLanguageManager -v
+pytest hololoom/voice/tests/test_language.py::TestVoiceMappings -v
+pytest hololoom/voice/tests/test_language.py::TestPerformance -v
 ```
 
 **Test Coverage**: 300+ lines, 40+ test cases
@@ -695,7 +695,7 @@ pip install langdetect
 
 **Test Detection**:
 ```python
-from HoloLoom.voice.language import LanguageDetector
+from hololoom.voice.language import LanguageDetector
 
 detector = LanguageDetector()
 lang, confidence = detector.detect_with_confidence("Your text here")
@@ -705,7 +705,7 @@ print(f"Detected: {lang} (confidence: {confidence:.2%})")
 ### Language YAML Not Loading
 
 **Check**:
-1. YAML file in correct directory: `HoloLoom/voice/languages/`
+1. YAML file in correct directory: `hololoom/voice/languages/`
 2. File name: `{language}.yaml` (e.g., `spanish.yaml`)
 3. YAML syntax valid (use online validator)
 4. Required fields present: `code`, `name`, `native_name`
@@ -819,10 +819,10 @@ Potential Phase 5+ additions:
 
 ## Related Documentation
 
-- **VoiceAgent**: `HoloLoom/voice/README.md`
-- **Personality System**: `HoloLoom/voice/PERSONALITY_README.md`
+- **VoiceAgent**: `hololoom/voice/README.md`
+- **Personality System**: `hololoom/voice/PERSONALITY_README.md`
 - **API Reference**: This document
-- **Tests**: `HoloLoom/voice/tests/test_language.py`
+- **Tests**: `hololoom/voice/tests/test_language.py`
 - **Demo**: `demos/demo_multi_language.py`
 
 ---
@@ -833,7 +833,7 @@ For issues or questions:
 
 1. Check troubleshooting section above
 2. Run demo: `python demos/demo_multi_language.py`
-3. Run tests: `pytest HoloLoom/voice/tests/test_language.py -v`
+3. Run tests: `pytest hololoom/voice/tests/test_language.py -v`
 4. Review logs for language detection issues
 
 ---

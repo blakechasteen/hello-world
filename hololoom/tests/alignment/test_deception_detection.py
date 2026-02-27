@@ -5,7 +5,7 @@ Tests for behavioral probes and goal transparency.
 """
 
 import pytest
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     DeceptionDetector,
     BehavioralProbe,
     GoalTransparency,

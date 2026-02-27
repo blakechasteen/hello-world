@@ -28,7 +28,7 @@ import logging
 import random
 from uuid import uuid4
 
-from HoloLoom.core.loom.protocol import (
+from hololoom.core.loom.protocol import (
     Loom,
     DreamInsight,
     InsightType,
@@ -37,8 +37,8 @@ from HoloLoom.core.loom.protocol import (
     CorrectionInsight,
     DiscoveryInsight,
 )
-from HoloLoom.core.fabric.fabric import Fabric, Tension
-from HoloLoom.core.protocols.department import (
+from hololoom.core.fabric.fabric import Fabric, Tension
+from hololoom.core.protocols.department import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -442,7 +442,7 @@ class BaseLoom(DreamingMixin, ABC):
         Returns:
             Verification result
         """
-        from HoloLoom.core.protocols.department import VerificationCheck, VerificationStatus
+        from hololoom.core.protocols.department import VerificationCheck, VerificationStatus
 
         checks = []
 
@@ -657,7 +657,7 @@ class BaseLoom(DreamingMixin, ABC):
         Returns:
             Fabric with perspective and epistemic fields
         """
-        from HoloLoom.core.fabric.spacetime import WeavingTrace
+        from hololoom.core.fabric.spacetime import WeavingTrace
 
         trace = WeavingTrace(
             start_time=datetime.now(),

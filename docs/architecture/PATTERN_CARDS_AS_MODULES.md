@@ -214,7 +214,7 @@ extensions:
 ### 1. Card Loader System
 
 ```python
-# HoloLoom/loom/card_loader.py
+# hololoom/loom/card_loader.py
 
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, List
@@ -231,7 +231,7 @@ class MathCapabilities:
 
     def to_semantic_config(self) -> 'SemanticCalculusConfig':
         """Convert to SemanticCalculusConfig."""
-        from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+        from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
         sc = self.semantic_calculus.get('config', {})
         return SemanticCalculusConfig(
@@ -363,9 +363,9 @@ class PatternCard:
 ### 2. Orchestrator Integration
 
 ```python
-# HoloLoom/weaving_shuttle.py (updated)
+# hololoom/weaving_shuttle.py (updated)
 
-from HoloLoom.loom.card_loader import PatternCard
+from hololoom.loom.card_loader import PatternCard
 
 class WeavingShuttle:
     def __init__(self, card: PatternCard, ...):

@@ -23,7 +23,7 @@ import logging
 import time
 from typing import List
 
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     SandboxedExecutor,
     SandboxConfig,
     SandboxMode,
@@ -31,7 +31,7 @@ from HoloLoom.redteam.sandbox import (
     create_sandboxed_executor_sync,
     sandboxed_attack_execution,
 )
-from HoloLoom.redteam.strategies import (
+from hololoom.redteam.strategies import (
     AttackStrategy,
     AttackPayload,
 )

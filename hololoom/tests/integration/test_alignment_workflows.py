@@ -27,10 +27,10 @@ import time
 from typing import List, Dict
 from pathlib import Path
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config
-from HoloLoom.alignment import (
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.alignment import (
     SafetyGuardrails,
     DeceptionDetector,
     InstrumentalConvergenceGuard,

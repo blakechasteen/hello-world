@@ -16,13 +16,13 @@ import pytest
 import asyncio
 from typing import Dict, Any
 
-from HoloLoom.agentic.capability_analyzer import (
+from hololoom.agentic.capability_analyzer import (
     QueryCapabilityAnalyzer,
     CapabilityAnalysis,
     QueryComplexity,
     analyze_query_capabilities,
 )
-from HoloLoom.agentic.expert_router import (
+from hololoom.agentic.expert_router import (
     ExpertRouter,
     SelectionStrategy,
     ThompsonPrior,
@@ -30,7 +30,7 @@ from HoloLoom.agentic.expert_router import (
     RoutingDecision,
     create_expert_router,
 )
-from HoloLoom.agentic.ensemble_decision import (
+from hololoom.agentic.ensemble_decision import (
     EnsembleAggregator,
     EnsembleStrategy,
     EnsembleResult,
@@ -40,7 +40,7 @@ from HoloLoom.agentic.ensemble_decision import (
     aggregate_responses,
     create_agent_response,
 )
-from HoloLoom.agentic.multi_agent import (
+from hololoom.agentic.multi_agent import (
     AgentCapability,
     AgentInfo,
     AgentStatus,

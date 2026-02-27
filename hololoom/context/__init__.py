@@ -33,7 +33,7 @@ Public API:
 - Factory functions: create_*
 """
 
-from HoloLoom.context.classifier import (
+from hololoom.context.classifier import (
     QueryClassifier,
     BackendSelection,
     Backend,
@@ -41,13 +41,13 @@ from HoloLoom.context.classifier import (
     create_classifier
 )
 
-from HoloLoom.context.bandit import (
+from hololoom.context.bandit import (
     ThompsonBandit,
     BanditArm,
     create_thompson_bandit
 )
 
-from HoloLoom.context.router import (
+from hololoom.context.router import (
     QueryRouter,
     RoutingPattern,
     RoutingResult,
@@ -55,28 +55,28 @@ from HoloLoom.context.router import (
 )
 
 # Part 4: Learning Mechanisms
-from HoloLoom.context.calibration import (
+from hololoom.context.calibration import (
     ConfidenceCalibrator,
     CalibrationObservation,
     CalibrationCurve,
     create_confidence_calibrator
 )
 
-from HoloLoom.context.learning_tracker import (
+from hololoom.context.learning_tracker import (
     LearningTracker,
     RoutingEvent,
     PerformanceMetrics,
     create_learning_tracker
 )
 
-from HoloLoom.context.strategy_updater import (
+from hololoom.context.strategy_updater import (
     StrategyUpdater,
     StrategyUpdate,
     create_strategy_updater
 )
 
 # Part 5: Production Hardening
-from HoloLoom.context.error_handling import (
+from hololoom.context.error_handling import (
     # Exceptions
     ContextError,
     RoutingError,
@@ -100,7 +100,7 @@ from HoloLoom.context.error_handling import (
     create_error_handler
 )
 
-from HoloLoom.context.monitoring import (
+from hololoom.context.monitoring import (
     # Monitors
     PerformanceMonitor,
     ResourceMonitor,
@@ -110,7 +110,7 @@ from HoloLoom.context.monitoring import (
     create_system_monitor
 )
 
-from HoloLoom.context.circuit_breaker import (
+from hololoom.context.circuit_breaker import (
     # States
     CircuitState,
     # Configuration
@@ -123,7 +123,7 @@ from HoloLoom.context.circuit_breaker import (
     create_circuit_breaker_registry
 )
 
-from HoloLoom.context.rate_limiter import (
+from hololoom.context.rate_limiter import (
     # Types
     RateLimiterType,
     # Configuration
@@ -140,7 +140,7 @@ from HoloLoom.context.rate_limiter import (
     create_concurrent_limiter
 )
 
-from HoloLoom.context.production_config import (
+from hololoom.context.production_config import (
     # Environment
     Environment,
     # Configurations
@@ -156,7 +156,7 @@ from HoloLoom.context.production_config import (
     detect_environment
 )
 
-from HoloLoom.context.health_check import (
+from hololoom.context.health_check import (
     # Status
     HealthStatus,
     # Results

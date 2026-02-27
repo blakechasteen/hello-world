@@ -11,7 +11,7 @@ Architecture:
 - Awareness context injection (prompts include compositional signals)
 
 Usage:
-    from HoloLoom.awareness.llm_integration import OllamaLLM
+    from hololoom.awareness.llm_integration import OllamaLLM
 
     llm = OllamaLLM(model="llama3.2:3b")
     response = await llm.generate(

@@ -3,7 +3,7 @@
   "name": "Document Intelligence Pipeline",
   "description": "End-to-end document processing: ingestion, entity extraction, summarization, Q&A generation, and knowledge graph construction with cross-reference linking.",
   "tags": ["document", "extraction", "summarization", "knowledge-graph", "nlp"],
-  "author": "HoloLoom Team",
+  "author": "hololoom Team",
   "created": "2025-12-25",
 
   "nodes": [

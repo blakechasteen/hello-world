@@ -19,12 +19,12 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 from typing import List, Dict, Any
 
-from HoloLoom.spinningWheel.youtube_spinner import (
+from hololoom.spinningWheel.youtube_spinner import (
     YouTubeSpinner,
     TRANSCRIPT_API_AVAILABLE,
     spin_youtube
 )
-from HoloLoom.spinningWheel.protocol import SpinnerStatus
+from hololoom.spinningWheel.protocol import SpinnerStatus
 
 
 # ============================================================================

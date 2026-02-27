@@ -35,7 +35,7 @@ Extract the core theme into a standalone file that any HTML page can use:
     <title>My mythRL Application</title>
 
     <!-- Link to theme CSS -->
-    <link rel="stylesheet" href="path/to/HoloLoom/visualization/modern_styles.css">
+    <link rel="stylesheet" href="path/to/hololoom/visualization/modern_styles.css">
 </head>
 <body>
     <!-- Your content here -->
@@ -45,7 +45,7 @@ Extract the core theme into a standalone file that any HTML page can use:
     </div>
 
     <!-- Include theme switcher -->
-    <script src="path/to/HoloLoom/visualization/modern_interactivity.js"></script>
+    <script src="path/to/hololoom/visualization/modern_interactivity.js"></script>
 </body>
 </html>
 ```
@@ -63,8 +63,8 @@ Extract the core theme into a standalone file that any HTML page can use:
 Use the `HTMLRenderer` class to generate themed HTML from Python:
 
 ```python
-from HoloLoom.visualization.html_renderer import HTMLRenderer
-from HoloLoom.visualization.dashboard import Dashboard, Panel, PanelType, PanelSize
+from hololoom.visualization.html_renderer import HTMLRenderer
+from hololoom.visualization.dashboard import Dashboard, Panel, PanelType, PanelSize
 
 # Create renderer
 renderer = HTMLRenderer(theme='light')  # or 'dark'
@@ -110,7 +110,7 @@ Use the theme in Jupyter notebooks for consistent styling:
 
 ```python
 from IPython.display import HTML
-from HoloLoom.visualization.html_renderer import HTMLRenderer
+from hololoom.visualization.html_renderer import HTMLRenderer
 
 # Render dashboard
 renderer = HTMLRenderer()
@@ -338,7 +338,7 @@ Panels use `contain: layout style paint` for 2-3x faster rendering:
 ### **Step 1: Add Theme CSS**
 
 ```html
-<link rel="stylesheet" href="HoloLoom/visualization/modern_styles.css">
+<link rel="stylesheet" href="hololoom/visualization/modern_styles.css">
 ```
 
 ### **Step 2: Replace Inline Styles**
@@ -366,7 +366,7 @@ Panels use `contain: layout style paint` for 2-3x faster rendering:
 The `modern_interactivity.js` automatically creates a theme toggle button. Just include it:
 
 ```html
-<script src="HoloLoom/visualization/modern_interactivity.js"></script>
+<script src="hololoom/visualization/modern_interactivity.js"></script>
 ```
 
 ---
@@ -380,7 +380,7 @@ The `modern_interactivity.js` automatically creates a theme toggle button. Just 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>mythRL Application</title>
-    <link rel="stylesheet" href="HoloLoom/visualization/modern_styles.css">
+    <link rel="stylesheet" href="hololoom/visualization/modern_styles.css">
 </head>
 <body>
     <!-- Skip link for accessibility -->
@@ -420,7 +420,7 @@ The `modern_interactivity.js` automatically creates a theme toggle button. Just 
     </div>
 
     <!-- Include theme manager & interactivity -->
-    <script src="HoloLoom/visualization/modern_interactivity.js"></script>
+    <script src="hololoom/visualization/modern_interactivity.js"></script>
 </body>
 </html>
 ```

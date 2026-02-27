@@ -16,13 +16,13 @@ Tests: 15 integration tests across 4 test classes
 
 Example Usage:
     # Run all integration tests
-    pytest HoloLoom/tests/integration/test_cove_integration.py -v
+    pytest hololoom/tests/integration/test_cove_integration.py -v
 
     # Run specific test class
-    pytest HoloLoom/tests/integration/test_cove_integration.py::TestVerificationMRFBridgeIntegration -v
+    pytest hololoom/tests/integration/test_cove_integration.py::TestVerificationMRFBridgeIntegration -v
 
     # Run with coverage
-    pytest HoloLoom/tests/integration/test_cove_integration.py --cov=HoloLoom.prompting
+    pytest hololoom/tests/integration/test_cove_integration.py --cov=HoloLoom.prompting
 """
 
 from __future__ import annotations
@@ -39,23 +39,23 @@ from enum import Enum
 # These are imported at module level to avoid repeated imports in test methods
 
 # Verification modules
-from HoloLoom.verification.protocol import VerificationStatus
+from hololoom.verification.protocol import VerificationStatus
 
 # Prompting modules
-from HoloLoom.prompting.verification_integration import (
+from hololoom.prompting.verification_integration import (
     VerificationMRFBridge,
     CoVeRefinementStrategy,
 )
-from HoloLoom.prompting.testing.verification_bridge import (
+from hololoom.prompting.testing.verification_bridge import (
     PromptVerificationBridge,
     VerificationInsights,
 )
-from HoloLoom.prompting.testing.protocol import PromptTestCase, PromptTestResult
-from HoloLoom.prompting.testing.metrics_collector import MetricsCollector
-from HoloLoom.prompting.analytics.dashboard import create_dashboard
+from hololoom.prompting.testing.protocol import PromptTestCase, PromptTestResult
+from hololoom.prompting.testing.metrics_collector import MetricsCollector
+from hololoom.prompting.analytics.dashboard import create_dashboard
 
 # Visualization modules
-from HoloLoom.visualization.verification_panel import (
+from hololoom.visualization.verification_panel import (
     VerificationPanelData,
     Contradiction,
     SeverityLevel,
@@ -532,8 +532,8 @@ class TestVerificationMRFBridgeIntegration:
         bridge.available = True
 
         # Mock VERIFICATION_AVAILABLE
-        with patch('HoloLoom.prompting.verification_integration.VERIFICATION_AVAILABLE', True):
-            with patch('HoloLoom.prompting.verification_integration.VerificationStatus', VerificationStatus):
+        with patch('hololoom.prompting.verification_integration.VERIFICATION_AVAILABLE', True):
+            with patch('hololoom.prompting.verification_integration.VerificationStatus', VerificationStatus):
                 # Get quality signals
                 signals = bridge.get_quality_signals(mock_verification_result_success)
 

@@ -7,8 +7,8 @@ The ConversationalAutoLoom automatically spins important conversation turns into
 ## Quick Start
 
 ```python
-from HoloLoom.conversational import conversational_loom
-from HoloLoom.Documentation.types import Query
+from hololoom.conversational import conversational_loom
+from hololoom.Documentation.types import Query
 
 # Create conversational system
 loom = await conversational_loom("Initial knowledge base...")
@@ -91,8 +91,8 @@ Score: 0.00 → FORGOTTEN (noise)
 #### Creation
 
 ```python
-from HoloLoom.conversational import ConversationalAutoLoom
-from HoloLoom.config import Config
+from hololoom.conversational import ConversationalAutoLoom
+from hololoom.config import Config
 
 # From text
 loom = await ConversationalAutoLoom.from_text(
@@ -108,7 +108,7 @@ loom = await ConversationalAutoLoom.from_file(
 )
 
 # Quick helper
-from HoloLoom.conversational import conversational_loom
+from hololoom.conversational import conversational_loom
 loom = await conversational_loom("Knowledge...")
 ```
 
@@ -329,7 +329,7 @@ print(f"Avg Importance: {stats['avg_importance']:.2f}")
 
 See:
 - `example_conversational.py` - Full demonstration of signal vs noise filtering
-- `HoloLoom/conversational.py` - Implementation details
+- `hololoom/conversational.py` - Implementation details
 
 ## Architecture
 

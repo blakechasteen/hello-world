@@ -2,7 +2,7 @@
 
 **Generated**: December 11, 2025
 **Status**: ✅ Complete and Current
-**Source**: Analysis of HoloLoom/federation/ codebase (4,357 lines)
+**Source**: Analysis of hololoom/federation/ codebase (4,357 lines)
 
 ## Quick Navigation
 
@@ -29,7 +29,7 @@
 ## File Structure
 
 ```
-HoloLoom/federation/
+hololoom/federation/
 ├── README.md                          (1,150 lines) ← START HERE
 │   ├── Overview & Philosophy
 │   ├── Quick Start Examples
@@ -310,7 +310,7 @@ async with Federation(config) as fed:
 ### Configuration
 
 ```python
-from HoloLoom.federation import FederationConfig
+from hololoom.federation import FederationConfig
 
 # Development
 config = FederationConfig.development()
@@ -557,7 +557,7 @@ result = await fed.query(
 
 ```python
 # Query routes to nodes with specific capabilities
-from HoloLoom.federation import Capability
+from hololoom.federation import Capability
 
 # Find nodes capable of medical analysis
 capable_nodes = await fed.router.find_nodes(
@@ -645,7 +645,7 @@ if light_result.verification.confidence < 0.7:
 
 ## References
 
-- **Main README**: `/c/Users/blake/OneDrive/Documents/mythRL/HoloLoom/federation/README.md` (1,150 lines)
+- **Main README**: `/c/Users/blake/OneDrive/Documents/mythRL/hololoom/federation/README.md` (1,150 lines)
 - **SWIM Protocol**: Gupta et al., "SWIM: Scalable Weakly-consistent Infection-style Membership Protocol" (2002)
 - **Kademlia**: Maymounkov & Mazières, "Kademlia: A Peer-to-Peer Information System Based on the XOR Metric" (2002)
 - **Byzantine Consensus**: Lamport et al., "The Byzantine Generals Problem" (1982)
@@ -653,8 +653,8 @@ if light_result.verification.confidence < 0.7:
 
 ## Support
 
-- **Documentation**: `/HoloLoom/federation/README.md`
-- **Tests**: `/HoloLoom/federation/tests/`
+- **Documentation**: `/hololoom/federation/README.md`
+- **Tests**: `/hololoom/federation/tests/`
 - **Examples**: `/demos/` (federation examples)
 - **Issues**: GitHub Issues (federation tag)
 

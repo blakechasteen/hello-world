@@ -23,8 +23,8 @@ import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.embedding.zero_copy import (
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.zero_copy import (
     ZeroCopyMatryoshkaEmbeddings,
     EmbeddingStore
 )

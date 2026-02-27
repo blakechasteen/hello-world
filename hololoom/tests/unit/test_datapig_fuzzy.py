@@ -8,7 +8,7 @@ Date: 2025-11-22
 """
 
 import pytest
-from HoloLoom.datapig.fuzzy_detection import (
+from hololoom.datapig.fuzzy_detection import (
     levenshtein_distance,
     normalized_similarity,
     phonetic_similarity,

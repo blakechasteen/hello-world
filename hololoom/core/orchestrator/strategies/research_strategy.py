@@ -17,8 +17,8 @@ Steps:
 
 from typing import List
 
-from HoloLoom.core.protocols import ComplexityLevel
-from HoloLoom.core.orchestrator.strategies.base import BaseStrategy
+from hololoom.core.protocols import ComplexityLevel
+from hololoom.core.orchestrator.strategies.base import BaseStrategy
 
 
 class ResearchStrategy(BaseStrategy):

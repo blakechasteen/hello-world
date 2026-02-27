@@ -185,7 +185,7 @@ crontab -e
    # Deployment configurations
    deployment/
    # Language/personality configs
-   HoloLoom/voice/{languages,personalities,*.yaml}
+   hololoom/voice/{languages,personalities,*.yaml}
    ```
 
 5. **Grafana Dashboards**
@@ -379,8 +379,8 @@ docker run --rm -v redis_data:/data -v $(pwd):/backup \
 # Copy files
 cp -r config/deployment/ /home/user/hello-world/deployment/
 cp config/docker-compose*.yml /home/user/hello-world/
-cp -r config/languages /home/user/hello-world/HoloLoom/voice/
-cp -r config/personalities /home/user/hello-world/HoloLoom/voice/
+cp -r config/languages /home/user/hello-world/hololoom/voice/
+cp -r config/personalities /home/user/hello-world/hololoom/voice/
 ```
 
 #### 7. Start Services
@@ -436,7 +436,7 @@ Global Load Balancer
 
 ### Failover Manager
 
-**Component**: `HoloLoom/voice/failover.py`
+**Component**: `hololoom/voice/failover.py`
 
 **Features**:
 - Continuous health monitoring (every 30s)
@@ -448,7 +448,7 @@ Global Load Balancer
 **Usage**:
 
 ```python
-from HoloLoom.voice.failover import create_failover_manager, FailoverStrategy
+from hololoom.voice.failover import create_failover_manager, FailoverStrategy
 
 # Create manager
 manager = create_failover_manager(
@@ -503,7 +503,7 @@ print(f"Active region: {status['active_region']['name']}")
 ```bash
 # Set maintenance mode (triggers failover)
 python3 -c "
-from HoloLoom.voice.failover import FailoverManager
+from hololoom.voice.failover import FailoverManager
 manager.set_maintenance_mode('us-east-1', enabled=True)
 "
 ```
@@ -913,7 +913,7 @@ curl -X POST https://api.statuspage.io/v1/pages/[PAGE_ID]/incidents \
 
 - [Backup Automation Script](../scripts/backup_automation.sh)
 - [Disaster Recovery Script](../scripts/disaster_recovery.sh)
-- [Failover Manager Implementation](../../HoloLoom/voice/failover.py)
+- [Failover Manager Implementation](../../hololoom/voice/failover.py)
 - [Validation Script](../scripts/validate_deployment.sh)
 - [Playbooks Directory](playbooks/)
 

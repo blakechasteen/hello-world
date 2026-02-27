@@ -60,24 +60,24 @@ from typing import (
     Union,
 )
 
-from HoloLoom.federation.types import FederationNode, GuildTrustLevel
-from HoloLoom.federation.load_balancer import (
+from hololoom.federation.types import FederationNode, GuildTrustLevel
+from hololoom.federation.load_balancer import (
     LoadBalancer,
     SelectionResult,
     LoadBalanceStrategy,
 )
-from HoloLoom.federation.safety import (
+from hololoom.federation.safety import (
     FederationSafetyGate,
     SignedRequest,
     SafetyCheckResult,
     FederationSafetyResult,
 )
-from HoloLoom.federation.rate_limiter import (
+from hololoom.federation.rate_limiter import (
     FederatedRateLimiter,
     RateLimitTier,
     get_tier_for_trust_level,
 )
-from HoloLoom.federation.wire_protocol import (
+from hololoom.federation.wire_protocol import (
     JSONRPCBuilder,
     RPCRequest,
     RPCResponse,
@@ -825,7 +825,7 @@ def create_inference_router(
 
     if safety_gate is None:
         try:
-            from HoloLoom.federation.safety import create_federation_safety_gate
+            from hololoom.federation.safety import create_federation_safety_gate
             safety_gate = create_federation_safety_gate()
         except ImportError:
             pass

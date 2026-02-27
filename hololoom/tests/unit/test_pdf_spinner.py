@@ -29,7 +29,7 @@ sys_modules_patch = {
 }
 
 with patch.dict('sys.modules', sys_modules_patch):
-    from HoloLoom.spinningWheel.pdf_spinner import (
+    from hololoom.spinningWheel.pdf_spinner import (
         PDFSpinner,
         PDFParser,
         PDFPage,

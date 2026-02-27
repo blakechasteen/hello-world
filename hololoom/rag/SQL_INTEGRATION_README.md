@@ -24,7 +24,7 @@ pip install sqlalchemy pandas  # Required for SQL integration
 ### Basic Usage
 
 ```python
-from HoloLoom.rag.sql_integration import SQLRAGMixin
+from hololoom.rag.sql_integration import SQLRAGMixin
 import asyncio
 
 class MyRAG(SQLRAGMixin):
@@ -165,7 +165,7 @@ class SQLRAGResult:
 Low-level SQL adapter for direct database access.
 
 ```python
-from HoloLoom.rag.sql_integration import SQLAdapter
+from hololoom.rag.sql_integration import SQLAdapter
 
 adapter = SQLAdapter(
     connection_string="sqlite:///database.db",
@@ -194,7 +194,7 @@ adapter.close()
 Text-to-SQL translation using LLM.
 
 ```python
-from HoloLoom.rag.sql_integration import TextToSQLTranslator
+from hololoom.rag.sql_integration import TextToSQLTranslator
 
 translator = TextToSQLTranslator(
     schema={"users": ["id", "name", "age"]},
@@ -486,7 +486,7 @@ Demonstrates:
 Run comprehensive test suite:
 
 ```bash
-pytest HoloLoom/rag/tests/test_sql_integration.py -v
+pytest hololoom/rag/tests/test_sql_integration.py -v
 ```
 
 Tests cover:
@@ -503,8 +503,8 @@ Tests cover:
 SQL Integration is designed as a mixin for easy integration:
 
 ```python
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.rag.sql_integration import SQLRAGMixin
+from hololoom.rag import SimpleRAG
+from hololoom.rag.sql_integration import SQLRAGMixin
 
 class SQLEnabledRAG(SQLRAGMixin, SimpleRAG):
     """SimpleRAG with SQL capabilities."""

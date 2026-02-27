@@ -21,8 +21,8 @@ from typing import List
 from unittest.mock import Mock, patch, MagicMock
 
 # Import HoloLoom types and configs
-from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.protocols.types import Query, MemoryShard, Context, Features
+from hololoom.config import Config, ExecutionMode
+from hololoom.protocols.types import Query, MemoryShard, Context, Features
 
 
 # =============================================================================
@@ -290,7 +290,7 @@ def cached_embeddings():
     Loading embeddings once per session instead of per test reduces
     test time from 3.3s to <0.5s per test.
     """
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     # MatryoshkaEmbeddings is a dataclass with sizes parameter
     return MatryoshkaEmbeddings(sizes=[96, 192, 384])

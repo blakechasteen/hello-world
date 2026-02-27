@@ -32,11 +32,11 @@ from pathlib import Path
 
 # HoloLoom imports
 try:
-    from HoloLoom.protocols.types import Query, Context, Features, MemoryShard
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-    from HoloLoom.memory.graph import KG
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.config import Config
+    from hololoom.protocols.types import Query, Context, Features, MemoryShard
+    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.memory.graph import KG
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.config import Config
     HOLOLOOM_AVAILABLE = True
 except ImportError as e:
     HOLOLOOM_AVAILABLE = False
@@ -45,7 +45,7 @@ except ImportError as e:
 # Matrix bot imports (use TYPE_CHECKING to avoid circular imports)
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from HoloLoom.apps.chatops.core.matrix_bot import MatrixBot
+    from hololoom.apps.chatops.core.matrix_bot import MatrixBot
 
 try:
     from nio import MatrixRoom, RoomMessageText

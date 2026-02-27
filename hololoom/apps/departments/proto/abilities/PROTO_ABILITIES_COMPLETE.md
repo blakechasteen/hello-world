@@ -1,7 +1,7 @@
 # Proto Ability Protocol & Registry
 
 **Status**: ✅ Production Ready (2025-12-02)
-**Location**: `HoloLoom/departments/proto/abilities/`
+**Location**: `hololoom/departments/proto/abilities/`
 **Total Code**: 812 lines across 3 files
 **Architecture**: Three-tier extensibility protocol
 
@@ -230,7 +230,7 @@ class BaseAbility(ABC):
 ### Creating a Tier 2 Plugin Ability
 
 ```python
-from HoloLoom.apps.departments.proto.abilities import (
+from hololoom.apps.departments.proto.abilities import (
     BaseAbility,
     AbilityManifest,
     AbilityTier,
@@ -446,7 +446,7 @@ Proto abilities integrate with:
 
 ```bash
 # Run comprehensive test
-PYTHONPATH=. python -m pytest HoloLoom/departments/proto/abilities/ -v
+PYTHONPATH=. python -m pytest hololoom/departments/proto/abilities/ -v
 
 # Run demo
 PYTHONPATH=. python demos/demo_proto_abilities.py

@@ -1,7 +1,7 @@
 {
   "dashboard": {
-    "title": "HoloLoom Orchestrator Metrics",
-    "description": "Comprehensive metrics dashboard for HoloLoom production monitoring",
+    "title": "hololoom Orchestrator Metrics",
+    "description": "Comprehensive metrics dashboard for hololoom production monitoring",
     "tags": [
       "hololoom",
       "ai",

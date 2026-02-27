@@ -7,9 +7,9 @@ End-to-end integration tests for web-enhanced agentic research.
 import pytest
 import asyncio
 from typing import List
-from HoloLoom.agentic import WebResearchOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.agentic import WebResearchOrchestrator
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
 
 
 @pytest.fixture

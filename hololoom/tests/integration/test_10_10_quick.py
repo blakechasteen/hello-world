@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, '.')
 
 import asyncio
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 
 async def quick_test():

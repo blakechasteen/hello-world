@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 # Setup logging
-logger = logging.getLogger("HoloLoom.safety")
+logger = logging.getLogger("hololoom.safety")
 
 
 class Layer6Capability(Enum):
@@ -365,12 +365,12 @@ Step 3: Unlock Layer 6
 export {SafetyLock.UNLOCK_ENV_VAR}={SafetyLock.UNLOCK_VALUE}
 
 # Enable in config
-from HoloLoom.config import Config
+from hololoom.config import Config
 config = Config.fast()
 config.layer6_enabled = True
 
 Step 4: Verify Unlock
-from HoloLoom.safety import SafetyLock
+from hololoom.safety import SafetyLock
 if SafetyLock.is_layer6_enabled(config):
     print("Layer 6 unlocked successfully")
 else:

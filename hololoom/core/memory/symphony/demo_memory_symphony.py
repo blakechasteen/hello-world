@@ -23,16 +23,16 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
-# Import from new location (moved to HoloLoom/memory/symphony/ in Dec 2025)
-from HoloLoom.core.memory.symphony import (
+# Import from new location (moved to hololoom/memory/symphony/ in Dec 2025)
+from hololoom.core.memory.symphony import (
     MemoryConductor,
     MemoryQuery,
     MemoryStrategy,
     create_memory_conductor
 )
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.core.memory.backend_factory import create_memory_backend
-from HoloLoom.core.protocols.types import MemoryShard
+from hololoom.config import Config, MemoryBackend
+from hololoom.core.memory.backend_factory import create_memory_backend
+from hololoom.core.protocols.types import MemoryShard
 
 
 async def create_sample_memory():
@@ -48,7 +48,7 @@ async def create_sample_memory():
     memory = await create_memory_backend(config)
 
     # Note: In production, you would populate memory with:
-    # from HoloLoom import HoloLoom
+    # from hololoom import hololoom
     # async with HoloLoom() as loom:
     #     await loom.experience("Your content here...")
 

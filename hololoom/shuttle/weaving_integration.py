@@ -19,10 +19,10 @@ import logging
 import time
 
 # HoloLoom types
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config, ExecutionMode
-from HoloLoom.memory.graph import KG
-from HoloLoom.chrono.trigger import TemporalWindow
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config, ExecutionMode
+from hololoom.memory.graph import KG
+from hololoom.chrono.trigger import TemporalWindow
 
 # Shuttle components
 from .config import ShuttleConfig, ShuttleMode
@@ -306,7 +306,7 @@ class ShuttleStage:
         self.retriever = retriever
         self.logger = logging.getLogger(__name__)
 
-        # Derive shuttle config from HoloLoom config if not provided
+        # Derive shuttle config from hololoom config if not provided
         if shuttle_config is None:
             shuttle_config = self._derive_shuttle_config(config)
 
@@ -330,7 +330,7 @@ class ShuttleStage:
 
     def _derive_shuttle_config(self, config: Config) -> ShuttleConfig:
         """
-        Derive ShuttleConfig from HoloLoom Config.
+        Derive ShuttleConfig from hololoom Config.
 
         Maps execution modes:
         - BARE → MINIMAL (lightweight)
@@ -496,10 +496,10 @@ def create_shuttle_stage(
         ShuttleStage instance ready for integration
 
     Example:
-        >>> from HoloLoom.config import Config
-        >>> from HoloLoom.memory.graph import KG
-        >>> from HoloLoom.memory.base import create_retriever
-        >>> from HoloLoom.shuttle.weaving_integration import create_shuttle_stage
+        >>> from hololoom.config import Config
+        >>> from hololoom.memory.graph import KG
+        >>> from hololoom.memory.base import create_retriever
+        >>> from hololoom.shuttle.weaving_integration import create_shuttle_stage
         >>>
         >>> config = Config.fast()
         >>> kg = KG()

@@ -17,9 +17,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 
 # Import the FastAPI app
-from HoloLoom.apps.server.agentic_api import app, ServerState
-from HoloLoom.agentic.core import AgenticResult, ReasoningMode
-from HoloLoom.config import Config
+from hololoom.apps.server.agentic_api import app, ServerState
+from hololoom.agentic.core import AgenticResult, ReasoningMode
+from hololoom.config import Config
 # ============================================================================
 # Fixtures
 # ============================================================================
@@ -56,7 +56,7 @@ def mock_orchestrator():
 @pytest.fixture(autouse=True)
 def setup_server_state():
     """Reset server state before each test."""
-    from HoloLoom.apps.server.agentic_api import state
+    from hololoom.apps.server.agentic_api import state
 
     # Reset stats if exists
     if state.stats:
@@ -100,7 +100,7 @@ def test_health_endpoint_performance(client):
 # Query Endpoint Tests - All Reasoning Modes
 # ============================================================================
 
-@patch('HoloLoom.apps.server.agentic_api.state')
+@patch('hololoom.apps.server.agentic_api.state')
 def test_query_endpoint_direct_mode(mock_state, client, mock_orchestrator):
     """Test /query endpoint with DIRECT reasoning mode."""
     # Setup mock
@@ -138,7 +138,7 @@ def test_query_endpoint_direct_mode(mock_state, client, mock_orchestrator):
 
     # Orchestrator called correctly
     mock_orchestrator.reason.assert_called_once()
-@patch('HoloLoom.apps.server.agentic_api.state')
+@patch('hololoom.apps.server.agentic_api.state')
 def test_query_endpoint_verify_mode(mock_state, client, mock_orchestrator):
     """Test /query endpoint with VERIFY reasoning mode (multi-query)."""
     # Setup mock with verification result
@@ -182,7 +182,7 @@ def test_query_endpoint_verify_mode(mock_state, client, mock_orchestrator):
     assert verification["verified"] is True
     assert isinstance(verification["supporting_evidence"], list)
     assert len(verification["supporting_evidence"]) > 0
-@patch('HoloLoom.apps.server.agentic_api.state')
+@patch('hololoom.apps.server.agentic_api.state')
 def test_query_endpoint_research_mode(mock_state, client, mock_orchestrator):
     """Test /query endpoint with RESEARCH mode (deep exploration)."""
     # Setup mock with multiple reasoning steps
@@ -290,7 +290,7 @@ def test_stats_endpoint(client):
 # Error Handling Tests
 # ============================================================================
 
-@patch('HoloLoom.apps.server.agentic_api.state')
+@patch('hololoom.apps.server.agentic_api.state')
 def test_error_handling_orchestrator_failure(mock_state, client, mock_orchestrator):
     """Test graceful error handling when orchestrator fails."""
     # Setup mock to raise exception
@@ -327,7 +327,7 @@ def test_cors_headers_present(client):
 # Code Context Integration Tests
 # ============================================================================
 
-@patch('HoloLoom.apps.server.agentic_api.state')
+@patch('hololoom.apps.server.agentic_api.state')
 def test_query_with_code_context(mock_state, client, mock_orchestrator):
     """Test /query endpoint accepts and uses code context from VS Code."""
     mock_state.orchestrator = mock_orchestrator
@@ -356,7 +356,7 @@ def test_query_with_code_context(mock_state, client, mock_orchestrator):
 # Performance Tests
 # ============================================================================
 
-@patch('HoloLoom.apps.server.agentic_api.state')
+@patch('hololoom.apps.server.agentic_api.state')
 def test_query_endpoint_performance_direct(mock_state, client, mock_orchestrator):
     """Test /query endpoint performance in DIRECT mode (< 200ms target)."""
     import time
@@ -384,7 +384,7 @@ def test_query_endpoint_performance_direct(mock_state, client, mock_orchestrator
 # Concurrent Request Tests
 # ============================================================================
 
-@patch('HoloLoom.apps.server.agentic_api.state')
+@patch('hololoom.apps.server.agentic_api.state')
 def test_concurrent_requests(mock_state, client, mock_orchestrator):
     """Test server handles concurrent requests correctly."""
     mock_state.orchestrator = mock_orchestrator
@@ -420,7 +420,7 @@ def test_response_matches_typescript_interface(client, mock_orchestrator):
 
     This is critical for VS Code extension integration.
     """
-    with patch('HoloLoom.apps.server.agentic_api.state') as mock_state:
+    with patch('hololoom.apps.server.agentic_api.state') as mock_state:
         mock_state.orchestrator = mock_orchestrator
         mock_state.stats = None
         
@@ -486,7 +486,7 @@ Integration Points Covered:
 - Code context from VS Code
 
 Next Steps:
-1. Run: pytest HoloLoom/server/tests/test_agentic_api_integration.py -v
+1. Run: pytest hololoom/server/tests/test_agentic_api_integration.py -v
 2. Create TypeScript tests: squad/tests/test_hololoom_bridge.test.ts
-3. Create full stack E2E: HoloLoom/tests/e2e/test_full_stack_vscode.py
+3. Create full stack E2E: hololoom/tests/e2e/test_full_stack_vscode.py
 """

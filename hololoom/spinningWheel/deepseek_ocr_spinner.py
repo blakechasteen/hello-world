@@ -24,13 +24,13 @@ Installation:
 
 Usage:
     # Simple usage
-    from HoloLoom.spinningWheel import DeepSeekOCRSpinner
+    from hololoom.spinningWheel import DeepSeekOCRSpinner
 
     spinner = DeepSeekOCRSpinner()
     result = await spinner.spin("document.png")
 
     # With configuration
-    from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRConfig
+    from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRConfig
 
     config = DeepSeekOCRConfig(
         backend="vllm",  # or "transformers"
@@ -53,7 +53,7 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from enum import Enum
 
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinnerCapabilities,
     SpinnerStatus,
@@ -61,7 +61,7 @@ from HoloLoom.spinningWheel.protocol import (
     ImportanceSignals,
     ImportanceScore
 )
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================

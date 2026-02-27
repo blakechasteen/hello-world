@@ -5,7 +5,7 @@ Dream Department - Phase 2 NeuroHood-HoloLoom Integration
 Production-grade department for dream processing with DS-STAR verification.
 
 Usage:
-    from HoloLoom.apps.departments.dream import DreamDepartment, create_dream_department
+    from hololoom.apps.departments.dream import DreamDepartment, create_dream_department
 
     dept = create_dream_department()
     await dept.start()

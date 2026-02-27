@@ -15,13 +15,13 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.memory.multimodal_memory import (
+from hololoom.memory.multimodal_memory import (
     MultiModalMemory,
     ModalityType,
     FusionStrategy,
     create_multimodal_memory
 )
-from HoloLoom.spinningWheel.multimodal_spinner import (
+from hololoom.spinningWheel.multimodal_spinner import (
     MultiModalSpinner,
     TextSpinner,
     StructuredDataSpinner,

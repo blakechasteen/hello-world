@@ -6,9 +6,9 @@ Tests both unit-level functionality (with mocks) and integration scenarios.
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from HoloLoom.rag import SimpleRAG, RAGResult
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom.rag import SimpleRAG, RAGResult
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 
 # ============================================================================

@@ -56,32 +56,32 @@
 ## Working Components (Verified)
 
 ### ✅ SpinningWheel
-- `HoloLoom/spinningWheel/website.py` - Web scraping
-- `HoloLoom/spinningWheel/audio.py` - Audio processing (modified)
-- `HoloLoom/spinningWheel/recursive_crawler.py` - Recursive crawl (modified)
+- `hololoom/spinningWheel/website.py` - Web scraping
+- `hololoom/spinningWheel/audio.py` - Audio processing (modified)
+- `hololoom/spinningWheel/recursive_crawler.py` - Recursive crawl (modified)
 - YouTube, text, browser history spinners
 
 ### ✅ Memory Systems
-- `HoloLoom/memory/protocol.py` - Unified interface
-- `HoloLoom/memory/neo4j_graph.py` - Neo4j backend
-- `HoloLoom/memory/stores/` - Qdrant implementation
-- `HoloLoom/memory/mem0_adapter.py` - Mem0 integration
-- `HoloLoom/memory/mcp_server.py` - MCP server (modified)
+- `hololoom/memory/protocol.py` - Unified interface
+- `hololoom/memory/neo4j_graph.py` - Neo4j backend
+- `hololoom/memory/stores/` - Qdrant implementation
+- `hololoom/memory/mem0_adapter.py` - Mem0 integration
+- `hololoom/memory/mcp_server.py` - MCP server (modified)
 
 ### ✅ Orchestrators
-- `HoloLoom/Orchestrator.py` - Main orchestrator
-- `HoloLoom/autospin.py` - AutoSpin wrapper
-- `HoloLoom/conversational.py` - Conversational interface
+- `hololoom/Orchestrator.py` - Main orchestrator
+- `hololoom/autospin.py` - AutoSpin wrapper
+- `hololoom/conversational.py` - Conversational interface
 
 ### ⚠️ Partially Complete
-- `HoloLoom/loom/` - Loom command (exists but not integrated)
-- `HoloLoom/chrono/` - Chrono trigger (exists but not integrated)
-- `HoloLoom/warp/` - Warp space (exists but not integrated)
-- `HoloLoom/resonance/` - Resonance shed (exists but not integrated)
-- `HoloLoom/convergence/` - Convergence engine (exists but not integrated)
-- `HoloLoom/fabric/` - Spacetime fabric (exists but not integrated)
-- `HoloLoom/synthesis/` - Synthesis modules (not integrated)
-- `HoloLoom/math/` - Math modules (not integrated)
+- `hololoom/loom/` - Loom command (exists but not integrated)
+- `hololoom/chrono/` - Chrono trigger (exists but not integrated)
+- `hololoom/warp/` - Warp space (exists but not integrated)
+- `hololoom/resonance/` - Resonance shed (exists but not integrated)
+- `hololoom/convergence/` - Convergence engine (exists but not integrated)
+- `hololoom/fabric/` - Spacetime fabric (exists but not integrated)
+- `hololoom/synthesis/` - Synthesis modules (not integrated)
+- `hololoom/math/` - Math modules (not integrated)
 
 ## Cleanup Plan
 
@@ -121,7 +121,7 @@ After cleanup, design sprint to:
 
 **Root Directory Status:**
 - Before: 40+ Python files
-- After: 1 Python file (HoloLoom.py - compatibility shim)
+- After: 1 Python file (hololoom.py - compatibility shim)
 - **Reduction: 97.5%**
 
 **New Structure:**

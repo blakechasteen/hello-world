@@ -1,7 +1,7 @@
 # Filesystem & Container Sandbox System
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/redteam/sandbox/`
+**Location**: `hololoom/redteam/sandbox/`
 **Components**: 2 new modules (filesystem.py, container.py)
 **Total Code**: 750+ lines of production code
 **Testing**: 34/34 tests passing (100%)
@@ -103,7 +103,7 @@ Provides isolated filesystem access through OverlayFS (Linux) with automatic fal
 
 **Basic Usage with Context Manager**
 ```python
-from HoloLoom.redteam.sandbox import FilesystemSandbox, FilesystemSandboxConfig
+from hololoom.redteam.sandbox import FilesystemSandbox, FilesystemSandboxConfig
 
 config = FilesystemSandboxConfig()
 async with FilesystemSandbox(config) as sandbox:
@@ -217,7 +217,7 @@ Provides isolated code execution through Docker containers with automatic fallba
 
 **Basic Execution**
 ```python
-from HoloLoom.redteam.sandbox import ContainerExecutor, ContainerSandboxConfig
+from hololoom.redteam.sandbox import ContainerExecutor, ContainerSandboxConfig
 
 config = ContainerSandboxConfig(
     image="python:3.11-slim",
@@ -290,7 +290,7 @@ Graceful fallback and error handling:
 
 ```python
 import asyncio
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     FilesystemSandbox, FilesystemSandboxConfig,
     ContainerExecutor, ContainerSandboxConfig,
     ResourceLimits
@@ -404,16 +404,16 @@ asyncio.run(safe_adversarial_execution())
 
 ```bash
 # Run all sandbox tests
-pytest HoloLoom/redteam/sandbox/tests/ -v
+pytest hololoom/redteam/sandbox/tests/ -v
 
 # Test filesystem module
-pytest HoloLoom/redteam/sandbox/tests/test_filesystem.py -v
+pytest hololoom/redteam/sandbox/tests/test_filesystem.py -v
 
 # Test container module
-pytest HoloLoom/redteam/sandbox/tests/test_container.py -v
+pytest hololoom/redteam/sandbox/tests/test_container.py -v
 
 # Test integration
-pytest HoloLoom/redteam/sandbox/tests/test_integration.py -v
+pytest hololoom/redteam/sandbox/tests/test_integration.py -v
 ```
 
 ## API Reference
@@ -502,7 +502,7 @@ These modules integrate seamlessly with CARTS red team system:
 
 ```python
 # In redteam/attack_orchestrator.py
-from HoloLoom.redteam.sandbox import (
+from hololoom.redteam.sandbox import (
     FilesystemSandbox,
     ContainerExecutor,
     FilesystemSandboxConfig,

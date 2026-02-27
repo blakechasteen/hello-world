@@ -18,11 +18,11 @@ import torch
 from collections import defaultdict
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+    from hololoom.dark_trace.multilayer.correlation_tracker import (
         CorrelationTracker,
         CorrelationPair,
     )
-    from HoloLoom.dark_trace.multilayer.propagation_analyzer import (
+    from hololoom.dark_trace.multilayer.propagation_analyzer import (
         PropagationAnalyzer,
         PropagationPath,
     )
@@ -683,7 +683,7 @@ class FeatureHierarchyAnalyzer:
         Returns:
             Dictionary mapping layer pairs to their top correlation pairs
         """
-        from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+        from hololoom.dark_trace.multilayer.correlation_tracker import (
             CorrelationTracker,
             CorrelationPair,
         )
@@ -752,7 +752,7 @@ class FeatureHierarchyAnalyzer:
         Returns:
             List of PropagationPath objects showing feature paths
         """
-        from HoloLoom.dark_trace.multilayer.propagation_analyzer import (
+        from hololoom.dark_trace.multilayer.propagation_analyzer import (
             PropagationPath,
         )
 
@@ -871,7 +871,7 @@ class FeatureHierarchyAnalyzer:
         Returns:
             Dictionary with correlation update statistics
         """
-        from HoloLoom.dark_trace.multilayer.correlation_tracker import (
+        from hololoom.dark_trace.multilayer.correlation_tracker import (
             WelfordCorrelator,
         )
 

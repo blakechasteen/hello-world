@@ -23,7 +23,7 @@ All features implemented with **zero breaking changes** to existing functionalit
 
 ### 1. Rate Limiting (Server)
 
-**File**: `HoloLoom/server/agentic_api.py`
+**File**: `hololoom/server/agentic_api.py`
 
 **Implementation**:
 ```python
@@ -60,7 +60,7 @@ class RateLimiter:
 
 ### 2. Query Size Validation (Server)
 
-**File**: `HoloLoom/server/agentic_api.py`
+**File**: `hololoom/server/agentic_api.py`
 
 **Implementation**:
 ```python
@@ -103,7 +103,7 @@ class QueryRequest(BaseModel):
 
 ### 3. Stats Tracking (Server)
 
-**File**: `HoloLoom/server/agentic_api.py`
+**File**: `hololoom/server/agentic_api.py`
 
 **Implementation**:
 ```python
@@ -412,10 +412,10 @@ Updated [TROUGH_QUICK_START.md](TROUGH_QUICK_START.md):
 
 ```bash
 # Development (auto-reload)
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app --reload --port 8000
 
 # Production (4 workers, rate limiting enabled)
-PYTHONPATH=. uvicorn HoloLoom.server.agentic_api:app \
+PYTHONPATH=. uvicorn hololoom.server.agentic_api:app \
   --host 0.0.0.0 \
   --port 8000 \
   --workers 4

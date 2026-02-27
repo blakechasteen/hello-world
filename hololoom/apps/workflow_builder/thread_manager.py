@@ -515,7 +515,7 @@ class ThreadManager:
             - Fault-tolerant: Partial failures allowed, logs all errors
             - Embedding optional: Falls back gracefully if unavailable
         """
-        from HoloLoom.memory.protocol import Memory
+        from hololoom.memory.protocol import Memory
         import logging
 
         # ============================================================

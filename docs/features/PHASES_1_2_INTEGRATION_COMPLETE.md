@@ -45,7 +45,7 @@ Result: Optimally packed context window!
 ### Simple API
 
 ```python
-from HoloLoom.physics import pack_context_multiphysics
+from hololoom.physics import pack_context_multiphysics
 
 # One-line multi-physics packing!
 result = await pack_context_multiphysics(
@@ -70,7 +70,7 @@ for component, packed in result.packed_contexts.items():
 ### Advanced API
 
 ```python
-from HoloLoom.physics import MultiPhysicsPacker
+from hololoom.physics import MultiPhysicsPacker
 
 # Create packer
 packer = MultiPhysicsPacker(
@@ -242,8 +242,8 @@ Demo 3: Manual vs Physics
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `HoloLoom/physics/multi_physics_packer.py` | 450 | Integrates Phases 1+2 |
-| `HoloLoom/physics/__init__.py` | +13 | Updated exports |
+| `hololoom/physics/multi_physics_packer.py` | 450 | Integrates Phases 1+2 |
+| `hololoom/physics/__init__.py` | +13 | Updated exports |
 | `demos/demo_multi_physics_integration.py` | 230 | Integration demo |
 
 **Total**: ~693 lines
@@ -255,8 +255,8 @@ Demo 3: Manual vs Physics
 ### With WeavingOrchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.physics import MultiPhysicsPacker
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.physics import MultiPhysicsPacker
 
 async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
     # Create multi-physics packer
@@ -285,8 +285,8 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### With Memory System
 
 ```python
-from HoloLoom.memory.integrated_memory_system import IntegratedMemorySystem
-from HoloLoom.physics import pack_context_multiphysics
+from hololoom.memory.integrated_memory_system import IntegratedMemorySystem
+from hololoom.physics import pack_context_multiphysics
 
 async with IntegratedMemorySystem.create_default() as system:
     # Pack context across memory components

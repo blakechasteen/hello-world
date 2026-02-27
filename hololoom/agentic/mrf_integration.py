@@ -19,7 +19,7 @@ Benefits:
 - More explicit goal decomposition in PLAN_EXECUTE mode
 
 Example:
-    from HoloLoom.agentic.mrf_integration import create_agentic_mrf_prompt
+    from hololoom.agentic.mrf_integration import create_agentic_mrf_prompt
 
     # VERIFY mode with MRF
     prompt = create_agentic_mrf_prompt(
@@ -33,13 +33,13 @@ import logging
 from typing import Optional, Dict, Any, List
 from enum import Enum
 
-from HoloLoom.prompting.unified_mrf import (
+from hololoom.prompting.unified_mrf import (
     UnifiedMRF,
     MetapromptConfig,
     ModelProvider,
     RefinementStrategyType
 )
-from HoloLoom.agentic.core import ReasoningMode
+from hololoom.agentic.core import ReasoningMode
 
 logger = logging.getLogger(__name__)
 

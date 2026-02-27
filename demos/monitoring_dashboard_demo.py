@@ -15,7 +15,7 @@ Run with:
 import asyncio
 import random
 import time
-from HoloLoom.telemetry.monitoring import MonitoringDashboard, MetricsCollector
+from hololoom.telemetry.monitoring import MonitoringDashboard, MetricsCollector
 
 
 async def simulate_queries(collector: MetricsCollector, num_queries: int = 50):
@@ -160,7 +160,7 @@ async def demo_integration_example():
     
     integration_code = '''
 # In weaving_orchestrator.py __init__:
-from HoloLoom.telemetry.monitoring import get_global_collector
+from hololoom.telemetry.monitoring import get_global_collector
 
 class WeavingOrchestrator:
     def __init__(self, config: Config):
@@ -202,7 +202,7 @@ async def weave(self, query: Query) -> Spacetime:
         raise
 
 # View dashboard in separate script or CLI command:
-from HoloLoom.telemetry.monitoring import MonitoringDashboard, get_global_collector
+from hololoom.telemetry.monitoring import MonitoringDashboard, get_global_collector
 
 collector = get_global_collector()
 dashboard = MonitoringDashboard(collector)

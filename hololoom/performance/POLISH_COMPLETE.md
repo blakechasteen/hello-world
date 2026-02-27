@@ -23,7 +23,7 @@ Complete performance analysis and optimization of the HoloLoom routing system. A
 
 **Usage:**
 ```python
-from HoloLoom.performance import RoutingProfiler
+from hololoom.performance import RoutingProfiler
 
 profiler = RoutingProfiler()
 
@@ -63,7 +63,7 @@ Recommendations:
 
 **Usage:**
 ```bash
-python HoloLoom/performance/routing_benchmarks.py
+python hololoom/performance/routing_benchmarks.py
 ```
 
 **Results:**
@@ -115,7 +115,7 @@ alternatives = sorted(
 
 ### 5. Package Updates
 
-**Updated:** [HoloLoom/performance/__init__.py](HoloLoom/performance/__init__.py)
+**Updated:** [hololoom/performance/__init__.py](hololoom/performance/__init__.py)
 
 Added exports:
 - `RoutingProfiler`
@@ -152,14 +152,14 @@ Added performance documentation to docstring with key metrics.
 ## Files Created/Modified
 
 ### Created
-1. `HoloLoom/performance/routing_profiler.py` (400 lines)
-2. `HoloLoom/performance/routing_benchmarks.py` (375 lines)
-3. `HoloLoom/performance/PERFORMANCE_SUMMARY.md` (350 lines)
-4. `HoloLoom/performance/POLISH_COMPLETE.md` (this file)
+1. `hololoom/performance/routing_profiler.py` (400 lines)
+2. `hololoom/performance/routing_benchmarks.py` (375 lines)
+3. `hololoom/performance/PERFORMANCE_SUMMARY.md` (350 lines)
+4. `hololoom/performance/POLISH_COMPLETE.md` (this file)
 
 ### Modified
-1. `HoloLoom/performance/__init__.py` - Added exports and documentation
-2. `HoloLoom/memory/routing/learned.py` - Fixed KeyError bug
+1. `hololoom/performance/__init__.py` - Added exports and documentation
+2. `hololoom/memory/routing/learned.py` - Fixed KeyError bug
 
 **Total:** 1,125+ lines of production-ready performance infrastructure
 
@@ -168,7 +168,7 @@ Added performance documentation to docstring with key metrics.
 All benchmarks run successfully:
 
 ```bash
-$ python HoloLoom/performance/routing_benchmarks.py
+$ python hololoom/performance/routing_benchmarks.py
 
 ======================================================================
 ROUTING PERFORMANCE BENCHMARKS

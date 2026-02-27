@@ -14,7 +14,7 @@ Exports:
     - ProtoEvent: Domain event
 """
 
-from HoloLoom.apps.departments.proto.domain.entities import (
+from hololoom.apps.departments.proto.domain.entities import (
     IntentType,
     CodeContext,
     ProtoIntent,
@@ -22,12 +22,12 @@ from HoloLoom.apps.departments.proto.domain.entities import (
     ProtoResponse,
 )
 
-from HoloLoom.apps.departments.proto.domain.session import (
+from hololoom.apps.departments.proto.domain.session import (
     ConversationTurn,
     ProtoSession,
 )
 
-from HoloLoom.apps.departments.proto.domain.events import (
+from hololoom.apps.departments.proto.domain.events import (
     ProtoEventType,
     ProtoEvent,
 )

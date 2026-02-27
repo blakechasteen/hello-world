@@ -7,8 +7,8 @@ devices are just windows. Built with 7 security layers for production use.
 Created: December 2025
 
 Quick Start:
-    from HoloLoom.handoff import UnifiedIdentity
-    from HoloLoom import HoloLoom
+    from hololoom.handoff import UnifiedIdentity
+    from hololoom import hololoom
 
     # Generate identity (or load existing)
     identity = UnifiedIdentity.generate("blake")
@@ -49,7 +49,7 @@ from __future__ import annotations
 #  IDENTITY - Cryptographic identity and device management
 # ═══════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.handoff.identity import (
+from hololoom.handoff.identity import (
     UnifiedIdentity,
     get_or_create_identity,
 )
@@ -58,7 +58,7 @@ from HoloLoom.handoff.identity import (
 #  TYPES - Data structures for handoff operations
 # ═══════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.handoff.types import (
+from hololoom.handoff.types import (
     # Enums
     DeviceStatus,
     HandoffStatus,
@@ -88,7 +88,7 @@ from HoloLoom.handoff.types import (
 #  SYNCED MEMORY - CRDT-based local-first memory with automatic sync
 # ═══════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.handoff.synced_memory import (
+from hololoom.handoff.synced_memory import (
     SyncedMemory,
     LamportClock,
     MemoryOp,
@@ -99,7 +99,7 @@ from HoloLoom.handoff.synced_memory import (
 #  ORCHESTRATOR - 7-layer security handoff coordination
 # ═══════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.handoff.orchestrator import (
+from hololoom.handoff.orchestrator import (
     HardenedHandoffOrchestrator,
 )
 
@@ -107,7 +107,7 @@ from HoloLoom.handoff.orchestrator import (
 #  TRANSPORT - Pluggable transport layer (WebSocket, Bluetooth, LAN)
 # ═══════════════════════════════════════════════════════════════════════════
 
-from HoloLoom.handoff.transport import (
+from hololoom.handoff.transport import (
     # Protocol and base
     TransportProtocol,
     TransportStatus,

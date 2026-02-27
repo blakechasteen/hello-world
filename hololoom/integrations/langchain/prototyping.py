@@ -74,8 +74,8 @@ class HoloLoomCLI:
 
         # Import HoloLoom
         try:
-            from HoloLoom import HoloLoom
-            from HoloLoom.config import Config
+            from hololoom import hololoom
+            from hololoom.config import Config
 
             if use_case == "production":
                 config = Config.fused()
@@ -288,7 +288,7 @@ def quick_start():
     Quick start function for immediate prototyping.
 
     Usage:
-        >>> from HoloLoom.integrations.langchain import quick_start
+        >>> from hololoom.integrations.langchain import quick_start
         >>> quick_start()
     """
     cli = HoloLoomCLI()
@@ -329,8 +329,8 @@ class QuickPrototype:
         """
         # HoloLoom
         try:
-            from HoloLoom import HoloLoom
-            from HoloLoom.config import Config
+            from hololoom import hololoom
+            from hololoom.config import Config
 
             config = Config.fast() if use_case == "development" else Config.fused()
             self.hololoom = HoloLoom(config=config)

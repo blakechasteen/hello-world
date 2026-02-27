@@ -27,11 +27,11 @@ import networkx as nx
 
 # Import only from shared types layer
 # Use the project's shared types module (avoid shadowing stdlib `types`)
-from HoloLoom.core.protocols.types import Vector
+from hololoom.core.protocols.types import Vector
 
 # Import Riemannian geometry for geodesic distance support
 try:
-    from HoloLoom.core.warp.riemannian_geometry import (
+    from hololoom.core.warp.riemannian_geometry import (
         ProductManifold, ManifoldConfig, ManifoldType
     )
     _HAVE_RIEMANNIAN = True
@@ -132,7 +132,7 @@ class MatryoshkaEmbeddings:
         self.base_dim = max(self.sizes)  # Placeholder until model loads
 
         # Embedding cache (text -> embedding)
-        from HoloLoom.performance.cache import QueryCache
+        from hololoom.performance.cache import QueryCache
         self._embedding_cache = QueryCache(max_size=500, ttl_seconds=3600)
 
         # Initialize projection matrices
@@ -385,7 +385,7 @@ class SpectralFusion:
         if self.use_wavelets and kg_sub.number_of_nodes() > 1:
             try:
                 # Import spectral methods
-                from HoloLoom.core.warp.spectral_methods import GraphLaplacian, SpectralWavelet, LaplacianType
+                from hololoom.core.warp.spectral_methods import GraphLaplacian, SpectralWavelet, LaplacianType
 
                 # Create temporary KG wrapper for spectral methods
                 # We need to wrap the NetworkX graph in a KG-like object
@@ -432,7 +432,7 @@ class SpectralFusion:
         diffusion_variance = 0.0
         if self.use_diffusion_maps and kg_sub.number_of_nodes() > self.diffusion_map_dims:
             try:
-                from HoloLoom.core.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
+                from hololoom.core.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
 
                 class _TempKG:
                     def __init__(self, G):

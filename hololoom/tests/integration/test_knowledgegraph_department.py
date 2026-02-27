@@ -33,7 +33,7 @@ import pytest
 from typing import List
 import asyncio
 
-from HoloLoom.apps.departments.knowledgegraph import (
+from hololoom.apps.departments.knowledgegraph import (
     KnowledgeGraphDepartment,
     GraphConstructor,
     GraphReasoner,
@@ -43,8 +43,8 @@ from HoloLoom.apps.departments.knowledgegraph import (
     GraphQuery,
     EvolutionOperation
 )
-from HoloLoom.departments import DepartmentRequest, DepartmentResponse, DepartmentRegistry
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.departments import DepartmentRequest, DepartmentResponse, DepartmentRegistry
+from hololoom.memory.graph import KG, KGEdge
 
 
 # ============================================================================

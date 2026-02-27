@@ -1352,7 +1352,7 @@ Subscription Patterns:
 
 FastAPI Integration:
     from fastapi import FastAPI
-    from HoloLoom.apps.chatops.handlers.agent_manager_ws import (
+    from hololoom.apps.chatops.handlers.agent_manager_ws import (
         AgentManagerWSManager, create_agent_manager_router
     )
 

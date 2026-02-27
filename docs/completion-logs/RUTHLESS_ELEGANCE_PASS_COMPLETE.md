@@ -544,11 +544,11 @@ Test coverage possible  | 40%    | 95%
 ## Files Created/Modified
 
 ### New Files
-- `HoloLoom/visualization/dashboard.py` - Refactored with enums, protocols, validation
+- `hololoom/visualization/dashboard.py` - Refactored with enums, protocols, validation
 - `demos/dashboard_prototype_elegant.py` - Class-based, composable implementation
 
 ### Modified Files
-- `HoloLoom/visualization/__init__.py` - Updated exports
+- `hololoom/visualization/__init__.py` - Updated exports
 - `DASHBOARD_PROTOTYPE_COMPLETE.md` - Updated with elegance pass
 
 ### Output Files

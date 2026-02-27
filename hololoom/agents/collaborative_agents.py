@@ -19,11 +19,11 @@ import asyncio
 from typing import Optional, Dict, Any, List
 import logging
 
-from HoloLoom.agents.persistent_agent import (
+from hololoom.agents.persistent_agent import (
     PersistentBackgroundAgent,
     AgentState
 )
-from HoloLoom.agents.multi_agent_communication import (
+from hololoom.agents.multi_agent_communication import (
     MessageBus,
     ConversationManager,
     BudgetManager,
@@ -33,7 +33,7 @@ from HoloLoom.agents.multi_agent_communication import (
     MessageType,
     Conversation
 )
-from HoloLoom.agents.policy_governance import (
+from hololoom.agents.policy_governance import (
     PolicyEngine,
     RoleBasedAccessControl,
     TopicGovernance,
@@ -590,4 +590,4 @@ class CollaborativeAgentManager:
 
 
 # Import ThoughtType for type hints
-from HoloLoom.scratchpad import ThoughtType
+from hololoom.scratchpad import ThoughtType

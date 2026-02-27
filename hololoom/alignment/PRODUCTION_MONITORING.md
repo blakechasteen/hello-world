@@ -22,7 +22,7 @@ The Alignment Framework includes comprehensive production monitoring with:
 ### 1. Basic Monitoring
 
 ```python
-from HoloLoom.alignment.monitoring import AlignmentMonitor
+from hololoom.alignment.monitoring import AlignmentMonitor
 
 # Create monitor
 monitor = AlignmentMonitor()
@@ -42,7 +42,7 @@ print(monitor.get_summary())
 
 ```python
 from pathlib import Path
-from HoloLoom.alignment.monitoring import AlignmentMonitor
+from hololoom.alignment.monitoring import AlignmentMonitor
 
 # Production monitor with persistence
 monitor = AlignmentMonitor(
@@ -85,7 +85,7 @@ async def process_query(query_text):
 
 ```bash
 # Run live monitoring dashboard
-python HoloLoom/alignment/live_monitor.py
+python hololoom/alignment/live_monitor.py
 ```
 
 **Output**:
@@ -293,14 +293,14 @@ sum by (component) (alignment_latency_p99)
 
 ```python
 from pathlib import Path
-from HoloLoom.alignment.monitoring import AlignmentMonitor, set_global_monitor
+from hololoom.alignment.monitoring import AlignmentMonitor, set_global_monitor
 
 # Create and set global monitor
 monitor = AlignmentMonitor(persist_path=Path("./production_metrics.json"))
 set_global_monitor(monitor)
 
 # Use throughout application
-from HoloLoom.alignment.monitoring import get_global_monitor
+from hololoom.alignment.monitoring import get_global_monitor
 
 monitor = get_global_monitor()
 
@@ -313,7 +313,7 @@ with monitor.track("guardrails"):
 ```python
 # monitoring_service.py
 from flask import Flask, Response, jsonify
-from HoloLoom.alignment.monitoring import AlignmentMonitor
+from hololoom.alignment.monitoring import AlignmentMonitor
 
 app = Flask(__name__)
 monitor = AlignmentMonitor()
@@ -345,8 +345,8 @@ if __name__ == '__main__':
 ### Option 3: Background Dashboard
 
 ```python
-from HoloLoom.alignment.live_monitor import LiveDashboard
-from HoloLoom.alignment.monitoring import AlignmentMonitor
+from hololoom.alignment.live_monitor import LiveDashboard
+from hololoom.alignment.monitoring import AlignmentMonitor
 
 # Start background dashboard
 monitor = AlignmentMonitor()
@@ -520,7 +520,7 @@ for component, metrics in monitor.metrics.items():
 ### Example 1: Basic Integration
 
 ```python
-from HoloLoom.alignment.monitoring import AlignmentMonitor
+from hololoom.alignment.monitoring import AlignmentMonitor
 
 monitor = AlignmentMonitor()
 

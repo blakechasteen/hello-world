@@ -71,10 +71,10 @@ hololoom cluster nodes     # List nodes
 ### Architecture
 | File | Purpose |
 |------|---------|
-| `HoloLoom/weaving_orchestrator.py` | Main orchestrator (3,476 lines) |
-| `HoloLoom/policy/unified.py` | Neural policy + Thompson Sampling |
-| `HoloLoom/memory/unified.py` | Unified memory interface |
-| `HoloLoom/config.py` | Configuration modes |
+| `hololoom/weaving_orchestrator.py` | Main orchestrator (3,476 lines) |
+| `hololoom/policy/unified.py` | Neural policy + Thompson Sampling |
+| `hololoom/memory/unified.py` | Unified memory interface |
+| `hololoom/config.py` | Configuration modes |
 
 ### Documentation
 | File | Purpose |
@@ -133,10 +133,10 @@ docker-compose up -d
 
 ```bash
 # Start Agentic API (queries, monitoring) on port 8000
-uvicorn HoloLoom.server.agentic_api:app --port 8000
+uvicorn hololoom.server.agentic_api:app --port 8000
 
 # Start Agent Manager (threads, swarms) on port 8002
-uvicorn HoloLoom.server.agent_manager_api:app --port 8002
+uvicorn hololoom.server.agent_manager_api:app --port 8002
 ```
 
 ---
@@ -144,9 +144,9 @@ uvicorn HoloLoom.server.agent_manager_api:app --port 8002
 ## Testing
 
 ```bash
-pytest HoloLoom/tests/unit/ -v          # Unit (<5s)
-pytest HoloLoom/tests/integration/ -v   # Integration (<30s)
-pytest HoloLoom/tests/e2e/ -v           # End-to-end (<2min)
+pytest hololoom/tests/unit/ -v          # Unit (<5s)
+pytest hololoom/tests/integration/ -v   # Integration (<30s)
+pytest hololoom/tests/e2e/ -v           # End-to-end (<2min)
 ```
 
 ---

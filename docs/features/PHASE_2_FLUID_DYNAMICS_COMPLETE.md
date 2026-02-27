@@ -17,7 +17,7 @@ Context now "flows like water" through the knowledge graph, automatically fillin
 
 ## What Was Implemented
 
-### 1. PressureField ([pressure_field.py](HoloLoom/physics/pressure_field.py)) - 210 lines
+### 1. PressureField ([pressure_field.py](hololoom/physics/pressure_field.py)) - 210 lines
 
 **Importance density map** for context across the knowledge graph.
 
@@ -36,7 +36,7 @@ gradient = neighbor_pressure - node_pressure
 High pressure → Low pressure = natural flow direction
 ```
 
-### 2. VelocityField ([velocity_field.py](HoloLoom/physics/velocity_field.py)) - 230 lines
+### 2. VelocityField ([velocity_field.py](hololoom/physics/velocity_field.py)) - 230 lines
 
 **Information flow vectors** driven by pressure gradients.
 
@@ -56,7 +56,7 @@ dv/dt = -gradient(p) + viscosity * laplacian(v)
 v_new = v_old - gradient * dt - viscosity * v_old * dt
 ```
 
-### 3. ContextFlowEngine ([fluid_dynamics.py](HoloLoom/physics/fluid_dynamics.py)) - 360 lines
+### 3. ContextFlowEngine ([fluid_dynamics.py](hololoom/physics/fluid_dynamics.py)) - 360 lines
 
 **Navier-Stokes solver** for adaptive context packing.
 
@@ -99,7 +99,7 @@ def step(dt):
     velocity.decay(decay_rate=1.0 - viscosity * dt)
 ```
 
-### 4. AdaptivePacker ([adaptive_packer.py](HoloLoom/physics/adaptive_packer.py)) - 280 lines
+### 4. AdaptivePacker ([adaptive_packer.py](hololoom/physics/adaptive_packer.py)) - 280 lines
 
 **High-level API** for adaptive context packing.
 
@@ -136,13 +136,13 @@ for node, importance, text in result.nodes:
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `HoloLoom/physics/__init__.py` | 40 | Package exports |
-| `HoloLoom/physics/pressure_field.py` | 210 | Importance density map |
-| `HoloLoom/physics/velocity_field.py` | 230 | Information flow vectors |
-| `HoloLoom/physics/fluid_dynamics.py` | 360 | Navier-Stokes solver |
-| `HoloLoom/physics/adaptive_packer.py` | 280 | High-level packing API |
+| `hololoom/physics/__init__.py` | 40 | Package exports |
+| `hololoom/physics/pressure_field.py` | 210 | Importance density map |
+| `hololoom/physics/velocity_field.py` | 230 | Information flow vectors |
+| `hololoom/physics/fluid_dynamics.py` | 360 | Navier-Stokes solver |
+| `hololoom/physics/adaptive_packer.py` | 280 | High-level packing API |
 | `demos/demo_fluid_dynamics_simple.py` | 284 | Comprehensive demo |
-| `HoloLoom/tests/integration/test_fluid_dynamics.py` | 260 | Integration tests |
+| `hololoom/tests/integration/test_fluid_dynamics.py` | 260 | Integration tests |
 
 **Total**: ~1,664 lines
 
@@ -292,8 +292,8 @@ Fluid dynamics integrates seamlessly with existing systems:
 ### With Spring Physics (Phase 0)
 
 ```python
-from HoloLoom.memory.integrated_memory_system import IntegratedMemorySystem
-from HoloLoom.physics import AdaptivePacker
+from hololoom.memory.integrated_memory_system import IntegratedMemorySystem
+from hololoom.physics import AdaptivePacker
 
 # Create memory system with spring physics
 system = await IntegratedMemorySystem.create_default()
@@ -318,8 +318,8 @@ result = packer.pack_sync(max_iterations=10)
 ### With Weaving Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.physics import AdaptivePacker
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.physics import AdaptivePacker
 
 async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
     # Weave query

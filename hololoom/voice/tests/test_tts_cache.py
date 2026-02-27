@@ -24,7 +24,7 @@ from unittest.mock import Mock, patch, AsyncMock
 from typing import Optional
 
 # Import module under test
-from HoloLoom.voice.tts_cache import (
+from hololoom.voice.tts_cache import (
     TTSCache,
     CacheConfig,
     CacheStats,
@@ -330,7 +330,7 @@ class TestCacheOperations:
         await cache.set("Hello", "nova", "en", b"audio_data")
 
     @pytest.mark.asyncio
-    @patch('HoloLoom.voice.tts_cache.aioredis.from_url')
+    @patch('hololoom.voice.tts_cache.aioredis.from_url')
     async def test_cache_get_hit(self, mock_from_url, cache_config, mock_redis):
         """Cache get should return cached audio on hit"""
         mock_from_url.return_value = mock_redis
@@ -346,7 +346,7 @@ class TestCacheOperations:
         assert cache.stats.misses == 0
 
     @pytest.mark.asyncio
-    @patch('HoloLoom.voice.tts_cache.aioredis.from_url')
+    @patch('hololoom.voice.tts_cache.aioredis.from_url')
     async def test_cache_get_miss(self, mock_from_url, cache_config, mock_redis):
         """Cache get should return None on miss"""
         mock_from_url.return_value = mock_redis
@@ -362,7 +362,7 @@ class TestCacheOperations:
         assert cache.stats.misses == 1
 
     @pytest.mark.asyncio
-    @patch('HoloLoom.voice.tts_cache.aioredis.from_url')
+    @patch('hololoom.voice.tts_cache.aioredis.from_url')
     async def test_cache_set(self, mock_from_url, cache_config, mock_redis):
         """Cache set should store audio"""
         mock_from_url.return_value = mock_redis
@@ -380,7 +380,7 @@ class TestCacheOperations:
         assert args[2] == b"audio_data"
 
     @pytest.mark.asyncio
-    @patch('HoloLoom.voice.tts_cache.aioredis.from_url')
+    @patch('hololoom.voice.tts_cache.aioredis.from_url')
     async def test_cache_set_size_limit(self, mock_from_url, cache_config, mock_redis):
         """Cache set should reject oversized audio"""
         mock_from_url.return_value = mock_redis
@@ -418,7 +418,7 @@ class TestCacheManagement:
     """Test cache management operations"""
 
     @pytest.mark.asyncio
-    @patch('HoloLoom.voice.tts_cache.aioredis.from_url')
+    @patch('hololoom.voice.tts_cache.aioredis.from_url')
     async def test_clear_cache(self, mock_from_url, cache_config, mock_redis):
         """Clear should remove all TTS keys"""
         mock_from_url.return_value = mock_redis
@@ -433,7 +433,7 @@ class TestCacheManagement:
         mock_redis.delete.assert_called_once()
 
     @pytest.mark.asyncio
-    @patch('HoloLoom.voice.tts_cache.aioredis.from_url')
+    @patch('hololoom.voice.tts_cache.aioredis.from_url')
     async def test_get_cache_size(self, mock_from_url, cache_config, mock_redis):
         """Get cache size should return memory usage"""
         mock_from_url.return_value = mock_redis
@@ -447,7 +447,7 @@ class TestCacheManagement:
         assert size == 1024000
 
     @pytest.mark.asyncio
-    @patch('HoloLoom.voice.tts_cache.aioredis.from_url')
+    @patch('hololoom.voice.tts_cache.aioredis.from_url')
     async def test_get_stats(self, mock_from_url, cache_config, mock_redis):
         """Get stats should return statistics dictionary"""
         mock_from_url.return_value = mock_redis
@@ -471,7 +471,7 @@ class TestContextManager:
     """Test async context manager"""
 
     @pytest.mark.asyncio
-    @patch('HoloLoom.voice.tts_cache.aioredis.from_url')
+    @patch('hololoom.voice.tts_cache.aioredis.from_url')
     async def test_context_manager(self, mock_from_url, cache_config, mock_redis):
         """Cache should work as async context manager"""
         mock_from_url.return_value = mock_redis

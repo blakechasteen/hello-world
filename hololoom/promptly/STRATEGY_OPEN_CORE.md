@@ -80,7 +80,7 @@
 
 **Core Solvers** (all 6 problems):
 ```
-HoloLoom/promptly/
+hololoom/promptly/
 ├── solvers/
 │   ├── schema/          # Problem 1: Projection Trap
 │   ├── surgical/        # Problem 2: Revision Loop

@@ -903,7 +903,7 @@ def create_prober_from_discoverer(
         prober = create_prober_from_discoverer(discoverer, preset="balanced")
         report = prober.probe_feature(42, test_inputs, activation_fn, gradient_fn)
     """
-    from HoloLoom.dark_trace.research.adversarial_prober import (
+    from hololoom.dark_trace.research.adversarial_prober import (
         AdversarialProber, ProbeConfig
     )
 
@@ -970,10 +970,10 @@ def probe_feature_with_catalog(
         )
         print(f"Vulnerability: {result['vulnerability_level']}")
     """
-    from HoloLoom.dark_trace.research.adversarial_prober import (
+    from hololoom.dark_trace.research.adversarial_prober import (
         AdversarialProber, ProbeConfig, create_prober
     )
-    from HoloLoom.dark_trace.research.adversarial_catalog import (
+    from hololoom.dark_trace.research.adversarial_catalog import (
         AdversarialCatalog, create_catalog
     )
 

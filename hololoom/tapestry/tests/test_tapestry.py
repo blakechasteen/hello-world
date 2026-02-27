@@ -22,7 +22,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-from HoloLoom.tapestry.protocol import (
+from hololoom.tapestry.protocol import (
     ThreadStatus,
     Thread,
     Tapestry,
@@ -30,13 +30,13 @@ from HoloLoom.tapestry.protocol import (
     FabricCheckResult,
     NoTapestryError
 )
-from HoloLoom.tapestry.backends.json_backend import JsonTapestryBackend
-from HoloLoom.tapestry.factory import create_tapestry_backend
-from HoloLoom.tapestry.signals.registry import SignalRegistry
-from HoloLoom.tapestry.inspector import FabricInspector
-from HoloLoom.tapestry.warper import Warper
-from HoloLoom.tapestry.keeper import LoomKeeper, SessionContext
-from HoloLoom.tapestry.git import GitIntegration
+from hololoom.tapestry.backends.json_backend import JsonTapestryBackend
+from hololoom.tapestry.factory import create_tapestry_backend
+from hololoom.tapestry.signals.registry import SignalRegistry
+from hololoom.tapestry.inspector import FabricInspector
+from hololoom.tapestry.warper import Warper
+from hololoom.tapestry.keeper import LoomKeeper, SessionContext
+from hololoom.tapestry.git import GitIntegration
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -292,7 +292,7 @@ class TestSignalRegistry:
     def test_builtin_signals_registered(self):
         """Verify 6 built-in signals are registered."""
         # Import builtins to trigger registration
-        from HoloLoom.tapestry.signals import builtins
+        from hololoom.tapestry.signals import builtins
 
         assert SignalRegistry.count() >= 6
         assert SignalRegistry.is_registered("tests")
@@ -304,14 +304,14 @@ class TestSignalRegistry:
 
     def test_total_weight_approximately_one(self):
         """Verify total weight is approximately 1.0."""
-        from HoloLoom.tapestry.signals import builtins
+        from hololoom.tapestry.signals import builtins
 
         total = SignalRegistry.total_weight()
         assert 0.99 <= total <= 1.01
 
     def test_get_signal(self):
         """Test getting signal by name."""
-        from HoloLoom.tapestry.signals import builtins
+        from hololoom.tapestry.signals import builtins
 
         signal = SignalRegistry.get("tests")
         assert signal is not None
@@ -320,7 +320,7 @@ class TestSignalRegistry:
 
     def test_get_all(self):
         """Test getting all signals."""
-        from HoloLoom.tapestry.signals import builtins
+        from hololoom.tapestry.signals import builtins
 
         signals = SignalRegistry.get_all()
         assert len(signals) >= 6

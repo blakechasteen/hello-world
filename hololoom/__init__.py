@@ -4,7 +4,7 @@ HoloLoom - Unified Memory System
 The 10/10 Layer: Everything is a memory operation.
 
 Perfect API Surface:
-    from HoloLoom import HoloLoom, Memory
+    from hololoom import hololoom, Memory
 
     # That's it. Two imports.
 
@@ -14,8 +14,8 @@ Perfect API Surface:
     await loom.reflect(memories, feedback={...})
 
 Advanced users can still import internal components:
-    from HoloLoom.core.memory.awareness_graph import AwarenessGraph
-    from HoloLoom.input.router import InputRouter
+    from hololoom.core.memory.awareness_graph import AwarenessGraph
+    from hololoom.input.router import InputRouter
     # Full control when needed
 """
 
@@ -58,7 +58,7 @@ __all__ = [
 # ==========================================================================
 # Backward Compatibility: HoloLoom.X → HoloLoom.core.X  (Wave 3, 2026-02-27)
 # ==========================================================================
-# Core modules moved to HoloLoom/core/.  Old import paths still work via this
+# Core modules moved to hololoom/core/.  Old import paths still work via this
 # meta-path finder but emit a DeprecationWarning.
 #
 # Covers: protocols, memory, embedding, policy, convergence, orchestrator,
@@ -75,8 +75,8 @@ _CORE_MODULES = frozenset({
 class _CoreRedirector:
     """Meta-path finder that redirects HoloLoom.<core> → HoloLoom.core.<core>."""
 
-    _PREFIX = "HoloLoom."
-    _NEW_PREFIX = "HoloLoom.core."
+    _PREFIX = "hololoom."
+    _NEW_PREFIX = "hololoom.core."
 
     def find_module(self, fullname, path=None):
         if not fullname.startswith(self._PREFIX):
@@ -126,7 +126,7 @@ def __getattr__(name):
 
     # Core API
     if name == 'HoloLoom':
-        from .unified_api import HoloLoom
+        from .unified_api import hololoom
         _lazy_imports[name] = HoloLoom
         return HoloLoom
 

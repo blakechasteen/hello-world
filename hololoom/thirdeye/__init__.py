@@ -21,7 +21,7 @@ Created: 2025-11-30
 Author: HoloLoom Team
 
 Quick Start:
-    from HoloLoom.thirdeye import ChatBridge, Thoughtspace, WebGLRenderer
+    from hololoom.thirdeye import ChatBridge, Thoughtspace, WebGLRenderer
 
     # Create components
     bridge = ChatBridge(chat_ws_url="ws://localhost:8002")
@@ -42,7 +42,7 @@ Quick Start:
 """
 
 # Core data types
-from HoloLoom.thirdeye.concept import (
+from hololoom.thirdeye.concept import (
     Concept,
     ConceptType,
     ConceptWorld,
@@ -54,7 +54,7 @@ from HoloLoom.thirdeye.concept import (
 )
 
 # Transitions
-from HoloLoom.thirdeye.transition import (
+from hololoom.thirdeye.transition import (
     Transition,
     TransitionType,
     TransitionConfig,
@@ -66,7 +66,7 @@ from HoloLoom.thirdeye.transition import (
 )
 
 # Chat integration
-from HoloLoom.thirdeye.chat_bridge import (
+from hololoom.thirdeye.chat_bridge import (
     ChatBridge,
     ChatMessage,
     MessageRole,
@@ -76,7 +76,7 @@ from HoloLoom.thirdeye.chat_bridge import (
 )
 
 # Thoughtspace
-from HoloLoom.thirdeye.thoughtspace import (
+from hololoom.thirdeye.thoughtspace import (
     Thoughtspace,
     ThoughtspaceMode,
     ThoughtspaceState,
@@ -87,7 +87,7 @@ from HoloLoom.thirdeye.thoughtspace import (
 )
 
 # Renderer protocol
-from HoloLoom.thirdeye.renderer_protocol import (
+from hololoom.thirdeye.renderer_protocol import (
     ConceptRenderer,
     BaseConceptRenderer,
     RenderCommand,
@@ -98,7 +98,7 @@ from HoloLoom.thirdeye.renderer_protocol import (
 )
 
 # Renderers
-from HoloLoom.thirdeye.renderers.webgl import (
+from hololoom.thirdeye.renderers.webgl import (
     WebGLRenderer,
     create_webgl_renderer,
 )

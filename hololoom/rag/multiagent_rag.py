@@ -74,12 +74,12 @@ from dataclasses import dataclass, field
 from collections import Counter
 from enum import Enum
 
-from HoloLoom.config import Config
-from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
+from hololoom.config import Config
+from hololoom.rag.simple_rag import SimpleRAG, RAGResult
 
 # Optional dependencies for advanced features
 try:
-    from HoloLoom.rag.embedding_plugins import (
+    from hololoom.rag.embedding_plugins import (
         EmbeddingProvider,
         MatryoshkaEmbedding,
         HuggingFaceEmbedding,
@@ -92,13 +92,13 @@ except ImportError:
     HuggingFaceEmbedding = None
 
 try:
-    from HoloLoom.rag.multihop_reasoning import MultiHopRAGMixin
+    from hololoom.rag.multihop_reasoning import MultiHopRAGMixin
     MULTIHOP_AVAILABLE = True
 except ImportError:
     MULTIHOP_AVAILABLE = False
 
 try:
-    from HoloLoom.rag.sql_integration import SQLRAGMixin
+    from hololoom.rag.sql_integration import SQLRAGMixin
     SQL_AVAILABLE = True
 except ImportError:
     SQL_AVAILABLE = False
@@ -107,7 +107,7 @@ logger = logging.getLogger(__name__)
 
 # LLM integration for LLM judge consensus
 try:
-    from HoloLoom.awareness.llm_integration import OllamaLLM, AnthropicLLM, LLMProvider
+    from hololoom.awareness.llm_integration import OllamaLLM, AnthropicLLM, LLMProvider
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False

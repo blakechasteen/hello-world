@@ -12,7 +12,7 @@ Features:
 - Confidence scoring for each detection
 
 Usage:
-    from HoloLoom.agentic.hallucination_detector import HallucinationDetector
+    from hololoom.agentic.hallucination_detector import HallucinationDetector
 
     detector = HallucinationDetector(indexer=codebase_indexer)
     hallucinations = await detector.detect(code, language="python")
@@ -29,7 +29,7 @@ from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 
-from HoloLoom.agentic.codebase_ingestion import CodebaseIndexer, EntityType, Language
+from hololoom.agentic.codebase_ingestion import CodebaseIndexer, EntityType, Language
 
 
 logger = logging.getLogger(__name__)

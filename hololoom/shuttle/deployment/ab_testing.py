@@ -28,9 +28,9 @@ from typing import List, Dict, Any, Tuple
 from pathlib import Path
 
 # HoloLoom
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config
-from HoloLoom.memory.graph import KG
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.memory.graph import KG
 
 
 # ============================================================================
@@ -109,7 +109,7 @@ class ABTestRunner:
         Returns:
             Metrics dict
         """
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
 
         # Configure Shuttle
         hololoom_config.enable_shuttle = enable_shuttle

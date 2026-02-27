@@ -30,7 +30,7 @@ Data Classes:
     - VerificationResult: Output verification result
 
 Example:
-    from HoloLoom.apps.departments.proto.abilities import (
+    from hololoom.apps.departments.proto.abilities import (
         BaseAbility,
         AbilityManifest,
         AbilityRegistry,

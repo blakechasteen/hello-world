@@ -23,8 +23,8 @@ from typing import List, Dict, Any, Optional, Set
 from datetime import datetime
 from dataclasses import dataclass, field
 
-from HoloLoom.documentation.types import MemoryShard
-from HoloLoom.spinning_wheel.code import CodeSpinner, CodeSpinnerConfig
+from hololoom.documentation.types import MemoryShard
+from hololoom.spinning_wheel.code import CodeSpinner, CodeSpinnerConfig
 
 
 @dataclass

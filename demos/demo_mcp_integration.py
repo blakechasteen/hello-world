@@ -56,7 +56,7 @@ async def demo_cross_department_workflow():
     print("[3/6] Trough Detection...")
 
     # Scan a sample file (use test file for demo)
-    test_file = "HoloLoom/agentic_search/test_citation.py"
+    test_file = "hololoom/agentic_search/test_citation.py"
 
     scan_result = await trough_server.trough_scan_file(
         file_path=test_file,
@@ -235,7 +235,7 @@ async def demo_batch_fixing():
     xterminator = XTerminatorMCPServer()
 
     # Scan file
-    test_file = "HoloLoom/agentic_search/test_citation.py"
+    test_file = "hololoom/agentic_search/test_citation.py"
 
     print(f"Scanning {test_file}...")
     scan_result = await trough.trough_scan_file(

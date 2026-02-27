@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
 
-from HoloLoom.prompting.testing.protocol import (
+from hololoom.prompting.testing.protocol import (
     TestType,
     TestStatus,
     PromptTestCase,
@@ -26,22 +26,22 @@ from HoloLoom.prompting.testing.protocol import (
     PromptTestReport,
     PromptTestConfig,
 )
-from HoloLoom.prompting.testing.golden_dataset import (
+from hololoom.prompting.testing.golden_dataset import (
     GoldenDatasetManager,
     GoldenPair,
     create_golden_dataset,
 )
-from HoloLoom.prompting.testing.mutation_testing import (
+from hololoom.prompting.testing.mutation_testing import (
     PromptMutator,
     MutationType,
     Mutation,
 )
-from HoloLoom.prompting.testing.regression_testing import (
+from hololoom.prompting.testing.regression_testing import (
     RegressionDetector,
     RegressionType,
     Regression,
 )
-from HoloLoom.prompting.testing.metrics_collector import (
+from hololoom.prompting.testing.metrics_collector import (
     MetricsCollector,
     MetricType,
     Metric,

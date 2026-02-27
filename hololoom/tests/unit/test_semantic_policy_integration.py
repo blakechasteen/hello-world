@@ -9,7 +9,7 @@ Tests the complete semantic integration pipeline:
 3. SemanticAwareBandit - Thompson Sampling with semantic adjustments
 4. NeuralCore integration - Gated semantic feature fusion
 
-Run with: pytest HoloLoom/tests/unit/test_semantic_policy_integration.py -v
+Run with: pytest hololoom/tests/unit/test_semantic_policy_integration.py -v
 """
 
 import pytest
@@ -18,7 +18,7 @@ import torch
 from typing import Dict, Any
 
 # Import semantic integration components
-from HoloLoom.semantic_calculus.semantic_state import (
+from hololoom.semantic_calculus.semantic_state import (
     SemanticState,
     SemanticToolSelector,
     SemanticAwareBandit,
@@ -470,7 +470,7 @@ class TestNeuralCoreIntegration:
     def neural_core(self):
         """Create a NeuralCore instance."""
         try:
-            from HoloLoom.policy.unified import NeuralCore
+            from hololoom.policy.unified import NeuralCore
             return NeuralCore(d_model=384, n_layers=1, n_heads=2, semantic_dim=8)
         except ImportError:
             pytest.skip("NeuralCore not available")

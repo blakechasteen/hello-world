@@ -6,12 +6,12 @@ Test Results: 38/38 PASSING
 
 ## File Location Map
 
-All files are located in: HoloLoom/departments/proto/abilities/core/
+All files are located in: hololoom/departments/proto/abilities/core/
 
 ### Core Implementation Files
 
 1. code_execution.py (890 lines)
-   Location: HoloLoom/departments/proto/abilities/core/code_execution.py
+   Location: hololoom/departments/proto/abilities/core/code_execution.py
    
    Main implementation file containing:
    - CodeExecutionAbility class
@@ -27,7 +27,7 @@ All files are located in: HoloLoom/departments/proto/abilities/core/
 ### Test Files
 
 2. test_code_execution.py (450 lines, 38 tests)
-   Location: HoloLoom/departments/proto/abilities/core/test_code_execution.py
+   Location: hololoom/departments/proto/abilities/core/test_code_execution.py
    
    Comprehensive test suite with 9 test classes:
    - TestManifest: 8 tests
@@ -41,12 +41,12 @@ All files are located in: HoloLoom/departments/proto/abilities/core/
    - TestIntegration: 3 tests
    
    Run tests with:
-   pytest HoloLoom/departments/proto/abilities/core/test_code_execution.py -v
+   pytest hololoom/departments/proto/abilities/core/test_code_execution.py -v
 
 ### Documentation Files
 
 3. CODE_EXECUTION_README.md (1,000+ lines)
-   Location: HoloLoom/departments/proto/abilities/core/CODE_EXECUTION_README.md
+   Location: hololoom/departments/proto/abilities/core/CODE_EXECUTION_README.md
    
    User-facing documentation covering:
    - Quick start guide
@@ -57,7 +57,7 @@ All files are located in: HoloLoom/departments/proto/abilities/core/
    - Troubleshooting
 
 4. INTEGRATION_GUIDE.md (500+ lines)
-   Location: HoloLoom/departments/proto/abilities/core/INTEGRATION_GUIDE.md
+   Location: hololoom/departments/proto/abilities/core/INTEGRATION_GUIDE.md
    
    Developer-focused documentation covering:
    - Registry integration
@@ -69,7 +69,7 @@ All files are located in: HoloLoom/departments/proto/abilities/core/
    - Monitoring
 
 5. examples.py (380 lines)
-   Location: HoloLoom/departments/proto/abilities/core/examples.py
+   Location: hololoom/departments/proto/abilities/core/examples.py
    
    8 runnable example programs:
    1. Simple print statement
@@ -82,13 +82,13 @@ All files are located in: HoloLoom/departments/proto/abilities/core/
    8. Preflight rejection
    
    Run with:
-   python -m HoloLoom.apps.departments.proto.abilities.core.examples 1
+   python -m hololoom.apps.departments.proto.abilities.core.examples 1
    (Replace 1 with example number)
 
 ### Module Files
 
 6. __init__.py (Updated)
-   Location: HoloLoom/departments/proto/abilities/core/__init__.py
+   Location: hololoom/departments/proto/abilities/core/__init__.py
    
    Updated to export:
    - CodeExecutionAbility
@@ -133,21 +133,21 @@ All files are located in: HoloLoom/departments/proto/abilities/core/
 ## Usage Quick Reference
 
 ### Basic Execution
-from HoloLoom.apps.departments.proto.abilities.core import CodeExecutionAbility
-from HoloLoom.apps.departments.proto.abilities.protocol import AbilityContext
+from hololoom.apps.departments.proto.abilities.core import CodeExecutionAbility
+from hololoom.apps.departments.proto.abilities.protocol import AbilityContext
 
 ability = CodeExecutionAbility()
 context = AbilityContext(session_id="test", user_confirmed=True)
 result = await ability.execute({"code": "print('hi')"}, context)
 
 ### With Configuration
-from HoloLoom.apps.departments.proto.abilities.core import CodeExecutionConfig
+from hololoom.apps.departments.proto.abilities.core import CodeExecutionConfig
 
 config = CodeExecutionConfig(max_timeout=60.0, max_output_length=500_000)
 ability = CodeExecutionAbility(config)
 
 ### Registry Integration
-from HoloLoom.apps.departments.proto.abilities.registry import AbilityRegistry
+from hololoom.apps.departments.proto.abilities.registry import AbilityRegistry
 
 registry = AbilityRegistry()
 registry.register(CodeExecutionAbility())
@@ -208,7 +208,7 @@ Integration:
 
 ## Protocol Compliance
 
-Implements: HoloLoom.apps.departments.proto.abilities.protocol.BaseAbility
+Implements: hololoom.apps.departments.proto.abilities.protocol.BaseAbility
 
 Methods:
 - preflight(context) -> PreflightResult
@@ -227,7 +227,7 @@ Manifest:
 For using in production:
 1. Review CODE_EXECUTION_IMPLEMENTATION_COMPLETE.md
 2. Configure based on your environment
-3. Run tests: pytest HoloLoom/departments/proto/abilities/core/test_code_execution.py
+3. Run tests: pytest hololoom/departments/proto/abilities/core/test_code_execution.py
 4. Integrate with AbilityRegistry
 5. Enable monitoring and logging
 6. Deploy to production
@@ -238,5 +238,5 @@ For using in production:
 - Developer Guide: INTEGRATION_GUIDE.md
 - Examples: examples.py
 - Tests: test_code_execution.py
-- Protocol: HoloLoom/departments/proto/abilities/protocol.py
+- Protocol: hololoom/departments/proto/abilities/protocol.py
 - Implementation Complete: CODE_EXECUTION_IMPLEMENTATION_COMPLETE.md

@@ -28,7 +28,7 @@ import logging
 from typing import Type, TypeVar, Optional, Any, Dict, Generic
 from pydantic import BaseModel, ValidationError
 
-from HoloLoom.awareness.llm_integration import LLMProtocol
+from hololoom.awareness.llm_integration import LLMProtocol
 
 # Generic type variable for Pydantic models
 T = TypeVar("T", bound=BaseModel)

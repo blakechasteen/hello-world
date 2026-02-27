@@ -18,13 +18,13 @@ from typing import Optional, Dict, List
 from pathlib import Path
 import time
 
-from HoloLoom.agents.types import AgentProfile, AgentStats
-from HoloLoom.agents.working_memory import AgentWorkingMemory
-from HoloLoom.agents.learner import WorkingMemoryLearner
-from HoloLoom.memory.graph import KG
-from HoloLoom.protocols.types import Query, MemoryShard, Context
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.config import Config
+from hololoom.agents.types import AgentProfile, AgentStats
+from hololoom.agents.working_memory import AgentWorkingMemory
+from hololoom.agents.learner import WorkingMemoryLearner
+from hololoom.memory.graph import KG
+from hololoom.protocols.types import Query, MemoryShard, Context
+from hololoom.fabric.spacetime import Spacetime
+from hololoom.config import Config
 
 
 class AgentOrchestrator:
@@ -151,7 +151,7 @@ class AgentOrchestrator:
     def _simple_response(self, query: Query, context: List[MemoryShard]) -> Spacetime:
         """Simple baseline response (no weaving orchestrator)"""
         from datetime import datetime
-        from HoloLoom.fabric.spacetime import WeavingTrace
+        from hololoom.fabric.spacetime import WeavingTrace
 
         # Concatenate top context
         context_text = "\n\n".join([shard.text for shard in context[:3]])
@@ -259,7 +259,7 @@ def create_agent(
     Returns:
         AgentOrchestrator instance
     """
-    from HoloLoom.agents.profiles import get_profile
+    from hololoom.agents.profiles import get_profile
 
     profile = get_profile(profile_name)
 

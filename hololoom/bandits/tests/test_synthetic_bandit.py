@@ -9,8 +9,8 @@ import pytest
 import numpy as np
 import torch
 from typing import Callable
-from HoloLoom.bandits.config import BanditConfig, create_neural_ts_policy
-from HoloLoom.bandits.neural_ts.types import Context, Action, Observation
+from hololoom.bandits.config import BanditConfig, create_neural_ts_policy
+from hololoom.bandits.neural_ts.types import Context, Action, Observation
 
 
 class SyntheticBandit:

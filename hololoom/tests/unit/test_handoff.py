@@ -29,7 +29,7 @@ class TestUnifiedIdentity:
 
     def test_create_identity(self):
         """Test creating a new identity."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.identity import UnifiedIdentity
 
         identity = UnifiedIdentity.create("test_user", device_name="my-laptop")
 
@@ -41,7 +41,7 @@ class TestUnifiedIdentity:
 
     def test_identity_signing(self):
         """Test signing and verification."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.identity import UnifiedIdentity
 
         identity = UnifiedIdentity.create("signer", device_name="signer-device")
         message = b"Hello, World!"
@@ -56,7 +56,7 @@ class TestUnifiedIdentity:
 
     def test_identity_verification_fails_for_tampered_message(self):
         """Test that verification fails for tampered messages."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.identity import UnifiedIdentity
 
         identity = UnifiedIdentity.create("verifier", device_name="verifier-device")
         message = b"Original message"
@@ -71,8 +71,8 @@ class TestUnifiedIdentity:
 
     def test_device_management(self):
         """Test adding and removing devices."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
-        from HoloLoom.handoff.types import DeviceStatus
+        from hololoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.types import DeviceStatus
 
         identity = UnifiedIdentity.create("device_manager", device_name="main-device")
 
@@ -111,7 +111,7 @@ class TestUnifiedIdentity:
         """Test identity save/load file-based serialization."""
         import tempfile
         import os
-        from HoloLoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.identity import UnifiedIdentity
 
         identity = UnifiedIdentity.create("serializer", device_name="main")
         identity.add_device("laptop", b"y" * 32)
@@ -141,14 +141,14 @@ class TestLamportClock:
 
     def test_clock_initialization(self):
         """Test clock starts at 0."""
-        from HoloLoom.handoff.synced_memory import LamportClock
+        from hololoom.handoff.synced_memory import LamportClock
 
         clock = LamportClock()
         assert clock.value == 0
 
     def test_clock_tick_sync(self):
         """Test local tick increments clock (sync version)."""
-        from HoloLoom.handoff.synced_memory import LamportClock
+        from hololoom.handoff.synced_memory import LamportClock
 
         clock = LamportClock()
         t1 = clock.tick_sync()
@@ -163,7 +163,7 @@ class TestLamportClock:
     @pytest.mark.asyncio
     async def test_clock_tick_async(self):
         """Test async tick."""
-        from HoloLoom.handoff.synced_memory import LamportClock
+        from hololoom.handoff.synced_memory import LamportClock
 
         clock = LamportClock()
         t1 = await clock.tick()
@@ -175,7 +175,7 @@ class TestLamportClock:
 
     def test_clock_update_with_higher(self):
         """Test update with higher remote time (sync version)."""
-        from HoloLoom.handoff.synced_memory import LamportClock
+        from hololoom.handoff.synced_memory import LamportClock
 
         clock = LamportClock()
         clock.tick_sync()  # local = 1
@@ -186,7 +186,7 @@ class TestLamportClock:
 
     def test_clock_update_with_lower(self):
         """Test update with lower remote time (sync version)."""
-        from HoloLoom.handoff.synced_memory import LamportClock
+        from hololoom.handoff.synced_memory import LamportClock
 
         clock = LamportClock()
         for _ in range(10):
@@ -207,8 +207,8 @@ class TestSyncedMemory:
 
     def test_memory_initialization(self):
         """Test synced memory initialization."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
-        from HoloLoom.handoff.synced_memory import SyncedMemory
+        from hololoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.synced_memory import SyncedMemory
 
         identity = UnifiedIdentity.create("mem_test", device_name="mem-device")
         memory = SyncedMemory(identity)
@@ -221,8 +221,8 @@ class TestSyncedMemory:
     @pytest.mark.asyncio
     async def test_experience_creates_op(self):
         """Test that experience() creates a signed operation."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
-        from HoloLoom.handoff.synced_memory import SyncedMemory
+        from hololoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.synced_memory import SyncedMemory
 
         identity = UnifiedIdentity.create("experience_test", device_name="exp-device")
         memory = SyncedMemory(identity)
@@ -240,9 +240,9 @@ class TestSyncedMemory:
     @pytest.mark.asyncio
     async def test_merge_remote_ops(self):
         """Test merging remote operations."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
-        from HoloLoom.handoff.synced_memory import SyncedMemory, MemoryOp, MemoryOpType
-        from HoloLoom.handoff.types import SignedOp
+        from hololoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.synced_memory import SyncedMemory, MemoryOp, MemoryOpType
+        from hololoom.handoff.types import SignedOp
         import secrets
 
         identity = UnifiedIdentity.create("merge_test", device_name="merge-device")
@@ -270,8 +270,8 @@ class TestSyncedMemory:
     @pytest.mark.asyncio
     async def test_clear_pending_ops(self):
         """Test clearing pending ops after sync using mark_synced()."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
-        from HoloLoom.handoff.synced_memory import SyncedMemory
+        from hololoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.synced_memory import SyncedMemory
 
         identity = UnifiedIdentity.create("clear_test", device_name="clear-device")
         memory = SyncedMemory(identity)
@@ -300,7 +300,7 @@ class TestHandoffTypes:
 
     def test_device_status_enum(self):
         """Test DeviceStatus enum values."""
-        from HoloLoom.handoff.types import DeviceStatus
+        from hololoom.handoff.types import DeviceStatus
 
         assert DeviceStatus.ACTIVE is not None
         assert DeviceStatus.SUSPENDED is not None
@@ -309,7 +309,7 @@ class TestHandoffTypes:
 
     def test_handoff_status_enum(self):
         """Test HandoffStatus enum values."""
-        from HoloLoom.handoff.types import HandoffStatus
+        from hololoom.handoff.types import HandoffStatus
 
         assert HandoffStatus.PENDING is not None
         assert HandoffStatus.IN_PROGRESS is not None
@@ -320,7 +320,7 @@ class TestHandoffTypes:
 
     def test_device_manifest_creation(self):
         """Test DeviceManifest creation and serialization."""
-        from HoloLoom.handoff.types import DeviceManifest, DeviceStatus
+        from hololoom.handoff.types import DeviceManifest, DeviceStatus
 
         manifest = DeviceManifest(
             device_id="dev_123",
@@ -346,7 +346,7 @@ class TestHandoffTypes:
 
     def test_handoff_request_creation(self):
         """Test HandoffRequest creation."""
-        from HoloLoom.handoff.types import HandoffRequest
+        from hololoom.handoff.types import HandoffRequest
 
         request = HandoffRequest(
             request_id="",  # Will be auto-generated
@@ -367,7 +367,7 @@ class TestHandoffTypes:
 
     def test_handoff_request_serialization(self):
         """Test HandoffRequest to/from dict."""
-        from HoloLoom.handoff.types import HandoffRequest
+        from hololoom.handoff.types import HandoffRequest
 
         request = HandoffRequest(
             request_id="handoff_test123",
@@ -389,7 +389,7 @@ class TestHandoffTypes:
 
     def test_handoff_result_success(self):
         """Test HandoffResult success property."""
-        from HoloLoom.handoff.types import HandoffResult, HandoffStatus
+        from hololoom.handoff.types import HandoffResult, HandoffStatus
 
         result_success = HandoffResult(
             request_id="req_1",
@@ -420,7 +420,7 @@ class TestHandoffErrors:
 
     def test_handoff_error_base(self):
         """Test base HandoffError."""
-        from HoloLoom.handoff.types import HandoffError
+        from hololoom.handoff.types import HandoffError
 
         error = HandoffError(
             "Something went wrong",
@@ -434,7 +434,7 @@ class TestHandoffErrors:
 
     def test_device_not_found_error(self):
         """Test DeviceNotFoundError."""
-        from HoloLoom.handoff.types import DeviceNotFoundError
+        from hololoom.handoff.types import DeviceNotFoundError
 
         error = DeviceNotFoundError(
             "Device not in registry",
@@ -445,7 +445,7 @@ class TestHandoffErrors:
 
     def test_device_revoked_error(self):
         """Test DeviceRevokedError."""
-        from HoloLoom.handoff.types import DeviceRevokedError
+        from hololoom.handoff.types import DeviceRevokedError
 
         error = DeviceRevokedError(
             "Device has been revoked",
@@ -455,21 +455,21 @@ class TestHandoffErrors:
 
     def test_rate_limit_exceeded_error(self):
         """Test RateLimitExceededError."""
-        from HoloLoom.handoff.types import RateLimitExceededError
+        from hololoom.handoff.types import RateLimitExceededError
 
         error = RateLimitExceededError("Rate limit exceeded")
         assert "Rate limit exceeded" in str(error)
 
     def test_invalid_signature_error(self):
         """Test InvalidSignatureError."""
-        from HoloLoom.handoff.types import InvalidSignatureError
+        from hololoom.handoff.types import InvalidSignatureError
 
         error = InvalidSignatureError("Signature verification failed")
         assert "Signature verification failed" in str(error)
 
     def test_replay_attack_error(self):
         """Test ReplayAttackError."""
-        from HoloLoom.handoff.types import ReplayAttackError
+        from hololoom.handoff.types import ReplayAttackError
 
         error = ReplayAttackError("Stale timestamp detected")
         assert "Stale timestamp" in str(error)
@@ -485,7 +485,7 @@ class TestTransport:
 
     def test_transport_status_enum(self):
         """Test TransportStatus enum."""
-        from HoloLoom.handoff.transport import TransportStatus
+        from hololoom.handoff.transport import TransportStatus
 
         assert TransportStatus.DISCONNECTED is not None
         assert TransportStatus.CONNECTING is not None
@@ -495,7 +495,7 @@ class TestTransport:
 
     def test_websocket_transport_creation(self):
         """Test WebSocket transport creation."""
-        from HoloLoom.handoff.transport import WebSocketTransport, TransportStatus
+        from hololoom.handoff.transport import WebSocketTransport, TransportStatus
 
         transport = WebSocketTransport(
             device_id="dev_123",
@@ -508,7 +508,7 @@ class TestTransport:
 
     def test_bluetooth_transport_creation(self):
         """Test Bluetooth transport creation."""
-        from HoloLoom.handoff.transport import BluetoothTransport, TransportStatus
+        from hololoom.handoff.transport import BluetoothTransport, TransportStatus
 
         transport = BluetoothTransport(device_id="dev_456")
 
@@ -517,7 +517,7 @@ class TestTransport:
 
     def test_local_network_transport_creation(self):
         """Test LocalNetwork transport creation."""
-        from HoloLoom.handoff.transport import LocalNetworkTransport
+        from hololoom.handoff.transport import LocalNetworkTransport
 
         transport = LocalNetworkTransport(
             device_id="dev_789",
@@ -531,7 +531,7 @@ class TestTransport:
 
     def test_composite_transport_creation(self):
         """Test Composite transport with multiple transports."""
-        from HoloLoom.handoff.transport import (
+        from hololoom.handoff.transport import (
             CompositeTransport,
             WebSocketTransport,
             BluetoothTransport,
@@ -551,7 +551,7 @@ class TestTransport:
     @pytest.mark.asyncio
     async def test_websocket_connect_without_server(self):
         """Test WebSocket connect returns False without real server."""
-        from HoloLoom.handoff.transport import WebSocketTransport, TransportStatus
+        from hololoom.handoff.transport import WebSocketTransport, TransportStatus
 
         transport = WebSocketTransport("dev_test", "wss://nonexistent.example.com")
 
@@ -565,7 +565,7 @@ class TestTransport:
 
     def test_send_result_dataclass(self):
         """Test SendResult dataclass."""
-        from HoloLoom.handoff.transport import SendResult
+        from hololoom.handoff.transport import SendResult
 
         result = SendResult(
             success=True,
@@ -587,7 +587,7 @@ class TestTransport:
 
     def test_transport_message_dataclass(self):
         """Test TransportMessage dataclass."""
-        from HoloLoom.handoff.transport import TransportMessage
+        from hololoom.handoff.transport import TransportMessage
 
         msg = TransportMessage(
             source_device="dev_a",
@@ -602,7 +602,7 @@ class TestTransport:
 
     def test_create_default_transport_factory(self):
         """Test create_default_transport factory function."""
-        from HoloLoom.handoff.transport import create_default_transport
+        from hololoom.handoff.transport import create_default_transport
 
         transport = create_default_transport("dev_factory")
 
@@ -620,9 +620,9 @@ class TestHardenedHandoffOrchestrator:
 
     def test_orchestrator_creation(self):
         """Test orchestrator initialization."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
-        from HoloLoom.handoff.synced_memory import SyncedMemory
-        from HoloLoom.handoff.orchestrator import HardenedHandoffOrchestrator
+        from hololoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.synced_memory import SyncedMemory
+        from hololoom.handoff.orchestrator import HardenedHandoffOrchestrator
 
         identity = UnifiedIdentity.create("orchestrator_test", device_name="orch-device")
         memory = SyncedMemory(identity)
@@ -639,10 +639,10 @@ class TestHardenedHandoffOrchestrator:
     @pytest.mark.asyncio
     async def test_orchestrator_handoff_requires_active_device(self):
         """Test that handoff fails without target device."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
-        from HoloLoom.handoff.synced_memory import SyncedMemory
-        from HoloLoom.handoff.orchestrator import HardenedHandoffOrchestrator
-        from HoloLoom.handoff.types import DeviceNotFoundError
+        from hololoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.synced_memory import SyncedMemory
+        from hololoom.handoff.orchestrator import HardenedHandoffOrchestrator
+        from hololoom.handoff.types import DeviceNotFoundError
 
         identity = UnifiedIdentity.create("handoff_test", device_name="test-device")
         memory = SyncedMemory(identity)
@@ -661,9 +661,9 @@ class TestHardenedHandoffOrchestrator:
 
     def test_get_device_registry(self):
         """Test accessing device registry via orchestrator's identity."""
-        from HoloLoom.handoff.identity import UnifiedIdentity
-        from HoloLoom.handoff.synced_memory import SyncedMemory
-        from HoloLoom.handoff.orchestrator import HardenedHandoffOrchestrator
+        from hololoom.handoff.identity import UnifiedIdentity
+        from hololoom.handoff.synced_memory import SyncedMemory
+        from hololoom.handoff.orchestrator import HardenedHandoffOrchestrator
 
         identity = UnifiedIdentity.create("registry_test", device_name="main-device")
         # Add another device
@@ -690,35 +690,35 @@ class TestAuditTrailHandoffIntegration:
 
     def test_handoff_decision_type_exists(self):
         """Test that HANDOFF decision type exists in DecisionType enum."""
-        from HoloLoom.alignment.audit_trail import DecisionType
+        from hololoom.alignment.audit_trail import DecisionType
 
         assert hasattr(DecisionType, "HANDOFF")
         assert DecisionType.HANDOFF.value == "handoff"
 
     def test_device_sync_decision_type_exists(self):
         """Test that DEVICE_SYNC decision type exists."""
-        from HoloLoom.alignment.audit_trail import DecisionType
+        from hololoom.alignment.audit_trail import DecisionType
 
         assert hasattr(DecisionType, "DEVICE_SYNC")
         assert DecisionType.DEVICE_SYNC.value == "device_sync"
 
     def test_device_pairing_decision_type_exists(self):
         """Test that DEVICE_PAIRING decision type exists."""
-        from HoloLoom.alignment.audit_trail import DecisionType
+        from hololoom.alignment.audit_trail import DecisionType
 
         assert hasattr(DecisionType, "DEVICE_PAIRING")
         assert DecisionType.DEVICE_PAIRING.value == "device_pairing"
 
     def test_device_revocation_decision_type_exists(self):
         """Test that DEVICE_REVOCATION decision type exists."""
-        from HoloLoom.alignment.audit_trail import DecisionType
+        from hololoom.alignment.audit_trail import DecisionType
 
         assert hasattr(DecisionType, "DEVICE_REVOCATION")
         assert DecisionType.DEVICE_REVOCATION.value == "device_revocation"
 
     def test_log_handoff_decision(self):
         """Test logging a HANDOFF decision."""
-        from HoloLoom.alignment.audit_trail import (
+        from hololoom.alignment.audit_trail import (
             AuditTrail,
             DecisionType,
             OutcomeType,
@@ -744,7 +744,7 @@ class TestAuditTrailHandoffIntegration:
 
     def test_query_handoff_decisions(self):
         """Test querying HANDOFF decisions from audit trail."""
-        from HoloLoom.alignment.audit_trail import (
+        from hololoom.alignment.audit_trail import (
             AuditTrail,
             DecisionType,
             OutcomeType,
@@ -788,14 +788,14 @@ class TestPackageImports:
 
     def test_import_identity(self):
         """Test importing UnifiedIdentity from package."""
-        from HoloLoom.handoff import UnifiedIdentity, get_or_create_identity
+        from hololoom.handoff import UnifiedIdentity, get_or_create_identity
 
         assert UnifiedIdentity is not None
         assert get_or_create_identity is not None
 
     def test_import_types(self):
         """Test importing types from package."""
-        from HoloLoom.handoff import (
+        from hololoom.handoff import (
             DeviceStatus,
             HandoffStatus,
             SyncDirection,
@@ -814,7 +814,7 @@ class TestPackageImports:
 
     def test_import_errors(self):
         """Test importing error classes from package."""
-        from HoloLoom.handoff import (
+        from hololoom.handoff import (
             HandoffError,
             DeviceNotFoundError,
             DeviceRevokedError,
@@ -832,7 +832,7 @@ class TestPackageImports:
 
     def test_import_synced_memory(self):
         """Test importing synced memory from package."""
-        from HoloLoom.handoff import (
+        from hololoom.handoff import (
             SyncedMemory,
             LamportClock,
             MemoryOp,
@@ -844,13 +844,13 @@ class TestPackageImports:
 
     def test_import_orchestrator(self):
         """Test importing orchestrator from package."""
-        from HoloLoom.handoff import HardenedHandoffOrchestrator
+        from hololoom.handoff import HardenedHandoffOrchestrator
 
         assert HardenedHandoffOrchestrator is not None
 
     def test_import_transport(self):
         """Test importing transport from package."""
-        from HoloLoom.handoff import (
+        from hololoom.handoff import (
             TransportProtocol,
             TransportStatus,
             WebSocketTransport,

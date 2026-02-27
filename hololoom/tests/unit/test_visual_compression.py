@@ -4,7 +4,7 @@
 import pytest
 import numpy as np
 import networkx as nx
-from HoloLoom.memory.visual_compression import (
+from hololoom.memory.visual_compression import (
     calculate_optimal_dimensions,
     compress_to_visual,
     CompressionType,

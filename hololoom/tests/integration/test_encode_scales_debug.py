@@ -5,9 +5,9 @@ import sys
 sys.path.insert(0, '.')
 
 import numpy as np
-from HoloLoom.config import Config
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.embedding.linguistic_matryoshka_gate import (
+from hololoom.config import Config
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.embedding.linguistic_matryoshka_gate import (
     LinguisticMatryoshkaGate, LinguisticGateConfig, LinguisticFilterMode
 )
 

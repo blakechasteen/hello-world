@@ -20,7 +20,7 @@ import json
 import time
 import pytest
 
-from HoloLoom.federation.wire_protocol import (
+from hololoom.federation.wire_protocol import (
     # Enums
     ErrorCode,
     # Data classes

@@ -19,8 +19,8 @@ Layer naming convention:
 - tool_head: Tool selection logits
 
 Usage:
-    from HoloLoom.policy.unified import create_policy
-    from HoloLoom.dark_trace.models import PolicyAdapter
+    from hololoom.policy.unified import create_policy
+    from hololoom.dark_trace.models import PolicyAdapter
 
     policy = create_policy(...)
     adapter = PolicyAdapter(policy.net)
@@ -60,7 +60,7 @@ except ImportError:
     torch = None
     nn = None
 
-from HoloLoom.dark_trace.models.adapter import (
+from hololoom.dark_trace.models.adapter import (
     ModelAdapter,
     LayerInfo,
     LayerType,

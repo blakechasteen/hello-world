@@ -343,7 +343,7 @@ element.addEventListener('touchstart', (e) => {
 ## File Locations
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── workflow_builder.html          (1774 lines, +609 CSS)
 ├── workflow_builder.js            (2585 lines, +220 JS)
 ├── MOBILE_RESPONSIVE_FEATURES.md  (This detailed guide)

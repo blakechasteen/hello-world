@@ -18,7 +18,7 @@ import pytest
 import asyncio
 from datetime import datetime
 
-from HoloLoom.memory.hybrid_retrieval import (
+from hololoom.memory.hybrid_retrieval import (
     SemanticRetriever,
     BM25Retriever,
     GraphRetriever,
@@ -26,8 +26,8 @@ from HoloLoom.memory.hybrid_retrieval import (
     reciprocal_rank_fusion,
     create_hybrid_retriever
 )
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.protocols.types import MemoryShard
 
 
 # ============================================================================
@@ -65,7 +65,7 @@ def sample_memories():
         MemoryShard(
             id="m5",
             text="HoloLoom uses Thompson Sampling for tool selection",
-            entities=["HoloLoom", "ThompsonSampling"],
+            entities=["hololoom", "ThompsonSampling"],
             metadata={"timestamp": datetime.now().isoformat()}
         )
     ]
@@ -83,7 +83,7 @@ def knowledge_graph():
         KGEdge("EpsilonGreedy", "Exploration", "USES", 1.0),
         KGEdge("UCB", "Exploration", "USES", 1.0),
         KGEdge("Bayesian", "GaussianProcess", "USES", 1.0),
-        KGEdge("HoloLoom", "ThompsonSampling", "USES", 1.0)
+        KGEdge("hololoom", "ThompsonSampling", "USES", 1.0)
     ]
 
     kg.add_edges(edges)

@@ -8,10 +8,10 @@
 ### 1. Open the Gallery
 ```bash
 # Option A: Direct file
-open HoloLoom/web_dashboard/template_gallery.html
+open hololoom/web_dashboard/template_gallery.html
 
 # Option B: Local server (recommended)
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python -m http.server 8000
 # Visit: http://localhost:8000/template_gallery.html
 

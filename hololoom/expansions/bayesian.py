@@ -7,8 +7,8 @@ Bayesian uncertainty quantification for neural policy.
 Install: pip install hololoom[bayesian]
 
 Usage:
-    from HoloLoom.config import Config
-    from HoloLoom.expansions.bayesian import BayesianConfig
+    from hololoom.config import Config
+    from hololoom.expansions.bayesian import BayesianConfig
 
     config = Config.research()
     config.load_expansion(BayesianConfig(use_bayesian=True))
@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 try:
-    from HoloLoom.config import ExpansionBundle
+    from hololoom.config import ExpansionBundle
 except ImportError:
     # Fallback for testing
     class ExpansionBundle:

@@ -15,7 +15,7 @@ Architecture:
 This is "agents all the way down" - each search type gets its own intelligent agent.
 
 Usage:
-    from HoloLoom.search import SearchOrchestrator
+    from hololoom.search import SearchOrchestrator
 
     orchestrator = SearchOrchestrator()
     result = await orchestrator.search("What's the ROI comparison between bread and brewing?")

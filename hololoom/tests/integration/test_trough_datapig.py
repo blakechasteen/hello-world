@@ -11,7 +11,7 @@ import pytest
 import os
 import tempfile
 from pathlib import Path
-from HoloLoom.datapig import IssueType, Severity
+from hololoom.datapig import IssueType, Severity
 
 
 # ============================================================================

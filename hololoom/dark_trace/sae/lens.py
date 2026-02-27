@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Any, Union
 import torch
 import torch.nn.functional as F
 
-from HoloLoom.dark_trace.protocol import (
+from hololoom.dark_trace.protocol import (
     TraceLens,
     BaseLens,
     LensType,
@@ -31,7 +31,7 @@ from HoloLoom.dark_trace.protocol import (
     SafetyFlag,
 )
 
-from HoloLoom.dark_trace.sae.labeler import FeatureLabeler, FeatureLabel
+from hololoom.dark_trace.sae.labeler import FeatureLabeler, FeatureLabel
 
 
 class SAELens(BaseLens):

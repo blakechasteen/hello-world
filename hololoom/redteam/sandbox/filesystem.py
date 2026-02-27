@@ -4,7 +4,7 @@ Implements overlay filesystem (OverlayFS on Linux) with fallback to temporary co
 Provides complete filesystem isolation for red team adversarial code execution.
 
 Status: Production Ready (November 2025)
-Location: HoloLoom/redteam/sandbox/filesystem.py
+Location: hololoom/redteam/sandbox/filesystem.py
 Performance: <10ms mount/unmount, full POSIX compatibility
 Testing: 18/18 tests passing (100%)
 """

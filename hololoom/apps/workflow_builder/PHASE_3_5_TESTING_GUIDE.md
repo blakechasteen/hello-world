@@ -8,7 +8,7 @@ Open a terminal and run:
 
 ```bash
 cd c:\Users\blake\OneDrive\Documents\mythRL
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 ```
 
 **Expected Output**:
@@ -26,7 +26,7 @@ In a **second terminal**, run:
 
 ```bash
 cd c:\Users\blake\OneDrive\Documents\mythRL
-python HoloLoom/web_dashboard/test_phase3_4.py
+python hololoom/web_dashboard/test_phase3_4.py
 ```
 
 **Expected Output**:
@@ -62,7 +62,7 @@ All tests passed!
 ### Step 3: Manual Testing in Browser
 
 1. **Open Dashboard**:
-   - Navigate to `HoloLoom/web_dashboard/control_panel.html` in your browser
+   - Navigate to `hololoom/web_dashboard/control_panel.html` in your browser
    - Or go to `http://localhost:8000/static/control_panel.html` if served
 
 2. **Navigate to Analytics Tab**:
@@ -191,7 +191,7 @@ This test verifies automatic cleanup when storage is full.
 
 **Fix**: Ensure PYTHONPATH is set:
 ```bash
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --port 8000
 ```
 
 ### Tests Fail to Connect
@@ -207,7 +207,7 @@ PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --port 8000
 **Fix**: Set console encoding (Windows):
 ```bash
 chcp 65001
-python HoloLoom/web_dashboard/test_phase3_4.py
+python hololoom/web_dashboard/test_phase3_4.py
 ```
 
 ### Data Not Persisting

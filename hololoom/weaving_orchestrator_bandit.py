@@ -12,8 +12,8 @@ Features:
 - Feature flags for gradual rollout
 
 Usage:
-    >>> from HoloLoom.weaving_orchestrator_bandit import BanditOrchestrator
-    >>> from HoloLoom.config import Config
+    >>> from hololoom.weaving_orchestrator_bandit import BanditOrchestrator
+    >>> from hololoom.config import Config
     >>>
     >>> config = Config.fused()
     >>> orchestrator = BanditOrchestrator(
@@ -41,20 +41,20 @@ from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 
 # Core HoloLoom
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
 
 # Thompson Sampling
-from HoloLoom.bandits import create_thompson_sampler
-from HoloLoom.bandits.neural_ts.types import Context, Action, Observation
-from HoloLoom.bandits.neural_ts.eval import BanditEvaluator
+from hololoom.bandits import create_thompson_sampler
+from hololoom.bandits.neural_ts.types import Context, Action, Observation
+from hololoom.bandits.neural_ts.eval import BanditEvaluator
 
 # Safety
-from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, create_guardrails
+from hololoom.alignment.safety_guardrails import SafetyGuardrails, create_guardrails
 
 # Monitoring
-from HoloLoom.fabric.spacetime import Spacetime
+from hololoom.fabric.spacetime import Spacetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

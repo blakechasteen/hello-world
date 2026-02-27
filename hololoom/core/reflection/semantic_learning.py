@@ -35,8 +35,8 @@ from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass, field
 from collections import defaultdict, deque
 
-from HoloLoom.core.fabric.spacetime import Spacetime
-from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
+from hololoom.core.fabric.spacetime import Spacetime
+from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
 
 logger = logging.getLogger(__name__)
 

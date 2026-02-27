@@ -4,7 +4,7 @@ Thread Branching Tests
 Unit tests for ThreadBrancher with 15 test cases.
 
 Run:
-    pytest HoloLoom/voice_first/thread/tests/test_thread_branching.py -v
+    pytest hololoom/voice_first/thread/tests/test_thread_branching.py -v
 """
 
 import pytest
@@ -150,7 +150,7 @@ class TestThreadBrancherBasics:
     @pytest.mark.asyncio
     async def test_initialization(self, mock_thread_manager):
         """Test 1: ThreadBrancher initialization"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(
             thread_manager=mock_thread_manager,
@@ -169,7 +169,7 @@ class TestThreadBrancherBasics:
         parent_thread
     ):
         """Test 2: Basic thread forking"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(
             thread_manager=mock_thread_manager,
@@ -189,7 +189,7 @@ class TestThreadBrancherBasics:
     @pytest.mark.asyncio
     async def test_parent_not_found(self, mock_thread_manager):
         """Test 3: Error when parent thread not found"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(thread_manager=mock_thread_manager)
 
@@ -206,7 +206,7 @@ class TestThreadBrancherBasics:
         parent_thread
     ):
         """Test 4: Branch thread created in ThreadManager"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(thread_manager=mock_thread_manager)
 
@@ -227,7 +227,7 @@ class TestThreadBrancherBasics:
         parent_thread
     ):
         """Test 5: Branch includes correct metadata"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(thread_manager=mock_thread_manager)
 
@@ -252,7 +252,7 @@ class TestContextInheritance:
         parent_thread
     ):
         """Test 6: Default 30-second context window"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(
             thread_manager=mock_thread_manager,
@@ -276,7 +276,7 @@ class TestContextInheritance:
         parent_thread
     ):
         """Test 7: Custom context window"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(thread_manager=mock_thread_manager)
 
@@ -296,7 +296,7 @@ class TestContextInheritance:
         parent_thread
     ):
         """Test 8: Inherited messages added to new thread"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(
             thread_manager=mock_thread_manager,
@@ -322,7 +322,7 @@ class TestContextInheritance:
         parent_thread
     ):
         """Test 9: Entity extraction from context"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(
             thread_manager=mock_thread_manager,
@@ -349,7 +349,7 @@ class TestContextInheritance:
         parent_thread
     ):
         """Test 10: Custom context override"""
-        from HoloLoom.voice.threads.thread import (
+        from hololoom.voice.threads.thread import (
             ThreadBrancher,
             BranchContext
         )
@@ -393,7 +393,7 @@ class TestYarnGraphIntegration:
         parent_thread
     ):
         """Test 11: BRANCHED_FROM edge created in YarnGraph"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(
             thread_manager=mock_thread_manager,
@@ -420,7 +420,7 @@ class TestYarnGraphIntegration:
         parent_thread
     ):
         """Test 12: Edge includes branch metadata"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(
             thread_manager=mock_thread_manager,
@@ -444,7 +444,7 @@ class TestYarnGraphIntegration:
         parent_thread
     ):
         """Test 13: Graceful degradation without YarnGraph"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(
             thread_manager=mock_thread_manager,
@@ -466,7 +466,7 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_empty_parent_thread(self, mock_thread_manager):
         """Test 14: Fork from empty parent thread"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         thread_id = mock_thread_manager.create_thread("empty thread")
         brancher = ThreadBrancher(thread_manager=mock_thread_manager)
@@ -487,7 +487,7 @@ class TestEdgeCases:
         parent_thread
     ):
         """Test 15: Branch serialization to dict"""
-        from HoloLoom.voice.threads.thread import ThreadBrancher
+        from hololoom.voice.threads.thread import ThreadBrancher
 
         brancher = ThreadBrancher(thread_manager=mock_thread_manager)
 

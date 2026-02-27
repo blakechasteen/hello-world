@@ -30,8 +30,8 @@ pip install torch numpy
 ### Basic Usage
 
 ```python
-from HoloLoom.bandits import create_neural_ts_policy, BanditConfig
-from HoloLoom.bandits.neural_ts.types import Context, Action, Observation
+from hololoom.bandits import create_neural_ts_policy, BanditConfig
+from hololoom.bandits.neural_ts.types import Context, Action, Observation
 import numpy as np
 
 # Create policy (uses HoloLoom defaults: 384-dim embeddings, Bootstrap)
@@ -40,7 +40,7 @@ policy = create_neural_ts_policy(config)
 
 # Your decision loop
 for query in queries:
-    # 1. Get context from HoloLoom embeddings
+    # 1. Get context from hololoom embeddings
     ctx = Context(
         id=f"query_{query.id}",
         x=query_embeddings,  # From HoloLoom's Matryoshka embeddings
@@ -77,7 +77,7 @@ policy.save_checkpoint("checkpoints/bandit_v1.pt")
 ### Configuration Presets
 
 ```python
-from HoloLoom.bandits.config import BanditConfig
+from hololoom.bandits.config import BanditConfig
 
 # Default (Bootstrap, 384-dim, production settings)
 config = BanditConfig.loom_default()
@@ -121,7 +121,7 @@ NeuralThompsonPolicy
 ### Data Flow
 
 ```
-1. Context (from HoloLoom embeddings)
+1. Context (from hololoom embeddings)
    ↓
 2. Featurizer → [context, action] features
    ↓
@@ -213,7 +213,7 @@ if replay.is_ready() and obs_count % train_every == 0:
 ### Metrics
 
 ```python
-from HoloLoom.bandits.neural_ts.eval import BanditEvaluator
+from hololoom.bandits.neural_ts.eval import BanditEvaluator
 
 evaluator = BanditEvaluator(n_bins=10)
 
@@ -240,7 +240,7 @@ print(f"Mean reward: {metrics['mean_reward']:.4f}")
 ### Visualization
 
 ```python
-from HoloLoom.bandits.neural_ts.eval import compute_cumulative_regret, compute_moving_average_reward
+from hololoom.bandits.neural_ts.eval import compute_cumulative_regret, compute_moving_average_reward
 
 # Cumulative regret over time (should plateau as model learns)
 cum_regret = compute_cumulative_regret(rewards, oracle_rewards)
@@ -327,9 +327,9 @@ top3 = policy.recommend_k(ctx, actions, k=3)
 ### WeavingOrchestrator Integration
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.bandits import create_neural_ts_policy, BanditConfig
-from HoloLoom.documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.bandits import create_neural_ts_policy, BanditConfig
+from hololoom.documentation.types import Query
 
 # Create bandit for tool selection
 config = BanditConfig.loom_default()
@@ -396,7 +396,7 @@ reward = user_rating / 5.0  # 0-1
 
 ```bash
 # All unit tests (37 tests, <1s)
-PYTHONPATH=. pytest HoloLoom/bandits/tests/test_units.py -v
+PYTHONPATH=. pytest hololoom/bandits/tests/test_units.py -v
 ```
 
 **Coverage**:
@@ -414,7 +414,7 @@ PYTHONPATH=. pytest HoloLoom/bandits/tests/test_units.py -v
 
 ```bash
 # CI validation (~30s)
-PYTHONPATH=. python HoloLoom/bandits/tests/test_synthetic_bandit.py
+PYTHONPATH=. python hololoom/bandits/tests/test_synthetic_bandit.py
 ```
 
 **Tests**:
@@ -433,10 +433,10 @@ PYTHONPATH=. python HoloLoom/bandits/tests/test_synthetic_bandit.py
 
 ```bash
 # Unit + synthetic
-PYTHONPATH=. pytest HoloLoom/bandits/tests/ -v
+PYTHONPATH=. pytest hololoom/bandits/tests/ -v
 
 # Or use pytest directly
-cd HoloLoom/bandits/tests
+cd hololoom/bandits/tests
 PYTHONPATH=../../.. pytest -v
 ```
 

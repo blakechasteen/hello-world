@@ -10,8 +10,8 @@ Optional research features for HoloLoom. Install via pip extras:
     pip install hololoom[geometry]     # Riemannian embeddings
 
 Usage:
-    from HoloLoom.config import Config
-    from HoloLoom.expansions.physics import PhysicsConfig
+    from hololoom.config import Config
+    from hololoom.expansions.physics import PhysicsConfig
 
     # Method 1: Load after construction
     config = Config.research()
@@ -41,16 +41,16 @@ def get_expansion(name: str):
     if name not in _EXPANSION_REGISTRY:
         # Try to import the module
         if name == "physics":
-            from HoloLoom.expansions.physics import PhysicsConfig
+            from hololoom.expansions.physics import PhysicsConfig
             _EXPANSION_REGISTRY["physics"] = PhysicsConfig
         elif name == "bayesian":
-            from HoloLoom.expansions.bayesian import BayesianConfig
+            from hololoom.expansions.bayesian import BayesianConfig
             _EXPANSION_REGISTRY["bayesian"] = BayesianConfig
         elif name == "geometry":
-            from HoloLoom.expansions.geometry import GeometryConfig
+            from hololoom.expansions.geometry import GeometryConfig
             _EXPANSION_REGISTRY["geometry"] = GeometryConfig
         elif name == "advanced_spectral":
-            from HoloLoom.expansions.advanced_spectral import AdvancedSpectralConfig
+            from hololoom.expansions.advanced_spectral import AdvancedSpectralConfig
             _EXPANSION_REGISTRY["advanced_spectral"] = AdvancedSpectralConfig
         else:
             raise ValueError(f"Unknown expansion: {name}")

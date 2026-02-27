@@ -1,7 +1,7 @@
 import unittest
 import time
 import multiprocessing
-from HoloLoom.eggroll.distributed_backend import LocalBackend, WorkerNode
+from hololoom.eggroll.distributed_backend import LocalBackend, WorkerNode
 
 class MockWorker:
     def __init__(self, worker_id, *args, **kwargs):

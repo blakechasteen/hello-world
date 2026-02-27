@@ -43,7 +43,7 @@ import numpy as np
 
 # Import advanced integrators
 try:
-    from HoloLoom.core.memory.integrators import (
+    from hololoom.core.memory.integrators import (
         IntegratorType,
         DynamicalState,
         ForceFunction,

@@ -155,7 +155,7 @@ result = await rag.query(
 ### Speed vs Quality Tradeoff
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # BARE - Fastest (~50ms), good for simple queries
 config = Config.bare()
@@ -188,7 +188,7 @@ result2 = await rag.query("What is Thompson Sampling?")
 For maximum control, use the full HoloLoom API:
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import hololoom
 
 async with HoloLoom() as loom:
     # Experience (form memories)
@@ -290,7 +290,7 @@ result.metadata         # Extra info (timing, etc.)
 - **Documentation**: `HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md`
 - **Quick Start**: `VISUAL_QUICK_START.md`
 - **Demos**: `demos/` folder
-- **Tests**: `pytest HoloLoom/rag/tests/ -v`
+- **Tests**: `pytest hololoom/rag/tests/ -v`
 
 ---
 

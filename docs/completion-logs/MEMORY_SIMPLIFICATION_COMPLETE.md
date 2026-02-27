@@ -10,7 +10,7 @@
 
 ### 1. Removed Complex Routing System ✓
 
-**Archived** (not deleted): `HoloLoom/memory/routing/`
+**Archived** (not deleted): `hololoom/memory/routing/`
 - Moved to: `archive/memory_routing/`
 - Removed: RuleBasedRouter, LearnedRouter, ABTestRouter
 - Removed: RoutingOrchestrator, execution patterns
@@ -192,18 +192,18 @@ All tests pass!
 ## Files Changed
 
 ### Archived (Moved, Not Deleted)
-- `HoloLoom/memory/routing/` → `archive/memory_routing/`
+- `hololoom/memory/routing/` → `archive/memory_routing/`
   - `__init__.py`, `rule_based.py`, `learned.py`, `ab_test.py`
   - `orchestrator.py`, `execution_patterns.py`, `protocol.py`
 
 ### Modified (Already Simplified)
-- `HoloLoom/memory/backend_factory.py` - Factory with auto-fallback
-- `HoloLoom/config.py` - Simplified MemoryBackend enum
+- `hololoom/memory/backend_factory.py` - Factory with auto-fallback
+- `hololoom/config.py` - Simplified MemoryBackend enum
 
 ### Unchanged (Still Work)
-- `HoloLoom/memory/stores/neo4j_store.py` - Neo4j implementation
-- `HoloLoom/memory/stores/qdrant_store.py` - Qdrant implementation
-- `HoloLoom/memory/stores/in_memory_store.py` - NetworkX implementation
+- `hololoom/memory/stores/neo4j_store.py` - Neo4j implementation
+- `hololoom/memory/stores/qdrant_store.py` - Qdrant implementation
+- `hololoom/memory/stores/in_memory_store.py` - NetworkX implementation
 
 ---
 
@@ -262,8 +262,8 @@ Task 1.3 Goals:
 
 ### Development (Fast)
 ```python
-from HoloLoom.config import Config
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config
+from hololoom.memory.backend_factory import create_memory_backend
 
 config = Config.fast()  # Auto-uses INMEMORY
 memory = await create_memory_backend(config)

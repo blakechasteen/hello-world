@@ -1,10 +1,10 @@
-# HoloLoom Quickstart - Minimal deployment that just works
+# hololoom Quickstart - Minimal deployment that just works
 #
 # Usage:
 #   docker-compose -f docker-compose.quickstart.yml up -d
 #
 # Access:
-#   - HoloLoom API: http://localhost:8000
+#   - hololoom API: http://localhost:8000
 #   - Neo4j Browser: http://localhost:7474 (neo4j/hololoom)
 #   - Qdrant Dashboard: http://localhost:6333/dashboard
 #
@@ -56,7 +56,7 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # HoloLoom API
+  # hololoom API
   hololoom:
     image: python:3.11-slim
     container_name: hololoom-api
@@ -76,7 +76,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     volumes:
-      - ./HoloLoom:/app/HoloLoom:ro
+      - ./hololoom:/app/hololoom:ro
       - ./demos:/app/demos:ro
       - ./requirements.txt:/app/requirements.txt:ro
     depends_on:
@@ -97,8 +97,8 @@ services:
         pip install --no-cache-dir -q networkx qdrant-client neo4j sentence-transformers &&
         pip install --no-cache-dir -q anthropic openai ollama 2>/dev/null || true &&
         echo '✓ Dependencies installed' &&
-        echo '✓ Starting HoloLoom API on http://localhost:8000' &&
-        uvicorn HoloLoom.apps.server.agentic_api:app --host 0.0.0.0 --port 8000
+        echo '✓ Starting hololoom API on http://localhost:8000' &&
+        uvicorn hololoom.apps.server.agentic_api:app --host 0.0.0.0 --port 8000
       "
 
 volumes:

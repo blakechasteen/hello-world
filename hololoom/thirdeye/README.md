@@ -1,7 +1,7 @@
 # ThirdEye - Chat-Integrated 2D/3D Concept Rendering Engine
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/thirdeye/`
+**Location**: `hololoom/thirdeye/`
 **Total Code**: ~13,883 lines across 30 Python files
 **Date**: Created 2025-11-30, Updated December 2025
 
@@ -41,7 +41,7 @@ Browser: Three.js, Babylon.js, Canvas visualization
 ### Basic Usage: Listen to Chat and Visualize
 
 ```python
-from HoloLoom.thirdeye import (
+from hololoom.thirdeye import (
     ChatBridge,
     Thoughtspace,
     WebGLRenderer,
@@ -75,10 +75,10 @@ async for extraction in bridge.listen():
 
 ### Server Integration: FastAPI WebSocket Server
 
-ThirdEye includes a production FastAPI server (`HoloLoom/thirdeye/server.py`) that handles the complete visualization pipeline:
+ThirdEye includes a production FastAPI server (`hololoom/thirdeye/server.py`) that handles the complete visualization pipeline:
 
 ```python
-from HoloLoom.thirdeye.server import ThirdEyeServer
+from hololoom.thirdeye.server import ThirdEyeServer
 import uvicorn
 
 # Create server
@@ -510,9 +510,9 @@ server = ThirdEyeServer(chat_ws_url, embedder)
 ThirdEye integrates seamlessly with other HoloLoom systems:
 
 ### 1. Memory System
-- **Concept extraction uses**: Semantic embeddings from `HoloLoom.embedding/`
+- **Concept extraction uses**: Semantic embeddings from `hololoom.embedding/`
 - **Positioning uses**: Embedding similarity + Matryoshka multi-scale embeddings
-- **Context enrichment**: Integration with `HoloLoom.memory/` for knowledge graph
+- **Context enrichment**: Integration with `hololoom.memory/` for knowledge graph
 
 ### 2. Chat System
 - **Input**: WebSocket connection to multithreaded chat (`ws://localhost:8002`)
@@ -565,7 +565,7 @@ ThirdEye integrates seamlessly with other HoloLoom systems:
 Control rendering parameters:
 
 ```python
-from HoloLoom.thirdeye.renderer_protocol import RenderConfig, RenderDimension, RenderQuality
+from hololoom.thirdeye.renderer_protocol import RenderConfig, RenderDimension, RenderQuality
 
 config = RenderConfig(
     dimension=RenderDimension.THREE_D,      # 1D/2D/3D/AR
@@ -608,7 +608,7 @@ thoughtspace.set_camera_mode(CameraMode.JOURNEY)  # Animated path
 
 ```python
 import asyncio
-from HoloLoom.thirdeye import ChatBridge, Thoughtspace, WebGLRenderer
+from hololoom.thirdeye import ChatBridge, Thoughtspace, WebGLRenderer
 
 async def main():
     # Create components
@@ -639,7 +639,7 @@ asyncio.run(main())
 ### Example 2: Full-Screen Thoughtspace
 
 ```python
-from HoloLoom.thirdeye import create_thoughtspace, create_entity_concept
+from hololoom.thirdeye import create_thoughtspace, create_entity_concept
 
 thoughtspace = create_thoughtspace()
 
@@ -666,7 +666,7 @@ print(f"Mode: {state.mode.value}, Concepts: {len(state.world.concepts)}")
 ### Example 3: Custom Concept Extraction
 
 ```python
-from HoloLoom.thirdeye import ConceptExtractor, ChatMessage, MessageRole
+from hololoom.thirdeye import ConceptExtractor, ChatMessage, MessageRole
 
 # Create extractor with optional embedding function
 def my_embedder(text: str):
@@ -695,7 +695,7 @@ for concept in extraction.concepts:
 ### Example 4: Server Integration
 
 ```python
-from HoloLoom.thirdeye.server import ThirdEyeServer
+from hololoom.thirdeye.server import ThirdEyeServer
 import uvicorn
 
 # Create server
@@ -738,13 +738,13 @@ The system includes comprehensive tests for all major components:
 
 ```bash
 # Run all thirdeye tests
-pytest HoloLoom/thirdeye/ -v
+pytest hololoom/thirdeye/ -v
 
 # Test specific components
-pytest HoloLoom/thirdeye/tests/test_concept.py -v
-pytest HoloLoom/thirdeye/tests/test_chat_bridge.py -v
-pytest HoloLoom/thirdeye/tests/test_thoughtspace.py -v
-pytest HoloLoom/thirdeye/tests/test_renderer.py -v
+pytest hololoom/thirdeye/tests/test_concept.py -v
+pytest hololoom/thirdeye/tests/test_chat_bridge.py -v
+pytest hololoom/thirdeye/tests/test_thoughtspace.py -v
+pytest hololoom/thirdeye/tests/test_renderer.py -v
 ```
 
 ## Roadmap
@@ -827,6 +827,6 @@ If you use ThirdEye in research, cite as:
   title={ThirdEye: Chat-Integrated 3D Concept Visualization Engine},
   author={HoloLoom Team},
   year={2025},
-  url={https://github.com/your-repo/HoloLoom/thirdeye}
+  url={https://github.com/your-repo/hololoom/thirdeye}
 }
 ```

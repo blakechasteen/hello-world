@@ -7,21 +7,21 @@ Validates all alignment components work correctly without pytest.
 import sys
 sys.path.insert(0, ".")
 
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     RiskLevel,
     ActionCategory,
 )
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     DeceptionDetector,
     BehavioralProbe,
 )
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
     ResourceBounds,
 )
-from HoloLoom.alignment.audit_trail import AuditTrail
-from HoloLoom.alignment.human_in_loop import HumanInLoopSystem, FeedbackType
+from hololoom.alignment.audit_trail import AuditTrail
+from hololoom.alignment.human_in_loop import HumanInLoopSystem, FeedbackType
 
 
 def test_safety_guardrails():

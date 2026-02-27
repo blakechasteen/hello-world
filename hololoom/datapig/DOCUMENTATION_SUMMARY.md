@@ -95,7 +95,7 @@ Comprehensive documentation for the DATAPIG data quality validation system cover
 
 ### Follows Best Practices From:
 - SPRING_DYNAMICS.md (comprehensive, well-organized)
-- HoloLoom/rag/MULTIMODAL_README.md (detailed API reference)
+- hololoom/rag/MULTIMODAL_README.md (detailed API reference)
 - CLAUDE.md (production-ready documentation standards)
 
 ### Key Features:
@@ -130,11 +130,11 @@ Comprehensive documentation for the DATAPIG data quality validation system cover
 
 ### Most Important Classes:
 ```python
-from HoloLoom.datapig import DataPigDetector, Severity, IssueType, DataQualityIssue
-from HoloLoom.datapig.config import create_config, DetectorConfig
-from HoloLoom.datapig.entropy_detection import shannon_entropy, detect_pii_by_entropy
-from HoloLoom.datapig.fuzzy_detection import find_fuzzy_duplicates
-from HoloLoom.datapig.dashboard import render_quality_dashboard, QualityReport
+from hololoom.datapig import DataPigDetector, Severity, IssueType, DataQualityIssue
+from hololoom.datapig.config import create_config, DetectorConfig
+from hololoom.datapig.entropy_detection import shannon_entropy, detect_pii_by_entropy
+from hololoom.datapig.fuzzy_detection import find_fuzzy_duplicates
+from hololoom.datapig.dashboard import render_quality_dashboard, QualityReport
 ```
 
 ### Typical Usage:
@@ -175,7 +175,7 @@ html = render_quality_dashboard(reports)
 ## File Structure
 
 ```
-HoloLoom/datapig/
+hololoom/datapig/
 ├── __init__.py                    # Public API exports
 ├── detector.py                    # Main detection engine (794 lines)
 ├── config.py                      # Configuration system (243 lines)
@@ -200,7 +200,7 @@ The documentation is now complete and ready for use. Users can:
 ## Quality Checklist
 
 - ✅ Status line (Production Ready, December 2025)
-- ✅ Location (HoloLoom/datapig/)
+- ✅ Location (hololoom/datapig/)
 - ✅ Line counts (2,173 total, 595 documentation)
 - ✅ Overview (3+ paragraphs, philosophy included)
 - ✅ Quick Start (4 code examples)

@@ -26,7 +26,7 @@ from typing import Optional, Dict, Any, List
 import time
 import torch
 
-from HoloLoom.core.memory.nested_ultra_fast import UltraFastOptimizer, UltraFastDecision
+from hololoom.core.memory.nested_ultra_fast import UltraFastOptimizer, UltraFastDecision
 
 
 class OptimizationLevel(Enum):

@@ -56,18 +56,18 @@ Follow **VOICE_QUICK_START.md** for detailed instructions. Summary:
 
 ### Step 1: Verify Tests Passing (DONE ✅)
 ```bash
-python HoloLoom/web_dashboard/test_voice_integration.py
+python hololoom/web_dashboard/test_voice_integration.py
 ```
 **Result**: ✅ SUCCESS - All tests passing!
 
 ### Step 2: Add Backend Code (~10 minutes)
 
-Edit `HoloLoom/web_dashboard/agentic_server.py`:
+Edit `hololoom/web_dashboard/agentic_server.py`:
 
 **Add imports** (around line 70):
 ```python
-from HoloLoom.apps.workflow_builder.voice_integration import create_voice_integration
-from HoloLoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
+from hololoom.apps.workflow_builder.voice_integration import create_voice_integration
+from hololoom.apps.workflow_builder.voice_endpoints import add_voice_endpoints
 ```
 
 **Add global** (around line 106):
@@ -111,7 +111,7 @@ Open **voice_ui_snippet.html** and copy:
 ### Step 4: Test! (~2 minutes)
 
 ```bash
-python HoloLoom/web_dashboard/agentic_server.py
+python hololoom/web_dashboard/agentic_server.py
 ```
 
 Expected output:
@@ -152,8 +152,8 @@ voice_integration = await create_voice_integration(
 
 ### Test Again:
 ```bash
-python HoloLoom/web_dashboard/test_voice_integration.py
-python HoloLoom/web_dashboard/agentic_server.py
+python hololoom/web_dashboard/test_voice_integration.py
+python hololoom/web_dashboard/agentic_server.py
 ```
 
 **Benefits**:
@@ -245,7 +245,7 @@ TEST SUMMARY
 
 ## 📚 Documentation
 
-All guides available in `HoloLoom/web_dashboard/`:
+All guides available in `hololoom/web_dashboard/`:
 
 1. **VOICE_READY_TO_INTEGRATE.md** (This file) - Integration checklist
 2. **VOICE_QUICK_START.md** - 3-step integration guide

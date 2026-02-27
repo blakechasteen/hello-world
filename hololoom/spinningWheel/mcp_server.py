@@ -17,7 +17,7 @@ Setup in Claude Desktop:
         "mcpServers": {
             "spinning-wheel": {
                 "command": "python",
-                "args": ["-m", "HoloLoom.spinningWheel.mcp_server"],
+                "args": ["-m", "hololoom.spinningWheel.mcp_server"],
                 "cwd": "C:/path/to/mythRL"
             }
         }
@@ -45,19 +45,19 @@ except ImportError:
 
 # Import spinners
 try:
-    from HoloLoom.spinningWheel.website import WebsiteSpinner
+    from hololoom.spinningWheel.website import WebsiteSpinner
     WEBSITE_SPINNER_AVAILABLE = True
 except ImportError:
     WEBSITE_SPINNER_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.browser_history import BrowserHistorySpinner
+    from hololoom.spinningWheel.browser_history import BrowserHistorySpinner
     BROWSER_HISTORY_AVAILABLE = True
 except ImportError:
     BROWSER_HISTORY_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.recursive_crawler import (
+    from hololoom.spinningWheel.recursive_crawler import (
         RecursiveCrawlerSpinner,
         CrawlConfig,
     )
@@ -354,7 +354,7 @@ class SpinningWheelMCPServer:
 
     async def _process_text(self, args: Dict[str, Any]) -> List[TextContent]:
         """Process and chunk text."""
-        from HoloLoom.documentation.types import MemoryShard
+        from hololoom.documentation.types import MemoryShard
         import hashlib
 
         text = args.get("text", "")

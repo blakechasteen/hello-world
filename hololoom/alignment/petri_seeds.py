@@ -13,7 +13,7 @@ Total Instructions: 50+ comprehensive scenarios
 
 References:
 - Petri framework: https://alignment.anthropic.com/2025/petri
-- HoloLoom alignment: HoloLoom/alignment/
+- HoloLoom alignment: hololoom/alignment/
 """
 
 from typing import List, Dict

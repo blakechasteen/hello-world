@@ -17,7 +17,7 @@ Each template includes:
 
 **What it does**:
 - Takes a question as input
-- Retrieves relevant context from HoloLoom memory
+- Retrieves relevant context from hololoom memory
 - Generates accurate, context-grounded answer
 
 **Best for**:

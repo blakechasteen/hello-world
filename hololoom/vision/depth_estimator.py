@@ -23,7 +23,7 @@ import logging
 import numpy as np
 from dataclasses import dataclass
 
-from HoloLoom.vision.protocol import DepthEstimatorProtocol, DepthMap
+from hololoom.vision.protocol import DepthEstimatorProtocol, DepthMap
 
 logger = logging.getLogger(__name__)
 

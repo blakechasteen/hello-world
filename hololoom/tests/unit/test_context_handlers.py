@@ -325,29 +325,29 @@ def context_handlers(mock_packer, mock_spreader, mock_scorer, mock_kg):
 
     # Patch the imports
     with patch.dict('sys.modules', {
-        'HoloLoom.context_packing': Mock(
+        'hololoom.context_packing': Mock(
             ContextPacker=MockContextPacker,
             ContextPackerConfig=MockContextPackerConfig,
             pack_context=Mock(),
             information_budget_pack=Mock(return_value=(['node1', 'node2'], {'node1': '384D'}, {'node1': 0.9}))
         ),
-        'HoloLoom.context_packing.activation_spreader': Mock(
+        'hololoom.context_packing.activation_spreader': Mock(
             ActivationSpreader=MockActivationSpreader
         ),
-        'HoloLoom.context_packing.config': Mock(
+        'hololoom.context_packing.config': Mock(
             BetaWaveConfig=MockBetaWaveConfig
         ),
-        'HoloLoom.context_packing.importance_scorer': Mock(
+        'hololoom.context_packing.importance_scorer': Mock(
             ImportanceScorer=MockImportanceScorer
         ),
-        'HoloLoom.context_packing.protocol': Mock(
+        'hololoom.context_packing.protocol': Mock(
             ImportanceSignal=MockImportanceSignal
         ),
-        'HoloLoom.memory.adaptive_expansion': Mock(
+        'hololoom.memory.adaptive_expansion': Mock(
             AdaptiveExpander=Mock(),
             expand_context_adaptive=mock_expand_context_adaptive
         ),
-        'HoloLoom.memory.streaming_expansion': Mock(
+        'hololoom.memory.streaming_expansion': Mock(
             StreamingContextBuilder=Mock(),
             stream_context_expansion=mock_stream_context_expansion,
             ChunkYieldStrategy=MockChunkYieldStrategy
@@ -358,7 +358,7 @@ def context_handlers(mock_packer, mock_spreader, mock_scorer, mock_kg):
         ),
     }):
         # Import handlers
-        from HoloLoom.apps.chatops.handlers import context_handlers as ch
+        from hololoom.apps.chatops.handlers import context_handlers as ch
 
         # Set global instances
         ch.set_context_packer(mock_packer)
@@ -779,7 +779,7 @@ class TestHandlerRegistration:
 
     def test_context_handlers_class(self, mock_packer, mock_spreader, mock_scorer, mock_kg):
         """Test ContextHandlers class initialization."""
-        from HoloLoom.apps.chatops.handlers.context_handlers import ContextHandlers
+        from hololoom.apps.chatops.handlers.context_handlers import ContextHandlers
 
         handlers = ContextHandlers(
             mock_packer,

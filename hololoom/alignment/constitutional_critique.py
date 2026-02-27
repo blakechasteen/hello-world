@@ -29,7 +29,7 @@ from datetime import datetime
 import re
 import hashlib
 
-logger = logging.getLogger("HoloLoom.alignment.constitutional_critique")
+logger = logging.getLogger("hololoom.alignment.constitutional_critique")
 
 
 # =============================================================================

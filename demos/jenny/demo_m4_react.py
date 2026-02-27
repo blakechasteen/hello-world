@@ -18,13 +18,13 @@ from demos.jenny import register_demo, demo_phase
 
 # Jenny imports
 try:
-    from HoloLoom.visualization.jenny_spec import (
+    from hololoom.visualization.jenny_spec import (
         JennySpec,
         PanelTypeJenny,
         PanelSizeJenny,
     )
-    from HoloLoom.visualization.jenny_renderer import ReactRenderer
-    from HoloLoom.visualization.jenny_renderer_registry import RenderTarget
+    from hololoom.visualization.jenny_renderer import ReactRenderer
+    from hololoom.visualization.jenny_renderer_registry import RenderTarget
     REACT_AVAILABLE = True
 except ImportError:
     REACT_AVAILABLE = False

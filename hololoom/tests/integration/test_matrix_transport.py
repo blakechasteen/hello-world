@@ -28,25 +28,25 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # Federation modules
-from HoloLoom.federation.types import (
+from hololoom.federation.types import (
     Capability,
     FederationNode,
     GuildTrustLevel,
     NodeStatus,
 )
-from HoloLoom.federation.identity import Identity
-from HoloLoom.federation.safety import (
+from hololoom.federation.identity import Identity
+from hololoom.federation.safety import (
     FederationSafetyGate,
     SafetyCheckResult,
     SignedRequest,
 )
-from HoloLoom.federation.rate_limiter import (
+from hololoom.federation.rate_limiter import (
     FederatedRateLimiter,
     RateLimitTier,
 )
 
 # Matrix transport modules
-from HoloLoom.federation.transport.matrix_transport import (
+from hololoom.federation.transport.matrix_transport import (
     MatrixTrustResolver,
     MatrixTransportAdapter,
     MatrixRPCEvent,
@@ -57,7 +57,7 @@ from HoloLoom.federation.transport.matrix_transport import (
     create_matrix_transport,
     create_matrix_trust_resolver,
 )
-from HoloLoom.federation.transport.matrix_room import (
+from hololoom.federation.transport.matrix_room import (
     MatrixAgentRoom,
     AgentCapabilities,
     RoomCapabilitySummary,

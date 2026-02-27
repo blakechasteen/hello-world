@@ -66,7 +66,7 @@ class SQLConfig:
     fallback_to_sqlite: bool = True
 
     # Schema
-    schema_path: str = "HoloLoom/infrastructure/sql/schema.sql"
+    schema_path: str = "hololoom/infrastructure/sql/schema.sql"
 
 
 class SQLBackend:

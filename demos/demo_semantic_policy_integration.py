@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from typing import List, Dict
 
 # Phase 8 imports
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     PolicySemanticState as SemanticState,
     SemanticToolSelector,
     SemanticAwareBandit,

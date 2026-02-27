@@ -10,7 +10,7 @@ Systematic vulnerability testing through behavioral probes that test:
 - Tool abuse scenarios
 - Information extraction attacks
 
-Following patterns from HoloLoom/alignment/deception_detection.py for consistency.
+Following patterns from hololoom/alignment/deception_detection.py for consistency.
 
 Author: Red Team System
 Date: 2025-12-05

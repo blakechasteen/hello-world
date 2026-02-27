@@ -26,7 +26,7 @@ Configuration for Claude Desktop:
       "mcpServers": {
         "hololoom-promptly": {
           "command": "python",
-          "args": ["-m", "HoloLoom.mcp_server_promptly"],
+          "args": ["-m", "hololoom.mcp_server_promptly"],
           "env": {
             "PYTHONPATH": "/path/to/mythRL"
           }
@@ -58,17 +58,17 @@ except ImportError:
     sys.exit(1)
 
 # HoloLoom imports
-from HoloLoom import HoloLoom, __version__
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
-from HoloLoom.protocols.recursive_reasoning import ReasoningStrategy
-from HoloLoom.agentic.skill_agents import (
+from hololoom import hololoom, __version__
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.weaving_orchestrator_recursive import RecursiveWeavingOrchestrator
+from hololoom.protocols.recursive_reasoning import ReasoningStrategy
+from hololoom.agentic.skill_agents import (
     SkillRegistry,
     SkillExecutor,
     list_available_skills
 )
-from HoloLoom.prompting.metaprompt import create_metaprompt_auto, enhance_request
+from hololoom.prompting.metaprompt import create_metaprompt_auto, enhance_request
 
 # Initialize logging
 logging.basicConfig(
@@ -450,7 +450,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
 
 async def handle_experience(args: Dict[str, Any]) -> List[TextContent]:
     """Handle hololoom_experience tool."""
-    from HoloLoom.hololoom import HoloLoom
+    from hololoom.hololoom import hololoom
 
     content = args["content"]
     context = args.get("context", "")
@@ -473,7 +473,7 @@ async def handle_experience(args: Dict[str, Any]) -> List[TextContent]:
 
 async def handle_recall(args: Dict[str, Any]) -> List[TextContent]:
     """Handle hololoom_recall tool."""
-    from HoloLoom.hololoom import HoloLoom
+    from hololoom.hololoom import hololoom
 
     query = args["query"]
     limit = args.get("limit", 5)
@@ -662,7 +662,7 @@ async def handle_refine_prompt(args: Dict[str, Any]) -> List[TextContent]:
 
 async def handle_skill_execution(skill_name: str, args: Dict[str, Any]) -> List[TextContent]:
     """Handle professional skill execution."""
-    from HoloLoom.agentic.skill_agents import execute_skill
+    from hololoom.agentic.skill_agents import execute_skill
 
     # Execute skill
     result = await execute_skill(

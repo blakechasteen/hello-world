@@ -12,7 +12,7 @@ Usage:
     python -m HoloLoom.performance.metrics_server
 
     # Or import and start
-    from HoloLoom.performance.metrics_server import run_metrics_server
+    from hololoom.performance.metrics_server import run_metrics_server
     run_metrics_server(port=8001)
 
 Metrics Endpoint:
@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 # Import metrics module
 try:
-    from HoloLoom.performance.prometheus_metrics import metrics, start_metrics_server, PROMETHEUS_AVAILABLE
+    from hololoom.performance.prometheus_metrics import metrics, start_metrics_server, PROMETHEUS_AVAILABLE
     if not PROMETHEUS_AVAILABLE:
         logger.error("prometheus_client not installed")
         logger.error("Install with: pip install prometheus-client")

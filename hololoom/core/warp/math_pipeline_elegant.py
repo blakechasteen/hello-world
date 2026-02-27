@@ -41,7 +41,7 @@ except ImportError:
     Console = None
 
 # Base math pipeline
-from HoloLoom.core.warp.math_pipeline_integration import (
+from hololoom.core.warp.math_pipeline_integration import (
     MathPipelineIntegration,
     MathPipelineResult
 )

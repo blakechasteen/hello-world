@@ -16,7 +16,7 @@ Date: 2025-12-01
 """
 
 import pytest
-from HoloLoom.routing.query_classifier import (
+from hololoom.routing.query_classifier import (
     QueryClassifier,
     QueryComplexity,
     ClassificationResult,

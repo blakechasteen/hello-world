@@ -5,7 +5,7 @@
 ## Import & Use
 
 ```python
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge
+from hololoom.portal.hololoom_bridge import HoloLoomBridge
 
 bridge = HoloLoomBridge()
 result = await bridge.recall("query", k=5)
@@ -57,7 +57,7 @@ async with HoloLoomBridge() as bridge:
 ## Configuration
 
 ```python
-from HoloLoom.portal.hololoom_bridge import BridgeConfig, HoloLoomBridge
+from hololoom.portal.hololoom_bridge import BridgeConfig, HoloLoomBridge
 
 config = BridgeConfig(
     hololoom_url="http://localhost:8000",
@@ -211,7 +211,7 @@ if result.confidence < 0.5:
 
 ```python
 import asyncio
-from HoloLoom.portal.hololoom_bridge import HoloLoomBridge, BridgeConfig
+from hololoom.portal.hololoom_bridge import HoloLoomBridge, BridgeConfig
 
 async def main():
     config = BridgeConfig(

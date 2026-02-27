@@ -11,7 +11,7 @@ Commands:
 - !reason <query> - Standard reasoning (DIRECT mode)
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.agentic_handlers import register_agentic_handlers
+    from hololoom.apps.chatops.handlers.agentic_handlers import register_agentic_handlers
 
     # In run_chatops.py:
     register_agentic_handlers(bot, orchestrator)
@@ -23,7 +23,7 @@ import logging
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.agentic.core import AgenticOrchestrator, ReasoningMode
+    from hololoom.agentic.core import AgenticOrchestrator, ReasoningMode
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -33,8 +33,8 @@ except ImportError:
 
 # Agentic imports
 try:
-    from HoloLoom.agentic.core import AgenticOrchestrator, ReasoningMode
-    from HoloLoom.protocols.types import Query
+    from hololoom.agentic.core import AgenticOrchestrator, ReasoningMode
+    from hololoom.protocols.types import Query
     AGENTIC_AVAILABLE = True
 except ImportError:
     AGENTIC_AVAILABLE = False
@@ -44,7 +44,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -450,7 +450,7 @@ class AgenticHandlers:
     Decorator-based ChatOps handlers for Agentic Reasoning.
 
     Usage:
-        from HoloLoom.apps.chatops.handlers.agentic_handlers import AgenticHandlers
+        from hololoom.apps.chatops.handlers.agentic_handlers import AgenticHandlers
 
         handlers = AgenticHandlers(orchestrator=agentic_orchestrator)
         registry.register_instance(handlers)

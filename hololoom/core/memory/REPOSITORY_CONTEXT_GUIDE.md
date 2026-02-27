@@ -46,7 +46,7 @@ When deploying multiple Claude Code agents in parallel, you need fine-grained co
 ### Basic Setup
 
 ```python
-from HoloLoom.memory.repository_context import create_repo_manager, AccessLevel
+from hololoom.memory.repository_context import create_repo_manager, AccessLevel
 
 # Create manager
 repo_mgr = await create_repo_manager()
@@ -361,7 +361,7 @@ Each chunk includes:
 ```python
 {
     'text': '<chunk content>',
-    'file_path': 'HoloLoom/policy/unified.py',
+    'file_path': 'hololoom/policy/unified.py',
     'extension': '.py',
     'language': 'python',
     'chunk_type': 'class',           # 'class', 'function', 'code'
@@ -426,7 +426,7 @@ Each chunk includes:
 ```python
 # test_repository_context.py
 import asyncio
-from HoloLoom.memory.repository_context import create_repo_manager, AccessLevel
+from hololoom.memory.repository_context import create_repo_manager, AccessLevel
 
 async def test_basic_flow():
     # Create manager

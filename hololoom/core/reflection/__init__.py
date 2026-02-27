@@ -9,7 +9,7 @@ Exports:
 - LearningSignal: Actionable learning insights
 """
 
-from HoloLoom.core.reflection.buffer import (
+from hololoom.core.reflection.buffer import (
     ReflectionBuffer,
     ReflectionMetrics,
     LearningSignal

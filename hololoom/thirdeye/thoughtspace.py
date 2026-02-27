@@ -16,13 +16,13 @@ from enum import Enum, auto
 from typing import Dict, Any, List, Optional, Tuple, Callable
 import logging
 
-from HoloLoom.thirdeye.concept import (
+from hololoom.thirdeye.concept import (
     Concept,
     ConceptType,
     ConceptWorld,
     SemanticPosition,
 )
-from HoloLoom.thirdeye.transition import (
+from hololoom.thirdeye.transition import (
     Transition,
     TransitionType,
     TransitionConfig,

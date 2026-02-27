@@ -56,7 +56,7 @@ except ImportError:
 
 # Handler registry (graceful import)
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
 except ImportError:
@@ -66,7 +66,7 @@ except ImportError:
 
 # Thompson Sampling convergence engine (graceful import)
 try:
-    from HoloLoom.convergence.engine import ThompsonBandit, ConvergenceEngine
+    from hololoom.convergence.engine import ThompsonBandit, ConvergenceEngine
     CONVERGENCE_AVAILABLE = True
 except ImportError:
     CONVERGENCE_AVAILABLE = False
@@ -75,7 +75,7 @@ except ImportError:
 
 # Hot pattern tracking (graceful import)
 try:
-    from HoloLoom.recursive.hot_patterns import HotPatternTracker
+    from hololoom.recursive.hot_patterns import HotPatternTracker
     HOT_PATTERNS_AVAILABLE = True
 except ImportError:
     HOT_PATTERNS_AVAILABLE = False
@@ -83,7 +83,7 @@ except ImportError:
 
 # Reflection buffer (graceful import)
 try:
-    from HoloLoom.reflection.buffer import ReflectionBuffer
+    from hololoom.reflection.buffer import ReflectionBuffer
     REFLECTION_AVAILABLE = True
 except ImportError:
     REFLECTION_AVAILABLE = False

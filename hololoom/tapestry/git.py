@@ -16,7 +16,7 @@ import subprocess
 from typing import Optional, List, Tuple
 from pathlib import Path
 
-from HoloLoom.tapestry.protocol import DirtyWorkingDirectoryError
+from hololoom.tapestry.protocol import DirtyWorkingDirectoryError
 
 logger = logging.getLogger(__name__)
 

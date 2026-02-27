@@ -5,7 +5,7 @@ Tests for policy gating, risk escalation, and adversarial defense.
 """
 
 import pytest
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     RiskLevel,
     ActionCategory,

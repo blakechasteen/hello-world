@@ -18,7 +18,7 @@ import asyncio
 from datetime import datetime
 
 # Import protocol types directly
-from HoloLoom.apps.departments.protocol import (
+from hololoom.apps.departments.protocol import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -27,7 +27,7 @@ from HoloLoom.apps.departments.protocol import (
 )
 
 # Import Planning Department
-from HoloLoom.apps.departments.planning_department import PlanningDepartment, Task, Dependency, Plan
+from hololoom.apps.departments.planning_department import PlanningDepartment, Task, Dependency, Plan
 
 
 # ===== Fixtures =====

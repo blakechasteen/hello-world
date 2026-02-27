@@ -21,7 +21,7 @@ from datetime import datetime
 from dataclasses import asdict
 
 # Import test targets
-from HoloLoom.spinningWheel.website import (
+from hololoom.spinningWheel.website import (
     ExtractedImage,
     WebPageContent,
     ImageExtractor,
@@ -31,7 +31,7 @@ from HoloLoom.spinningWheel.website import (
     REQUESTS_AVAILABLE,
     BS4_AVAILABLE
 )
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.spinningWheel.protocol import (
     SpinnerCapabilities,
     ImportanceSignals,
     ImportanceScore
@@ -647,7 +647,7 @@ class TestConvenienceFunctions:
                         reason="requests or bs4 not installed")
     async def test_scrape_webpage(self, mock_html_content):
         """Test scrape_webpage convenience function."""
-        with patch('HoloLoom.spinningWheel.website.WebsiteSpinner._fetch_sync',
+        with patch('hololoom.spinningWheel.website.WebsiteSpinner._fetch_sync',
                    return_value=mock_html_content):
             result = await scrape_webpage(
                 "https://example.com",

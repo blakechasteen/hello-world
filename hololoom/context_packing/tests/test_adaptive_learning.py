@@ -19,7 +19,7 @@ import os
 import tempfile
 from typing import List
 
-from HoloLoom.context_packing.learning import (
+from hololoom.context_packing.learning import (
     QueryComplexity,
     BudgetOutcome,
     BudgetRecommendation,

@@ -9,9 +9,9 @@ This test verifies:
 """
 
 import asyncio
-from HoloLoom.config import Config
-from HoloLoom.memory.hyperspace_backend import create_hyperspace_backend, CrawlComplexity
-from HoloLoom.memory.protocol import Memory, MemoryQuery, Strategy
+from hololoom.config import Config
+from hololoom.memory.hyperspace_backend import create_hyperspace_backend, CrawlComplexity
+from hololoom.memory.protocol import Memory, MemoryQuery, Strategy
 
 
 async def test_hyperspace_backend():

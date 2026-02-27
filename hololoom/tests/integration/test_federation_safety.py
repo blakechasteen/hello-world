@@ -26,7 +26,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # Federation modules
-from HoloLoom.federation.safety import (
+from hololoom.federation.safety import (
     SignatureVerifier,
     GuildTrustChecker,
     FederationSafetyGate,
@@ -39,7 +39,7 @@ from HoloLoom.federation.safety import (
     parse_signed_request,
     create_federation_safety_gate,
 )
-from HoloLoom.federation.rate_limiter import (
+from hololoom.federation.rate_limiter import (
     FederatedRateLimiter,
     RateLimitTier,
     RateLimitInfo,
@@ -47,13 +47,13 @@ from HoloLoom.federation.rate_limiter import (
     create_rate_limiter,
     DEFAULT_RATE_LIMITS,
 )
-from HoloLoom.federation.types import (
+from hololoom.federation.types import (
     FederationNode,
     GuildTrustLevel,
     NodeStatus,
     Capability,
 )
-from HoloLoom.federation.identity import Identity
+from hololoom.federation.identity import Identity
 
 
 # ============================================================================

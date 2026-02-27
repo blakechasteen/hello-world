@@ -10,7 +10,7 @@ These schemas work with any LLM that supports OpenAI's function calling format:
 - LangChain, LlamaIndex, and other frameworks
 
 Usage:
-    from HoloLoom.lite.openai_tools import HOLOLOOM_LITE_TOOLS, execute_tool
+    from hololoom.lite.openai_tools import HOLOLOOM_LITE_TOOLS, execute_tool
 
     # Pass tools to OpenAI
     response = openai.chat.completions.create(

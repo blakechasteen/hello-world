@@ -18,7 +18,7 @@ Research Basis:
 - IOI Circuit (Wang et al., 2022): Indirect Object Identification
 
 Usage:
-    from HoloLoom.dark_trace.circuits import (
+    from hololoom.dark_trace.circuits import (
         CircuitTracer,
         TracerConfig,
         CircuitTrace,
@@ -63,7 +63,7 @@ Usage:
 """
 
 # Circuit tracing
-from HoloLoom.dark_trace.circuits.tracer import (
+from hololoom.dark_trace.circuits.tracer import (
     CircuitTracer,
     TracerConfig,
     CircuitTrace,
@@ -73,7 +73,7 @@ from HoloLoom.dark_trace.circuits.tracer import (
 )
 
 # Circuit graph representation
-from HoloLoom.dark_trace.circuits.graph import (
+from hololoom.dark_trace.circuits.graph import (
     CircuitGraph,
     CircuitNode,
     CircuitEdge,
@@ -83,7 +83,7 @@ from HoloLoom.dark_trace.circuits.graph import (
 )
 
 # Pattern detection
-from HoloLoom.dark_trace.circuits.patterns import (
+from hololoom.dark_trace.circuits.patterns import (
     CircuitPatternMatcher,
     KnownPattern,
     PatternMatch,
@@ -92,7 +92,7 @@ from HoloLoom.dark_trace.circuits.patterns import (
 )
 
 # Vulnerability analysis
-from HoloLoom.dark_trace.circuits.vulnerability import (
+from hololoom.dark_trace.circuits.vulnerability import (
     VulnerabilityAnalyzer,
     VulnerabilityReport,
     Vulnerability,
@@ -102,7 +102,7 @@ from HoloLoom.dark_trace.circuits.vulnerability import (
 )
 
 # Visualization
-from HoloLoom.dark_trace.circuits.visualizer import (
+from hololoom.dark_trace.circuits.visualizer import (
     CircuitVisualizer,
     CircuitDiagram,
     CircuitVisualizationConfig,

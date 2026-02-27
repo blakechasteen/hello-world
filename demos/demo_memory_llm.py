@@ -5,7 +5,7 @@ Usage:
     python demos/demo_memory_llm.py
 """
 
-from HoloLoom.memory_llm import MemoryLLM
+from hololoom.memory_llm import MemoryLLM
 
 def main():
     print("=" * 50)

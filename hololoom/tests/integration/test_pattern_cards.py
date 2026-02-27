@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.loom.card_loader import PatternCard
+from hololoom.loom.card_loader import PatternCard
 
 
 def test_card_loading():

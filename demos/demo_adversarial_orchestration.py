@@ -18,15 +18,15 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.apps.workflow_builder.adversarial_orchestration import (
+from hololoom.apps.workflow_builder.adversarial_orchestration import (
     create_adversarial_orchestration_system,
     TaskPriority,
     TaskType,
     PersistentAgent
 )
-from HoloLoom.memory.graph import KG
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Query, MemoryShard, Spacetime
+from hololoom.memory.graph import KG
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Query, MemoryShard, Spacetime
 from typing import Dict, Any
 
 

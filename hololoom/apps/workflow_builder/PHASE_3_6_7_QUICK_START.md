@@ -12,7 +12,7 @@ This guide gets you up and running with Advanced Filtering (Phase 3.6) and Custo
 
 ```bash
 cd c:\Users\blake\OneDrive\Documents\mythRL
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 ```
 
 **Expected Output**:
@@ -27,7 +27,7 @@ In a **second terminal**:
 
 ```bash
 cd c:\Users\blake\OneDrive\Documents\mythRL
-python HoloLoom/web_dashboard/test_phase3_4.py
+python hololoom/web_dashboard/test_phase3_4.py
 ```
 
 **Expected Output**:
@@ -39,7 +39,7 @@ All tests passed!
 
 ### Step 3: Open Dashboard
 
-Navigate to: `HoloLoom/web_dashboard/control_panel.html`
+Navigate to: `hololoom/web_dashboard/control_panel.html`
 
 Click the **Analytics** tab.
 

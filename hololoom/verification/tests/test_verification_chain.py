@@ -17,7 +17,7 @@ import asyncio
 import pytest
 from typing import Any, Dict, List
 
-from HoloLoom.verification.protocol import (
+from hololoom.verification.protocol import (
     ClaimType,
     ContradictionType,
     DegradationLevel,
@@ -29,30 +29,30 @@ from HoloLoom.verification.protocol import (
     VerificationQuestion,
     VerificationResult,
 )
-from HoloLoom.verification.claim_extractor import (
+from hololoom.verification.claim_extractor import (
     RuleBasedClaimExtractor,
     create_claim_extractor,
 )
-from HoloLoom.verification.verification_planner import (
+from hololoom.verification.verification_planner import (
     RuleBasedVerificationPlanner,
     create_verification_planner,
 )
-from HoloLoom.verification.independent_verifier import (
+from hololoom.verification.independent_verifier import (
     KnowledgeBaseVerifier,
     create_independent_verifier,
 )
-from HoloLoom.verification.contradiction_detector import (
+from hololoom.verification.contradiction_detector import (
     RuleBasedContradictionDetector,
     create_contradiction_detector,
 )
-from HoloLoom.verification.result_synthesizer import (
+from hololoom.verification.result_synthesizer import (
     RuleBasedResultSynthesizer,
     ConfidenceRecalibrator,
     determine_claim_status,
     calculate_overall_status,
     create_result_synthesizer,
 )
-from HoloLoom.verification.chain import (
+from hololoom.verification.chain import (
     VerificationChain,
     VerificationCache,
     VerificationMetrics,

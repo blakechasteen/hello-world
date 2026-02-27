@@ -2,7 +2,7 @@
 
 **Status**: ✅ Production Ready (December 2025)
 **Last Updated**: 2025-12-09
-**Location**: `HoloLoom/web_dashboard/workflow_builder.html`
+**Location**: `hololoom/web_dashboard/workflow_builder.html`
 
 ## Overview
 
@@ -213,7 +213,7 @@ Slide-in/out animations for notifications:
 ## File Structure
 
 ```
-HoloLoom/web_dashboard/
+hololoom/web_dashboard/
 ├── workflow_builder.html
 │   ├── Templates button in toolbar (line 1531)
 │   ├── Templates modal (lines 1613-1633)

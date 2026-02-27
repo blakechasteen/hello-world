@@ -26,7 +26,7 @@ from pathlib import Path
 from unittest.mock import Mock, MagicMock, patch, AsyncMock
 
 # Import from scratchpad module
-from HoloLoom.apps.chatops.scratchpad.types import (
+from hololoom.apps.chatops.scratchpad.types import (
     ScratchArtifact,
     ArtifactScope,
     ArtifactType,
@@ -39,7 +39,7 @@ from HoloLoom.apps.chatops.scratchpad.types import (
     ListResult,
     DeleteResult,
 )
-from HoloLoom.apps.chatops.scratchpad.manager import (
+from hololoom.apps.chatops.scratchpad.manager import (
     ScratchPadManager,
     RateLimiter,
     NameValidator,

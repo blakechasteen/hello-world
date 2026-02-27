@@ -14,7 +14,7 @@ Author: Claude Code (Elegance Pass Refactoring - Phase 8)
 Date: 2025-11-22
 """
 
-from HoloLoom.core.orchestrator.learning.recursive_learning import (
+from hololoom.core.orchestrator.learning.recursive_learning import (
     apply_recursive_learning,
 )
 

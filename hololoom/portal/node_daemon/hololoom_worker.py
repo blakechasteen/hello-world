@@ -19,8 +19,8 @@ logger = get_logger(__name__, component="node")
 
 # Graceful fallback if HoloLoom not available
 try:
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import hololoom
+    from hololoom.config import Config
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HoloLoom = None
@@ -30,8 +30,8 @@ except ImportError:
 
 # Try to import weaving orchestrator for full reasoning
 try:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.protocols.types import Query
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.protocols.types import Query
     ORCHESTRATOR_AVAILABLE = True
 except ImportError:
     WeavingOrchestrator = None

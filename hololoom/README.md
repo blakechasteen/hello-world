@@ -18,7 +18,7 @@ pip install torch numpy gymnasium matplotlib
 
 ```bash
 # from the repository root
-PYTHONPATH=HoloLoom .venv/bin/python -c "from HoloLoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
+PYTHONPATH=HoloLoom .venv/bin/python -c "from hololoom.train_agent import PPOTrainer; t=PPOTrainer(env_name='CartPole-v1', total_timesteps=2000, steps_per_update=256, n_epochs=1, batch_size=32, log_dir='./logs/test_run_small'); t.train()"
 ```
 
 3. Notes

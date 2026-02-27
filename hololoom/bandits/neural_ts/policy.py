@@ -8,11 +8,11 @@ Handles Thompson Sampling, online learning, and diagnostics.
 import torch
 import time
 from typing import Any
-from HoloLoom.bandits.neural_ts.types import Context, Action, Observation
-from HoloLoom.bandits.neural_ts.posterior import BootstrapPosterior, MCDropoutPosterior
-from HoloLoom.bandits.neural_ts.featurizer import ContextActionFeaturizer
-from HoloLoom.bandits.neural_ts.replay import ReplayBuffer
-from HoloLoom.bandits.neural_ts.trainer import BanditTrainer
+from hololoom.bandits.neural_ts.types import Context, Action, Observation
+from hololoom.bandits.neural_ts.posterior import BootstrapPosterior, MCDropoutPosterior
+from hololoom.bandits.neural_ts.featurizer import ContextActionFeaturizer
+from hololoom.bandits.neural_ts.replay import ReplayBuffer
+from hololoom.bandits.neural_ts.trainer import BanditTrainer
 
 
 class NeuralThompsonPolicy:
@@ -35,8 +35,8 @@ class NeuralThompsonPolicy:
         device: Compute device
 
     Example:
-        >>> from HoloLoom.bandits import create_neural_ts_policy
-        >>> from HoloLoom.bandits.config import BanditConfig
+        >>> from hololoom.bandits import create_neural_ts_policy
+        >>> from hololoom.bandits.config import BanditConfig
         >>>
         >>> config = BanditConfig()  # Defaults to Bootstrap
         >>> policy = create_neural_ts_policy(config)

@@ -11,7 +11,7 @@ Design Pattern:
 - Easy extensibility (just register new handlers)
 
 Usage:
-    from HoloLoom.tools.handler_factory import ToolHandlerFactory
+    from hololoom.tools.handler_factory import ToolHandlerFactory
 
     # Create factory
     factory = ToolHandlerFactory(logger=logger, llm=llm_client)
@@ -28,7 +28,7 @@ from typing import Dict, Callable, Awaitable, Any, Optional
 from dataclasses import dataclass
 import logging
 
-from HoloLoom.protocols.types import Query, Context
+from hololoom.protocols.types import Query, Context
 
 
 @dataclass

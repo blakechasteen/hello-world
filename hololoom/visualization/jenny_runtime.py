@@ -43,7 +43,7 @@ Architecture:
                         └───────────┘
 
 Usage:
-    from HoloLoom.visualization import JennyRuntime
+    from hololoom.visualization import JennyRuntime
 
     # One-liner magic
     async with JennyRuntime() as jenny:
@@ -983,7 +983,7 @@ async def jenny_session(
             panel = await jenny.ask("What is Python?")
 
         # With MRF learning:
-        from HoloLoom.visualization.jenny_mrf import JennyMRFCompiler
+        from hololoom.visualization.jenny_mrf import JennyMRFCompiler
         compiler = JennyMRFCompiler(enable_learning=True)
         async with jenny_session(compiler=compiler) as jenny:
             panel = await jenny.ask("What is Thompson Sampling?")

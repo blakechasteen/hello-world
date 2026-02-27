@@ -423,7 +423,7 @@ Monitor Thompson Sampling trajectory statistics:
 
 ```python
 # Check trajectory performance
-from HoloLoom.shuttle.trajectory_bandit import TrajectoryBandit
+from hololoom.shuttle.trajectory_bandit import TrajectoryBandit
 
 bandit = orchestrator.shuttle_stage.shuttle.trajectory_selector.bandit
 stats = bandit.get_statistics()

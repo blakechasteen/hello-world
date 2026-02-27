@@ -10,7 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from HoloLoom.prompting.testing.protocol import PromptTestCase
+from hololoom.prompting.testing.protocol import PromptTestCase
 
 
 @dataclass

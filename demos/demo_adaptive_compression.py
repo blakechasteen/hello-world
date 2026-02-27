@@ -25,7 +25,7 @@ def demo_basic_classification():
     print("DEMO 1: Basic Query Classification")
     print("=" * 70)
 
-    from HoloLoom.context_packing import (
+    from hololoom.context_packing import (
         AdaptiveCompressionStrategy,
         AdaptiveComplexity,
     )
@@ -74,7 +74,7 @@ def demo_mi_budget_mapping():
     print("DEMO 2: MI Budget Mapping")
     print("=" * 70)
 
-    from HoloLoom.context_packing.adaptive_strategy import (
+    from hololoom.context_packing.adaptive_strategy import (
         AdaptiveComplexity,
         MI_BUDGETS,
         COMPRESSION_RATIOS,
@@ -116,7 +116,7 @@ def demo_convenience_functions():
     print("DEMO 3: Convenience Functions")
     print("=" * 70)
 
-    from HoloLoom.context_packing import (
+    from hololoom.context_packing import (
         select_adaptive_strategy,
         get_adaptive_mi_budget,
         get_adaptive_config,
@@ -161,7 +161,7 @@ def demo_with_information_budget_pack():
 
     try:
         import networkx as nx
-        from HoloLoom.context_packing import (
+        from hololoom.context_packing import (
             information_budget_pack,
             get_adaptive_mi_budget,
         )
@@ -254,7 +254,7 @@ def demo_performance():
     print("DEMO 5: Classification Performance")
     print("=" * 70)
 
-    from HoloLoom.context_packing import AdaptiveCompressionStrategy
+    from hololoom.context_packing import AdaptiveCompressionStrategy
 
     strategy = AdaptiveCompressionStrategy()
 
@@ -297,7 +297,7 @@ def demo_statistics():
     print("DEMO 6: Statistics Tracking")
     print("=" * 70)
 
-    from HoloLoom.context_packing import AdaptiveCompressionStrategy
+    from hololoom.context_packing import AdaptiveCompressionStrategy
 
     strategy = AdaptiveCompressionStrategy()
 

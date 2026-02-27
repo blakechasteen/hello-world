@@ -30,8 +30,8 @@ logger = logging.getLogger(__name__)
 
 # Import Promptly components
 try:
-    from HoloLoom.promptly.dspy_hololoom import DSPyHoloLoom
-    from HoloLoom.promptly.workflow import WorkflowAdapter
+    from hololoom.promptly.dspy_hololoom import DSPyHoloLoom
+    from hololoom.promptly.workflow import WorkflowAdapter
     PROMPTLY_AVAILABLE = True
     logger.info("✓ Promptly components loaded successfully")
 except ImportError as e:

@@ -19,7 +19,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-from HoloLoom.verification.protocol import (
+from hololoom.verification.protocol import (
     Contradiction,
     DegradationLevel,
     VerifiableClaim,
@@ -30,11 +30,11 @@ from HoloLoom.verification.protocol import (
     VerificationResult,
     VerificationStatus,
 )
-from HoloLoom.verification.claim_extractor import create_claim_extractor
-from HoloLoom.verification.verification_planner import create_verification_planner
-from HoloLoom.verification.independent_verifier import create_independent_verifier
-from HoloLoom.verification.contradiction_detector import create_contradiction_detector
-from HoloLoom.verification.result_synthesizer import (
+from hololoom.verification.claim_extractor import create_claim_extractor
+from hololoom.verification.verification_planner import create_verification_planner
+from hololoom.verification.independent_verifier import create_independent_verifier
+from hololoom.verification.contradiction_detector import create_contradiction_detector
+from hololoom.verification.result_synthesizer import (
     create_result_synthesizer,
     calculate_overall_status,
     aggregate_claim_statuses,

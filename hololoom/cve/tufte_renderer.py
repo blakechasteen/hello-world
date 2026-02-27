@@ -25,7 +25,7 @@ from datetime import datetime
 from dataclasses import dataclass
 import json
 
-from HoloLoom.cve.cognitive_protocol import (
+from hololoom.cve.cognitive_protocol import (
     CognitiveEvent,
     CognitiveFrame,
     CognitiveStream,
@@ -1224,7 +1224,7 @@ def render_cognitive_frame(frame: CognitiveFrame, **kwargs) -> str:
 # ============================================================================
 
 if __name__ == "__main__":
-    from HoloLoom.cve.cognitive_protocol import (
+    from hololoom.cve.cognitive_protocol import (
         ActivationField,
         ProbabilityManifold,
         SemanticPosition,

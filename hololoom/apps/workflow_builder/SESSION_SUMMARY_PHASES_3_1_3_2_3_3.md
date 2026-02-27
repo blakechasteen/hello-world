@@ -294,17 +294,17 @@ Exploration Balance:
 
 **Phase 3.1**: `test_stage_tracking.py`
 - 4 tests: health, stage progression, duration capture, bottleneck detection
-- Run with: `python HoloLoom/web_dashboard/test_stage_tracking.py`
+- Run with: `python hololoom/web_dashboard/test_stage_tracking.py`
 
 **Phase 3.2**: `test_phase3_2.py`
 - 4 tests: health, multiple queries, sparkline data, bottleneck detection
-- Run with: `python HoloLoom/web_dashboard/test_phase3_2.py`
+- Run with: `python hololoom/web_dashboard/test_phase3_2.py`
 
 ### Manual Dashboard Testing
 
 ```bash
 # 1. Start server
-PYTHONPATH=. uvicorn HoloLoom.server.unified_server:app --reload --port 8000
+PYTHONPATH=. uvicorn hololoom.server.unified_server:app --reload --port 8000
 
 # 2. Open control_panel.html in browser
 
@@ -345,17 +345,17 @@ done
 
 ## Files Modified
 
-### 1. HoloLoom/weaving_orchestrator.py (Phase 3.1)
+### 1. hololoom/weaving_orchestrator.py (Phase 3.1)
 - Added `stage_callback` parameter (line 422)
 - Created `_emit_stage_event()` helper (lines 1242-1256)
 - Added tracking calls to all 9 stages (throughout `weave()` method)
 
-### 2. HoloLoom/server/unified_server.py (Phase 3.1)
+### 2. hololoom/server/unified_server.py (Phase 3.1)
 - Added `stage_tracking_callback()` method (lines 168-187)
 - Wired callback to orchestrator (lines 200-205)
 - Enhanced query endpoint with real trace capture (lines 462-468)
 
-### 3. HoloLoom/web_dashboard/js/orchestrator_visualizer.js (Phase 3.2)
+### 3. hololoom/web_dashboard/js/orchestrator_visualizer.js (Phase 3.2)
 - Added `stageTrends` tracking (lines 25-27)
 - Added `renderSparkline()` method (lines 287-314)
 - Added `updateStageTrends()` method (lines 316-332)
@@ -363,11 +363,11 @@ done
 - Enhanced `updateStageProgress()` with bottleneck detection (lines 153-220)
 - Enhanced `updateStageHistory()` with waterfall bottlenecks (lines 222-298)
 
-### 4. HoloLoom/web_dashboard/control_panel.html (Phase 3.2)
+### 4. hololoom/web_dashboard/control_panel.html (Phase 3.2)
 - Added bottleneck CSS animations (lines 656-712)
 - Added waterfall bottleneck indicators (lines 769-814)
 
-### 5. HoloLoom/web_dashboard/js/policy_monitor.js (Phase 3.3)
+### 5. hololoom/web_dashboard/js/policy_monitor.js (Phase 3.3)
 - Enhanced `renderThompsonChart()` with win rates (lines 132-253)
 - Added `renderInlineSparkline()` helper (lines 234-253)
 - Enhanced `renderPolicyWeightChart()` with sparklines (lines 367-407)
@@ -376,8 +376,8 @@ done
 - Added `getBalanceRecommendation()` (lines 535-546)
 
 ### 6. Test Scripts (New)
-- HoloLoom/web_dashboard/test_stage_tracking.py (400 lines)
-- HoloLoom/web_dashboard/test_phase3_2.py (200 lines)
+- hololoom/web_dashboard/test_stage_tracking.py (400 lines)
+- hololoom/web_dashboard/test_phase3_2.py (200 lines)
 
 ---
 

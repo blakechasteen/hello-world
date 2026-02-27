@@ -60,7 +60,7 @@ Validates architecture, data, coding, and emergent AI alignment across the mythR
 import asyncio
 
 # Import mythRL core components
-from HoloLoom.protocols import (
+from hololoom.protocols import (
     ComplexityLevel, ProvenanceTrace, MythRLResult,
     PatternSelectionProtocol, DecisionEngineProtocol,
     FeatureExtractionProtocol, WarpSpaceProtocol,

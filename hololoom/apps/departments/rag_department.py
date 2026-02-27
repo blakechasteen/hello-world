@@ -20,9 +20,9 @@ import time
 from typing import Any, Dict, List, Optional
 from datetime import datetime, timedelta
 
-from HoloLoom.config import Config
-from HoloLoom.rag.simple_rag import SimpleRAG, RAGResult
-from HoloLoom.apps.departments.protocol import (
+from hololoom.config import Config
+from hololoom.rag.simple_rag import SimpleRAG, RAGResult
+from hololoom.apps.departments.protocol import (
     Department,
     DepartmentRequest,
     DepartmentResponse,
@@ -32,7 +32,7 @@ from HoloLoom.apps.departments.protocol import (
     DSStarCheck,
     DepartmentConfig,
 )
-from HoloLoom.apps.departments.base import BaseDepartment
+from hololoom.apps.departments.base import BaseDepartment
 
 logger = logging.getLogger(__name__)
 
@@ -751,8 +751,8 @@ class RAGDepartment(BaseDepartment):
             >>> print(f"Confidence: {result['final_confidence']:.2f}")
             >>> print(f"Iterations: {result['iterations']}")
         """
-        from HoloLoom.convergence.recursive_reasoner_enhanced import create_recursive_reasoner
-        from HoloLoom.protocols.recursive_reasoning import RecursiveConfig, ReasoningStrategy
+        from hololoom.convergence.recursive_reasoner_enhanced import create_recursive_reasoner
+        from hololoom.protocols.recursive_reasoning import RecursiveConfig, ReasoningStrategy
 
         logger.info(f"Starting recursive reasoning: {query[:50]}... (max_depth={max_depth})")
 

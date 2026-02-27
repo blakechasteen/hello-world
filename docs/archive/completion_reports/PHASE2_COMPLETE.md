@@ -23,7 +23,7 @@ Successfully completed Phase 2 - four high-impact, research-backed enhancements 
 
 ### Implementation
 
-**File**: `HoloLoom/warp/math/contextual_bandit.py` (650 lines)
+**File**: `hololoom/warp/math/contextual_bandit.py` (650 lines)
 
 **What It Does**:
 - Extracts 470-dimensional context vectors from queries
@@ -79,7 +79,7 @@ selector.record_feedback(
 
 ### Implementation
 
-**File**: `HoloLoom/warp/math/data_understanding.py` (580 lines)
+**File**: `hololoom/warp/math/data_understanding.py` (580 lines)
 
 **What It Does**:
 - **Stage 1 of 5-stage NLG pipeline** (Reiter & Dale, 2000)
@@ -150,7 +150,7 @@ meaning = synthesizer.synthesize(results, intent, plan)
 
 ### Implementation
 
-**File**: `HoloLoom/warp/math/monitoring_dashboard.py` (520 lines)
+**File**: `hololoom/warp/math/monitoring_dashboard.py` (520 lines)
 
 **What It Does**:
 - Real-time metrics collection (sliding windows)
@@ -241,7 +241,7 @@ Recent Performance:
 
 ### Implementation
 
-**File**: `HoloLoom/warp/math/explainability.py` (480 lines)
+**File**: `hololoom/warp/math/explainability.py` (480 lines)
 
 **What It Does**:
 - **Why explanations**: "Why was operation X chosen?"

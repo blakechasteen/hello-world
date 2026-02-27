@@ -32,7 +32,7 @@ import numpy as np
 
 # Import semantic calculus components
 try:
-    from HoloLoom.semantic_calculus import (
+    from hololoom.semantic_calculus import (
         PolicySemanticState as SemanticState,
         SemanticToolSelector,
         SemanticAwareBandit,
@@ -49,13 +49,13 @@ except ImportError:
     SEMANTIC_CATEGORIES = {}
 
 # Handler registry
-from HoloLoom.apps.chatops.handlers.handler_registry import (
+from hololoom.apps.chatops.handlers.handler_registry import (
     HandlerRegistry, HandlerCategory, chatops_handler
 )
 
 # Multi-agent integration (Phase 7)
 try:
-    from HoloLoom.apps.chatops.handlers.multi_agent_semantic import (
+    from hololoom.apps.chatops.handlers.multi_agent_semantic import (
         notify_semantic_update,
         get_semantic_registry
     )
@@ -811,7 +811,7 @@ Commands available:
 - !semantic help        - Show command help
 
 Integration:
-    from HoloLoom.apps.chatops.handlers.semantic_handlers import create_semantic_handlers
+    from hololoom.apps.chatops.handlers.semantic_handlers import create_semantic_handlers
 
     bot = MatrixBot(config)
     semantic = create_semantic_handlers(bot, embedder=my_embedder)

@@ -17,7 +17,7 @@ Design Philosophy:
 - Alerts should be actionable, not noisy
 
 Usage:
-    from HoloLoom.dark_trace.integration.monitoring import (
+    from hololoom.dark_trace.integration.monitoring import (
         InterpretabilityMonitor,
         create_monitor,
     )
@@ -46,7 +46,7 @@ import numpy as np
 import time
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.engine import DarkTraceEngine
+    from hololoom.dark_trace.engine import DarkTraceEngine
 
 
 class DriftType(Enum):

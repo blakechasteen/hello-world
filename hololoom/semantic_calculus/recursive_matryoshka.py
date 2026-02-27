@@ -48,8 +48,8 @@ from collections import deque
 from enum import Enum
 import time
 
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.semantic_calculus.dimensions import SemanticSpectrum, STANDARD_DIMENSIONS
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.dimensions import SemanticSpectrum, STANDARD_DIMENSIONS
 
 
 class FusionStrategy(Enum):
@@ -263,7 +263,7 @@ class RecursiveMatryoshkaCalculus:
         # Create semantic spectrums (same as before)
         self.spectrum_word = SemanticSpectrum(dimensions=STANDARD_DIMENSIONS[:16])
 
-        from HoloLoom.semantic_calculus.dimensions import (
+        from hololoom.semantic_calculus.dimensions import (
             NARRATIVE_DIMENSIONS,
             EMOTIONAL_DEPTH_DIMENSIONS, RELATIONAL_DIMENSIONS,
             ARCHETYPAL_DIMENSIONS, PHILOSOPHICAL_DIMENSIONS,
@@ -519,7 +519,7 @@ async def demonstrate_recursive():
     print("=" * 80)
     print()
 
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
     embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
 

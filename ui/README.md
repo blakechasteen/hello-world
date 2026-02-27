@@ -186,7 +186,7 @@ Efficiency:
 Replace `UIMemoryBackend` with your own:
 
 ```python
-from HoloLoom.memory.protocol import MemoryBackend
+from hololoom.memory.protocol import MemoryBackend
 
 # Use your backend
 memory_backend = YourCustomBackend()

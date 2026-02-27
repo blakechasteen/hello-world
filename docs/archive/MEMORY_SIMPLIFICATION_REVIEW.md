@@ -220,7 +220,7 @@ config = Config.fused()
 **Solution**: Intelligent auto-fallback
 
 ```python
-# HoloLoom/memory/backend_factory.py
+# hololoom/memory/backend_factory.py
 async def _create_hybrid_with_fallback(config: Config):
     """Try Neo4j + Qdrant, fallback to NetworkX if unavailable."""
 
@@ -256,7 +256,7 @@ async def _create_hybrid_with_fallback(config: Config):
 
 **Old Code** (still works):
 ```python
-from HoloLoom.config import MemoryBackend
+from hololoom.config import MemoryBackend
 
 config.memory_backend = MemoryBackend.NEO4J_QDRANT  # Legacy name
 ```
@@ -271,7 +271,7 @@ config.memory_backend = MemoryBackend.NEO4J_QDRANT  # Legacy name
 
 **Migration Function**:
 ```python
-# HoloLoom/config.py
+# hololoom/config.py
 @staticmethod
 def migrate_legacy(backend_name: str) -> MemoryBackend:
     """Auto-migrate legacy backend names to new core backends."""
@@ -311,9 +311,9 @@ def migrate_legacy(backend_name: str) -> MemoryBackend:
 
 ```python
 # apps/beekeeping/spinners/bee_inspection.py
-from HoloLoom.spinningWheel import BeeInspectionAudioSpinner
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.spinningWheel import BeeInspectionAudioSpinner
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Production config (auto-uses HYBRID)
 config = Config.fused()
@@ -464,7 +464,7 @@ def test_auto_fallback(): ...
 **Old**:
 ```python
 from farm_core import FarmTracker
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 config = Config.fused()
 config.memory_backend = MemoryBackend.NEO4J_QDRANT  # Deprecated
@@ -475,7 +475,7 @@ tracker = FarmTracker(config=config)
 **New**:
 ```python
 from farm_core import FarmTracker
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 config = Config.fused()  # Auto-uses HYBRID
 # or explicitly:

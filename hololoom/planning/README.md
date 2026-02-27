@@ -1,7 +1,7 @@
 # HoloLoom Planning System
 
 **Status**: ✅ Production Ready (December 2025)
-**Location**: `HoloLoom/planning/`
+**Location**: `hololoom/planning/`
 **Total Lines**: ~4,200 lines across 7 modules
 **Date**: 2025-12-11
 
@@ -23,8 +23,8 @@ The system implements:
 ### Basic Planning with Causal Reasoning
 
 ```python
-from HoloLoom.planning import HierarchicalPlanner, Goal
-from HoloLoom.causal import CausalDAG, Edge
+from hololoom.planning import HierarchicalPlanner, Goal
+from hololoom.causal import CausalDAG, Edge
 
 # Create causal knowledge
 dag = CausalDAG()
@@ -53,7 +53,7 @@ for i, action in enumerate(plan.actions, 1):
 ### Planning Under Uncertainty (POMDP)
 
 ```python
-from HoloLoom.planning import (
+from hololoom.planning import (
     POMDPPlanner, BeliefState, ObservationModel, Goal
 )
 import numpy as np
@@ -84,7 +84,7 @@ print(f"Branches: {list(contingent_plan.branches.keys())}")
 ### Resource-Constrained Planning
 
 ```python
-from HoloLoom.planning import (
+from hololoom.planning import (
     ResourceAwarePlanner, Resource, ResourceType, Goal
 )
 
@@ -113,7 +113,7 @@ if plan:
 ### Multi-Agent Planning
 
 ```python
-from HoloLoom.planning import (
+from hololoom.planning import (
     create_agent, MultiAgentCoordinator, Task,
     AgentType, NegotiationProtocol, Goal
 )
@@ -142,7 +142,7 @@ print(f"Allocation: {allocation}")
 ### Adaptive Plan Execution
 
 ```python
-from HoloLoom.planning import AdaptivePlanner
+from hololoom.planning import AdaptivePlanner
 
 # Create executor function (your action execution code)
 def execute_action(action):
@@ -376,9 +376,9 @@ The Planning System is Layer 2 of the cognitive architecture:
 
 **Integration Example**:
 ```python
-from HoloLoom.causal import CausalDAG, Edge
-from HoloLoom.planning import HierarchicalPlanner, Goal
-from HoloLoom.alignment import SafetyGuardrails
+from hololoom.causal import CausalDAG, Edge
+from hololoom.planning import HierarchicalPlanner, Goal
+from hololoom.alignment import SafetyGuardrails
 
 # Layer 1: Build causal knowledge
 dag = CausalDAG()

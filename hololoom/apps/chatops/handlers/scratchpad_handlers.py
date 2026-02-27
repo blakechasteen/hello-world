@@ -14,7 +14,7 @@ Commands:
 - !scratch help - Show scratch pad help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.scratchpad_handlers import (
+    from hololoom.apps.chatops.handlers.scratchpad_handlers import (
         register_scratchpad_handlers,
         ScratchPadHandlers
     )
@@ -30,8 +30,8 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List, TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
-    from HoloLoom.fabric.spacetime import Spacetime
-    from HoloLoom.apps.chatops.scratchpad.manager import ScratchPadManager
+    from hololoom.fabric.spacetime import Spacetime
+    from hololoom.apps.chatops.scratchpad.manager import ScratchPadManager
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -75,11 +75,11 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.apps.chatops.scratchpad.manager import (
+    from hololoom.apps.chatops.scratchpad.manager import (
         ScratchPadManager,
         create_scratchpad_manager
     )
-    from HoloLoom.apps.chatops.scratchpad.types import (
+    from hololoom.apps.chatops.scratchpad.types import (
         ArtifactScope,
         ArtifactType,
         ScratchArtifact,
@@ -107,7 +107,7 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.apps.chatops.handlers.conversation_handlers import (
+    from hololoom.apps.chatops.handlers.conversation_handlers import (
         get_session_manager
     )
     CONVERSATION_AVAILABLE = True
@@ -121,8 +121,8 @@ except ImportError:
 # ============================================================================
 
 try:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-    from HoloLoom.fabric.spacetime import Spacetime
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.fabric.spacetime import Spacetime
     ORCHESTRATOR_AVAILABLE = True
 except ImportError:
     ORCHESTRATOR_AVAILABLE = False
@@ -856,7 +856,7 @@ async def register_scratchpad_handlers(
     # Register with registry if available
     if REGISTRY_AVAILABLE:
         if registry is None:
-            from HoloLoom.apps.chatops.handlers.handler_registry import get_global_registry
+            from hololoom.apps.chatops.handlers.handler_registry import get_global_registry
             registry = get_global_registry()
 
         registry.register_instance(handlers)

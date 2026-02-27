@@ -11,10 +11,10 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.terminal_ui import TerminalUI
-from HoloLoom.loom.command import PatternCard
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.terminal_ui import TerminalUI
+from hololoom.loom.command import PatternCard
 
 
 async def test_ui_creation():
@@ -24,7 +24,7 @@ async def test_ui_creation():
     print("="*70)
     
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.memory.backend_factory import create_memory_backend
         
         config = Config.bare()
         memory = await create_memory_backend(config)
@@ -48,7 +48,7 @@ async def test_banner_display():
     print("="*70)
     
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.memory.backend_factory import create_memory_backend
         
         config = Config.bare()
         memory = await create_memory_backend(config)
@@ -71,7 +71,7 @@ async def test_basic_weave():
     print("="*70)
     
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.memory.backend_factory import create_memory_backend
         
         config = Config.bare()
         memory = await create_memory_backend(config)
@@ -103,7 +103,7 @@ async def test_history_display():
     print("="*70)
     
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.memory.backend_factory import create_memory_backend
         
         config = Config.bare()
         memory = await create_memory_backend(config)
@@ -141,7 +141,7 @@ async def test_trace_display():
     print("="*70)
     
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.memory.backend_factory import create_memory_backend
         
         config = Config.fast()
         memory = await create_memory_backend(config)

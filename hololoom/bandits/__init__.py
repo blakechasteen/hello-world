@@ -13,25 +13,25 @@ Key Components:
 - Evaluation: ECE, regret proxy, reward tracking
 
 Example:
-    >>> from HoloLoom.bandits import create_neural_ts_policy
+    >>> from hololoom.bandits import create_neural_ts_policy
     >>> policy = create_neural_ts_policy(config)
     >>> action = policy.select(context, candidate_actions)
     >>> # ... execute action, compute reward ...
     >>> policy.update(Observation(ctx.id, action.id, reward))
 """
 
-from HoloLoom.bandits.neural_ts.types import (
+from hololoom.bandits.neural_ts.types import (
     Context,
     Action,
     Observation,
     BanditPolicy,
 )
-from HoloLoom.bandits.neural_ts.policy import NeuralThompsonPolicy
-from HoloLoom.bandits.config import BanditConfig, create_neural_ts_policy
+from hololoom.bandits.neural_ts.policy import NeuralThompsonPolicy
+from hololoom.bandits.config import BanditConfig, create_neural_ts_policy
 
 # Re-exports from merged ts_core module
-from HoloLoom.bandits.ts_base import ThompsonSampler, ThompsonSamplerConfig
-from HoloLoom.bandits.samplers import create_thompson_sampler
+from hololoom.bandits.ts_base import ThompsonSampler, ThompsonSamplerConfig
+from hololoom.bandits.samplers import create_thompson_sampler
 
 __all__ = [
     "Context",

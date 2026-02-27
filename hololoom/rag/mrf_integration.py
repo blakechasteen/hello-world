@@ -19,7 +19,7 @@ Benefits:
 - More structured multimodal responses
 
 Example:
-    from HoloLoom.rag.mrf_integration import create_rag_mrf_prompt
+    from hololoom.rag.mrf_integration import create_rag_mrf_prompt
 
     # Answer generation with MRF
     prompt = create_rag_mrf_prompt(
@@ -33,7 +33,7 @@ Example:
 import logging
 from typing import Optional, Dict, Any, List
 
-from HoloLoom.prompting.unified_mrf import (
+from hololoom.prompting.unified_mrf import (
     UnifiedMRF,
     MetapromptConfig,
     ModelProvider

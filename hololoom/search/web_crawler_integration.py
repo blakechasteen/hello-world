@@ -25,9 +25,9 @@ from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
-from HoloLoom.spinningWheel.modalities.recursive_crawler import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
+from hololoom.spinningWheel.modalities.recursive_crawler import (
     RecursiveCrawler,
     CrawlConfig,
     LinkInfo

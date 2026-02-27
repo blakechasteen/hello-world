@@ -21,7 +21,7 @@ Applied to mythRL: **Every Spacetime fabric should auto-generate its own optimal
 ## What You Already Have ✅
 
 ### 1. **Complete Computational Lineage** (Spacetime Fabric)
-`HoloLoom/fabric/spacetime.py` captures EVERYTHING about a weaving cycle:
+`hololoom/fabric/spacetime.py` captures EVERYTHING about a weaving cycle:
 
 ```python
 @dataclass
@@ -45,7 +45,7 @@ class Spacetime:
 This is **richer than any traditional logging system** - it's a 4D artifact (3D semantic space + 1D temporal trace).
 
 ### 2. **244D Interpretable Semantic Space**
-`HoloLoom/semantic_calculus/dimensions.py` - **Human-readable axes**:
+`hololoom/semantic_calculus/dimensions.py` - **Human-readable axes**:
 
 - 10 standard dimensions (Warmth, Formality, Concreteness, etc.)
 - Extensible to 244 dimensions for complete coverage
@@ -53,7 +53,7 @@ This is **richer than any traditional logging system** - it's a 4D artifact (3D 
 - Enables **semantic position visualization** ("Your query moved from Technical → Emotional")
 
 ### 3. **Semantic Flow Calculus**
-`HoloLoom/semantic_calculus/flow_calculus.py` - **Physics of meaning**:
+`hololoom/semantic_calculus/flow_calculus.py` - **Physics of meaning**:
 
 - **Velocity** - Rate of meaning change between words
 - **Acceleration** - Change in semantic direction
@@ -95,7 +95,7 @@ You already detect:
 
 ## The Vision: Auto-Constructing Dashboard Engine
 
-### Architecture: `HoloLoom/visualization/dashboard_constructor.py`
+### Architecture: `hololoom/visualization/dashboard_constructor.py`
 
 ```python
 class DashboardConstructor:
@@ -214,7 +214,7 @@ class DashboardConstructor:
 **Goal:** Auto-generate dashboards from Spacetime fabric
 
 ```python
-# File: HoloLoom/visualization/dashboard_constructor.py
+# File: hololoom/visualization/dashboard_constructor.py
 
 @dataclass
 class PanelSpec:
@@ -274,7 +274,7 @@ class DashboardConstructor:
 **Goal:** Implement panel generators for all data types
 
 ```python
-# File: HoloLoom/visualization/panels.py
+# File: hololoom/visualization/panels.py
 
 class PanelGenerator:
     """Generates panels from Spacetime data."""
@@ -326,7 +326,7 @@ class PanelGenerator:
 **Goal:** Intelligent dashboard type selection
 
 ```python
-# File: HoloLoom/visualization/strategy.py
+# File: hololoom/visualization/strategy.py
 
 class StrategySelector:
     """Selects optimal dashboard strategy based on Spacetime analysis."""
@@ -399,7 +399,7 @@ class StrategySelector:
 **Goal:** Optimal grid arrangement
 
 ```python
-# File: HoloLoom/visualization/layout.py
+# File: hololoom/visualization/layout.py
 
 class LayoutEngine:
     """Arranges panels in optimal grid layout."""
@@ -461,7 +461,7 @@ class TerminalDashboardRenderer:
     def render(self, dashboard: Dashboard):
         # ASCII art visualizations
         # Live tables with rich.live()
-        # Integrates with HoloLoom/monitoring/dashboard.py
+        # Integrates with hololoom/monitoring/dashboard.py
 ```
 
 ---
@@ -471,7 +471,7 @@ class TerminalDashboardRenderer:
 ### 1. **WeavingOrchestrator Integration**
 
 ```python
-# File: HoloLoom/weaving_orchestrator.py
+# File: hololoom/weaving_orchestrator.py
 
 class WeavingOrchestrator:
     async def weave(self, query: Query) -> Spacetime:
@@ -514,7 +514,7 @@ async def handle_query(self, query: str):
 ### 3. **Matrix ChatOps Integration**
 
 ```python
-# File: HoloLoom/chatops/core/chatops_bridge.py
+# File: hololoom/chatops/core/chatops_bridge.py
 
 async def handle_weave_command(self, query: str):
     spacetime = await self.shuttle.weave(Query(text=query))

@@ -7,8 +7,8 @@ from typing import Dict, Any, List, Optional, Callable, Union
 from dataclasses import dataclass, field
 from enum import Enum
 
-from HoloLoom.skills.base import SkillOutput, SkillStatus
-from HoloLoom.skills.executor import SkillExecutor, ExecutionResult, BatchResult
+from hololoom.skills.base import SkillOutput, SkillStatus
+from hololoom.skills.executor import SkillExecutor, ExecutionResult, BatchResult
 
 logger = logging.getLogger(__name__)
 

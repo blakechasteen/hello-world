@@ -1,7 +1,7 @@
 # Explainability - Layer 5 of HoloLoom's Cognitive Architecture
 
 **Status**: ✅ Production Ready
-**Location**: `HoloLoom/explainability/`
+**Location**: `hololoom/explainability/`
 **Total Code**: ~103,600 lines across 8 Python modules
 **Last Updated**: November 20, 2025 (Production Ready)
 
@@ -37,7 +37,7 @@ Unlike systems that offer *either* model-agnostic explanations (LIME) *or* model
 ### Basic Unified Explanation (All 7 Techniques)
 
 ```python
-from HoloLoom.explainability import UnifiedExplainer, explain
+from hololoom.explainability import UnifiedExplainer, explain
 
 # Simple one-line API
 explanation = explain(
@@ -92,7 +92,7 @@ COMPUTATIONAL LINEAGE:
 ### Advanced Usage with Component Selection
 
 ```python
-from HoloLoom.explainability import (
+from hololoom.explainability import (
     UnifiedExplainer,
     FeatureAttributor,
     AttentionExplainer,
@@ -135,7 +135,7 @@ print(f"Lineage: {explanation.lineage}")
 **Feature Attribution** - What features drove the decision?
 
 ```python
-from HoloLoom.explainability import FeatureAttributor, AttributionMethod
+from hololoom.explainability import FeatureAttributor, AttributionMethod
 
 attributor = FeatureAttributor(
     model=model,
@@ -156,7 +156,7 @@ for feat in importances[:5]:
 **Attention Visualization** - What did the model focus on?
 
 ```python
-from HoloLoom.explainability import AttentionExplainer, visualize_attention
+from hololoom.explainability import AttentionExplainer, visualize_attention
 
 explainer = AttentionExplainer(model=model, num_heads=8)
 heatmaps = explainer.extract_attention(
@@ -176,7 +176,7 @@ print(f"Most attended: {analysis['most_attended_tokens'][:5]}")
 **Counterfactual Generation** - What would change the decision?
 
 ```python
-from HoloLoom.explainability import CounterfactualGenerator, CounterfactualMethod
+from hololoom.explainability import CounterfactualGenerator, CounterfactualMethod
 
 generator = CounterfactualGenerator(
     model=model,
@@ -198,7 +198,7 @@ for cf in counterfactuals:
 **Natural Language Explanations** - Human-readable narratives
 
 ```python
-from HoloLoom.explainability import (
+from hololoom.explainability import (
     NaturalLanguageExplainer,
     ExplanationType
 )
@@ -237,7 +237,7 @@ print(what_if.text)  # "If you wanted a different outcome..."
 **Decision Tree Extraction** - Interpretable rules
 
 ```python
-from HoloLoom.explainability import DecisionTreeExtractor, extract_rules
+from hololoom.explainability import DecisionTreeExtractor, extract_rules
 
 extractor = DecisionTreeExtractor(
     model=model,
@@ -261,7 +261,7 @@ prediction = ruleset.predict({'age': 30, 'income': 50000})
 **Provenance Tracking** - Full computational lineage
 
 ```python
-from HoloLoom.explainability import ProvenanceTracker, trace_decision
+from hololoom.explainability import ProvenanceTracker, trace_decision
 
 tracker = ProvenanceTracker(
     track_intermediate=True,
@@ -653,8 +653,8 @@ spacetime = tracker.export_to_spacetime()
 ### 1. Integration with Weaving Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.explainability import UnifiedExplainer
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.explainability import UnifiedExplainer
 
 async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
     # Make decision
@@ -679,8 +679,8 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### 2. Integration with Alignment Framework
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.explainability import ProvenanceTracker
+from hololoom.alignment import SafetyGuardrails
+from hololoom.explainability import ProvenanceTracker
 
 guardrails = SafetyGuardrails()
 tracker = ProvenanceTracker()
@@ -714,8 +714,8 @@ else:
 ### 3. Integration with Memory System
 
 ```python
-from HoloLoom.memory.unified import UnifiedMemory
-from HoloLoom.explainability import FeatureAttributor
+from hololoom.memory.unified import UnifiedMemory
+from hololoom.explainability import FeatureAttributor
 
 memory = UnifiedMemory(backend=backend)
 
@@ -736,8 +736,8 @@ for feat in importances:
 ### 4. Integration with RAG System
 
 ```python
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.explainability import explain
+from hololoom.rag import SimpleRAG
+from hololoom.explainability import explain
 
 async with SimpleRAG() as rag:
     result = await rag.query("What is Thompson Sampling?")
@@ -834,7 +834,7 @@ The explainability layer is grounded in peer-reviewed research:
 ### Complete Example: Loan Approval
 
 ```python
-from HoloLoom.explainability import (
+from hololoom.explainability import (
     UnifiedExplainer, explain,
     FeatureAttributor, AttributionMethod,
     AttentionExplainer, visualize_attention,
@@ -987,15 +987,15 @@ COMPONENT-WISE ANALYSIS
 
 ```bash
 # Run explainability tests
-pytest HoloLoom/explainability/ -v
+pytest hololoom/explainability/ -v
 
 # Test specific components
-pytest HoloLoom/explainability/ -k "attribution" -v
-pytest HoloLoom/explainability/ -k "attention" -v
-pytest HoloLoom/explainability/ -k "counterfactual" -v
-pytest HoloLoom/explainability/ -k "natural_language" -v
-pytest HoloLoom/explainability/ -k "tree" -v
-pytest HoloLoom/explainability/ -k "provenance" -v
+pytest hololoom/explainability/ -k "attribution" -v
+pytest hololoom/explainability/ -k "attention" -v
+pytest hololoom/explainability/ -k "counterfactual" -v
+pytest hololoom/explainability/ -k "natural_language" -v
+pytest hololoom/explainability/ -k "tree" -v
+pytest hololoom/explainability/ -k "provenance" -v
 ```
 
 ---

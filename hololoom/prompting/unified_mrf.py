@@ -15,7 +15,7 @@ This module unifies:
 
 Usage:
     ```python
-    from HoloLoom.prompting import UnifiedMRF
+    from hololoom.prompting import UnifiedMRF
 
     mrf = UnifiedMRF()
 
@@ -61,10 +61,10 @@ import json
 
 # Import existing MRF components
 try:
-    from HoloLoom.prompting.metaprompt import create_metaprompt, create_metaprompt_with_strategy
-    from HoloLoom.prompting.adapters import ModelAdapter, ClaudeAdapter, GeminiAdapter, GPTAdapter
-    from HoloLoom.prompting.strategy import PromptingStrategy, StrategyContext, StrategyResult
-    from HoloLoom.prompting.registry import StrategyRegistry
+    from hololoom.prompting.metaprompt import create_metaprompt, create_metaprompt_with_strategy
+    from hololoom.prompting.adapters import ModelAdapter, ClaudeAdapter, GeminiAdapter, GPTAdapter
+    from hololoom.prompting.strategy import PromptingStrategy, StrategyContext, StrategyResult
+    from hololoom.prompting.registry import StrategyRegistry
 except ImportError:
     # Graceful degradation if prompting module incomplete
     create_metaprompt = None

@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 import math
 import numpy as np
 
-from HoloLoom.voice.ar_context import ARContext, Vector3
+from hololoom.voice.ar_context import ARContext, Vector3
 
 
 # ============================================================================
@@ -394,7 +394,7 @@ def create_test_audio(duration_seconds: float = 1.0, sample_rate: int = 16000) -
 
 def test_spatial_audio():
     """Test spatial audio handler with various positions."""
-    from HoloLoom.voice.ar_context import create_test_context
+    from hololoom.voice.ar_context import create_test_context
 
     print("Testing Spatial Audio Handler")
     print("=" * 60)

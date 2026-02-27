@@ -6,7 +6,7 @@ This module provides backward compatibility with the legacy config system
 while exposing the new zero-config architecture.
 
 New (Recommended):
-    from HoloLoom.config import Config
+    from hololoom.config import Config
 
     # Zero-config - just works
     config = Config()
@@ -17,7 +17,7 @@ New (Recommended):
     config = Config.research()   # Experimental features
 
     # With expansion bundles for research features
-    from HoloLoom.expansions.physics import PhysicsConfig
+    from hololoom.expansions.physics import PhysicsConfig
 
     config = Config.research()
     config.load_expansion(PhysicsConfig(use_gp_bandits=True))
@@ -40,7 +40,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 # Import from shared types
-from HoloLoom.core.protocols.types import BanditStrategy
+from hololoom.core.protocols.types import BanditStrategy
 
 
 # =============================================================================
@@ -127,7 +127,7 @@ class ExpansionBundle:
     loaded into a Config after construction.
 
     Example:
-        from HoloLoom.config import Config, ExpansionBundle
+        from hololoom.config import Config, ExpansionBundle
 
         class MyExpansion(ExpansionBundle):
             def __init__(self, my_setting: bool = False):
@@ -332,7 +332,7 @@ class Config:
         config = Config(retrieval_k=10, pipeline_timeout=10.0)
 
         # With expansion bundles (research features)
-        from HoloLoom.expansions.physics import PhysicsConfig
+        from hololoom.expansions.physics import PhysicsConfig
         config = Config.research()
         config.load_expansion(PhysicsConfig(use_gp_bandits=True))
     """
@@ -718,7 +718,7 @@ class Config:
         - SafetyGuardrails enabled by default
 
         Use HoloLoomLite class for the simplified API:
-            from HoloLoom import HoloLoomLite
+            from hololoom import HoloLoomLite
             async with HoloLoomLite() as loom:
                 await loom.experience("content")
                 results = await loom.recall("query")
@@ -845,7 +845,7 @@ if __name__ == "__main__":
     # With expansion bundles
     print("\n4. Research with Expansion Bundle:")
     try:
-        from HoloLoom.expansions.physics import PhysicsConfig
+        from hololoom.expansions.physics import PhysicsConfig
         cfg_physics = Config.research()
         cfg_physics.load_expansion(PhysicsConfig(use_gp_bandits=True))
         print(f"   GP Bandits: {cfg_physics.use_gp_bandits}")

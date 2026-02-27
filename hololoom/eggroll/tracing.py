@@ -15,7 +15,7 @@ from __future__ import annotations
 import functools
 from typing import Any, Callable, Optional, TypeVar, Union
 
-from HoloLoom.telemetry.tracing import (
+from hololoom.telemetry.tracing import (
     get_tracer,
     span,
 )

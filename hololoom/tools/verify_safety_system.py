@@ -10,8 +10,8 @@ import os
 # Add repository root to path
 sys.path.insert(0, os.path.dirname(__file__))
 
-from HoloLoom.config import Config
-from HoloLoom.safety import (
+from hololoom.config import Config
+from hololoom.safety import (
     SafetyLock,
     Layer6Capability,
     Layer6BlockedException,

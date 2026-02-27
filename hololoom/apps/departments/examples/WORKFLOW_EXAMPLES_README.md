@@ -1,7 +1,7 @@
 # Cross-Department Workflow Examples
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/departments/examples/`
+**Location**: `hololoom/departments/examples/`
 **Total Code**: 730 lines of executable examples
 
 ## Overview
@@ -269,7 +269,7 @@ Return onboarding status + step results
 
 ```python
 import asyncio
-from HoloLoom.apps.departments.examples import (
+from hololoom.apps.departments.examples import (
     research_workflow_example,
     deployment_workflow_example,
     intelligent_routing_workflow_example,
@@ -289,7 +289,7 @@ asyncio.run(main())
 
 ```python
 import asyncio
-from HoloLoom.apps.departments.examples import run_all_workflows
+from hololoom.apps.departments.examples import run_all_workflows
 
 # Run all 5 workflows
 async def main():
@@ -305,7 +305,7 @@ asyncio.run(main())
 
 ```bash
 # Run all workflows
-PYTHONPATH=. python HoloLoom/departments/examples/workflow_examples.py
+PYTHONPATH=. python hololoom/departments/examples/workflow_examples.py
 
 # Expected output:
 # ================================================================================
@@ -630,7 +630,7 @@ async def my_workflow_example():
 
 2. **Add to __init__.py**:
 ```python
-from HoloLoom.apps.departments.examples.workflow_examples import my_workflow_example
+from hololoom.apps.departments.examples.workflow_examples import my_workflow_example
 
 __all__ = [
     ...,

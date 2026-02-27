@@ -236,10 +236,10 @@ The moonshot vision: How HoloLoom becomes a B2B platform for every industry.
 **Goal**: Core framework + Context Department
 
 **Deliverables**:
-- `HoloLoom/departments/protocol.py` (500 lines)
-- `HoloLoom/departments/base.py` (300 lines)
-- `HoloLoom/departments/registry.py` (200 lines)
-- `HoloLoom/departments/context.py` (600 lines)
+- `hololoom/departments/protocol.py` (500 lines)
+- `hololoom/departments/base.py` (300 lines)
+- `hololoom/departments/registry.py` (200 lines)
+- `hololoom/departments/context.py` (600 lines)
 - Tests (900 lines)
 
 **Team**: 1-2 engineers
@@ -249,8 +249,8 @@ The moonshot vision: How HoloLoom becomes a B2B platform for every industry.
 **Goal**: MasterWeaver + Infrastructure (beekeeping-specific)
 
 **Deliverables**:
-- `HoloLoom/departments/beekeeping/masterweaver.py` (800 lines)
-- `HoloLoom/departments/beekeeping/infrastructure.py` (500 lines)
+- `hololoom/departments/beekeeping/masterweaver.py` (800 lines)
+- `hololoom/departments/beekeeping/infrastructure.py` (500 lines)
 - Beekeeping taxonomy (200 lines)
 - LLM integration (Ollama + OpenAI)
 - Tests (800 lines)
@@ -262,8 +262,8 @@ The moonshot vision: How HoloLoom becomes a B2B platform for every industry.
 **Goal**: Verification + Orchestration + End-to-End Testing
 
 **Deliverables**:
-- `HoloLoom/departments/verification.py` (600 lines)
-- `HoloLoom/departments/orchestration.py` (700 lines)
+- `hololoom/departments/verification.py` (600 lines)
+- `hololoom/departments/orchestration.py` (700 lines)
 - `demos/demo_beekeeping_workflow.py` (300 lines)
 - Integration tests (400 lines)
 - Documentation (500 lines)

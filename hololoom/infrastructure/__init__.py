@@ -8,7 +8,7 @@ Components:
 - MCP Server: Model Context Protocol server (Days 6-10)
 """
 
-from HoloLoom.infrastructure.sql import (
+from hololoom.infrastructure.sql import (
     SQLBackend,
     SQLConfig,
     QueryResult,

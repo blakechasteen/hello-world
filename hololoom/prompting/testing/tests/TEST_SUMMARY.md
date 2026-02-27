@@ -105,17 +105,17 @@ Tests edge cases and error handling:
 **Run all tests:**
 ```bash
 cd /c/Users/blake/OneDrive/Documents/mythRL
-python -m pytest HoloLoom/prompting/testing/tests/test_prompt_testing.py -v
+python -m pytest hololoom/prompting/testing/tests/test_prompt_testing.py -v
 ```
 
 **Run specific test class:**
 ```bash
-pytest HoloLoom/prompting/testing/tests/test_prompt_testing.py::TestMetricsCollector -v
+pytest hololoom/prompting/testing/tests/test_prompt_testing.py::TestMetricsCollector -v
 ```
 
 **Run with coverage:**
 ```bash
-pytest HoloLoom/prompting/testing/tests/test_prompt_testing.py --cov=HoloLoom.prompting.testing
+pytest hololoom/prompting/testing/tests/test_prompt_testing.py --cov=hololoom.prompting.testing
 ```
 
 ## Results
@@ -138,7 +138,7 @@ All 40 tests passing with excellent performance (<0.5 seconds total).
 ## Dependencies
 
 - pytest (already in project)
-- HoloLoom.prompting.testing (all modules under test)
+- hololoom.prompting.testing (all modules under test)
 - Standard library (json, tempfile, pathlib, datetime, enum)
 
 ## Future Enhancements

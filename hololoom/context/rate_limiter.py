@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from collections import deque
 from enum import Enum
 
-from HoloLoom.context.error_handling import RateLimitExceededError
+from hololoom.context.error_handling import RateLimitExceededError
 
 
 # ============================================================================

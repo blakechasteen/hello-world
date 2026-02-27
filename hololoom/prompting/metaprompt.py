@@ -11,8 +11,8 @@ Architecture:
 4. Return enhanced prompt ready for LLM
 
 Example:
-    >>> from HoloLoom.config import Config
-    >>> from HoloLoom.prompting import create_metaprompt
+    >>> from hololoom.config import Config
+    >>> from hololoom.prompting import create_metaprompt
     >>>
     >>> config = Config.fused()
     >>> config.llm_provider = "anthropic"
@@ -47,7 +47,7 @@ def load_core_template() -> str:
         >>> print(template[:100])
         'You are a prompt engineering expert...'
     """
-    # Navigate from HoloLoom/prompting/metaprompt.py -> promptly_skills/meta_prompt/CORE_TEMPLATE.md
+    # Navigate from hololoom/prompting/metaprompt.py -> promptly_skills/meta_prompt/CORE_TEMPLATE.md
     repo_root = Path(__file__).parent.parent.parent
     template_path = repo_root / "promptly_skills" / "meta_prompt" / "CORE_TEMPLATE.md"
 
@@ -122,7 +122,7 @@ def create_metaprompt(
         Enhanced prompt ready for LLM
 
     Example:
-        >>> from HoloLoom.config import Config
+        >>> from hololoom.config import Config
         >>> config = Config.fused()
         >>> config.llm_provider = "anthropic"
         >>>
@@ -290,7 +290,7 @@ def enhance_request(request: str, provider: str = "anthropic") -> str:
         ... )
         >>> # Returns: Core + Claude adapter
     """
-    from HoloLoom.config import Config
+    from hololoom.config import Config
 
     config = Config.fused()
     config.llm_provider = provider

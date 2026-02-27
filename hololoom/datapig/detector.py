@@ -324,7 +324,7 @@ class DataPigDetector:
         Detects fuzzy duplicates using Levenshtein distance.
         Complements exact duplicate detection with approximate matching.
         """
-        from HoloLoom.datapig.fuzzy_detection import find_fuzzy_duplicates_advanced
+        from hololoom.datapig.fuzzy_detection import find_fuzzy_duplicates_advanced
 
         # Auto-detect string fields if not specified
         if self.fuzzy_fields is None:
@@ -380,7 +380,7 @@ class DataPigDetector:
         Identifies high-entropy patterns (SSNs, API keys, UUIDs, hashes) and
         low-entropy weak passwords.
         """
-        from HoloLoom.datapig.entropy_detection import detect_pii_by_entropy
+        from hololoom.datapig.entropy_detection import detect_pii_by_entropy
 
         # Run entropy detection
         results = detect_pii_by_entropy(

@@ -1,7 +1,7 @@
 # ChatOps Scratch Pad
 
 **Status**: Production Ready (December 2025)
-**Location**: `HoloLoom/chatops/scratchpad/`
+**Location**: `hololoom/chatops/scratchpad/`
 **Total Code**: ~3,500 lines
 
 Persistent artifact storage system for ChatOps workflows that enables context passing between commands, intermediate result storage, and artifact sharing between users.
@@ -32,13 +32,13 @@ The Scratch Pad system provides:
 ### Programmatic Usage
 
 ```python
-from HoloLoom.apps.chatops.scratchpad import (
+from hololoom.apps.chatops.scratchpad import (
     ScratchPadConfig,
     ScratchPadManager,
     ArtifactScope,
     ArtifactType,
 )
-from HoloLoom.apps.chatops.scratchpad.manager import create_and_start_manager
+from hololoom.apps.chatops.scratchpad.manager import create_and_start_manager
 
 # Create configuration
 config = ScratchPadConfig(
@@ -603,8 +603,8 @@ class AuditEvent:
 Auto-store artifacts from Spacetime results:
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.apps.chatops.scratchpad.manager import create_and_start_manager
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.apps.chatops.scratchpad.manager import create_and_start_manager
 
 manager = await create_and_start_manager(config)
 
@@ -630,7 +630,7 @@ async with WeavingOrchestrator(cfg=cfg, shards=shards) as orchestrator:
 Context passing for multi-turn conversations:
 
 ```python
-from HoloLoom.apps.chatops.handlers import ConversationHandlers
+from hololoom.apps.chatops.handlers import ConversationHandlers
 
 class EnhancedHandlers(ConversationHandlers):
     def __init__(self, scratchpad_manager):
@@ -752,7 +752,7 @@ content/
 The serialization module handles binary content properly:
 
 ```python
-from HoloLoom.apps.chatops.scratchpad import serialize_content, deserialize_content
+from hololoom.apps.chatops.scratchpad import serialize_content, deserialize_content
 
 # Serialize any content
 raw_bytes, metadata = serialize_content(content)
@@ -789,7 +789,7 @@ if metadata.compressed:
 Automatic detection from magic bytes:
 
 ```python
-from HoloLoom.apps.chatops.scratchpad.serialization import detect_content_type, ContentType
+from hololoom.apps.chatops.scratchpad.serialization import detect_content_type, ContentType
 
 content_type = detect_content_type(raw_bytes)
 # ContentType.IMAGE_PNG, ContentType.APPLICATION_JSON, etc.
@@ -801,12 +801,12 @@ content_type = detect_content_type(raw_bytes)
 
 ```bash
 # All scratch pad tests
-pytest HoloLoom/chatops/scratchpad/tests/ -v
+pytest hololoom/chatops/scratchpad/tests/ -v
 
 # Individual test files
-pytest HoloLoom/chatops/scratchpad/tests/test_manager.py -v
-pytest HoloLoom/chatops/scratchpad/tests/test_storage.py -v
-pytest HoloLoom/chatops/scratchpad/tests/test_integration.py -v
+pytest hololoom/chatops/scratchpad/tests/test_manager.py -v
+pytest hololoom/chatops/scratchpad/tests/test_storage.py -v
+pytest hololoom/chatops/scratchpad/tests/test_integration.py -v
 ```
 
 ### Demo Script
@@ -883,7 +883,7 @@ Enable debug logging:
 
 ```python
 import logging
-logging.getLogger("HoloLoom.apps.chatops.scratchpad").setLevel(logging.DEBUG)
+logging.getLogger("hololoom.apps.chatops.scratchpad").setLevel(logging.DEBUG)
 ```
 
 ### Audit Trail Review

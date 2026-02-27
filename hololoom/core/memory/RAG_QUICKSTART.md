@@ -6,12 +6,12 @@ I've implemented a **production-grade RAG (Retrieval-Augmented Generation) syste
 
 ### 📦 Files Created
 
-1. **`HoloLoom/memory/mcp_rag_server.py`** (680 lines)
+1. **`hololoom/memory/mcp_rag_server.py`** (680 lines)
    - Complete RAG MCP server
    - Semantic routing, HyDE, hybrid retrieval, re-ranking
    - Ready for Claude Desktop integration
 
-2. **`HoloLoom/memory/RAG_README.md`** (Comprehensive docs)
+2. **`hololoom/memory/RAG_README.md`** (Comprehensive docs)
    - Full feature documentation
    - Usage examples
    - Architecture diagrams
@@ -97,7 +97,7 @@ Use rag_query: What are the quick wins with highest ROI?
 
 ```python
 import asyncio
-from HoloLoom.memory.mcp_rag_server import rag_query, init_memory
+from hololoom.memory.mcp_rag_server import rag_query, init_memory
 
 async def test():
     # Initialize

@@ -783,7 +783,7 @@ class SmartMathOperationSelector(MathOperationSelector):
         self.tester = RigorousTester()
 
         # State persistence
-        self.state_file = Path("HoloLoom/warp/math/.smart_selector_state.json")
+        self.state_file = Path("hololoom/warp/math/.smart_selector_state.json")
 
         if load_state and self.state_file.exists():
             self._load_state()

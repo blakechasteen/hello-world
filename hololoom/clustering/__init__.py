@@ -20,15 +20,15 @@ import sys
 import warnings
 
 _RENAME_MAP = {
-    "HoloLoom.clustering.core": "HoloLoom.semantic_calculus.clustering_core",
-    "HoloLoom.clustering.labeler": "HoloLoom.semantic_calculus.clustering_labeler",
-    "HoloLoom.clustering.thompson": "HoloLoom.semantic_calculus.clustering_thompson",
+    "hololoom.clustering.core": "hololoom.semantic_calculus.clustering_core",
+    "hololoom.clustering.labeler": "hololoom.semantic_calculus.clustering_labeler",
+    "hololoom.clustering.thompson": "hololoom.semantic_calculus.clustering_thompson",
 }
 
 
 class _DeprecatedFinder:
-    _OLD = "HoloLoom.clustering"
-    _NEW = "HoloLoom.semantic_calculus"
+    _OLD = "hololoom.clustering"
+    _NEW = "hololoom.semantic_calculus"
 
     def find_module(self, fullname, path=None):
         if fullname == self._OLD or fullname.startswith(self._OLD + "."):

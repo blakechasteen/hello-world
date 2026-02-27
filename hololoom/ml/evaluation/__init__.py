@@ -6,7 +6,7 @@ Evaluation metrics and utilities for model assessment.
 Created: 2025-12-31
 """
 
-from HoloLoom.ml.evaluation.metrics import (
+from hololoom.ml.evaluation.metrics import (
     calculate_regression_metrics,
     calculate_residual_stats,
     calculate_confidence_intervals,

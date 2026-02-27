@@ -16,7 +16,7 @@ import logging
 from ..judgment import Concern, Wisdom
 
 
-logger = logging.getLogger("HoloLoom.conscience.lenses")
+logger = logging.getLogger("hololoom.conscience.lenses")
 
 
 class BaseLens(ABC):

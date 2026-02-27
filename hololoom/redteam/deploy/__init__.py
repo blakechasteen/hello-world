@@ -15,7 +15,7 @@ Usage:
     python -m HoloLoom.redteam.deploy.cli destroy
 
     # Programmatic
-    from HoloLoom.redteam.deploy import DeploymentConfig, create_deployer
+    from hololoom.redteam.deploy import DeploymentConfig, create_deployer
 
     config = DeploymentConfig.for_dev()
     deployer = create_deployer(config)

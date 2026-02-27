@@ -196,7 +196,7 @@ try { postMessage(...) } catch { fallback to redirect }
 
 ### workflow_builder.html
 ```
-Location: HoloLoom/web_dashboard/workflow_builder.html
+Location: hololoom/web_dashboard/workflow_builder.html
 Lines Added: 210 (lines 1773-1976)
 Functions: 5 new functions
 Event Listeners: 3 new listeners
@@ -212,7 +212,7 @@ Event Listeners: 3 new listeners
 
 ### template_gallery.html
 ```
-Location: HoloLoom/web_dashboard/template_gallery.html
+Location: hololoom/web_dashboard/template_gallery.html
 Lines Modified: 20 (lines 1074-1093)
 Functions Modified: 1 (loadTemplate)
 ```

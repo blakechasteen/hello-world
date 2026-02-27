@@ -33,7 +33,7 @@ python proto.py test path/to/file.py
 ### Programmatic
 
 ```python
-from HoloLoom.apps.departments.proto import ProtoEngine, ProtoConfig
+from hololoom.apps.departments.proto import ProtoEngine, ProtoConfig
 
 async with ProtoEngine(ProtoConfig.default()) as engine:
     response = await engine.process("explain this code", context)
@@ -95,7 +95,7 @@ Benefits of thin waist:
 ## Configuration
 
 ```python
-from HoloLoom.apps.departments.proto import ProtoConfig
+from hololoom.apps.departments.proto import ProtoConfig
 
 # Default (balanced)
 config = ProtoConfig.default()
@@ -272,13 +272,13 @@ else:
 
 ```bash
 # Run all Proto tests
-pytest HoloLoom/departments/proto/tests/ -v
+pytest hololoom/departments/proto/tests/ -v
 
 # Run specific test suite
-pytest HoloLoom/departments/proto/tests/test_engine.py -v
+pytest hololoom/departments/proto/tests/test_engine.py -v
 
 # With coverage
-pytest HoloLoom/departments/proto/ --cov=HoloLoom.apps.departments.proto
+pytest hololoom/departments/proto/ --cov=hololoom.apps.departments.proto
 ```
 
 ## Documentation

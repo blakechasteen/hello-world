@@ -13,7 +13,7 @@ import asyncio
 from typing import Dict, Any
 
 # Chain imports
-from HoloLoom.chaining import (
+from hololoom.chaining import (
     Chain,
     ChainStep,
     StepType,
@@ -23,7 +23,7 @@ from HoloLoom.chaining import (
 )
 
 # New condition imports
-from HoloLoom.chaining import (
+from hololoom.chaining import (
     FactCheckConditions,
     CodeReviewConditions,
     SafetyConditions,
@@ -34,7 +34,7 @@ from HoloLoom.chaining import (
 )
 
 # Evaluation imports
-from HoloLoom.chaining import (
+from hololoom.chaining import (
     LLMJudge,
     ChainEvaluator,
     JudgeCriteria,

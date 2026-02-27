@@ -356,21 +356,21 @@ BaseAgent will be extended by:
 ## Files Created
 
 ### Core Implementation
-1. **HoloLoom/redteam/swarm/agent_base.py** (350 lines)
+1. **hololoom/redteam/swarm/agent_base.py** (350 lines)
    - AgentMetrics dataclass
    - BaseAgent class
    - Complete docstrings
    - Production-ready code
 
 ### Testing
-2. **HoloLoom/redteam/swarm/tests/test_agent_base.py** (500 lines)
+2. **hololoom/redteam/swarm/tests/test_agent_base.py** (500 lines)
    - 30+ comprehensive tests
    - Test fixtures
    - Integration tests
    - All tests passing
 
 ### Documentation
-3. **HoloLoom/redteam/swarm/AGENT_BASE_DOCUMENTATION.md** (600+ lines)
+3. **hololoom/redteam/swarm/AGENT_BASE_DOCUMENTATION.md** (600+ lines)
    - Architecture overview
    - Usage guide
    - API reference
@@ -378,7 +378,7 @@ BaseAgent will be extended by:
    - Performance characteristics
    - Integration guide
 
-4. **HoloLoom/redteam/swarm/AGENT_BASE_IMPLEMENTATION_SUMMARY.md** (This file)
+4. **hololoom/redteam/swarm/AGENT_BASE_IMPLEMENTATION_SUMMARY.md** (This file)
    - Project overview
    - Key accomplishments
    - Architecture highlights
@@ -387,13 +387,13 @@ BaseAgent will be extended by:
 
 ```bash
 # Run all tests
-pytest HoloLoom/redteam/swarm/tests/test_agent_base.py -v
+pytest hololoom/redteam/swarm/tests/test_agent_base.py -v
 
 # Run specific test
-pytest HoloLoom/redteam/swarm/tests/test_agent_base.py::test_agent_lifecycle -v
+pytest hololoom/redteam/swarm/tests/test_agent_base.py::test_agent_lifecycle -v
 
 # Run with coverage report
-pytest HoloLoom/redteam/swarm/tests/test_agent_base.py --cov --cov-report=html
+pytest hololoom/redteam/swarm/tests/test_agent_base.py --cov --cov-report=html
 
 # Expected output: 30+ tests PASSED
 ```
@@ -402,9 +402,9 @@ pytest HoloLoom/redteam/swarm/tests/test_agent_base.py --cov --cov-report=html
 
 ### Create an Agent
 ```python
-from HoloLoom.redteam.swarm.agent_base import BaseAgent
-from HoloLoom.redteam.swarm.communication import MessageBus
-from HoloLoom.redteam.swarm.protocols import AgentRole
+from hololoom.redteam.swarm.agent_base import BaseAgent
+from hololoom.redteam.swarm.communication import MessageBus
+from hololoom.redteam.swarm.protocols import AgentRole
 
 bus = MessageBus()
 agent = BaseAgent("scout_1", AgentRole.SCOUT, bus)

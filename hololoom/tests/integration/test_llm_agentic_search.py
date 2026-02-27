@@ -11,9 +11,9 @@ Usage:
 
 import asyncio
 import logging
-from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

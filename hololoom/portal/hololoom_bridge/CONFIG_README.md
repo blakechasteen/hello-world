@@ -15,7 +15,7 @@ The HoloLoom Bridge Configuration (`config.py`) provides a Pydantic-based config
 ### Default Configuration
 
 ```python
-from HoloLoom.portal.hololoom_bridge import BridgeConfig
+from hololoom.portal.hololoom_bridge import BridgeConfig
 
 # Create config with defaults
 config = BridgeConfig()
@@ -24,7 +24,7 @@ config = BridgeConfig()
 ### Load from YAML File
 
 ```python
-from HoloLoom.portal.hololoom_bridge import load_bridge_config
+from hololoom.portal.hololoom_bridge import load_bridge_config
 
 # Load from default location (configs/bridge.yaml)
 config = load_bridge_config()
@@ -205,7 +205,7 @@ result = await bridge.recall(query, k=20, mode="fused")
 ## Testing Configuration
 
 ```python
-from HoloLoom.portal.hololoom_bridge import load_bridge_config
+from hololoom.portal.hololoom_bridge import load_bridge_config
 
 # Test loading
 config = load_bridge_config()

@@ -20,7 +20,7 @@ Requirements:
 - Monitoring system (optional)
 
 Usage:
-    pytest HoloLoom/tests/integration/test_alignment_hololoom.py -v
+    pytest hololoom/tests/integration/test_alignment_hololoom.py -v
 
 Author: Claude Code
 Date: November 2, 2025
@@ -33,12 +33,12 @@ from typing import List, Dict
 from unittest.mock import Mock, patch
 
 # HoloLoom core
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.config import Config, ExecutionMode
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config, ExecutionMode
 
 # Alignment framework
-from HoloLoom.alignment import (
+from hololoom.alignment import (
     SafetyGuardrails,
     DeceptionDetector,
     InstrumentalConvergenceGuard,
@@ -54,8 +54,8 @@ from HoloLoom.alignment import (
 
 # Monitoring (optional)
 try:
-    from HoloLoom.alignment.monitoring import AlignmentMonitor, AlertLevel
-    from HoloLoom.alignment.live_monitor import LiveDashboard
+    from hololoom.alignment.monitoring import AlignmentMonitor, AlertLevel
+    from hololoom.alignment.live_monitor import LiveDashboard
     MONITORING_AVAILABLE = True
 except ImportError:
     MONITORING_AVAILABLE = False
@@ -421,7 +421,7 @@ async def test_alignment_end_to_end_pipeline(test_shards):
             pytest.fail("Query rejected by guardrails")
 
         # Step 2: Deception detection
-        from HoloLoom.alignment.deception_detection import ActionObservation
+        from hololoom.alignment.deception_detection import ActionObservation
 
         action_obs = ActionObservation(
             action=f"Processing query: {query.text}",

@@ -20,7 +20,7 @@ from unittest import mock
 
 import pytest
 
-from HoloLoom.portal.shared.cas_storage import (
+from hololoom.portal.shared.cas_storage import (
     CASEntry,
     CASReference,
     CASStats,

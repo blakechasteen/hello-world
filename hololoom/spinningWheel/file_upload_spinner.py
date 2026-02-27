@@ -19,7 +19,7 @@ Supports:
 - Unified error handling
 
 Usage:
-    from HoloLoom.spinningWheel.file_upload_spinner import FileUploadSpinner
+    from hololoom.spinningWheel.file_upload_spinner import FileUploadSpinner
 
     spinner = FileUploadSpinner()
 
@@ -38,8 +38,8 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, AsyncIterator
 import mimetypes
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities
@@ -47,25 +47,25 @@ from HoloLoom.spinningWheel.protocol import (
 
 # Import all specific spinners
 try:
-    from HoloLoom.spinningWheel.pdf_spinner import PDFSpinner
+    from hololoom.spinningWheel.pdf_spinner import PDFSpinner
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.email_spinner import EmailSpinner
+    from hololoom.spinningWheel.email_spinner import EmailSpinner
     EMAIL_AVAILABLE = True
 except ImportError:
     EMAIL_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.codebase_spinner import CodebaseSpinner
+    from hololoom.spinningWheel.codebase_spinner import CodebaseSpinner
     CODE_AVAILABLE = True
 except ImportError:
     CODE_AVAILABLE = False
 
 try:
-    from HoloLoom.spinningWheel.multimodal_spinner import MultiModalSpinner
+    from hololoom.spinningWheel.multimodal_spinner import MultiModalSpinner
     MULTIMODAL_AVAILABLE = True
 except ImportError:
     MULTIMODAL_AVAILABLE = False

@@ -14,7 +14,7 @@ Architecture:
 Total: ~80ms vs 500ms single-scale = 6.25x speedup!
 
 Usage:
-    from HoloLoom.search import MatryoshkaWebSearch, SearchConfig
+    from hololoom.search import MatryoshkaWebSearch, SearchConfig
 
     config = SearchConfig(provider="serpapi", api_key="...")
     search = MatryoshkaWebSearch(config=config)
@@ -31,9 +31,9 @@ from urllib.parse import urlparse
 
 import numpy as np
 
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.spinningWheel.modalities.website import WebsiteSpinner, WebsiteSpinnerConfig
+from hololoom.protocols.types import MemoryShard
 
 from .protocol import (
     SearchConfig,

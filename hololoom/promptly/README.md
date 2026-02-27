@@ -58,8 +58,8 @@ python beginner_prompts.py
 **Option 2: Python API** (Developers)
 
 ```python
-from HoloLoom.promptly import DSPyHoloLoom, create_signature
-from HoloLoom.config import Config
+from hololoom.promptly import DSPyHoloLoom, create_signature
+from hololoom.config import Config
 
 # Create signature
 signature = create_signature(
@@ -68,7 +68,7 @@ signature = create_signature(
     outputs=["answer", "confidence"]
 )
 
-# Optimize from HoloLoom memory
+# Optimize from hololoom memory
 bridge = DSPyHoloLoom(config=Config.fused())
 optimized = await bridge.optimize_from_memory(
     signature=signature,
@@ -84,7 +84,7 @@ print(result.answer)
 
 ```bash
 # Start workflow builder
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 
 # Open workflow_builder.html in browser
@@ -225,7 +225,7 @@ python beginner_prompts.py
 
 ```python
 # Create custom workflow
-from HoloLoom.promptly import DSPyWorkflowAdapter
+from hololoom.promptly import DSPyWorkflowAdapter
 
 adapter = DSPyWorkflowAdapter(config=Config.fast())
 workflow = adapter.create_workflow(

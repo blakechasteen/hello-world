@@ -18,7 +18,7 @@ Supports:
 - Various quality levels
 
 Usage:
-    from HoloLoom.spinningWheel import ImageSpinner
+    from hololoom.spinningWheel import ImageSpinner
 
     spinner = ImageSpinner()
     result = await spinner.spin("document.png")
@@ -35,16 +35,16 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 import time
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.spinningWheel.protocol import (
+from hololoom.protocols.types import MemoryShard
+from hololoom.spinningWheel.protocol import (
     BaseSpinner,
     SpinResult,
     SpinnerCapabilities,
     ImportanceScore,
     ImportanceSignals
 )
-from HoloLoom.spinningWheel.ocr_protocol import OCROutputFormat
-from HoloLoom.spinningWheel.ocr_backends import get_all_available_backends
+from hololoom.spinningWheel.ocr_protocol import OCROutputFormat
+from hololoom.spinningWheel.ocr_backends import get_all_available_backends
 
 
 @dataclass

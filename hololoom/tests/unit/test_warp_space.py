@@ -2,7 +2,7 @@
 Test Warp Space - Tensioned Tensor Field
 =========================================
 
-Tests for HoloLoom/warp/space.py - Continuous computational manifold.
+Tests for hololoom/warp/space.py - Continuous computational manifold.
 
 Coverage:
 - Tensioning threads into Warp Space
@@ -22,11 +22,11 @@ import numpy as np
 from unittest.mock import Mock, AsyncMock, patch
 from typing import List
 
-from HoloLoom.warp.space import (
+from hololoom.warp.space import (
     WarpSpace,
     TensionedThread
 )
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     ActionRequest,
     SafetyDecision,

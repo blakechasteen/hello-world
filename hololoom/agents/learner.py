@@ -17,14 +17,14 @@ import time
 import uuid
 import numpy as np
 
-from HoloLoom.agents.types import (
+from hololoom.agents.types import (
     WorkingMemorySnapshot,
     LearnedPattern,
     WorkingMemoryState,
     AgentProfile
 )
-from HoloLoom.protocols.types import Query
-from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
+from hololoom.protocols.types import Query
+from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
 
 
 class WorkingMemoryLearner:

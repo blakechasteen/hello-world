@@ -17,12 +17,12 @@ from typing import Tuple
 import numpy as np
 import pytest
 
-from HoloLoom.ml.config import (
+from hololoom.ml.config import (
     LinearRegressionConfig,
     TrainingConfig,
     ValidationStrictness,
 )
-from HoloLoom.ml.protocol import DataSplit, ModelType
+from hololoom.ml.protocol import DataSplit, ModelType
 
 
 # ---------------------------------------------------------------------------
@@ -95,12 +95,12 @@ class TestTrainerCreation:
 
     def test_import_trainer(self):
         """Test that trainer can be imported."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
         assert LinearRegressionTrainer is not None
 
     def test_create_trainer_default_config(self):
         """Test creating trainer with default config."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         trainer = LinearRegressionTrainer()
         assert trainer is not None
@@ -108,7 +108,7 @@ class TestTrainerCreation:
 
     def test_create_trainer_custom_config(self):
         """Test creating trainer with custom config."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         config = LinearRegressionConfig(
             fit_intercept=False,
@@ -140,7 +140,7 @@ class TestTraining:
     @pytest.fixture
     def trainer(self):
         """Create trainer instance."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
         return LinearRegressionTrainer()
 
     @pytest.fixture
@@ -212,7 +212,7 @@ class TestEvaluation:
     @pytest.fixture
     def trainer(self):
         """Create trainer instance."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
         return LinearRegressionTrainer()
 
     @pytest.fixture
@@ -279,7 +279,7 @@ class TestPrediction:
     @pytest.fixture
     def trainer(self):
         """Create trainer instance."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
         return LinearRegressionTrainer()
 
     @pytest.fixture
@@ -336,7 +336,7 @@ class TestFeatureImportance:
     @pytest.fixture
     def trainer(self):
         """Create trainer instance."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
         return LinearRegressionTrainer()
 
     @pytest.fixture
@@ -386,7 +386,7 @@ class TestConfigurationVariants:
     @pytest.mark.asyncio
     async def test_no_intercept(self, data_split):
         """Test training without intercept."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         config = LinearRegressionConfig(fit_intercept=False)
         trainer = LinearRegressionTrainer(config=config)
@@ -399,7 +399,7 @@ class TestConfigurationVariants:
     @pytest.mark.asyncio
     async def test_positive_coefficients(self, data_split):
         """Test training with positive coefficients constraint."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         # Create data with all positive coefficients
         np.random.seed(42)
@@ -435,7 +435,7 @@ class TestEdgeCases:
     @pytest.fixture
     def trainer(self):
         """Create trainer instance."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
         return LinearRegressionTrainer()
 
     @pytest.mark.asyncio
@@ -503,7 +503,7 @@ class TestProtocolCompliance:
 
     def test_has_model_type(self):
         """Test trainer has model_type property."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         trainer = LinearRegressionTrainer()
         assert hasattr(trainer, "model_type")
@@ -511,7 +511,7 @@ class TestProtocolCompliance:
 
     def test_has_train_method(self):
         """Test trainer has train method."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         trainer = LinearRegressionTrainer()
         assert hasattr(trainer, "train")
@@ -519,7 +519,7 @@ class TestProtocolCompliance:
 
     def test_has_evaluate_method(self):
         """Test trainer has evaluate method."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         trainer = LinearRegressionTrainer()
         assert hasattr(trainer, "evaluate")
@@ -527,7 +527,7 @@ class TestProtocolCompliance:
 
     def test_has_predict_method(self):
         """Test trainer has predict method."""
-        from HoloLoom.ml.trainers import LinearRegressionTrainer
+        from hololoom.ml.trainers import LinearRegressionTrainer
 
         trainer = LinearRegressionTrainer()
         assert hasattr(trainer, "predict")

@@ -20,14 +20,14 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 
-from HoloLoom.spinningWheel.git_spinner import (
+from hololoom.spinningWheel.git_spinner import (
     GitSpinner,
     GitParser,
     GitCommit,
     spin_repository,
     spin_repository_incremental
 )
-from HoloLoom.spinningWheel.protocol import SpinnerStatus
+from hololoom.spinningWheel.protocol import SpinnerStatus
 
 
 # ============================================================================

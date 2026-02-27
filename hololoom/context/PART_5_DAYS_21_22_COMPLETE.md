@@ -343,7 +343,7 @@ All components follow the "graceful degradation" principle:
 
 **Router Integration** (example):
 ```python
-from HoloLoom.context import (
+from hololoom.context import (
     create_query_router,
     create_error_handler,
     create_system_monitor,

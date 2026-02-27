@@ -15,7 +15,7 @@ Commands:
 - !learn help - Show learning help
 
 Usage:
-    from HoloLoom.apps.chatops.handlers.learning_handlers import register_learning_handlers
+    from hololoom.apps.chatops.handlers.learning_handlers import register_learning_handlers
 
     # In run_chatops.py:
     register_learning_handlers(bot)
@@ -28,7 +28,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.recursive import FullLearningEngine, HotPatternTracker
+    from hololoom.recursive import FullLearningEngine, HotPatternTracker
 
 try:
     from nio import MatrixRoom, RoomMessageText
@@ -40,7 +40,7 @@ except ImportError:
 
 # Learning system imports with graceful degradation
 try:
-    from HoloLoom.recursive import (
+    from hololoom.recursive import (
         FullLearningEngine,
         ThompsonPriors,
         PolicyWeights,
@@ -71,7 +71,7 @@ except ImportError:
     LearnedPattern = None
 
 try:
-    from HoloLoom.reflection.buffer import ReflectionBuffer, ReflectionMetrics
+    from hololoom.reflection.buffer import ReflectionBuffer, ReflectionMetrics
     REFLECTION_AVAILABLE = True
 except ImportError:
     REFLECTION_AVAILABLE = False
@@ -80,7 +80,7 @@ except ImportError:
 
 # Handler registry
 try:
-    from HoloLoom.apps.chatops.handlers.handler_registry import (
+    from hololoom.apps.chatops.handlers.handler_registry import (
         HandlerRegistry, HandlerCategory, chatops_handler
     )
     REGISTRY_AVAILABLE = True
@@ -497,7 +497,7 @@ async def handle_learn_refine(
 
     try:
         # Create refiner and run refinement
-        from HoloLoom.protocols.types import Query
+        from hololoom.protocols.types import Query
 
         # This is a simplified version - actual implementation would use orchestrator
         output = [

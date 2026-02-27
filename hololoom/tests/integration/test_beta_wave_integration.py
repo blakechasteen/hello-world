@@ -22,8 +22,8 @@ import numpy as np
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
 
 
 def create_test_embedding(text: str, dim: int = 128) -> np.ndarray:
@@ -65,9 +65,9 @@ async def test_1_beta_wave_packing_enabled():
     print("="*80)
 
     try:
-        from HoloLoom.memory.multi_wave_engine import MultiWaveMemoryEngine, MultiWaveConfig
-        from HoloLoom.memory.spring_dynamics_engine import SpringEngineConfig
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.memory.multi_wave_engine import MultiWaveMemoryEngine, MultiWaveConfig
+        from hololoom.memory.spring_dynamics_engine import SpringEngineConfig
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
 
         # Create config with beta wave packing ENABLED
         config = Config.fast()
@@ -151,7 +151,7 @@ async def test_2_beta_wave_packing_disabled():
     print("="*80)
 
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
 
         # Create config with beta wave packing DISABLED
         config = Config.fast()
@@ -204,7 +204,7 @@ async def test_3_beta_wave_packing_no_spring_engine():
     print("="*80)
 
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
 
         # Create config with beta wave packing ENABLED
         config = Config.fast()

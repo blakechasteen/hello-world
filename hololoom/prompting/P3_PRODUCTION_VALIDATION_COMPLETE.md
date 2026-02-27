@@ -25,7 +25,7 @@ Successfully created a comprehensive production validation framework for validat
 
 ### 1. A/B Testing Infrastructure
 
-**File**: `HoloLoom/prompting/validation/ab_testing.py` (580 lines)
+**File**: `hololoom/prompting/validation/ab_testing.py` (580 lines)
 
 **Purpose**: Run controlled A/B tests comparing traditional vs UnifiedMRF prompts.
 
@@ -44,7 +44,7 @@ Successfully created a comprehensive production validation framework for validat
 
 **Example**:
 ```python
-from HoloLoom.prompting.validation import ABTestRunner, ABTestConfig
+from hololoom.prompting.validation import ABTestRunner, ABTestConfig
 
 config = ABTestConfig(
     mrf_traffic_ratio=0.5,  # 50/50 split
@@ -67,7 +67,7 @@ print(f"Statistically significant: {results.is_statistically_significant}")
 
 ### 2. Data Collection Framework
 
-**File**: `HoloLoom/prompting/validation/data_collection.py` (460 lines)
+**File**: `hololoom/prompting/validation/data_collection.py` (460 lines)
 
 **Purpose**: Collect and store production query data, responses, quality metrics, and user feedback.
 
@@ -87,7 +87,7 @@ print(f"Statistically significant: {results.is_statistically_significant}")
 
 **Example**:
 ```python
-from HoloLoom.prompting.validation import ProductionDataCollector, QuerySource
+from hololoom.prompting.validation import ProductionDataCollector, QuerySource
 
 collector = ProductionDataCollector("production_data.db")
 
@@ -129,7 +129,7 @@ queries = await collector.get_queries(
 
 ### 3. Statistical Analysis
 
-**File**: `HoloLoom.prompting/validation/statistical_analysis.py` (510 lines)
+**File**: `hololoom.prompting/validation/statistical_analysis.py` (510 lines)
 
 **Purpose**: Perform rigorous statistical analysis to determine if observed improvements are statistically significant.
 
@@ -163,7 +163,7 @@ Confidence interval:
 
 **Example**:
 ```python
-from HoloLoom.prompting.validation import StatisticalAnalyzer
+from hololoom.prompting.validation import StatisticalAnalyzer
 
 analyzer = StatisticalAnalyzer()
 
@@ -192,7 +192,7 @@ print(f"Summary: {report.summary}")
 
 ### 4. Human Evaluation Framework
 
-**File**: `HoloLoom/prompting/validation/human_evaluation.py` (590 lines)
+**File**: `hololoom/prompting/validation/human_evaluation.py` (590 lines)
 
 **Purpose**: Collect blind side-by-side human evaluations comparing traditional vs UnifiedMRF responses.
 
@@ -222,7 +222,7 @@ print(f"Summary: {report.summary}")
 
 **Example**:
 ```python
-from HoloLoom.prompting.validation import HumanEvaluationCollector, Preference, EvaluationCriterion
+from hololoom.prompting.validation import HumanEvaluationCollector, Preference, EvaluationCriterion
 
 collector = HumanEvaluationCollector("human_eval.db")
 
@@ -263,7 +263,7 @@ print(f"Average score: {results.avg_score:+.2f}")
 ### Step 1: Setup
 
 ```python
-from HoloLoom.prompting.validation import (
+from hololoom.prompting.validation import (
     ABTestRunner,
     ABTestConfig,
     ProductionDataCollector,
@@ -508,8 +508,8 @@ Based on validation results, use the following decision framework:
 ### Integration Point 1: HoloLoom Orchestrator
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.prompting.validation import ABTestRunner, ABTestConfig
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.prompting.validation import ABTestRunner, ABTestConfig
 
 # Wrap orchestrator with A/B testing
 config = Config.fused()
@@ -530,8 +530,8 @@ async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
 ### Integration Point 2: RAG System
 
 ```python
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.prompting.validation import ProductionDataCollector
+from hololoom.rag import SimpleRAG
+from hololoom.prompting.validation import ProductionDataCollector
 
 collector = ProductionDataCollector()
 
@@ -579,28 +579,28 @@ If validation results are positive, consider Phase 4: Expansion
 
 **Phase 3 Framework** (4 files, ~2,140 lines):
 
-1. `HoloLoom/prompting/validation/ab_testing.py` (580 lines)
+1. `hololoom/prompting/validation/ab_testing.py` (580 lines)
    - A/B testing infrastructure
    - Traffic splitting and execution tracking
    - Statistical significance testing
 
-2. `HoloLoom/prompting/validation/data_collection.py` (460 lines)
+2. `hololoom/prompting/validation/data_collection.py` (460 lines)
    - Production data collection
    - SQLite database storage
    - Query/response/metrics logging
 
-3. `HoloLoom/prompting/validation/statistical_analysis.py` (510 lines)
+3. `hololoom/prompting/validation/statistical_analysis.py` (510 lines)
    - Welch's t-test implementation
    - Effect size calculation
    - Validation report generation
 
-4. `HoloLoom/prompting/validation/human_evaluation.py` (590 lines)
+4. `hololoom/prompting/validation/human_evaluation.py` (590 lines)
    - Blind side-by-side comparisons
    - Preference collection
    - Inter-rater reliability
 
 **Documentation**:
-- `HoloLoom/prompting/P3_PRODUCTION_VALIDATION_COMPLETE.md` (this file)
+- `hololoom/prompting/P3_PRODUCTION_VALIDATION_COMPLETE.md` (this file)
 
 **Total**: 5 files, ~2,700+ lines
 

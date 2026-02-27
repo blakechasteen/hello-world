@@ -19,9 +19,9 @@ from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 import numpy as np
 
-from HoloLoom.agents.mcts_core import MCTSStateSpace, MCTSEngine, HierarchicalMCTS
-from HoloLoom.agents.orchestrator_mcts import MCTSAgentOrchestrator
-from HoloLoom.protocols.types import Query
+from hololoom.agents.mcts_core import MCTSStateSpace, MCTSEngine, HierarchicalMCTS
+from hololoom.agents.orchestrator_mcts import MCTSAgentOrchestrator
+from hololoom.protocols.types import Query
 
 
 # ============================================================================

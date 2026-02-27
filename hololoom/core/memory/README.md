@@ -46,8 +46,8 @@ Memory System
 
 ### Basic Usage (INMEMORY)
 ```python
-from HoloLoom.config import Config
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config
+from hololoom.memory.backend_factory import create_memory_backend
 
 config = Config.bare()
 config.memory_backend = MemoryBackend.INMEMORY
@@ -113,13 +113,13 @@ memory = await create_memory_backend(config)
 
 ### Unit Tests
 ```bash
-pytest HoloLoom/tests/unit/test_memory_graph.py -v  # 80+ assertions
-pytest HoloLoom/tests/unit/test_memory_cache.py -v  # 70+ assertions
+pytest hololoom/tests/unit/test_memory_graph.py -v  # 80+ assertions
+pytest hololoom/tests/unit/test_memory_cache.py -v  # 70+ assertions
 ```
 
 ### Integration Tests
 ```bash
-pytest HoloLoom/tests/integration/test_backends.py -v
+pytest hololoom/tests/integration/test_backends.py -v
 ```
 
 ## Simplification (Oct 2025)

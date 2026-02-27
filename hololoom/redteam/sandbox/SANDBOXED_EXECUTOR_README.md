@@ -18,7 +18,7 @@
 ### Basic Usage (3 lines)
 
 ```python
-from HoloLoom.redteam.sandbox import create_sandboxed_executor
+from hololoom.redteam.sandbox import create_sandboxed_executor
 
 async with await create_sandboxed_executor() as executor:
     result = await executor.execute_attack(strategy, payload, context)
@@ -188,7 +188,7 @@ config = SandboxConfig(
 ### Configuration Validation
 
 ```python
-from HoloLoom.redteam.sandbox import validate_sandbox_config
+from hololoom.redteam.sandbox import validate_sandbox_config
 
 warnings = validate_sandbox_config(config)
 if warnings:
@@ -307,8 +307,8 @@ if result.outcome.value == "timeout":
 ### With Attack Learner
 
 ```python
-from HoloLoom.redteam.sandbox import create_sandboxed_executor
-from HoloLoom.redteam.learning import AttackLearner
+from hololoom.redteam.sandbox import create_sandboxed_executor
+from hololoom.redteam.learning import AttackLearner
 
 executor = await create_sandboxed_executor()
 learner = AttackLearner()
@@ -324,7 +324,7 @@ for payload, result in zip(payloads, results):
 ### With Attack Tracker
 
 ```python
-from HoloLoom.redteam.tracker import AttackTracker
+from hololoom.redteam.tracker import AttackTracker
 
 tracker = AttackTracker()
 async with await create_sandboxed_executor() as executor:
@@ -335,7 +335,7 @@ async with await create_sandboxed_executor() as executor:
 ### With Attack Reporter
 
 ```python
-from HoloLoom.redteam.reporter import AttackReporter
+from hololoom.redteam.reporter import AttackReporter
 
 reporter = AttackReporter()
 async with await create_sandboxed_executor() as executor:
@@ -429,13 +429,13 @@ Run the comprehensive test suite:
 
 ```bash
 # All tests
-pytest HoloLoom/redteam/sandbox/tests/test_sandboxed_executor.py -v
+pytest hololoom/redteam/sandbox/tests/test_sandboxed_executor.py -v
 
 # Specific test
-pytest HoloLoom/redteam/sandbox/tests/test_sandboxed_executor.py::test_sandboxed_executor_init -v
+pytest hololoom/redteam/sandbox/tests/test_sandboxed_executor.py::test_sandboxed_executor_init -v
 
 # With logging
-pytest HoloLoom/redteam/sandbox/tests/test_sandboxed_executor.py -v -s
+pytest hololoom/redteam/sandbox/tests/test_sandboxed_executor.py -v -s
 ```
 
 ## Demo
@@ -443,7 +443,7 @@ pytest HoloLoom/redteam/sandbox/tests/test_sandboxed_executor.py -v -s
 Run the comprehensive demo:
 
 ```bash
-python -m HoloLoom.redteam.sandbox.demo_sandboxed_executor
+python -m hololoom.redteam.sandbox.demo_sandboxed_executor
 ```
 
 Demonstrates:
@@ -568,7 +568,7 @@ Enable debug logging to see sandbox internals:
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger("HoloLoom.redteam.sandbox")
+logger = logging.getLogger("hololoom.redteam.sandbox")
 
 # Now see all sandbox operations
 ```

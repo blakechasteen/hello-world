@@ -14,13 +14,13 @@ Team knowledge management with:
 """
 
 # Original modules
-from HoloLoom.collaboration.user_manager import UserManager, User, UserRole
-from HoloLoom.collaboration.contribution_tracker import ContributionTracker
-from HoloLoom.collaboration.access_control import AccessController, Permission, AccessLevel
-from HoloLoom.collaboration.knowledge_sharing import KnowledgeSharing, SharedKnowledge
+from hololoom.collaboration.user_manager import UserManager, User, UserRole
+from hololoom.collaboration.contribution_tracker import ContributionTracker
+from hololoom.collaboration.access_control import AccessController, Permission, AccessLevel
+from hololoom.collaboration.knowledge_sharing import KnowledgeSharing, SharedKnowledge
 
 # New session management (November 2025)
-from HoloLoom.collaboration.session import (
+from hololoom.collaboration.session import (
     Session,
     SessionManager,
     SessionState,
@@ -33,7 +33,7 @@ from HoloLoom.collaboration.session import (
 )
 
 # Real-time presence tracking
-from HoloLoom.collaboration.presence import (
+from hololoom.collaboration.presence import (
     UserPresence,
     PresenceManager,
     ActivityStatus,
@@ -45,7 +45,7 @@ from HoloLoom.collaboration.presence import (
 )
 
 # State synchronization with CRDT-inspired conflict resolution
-from HoloLoom.collaboration.sync import (
+from hololoom.collaboration.sync import (
     StateSynchronizer,
     Operation,
     OperationType,
@@ -57,7 +57,7 @@ from HoloLoom.collaboration.sync import (
 )
 
 # Enhanced attribution tracking
-from HoloLoom.collaboration.attribution import (
+from hololoom.collaboration.attribution import (
     AttributionManager,
     Contribution,
     ContributionType,
@@ -68,7 +68,7 @@ from HoloLoom.collaboration.attribution import (
 )
 
 # WebRTC voice/video communication
-from HoloLoom.collaboration.voice import (
+from hololoom.collaboration.voice import (
     VoiceRoom,
     VoiceManager,
     VoiceRoomSettings,

@@ -30,7 +30,7 @@ import numpy as np
 from collections import defaultdict
 
 if TYPE_CHECKING:
-    from HoloLoom.dark_trace.models.adapter import ModelAdapter
+    from hololoom.dark_trace.models.adapter import ModelAdapter
 
 
 class FingerprintMethod(Enum):

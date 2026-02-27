@@ -389,7 +389,7 @@ class HierarchyVisualizer:
                 flow_result = self.flow_analyzer.analyze(test_inputs)
             else:
                 # Create empty result
-                from HoloLoom.dark_trace.multilayer.flow import FlowAnalysisResult
+                from hololoom.dark_trace.multilayer.flow import FlowAnalysisResult
                 flow_result = FlowAnalysisResult()
 
         # Render based on format
@@ -442,7 +442,7 @@ class HierarchyVisualizer:
                 )
             else:
                 # Create empty evolution
-                from HoloLoom.dark_trace.multilayer.hierarchy import FeatureEvolution
+                from hololoom.dark_trace.multilayer.hierarchy import FeatureEvolution
                 evolution = FeatureEvolution(
                     feature_id=feature_id,
                     source_layer=0,

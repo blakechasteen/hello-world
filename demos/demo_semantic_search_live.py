@@ -14,10 +14,10 @@ Tests:
 import asyncio
 import json
 from datetime import datetime
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.memory.protocol import Memory, MemoryQuery
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.protocol import Memory, MemoryQuery
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 
 async def main():

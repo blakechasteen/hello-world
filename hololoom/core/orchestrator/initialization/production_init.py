@@ -28,7 +28,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 # Module availability flag
 PRODUCTION_HARDENING_AVAILABLE = False
 try:
-    from HoloLoom.context import (
+    from hololoom.context import (
         ProductionConfig,
         create_system_monitor,
         create_circuit_breaker_registry,

@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
-from HoloLoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
+from hololoom.skills.base import (BaseSkill, SkillInput, SkillOutput, SkillMetadata,
                                    SkillCategory, SkillStatus)
 
 # Check for jedi availability (Python code intelligence)
@@ -460,5 +460,5 @@ class LSPIntegrationSkill(BaseSkill):
             }
 
 
-from HoloLoom.skills.base import register_skill
+from hololoom.skills.base import register_skill
 register_skill(LSPIntegrationSkill())
