@@ -14,7 +14,7 @@ from typing import Dict, Any, Optional
 from HoloLoom.protocols.types import Query
 from HoloLoom.loom.command import LoomCommand, PatternCard, PatternSpec
 from HoloLoom.protocols import ComplexityLevel
-from HoloLoom.weaving.protocols import StageResult, WeavingStageProtocol
+from HoloLoom.orchestrator.protocols import StageResult, WeavingStageProtocol
 
 
 class PatternSelectionStage:

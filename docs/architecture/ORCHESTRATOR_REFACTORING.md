@@ -130,7 +130,7 @@ spacetime = await orchestrator.weave(
 ### Testing Individual Stages
 
 ```python
-from HoloLoom.weaving.stages import PatternSelectionStage
+from HoloLoom.orchestrator.stages import PatternSelectionStage
 from HoloLoom.loom.command import LoomCommand
 
 # Create and test a stage independently
@@ -152,7 +152,7 @@ assert "pattern_card" in result.data
 ### Creating Custom Strategies
 
 ```python
-from HoloLoom.weaving.strategies.base import BaseStrategy
+from HoloLoom.orchestrator.strategies.base import BaseStrategy
 from HoloLoom.protocols import ComplexityLevel
 
 class CustomStrategy(BaseStrategy):

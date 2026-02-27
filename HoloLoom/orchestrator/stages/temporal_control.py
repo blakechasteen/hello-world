@@ -17,7 +17,7 @@ from datetime import datetime
 from HoloLoom.protocols.types import Query
 from HoloLoom.chrono.trigger import ChronoTrigger, TemporalWindow, ExecutionLimits
 from HoloLoom.loom.command import PatternSpec
-from HoloLoom.weaving.protocols import StageResult
+from HoloLoom.orchestrator.protocols import StageResult
 
 
 class TemporalControlStage:

@@ -77,6 +77,13 @@ from .steps_7_9 import (
     execute_step9_spacetime_fabric,
 )
 
+# Merged from HoloLoom.weaving.stages (Wave 2 consolidation, 2026-02-27)
+from .pattern_selection import PatternSelectionStage
+from .temporal_control import TemporalControlStage
+from .feature_extraction import FeatureExtractionStage
+from .memory_retrieval import MemoryRetrievalStage
+from .decision_collapse import DecisionCollapseStage
+
 __all__ = [
     # Steps 0-3
     'execute_step0_meta_prompt',
@@ -100,4 +107,11 @@ __all__ = [
     'execute_step7_convergence',
     'execute_step8_tool_execution',
     'execute_step9_spacetime_fabric',
+
+    # Weaving stage classes (merged from HoloLoom.weaving.stages)
+    'PatternSelectionStage',
+    'TemporalControlStage',
+    'FeatureExtractionStage',
+    'MemoryRetrievalStage',
+    'DecisionCollapseStage',
 ]

@@ -12,7 +12,7 @@ Steps:
 from typing import List
 
 from HoloLoom.protocols import ComplexityLevel
-from HoloLoom.weaving.strategies.base import BaseStrategy
+from HoloLoom.orchestrator.strategies.base import BaseStrategy
 
 
 class LiteStrategy(BaseStrategy):

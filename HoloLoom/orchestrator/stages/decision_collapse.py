@@ -17,7 +17,7 @@ import numpy as np
 from HoloLoom.protocols.types import Query, Features, Context
 from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy
 from HoloLoom.loom.command import PatternSpec
-from HoloLoom.weaving.protocols import StageResult
+from HoloLoom.orchestrator.protocols import StageResult
 
 
 class DecisionCollapseStage:

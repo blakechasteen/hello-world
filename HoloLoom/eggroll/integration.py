@@ -38,7 +38,7 @@ from HoloLoom.eggroll.tracing import (
 from HoloLoom.shuttle.eggroll_shuttle import Shuttle, PerturbSpec
 from HoloLoom.warp.eggroll_warp import Warp
 from HoloLoom.memory.yarn.eggroll_yarn import Yarn
-from HoloLoom.weaving.eggroll_weave import Weave
+from HoloLoom.orchestrator.eggroll_weave import Weave
 import torch
 from HoloLoom.eggroll.loom_node import LoomNode
 from HoloLoom.eggroll.mirror_core import MirrorCoreAgent

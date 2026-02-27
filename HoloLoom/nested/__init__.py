@@ -1,47 +1,55 @@
 """
-HoloLoom Phase 6: Nested Learning Meta-Architecture
+HoloLoom nested — MOVED to HoloLoom.memory
+===========================================
 
-This module implements Google Research's Nested Learning paradigm, treating
-architecture and optimization as hierarchical learning problems at different frequencies.
+This shim redirects imports of ``HoloLoom.nested.*`` to their new
+locations inside ``HoloLoom.memory``.  Files were renamed with a
+``nested_`` prefix during the move:
 
-Core Components:
-- Ultra-fast optimizer: Sub-query routing, token-level decisions (1-10ms)
-- Medium-frequency optimizer: Step selection, retrieval strategy learning (1-5s)
-- Very slow optimizer: Architectural evolution (manual/rare)
-- Meta-policy: Learnable step selection
-- Recurrent orchestrator: Hope-style hidden state across queries
-- Continuum Memory System: Unified memory spectrum
-- Self-optimizing memory: Learned retrieval strategies
-
-Philosophy:
-"Architecture and optimization are not separate—they are nested learning problems
-at different frequencies."
-
-References:
-- Google Research: Nested Learning (2024)
-- HoloLoom Phase 5: Recursive Learning
+    HoloLoom.nested.ultra_fast  →  HoloLoom.memory.nested_ultra_fast
+    HoloLoom.nested.hierarchy   →  HoloLoom.memory.nested_hierarchy
 """
 
-from HoloLoom.nested.ultra_fast import (
-    UltraFastOptimizer,
-    WorkingMemory,
-    SubQueryRouter,
-)
+import importlib
+import warnings
+import sys
 
-from HoloLoom.nested.hierarchy import (
-    NestedLearningHierarchy,
-    OptimizationLevel,
-)
 
-__all__ = [
-    # Ultra-fast components
-    "UltraFastOptimizer",
-    "WorkingMemory",
-    "SubQueryRouter",
+_RENAME_MAP = {
+    "HoloLoom.nested.ultra_fast": "HoloLoom.memory.nested_ultra_fast",
+    "HoloLoom.nested.hierarchy": "HoloLoom.memory.nested_hierarchy",
+}
 
-    # Hierarchy
-    "NestedLearningHierarchy",
-    "OptimizationLevel",
-]
 
-__version__ = "6.0.0-alpha"
+class _DeprecatedFinder:
+    """Meta-path finder that redirects HoloLoom.nested.* imports."""
+
+    _PREFIX = "HoloLoom.nested."
+
+    def find_module(self, fullname, path=None):
+        if fullname == "HoloLoom.nested" or fullname.startswith(
+            self._PREFIX
+        ):
+            return self
+        return None
+
+    def load_module(self, fullname):
+        if fullname in sys.modules:
+            return sys.modules[fullname]
+        new_name = _RENAME_MAP.get(fullname)
+        if new_name is None:
+            # For the package itself, re-export from memory
+            new_name = "HoloLoom.memory"
+        warnings.warn(
+            f"Importing from {fullname} is deprecated. "
+            f"Use {new_name} instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        real = importlib.import_module(new_name)
+        sys.modules[fullname] = real
+        return real
+
+
+if not any(isinstance(f, _DeprecatedFinder) for f in sys.meta_path):
+    sys.meta_path.insert(0, _DeprecatedFinder())

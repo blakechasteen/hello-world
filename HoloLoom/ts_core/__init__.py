@@ -1,44 +1,46 @@
 """
-HoloLoom Thompson Sampling Core - Unified TS Underlayer
+HoloLoom ts_core — MOVED to HoloLoom.bandits
+=============================================
 
-Provides a complete Thompson Sampling ecosystem:
-- Discrete Bernoulli (Beta-Bernoulli for multi-armed bandits)
-- Bayesian Linear (closed-form posterior for linear rewards)
-- Neural Bandits (deep contextual bandits with Bootstrap/MC-Dropout)
-- GP-TS (Gaussian Process Thompson Sampling)
-- Deep Kernel GP-TS (neural embedding + GP kernel)
-
-All models implement the unified ThompsonSampler protocol for seamless swapping.
-
-Example:
-    >>> from HoloLoom.ts_core import create_thompson_sampler
-    >>>
-    >>> # Discrete MAB
-    >>> sampler = create_thompson_sampler("discrete", n_arms=5)
-    >>> arm = sampler.select()
-    >>> sampler.update(arm, reward=1.0)
-    >>>
-    >>> # Bayesian Linear
-    >>> sampler = create_thompson_sampler("linear", context_dim=10, n_actions=3)
-    >>> action = sampler.select(context)
-    >>> sampler.update(context, action, reward)
-    >>>
-    >>> # Neural Bandit
-    >>> sampler = create_thompson_sampler("neural", context_dim=384, n_actions=5)
-    >>> action = sampler.select(context)
-    >>> sampler.update(context, action, reward)
-    >>>
-    >>> # GP-TS
-    >>> sampler = create_thompson_sampler("gp", param_dim=5)
-    >>> params = sampler.select()  # Continuous parameter vector
-    >>> sampler.update(params, reward)
+This shim installs a ``sys.meta_path`` finder so that **any** import of
+``HoloLoom.ts_core`` or ``HoloLoom.ts_core.*`` is transparently
+redirected to ``HoloLoom.bandits``.  A one-time
+``DeprecationWarning`` is emitted to encourage migration.
 """
 
-from HoloLoom.ts_core.base import ThompsonSampler, ThompsonSamplerConfig
-from HoloLoom.ts_core.samplers import create_thompson_sampler
+import importlib
+import warnings
+import sys
 
-__all__ = [
-    "ThompsonSampler",
-    "ThompsonSamplerConfig",
-    "create_thompson_sampler",
-]
+
+class _DeprecatedFinder:
+    """Meta-path finder that redirects HoloLoom.ts_core.* imports."""
+
+    _PREFIX = "HoloLoom.ts_core."
+
+    def find_module(self, fullname, path=None):
+        if fullname == "HoloLoom.ts_core" or fullname.startswith(
+            self._PREFIX
+        ):
+            return self
+        return None
+
+    def load_module(self, fullname):
+        if fullname in sys.modules:
+            return sys.modules[fullname]
+        new_name = fullname.replace(
+            "HoloLoom.ts_core", "HoloLoom.bandits", 1
+        )
+        warnings.warn(
+            f"Importing from {fullname} is deprecated. "
+            f"Use {new_name} instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        real = importlib.import_module(new_name)
+        sys.modules[fullname] = real
+        return real
+
+
+if not any(isinstance(f, _DeprecatedFinder) for f in sys.meta_path):
+    sys.meta_path.insert(0, _DeprecatedFinder())

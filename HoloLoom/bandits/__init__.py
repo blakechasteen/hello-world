@@ -29,6 +29,10 @@ from HoloLoom.bandits.neural_ts.types import (
 from HoloLoom.bandits.neural_ts.policy import NeuralThompsonPolicy
 from HoloLoom.bandits.config import BanditConfig, create_neural_ts_policy
 
+# Re-exports from merged ts_core module
+from HoloLoom.bandits.ts_base import ThompsonSampler, ThompsonSamplerConfig
+from HoloLoom.bandits.samplers import create_thompson_sampler
+
 __all__ = [
     "Context",
     "Action",
@@ -37,4 +41,8 @@ __all__ = [
     "NeuralThompsonPolicy",
     "BanditConfig",
     "create_neural_ts_policy",
+    # From merged ts_core
+    "ThompsonSampler",
+    "ThompsonSamplerConfig",
+    "create_thompson_sampler",
 ]

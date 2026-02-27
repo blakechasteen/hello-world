@@ -13,7 +13,7 @@ This directory contains the implementation of the EGGROLL integration for HoloLo
 *   **Shuttle (`HoloLoom/shuttle/eggroll_shuttle.py`)**: Exploration Orchestrator. Uses Neural Thompson Sampling to propose perturbations.
 *   **Warp (`HoloLoom/warp/eggroll_warp.py`)**: Evaluator. Embeds outputs and computes scores (coherence, novelty, etc.).
 *   **Yarn (`HoloLoom/yarn/eggroll_yarn.py`)**: Lineage + Memory. Logs ancestry and perturbation traces.
-*   **Weave (`HoloLoom/weaving/eggroll_weave.py`)**: Data + Reward Fabric. Generates tasks and computes composite rewards.
+*   **Weave (`HoloLoom/orchestrator/eggroll_weave.py`)**: Data + Reward Fabric. Generates tasks and computes composite rewards.
 *   **Nodes (`HoloLoom/eggroll/nodes.py`)**: Federated Loom Nodes. Apply perturbations and run inference.
 *   **MirrorCore (`HoloLoom/eggroll/mirror_core.py`)**: Agent wrapper that maintains weights and applies updates.
 

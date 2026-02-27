@@ -15,7 +15,7 @@ from typing import Dict, Any, Optional, List, Tuple
 
 from HoloLoom.protocols.types import Query, MemoryShard
 from HoloLoom.loom.command import PatternSpec
-from HoloLoom.weaving.protocols import StageResult
+from HoloLoom.orchestrator.protocols import StageResult
 
 
 class MemoryRetrievalStage:

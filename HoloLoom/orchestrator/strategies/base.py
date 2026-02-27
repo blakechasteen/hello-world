@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from HoloLoom.protocols.types import Query
 from HoloLoom.protocols import ComplexityLevel, ProvenanceTrace
 from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.weaving.protocols import WeavingStageProtocol, StageResult
+from HoloLoom.orchestrator.protocols import WeavingStageProtocol, StageResult
 
 
 class BaseStrategy(ABC):

@@ -10,10 +10,10 @@ Tests all TS variants:
 
 import pytest
 import numpy as np
-from HoloLoom.ts_core.models.discrete_bernoulli import DiscreteBernoulliTS, create_discrete_ts
-from HoloLoom.ts_core.models.bayes_linear import BayesianLinearTS, create_bayesian_linear_ts
-from HoloLoom.ts_core.models.gp_ts import GaussianProcessTS, create_gp_ts
-from HoloLoom.ts_core.samplers import (
+from HoloLoom.bandits.models.discrete_bernoulli import DiscreteBernoulliTS, create_discrete_ts
+from HoloLoom.bandits.models.bayes_linear import BayesianLinearTS, create_bayesian_linear_ts
+from HoloLoom.bandits.models.gp_ts import GaussianProcessTS, create_gp_ts
+from HoloLoom.bandits.samplers import (
     create_thompson_sampler,
     create_discrete_mab,
     create_contextual_bandit,

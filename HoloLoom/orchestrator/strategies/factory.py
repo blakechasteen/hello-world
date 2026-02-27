@@ -8,11 +8,11 @@ import logging
 from typing import Dict, Optional
 
 from HoloLoom.protocols import ComplexityLevel
-from HoloLoom.weaving.protocols import WeavingStageProtocol, ComplexityStrategyProtocol
-from HoloLoom.weaving.strategies.lite_strategy import LiteStrategy
-from HoloLoom.weaving.strategies.fast_strategy import FastStrategy
-from HoloLoom.weaving.strategies.full_strategy import FullStrategy
-from HoloLoom.weaving.strategies.research_strategy import ResearchStrategy
+from HoloLoom.orchestrator.protocols import WeavingStageProtocol, ComplexityStrategyProtocol
+from HoloLoom.orchestrator.strategies.lite_strategy import LiteStrategy
+from HoloLoom.orchestrator.strategies.fast_strategy import FastStrategy
+from HoloLoom.orchestrator.strategies.full_strategy import FullStrategy
+from HoloLoom.orchestrator.strategies.research_strategy import ResearchStrategy
 
 
 def create_strategy(

@@ -19,7 +19,7 @@
 ### One-Line Usage
 
 ```python
-from HoloLoom.ts_core import create_thompson_sampler
+from HoloLoom.bandits import create_thompson_sampler
 
 # Discrete MAB (A/B testing)
 sampler = create_thompson_sampler("discrete", n_arms=2)
@@ -56,7 +56,7 @@ Posterior: θ_a | data ~ Beta(α + successes, β + failures)
 
 **Example**:
 ```python
-from HoloLoom.ts_core.models.discrete_bernoulli import DiscreteBernoulliTS
+from HoloLoom.bandits.models.discrete_bernoulli import DiscreteBernoulliTS
 
 # A/B test
 sampler = DiscreteBernoulliTS(n_arms=2, alpha_prior=1.0, beta_prior=1.0)
@@ -86,7 +86,7 @@ sampler = DiscreteBernoulliTS(n_arms=5, alpha_prior=1.0, beta_prior=1.0)
 sampler = DiscreteBernoulliTS(n_arms=5, alpha_prior=10.0, beta_prior=1.0)
 
 # Using factory
-from HoloLoom.ts_core.models.discrete_bernoulli import create_discrete_ts
+from HoloLoom.bandits.models.discrete_bernoulli import create_discrete_ts
 sampler = create_discrete_ts(n_arms=5, prior="optimistic")
 ```
 
@@ -103,7 +103,7 @@ Posterior: Gaussian (closed-form conjugate update)
 
 **Example**:
 ```python
-from HoloLoom.ts_core.models.bayes_linear import BayesianLinearTS
+from HoloLoom.bandits.models.bayes_linear import BayesianLinearTS
 
 # News article recommendation
 sampler = BayesianLinearTS(context_dim=50, n_actions=10)
@@ -136,7 +136,7 @@ sampler = BayesianLinearTS(
 )
 
 # Using factory
-from HoloLoom.ts_core.models.bayes_linear import create_bayesian_linear_ts
+from HoloLoom.bandits.models.bayes_linear import create_bayesian_linear_ts
 sampler = create_bayesian_linear_ts(
     context_dim=50,
     n_actions=10,
@@ -152,7 +152,7 @@ sampler = create_bayesian_linear_ts(
 
 **Example**:
 ```python
-from HoloLoom.ts_core import create_thompson_sampler
+from HoloLoom.bandits import create_thompson_sampler
 
 # HoloLoom tool selection
 sampler = create_thompson_sampler(
@@ -181,7 +181,7 @@ Posterior: GP(μ_post, k_post)
 
 **Example**:
 ```python
-from HoloLoom.ts_core.models.gp_ts import GaussianProcessTS
+from HoloLoom.bandits.models.gp_ts import GaussianProcessTS
 
 # Hyperparameter tuning
 sampler = GaussianProcessTS(
@@ -215,7 +215,7 @@ sampler = GaussianProcessTS(
 )
 
 # Using factory
-from HoloLoom.ts_core.models.gp_ts import create_gp_ts
+from HoloLoom.bandits.models.gp_ts import create_gp_ts
 sampler = create_gp_ts(param_dim=10, kernel="matern")
 ```
 
@@ -228,7 +228,7 @@ sampler = create_gp_ts(param_dim=10, kernel="matern")
 **One function to rule them all**:
 
 ```python
-from HoloLoom.ts_core import create_thompson_sampler
+from HoloLoom.bandits import create_thompson_sampler
 
 # Discrete
 sampler = create_thompson_sampler(
@@ -268,7 +268,7 @@ sampler = create_thompson_sampler(
 ### Convenience Functions
 
 ```python
-from HoloLoom.ts_core.samplers import (
+from HoloLoom.bandits.samplers import (
     create_discrete_mab,
     create_contextual_bandit,
     create_continuous_optimizer,
@@ -365,7 +365,7 @@ def test_discrete_learning():
 ### Tool Selection
 
 ```python
-from HoloLoom.ts_core import create_thompson_sampler
+from HoloLoom.bandits import create_thompson_sampler
 
 # Neural bandit for tool selection
 tool_sampler = create_thompson_sampler(
@@ -393,7 +393,7 @@ async def weave(query):
 ### Agent Routing
 
 ```python
-from HoloLoom.ts_core import create_discrete_mab
+from HoloLoom.bandits import create_discrete_mab
 
 # Discrete MAB for routing queries to agents
 router = create_discrete_mab(n_arms=5)  # 5 agents
@@ -408,7 +408,7 @@ for query in queries:
 ### Hyperparameter Tuning
 
 ```python
-from HoloLoom.ts_core import create_continuous_optimizer
+from HoloLoom.bandits import create_continuous_optimizer
 
 # GP-TS for tuning learning rates, temperatures, etc.
 optimizer = create_continuous_optimizer(

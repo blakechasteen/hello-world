@@ -19,7 +19,7 @@ from HoloLoom.resonance.shed import ResonanceShed
 from HoloLoom.motif.base import create_motif_detector
 from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
 from HoloLoom.loom.command import PatternSpec
-from HoloLoom.weaving.protocols import StageResult
+from HoloLoom.orchestrator.protocols import StageResult
 
 
 class FeatureExtractionStage:

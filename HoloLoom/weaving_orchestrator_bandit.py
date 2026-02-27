@@ -46,7 +46,7 @@ from HoloLoom.config import Config
 from HoloLoom.protocols.types import Query, MemoryShard
 
 # Thompson Sampling
-from HoloLoom.ts_core import create_thompson_sampler
+from HoloLoom.bandits import create_thompson_sampler
 from HoloLoom.bandits.neural_ts.types import Context, Action, Observation
 from HoloLoom.bandits.neural_ts.eval import BanditEvaluator
 

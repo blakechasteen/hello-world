@@ -21,7 +21,7 @@ from HoloLoom.fabric.spacetime import Spacetime
 from HoloLoom.config import Config
 
 # Import stage implementations
-from HoloLoom.weaving.stages import (
+from HoloLoom.orchestrator.stages import (
     PatternSelectionStage,
     TemporalControlStage,
     FeatureExtractionStage,
@@ -30,7 +30,7 @@ from HoloLoom.weaving.stages import (
 )
 
 # Import strategies
-from HoloLoom.weaving.strategies import create_strategy
+from HoloLoom.orchestrator.strategies import create_strategy
 
 # Import components for stage creation
 from HoloLoom.loom.command import LoomCommand, PatternCard

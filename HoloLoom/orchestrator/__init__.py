@@ -134,6 +134,22 @@ from .protocol_factory import (
     ProtocolOrchestrator,
 )
 
+# Merged from HoloLoom.weaving (Wave 2 consolidation, 2026-02-27)
+from .weaving_protocols import (
+    WeavingStageProtocol,
+    ComplexityStrategyProtocol,
+    StageResult,
+)
+
+# Weaving stage classes (merged from HoloLoom.weaving.stages)
+from .stages import (
+    PatternSelectionStage,
+    TemporalControlStage,
+    FeatureExtractionStage,
+    MemoryRetrievalStage,
+    DecisionCollapseStage,
+)
+
 __all__ = [
     # Context
     'WeavingContext',
@@ -211,4 +227,14 @@ __all__ = [
     'create_orchestrator_from_protocols',
     'create_pipeline_with_protocols',
     'ProtocolOrchestrator',
+
+    # Merged from HoloLoom.weaving (Wave 2)
+    'WeavingStageProtocol',
+    'ComplexityStrategyProtocol',
+    'StageResult',
+    'PatternSelectionStage',
+    'TemporalControlStage',
+    'FeatureExtractionStage',
+    'MemoryRetrievalStage',
+    'DecisionCollapseStage',
 ]
