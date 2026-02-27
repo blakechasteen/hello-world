@@ -27,12 +27,12 @@ import time
 import math
 
 # HoloLoom components
-from HoloLoom.recursive.loop_integration import (
+from HoloLoom.core.recursive.loop_integration import (
     LearningLoopEngine,
     LearningLoopConfig
 )
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.protocols.types import Query, MemoryShard
+from HoloLoom.core.fabric.spacetime import Spacetime
+from HoloLoom.core.protocols.types import Query, MemoryShard
 from HoloLoom.config import Config
 
 logger = logging.getLogger(__name__)
@@ -633,9 +633,9 @@ if __name__ == "__main__":
     print()
     print("Usage:")
     print("""
-from HoloLoom.recursive import HotPatternFeedbackEngine, HotPatternConfig
+from HoloLoom.core.recursive import HotPatternFeedbackEngine, HotPatternConfig
 from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from HoloLoom.core.protocols.types import Query
 
 config = Config.fast()
 hot_config = HotPatternConfig(

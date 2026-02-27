@@ -29,14 +29,14 @@ from typing import Optional, List, Any, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from HoloLoom.config import Config
-    from HoloLoom.loom.command import LoomCommand
-    from HoloLoom.memory.graph import KG
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from HoloLoom.core.loom.command import LoomCommand
+    from HoloLoom.core.memory.graph import KG
+    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
     from HoloLoom.tools.executor import ToolExecutor
     from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
     from HoloLoom.alignment.audit_trail import AuditTrail
 
-from HoloLoom.orchestrator.protocols import (
+from HoloLoom.core.orchestrator.protocols import (
     PatternSelectorProtocol,
     ThreadSelectorProtocol,
     FeatureExtractorProtocol,
@@ -50,7 +50,7 @@ from HoloLoom.orchestrator.protocols import (
     DefaultToolExecutor,
     DefaultSpacetimeAssembler,
 )
-from HoloLoom.orchestrator.pipeline import ExecutorPipeline
+from HoloLoom.core.orchestrator.pipeline import ExecutorPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +201,7 @@ def create_component_defaults(
     convergence_engine = None
     if policy is not None:
         try:
-            from HoloLoom.convergence.engine import ConvergenceEngine
+            from HoloLoom.core.convergence.engine import ConvergenceEngine
             convergence_engine = ConvergenceEngine(policy=policy, cfg=cfg)
         except (ImportError, Exception) as e:
             log.debug(f"Could not create ConvergenceEngine: {e}")
@@ -486,7 +486,7 @@ def create_pipeline_with_protocols(
     components.validate()
     log = logger or logging.getLogger(__name__)
 
-    from HoloLoom.orchestrator.stages.executors import (
+    from HoloLoom.core.orchestrator.stages.executors import (
         MetaPromptExecutor,
         PatternSelectionExecutor,
         ChronoTriggerExecutor,

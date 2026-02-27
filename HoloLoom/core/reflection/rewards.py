@@ -21,7 +21,7 @@ from typing import Dict, Any, Optional
 from dataclasses import dataclass
 import numpy as np
 
-from HoloLoom.fabric.spacetime import Spacetime
+from HoloLoom.core.fabric.spacetime import Spacetime
 
 logger = logging.getLogger(__name__)
 
@@ -317,7 +317,7 @@ def estimate_potential(spacetime: Spacetime) -> float:
 
 if __name__ == "__main__":
     from datetime import datetime
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+    from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
 
     print("="*80)
     print("Reward Extraction Demo")

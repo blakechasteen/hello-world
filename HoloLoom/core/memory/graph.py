@@ -739,7 +739,7 @@ class KG:
             return np.eye(self.G.number_of_nodes())
 
         try:
-            from HoloLoom.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
+            from HoloLoom.core.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
 
             # Compute diffusion map
             laplacian = GraphLaplacian(self, laplacian_type=LaplacianType.RANDOM_WALK)
@@ -811,7 +811,7 @@ class KG:
             return {}
 
         try:
-            from HoloLoom.warp.spectral_methods import GraphLaplacian, spectral_clustering, LaplacianType
+            from HoloLoom.core.warp.spectral_methods import GraphLaplacian, spectral_clustering, LaplacianType
 
             # Compute spectral clustering
             laplacian = GraphLaplacian(self, laplacian_type=LaplacianType.NORMALIZED)
@@ -1006,7 +1006,7 @@ class KG:
         Returns:
             RetrievalResult with memories, scores, and metadata
         """
-        from HoloLoom.memory.protocol import Memory, RetrievalResult
+        from HoloLoom.core.memory.protocol import Memory, RetrievalResult
         from datetime import datetime
 
         query_text = query.text if hasattr(query, 'text') else str(query)
@@ -1092,7 +1092,7 @@ class KG:
         Returns:
             List[MemoryShard]: Selected threads from the graph
         """
-        from HoloLoom.protocols.types import MemoryShard
+        from HoloLoom.core.protocols.types import MemoryShard
         from datetime import datetime
 
         query_text = query.text if hasattr(query, 'text') else str(query)
@@ -1192,7 +1192,7 @@ class KG:
             Node ID (token_id)
 
         Example:
-            >>> from HoloLoom.memory.photo_tokens import PhotoToken
+            >>> from HoloLoom.core.memory.photo_tokens import PhotoToken
             >>> kg = KG()
             >>> photo = PhotoToken(token_id="photo_abc", caption="Architecture diagram", ...)
             >>> kg.add_photo_node(photo)

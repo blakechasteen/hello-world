@@ -19,7 +19,7 @@ Philosophy:
 - No business logic in protocol definitions
 
 Usage:
-    from HoloLoom.protocols import (
+    from HoloLoom.core.protocols import (
         ComplexityLevel,
         MemoryStore,
         PolicyEngine,
@@ -178,7 +178,7 @@ from .department import (
 # ============================================================================
 
 try:
-    from HoloLoom.protocols.types import (
+    from HoloLoom.core.protocols.types import (
         Query, Features, Context, Response, MemoryShard,
         PolicyAction, ActionPlan, ToolCall, ToolResult, Vector
     )

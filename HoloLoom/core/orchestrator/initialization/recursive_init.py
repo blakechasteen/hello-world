@@ -76,11 +76,11 @@ def initialize_recursive_learning(orchestrator: 'WeavingOrchestrator') -> None:
         return  # Already initialized
 
     try:
-        from HoloLoom.recursive.scratchpad import Scratchpad
-        from HoloLoom.recursive.loop_integration import PatternLearner
-        from HoloLoom.recursive.hot_patterns import HotPatternTracker
-        from HoloLoom.recursive.advanced_refinement import AdvancedRefiner
-        from HoloLoom.recursive.full_learning_loop import (
+        from HoloLoom.core.recursive.scratchpad import Scratchpad
+        from HoloLoom.core.recursive.loop_integration import PatternLearner
+        from HoloLoom.core.recursive.hot_patterns import HotPatternTracker
+        from HoloLoom.core.recursive.advanced_refinement import AdvancedRefiner
+        from HoloLoom.core.recursive.full_learning_loop import (
             ThompsonPriors,
             PolicyWeights,
             BackgroundLearner,

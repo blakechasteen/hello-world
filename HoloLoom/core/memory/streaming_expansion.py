@@ -21,7 +21,7 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Set
 from dataclasses import dataclass, field
 from enum import Enum
 
-from HoloLoom.memory.adaptive_expansion import (
+from HoloLoom.core.memory.adaptive_expansion import (
     AdaptiveExpander,
     RelevanceScorer,
     BudgetTracker

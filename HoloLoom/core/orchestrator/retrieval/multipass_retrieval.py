@@ -28,7 +28,7 @@ from typing import List, Optional, Any, Dict, TYPE_CHECKING
 if TYPE_CHECKING:
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.protocols.types import Query, MemoryShard, ComplexityLevel, ProvenanceTrace
+from HoloLoom.core.protocols.types import Query, MemoryShard, ComplexityLevel, ProvenanceTrace
 
 
 logger = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ async def multipass_memory_crawl(
             try:
                 # Use memory backend's recall method
                 # Note: Threshold is handled by the backend based on relevance scoring
-                from HoloLoom.memory.protocol import MemoryQuery
+                from HoloLoom.core.memory.protocol import MemoryQuery
                 mem_query = MemoryQuery(
                     text=query.text,
                     limit=limit
@@ -239,7 +239,7 @@ async def query_memory_backend(
 
     try:
         # Import protocol types
-        from HoloLoom.memory.protocol import MemoryQuery
+        from HoloLoom.core.memory.protocol import MemoryQuery
 
         # Create query
         mem_query = MemoryQuery(

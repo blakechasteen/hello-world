@@ -33,14 +33,14 @@ from uuid import uuid4
 import numpy as np
 
 if TYPE_CHECKING:
-    from HoloLoom.orchestrator.context import WeavingContext
+    from HoloLoom.core.orchestrator.context import WeavingContext
     from HoloLoom.config import Config
     from HoloLoom.tools.executor import ToolExecutor
     from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
     from HoloLoom.alignment.audit_trail import AuditTrail
-    from HoloLoom.convergence.engine import ConvergenceEngine
-    from HoloLoom.warp.space import WarpSpace
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+    from HoloLoom.core.convergence.engine import ConvergenceEngine
+    from HoloLoom.core.warp.space import WarpSpace
+    from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,7 @@ async def execute_step7_convergence(
     except asyncio.TimeoutError:
         log.error("Policy decision timed out after 200ms, using safe default")
         # Create safe default action plan
-        from HoloLoom.protocols.types import ActionPlan
+        from HoloLoom.core.protocols.types import ActionPlan
         ctx.action_plan = ActionPlan(
             tool="answer",
             confidence=0.5,
@@ -134,7 +134,7 @@ async def execute_step7_convergence(
             log.warning(f"Gradient flow routing failed: {e}")
 
     # Create Convergence Engine and collapse
-    from HoloLoom.convergence.engine import ConvergenceEngine, CollapseStrategy
+    from HoloLoom.core.convergence.engine import ConvergenceEngine, CollapseStrategy
 
     # Map bandit strategy to collapse strategy
     strategy_map = {
@@ -358,7 +358,7 @@ async def execute_step9_spacetime_fabric(
     duration_ms = ctx.total_duration_ms
 
     # Import fabric types
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace, Artifact
+    from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace, Artifact
 
     # Create WeavingTrace with full provenance
     ctx.trace = WeavingTrace(

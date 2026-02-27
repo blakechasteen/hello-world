@@ -22,11 +22,11 @@ from typing import Optional, Union, Dict, List
 import numpy as np
 
 # Import base embedder
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 
 # Import Riemannian geometry for geodesic distance support
 try:
-    from HoloLoom.warp.riemannian_geometry import (
+    from HoloLoom.core.warp.riemannian_geometry import (
         ProductManifold, ManifoldConfig, ManifoldType
     )
     _HAVE_RIEMANNIAN = True
@@ -63,7 +63,7 @@ class RiemannianMatryoshka:
 
     Example:
     ```python
-    from HoloLoom.embedding.riemannian_matryoshka import RiemannianMatryoshka
+    from HoloLoom.core.embedding.riemannian_matryoshka import RiemannianMatryoshka
 
     # Create Riemannian embedder
     embedder = RiemannianMatryoshka(

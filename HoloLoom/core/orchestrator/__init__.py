@@ -25,7 +25,7 @@ Philosophy:
     The main WeavingOrchestrator chains these stages together.
 
 Example:
-    >>> from HoloLoom.orchestrator import (
+    >>> from HoloLoom.core.orchestrator import (
     ...     WeavingContext,
     ...     create_weaving_context,
     ...     execute_step1_pattern_selection,

@@ -29,8 +29,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.protocols.types import Query
-from HoloLoom.fabric.spacetime import Spacetime
+from HoloLoom.core.protocols.types import Query
+from HoloLoom.core.fabric.spacetime import Spacetime
 
 
 logger = logging.getLogger(__name__)

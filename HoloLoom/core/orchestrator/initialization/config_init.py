@@ -34,8 +34,8 @@ if TYPE_CHECKING:
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
 from HoloLoom.config import ExecutionMode
-from HoloLoom.loom.command import PatternCard
-from HoloLoom.protocols import ComplexityLevel
+from HoloLoom.core.loom.command import PatternCard
+from HoloLoom.core.protocols import ComplexityLevel
 from HoloLoom.alignment import create_guardrails
 from HoloLoom.alignment.audit_trail import AuditTrail
 

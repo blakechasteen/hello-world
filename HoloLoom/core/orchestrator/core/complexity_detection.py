@@ -27,9 +27,9 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.protocols.types import Query
-from HoloLoom.protocols import ComplexityLevel, ProvenanceTrace
-from HoloLoom.loom.command import PatternCard
+from HoloLoom.core.protocols.types import Query
+from HoloLoom.core.protocols import ComplexityLevel, ProvenanceTrace
+from HoloLoom.core.loom.command import PatternCard
 
 
 logger = logging.getLogger(__name__)

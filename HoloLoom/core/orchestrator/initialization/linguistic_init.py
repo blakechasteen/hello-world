@@ -69,7 +69,7 @@ def initialize_linguistic_gate(orchestrator: 'WeavingOrchestrator') -> None:
         This is expected behavior when linguistic modules are unavailable.
     """
     try:
-        from HoloLoom.embedding.linguistic_matryoshka_gate import (
+        from HoloLoom.core.embedding.linguistic_matryoshka_gate import (
             LinguisticMatryoshkaGate,
             LinguisticGateConfig,
             LinguisticFilterMode

@@ -24,15 +24,15 @@ repo_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
 # Import from new location (moved to HoloLoom/memory/symphony/ in Dec 2025)
-from HoloLoom.memory.symphony import (
+from HoloLoom.core.memory.symphony import (
     MemoryConductor,
     MemoryQuery,
     MemoryStrategy,
     create_memory_conductor
 )
 from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.protocols.types import MemoryShard
+from HoloLoom.core.memory.backend_factory import create_memory_backend
+from HoloLoom.core.protocols.types import MemoryShard
 
 
 async def create_sample_memory():

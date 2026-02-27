@@ -13,9 +13,9 @@ import logging
 import time
 from typing import Dict, Any, Optional, List, Tuple
 
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.loom.command import PatternSpec
-from HoloLoom.orchestrator.protocols import StageResult
+from HoloLoom.core.protocols.types import Query, MemoryShard
+from HoloLoom.core.loom.command import PatternSpec
+from HoloLoom.core.orchestrator.protocols import StageResult
 
 
 class MemoryRetrievalStage:
@@ -176,7 +176,7 @@ class MemoryRetrievalStage:
         """
         # Import the actual multipass retrieval function
         try:
-            from HoloLoom.orchestrator.retrieval import multipass_memory_crawl
+            from HoloLoom.core.orchestrator.retrieval import multipass_memory_crawl
 
             # Create a mock orchestrator context with necessary attributes
             class MockOrchestrator:

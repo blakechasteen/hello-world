@@ -19,9 +19,9 @@ from typing import List, Dict, Optional, Any
 import time
 import asyncio
 
-from HoloLoom.protocols import RetrievalStrategy, RetrievalResult, SpringActivationMetadata
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.memory.spring_dynamics import SpringDynamics, SpringConfig
+from HoloLoom.core.protocols import RetrievalStrategy, RetrievalResult, SpringActivationMetadata
+from HoloLoom.core.protocols.types import Query, MemoryShard
+from HoloLoom.core.memory.spring_dynamics import SpringDynamics, SpringConfig
 
 
 # ============================================================================

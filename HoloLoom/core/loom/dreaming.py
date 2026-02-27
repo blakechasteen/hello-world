@@ -33,7 +33,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Set
 
-from HoloLoom.loom.protocol import (
+from HoloLoom.core.loom.protocol import (
     Loom,
     DreamInsight,
     InsightType,

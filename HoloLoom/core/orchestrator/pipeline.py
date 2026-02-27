@@ -25,12 +25,12 @@ import logging
 from typing import List, Optional, Any, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.orchestrator.protocols import StageExecutorProtocol
-    from HoloLoom.orchestrator.context import WeavingContext
+    from HoloLoom.core.orchestrator.protocols import StageExecutorProtocol
+    from HoloLoom.core.orchestrator.context import WeavingContext
     from HoloLoom.config import Config
-    from HoloLoom.loom.command import LoomCommand
-    from HoloLoom.memory.graph import KG
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from HoloLoom.core.loom.command import LoomCommand
+    from HoloLoom.core.memory.graph import KG
+    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
     from HoloLoom.tools.executor import ToolExecutor
     from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
     from HoloLoom.alignment.audit_trail import AuditTrail
@@ -186,7 +186,7 @@ def create_default_pipeline(
         ... )
         >>> ctx = await pipeline.execute(ctx)
     """
-    from HoloLoom.orchestrator.stages.executors import (
+    from HoloLoom.core.orchestrator.stages.executors import (
         MetaPromptExecutor,
         PatternSelectionExecutor,
         ChronoTriggerExecutor,
@@ -317,7 +317,7 @@ def create_minimal_pipeline(
     Returns:
         ExecutorPipeline with 5 executors
     """
-    from HoloLoom.orchestrator.stages.executors import (
+    from HoloLoom.core.orchestrator.stages.executors import (
         PatternSelectionExecutor,
         ChronoTriggerExecutor,
         ParallelFeatureExecutor,

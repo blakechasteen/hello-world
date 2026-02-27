@@ -20,7 +20,7 @@ from typing import List, Dict, Set
 import networkx as nx
 
 # Import adaptive expansion components
-from HoloLoom.memory.adaptive_expansion import (
+from HoloLoom.core.memory.adaptive_expansion import (
     AdaptiveExpander,
     RelevanceScorer,
     BudgetTracker,
@@ -33,7 +33,7 @@ from HoloLoom.memory.adaptive_expansion import (
 )
 
 # Import graph for testing
-from HoloLoom.memory.graph import KG, KGEdge
+from HoloLoom.core.memory.graph import KG, KGEdge
 
 
 # ============================================================================

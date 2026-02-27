@@ -20,8 +20,8 @@ Philosophy:
     Stages are pure functions with explicit dependencies.
 
 Example:
-    >>> from HoloLoom.orchestrator.context import create_weaving_context
-    >>> from HoloLoom.orchestrator.stages import (
+    >>> from HoloLoom.core.orchestrator.context import create_weaving_context
+    >>> from HoloLoom.core.orchestrator.stages import (
     ...     execute_step0_meta_prompt,
     ...     execute_step1_pattern_selection,
     ...     execute_step2_chrono_trigger,

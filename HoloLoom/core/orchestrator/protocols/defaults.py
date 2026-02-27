@@ -20,7 +20,7 @@ Default Implementations:
     6. DefaultSpacetimeAssembler - Wraps fabric assembly logic
 
 Usage:
-    >>> from HoloLoom.orchestrator.protocols.defaults import (
+    >>> from HoloLoom.core.orchestrator.protocols.defaults import (
     ...     DefaultPatternSelector,
     ...     DefaultToolExecutor,
     ... )
@@ -52,17 +52,17 @@ from .components import (
 )
 
 if TYPE_CHECKING:
-    from HoloLoom.orchestrator.context import WeavingContext
-    from HoloLoom.loom.command import LoomCommand
-    from HoloLoom.loom.protocol import PatternSpec
-    from HoloLoom.memory.graph import KG
-    from HoloLoom.chrono.trigger import TemporalWindow
-    from HoloLoom.protocols.types import Query, MemoryShard
-    from HoloLoom.convergence.engine import ConvergenceEngine, CollapseResult
-    from HoloLoom.resonance.shed import ResonanceShed
+    from HoloLoom.core.orchestrator.context import WeavingContext
+    from HoloLoom.core.loom.command import LoomCommand
+    from HoloLoom.core.loom.protocol import PatternSpec
+    from HoloLoom.core.memory.graph import KG
+    from HoloLoom.core.chrono.trigger import TemporalWindow
+    from HoloLoom.core.protocols.types import Query, MemoryShard
+    from HoloLoom.core.convergence.engine import ConvergenceEngine, CollapseResult
+    from HoloLoom.core.resonance.shed import ResonanceShed
     from HoloLoom.tools.executor import ToolExecutor
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
+    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
     from HoloLoom.config import Config
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class DefaultPatternSelector:
     Wraps LoomCommand to provide pattern selection based on query characteristics.
 
     Example:
-        >>> from HoloLoom.loom.command import LoomCommand
+        >>> from HoloLoom.core.loom.command import LoomCommand
         >>> loom_command = LoomCommand(config)
         >>> selector = DefaultPatternSelector(loom_command=loom_command)
         >>> pattern = selector.select_pattern("What is Thompson Sampling?")
@@ -140,7 +140,7 @@ class DefaultPatternSelector:
             Complexity level: "trivial", "simple", "moderate", "complex", "research"
         """
         # Delegate to core complexity detection
-        from HoloLoom.orchestrator.core import assess_complexity_level
+        from HoloLoom.core.orchestrator.core import assess_complexity_level
         return assess_complexity_level(query_text)
 
 
@@ -155,7 +155,7 @@ class DefaultThreadSelector:
     Wraps KG (YarnGraph) to provide memory thread selection.
 
     Example:
-        >>> from HoloLoom.memory.graph import KG
+        >>> from HoloLoom.core.memory.graph import KG
         >>> kg = KG()
         >>> selector = DefaultThreadSelector(yarn_graph=kg)
         >>> threads = await selector.select_threads(temporal_window, query, limit=10)
@@ -255,7 +255,7 @@ class DefaultThreadSelector:
 
         # Use adaptive expansion if available
         try:
-            from HoloLoom.memory.adaptive_expansion import expand_context_adaptive
+            from HoloLoom.core.memory.adaptive_expansion import expand_context_adaptive
 
             seed_node_ids = [t.id for t in threads if hasattr(t, 'id')]
             result = await expand_context_adaptive(
@@ -376,7 +376,7 @@ class DefaultConvergence:
     Wraps ConvergenceEngine for decision collapse.
 
     Example:
-        >>> from HoloLoom.convergence.engine import ConvergenceEngine
+        >>> from HoloLoom.core.convergence.engine import ConvergenceEngine
         >>> engine = ConvergenceEngine()
         >>> convergence = DefaultConvergence(engine=engine)
         >>> result = convergence.collapse(probs, strategy="bayesian_blend")
@@ -646,7 +646,7 @@ class DefaultSpacetimeAssembler:
         Returns:
             Spacetime object with response, confidence, and trace
         """
-        from HoloLoom.fabric.spacetime import Spacetime
+        from HoloLoom.core.fabric.spacetime import Spacetime
 
         # Extract query text from context
         query_text = ""
@@ -708,7 +708,7 @@ class DefaultSpacetimeAssembler:
             WeavingTrace object with complete provenance
         """
         from datetime import datetime
-        from HoloLoom.fabric.spacetime import WeavingTrace
+        from HoloLoom.core.fabric.spacetime import WeavingTrace
 
         # Calculate timing from context or use defaults
         now = datetime.now()

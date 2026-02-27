@@ -20,7 +20,7 @@ class Yarn:
         
         # Connect to Unified Memory
         try:
-            from HoloLoom.memory.unified import UnifiedMemory
+            from HoloLoom.core.memory.unified import UnifiedMemory
             self.memory = UnifiedMemory()
             self.has_memory = True
         except ImportError:

@@ -19,7 +19,7 @@ Benefits:
 - Smarter deduplication (semantic similarity, not just text matching)
 
 Example:
-    from HoloLoom.memory.mrf_consolidation import create_consolidation_mrf_prompt
+    from HoloLoom.core.memory.mrf_consolidation import create_consolidation_mrf_prompt
 
     # Fact extraction with MRF
     prompt = create_consolidation_mrf_prompt(
@@ -37,8 +37,8 @@ from HoloLoom.prompting.unified_mrf import (
     MetapromptConfig,
     ModelProvider
 )
-from HoloLoom.memory.consolidation import ConsolidationStrategy
-from HoloLoom.protocols.types import MemoryShard
+from HoloLoom.core.memory.consolidation import ConsolidationStrategy
+from HoloLoom.core.protocols.types import MemoryShard
 
 logger = logging.getLogger(__name__)
 

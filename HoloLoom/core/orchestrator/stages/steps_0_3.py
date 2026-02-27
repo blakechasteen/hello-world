@@ -30,11 +30,11 @@ from datetime import datetime, timedelta
 from typing import Callable, Optional, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.orchestrator.context import WeavingContext
-    from HoloLoom.protocols.types import Query
-    from HoloLoom.loom.command import LoomCommand
-    from HoloLoom.chrono.trigger import ChronoTrigger, TemporalWindow
-    from HoloLoom.memory.graph import KG
+    from HoloLoom.core.orchestrator.context import WeavingContext
+    from HoloLoom.core.protocols.types import Query
+    from HoloLoom.core.loom.command import LoomCommand
+    from HoloLoom.core.chrono.trigger import ChronoTrigger, TemporalWindow
+    from HoloLoom.core.memory.graph import KG
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +97,7 @@ async def execute_step0_meta_prompt(
         enhanced_text = await proto_llm_call(ctx.query.text)
 
         # Create new Query with enhanced text, preserving metadata
-        from HoloLoom.protocols.types import Query
+        from HoloLoom.core.protocols.types import Query
         enhanced_metadata = dict(ctx.query.metadata) if ctx.query.metadata else {}
         enhanced_metadata['original_query'] = ctx.original_query_text
         enhanced_metadata['enhanced'] = True
@@ -222,7 +222,7 @@ async def execute_step2_chrono_trigger(
         emit_stage_event(2, "Chrono Trigger", None)
 
     # Import chrono types
-    from HoloLoom.chrono.trigger import ChronoTrigger, TemporalWindow
+    from HoloLoom.core.chrono.trigger import ChronoTrigger, TemporalWindow
 
     # Create a minimal config for Chrono using pattern spec timeout
     pipeline_timeout = ctx.pattern_spec.pipeline_timeout if ctx.pattern_spec else 30.0

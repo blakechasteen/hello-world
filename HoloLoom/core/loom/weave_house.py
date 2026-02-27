@@ -19,11 +19,11 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Tuple
 import logging
 
-from HoloLoom.loom.base_loom import BaseLoom
-from HoloLoom.loom.protocol import Loom, COLLECTIVE, DreamInsight
-from HoloLoom.loom.consensus import LoomConsensus, Tension, Resolution
-from HoloLoom.fabric.fabric import Fabric
-from HoloLoom.protocols.department import (
+from HoloLoom.core.loom.base_loom import BaseLoom
+from HoloLoom.core.loom.protocol import Loom, COLLECTIVE, DreamInsight
+from HoloLoom.core.loom.consensus import LoomConsensus, Tension, Resolution
+from HoloLoom.core.fabric.fabric import Fabric
+from HoloLoom.core.protocols.department import (
     DepartmentRequest,
     DepartmentResponse,
     ConfidenceMetadata,
@@ -736,7 +736,7 @@ def create_weave_house(
         Configured WeaveHouse
     """
     if looms is None:
-        from HoloLoom.loom.core_looms import create_all_looms
+        from HoloLoom.core.loom.core_looms import create_all_looms
         looms = create_all_looms(**kwargs)
 
     consensus = LoomConsensus()

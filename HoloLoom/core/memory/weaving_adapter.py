@@ -25,26 +25,26 @@ from datetime import datetime, timedelta
 import hashlib
 
 # Shared types
-from HoloLoom.protocols.types import MemoryShard, Query
+from HoloLoom.core.protocols.types import MemoryShard, Query
 
 # Try importing various memory backends
 try:
-    from HoloLoom.memory.unified import UnifiedMemory, RecallStrategy, Memory as UnifiedMemoryObj
+    from HoloLoom.core.memory.unified import UnifiedMemory, RecallStrategy, Memory as UnifiedMemoryObj
     UNIFIED_MEMORY_AVAILABLE = True
 except ImportError:
     UNIFIED_MEMORY_AVAILABLE = False
     UnifiedMemory = None
 
 try:
-    from HoloLoom.memory.backend_factory import create_memory_backend
-    from HoloLoom.memory.protocol import Memory, MemoryQuery, Strategy
+    from HoloLoom.core.memory.backend_factory import create_memory_backend
+    from HoloLoom.core.memory.protocol import Memory, MemoryQuery, Strategy
     BACKEND_FACTORY_AVAILABLE = True
 except ImportError:
     BACKEND_FACTORY_AVAILABLE = False
     create_memory_backend = None
 
 try:
-    from HoloLoom.chrono.trigger import TemporalWindow
+    from HoloLoom.core.chrono.trigger import TemporalWindow
     CHRONO_AVAILABLE = True
 except ImportError:
     CHRONO_AVAILABLE = False

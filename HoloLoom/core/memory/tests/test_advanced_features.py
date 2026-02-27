@@ -17,8 +17,8 @@ import time
 from typing import Dict, List
 import networkx as nx
 
-from HoloLoom.memory.interleaved_generation import ContextChunk, GenerationToken, StreamMetadata
-from HoloLoom.memory.interleaved_generation_advanced import (
+from HoloLoom.core.memory.interleaved_generation import ContextChunk, GenerationToken, StreamMetadata
+from HoloLoom.core.memory.interleaved_generation_advanced import (
     AdaptiveLLMProtocol,
     AdvancedInterleavedManager,
     AgenticGraphNavigator,

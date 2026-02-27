@@ -9,9 +9,9 @@ import asyncio
 import networkx as nx
 import numpy as np
 
-from HoloLoom.memory.awareness_graph import AwarenessGraph
-from HoloLoom.memory.awareness_types import ActivationStrategy, ActivationBudget
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from HoloLoom.core.memory.awareness_graph import AwarenessGraph
+from HoloLoom.core.memory.awareness_types import ActivationStrategy, ActivationBudget
+from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
 

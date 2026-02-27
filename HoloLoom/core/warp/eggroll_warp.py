@@ -84,7 +84,7 @@ class Warp:
             # print("Warning: SafetyGuardrails not available.")
 
         try:
-            from HoloLoom.resonance.shed import ResonanceShed
+            from HoloLoom.core.resonance.shed import ResonanceShed
             self.resonance = ResonanceShed()
             self.has_resonance = True
         except ImportError:

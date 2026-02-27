@@ -32,14 +32,14 @@ from typing import Dict, List, Any, Optional, Tuple, TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    from HoloLoom.protocols.types import Query, Features, Context, MemoryShard
-    from HoloLoom.protocols import ComplexityLevel, ProvenanceTrace
-    from HoloLoom.loom.command import PatternCard, PatternSpec
-    from HoloLoom.chrono.trigger import ChronoTrigger, TemporalWindow
-    from HoloLoom.resonance.shed import ResonanceShed
-    from HoloLoom.warp.space import WarpSpace
-    from HoloLoom.convergence.engine import ConvergenceEngine, CollapseResult
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+    from HoloLoom.core.protocols.types import Query, Features, Context, MemoryShard
+    from HoloLoom.core.protocols import ComplexityLevel, ProvenanceTrace
+    from HoloLoom.core.loom.command import PatternCard, PatternSpec
+    from HoloLoom.core.chrono.trigger import ChronoTrigger, TemporalWindow
+    from HoloLoom.core.resonance.shed import ResonanceShed
+    from HoloLoom.core.warp.space import WarpSpace
+    from HoloLoom.core.convergence.engine import ConvergenceEngine, CollapseResult
+    from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
     from HoloLoom.alignment.safety_guardrails import SafetyDecision, ActionRequest
 
 

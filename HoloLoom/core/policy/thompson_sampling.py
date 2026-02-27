@@ -14,7 +14,7 @@ from typing import Any, Dict, Optional, Tuple
 import numpy as np
 
 # Import BanditStrategy from shared types (no circular dependency)
-from HoloLoom.protocols.types import BanditStrategy
+from HoloLoom.core.protocols.types import BanditStrategy
 
 
 class TSBandit:

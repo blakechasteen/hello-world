@@ -22,11 +22,11 @@ from typing import List, Optional, Dict, Any, Set
 from datetime import datetime, timedelta
 from collections import defaultdict, deque
 
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+from HoloLoom.core.protocols.types import Query, MemoryShard
+from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.config import Config
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.recursive.scratchpad import Scratchpad
+from HoloLoom.core.recursive.scratchpad import Scratchpad
 
 from .loop_integration import (
     LearningLoopEngine,

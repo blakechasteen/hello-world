@@ -61,7 +61,7 @@ from HoloLoom.utils.time_bucket import TimeInput, time_bucket, to_utc_datetime
 try:
     from holoLoom.memory.graph import KGEdge
 except ImportError:
-    from HoloLoom.memory.graph import KGEdge
+    from HoloLoom.core.memory.graph import KGEdge
 
 
 # ============================================================================
@@ -1226,7 +1226,7 @@ class Neo4jKG:
         Returns:
             RetrievalResult with memories, scores, and metadata
         """
-        from HoloLoom.memory.protocol import Memory, RetrievalResult
+        from HoloLoom.core.memory.protocol import Memory, RetrievalResult
         from datetime import datetime
 
         # Extract query text

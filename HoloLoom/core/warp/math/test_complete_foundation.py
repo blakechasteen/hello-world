@@ -14,7 +14,7 @@ print("=" * 70)
 # Test 1: Analysis modules
 print("\n[1/6] Testing Analysis modules...")
 try:
-    from HoloLoom.warp.math.analysis import (
+    from HoloLoom.core.warp.math.analysis import (
         MetricSpace, ComplexFunction, HilbertSpace,
         LebesgueMeasure, FourierTransform, BrownianMotion,
         Entropy as AnalysisEntropy, RootFinder, RandomVariable
@@ -31,7 +31,7 @@ except Exception as e:
 # Test 2: Algebra modules
 print("\n[2/6] Testing Algebra modules...")
 try:
-    from HoloLoom.warp.math.algebra import (
+    from HoloLoom.core.warp.math.algebra import (
         Group, Ring, Field, GaloisGroup,
         Module, ChainComplex
     )
@@ -47,7 +47,7 @@ except Exception as e:
 # Test 3: Geometry & Physics modules
 print("\n[3/6] Testing Geometry & Physics modules...")
 try:
-    from HoloLoom.warp.math.geometry import (
+    from HoloLoom.core.warp.math.geometry import (
         SmoothManifold, TangentSpace, VectorField,
         RiemannianMetric, Christoffel, Geodesic,
         LagrangianMechanics, HamiltonianMechanics, SymplecticManifold
@@ -65,7 +65,7 @@ except Exception as e:
 # Test 4: Decision & Information modules
 print("\n[4/6] Testing Decision & Information modules...")
 try:
-    from HoloLoom.warp.math.decision import (
+    from HoloLoom.core.warp.math.decision import (
         Entropy, MutualInformation, ChannelCapacity,
         NormalFormGame, NashEquilibrium, AuctionTheory,
         NetworkFlows, DynamicProgramming, InventoryTheory
@@ -83,7 +83,7 @@ except Exception as e:
 # Test 5: Logic modules
 print("\n[5/6] Testing Logic & Foundations modules...")
 try:
-    from HoloLoom.warp.math.logic import (
+    from HoloLoom.core.warp.math.logic import (
         PropositionalLogic, FirstOrderLogic, GodelTheorems,
         TuringMachine, ChurchTuringThesis, ComplexityClasses
     )
@@ -100,10 +100,10 @@ except Exception as e:
 print("\n[6/6] Testing cross-module integration...")
 try:
     # Information theory entropy
-    from HoloLoom.warp.math.decision import Entropy as InfoEntropy
+    from HoloLoom.core.warp.math.decision import Entropy as InfoEntropy
 
     # Probability theory entropy
-    from HoloLoom.warp.math.analysis import Entropy as ProbEntropy
+    from HoloLoom.core.warp.math.analysis import Entropy as ProbEntropy
 
     # They should compute same result
     probs = np.array([0.25, 0.25, 0.25, 0.25])
@@ -111,7 +111,7 @@ try:
     # Note: ProbEntropy is a class, InfoEntropy has static methods
 
     # Riemannian geometry + Hamiltonian mechanics
-    from HoloLoom.warp.math.geometry import RiemannianMetric, HamiltonianMechanics
+    from HoloLoom.core.warp.math.geometry import RiemannianMetric, HamiltonianMechanics
 
     metric = RiemannianMetric.sphere(radius=1.0)
     hamiltonian = HamiltonianMechanics.simple_harmonic_oscillator(m=1.0, k=1.0)

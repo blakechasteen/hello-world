@@ -19,7 +19,7 @@ import time
 from typing import Optional, List, Dict, Any, Callable
 from datetime import datetime
 
-from HoloLoom.protocols.recursive_reasoning import (
+from HoloLoom.core.protocols.recursive_reasoning import (
     RecursiveConfig,
     RecursiveResult,
     RefinementStep,
@@ -27,9 +27,9 @@ from HoloLoom.protocols.recursive_reasoning import (
     ReasoningStrategy,
     StopCondition
 )
-from HoloLoom.convergence.query_decomposition import QueryDecomposer
-from HoloLoom.convergence.refinement_strategies import StrategySelector
-from HoloLoom.convergence.detectors import (
+from HoloLoom.core.convergence.query_decomposition import QueryDecomposer
+from HoloLoom.core.convergence.refinement_strategies import StrategySelector
+from HoloLoom.core.convergence.detectors import (
     create_multi_criteria_detector,
     ConvergenceDetector
 )
@@ -330,7 +330,7 @@ class EnhancedRecursiveReasoner:
         Returns:
             (refined_result, improvement) tuple
         """
-        from HoloLoom.convergence.refinement_strategies import StrategyExecutor
+        from HoloLoom.core.convergence.refinement_strategies import StrategyExecutor
 
         # Get execution parameters for strategy
         params = StrategyExecutor.get_execution_params(strategy)

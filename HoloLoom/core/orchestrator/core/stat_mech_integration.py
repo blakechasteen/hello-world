@@ -32,7 +32,7 @@ from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.protocols.types import MemoryShard
+from HoloLoom.core.protocols.types import MemoryShard
 
 # Check if statistical mechanics is available
 try:

@@ -35,8 +35,8 @@ from datetime import datetime, timedelta
 from collections import defaultdict, deque
 import numpy as np
 
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
-from HoloLoom.reflection.rewards import RewardExtractor, RewardConfig
+from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
+from HoloLoom.core.reflection.rewards import RewardExtractor, RewardConfig
 
 logging.basicConfig(level=logging.INFO)
 
@@ -941,7 +941,7 @@ async def demo():
     print(f"Buffer initialized: {buffer}\n")
 
     # Simulate some weaving cycles
-    from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+    from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
 
     tools = ["answer", "search", "calc", "notion_write"]
     patterns = ["bare", "fast", "fused"]

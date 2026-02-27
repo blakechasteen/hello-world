@@ -14,10 +14,10 @@ import time
 from typing import Dict, Any, Optional
 from datetime import datetime
 
-from HoloLoom.protocols.types import Query
-from HoloLoom.chrono.trigger import ChronoTrigger, TemporalWindow, ExecutionLimits
-from HoloLoom.loom.command import PatternSpec
-from HoloLoom.orchestrator.protocols import StageResult
+from HoloLoom.core.protocols.types import Query
+from HoloLoom.core.chrono.trigger import ChronoTrigger, TemporalWindow, ExecutionLimits
+from HoloLoom.core.loom.command import PatternSpec
+from HoloLoom.core.orchestrator.protocols import StageResult
 
 
 class TemporalControlStage:

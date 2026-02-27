@@ -27,16 +27,16 @@ from datetime import datetime
 import time
 
 # HoloLoom components
-from HoloLoom.recursive.scratchpad_integration import (
+from HoloLoom.core.recursive.scratchpad_integration import (
     ScratchpadOrchestrator,
     ScratchpadConfig
 )
-from HoloLoom.fabric.spacetime import Spacetime
-from HoloLoom.protocols.types import Query, MemoryShard
+from HoloLoom.core.fabric.spacetime import Spacetime
+from HoloLoom.core.protocols.types import Query, MemoryShard
 from HoloLoom.config import Config
 
 # Scratchpad components (standalone, was from Promptly)
-from HoloLoom.recursive.scratchpad import Scratchpad
+from HoloLoom.core.recursive.scratchpad import Scratchpad
 
 logger = logging.getLogger(__name__)
 
@@ -599,7 +599,7 @@ async def weave_with_learning(
         Tuple of (Spacetime, learning_stats)
 
     Usage:
-        from HoloLoom.recursive import weave_with_learning
+        from HoloLoom.core.recursive import weave_with_learning
 
         spacetime, stats = await weave_with_learning(
             Query(text="How does Thompson Sampling work?"),
@@ -632,9 +632,9 @@ if __name__ == "__main__":
     print()
     print("Usage:")
     print("""
-from HoloLoom.recursive import LearningLoopEngine, LearningLoopConfig
+from HoloLoom.core.recursive import LearningLoopEngine, LearningLoopConfig
 from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from HoloLoom.core.protocols.types import Query
 
 config = Config.fast()
 loop_config = LearningLoopConfig(

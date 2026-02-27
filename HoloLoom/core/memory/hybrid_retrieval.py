@@ -28,9 +28,9 @@ import math
 import re
 from collections import Counter
 
-from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.memory.graph import KG
-from HoloLoom.memory.retrieval_result import (
+from HoloLoom.core.protocols.types import MemoryShard
+from HoloLoom.core.memory.graph import KG
+from HoloLoom.core.memory.retrieval_result import (
     RetrievalResultEnhanced,
     RetrievalStatus,
     TraversalResult,

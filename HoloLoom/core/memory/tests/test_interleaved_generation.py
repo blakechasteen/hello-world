@@ -19,7 +19,7 @@ import pytest
 import asyncio
 from typing import List
 
-from HoloLoom.memory.interleaved_generation import (
+from HoloLoom.core.memory.interleaved_generation import (
     InterleavedStreamManager,
     GenerationToken,
     StreamMetadata,
@@ -28,8 +28,8 @@ from HoloLoom.memory.interleaved_generation import (
     LLMProtocol,
     stream_interleaved_expansion_generation
 )
-from HoloLoom.memory.streaming_expansion import ContextChunk
-from HoloLoom.memory.graph import KG, KGEdge
+from HoloLoom.core.memory.streaming_expansion import ContextChunk
+from HoloLoom.core.memory.graph import KG, KGEdge
 
 
 # ============================================================================
@@ -428,7 +428,7 @@ async def test_interleaved_vs_sequential_latency(simple_graph, importance_scores
     """Compare interleaved vs sequential (expand THEN generate) latency."""
     import time
 
-    from HoloLoom.memory.streaming_expansion import StreamingContextBuilder
+    from HoloLoom.core.memory.streaming_expansion import StreamingContextBuilder
 
     # Sequential: Expand all context THEN generate
     sequential_start = time.time()

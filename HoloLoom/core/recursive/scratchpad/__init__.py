@@ -51,26 +51,26 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from enum import Enum
 
-from HoloLoom.recursive.scratchpad.recursive_scratchpad import (
+from HoloLoom.core.recursive.scratchpad.recursive_scratchpad import (
     RecursiveScratchpad,
     Thought,
     ThoughtType,
     DialogueTree,
 )
 
-from HoloLoom.recursive.scratchpad.internal_dialogue import (
+from HoloLoom.core.recursive.scratchpad.internal_dialogue import (
     InternalDialogue,
     DialogueStep,
     DialogueMode,
 )
 
-from HoloLoom.recursive.scratchpad.strange_loops import (
+from HoloLoom.core.recursive.scratchpad.strange_loops import (
     StrangeLoop,
     LoopDetector,
     LevelCrossing,
 )
 
-from HoloLoom.recursive.scratchpad.persistence import (
+from HoloLoom.core.recursive.scratchpad.persistence import (
     ThoughtPersistence,
     SessionManager,
 )

@@ -14,10 +14,10 @@ import time
 from typing import Dict, List, Any, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from HoloLoom.protocols.types import Query
-    from HoloLoom.fabric.spacetime import Spacetime
-    from HoloLoom.loom.command import PatternSpec
-    from HoloLoom.protocols import ComplexityLevel
+    from HoloLoom.core.protocols.types import Query
+    from HoloLoom.core.fabric.spacetime import Spacetime
+    from HoloLoom.core.loom.command import PatternSpec
+    from HoloLoom.core.protocols import ComplexityLevel
 
 logger = logging.getLogger(__name__)
 

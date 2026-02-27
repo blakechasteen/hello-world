@@ -554,7 +554,7 @@ class WarpSpace:
 
 if __name__ == "__main__":
     import asyncio
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 
     async def demo():
         print("="*80)

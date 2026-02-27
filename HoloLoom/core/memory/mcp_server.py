@@ -12,7 +12,7 @@ NEW: Conversational interface with auto-spin signal filtering!
 - Tracks conversation stats and signal/noise ratio
 
 Usage:
-    python -m HoloLoom.memory.mcp_server
+    python -m HoloLoom.core.memory.mcp_server
 
 Configuration:
     Set user_id and backend flags in main() or via environment variables.

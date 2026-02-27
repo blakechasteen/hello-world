@@ -16,7 +16,7 @@ Date: 2025-10-27 (Phase 1 - Task 1.1: Protocol Standardization)
 """
 
 from typing import Protocol, runtime_checkable, List, Dict, Any, Optional
-from HoloLoom.protocols.types import ComplexityLevel
+from HoloLoom.core.protocols.types import ComplexityLevel
 
 
 # ============================================================================

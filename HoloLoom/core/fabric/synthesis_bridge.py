@@ -19,9 +19,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 try:
-    from HoloLoom.fabric.enriched_memory import EnrichedMemory, MemoryEnricher, ReasoningType
-    from HoloLoom.fabric.pattern_extractor import PatternExtractor, Pattern, PatternType
-    from HoloLoom.fabric.data_synthesizer import DataSynthesizer, SynthesisConfig, TrainingExample
+    from HoloLoom.core.fabric.enriched_memory import EnrichedMemory, MemoryEnricher, ReasoningType
+    from HoloLoom.core.fabric.pattern_extractor import PatternExtractor, Pattern, PatternType
+    from HoloLoom.core.fabric.data_synthesizer import DataSynthesizer, SynthesisConfig, TrainingExample
 except ImportError as e:
     print(f"Synthesis modules not available: {e}")
     EnrichedMemory = None

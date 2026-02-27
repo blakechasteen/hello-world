@@ -13,7 +13,7 @@ class Weave:
     def __init__(self):
         # Connect to Reflection Buffer
         try:
-            from HoloLoom.reflection.buffer import ReflectionBuffer
+            from HoloLoom.core.reflection.buffer import ReflectionBuffer
             self.reflection = ReflectionBuffer()
             self.has_reflection = True
         except ImportError:

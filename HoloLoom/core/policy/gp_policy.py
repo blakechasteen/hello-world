@@ -14,7 +14,7 @@ WHY GP BANDITS?
 
 USAGE:
 ```python
-from HoloLoom.policy.gp_policy import GPPolicy, GPConfig
+from HoloLoom.core.policy.gp_policy import GPPolicy, GPConfig
 
 # Create GP-based policy
 policy = GPPolicy(
@@ -67,15 +67,15 @@ from HoloLoom.bandits.gaussian_process_bandits import (
 )
 
 # Import policy components
-from HoloLoom.policy.unified import (
+from HoloLoom.core.policy.unified import (
     UnifiedPolicy,
     create_policy,
     BanditStrategy,
 )
 
 # Import types
-from HoloLoom.protocols.types import Features, Context, ActionPlan
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from HoloLoom.core.protocols.types import Features, Context, ActionPlan
+from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 
 logger = logging.getLogger(__name__)
 

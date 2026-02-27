@@ -32,7 +32,7 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 
-from HoloLoom.memory.streaming_expansion import (
+from HoloLoom.core.memory.streaming_expansion import (
     ContextChunk,
     StreamingContextBuilder,
     stream_context_expansion
@@ -228,7 +228,7 @@ class OllamaStreamLLM(LLMProtocol):
         self._available = False
 
         try:
-            from HoloLoom.memory.awareness.llm_integration import OllamaLLM
+            from HoloLoom.core.memory.awareness.llm_integration import OllamaLLM
             self._ollama_llm = OllamaLLM(model=model, base_url=base_url)
             self._available = self._ollama_llm.is_available()
         except ImportError:
@@ -300,7 +300,7 @@ class AnthropicStreamLLM(LLMProtocol):
         self._available = False
 
         try:
-            from HoloLoom.memory.awareness.llm_integration import AnthropicLLM
+            from HoloLoom.core.memory.awareness.llm_integration import AnthropicLLM
             self._anthropic_llm = AnthropicLLM(model=model, api_key=api_key)
             self._available = self._anthropic_llm.is_available()
         except ImportError:
@@ -372,7 +372,7 @@ class OpenAIStreamLLM(LLMProtocol):
         self._available = False
 
         try:
-            from HoloLoom.memory.awareness.llm_integration import OpenAILLM
+            from HoloLoom.core.memory.awareness.llm_integration import OpenAILLM
             self._openai_llm = OpenAILLM(model=model, api_key=api_key)
             self._available = self._openai_llm.is_available()
         except ImportError:

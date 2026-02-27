@@ -14,7 +14,7 @@ Author: Claude Code (Elegance Pass Refactoring - Phase 7)
 Date: 2025-11-22
 """
 
-from HoloLoom.orchestrator.physics.physics_integration import (
+from HoloLoom.core.orchestrator.physics.physics_integration import (
     weave_with_physics,
 )
 

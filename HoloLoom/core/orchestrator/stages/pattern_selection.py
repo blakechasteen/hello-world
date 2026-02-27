@@ -11,10 +11,10 @@ import logging
 import time
 from typing import Dict, Any, Optional
 
-from HoloLoom.protocols.types import Query
-from HoloLoom.loom.command import LoomCommand, PatternCard, PatternSpec
-from HoloLoom.protocols import ComplexityLevel
-from HoloLoom.orchestrator.protocols import StageResult, WeavingStageProtocol
+from HoloLoom.core.protocols.types import Query
+from HoloLoom.core.loom.command import LoomCommand, PatternCard, PatternSpec
+from HoloLoom.core.protocols import ComplexityLevel
+from HoloLoom.core.orchestrator.protocols import StageResult, WeavingStageProtocol
 
 
 class PatternSelectionStage:

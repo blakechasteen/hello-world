@@ -672,7 +672,7 @@ if __name__ == "__main__":
         print("3. GPU-Accelerated Warp Space")
         print("-" * 40)
 
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 
         async def test_gpu():
             embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])

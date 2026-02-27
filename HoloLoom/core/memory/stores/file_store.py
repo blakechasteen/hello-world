@@ -353,8 +353,8 @@ if __name__ == "__main__":
     sys.path.insert(0, repo_root)
 
     # Now import after path is set
-    from HoloLoom.memory.protocol import Memory, MemoryQuery, RetrievalResult, Strategy
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from HoloLoom.core.memory.protocol import Memory, MemoryQuery, RetrievalResult, Strategy
+    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 
     async def main():
         print("="*80)

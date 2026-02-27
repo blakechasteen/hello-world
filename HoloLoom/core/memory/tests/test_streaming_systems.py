@@ -23,14 +23,14 @@ except ImportError:
     NETWORKX_AVAILABLE = False
     nx = None
 
-from HoloLoom.memory.streaming_expansion import (
+from HoloLoom.core.memory.streaming_expansion import (
     StreamingContextBuilder,
     ContextChunk,
     ChunkYieldStrategy,
     stream_context_expansion,
     StreamingResult
 )
-from HoloLoom.memory.interleaved_generation import (
+from HoloLoom.core.memory.interleaved_generation import (
     InterleavedStreamManager,
     GenerationToken,
     StreamMetadata,
@@ -38,7 +38,7 @@ from HoloLoom.memory.interleaved_generation import (
     MockLLM,
     LLMProtocol
 )
-from HoloLoom.memory.adaptive_expansion import (
+from HoloLoom.core.memory.adaptive_expansion import (
     RelevanceScorer,
     BudgetTracker,
     AdaptiveExpander

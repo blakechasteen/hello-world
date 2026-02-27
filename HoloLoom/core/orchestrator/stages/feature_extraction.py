@@ -14,12 +14,12 @@ import logging
 import time
 from typing import Dict, Any, Optional, List
 
-from HoloLoom.protocols.types import Query, Features
-from HoloLoom.resonance.shed import ResonanceShed
+from HoloLoom.core.protocols.types import Query, Features
+from HoloLoom.core.resonance.shed import ResonanceShed
 from HoloLoom.motif.base import create_motif_detector
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
-from HoloLoom.loom.command import PatternSpec
-from HoloLoom.orchestrator.protocols import StageResult
+from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings, SpectralFusion
+from HoloLoom.core.loom.command import PatternSpec
+from HoloLoom.core.orchestrator.protocols import StageResult
 
 
 class FeatureExtractionStage:
@@ -150,7 +150,7 @@ class FeatureExtractionStage:
 
         # Use zero-copy embeddings if enabled
         elif self.config.enable_zero_copy_embeddings:
-            from HoloLoom.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
+            from HoloLoom.core.embedding.zero_copy import ZeroCopyMatryoshkaEmbeddings
             self.logger.info(
                 f"  [4a] Zero-copy embeddings enabled "
                 f"(cache={self.config.zero_copy_cache_path})"

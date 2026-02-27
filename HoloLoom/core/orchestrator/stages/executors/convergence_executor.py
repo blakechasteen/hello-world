@@ -19,10 +19,10 @@ from __future__ import annotations
 import logging
 from typing import Callable, Optional, Any, TYPE_CHECKING
 
-from HoloLoom.orchestrator.protocols import BaseStageExecutor
+from HoloLoom.core.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
-    from HoloLoom.orchestrator.context import WeavingContext
+    from HoloLoom.core.orchestrator.context import WeavingContext
     from HoloLoom.config import Config
     from HoloLoom.tools.executor import ToolExecutor
 
@@ -97,7 +97,7 @@ class ConvergenceExecutor(BaseStageExecutor):
         start = self._start_timing()
 
         # Import and delegate to pure function
-        from HoloLoom.orchestrator.stages.steps_7_9 import execute_step7_convergence
+        from HoloLoom.core.orchestrator.stages.steps_7_9 import execute_step7_convergence
 
         ctx = await execute_step7_convergence(
             ctx=ctx,

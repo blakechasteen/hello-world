@@ -13,7 +13,7 @@ import numpy as np
 from typing import List, Tuple, Optional
 from dataclasses import dataclass
 
-from HoloLoom.protocols.recursive_reasoning import (
+from HoloLoom.core.protocols.recursive_reasoning import (
     RefinementStep,
     ConvergenceDetectorProtocol
 )

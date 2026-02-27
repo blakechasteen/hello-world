@@ -31,7 +31,7 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Set, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
-from HoloLoom.memory.interleaved_generation import (
+from HoloLoom.core.memory.interleaved_generation import (
     ContextChunk,
     GenerationToken,
     InterleavedResult,
@@ -40,7 +40,7 @@ from HoloLoom.memory.interleaved_generation import (
     StreamMetadata,
     StreamMode
 )
-from HoloLoom.memory.streaming_expansion import stream_context_expansion
+from HoloLoom.core.memory.streaming_expansion import stream_context_expansion
 
 
 # ============================================================================
@@ -733,7 +733,7 @@ class OllamaAdaptiveLLM(AdaptiveLLMProtocol):
         self._available = False
 
         try:
-            from HoloLoom.memory.awareness.llm_integration import OllamaLLM
+            from HoloLoom.core.memory.awareness.llm_integration import OllamaLLM
             self._ollama_llm = OllamaLLM(model=model, base_url=base_url)
             self._available = self._ollama_llm.is_available()
             if self._available:
@@ -850,7 +850,7 @@ class AnthropicAdaptiveLLM(AdaptiveLLMProtocol):
             return
 
         try:
-            from HoloLoom.memory.awareness.llm_integration import AnthropicLLM
+            from HoloLoom.core.memory.awareness.llm_integration import AnthropicLLM
             self._anthropic_llm = AnthropicLLM(api_key=self.api_key, model=model)
             self._available = True
             logger.info(f"AnthropicAdaptiveLLM initialized (model={model})")
@@ -953,7 +953,7 @@ class OpenAIAdaptiveLLM(AdaptiveLLMProtocol):
             return
 
         try:
-            from HoloLoom.memory.awareness.llm_integration import OpenAILLM
+            from HoloLoom.core.memory.awareness.llm_integration import OpenAILLM
             self._openai_llm = OpenAILLM(api_key=self.api_key, model=model)
             self._available = True
             logger.info(f"OpenAIAdaptiveLLM initialized (model={model})")

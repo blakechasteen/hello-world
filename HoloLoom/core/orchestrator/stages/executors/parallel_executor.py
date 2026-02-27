@@ -25,12 +25,12 @@ from __future__ import annotations
 import logging
 from typing import Callable, Optional, Any, TYPE_CHECKING
 
-from HoloLoom.orchestrator.protocols import BaseStageExecutor
+from HoloLoom.core.orchestrator.protocols import BaseStageExecutor
 
 if TYPE_CHECKING:
-    from HoloLoom.orchestrator.context import WeavingContext
+    from HoloLoom.core.orchestrator.context import WeavingContext
     from HoloLoom.config import Config
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
     from HoloLoom.alignment.safety_guardrails import SafetyGuardrails
 
 
@@ -125,7 +125,7 @@ class ParallelFeatureExecutor(BaseStageExecutor):
         start = self._start_timing()
 
         # Import pure functions
-        from HoloLoom.orchestrator.stages.steps_4_6 import (
+        from HoloLoom.core.orchestrator.stages.steps_4_6 import (
             execute_steps_4_6_parallel,
             execute_step5_5_warp_compute,
             execute_step6_5_beta_wave_packing,

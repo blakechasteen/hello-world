@@ -16,9 +16,9 @@ import numpy as np
 
 try:
     from HoloLoom.motif.xbar_chunker import UniversalGrammarChunker, XBarPhrase
-    from HoloLoom.warp.merge import MergeOperator
+    from HoloLoom.core.warp.merge import MergeOperator
     from HoloLoom.performance.compositional_cache import CompositionalCache
-    from HoloLoom.memory.awareness_graph import AwarenessGraph
+    from HoloLoom.core.memory.awareness_graph import AwarenessGraph
     UG_AVAILABLE = True
 except ImportError:
     UG_AVAILABLE = False

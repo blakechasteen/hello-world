@@ -19,8 +19,8 @@ from typing import List, Dict, Any, Optional
 from unittest.mock import Mock, MagicMock, AsyncMock
 
 # Import conductor and protocols (moved to HoloLoom/memory/symphony/ in Dec 2025)
-from HoloLoom.memory.symphony.conductor import MemoryConductor
-from HoloLoom.memory.symphony.protocol import (
+from HoloLoom.core.memory.symphony.conductor import MemoryConductor
+from HoloLoom.core.memory.symphony.protocol import (
     MemoryQuery,
     MemoryResult,
     MemoryStrategy,

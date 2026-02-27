@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 
-from HoloLoom.reflection.buffer import ReflectionBuffer
+from HoloLoom.core.reflection.buffer import ReflectionBuffer
 from HoloLoom.performance.cache import QueryCache
 from HoloLoom.routing.classifier_factory import create_classifier, create_fast_path_router
 

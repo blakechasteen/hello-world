@@ -25,10 +25,10 @@ import logging
 import re
 import random
 
-from HoloLoom.loom.base_loom import BaseLoom
-from HoloLoom.loom.protocol import REFUSE, CorrectionInsight, DiscoveryInsight
-from HoloLoom.fabric.fabric import Fabric
-from HoloLoom.protocols.department import (
+from HoloLoom.core.loom.base_loom import BaseLoom
+from HoloLoom.core.loom.protocol import REFUSE, CorrectionInsight, DiscoveryInsight
+from HoloLoom.core.fabric.fabric import Fabric
+from HoloLoom.core.protocols.department import (
     DepartmentRequest,
     DepartmentResponse,
     ConfidenceMetadata,

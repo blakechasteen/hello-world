@@ -17,8 +17,8 @@ import numpy as np
 import networkx as nx
 import uuid
 
-from HoloLoom.memory.protocol import Memory
-from HoloLoom.memory.awareness_types import (
+from HoloLoom.core.memory.protocol import Memory
+from HoloLoom.core.memory.awareness_types import (
     SemanticPerception,
     ActivationStrategy,
     ActivationBudget,
@@ -26,7 +26,7 @@ from HoloLoom.memory.awareness_types import (
     EdgeType,
     EdgeMetadata
 )
-from HoloLoom.memory.activation_field import ActivationField
+from HoloLoom.core.memory.activation_field import ActivationField
 
 # Multi-modal input support (graceful degradation if not available)
 try:

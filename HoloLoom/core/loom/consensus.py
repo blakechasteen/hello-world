@@ -27,8 +27,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from HoloLoom.fabric.fabric import Fabric, Tension, Resolution
-from HoloLoom.fabric.spacetime import WeavingTrace
+from HoloLoom.core.fabric.fabric import Fabric, Tension, Resolution
+from HoloLoom.core.fabric.spacetime import WeavingTrace
 
 logger = logging.getLogger(__name__)
 

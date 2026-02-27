@@ -13,8 +13,8 @@ Steps:
 
 from typing import List, Dict, Any
 
-from HoloLoom.protocols import ComplexityLevel
-from HoloLoom.orchestrator.strategies.base import BaseStrategy
+from HoloLoom.core.protocols import ComplexityLevel
+from HoloLoom.core.orchestrator.strategies.base import BaseStrategy
 
 
 class FastStrategy(BaseStrategy):

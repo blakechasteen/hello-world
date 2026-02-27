@@ -29,8 +29,8 @@ from typing import List, Dict, Tuple, Optional, Protocol
 import numpy as np
 
 # Import only from shared types and embedding
-from HoloLoom.protocols.types import Query, Context, Features, Vector
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from HoloLoom.core.protocols.types import Query, Context, Features, Vector
+from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 
 # Optional BM25 dependency
 try:

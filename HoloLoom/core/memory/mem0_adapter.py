@@ -613,7 +613,7 @@ if __name__ == "__main__":
         print("=== Hybrid Memory Demo ===\n")
         
         # Note: This demo requires HoloLoom components
-        # Run from repository root with: python -m HoloLoom.memory.mem0_adapter
+        # Run from repository root with: python -m HoloLoom.core.memory.mem0_adapter
         
         print("Demo would show:")
         print("1. Initialize HoloLoom memory")

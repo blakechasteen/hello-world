@@ -53,7 +53,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # Import only from shared types and embedding (package-relative)
-from HoloLoom.protocols.types import Features, Context, ActionPlan, BanditStrategy
+from HoloLoom.core.protocols.types import Features, Context, ActionPlan, BanditStrategy
 from HoloLoom.alignment.safety_guardrails import (
     ActionCategory,
     ActionRequest,
@@ -64,10 +64,10 @@ from HoloLoom.alignment.safety_guardrails import (
 
 # Initialize logger
 logger = logging.getLogger(__name__)
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 
 # Import Thompson Sampling from dedicated module (Elegance Track - Day 3)
-from HoloLoom.policy.thompson_sampling import TSBandit
+from HoloLoom.core.policy.thompson_sampling import TSBandit
 
 
 # ============================================================================
@@ -83,7 +83,7 @@ def maybe_device() -> torch.device:
 # Neural Network Components
 # ============================================================================
 # Note: PolicyEngine protocol is defined in HoloLoom.protocols
-# Use: from HoloLoom.protocols import PolicyEngine
+# Use: from HoloLoom.core.protocols import PolicyEngine
 
 class CustomMHA(nn.Module):
     """
@@ -752,7 +752,7 @@ def create_policy(
     # Upgrade to Bayesian if requested
     if use_bayesian:
         try:
-            from HoloLoom.policy.bayesian_policy import create_bayesian_policy
+            from HoloLoom.core.policy.bayesian_policy import create_bayesian_policy
 
             bayesian_policy = create_bayesian_policy(
                 base_policy=base_policy,

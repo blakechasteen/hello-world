@@ -27,11 +27,11 @@ import networkx as nx
 
 # Import only from shared types layer
 # Use the project's shared types module (avoid shadowing stdlib `types`)
-from HoloLoom.protocols.types import Vector
+from HoloLoom.core.protocols.types import Vector
 
 # Import Riemannian geometry for geodesic distance support
 try:
-    from HoloLoom.warp.riemannian_geometry import (
+    from HoloLoom.core.warp.riemannian_geometry import (
         ProductManifold, ManifoldConfig, ManifoldType
     )
     _HAVE_RIEMANNIAN = True
@@ -385,7 +385,7 @@ class SpectralFusion:
         if self.use_wavelets and kg_sub.number_of_nodes() > 1:
             try:
                 # Import spectral methods
-                from HoloLoom.warp.spectral_methods import GraphLaplacian, SpectralWavelet, LaplacianType
+                from HoloLoom.core.warp.spectral_methods import GraphLaplacian, SpectralWavelet, LaplacianType
 
                 # Create temporary KG wrapper for spectral methods
                 # We need to wrap the NetworkX graph in a KG-like object
@@ -432,7 +432,7 @@ class SpectralFusion:
         diffusion_variance = 0.0
         if self.use_diffusion_maps and kg_sub.number_of_nodes() > self.diffusion_map_dims:
             try:
-                from HoloLoom.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
+                from HoloLoom.core.warp.spectral_methods import GraphLaplacian, DiffusionMap, LaplacianType
 
                 class _TempKG:
                     def __init__(self, G):

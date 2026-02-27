@@ -30,9 +30,9 @@ from pathlib import Path
 import warnings
 
 try:
-    from HoloLoom.protocols.types import MemoryShard, Query
-    from HoloLoom.memory.protocol import Memory, MemoryQuery, RetrievalResult
-    from HoloLoom.memory.neo4j_graph import Neo4jKG, Neo4jConfig
+    from HoloLoom.core.protocols.types import MemoryShard, Query
+    from HoloLoom.core.memory.protocol import Memory, MemoryQuery, RetrievalResult
+    from HoloLoom.core.memory.neo4j_graph import Neo4jKG, Neo4jConfig
 except ImportError:
     warnings.warn("HoloLoom types not available - using fallbacks")
     MemoryShard = None
@@ -187,7 +187,7 @@ class MultiModalMemory:
         # Initialize backends
         if enable_neo4j:
             try:
-                from HoloLoom.memory.neo4j_graph import Neo4jKG
+                from HoloLoom.core.memory.neo4j_graph import Neo4jKG
                 self.graph_store = Neo4jKG(neo4j_config or Neo4jConfig.from_env())
             except Exception as e:
                 warnings.warn(f"Neo4j unavailable: {e}. Using in-memory only.")
@@ -501,7 +501,7 @@ class MultiModalMemory:
     
     def _shard_to_memory(self, shard: Any, modality_meta: ModalityMetadata) -> Memory:
         """Convert MemoryShard to Memory."""
-        from HoloLoom.memory.protocol import Memory
+        from HoloLoom.core.memory.protocol import Memory
         
         return Memory(
             id=shard.id,

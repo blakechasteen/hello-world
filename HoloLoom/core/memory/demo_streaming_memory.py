@@ -22,10 +22,10 @@ from typing import List, AsyncIterator
 from dataclasses import dataclass
 
 # Note: In real use, these would be actual imports
-# from HoloLoom.memory.multi_wave_engine import MultiWaveMemoryEngine, BrainWaveMode
-# from HoloLoom.protocols.types import MemoryShard
-from HoloLoom.memory.multi_wave_engine import MultiWaveMemoryEngine, BrainWaveMode
-from HoloLoom.memory.spring_dynamics_engine import SpringEngineConfig
+# from HoloLoom.core.memory.multi_wave_engine import MultiWaveMemoryEngine, BrainWaveMode
+# from HoloLoom.core.protocols.types import MemoryShard
+from HoloLoom.core.memory.multi_wave_engine import MultiWaveMemoryEngine, BrainWaveMode
+from HoloLoom.core.memory.spring_dynamics_engine import SpringEngineConfig
 
 
 # ============================================================================

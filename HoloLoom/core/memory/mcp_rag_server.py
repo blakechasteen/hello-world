@@ -11,7 +11,7 @@ Modern RAG (Retrieval-Augmented Generation) server with:
 This is the "cool" RAG you asked for - modern, production-ready, and powerful.
 
 Usage:
-    python -m HoloLoom.memory.mcp_rag_server
+    python -m HoloLoom.core.memory.mcp_rag_server
 
 Features:
     - rag_query: Main RAG endpoint with all features

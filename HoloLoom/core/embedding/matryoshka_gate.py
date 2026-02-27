@@ -333,7 +333,7 @@ if __name__ == "__main__":
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     sys.path.insert(0, repo_root)
 
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from HoloLoom.core.embedding.spectral import MatryoshkaEmbeddings
 
     print("="*80)
     print("MATRYOSHKA GATING DEMO")

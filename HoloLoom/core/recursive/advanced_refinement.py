@@ -36,10 +36,10 @@ from enum import Enum
 from typing import List, Optional, Dict, Any, Callable, Union
 from datetime import datetime
 
-from HoloLoom.protocols.types import Query
-from HoloLoom.fabric.spacetime import Spacetime, WeavingTrace
+from HoloLoom.core.protocols.types import Query
+from HoloLoom.core.fabric.spacetime import Spacetime, WeavingTrace
 from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.recursive.scratchpad import Scratchpad, ScratchpadEntry
+from HoloLoom.core.recursive.scratchpad import Scratchpad, ScratchpadEntry
 from HoloLoom.prompting.unified_mrf import (
     UnifiedMRF,
     RefinementStrategyType,
@@ -57,7 +57,7 @@ class RefinementStrategy(Enum):
 
         Migration:
             # Old (deprecated)
-            from HoloLoom.recursive.advanced_refinement import RefinementStrategy
+            from HoloLoom.core.recursive.advanced_refinement import RefinementStrategy
             strategy = RefinementStrategy.REFINE
 
             # New (recommended)
@@ -80,7 +80,7 @@ class RefinementStrategy(Enum):
     def __init__(self, value):
         """Emit deprecation warning on initialization."""
         warnings.warn(
-            "RefinementStrategy from HoloLoom.recursive.advanced_refinement is deprecated. "
+            "RefinementStrategy from HoloLoom.core.recursive.advanced_refinement is deprecated. "
             "Use RefinementStrategyType from HoloLoom.prompting.unified_mrf instead. "
             "This enum will be removed in v2.0.0.",
             DeprecationWarning,
@@ -692,7 +692,7 @@ async def refine_with_strategy(
         )
 
         # Deprecated: RefinementStrategy (emits warning)
-        from HoloLoom.recursive.advanced_refinement import RefinementStrategy
+        from HoloLoom.core.recursive.advanced_refinement import RefinementStrategy
 
         result = await refine_with_strategy(
             query=query,
