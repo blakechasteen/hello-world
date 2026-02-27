@@ -43,7 +43,7 @@ dependencies = [
     "networkx>=3.0",
     "httpx>=0.24.0",
     "pydantic>=2.0.0",
-    "asyncio",
+    "sentence-transformers>=2.2.0,<3.0.0",
 ]
 
 [project.urls]
@@ -52,9 +52,123 @@ dependencies = [
 "Source Code" = "https://github.com/blakechasteen/mythRL"
 "Release Notes" = "https://github.com/blakechasteen/mythRL/blob/master/RELEASE_v1.0.0.md"
 
+# ============================================================================
+# Optional Dependency Groups
+# ============================================================================
+# Install with: pip install hololoom[group1,group2]
+# Examples:
+#   pip install hololoom[voice,vision]    # Multimodal features
+#   pip install hololoom[llm]             # All LLM providers
+#   pip install hololoom[production]      # Production backends
+#   pip install hololoom[all]             # Everything
+# ============================================================================
 [project.optional-dependencies]
-nlp = ["spacy>=3.7.0,<4.0.0"]
-production = ["qdrant-client>=1.7.0,<2.0.0", "neo4j>=5.0.0,<6.0.0"]
+
+# --- NLP & Language ---
+nlp = [
+    "spacy>=3.7.0,<4.0.0",
+    "nltk>=3.8.0,<4.0.0",
+]
+
+# --- Scientific Computing ---
+scientific = [
+    "scipy>=1.10.0,<2.0.0",
+    "scikit-learn>=1.3.0,<2.0.0",
+]
+
+# --- Production Database Backends ---
+production = [
+    "qdrant-client>=1.7.0,<2.0.0",
+    "neo4j>=5.0.0,<6.0.0",
+]
+
+# --- Computer Vision ---
+vision = [
+    "Pillow>=10.0.0,<11.0.0",
+    "opencv-python>=4.8.0,<5.0.0",
+    "pytesseract>=0.3.10,<1.0.0",
+]
+
+# --- Voice & Audio ---
+voice = [
+    "openai-whisper>=20230918",
+    "pyttsx3>=2.90,<3.0.0",
+    "sounddevice>=0.4.6,<1.0.0",
+]
+
+# --- LLM Providers ---
+llm = [
+    "openai>=1.0.0,<2.0.0",
+    "anthropic>=0.18.0,<1.0.0",
+    "google-generativeai>=0.3.0,<1.0.0",
+    "ollama>=0.1.0,<1.0.0",
+]
+
+# --- Web Server & APIs ---
+web = [
+    "fastapi>=0.104.0,<1.0.0",
+    "uvicorn>=0.24.0,<1.0.0",
+    "websockets>=12.0,<14.0",
+    "aiohttp>=3.9.0,<4.0.0",
+]
+
+# --- Matrix / ChatOps ---
+chat = [
+    "matrix-nio>=0.21.0,<1.0.0",
+]
+
+# --- Document Processing ---
+documents = [
+    "openpyxl>=3.1.0,<4.0.0",
+    "beautifulsoup4>=4.12.0,<5.0.0",
+    "lxml>=4.9.0,<6.0.0",
+    "python-docx>=1.0.0,<2.0.0",
+    "python-pptx>=0.6.21,<1.0.0",
+    "PyPDF2>=3.0.0,<4.0.0",
+]
+
+# --- Data Analysis ---
+data = [
+    "pandas>=2.0.0,<3.0.0",
+    "PyYAML>=6.0,<7.0",
+]
+
+# --- Security & Cryptography ---
+security = [
+    "cryptography>=41.0.0,<43.0.0",
+    "PyNaCl>=1.5.0,<2.0.0",
+]
+
+# --- Visualization ---
+viz = [
+    "matplotlib>=3.7.0,<4.0.0",
+    "plotly>=5.17.0,<6.0.0",
+]
+
+# --- Terminal UI ---
+tui = [
+    "rich>=13.0.0,<14.0.0",
+    "textual>=0.40.0,<1.0.0",
+]
+
+# --- RL Training ---
+training = [
+    "gymnasium>=0.28.0,<1.0.0",
+]
+
+# --- Distributed Computing ---
+distributed = [
+    "vllm>=0.2.0",
+    "ray>=2.8.0,<3.0.0",
+]
+
+# --- Browser Automation ---
+automation = [
+    "playwright>=1.40.0,<2.0.0",
+    "dspy-ai>=2.0.0,<3.0.0",
+]
+
+# --- Development Tools ---
 dev = [
     "pytest>=7.4.0,<8.0.0",
     "pytest-asyncio>=0.21.0,<1.0.0",
@@ -65,14 +179,19 @@ dev = [
     "isort>=5.13.0,<6.0.0",
     "pre-commit>=3.5.0,<4.0.0",
 ]
-viz = ["matplotlib>=3.7.0,<4.0.0", "plotly>=5.17.0,<6.0.0"]
+
+# --- Convenience Bundles ---
+# "pip install hololoom[multimodal]" = voice + vision + documents
+multimodal = [
+    "hololoom[voice,vision,documents]",
+]
+# "pip install hololoom[server]" = web + llm + chat
+server = [
+    "hololoom[web,llm,chat]",
+]
+# "pip install hololoom[all]" = everything except dev and distributed
 all = [
-    "spacy>=3.7.0,<4.0.0",
-    "qdrant-client>=1.7.0,<2.0.0",
-    "neo4j>=5.0.0,<6.0.0",
-    "scipy>=1.10.0,<2.0.0",
-    "matplotlib>=3.7.0,<4.0.0",
-    "plotly>=5.17.0,<6.0.0",
+    "hololoom[nlp,scientific,production,vision,voice,llm,web,chat,documents,data,security,viz,tui,training,automation]",
 ]
 
 [project.scripts]
@@ -116,7 +235,13 @@ ensure_newline_before_comments = true
 skip_gitignore = true
 skip = [".venv", "build", "dist", ".tox"]
 known_first_party = ["HoloLoom"]
-known_third_party = ["torch", "numpy", "gymnasium", "spacy", "networkx", "pytest"]
+known_third_party = [
+    "torch", "numpy", "gymnasium", "spacy", "networkx", "pytest",
+    "sentence_transformers", "scipy", "sklearn", "httpx", "pydantic",
+    "openai", "anthropic", "ollama", "fastapi", "uvicorn",
+    "PIL", "cv2", "whisper", "rich", "textual",
+    "neo4j", "qdrant_client", "matplotlib", "plotly", "pandas",
+]
 
 # ============================================================================
 # Ruff Configuration (fast linter, replaces flake8)
@@ -181,13 +306,46 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 module = [
     "torch",
+    "torch.*",
     "numpy",
     "gymnasium",
     "spacy",
+    "spacy.*",
     "networkx",
     "nltk",
     "sklearn",
+    "sklearn.*",
     "scipy",
+    "scipy.*",
+    "sentence_transformers",
+    "sentence_transformers.*",
+    "openai",
+    "anthropic",
+    "ollama",
+    "PIL",
+    "PIL.*",
+    "cv2",
+    "whisper",
+    "rich",
+    "rich.*",
+    "textual",
+    "textual.*",
+    "fastapi",
+    "uvicorn",
+    "websockets",
+    "aiohttp",
+    "neo4j",
+    "qdrant_client",
+    "matplotlib",
+    "matplotlib.*",
+    "plotly",
+    "plotly.*",
+    "pandas",
+    "bs4",
+    "lxml",
+    "pydantic",
+    "pydantic.*",
+    "httpx",
 ]
 ignore_missing_imports = true
 
