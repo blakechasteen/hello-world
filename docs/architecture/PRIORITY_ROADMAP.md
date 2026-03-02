@@ -30,7 +30,7 @@ Phase 3: Advanced Features 🔮
 - Real-time trajectory tracking
 
 **Files:**
-- `HoloLoom/semantic_calculus/*`
+- `hololoom/semantic_calculus/*`
 - All demos ready to run
 
 **Next step:** Run demos, verify they work
@@ -56,7 +56,7 @@ Without semantic-aware policy, the system can't:
 ### 1.1: Create SemanticState Integration (Week 1-2)
 
 ```python
-# HoloLoom/semantic_calculus/semantic_state.py
+# hololoom/semantic_calculus/semantic_state.py
 
 @dataclass
 class SemanticState:
@@ -92,7 +92,7 @@ class SemanticState:
 ### 1.2: Integrate with WeavingOrchestrator (Week 2-3)
 
 ```python
-# HoloLoom/weaving_orchestrator.py
+# hololoom/weaving_orchestrator.py
 
 class WeavingOrchestrator:
     def __init__(self, cfg, shards=None, memory=None):
@@ -100,7 +100,7 @@ class WeavingOrchestrator:
 
         # NEW: Add semantic calculus if enabled
         if cfg.enable_semantic_awareness:
-            from HoloLoom.semantic_calculus.matryoshka_streaming import (
+            from hololoom.semantic_calculus.matryoshka_streaming import (
                 MatryoshkaSemanticCalculus
             )
             self.semantic_calculus = MatryoshkaSemanticCalculus(
@@ -140,7 +140,7 @@ class WeavingOrchestrator:
 ### 1.3: Enhance Policy to Use Semantic Features (Week 3-4)
 
 ```python
-# HoloLoom/policy/unified.py
+# hololoom/policy/unified.py
 
 class NeuralCore(nn.Module):
     def __init__(self, ..., use_semantic_state=False):
@@ -177,7 +177,7 @@ class NeuralCore(nn.Module):
 ### 1.4: Semantic-Aware Tool Selection (Week 4)
 
 ```python
-# HoloLoom/policy/semantic_tools.py
+# hololoom/policy/semantic_tools.py
 
 class SemanticToolSelector:
     """Use semantic state to guide tool selection."""

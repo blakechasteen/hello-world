@@ -14,7 +14,7 @@ A production-ready visualization foundation for red team attack tracking has bee
 ## Deliverable 1: Core Implementation
 
 ### Location
-`HoloLoom/redteam/visualization/`
+`hololoom/redteam/visualization/`
 
 ### Files Provided
 
@@ -146,11 +146,11 @@ A production-ready visualization foundation for red team attack tracking has bee
 ## Deliverable 3: Working Examples
 
 ### Demo Script
-**Location**: `HoloLoom/redteam/visualization/demo_attack_trajectory.py`
+**Location**: `hololoom/redteam/visualization/demo_attack_trajectory.py`
 **Status**: ✅ Existing and functional
 
 ### Demo Output
-**Location**: `HoloLoom/redteam/visualization/demo_output_production.html`
+**Location**: `hololoom/redteam/visualization/demo_output_production.html`
 **Status**: ✅ Reference output included
 
 ### Code Examples in Documentation
@@ -299,7 +299,7 @@ def render_attack_trajectory(
 
 ### Production Code Files
 ```
-HoloLoom/redteam/visualization/
+hololoom/redteam/visualization/
 ├── __init__.py                  39 lines   ✅
 └── attack_trajectory.py         1,034 lines ✅
 Total: 1,073 lines
@@ -319,7 +319,7 @@ Total: 2,200 lines
 
 ### Supporting Files (Existing)
 ```
-HoloLoom/redteam/visualization/
+hololoom/redteam/visualization/
 ├── demo_attack_trajectory.py                   370 lines
 ├── demo_output_production.html                 (reference)
 ├── README.md                                   650 lines
@@ -362,7 +362,7 @@ Total: 1,470 lines
 ### Absolute Quickest (30 seconds)
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 html = render_attack_trajectory(
     strategies=["a", "b"],
@@ -378,7 +378,7 @@ with open("report.html", "w") as f:
 ### Run Demo (1 minute)
 
 ```bash
-cd HoloLoom/redteam/visualization
+cd hololoom/redteam/visualization
 PYTHONPATH=../.. python demo_attack_trajectory.py
 ```
 

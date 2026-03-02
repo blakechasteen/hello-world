@@ -112,7 +112,7 @@ Every enterprise will run AI agent swarms by 2026. They'll need infrastructure t
 
 ### 1. Multi-Agent Orchestration (30,000+ lines)
 
-#### Federation System (`HoloLoom/federation/`)
+#### Federation System (`hololoom/federation/`)
 **Lines**: 10,000+
 **Purpose**: P2P network for distributed agent coordination
 
@@ -122,7 +122,7 @@ Every enterprise will run AI agent swarms by 2026. They'll need infrastructure t
 - **Wire Protocol**: Efficient agent-to-agent communication
 
 ```python
-from HoloLoom.federation import FederationNode, SwimGossip
+from hololoom.federation import FederationNode, SwimGossip
 
 # Create federated node
 node = FederationNode(
@@ -138,7 +138,7 @@ await node.join(bootstrap_nodes=["agent-000:8080"])
 await node.broadcast(message={"task": "analyze", "data": ...})
 ```
 
-#### Agent System (`HoloLoom/agents/`)
+#### Agent System (`hololoom/agents/`)
 **Lines**: 8,938
 **Purpose**: Multi-scale agent orchestration
 
@@ -148,7 +148,7 @@ await node.broadcast(message={"task": "analyze", "data": ...})
 - **Governance**: Budget and priority enforcement
 
 ```python
-from HoloLoom.agents import AgentOrchestrator, MCTSPlanner
+from hololoom.agents import AgentOrchestrator, MCTSPlanner
 
 orchestrator = AgentOrchestrator(
     planner=MCTSPlanner(exploration_constant=1.414),
@@ -163,7 +163,7 @@ orchestrator = AgentOrchestrator(
 result = await orchestrator.execute(task="research_topic", context={...})
 ```
 
-#### Chaining System (`HoloLoom/chaining/`)
+#### Chaining System (`hololoom/chaining/`)
 **Lines**: 3,500+
 **Purpose**: Workflow pattern orchestration
 
@@ -189,7 +189,7 @@ result = await orchestrator.execute(task="research_topic", context={...})
 | `debate` | agents debate → judge decides |
 
 ```python
-from HoloLoom.chaining import Chain, ChainStep
+from hololoom.chaining import Chain, ChainStep
 
 # Define workflow
 chain = Chain(
@@ -206,7 +206,7 @@ chain = Chain(
 result = await chain.execute(query="Analyze Thompson Sampling tradeoffs")
 ```
 
-#### Eggroll Distributed (`HoloLoom/eggroll/`)
+#### Eggroll Distributed (`hololoom/eggroll/`)
 **Lines**: 5,000+
 **Purpose**: Distributed worker management
 
@@ -216,7 +216,7 @@ result = await chain.execute(query="Analyze Thompson Sampling tradeoffs")
 - **Checkpointing**: Fault-tolerant execution
 
 ```python
-from HoloLoom.eggroll import EggrollCluster, WorkerConfig
+from hololoom.eggroll import EggrollCluster, WorkerConfig
 
 cluster = EggrollCluster(
     workers=[
@@ -242,7 +242,7 @@ result = await cluster.submit(
 
 Every agent call goes through the amplifier layer for automatic optimization.
 
-#### Query Cache (`HoloLoom/memory/query_cache.py`)
+#### Query Cache (`hololoom/memory/query_cache.py`)
 **Impact**: 100x speedup for repeated queries
 
 ```python
@@ -254,11 +254,11 @@ spacetime = await agent.weave(query)
 spacetime = await agent.weave(query)
 ```
 
-#### Fast Path Routing (`HoloLoom/routing/`)
+#### Fast Path Routing (`hololoom/routing/`)
 **Impact**: 10-15x speedup for simple queries
 
 ```python
-from HoloLoom.routing import QueryClassifier, QueryComplexity
+from hololoom.routing import QueryClassifier, QueryComplexity
 
 classifier = QueryClassifier()
 result = classifier.classify("What is Python?")
@@ -272,11 +272,11 @@ else:
     response = await full_orchestrator(query)
 ```
 
-#### Context Packing (`HoloLoom/context_packing/`)
+#### Context Packing (`hololoom/context_packing/`)
 **Impact**: 40-90% token savings
 
 ```python
-from HoloLoom.context_packing import ContextPacker, ContextPackerConfig
+from hololoom.context_packing import ContextPacker, ContextPackerConfig
 
 packer = ContextPacker(ContextPackerConfig.balanced())
 
@@ -291,7 +291,7 @@ print(f"Compression: {result.compression_ratio:.1%}")
 # Output: Compression: 55.0% (45% token savings)
 ```
 
-#### Multi-Model Routing (`HoloLoom/integrations/langchain/`)
+#### Multi-Model Routing (`hololoom/integrations/langchain/`)
 **Supported Providers**: 9+
 
 | Provider | Models | Best For |
@@ -307,7 +307,7 @@ print(f"Compression: {result.compression_ratio:.1%}")
 | **Replicate** | Custom models | Specialized |
 
 ```python
-from HoloLoom.integrations.langchain import MultiProviderLLM
+from hololoom.integrations.langchain import MultiProviderLLM
 
 # Capability-based routing
 llm = MultiProviderLLM(
@@ -329,12 +329,12 @@ response = await llm.generate(prompt, task_type="vision")
 
 Built-in compliance, audit, and control for enterprise deployments.
 
-#### Audit Trail (`HoloLoom/alignment/audit_trail.py`)
+#### Audit Trail (`hololoom/alignment/audit_trail.py`)
 **Lines**: 562
 **Purpose**: Complete decision provenance
 
 ```python
-from HoloLoom.alignment import AuditTrail
+from hololoom.alignment import AuditTrail
 
 audit = AuditTrail(persist_path="./audit_logs")
 
@@ -360,12 +360,12 @@ entries = await audit.search(
 )
 ```
 
-#### Safety Guardrails (`HoloLoom/alignment/safety_guardrails.py`)
+#### Safety Guardrails (`hololoom/alignment/safety_guardrails.py`)
 **Lines**: 580
 **Purpose**: Risk-based action gating
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails, RiskLevel
+from hololoom.alignment import SafetyGuardrails, RiskLevel
 
 guardrails = SafetyGuardrails(
     enable_human_in_loop=True,
@@ -383,10 +383,10 @@ if result.risk_level == RiskLevel.CRITICAL:
     # Human approval required
 ```
 
-#### Token Budget Enforcement (`HoloLoom/agents/governance.py`)
+#### Token Budget Enforcement (`hololoom/agents/governance.py`)
 
 ```python
-from HoloLoom.agents import GovernanceConfig
+from hololoom.agents import GovernanceConfig
 
 governance = GovernanceConfig(
     max_tokens=100000,          # Per agent
@@ -404,10 +404,10 @@ if result.budget_exceeded:
     print(f"Stopped: {result.tokens_used}/{governance.max_tokens} tokens")
 ```
 
-#### Circuit Breakers (`HoloLoom/context/circuit_breaker.py`)
+#### Circuit Breakers (`hololoom/context/circuit_breaker.py`)
 
 ```python
-from HoloLoom.context import CircuitBreaker, CircuitBreakerConfig
+from hololoom.context import CircuitBreaker, CircuitBreakerConfig
 
 breaker = CircuitBreaker(
     CircuitBreakerConfig(
@@ -423,10 +423,10 @@ async with breaker.protect("openai_api"):
     # If 5 failures, circuit opens and fast-fails
 ```
 
-#### Rate Limiting (`HoloLoom/context/rate_limiter.py`)
+#### Rate Limiting (`hololoom/context/rate_limiter.py`)
 
 ```python
-from HoloLoom.context import RateLimiter
+from hololoom.context import RateLimiter
 
 limiter = RateLimiter(
     global_qps=100,           # 100 queries/second total
@@ -445,10 +445,10 @@ async with limiter.acquire(session_id="user-123"):
 
 Persistent, learning, provenance-tracked memory for every agent.
 
-#### Thompson Sampling Learning (`HoloLoom/policy/unified.py`)
+#### Thompson Sampling Learning (`hololoom/policy/unified.py`)
 
 ```python
-from HoloLoom.policy import create_policy, BanditStrategy
+from hololoom.policy import create_policy, BanditStrategy
 
 policy = create_policy(
     bandit_strategy=BanditStrategy.BAYESIAN_BLEND,
@@ -464,10 +464,10 @@ stats = policy.bandit.get_stats()
 print(f"Tool preferences: {stats}")
 ```
 
-#### Memory Consolidation (`HoloLoom/memory/consolidation.py`)
+#### Memory Consolidation (`hololoom/memory/consolidation.py`)
 
 ```python
-from HoloLoom.memory import MemoryConsolidator
+from hololoom.memory import MemoryConsolidator
 
 consolidator = MemoryConsolidator(
     consolidation_interval_minutes=60,
@@ -484,10 +484,10 @@ stats = await consolidator.consolidate_once()
 print(f"Facts extracted: {stats['facts_extracted']}")
 ```
 
-#### Hot Pattern Feedback (`HoloLoom/recursive/hot_pattern_feedback.py`)
+#### Hot Pattern Feedback (`hololoom/recursive/hot_pattern_feedback.py`)
 
 ```python
-from HoloLoom.recursive import HotPatternTracker
+from hololoom.recursive import HotPatternTracker
 
 tracker = HotPatternTracker()
 
@@ -524,9 +524,9 @@ pip install -e .
 
 ```python
 import asyncio
-from HoloLoom.agents import AgentOrchestrator
-from HoloLoom.chaining import Chain, ChainStep
-from HoloLoom.alignment import SafetyGuardrails, AuditTrail
+from hololoom.agents import AgentOrchestrator
+from hololoom.chaining import Chain, ChainStep
+from hololoom.alignment import SafetyGuardrails, AuditTrail
 
 async def main():
     # Create infrastructure
@@ -564,8 +564,8 @@ asyncio.run(main())
 ### Multi-Model Routing
 
 ```python
-from HoloLoom.integrations.langchain import MultiProviderLLM
-from HoloLoom.agents import Agent
+from hololoom.integrations.langchain import MultiProviderLLM
+from hololoom.agents import Agent
 
 # Create multi-model router
 llm = MultiProviderLLM(
@@ -592,8 +592,8 @@ result = await agent.execute("What is 2+2?")
 ### Distributed Execution
 
 ```python
-from HoloLoom.eggroll import EggrollCluster
-from HoloLoom.agents import AgentPool
+from hololoom.eggroll import EggrollCluster
+from hololoom.agents import AgentPool
 
 # Create distributed cluster
 cluster = EggrollCluster(
@@ -623,7 +623,7 @@ results = await pool.map(
 ### Prometheus Metrics
 
 ```python
-from HoloLoom.chatops.handlers import PrometheusMetrics
+from hololoom.chatops.handlers import PrometheusMetrics
 
 metrics = PrometheusMetrics()
 
@@ -641,7 +641,7 @@ app.mount("/metrics", metrics.app)
 ### WebSocket Progress
 
 ```python
-from HoloLoom.chatops.handlers import WebSocketProgress
+from hololoom.chatops.handlers import WebSocketProgress
 
 progress = WebSocketProgress()
 
@@ -656,7 +656,7 @@ await progress.subscribe(pattern="agent:agent-001:*")
 
 ### Grafana Dashboard
 
-Import `HoloLoom/chatops/dashboards/hololoom_agents.json` for:
+Import `hololoom/chatops/dashboards/hololoom_agents.json` for:
 - Agent throughput over time
 - Token budget utilization
 - Latency percentiles (p50, p95, p99)

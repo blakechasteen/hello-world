@@ -2,7 +2,7 @@
 
 **Created**: 2025-12-01
 **Status**: Implementation Complete (18 tests created)
-**Location**: `HoloLoom/tests/integration/test_cross_component_integration.py`
+**Location**: `hololoom/tests/integration/test_cross_component_integration.py`
 
 ## Overview
 
@@ -315,15 +315,15 @@ test_cross_component_integration.py
 Several tests are failing due to import issues:
 
 1. **RAG import errors**:
-   - `from HoloLoom.rag import SimpleRAG` may be failing
+   - `from hololoom.rag import SimpleRAG` may be failing
    - Need to verify RAG module structure
 
 2. **Routing import errors**:
-   - `from HoloLoom.routing import QueryClassifier` may need adjustment
-   - `from HoloLoom.routing.learning import PatternMiner` path verification needed
+   - `from hololoom.routing import QueryClassifier` may need adjustment
+   - `from hololoom.routing.learning import PatternMiner` path verification needed
 
 3. **Policy import errors**:
-   - `from HoloLoom.policy.unified import create_policy` should be validated
+   - `from hololoom.policy.unified import create_policy` should be validated
 
 ### Next Steps
 
@@ -337,13 +337,13 @@ Several tests are failing due to import issues:
 
 ```bash
 # Run all cross-component integration tests
-pytest HoloLoom/tests/integration/test_cross_component_integration.py -v
+pytest hololoom/tests/integration/test_cross_component_integration.py -v
 
 # Run specific test class
-pytest HoloLoom/tests/integration/test_cross_component_integration.py::TestRAGMemoryIntegration -v
+pytest hololoom/tests/integration/test_cross_component_integration.py::TestRAGMemoryIntegration -v
 
 # Run specific test
-pytest HoloLoom/tests/integration/test_cross_component_integration.py::TestErrorPropagation::test_memory_backend_failure_graceful_degradation -v
+pytest hololoom/tests/integration/test_cross_component_integration.py::TestErrorPropagation::test_memory_backend_failure_graceful_degradation -v
 ```
 
 ## Test Design Principles
@@ -407,5 +407,5 @@ pytest HoloLoom/tests/integration/test_cross_component_integration.py::TestError
 ## References
 
 - **HoloLoom Architecture**: See `CLAUDE.md` for complete system overview
-- **Test Organization**: See `HoloLoom/tests/README.md` (if exists)
-- **Integration Patterns**: See existing integration tests in `HoloLoom/tests/integration/`
+- **Test Organization**: See `hololoom/tests/README.md` (if exists)
+- **Integration Patterns**: See existing integration tests in `hololoom/tests/integration/`

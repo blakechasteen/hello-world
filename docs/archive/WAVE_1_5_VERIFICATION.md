@@ -109,7 +109,7 @@ curl http://localhost:8001/api/memory/entity/test_entity
 ## Code Integration Points
 
 ### Imports
-**File**: `HoloLoom/web_dashboard/workflow_executor.py`
+**File**: `hololoom/web_dashboard/workflow_executor.py`
 **Line 24**: Added `import uuid`
 **Line 30**: Added `File, UploadFile` to FastAPI imports
 
@@ -135,7 +135,7 @@ All endpoints follow this pattern for missing SpinningWheel:
 
 ```python
 try:
-    from HoloLoom.spinningWheel import spin
+    from hololoom.spinningWheel import spin
     shards = await spin(...)
 except ImportError:
     logger.warning("SpinningWheel not available")
@@ -304,7 +304,7 @@ http://localhost:8001/redoc
 - ✅ Ready for production testing
 
 **Files Modified**: 1
-- `HoloLoom/web_dashboard/workflow_executor.py` (+95 lines)
+- `hololoom/web_dashboard/workflow_executor.py` (+95 lines)
 
 **Files Created**: 2
 - `WAVE_1_5_ENDPOINTS_SUMMARY.md` (documentation)
@@ -323,7 +323,7 @@ http://localhost:8001/redoc
 
 **Start Server**:
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 ```
 

@@ -18,7 +18,7 @@ Like biological breathing, this creates asymmetric cycles that prevent constant 
 
 ### 1. ChronoTrigger - Breathing Rhythm
 
-**Location**: `HoloLoom/chrono/trigger.py`
+**Location**: `hololoom/chrono/trigger.py`
 
 **What It Does**:
 - Orchestrates inhale/exhale/rest cycles
@@ -68,7 +68,7 @@ chrono.adjust_breathing_rate(0.5)  # 2x slower (complex reasoning)
 
 ### 2. WarpSpace - Sparsity Enforcement
 
-**Location**: `HoloLoom/warp/space.py`
+**Location**: `hololoom/warp/space.py`
 
 **What It Does**:
 - Selectively tensions threads (only top K active)
@@ -112,7 +112,7 @@ await warp.tension(threads, sparsity=0.7)
 
 ### 3. ResonanceShed - Pressure Relief
 
-**Location**: `HoloLoom/resonance/shed.py`
+**Location**: `hololoom/resonance/shed.py`
 
 **What It Does**:
 - Monitors feature density (how many extractors active)
@@ -167,7 +167,7 @@ plasma = await shed.weave(query)
 
 ### 4. ConvergenceEngine - Entropy Injection
 
-**Location**: `HoloLoom/convergence/engine.py`
+**Location**: `hololoom/convergence/engine.py`
 
 **What It Does**:
 - Injects "fresh air" (controlled noise) into decisions
@@ -226,7 +226,7 @@ result = engine.collapse(neural_probs, inject_entropy=True)
 
 ### 5. ReflectionBuffer - Consolidation
 
-**Location**: `HoloLoom/reflection/buffer.py`
+**Location**: `hololoom/reflection/buffer.py`
 
 **What It Does**:
 - Deep consolidation phase (like REM sleep)

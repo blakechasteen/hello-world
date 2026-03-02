@@ -494,7 +494,7 @@ curl http://localhost:8000/api/recommendations
 - Edward Tufte principles (Visualization design)
 
 **Inspired by**:
-- HoloLoom Tufte visualizations (`HoloLoom/visualization/`)
+- HoloLoom Tufte visualizations (`hololoom/visualization/`)
 - Elle Core operational intelligence (`elle/`)
 - Coz farm operations (`coz/`)
 

@@ -39,8 +39,8 @@ pip install numba
 
 ```python
 import asyncio
-from HoloLoom.warp import WarpSpace
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.warp import WarpSpace
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 async def basic_example():
     # Initialize
@@ -89,7 +89,7 @@ Operations: 2
 ### Step 2: Advanced - Curved Manifolds
 
 ```python
-from HoloLoom.warp.advanced import RiemannianManifold
+from hololoom.warp.advanced import RiemannianManifold
 
 async def manifold_example():
     embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
@@ -121,7 +121,7 @@ asyncio.run(manifold_example())
 ### Step 3: Quantum Decisions
 
 ```python
-from HoloLoom.warp.advanced import QuantumWarpOperations
+from hololoom.warp.advanced import QuantumWarpOperations
 
 async def quantum_example():
     embedder = MatryoshkaEmbeddings(sizes=[96, 192, 384])
@@ -165,7 +165,7 @@ asyncio.run(quantum_example())
 ### Step 4: GPU Acceleration (if available)
 
 ```python
-from HoloLoom.warp.optimized import GPUWarpSpace
+from hololoom.warp.optimized import GPUWarpSpace
 
 async def gpu_example():
     import torch
@@ -205,9 +205,9 @@ asyncio.run(gpu_example())
 ```python
 import asyncio
 import numpy as np
-from HoloLoom.warp import WarpSpace
-from HoloLoom.warp.advanced import RiemannianManifold
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.warp import WarpSpace
+from hololoom.warp.advanced import RiemannianManifold
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 async def semantic_search():
     # Initialize
@@ -278,9 +278,9 @@ python test_warp_drive_complete.py
 python demos/warp_drive_showcase.py
 
 # Test individual modules
-python HoloLoom/warp/space.py
-python HoloLoom/warp/advanced.py
-python HoloLoom/warp/optimized.py
+python hololoom/warp/space.py
+python hololoom/warp/advanced.py
+python hololoom/warp/optimized.py
 ```
 
 ---
@@ -342,10 +342,10 @@ responses = [generate(q, c) for q, c in zip(queries, contexts)]
 
 ## Next Steps
 
-1. **Read the full docs:** `HoloLoom/warp/README.md`
+1. **Read the full docs:** `hololoom/warp/README.md`
 2. **Explore demos:** `demos/warp_drive_showcase.py`
-3. **Check advanced ops:** `HoloLoom/warp/advanced.py`
-4. **Optimize for production:** `HoloLoom/warp/optimized.py`
+3. **Check advanced ops:** `hololoom/warp/advanced.py`
+4. **Optimize for production:** `hololoom/warp/optimized.py`
 
 ---
 
@@ -385,11 +385,11 @@ print(f"CUDA available: {torch.cuda.is_available()}")
 warp = WarpSpace(embedder, scales=[96])  # Faster
 
 # Or use sparse tensors
-from HoloLoom.warp.optimized import SparseTensorField
+from hololoom.warp.optimized import SparseTensorField
 sparse = SparseTensorField(dense, threshold=0.1)
 
 # Or enable memory pooling
-from HoloLoom.warp.optimized import TensorMemoryPool
+from hololoom.warp.optimized import TensorMemoryPool
 pool = TensorMemoryPool()
 ```
 
@@ -446,4 +446,4 @@ pool = TensorMemoryPool()
 
 **You're ready! The Warp Drive awaits.** 🚀
 
-*For questions, see `HoloLoom/warp/README.md` or run the demos.*
+*For questions, see `hololoom/warp/README.md` or run the demos.*

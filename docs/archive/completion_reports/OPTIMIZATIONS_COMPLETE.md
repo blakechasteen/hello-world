@@ -50,7 +50,7 @@ These optimizations enable:
 ### Usage
 
 ```python
-from HoloLoom.chatops import PatternTuner
+from hololoom.chatops import PatternTuner
 
 # Initialize tuner
 tuner = PatternTuner()
@@ -162,7 +162,7 @@ tuner.save("pattern_config.json")
 ### Usage
 
 ```python
-from HoloLoom.chatops import PerformanceOptimizer
+from hololoom.chatops import PerformanceOptimizer
 
 # Initialize optimizer
 optimizer = PerformanceOptimizer(
@@ -292,7 +292,7 @@ resources = optimizer.get_resource_usage()
 #### Define Commands via Decorator
 
 ```python
-from HoloLoom.chatops import CustomCommandManager, CommandContext
+from hololoom.chatops import CustomCommandManager, CommandContext
 
 manager = CustomCommandManager()
 
@@ -377,7 +377,7 @@ help_text = manager.get_help("deploy")
 
 ```python
 # my_custom_commands.py
-from HoloLoom.chatops.custom_commands import manager
+from hololoom.chatops.custom_commands import manager
 
 @manager.command(
     name="ticket",
@@ -403,7 +403,7 @@ async def check_oncall(ctx):
 ### Integration with Matrix Bot
 
 ```python
-from HoloLoom.chatops import MatrixBot, CustomCommandManager
+from hololoom.chatops import MatrixBot, CustomCommandManager
 
 bot = MatrixBot(config)
 cmd_manager = CustomCommandManager()
@@ -541,7 +541,7 @@ custom_commands:
 ### Pattern Tuning Tests
 
 ```bash
-python HoloLoom/chatops/pattern_tuning.py
+python hololoom/chatops/pattern_tuning.py
 
 # Output:
 # ✓ Configured 6 pattern categories
@@ -553,7 +553,7 @@ python HoloLoom/chatops/pattern_tuning.py
 ### Performance Tests
 
 ```bash
-python HoloLoom/chatops/performance_optimizer.py
+python hololoom/chatops/performance_optimizer.py
 
 # Output:
 # Cache Statistics:
@@ -570,7 +570,7 @@ python HoloLoom/chatops/performance_optimizer.py
 ### Custom Commands Tests
 
 ```bash
-python HoloLoom/chatops/custom_commands.py
+python hololoom/chatops/custom_commands.py
 
 # Output:
 # ✓ Registered 3 commands
@@ -587,12 +587,12 @@ python HoloLoom/chatops/custom_commands.py
 
 ```python
 # OLD
-from HoloLoom.chatops import ProactiveAgent
+from hololoom.chatops import ProactiveAgent
 agent = ProactiveAgent()
 insights = agent.process_messages(messages, conv_id)
 
 # NEW - with tuning
-from HoloLoom.chatops import ProactiveAgent, PatternTuner
+from hololoom.chatops import ProactiveAgent, PatternTuner
 
 tuner = PatternTuner()
 tuner.load("pattern_config.json")  # Load custom config
@@ -605,7 +605,7 @@ insights = agent.process_messages(messages, conv_id)
 
 ```python
 # Wrap ChatOps orchestrator
-from HoloLoom.chatops import ChatOpsOrchestrator, PerformanceOptimizer
+from hololoom.chatops import ChatOpsOrchestrator, PerformanceOptimizer
 
 optimizer = PerformanceOptimizer()
 
@@ -622,7 +622,7 @@ class OptimizedChatOpsOrchestrator(ChatOpsOrchestrator):
 ### Register Custom Commands
 
 ```python
-from HoloLoom.chatops import CustomCommandManager
+from hololoom.chatops import CustomCommandManager
 
 # In bot setup
 cmd_manager = CustomCommandManager()
@@ -665,7 +665,7 @@ for cmd in cmd_manager.list_commands():
 ## File Summary
 
 ```
-HoloLoom/chatops/
+hololoom/chatops/
 ├── Optimization Systems (3 files, ~1,810 lines)
 │   ├── pattern_tuning.py          # Pattern detection tuning (560 lines)
 │   ├── performance_optimizer.py   # Response caching & profiling (570 lines)

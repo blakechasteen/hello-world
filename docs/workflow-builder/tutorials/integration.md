@@ -68,7 +68,7 @@ docker-compose ps
 ### 1b. Start the Workflow Executor
 
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 
 # Expected output:
@@ -121,8 +121,8 @@ Backend Settings:
 ### 2b. Programmatic Configuration
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.apps.workflow_builder.workflow_executor import WorkflowExecutor
+from hololoom.config import Config, MemoryBackend
+from hololoom.apps.workflow_builder.workflow_executor import WorkflowExecutor
 
 # Create FUSED configuration
 config = Config.fused()
@@ -167,7 +167,7 @@ Connect workflows to HoloLoom's persistent memory:
 
 ### 3b. Add Context Retriever Node
 
-Retrieve context from HoloLoom's memory system:
+Retrieve context from hololoom's memory system:
 
 1. From **Memory** palette, drag **Context Retriever** node
 2. Configure:
@@ -399,10 +399,10 @@ Description: RAG + Learning + Safety + Monitoring
 """
 
 import asyncio
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.alignment import SafetyGuardrails, AuditTrail
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.alignment import SafetyGuardrails, AuditTrail
+from hololoom.recursive import FullLearningEngine
 
 
 async def run_integrated_workflow(query: str) -> dict:

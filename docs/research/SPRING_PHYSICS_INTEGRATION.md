@@ -22,7 +22,7 @@ Spring physics provides a **physics-based alternative to BFS graph traversal** f
 ## Quick Start (30 seconds)
 
 ```python
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
 
 # Create system
 system = create_integrated_memory_system()
@@ -111,7 +111,7 @@ E_dissipation = Σ decay × a_i           [dissipation]
 ### Custom Physics Parameters
 
 ```python
-from HoloLoom.memory.spring_graph_retriever import create_spring_config
+from hololoom.memory.spring_graph_retriever import create_spring_config
 
 # Create custom config
 config = create_spring_config(
@@ -158,7 +158,7 @@ system.enable_spring_physics(config=config)
 ### Compare Performance
 
 ```python
-from HoloLoom.memory.spring_graph_retriever import compare_retrievers
+from hololoom.memory.spring_graph_retriever import compare_retrievers
 
 # Run comparison
 comparison = await compare_retrievers(
@@ -175,7 +175,7 @@ print(f"Speedup: {comparison['speedup']:.1f}×")
 ### Activation Visualization
 
 ```python
-from HoloLoom.memory.spring_graph_retriever import SpringPhysicsGraphRetriever
+from hololoom.memory.spring_graph_retriever import SpringPhysicsGraphRetriever
 
 # Create retriever
 retriever = SpringPhysicsGraphRetriever(kg=system.kg)
@@ -238,15 +238,15 @@ When you call `system.enable_spring_physics()`:
 ### Files
 
 **Core Implementation** (2,443 lines):
-- `HoloLoom/memory/spring_dynamics.py` (699 lines) - Spring physics engine
-- `HoloLoom/memory/spring_dynamics_advanced.py` (529 lines) - Advanced features
-- `HoloLoom/memory/spring_dynamics_engine.py` (869 lines) - Full physics engine
-- `HoloLoom/tests/integration/test_spring_activation.py` (346 tests)
+- `hololoom/memory/spring_dynamics.py` (699 lines) - Spring physics engine
+- `hololoom/memory/spring_dynamics_advanced.py` (529 lines) - Advanced features
+- `hololoom/memory/spring_dynamics_engine.py` (869 lines) - Full physics engine
+- `hololoom/tests/integration/test_spring_activation.py` (346 tests)
 
 **Memory System Integration** (755 lines):
-- `HoloLoom/memory/spring_graph_retriever.py` (324 lines) - Retriever + utilities
-- `HoloLoom/memory/spring_memory_scoring.py` (431 lines) - Learning system (NEW!)
-- `HoloLoom/memory/integrated_memory_system.py` (updated) - enable_spring_physics() method
+- `hololoom/memory/spring_graph_retriever.py` (324 lines) - Retriever + utilities
+- `hololoom/memory/spring_memory_scoring.py` (431 lines) - Learning system (NEW!)
+- `hololoom/memory/integrated_memory_system.py` (updated) - enable_spring_physics() method
 
 **Demos**:
 - `demos/demo_memory_system_with_spring_physics.py` - Full comparison demo
@@ -277,7 +277,7 @@ When you call `system.enable_spring_physics()`:
 ### Example 1: Basic Usage
 
 ```python
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
 
 # Create and populate system
 system = create_integrated_memory_system()
@@ -295,7 +295,7 @@ results = await system.retrieve("Bayesian", limit=5)
 ### Example 2: Custom Configuration
 
 ```python
-from HoloLoom.memory.spring_graph_retriever import create_spring_config
+from hololoom.memory.spring_graph_retriever import create_spring_config
 
 # Stronger spreading for broad exploration
 config = create_spring_config(
@@ -310,7 +310,7 @@ system.enable_spring_physics(config=config)
 ### Example 3: Performance Benchmarking
 
 ```python
-from HoloLoom.memory.spring_graph_retriever import compare_retrievers
+from hololoom.memory.spring_graph_retriever import compare_retrievers
 
 # Compare BFS vs Spring Physics
 comparison = await compare_retrievers(system, "exploration strategies")
@@ -358,12 +358,12 @@ HoloLoom's spring physics adds:
 
 ### Import Errors
 
-**Error**: `ModuleNotFoundError: No module named 'HoloLoom.memory.spring_dynamics'`
+**Error**: `ModuleNotFoundError: No module named 'hololoom.memory.spring_dynamics'`
 
 **Solution**:
 ```bash
 # Ensure spring_dynamics.py exists
-ls HoloLoom/memory/spring_dynamics.py
+ls hololoom/memory/spring_dynamics.py
 
 # If missing, reinstall HoloLoom
 pip install -e .
@@ -413,7 +413,7 @@ system.enable_spring_physics(config=config)
 ## Memory Learning System (NEW!)
 
 **Status**: ✅ Complete (November 8, 2025)
-**File**: `HoloLoom/memory/spring_memory_scoring.py` (431 lines)
+**File**: `hololoom/memory/spring_memory_scoring.py` (431 lines)
 
 The spring physics system now **learns from usage patterns** to create a self-improving retrieval system!
 
@@ -441,7 +441,7 @@ Where:
 ### Usage
 
 ```python
-from HoloLoom.memory.spring_memory_scoring import (
+from hololoom.memory.spring_memory_scoring import (
     SpringMemoryScorer,
     AdaptiveSpringRetriever
 )
@@ -554,9 +554,9 @@ If you use spring physics in your research:
 - Full comparison: `demos/demo_memory_system_with_spring_physics.py`
 
 **Source Code**:
-- Spring dynamics: `HoloLoom/memory/spring_dynamics.py`
-- Retriever: `HoloLoom/memory/spring_graph_retriever.py`
-- Tests: `HoloLoom/tests/integration/test_spring_activation.py`
+- Spring dynamics: `hololoom/memory/spring_dynamics.py`
+- Retriever: `hololoom/memory/spring_graph_retriever.py`
+- Tests: `hololoom/tests/integration/test_spring_activation.py`
 
 **GitHub Issues**: https://github.com/blakechasteen/hello-world/issues
 

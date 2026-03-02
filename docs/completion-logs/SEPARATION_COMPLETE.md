@@ -2,7 +2,7 @@
 
 **Date:** 2025-10-27
 **Duration:** ~3 hours
-**Status:** ✅ Successfully separated narrative analyzer from HoloLoom core
+**Status:** ✅ Successfully separated narrative analyzer from hololoom core
 
 ---
 
@@ -38,9 +38,9 @@ hololoom_narrative/
 
 **Updated all imports from:**
 ```python
-from HoloLoom.narrative_intelligence import ...
-from HoloLoom.matryoshka_depth import ...
-from HoloLoom.narrative_cache import ...
+from hololoom.narrative_intelligence import ...
+from hololoom.matryoshka_depth import ...
+from hololoom.narrative_cache import ...
 ```
 
 **To:**
@@ -94,7 +94,7 @@ PYTHONPATH=. python -c "from hololoom_narrative import \
 
 ```
 mythRL/
-├── HoloLoom/                    # FRAMEWORK
+├── hololoom/                    # FRAMEWORK
 │   ├── __init__.py
 │   ├── weaving_shuttle.py
 │   ├── weaving_orchestrator.py

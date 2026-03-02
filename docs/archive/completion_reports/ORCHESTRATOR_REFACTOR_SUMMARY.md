@@ -15,13 +15,13 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 
 **Solution:**
 - Established `HoloLoom.Documentation.types` as the canonical source for all shared types
-- Fixed `HoloLoom/Modules/Features.py` to import from correct location
+- Fixed `hololoom/Modules/Features.py` to import from correct location
 - Removed inline type definitions from orchestrator
 - All modules now import from single source of truth
 
 **Files Modified:**
-- `HoloLoom/orchestrator.py` - Updated imports
-- `HoloLoom/Modules/Features.py` - Fixed import path from `.shared_types` to `HoloLoom.Documentation.types`
+- `hololoom/orchestrator.py` - Updated imports
+- `hololoom/Modules/Features.py` - Fixed import path from `.shared_types` to `HoloLoom.Documentation.types`
 
 ### 2. Policy Initialization Simplification ✓
 
@@ -34,7 +34,7 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 - Reduced code from 239 lines to 46 lines in `_initialize_components()`
 
 **Files Modified:**
-- `HoloLoom/orchestrator.py` - Simplified `_initialize_components()`
+- `hololoom/orchestrator.py` - Simplified `_initialize_components()`
 
 ### 3. Configuration Derivation Helpers ✓
 
@@ -49,7 +49,7 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 - Easier to test and modify
 
 **Files Modified:**
-- `HoloLoom/orchestrator.py` - Added helper functions (lines 51-116)
+- `hololoom/orchestrator.py` - Added helper functions (lines 51-116)
 
 ### 4. Tool Execution Refactoring ✓
 
@@ -62,7 +62,7 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 - Better separation of concerns
 
 **Files Modified:**
-- `HoloLoom/orchestrator.py` - Refactored `ToolExecutor` class (lines 123-203)
+- `hololoom/orchestrator.py` - Refactored `ToolExecutor` class (lines 123-203)
 
 ### 5. Error Handling Consistency ✓
 
@@ -77,7 +77,7 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 - Better debugging information in trace
 
 **Files Modified:**
-- `HoloLoom/orchestrator.py` - Added `_assemble_error_response()` (lines 557-581)
+- `hololoom/orchestrator.py` - Added `_assemble_error_response()` (lines 557-581)
 
 ### 6. Documentation Enhancement ✓
 
@@ -91,7 +91,7 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 - Enhanced usage examples
 
 **Files Modified:**
-- `HoloLoom/orchestrator.py` - Enhanced documentation throughout
+- `hololoom/orchestrator.py` - Enhanced documentation throughout
 
 ### 7. Bug Fixes ✓
 
@@ -104,7 +104,7 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 - Maintained fallback for edge cases
 
 **Files Modified:**
-- `HoloLoom/config.py` - Import from policy module (lines 14-18, 133-148)
+- `hololoom/config.py` - Import from policy module (lines 14-18, 133-148)
 
 #### Bug #2: Shadowed UnifiedPolicy Class
 **Problem:** Line 1219 in `policy/unified.py` had `UnifiedPolicy = SimpleUnifiedPolicy` which shadowed the real dataclass.
@@ -115,7 +115,7 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 - Tests should use `SimpleUnifiedPolicy` directly if needed
 
 **Files Modified:**
-- `HoloLoom/policy/unified.py` - Commented out alias (lines 1218-1221)
+- `hololoom/policy/unified.py` - Commented out alias (lines 1218-1221)
 
 #### Bug #3: Hardcoded Dimension in psi_proj
 **Problem:** `create_policy()` hardcoded `nn.Linear(6, 8)` instead of using `mem_dim`.
@@ -125,7 +125,7 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 - Fixes matrix multiplication errors
 
 **Files Modified:**
-- `HoloLoom/policy/unified.py` - Fixed dimension (line 738)
+- `hololoom/policy/unified.py` - Fixed dimension (line 738)
 
 #### Bug #4: Incorrect Policy API Call
 **Problem:** Orchestrator called `policy.decide(query=..., features=..., context=...)` but API only accepts `(features, context)`.
@@ -136,7 +136,7 @@ Performed a comprehensive cleanup and refactoring of the HoloLoom orchestrator b
 - Extract tool confidence from tool_probs dict
 
 **Files Modified:**
-- `HoloLoom/orchestrator.py` - Fixed `_make_decision()` (lines 464-503)
+- `hololoom/orchestrator.py` - Fixed `_make_decision()` (lines 464-503)
 
 ## Code Quality Improvements
 
@@ -219,10 +219,10 @@ def derive_execution_mode(cfg: Config) -> str:
 
 ## Files Changed
 
-1. **HoloLoom/orchestrator.py** - Complete refactor (661 lines)
-2. **HoloLoom/Modules/Features.py** - Fixed imports
-3. **HoloLoom/policy/unified.py** - Fixed bugs (alias, dimension)
-4. **HoloLoom/config.py** - Consolidated BanditStrategy import
+1. **hololoom/orchestrator.py** - Complete refactor (661 lines)
+2. **hololoom/Modules/Features.py** - Fixed imports
+3. **hololoom/policy/unified.py** - Fixed bugs (alias, dimension)
+4. **hololoom/config.py** - Consolidated BanditStrategy import
 
 ## Performance Impact
 

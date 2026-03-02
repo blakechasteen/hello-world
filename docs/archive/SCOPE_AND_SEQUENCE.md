@@ -49,7 +49,7 @@ Weekly Maintenance (Ongoing):
 
 #### Task 1.1: Protocol Standardization ⚡ HIGH PRIORITY
 **Days 1-3**
-- Move protocols from `dev/` to `HoloLoom/protocols/`
+- Move protocols from `dev/` to `hololoom/protocols/`
 - Standardize: PatternSelectionProtocol, DecisionEngineProtocol, MemoryProtocol
 - Update all implementations to use standard interfaces
 - **Output:** Clean protocol directory structure
@@ -96,7 +96,7 @@ These are **weekly chores** rather than one-time Phase goals:
 - Keep migration guides current
 
 ### Phase 1 Success Criteria ✅
-- [ ] All protocols in `HoloLoom/protocols/`
+- [ ] All protocols in `hololoom/protocols/`
 - [ ] Shuttle architecture integrated
 - [ ] HybridStore as default memory backend
 - [ ] Framework/app separation complete

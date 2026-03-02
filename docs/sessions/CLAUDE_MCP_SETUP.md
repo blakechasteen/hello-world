@@ -183,7 +183,7 @@ Text: Met with Jodi to discuss hive placement for spring expansion...
 
 ### Configure Backend Weights
 
-Edit `HoloLoom/memory/mcp_server.py` → `init_memory()`:
+Edit `hololoom/memory/mcp_server.py` → `init_memory()`:
 
 ```python
 memory = await create_unified_memory(
@@ -196,7 +196,7 @@ memory = await create_unified_memory(
 
 ### Adjust Fusion Strategy
 
-In `HoloLoom/memory/stores/hybrid_store.py`:
+In `hololoom/memory/stores/hybrid_store.py`:
 
 ```python
 HybridMemoryStore(
@@ -219,13 +219,13 @@ Tool(
 
 ## Files Reference
 
-- **Server:** `HoloLoom/memory/mcp_server.py`
-- **Protocol:** `HoloLoom/memory/protocol.py`
+- **Server:** `hololoom/memory/mcp_server.py`
+- **Protocol:** `hololoom/memory/protocol.py`
 - **Config:** `C:\Users\blake\AppData\Roaming\Claude\claude_desktop_config.json`
 - **Docs:** 
-  - `HoloLoom/memory/MCP_SETUP.md` - Detailed setup
-  - `HoloLoom/memory/QUICKSTART.md` - Memory basics
-  - `HoloLoom/memory/REFERENCE.md` - API reference
+  - `hololoom/memory/MCP_SETUP.md` - Detailed setup
+  - `hololoom/memory/QUICKSTART.md` - Memory basics
+  - `hololoom/memory/REFERENCE.md` - API reference
 
 ## Support
 

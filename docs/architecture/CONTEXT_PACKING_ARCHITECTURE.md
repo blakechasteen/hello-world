@@ -2,7 +2,7 @@
 
 **Created**: 2025-11-21
 **Status**: Production Ready
-**Location**: `HoloLoom/awareness/`
+**Location**: `hololoom/awareness/`
 **Total Code**: ~3,427 lines
 
 ---
@@ -476,7 +476,7 @@ Context packing integrates with all 11 memory systems:
 ### Basic Usage (Beta Wave Packer)
 
 ```python
-from HoloLoom.awareness import BetaWavePacker, TokenBudget, ContextElement
+from hololoom.awareness import BetaWavePacker, TokenBudget, ContextElement
 
 # Create packer
 packer = BetaWavePacker()
@@ -510,7 +510,7 @@ print(f"Compression: {packed.compression_ratio:.1%}")
 ### Advanced Usage (Compositional Awareness)
 
 ```python
-from HoloLoom.awareness import CompositionalAwareness, ContextSource
+from hololoom.awareness import CompositionalAwareness, ContextSource
 
 # Create composer
 composer = CompositionalAwareness()
@@ -536,8 +536,8 @@ packed = packer.pack(composed.elements, budget)
 ### Production Integration
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.awareness import BetaWavePacker, TokenBudget
+from hololoom import HoloLoom
+from hololoom.awareness import BetaWavePacker, TokenBudget
 
 async def query_with_packing(query: str, max_tokens: int = 8000):
     async with HoloLoom() as loom:
@@ -737,4 +737,4 @@ Context packing is the **crucial bridge** between HoloLoom's rich 11-system memo
 **Created**: 2025-11-21
 **Documentation**: CONTEXT_PACKING_ARCHITECTURE.md
 **Demo**: `demos/demo_context_packing.py`
-**Code**: `HoloLoom/awareness/*.py` (~3,427 lines)
+**Code**: `hololoom/awareness/*.py` (~3,427 lines)

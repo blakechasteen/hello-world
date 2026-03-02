@@ -295,7 +295,7 @@ High Impact, High Effort:
 1. **Test Matrix Bot** (you opened it for a reason!)
    ```bash
    # Check what's already there
-   cat HoloLoom/chatops/matrix_bot.py
+   cat hololoom/chatops/matrix_bot.py
 
    # See what needs completion
    ```
@@ -339,7 +339,7 @@ High Impact, High Effort:
 
 ## 📝 Notes
 
-**You opened:** `HoloLoom/chatops/matrix_bot.py`
+**You opened:** `hololoom/chatops/matrix_bot.py`
 
 This suggests you might be interested in:
 - Chat integration

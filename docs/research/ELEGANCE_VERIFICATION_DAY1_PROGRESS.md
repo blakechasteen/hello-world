@@ -69,7 +69,7 @@ Each test was creating a new `MatryoshkaEmbeddings(sizes=[96])` instance, loadin
 @pytest.fixture(scope="session")
 def cached_embeddings():
     """Session-scoped embedding model to avoid loading for every test."""
-    from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.embedding.spectral import MatryoshkaEmbeddings
     return MatryoshkaEmbeddings(sizes=[96, 192, 384])
 
 # test_memory_cache.py (3 tests updated)
@@ -109,8 +109,8 @@ Files Created:
 └─ ELEGANCE_VERIFICATION_DAY1_PROGRESS.md (this file)
 
 Files Modified:
-├─ HoloLoom/tests/conftest.py (+14 lines, cached_embeddings fixture)
-└─ HoloLoom/tests/unit/test_memory_cache.py (3 tests updated)
+├─ hololoom/tests/conftest.py (+14 lines, cached_embeddings fixture)
+└─ hololoom/tests/unit/test_memory_cache.py (3 tests updated)
 
 Test Infrastructure:
 ├─ Session-scoped fixture pattern established ✅

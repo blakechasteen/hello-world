@@ -6,7 +6,7 @@ The semantic calculus is now **cleanly integrated** into HoloLoom using a well-o
 
 ## Architecture Layers
 
-### Layer 1: Core Mathematics (`HoloLoom/semantic_calculus/`)
+### Layer 1: Core Mathematics (`hololoom/semantic_calculus/`)
 
 **Pure mathematical operations** - independent of HoloLoom:
 - `flow_calculus.py` - Trajectory computation, derivatives, dynamics
@@ -17,20 +17,20 @@ The semantic calculus is now **cleanly integrated** into HoloLoom using a well-o
 
 **Exports** (direct mathematical usage):
 ```python
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     SemanticFlowCalculus,      # Compute trajectories
     SemanticSpectrum,           # 16D projection
     EthicalSemanticPolicy,      # Ethical analysis
 )
 ```
 
-### Layer 2: Integration Layer (`HoloLoom/semantic_calculus/integration.py`) ✨ NEW
+### Layer 2: Integration Layer (`hololoom/semantic_calculus/integration.py`) ✨ NEW
 
 **Clean adapter between mathematics and HoloLoom** - this is the **organized interface**:
 
 #### Configuration
 ```python
-from HoloLoom.semantic_calculus import SemanticCalculusConfig
+from hololoom.semantic_calculus import SemanticCalculusConfig
 
 # Three presets
 config = SemanticCalculusConfig.fast()          # 8D, no ethics, cache enabled
@@ -54,7 +54,7 @@ config = SemanticCalculusConfig.from_pattern_spec(pattern_spec)
 
 #### Unified Analyzer
 ```python
-from HoloLoom.semantic_calculus import create_semantic_analyzer
+from hololoom.semantic_calculus import create_semantic_analyzer
 
 # Create analyzer (handles all complexity internally)
 analyzer = create_semantic_analyzer(
@@ -84,11 +84,11 @@ stats = get_cache_stats(analyzer)
 
 ### Layer 3: HoloLoom Integration
 
-#### 3.1 Configuration (`HoloLoom/config.py`)
+#### 3.1 Configuration (`hololoom/config.py`)
 
 Added semantic calculus settings to Config class:
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 # Semantic calculus is disabled by default for backward compatibility
 config = Config.fast()
@@ -119,11 +119,11 @@ config.semantic_dimensions = 16
 config.semantic_ethics = True
 ```
 
-#### 3.2 Pattern Cards (`HoloLoom/loom/command.py`)
+#### 3.2 Pattern Cards (`hololoom/loom/command.py`)
 
 SEMANTIC_FLOW pattern card for dedicated semantic analysis:
 ```python
-from HoloLoom.loom.command import PatternCard, SEMANTIC_FLOW_PATTERN
+from hololoom.loom.command import PatternCard, SEMANTIC_FLOW_PATTERN
 
 # Pattern card already exists
 pattern = SEMANTIC_FLOW_PATTERN
@@ -134,7 +134,7 @@ pattern = SEMANTIC_FLOW_PATTERN
 # - semantic_ethics=True
 ```
 
-#### 3.3 ResonanceShed (`HoloLoom/resonance/shed.py`)
+#### 3.3 ResonanceShed (`hololoom/resonance/shed.py`)
 
 **Backward compatible** - accepts both old and new interfaces:
 ```python
@@ -155,16 +155,16 @@ else:
     features = {...}  # manual extraction
 ```
 
-#### 3.4 WeavingShuttle (`HoloLoom/weaving_shuttle.py`)
+#### 3.4 WeavingShuttle (`hololoom/weaving_shuttle.py`)
 
 Uses clean integration layer:
 ```python
 # Old way (removed):
-# from HoloLoom.semantic_calculus import SemanticFlowCalculus
+# from hololoom.semantic_calculus import SemanticFlowCalculus
 # semantic_calculus = SemanticFlowCalculus(embed_fn, enable_cache=True, cache_size=10000)
 
 # New way (organized):
-from HoloLoom.semantic_calculus import create_semantic_analyzer, SemanticCalculusConfig
+from hololoom.semantic_calculus import create_semantic_analyzer, SemanticCalculusConfig
 
 sem_config = SemanticCalculusConfig.from_pattern_spec(pattern_spec)
 semantic_calculus = create_semantic_analyzer(embed_fn, config=sem_config)
@@ -178,10 +178,10 @@ semantic_calculus = create_semantic_analyzer(embed_fn, config=sem_config)
 
 ### Layer 4: User-Facing APIs
 
-#### 4.1 Unified API (`HoloLoom/unified_api.py`)
+#### 4.1 Unified API (`hololoom/unified_api.py`)
 
 ```python
-from HoloLoom.unified_api import HoloLoom
+from hololoom.unified_api import HoloLoom
 
 # Semantic calculus via narrative depth
 loom = await HoloLoom.create(
@@ -197,13 +197,13 @@ depth = await loom.analyze_narrative_depth("Your text...")
 
 ```python
 # Option 1: Quick analysis
-from HoloLoom.semantic_calculus import quick_analysis
+from hololoom.semantic_calculus import quick_analysis
 
 result = quick_analysis(text, embed_fn)
 # Uses fast config internally
 
 # Option 2: Full control
-from HoloLoom.semantic_calculus import create_semantic_analyzer, SemanticCalculusConfig
+from hololoom.semantic_calculus import create_semantic_analyzer, SemanticCalculusConfig
 
 config = SemanticCalculusConfig(
     dimensions=32,
@@ -214,7 +214,7 @@ analyzer = create_semantic_analyzer(embed_fn, config)
 result = analyzer.analyze_text(text)
 ```
 
-#### 4.3 MCP Server (`HoloLoom/semantic_calculus/mcp_server.py`)
+#### 4.3 MCP Server (`hololoom/semantic_calculus/mcp_server.py`)
 
 Exposes 3 tools to Claude Desktop:
 - `analyze_semantic_flow` - Velocity, acceleration, curvature
@@ -224,7 +224,7 @@ Exposes 3 tools to Claude Desktop:
 ## File Organization
 
 ```
-HoloLoom/
+hololoom/
 ├── config.py                              # ✨ Added semantic calculus config
 │   └── Semantic Calculus section (7 fields)
 │
@@ -268,8 +268,8 @@ demos/
 
 ### Pattern 1: Enable in Config (Recommended)
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
 
 config = Config.fast()
 config.enable_semantic_calculus = True  # Single line to enable!
@@ -281,8 +281,8 @@ async with WeavingShuttle(cfg=config) as shuttle:
 
 ### Pattern 2: Use SEMANTIC_FLOW Pattern Card
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.loom.command import LoomCommand, PatternCard
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.loom.command import LoomCommand, PatternCard
 
 async with WeavingShuttle() as shuttle:
     spacetime = await shuttle.weave(
@@ -293,8 +293,8 @@ async with WeavingShuttle() as shuttle:
 
 ### Pattern 3: Direct Semantic Analysis (Standalone)
 ```python
-from HoloLoom.semantic_calculus import create_semantic_analyzer
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.semantic_calculus import create_semantic_analyzer
+from hololoom.embedding.spectral import create_embedder
 
 embedder = create_embedder(sizes=[384])
 embed_fn = lambda words: embedder.encode(words)
@@ -309,7 +309,7 @@ print(f"Ethics: {result['ethics']['virtue_score']}")
 
 ### Pattern 4: Integration with HoloLoom Unified API
 ```python
-from HoloLoom.unified_api import HoloLoom
+from hololoom.unified_api import HoloLoom
 
 loom = await HoloLoom.create(enable_narrative_depth=True)
 depth = await loom.analyze_narrative_depth("Epic story text...")
@@ -343,7 +343,7 @@ print(depth['symbolic_elements']) # Detected symbols
 ### 4. Organized Exports ✅
 ```python
 # Clean imports
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     # Integration layer (recommended)
     create_semantic_analyzer,
     SemanticCalculusConfig,
@@ -369,7 +369,7 @@ from HoloLoom.semantic_calculus import (
 
 ### Cache Statistics
 ```python
-from HoloLoom.semantic_calculus import get_cache_stats
+from hololoom.semantic_calculus import get_cache_stats
 
 stats = get_cache_stats(analyzer)
 print(f"Hit rate: {stats['hit_rate']:.1%}")
@@ -402,7 +402,7 @@ PYTHONPATH=. python demos/narrative_depth_production.py
 
 **Before** (legacy):
 ```python
-from HoloLoom.semantic_calculus import SemanticFlowCalculus
+from hololoom.semantic_calculus import SemanticFlowCalculus
 
 calculus = SemanticFlowCalculus(embed_fn, enable_cache=True, cache_size=10000)
 trajectory = calculus.compute_trajectory(words)
@@ -411,7 +411,7 @@ trajectory = calculus.compute_trajectory(words)
 
 **After** (organized):
 ```python
-from HoloLoom.semantic_calculus import create_semantic_analyzer
+from hololoom.semantic_calculus import create_semantic_analyzer
 
 analyzer = create_semantic_analyzer(embed_fn)
 result = analyzer.analyze_text(text)  # Includes trajectory + features + ethics

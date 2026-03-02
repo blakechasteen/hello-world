@@ -60,7 +60,7 @@ Each mode uses intelligent dimension selection with different strategies and dom
 
 **Example**:
 ```python
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
 
 config = SemanticCalculusConfig.fused_narrative()
 # 36D with NARRATIVE strategy, narrative domain
@@ -272,9 +272,9 @@ config = SemanticCalculusConfig.fused_general()
 ### Python API
 
 ```python
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.embedding.spectral import create_embedder
 
 # Create embedder
 embed_model = create_embedder(sizes=[384])
@@ -318,8 +318,8 @@ result = analyzer_technical.analyze_text(
 Simply reference the appropriate pattern card in your configuration:
 
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.loom.command import LoomCommand
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.loom.command import LoomCommand
 
 # Load domain-specific pattern card
 loom = LoomCommand()
@@ -407,7 +407,7 @@ Grouped bar chart showing category distribution for each mode:
 All domain modes are accessible via factory methods in `SemanticCalculusConfig`:
 
 ```python
-# In HoloLoom/semantic_calculus/config.py
+# In hololoom/semantic_calculus/config.py
 
 @classmethod
 def fused_narrative(cls) -> 'SemanticCalculusConfig':
@@ -505,7 +505,7 @@ config = SemanticCalculusConfig.from_domain(detected_domain)
 ## Files Created
 
 ```
-HoloLoom/
+hololoom/
 ├── semantic_calculus/
 │   ├── config.py (UPDATED)
 │   │   - Added selection_strategy and domain parameters

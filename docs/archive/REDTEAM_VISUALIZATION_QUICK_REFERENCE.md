@@ -1,14 +1,14 @@
 # Red Team Visualization - Quick Reference
 
 **Status**: ✅ Production Ready (November 2025)
-**Location**: `HoloLoom/redteam/visualization/`
+**Location**: `hololoom/redteam/visualization/`
 
 ---
 
 ## 30-Second Getting Started
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 html = render_attack_trajectory(
     strategies=["prompt_injection", "jailbreak", "overflow"],
@@ -95,7 +95,7 @@ metrics = StrategyMetrics(
 ### Pattern 1: Simple Visualization
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 html = render_attack_trajectory(
     strategies=["technique_a", "technique_b"],
@@ -111,7 +111,7 @@ with open("output.html", "w") as f:
 ### Pattern 2: Detailed Rendering
 
 ```python
-from HoloLoom.redteam.visualization import AttackTrajectoryRenderer, AttackPoint
+from hololoom.redteam.visualization import AttackTrajectoryRenderer, AttackPoint
 from datetime import datetime
 
 # Create points with metadata
@@ -149,8 +149,8 @@ with open("detailed_report.html", "w") as f:
 ### Pattern 3: Integration with CARTS
 
 ```python
-from HoloLoom.redteam.visualization import AttackTrajectoryRenderer
-from HoloLoom.redteam.tracker import AttackTracker
+from hololoom.redteam.visualization import AttackTrajectoryRenderer
+from hololoom.redteam.tracker import AttackTracker
 
 # Get data from CARTS tracker
 tracker = AttackTracker()
@@ -245,7 +245,7 @@ The HTML file is **self-contained** - no external files needed, works offline.
 ### Task: Visualize Single Attack Campaign
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 
 results = [
     ("attempt_1", 0.35, 50, 17),
@@ -269,7 +269,7 @@ with open("campaign.html", "w") as f:
 ### Task: Compare Multiple Strategies
 
 ```python
-from HoloLoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
+from hololoom.redteam.visualization import AttackPoint, AttackTrajectoryRenderer
 
 # Data from your attack runs
 strategies_data = {
@@ -300,7 +300,7 @@ with open("comparison.html", "w") as f:
 ### Task: Generate Executive Report
 
 ```python
-from HoloLoom.redteam.visualization import render_attack_trajectory
+from hololoom.redteam.visualization import render_attack_trajectory
 from datetime import datetime
 
 # Your campaign metrics
@@ -405,7 +405,7 @@ for campaign in campaigns:
 Run the built-in demo:
 
 ```bash
-cd HoloLoom/redteam/visualization
+cd hololoom/redteam/visualization
 PYTHONPATH=../.. python demo_attack_trajectory.py
 
 # Output: demo_output_simple.html

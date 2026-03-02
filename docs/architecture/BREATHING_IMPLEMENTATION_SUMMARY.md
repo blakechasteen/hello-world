@@ -8,7 +8,7 @@
 ## What Was Implemented
 
 ### 1. **ChronoTrigger - Breathing Rhythm** ✓
-**File**: `HoloLoom/chrono/trigger.py`
+**File**: `hololoom/chrono/trigger.py`
 
 **Added**:
 - `BreathingRhythm` dataclass with cycle parameters
@@ -24,7 +24,7 @@
 ---
 
 ### 2. **WarpSpace - Sparsity Enforcement** ✓
-**File**: `HoloLoom/warp/space.py`
+**File**: `hololoom/warp/space.py`
 
 **Added**:
 - `sparsity` parameter to `tension()` method
@@ -40,7 +40,7 @@
 ---
 
 ### 3. **ResonanceShed - Pressure Relief** ✓
-**File**: `HoloLoom/resonance/shed.py`
+**File**: `hololoom/resonance/shed.py`
 
 **Added**:
 - `max_feature_density` parameter
@@ -59,7 +59,7 @@
 ---
 
 ### 4. **ConvergenceEngine - Entropy Injection** ✓
-**File**: `HoloLoom/convergence/engine.py`
+**File**: `hololoom/convergence/engine.py`
 
 **Added**:
 - `entropy_temperature` parameter
@@ -77,7 +77,7 @@
 ---
 
 ### 5. **ReflectionBuffer - Consolidation** ✓
-**File**: `HoloLoom/reflection/buffer.py`
+**File**: `hololoom/reflection/buffer.py`
 
 **Added**:
 - `consolidate()` method
@@ -129,11 +129,11 @@
 ## Summary Statistics
 
 **Total Files Modified**: 5
-- `HoloLoom/chrono/trigger.py`
-- `HoloLoom/warp/space.py`
-- `HoloLoom/resonance/shed.py`
-- `HoloLoom/convergence/engine.py`
-- `HoloLoom/reflection/buffer.py`
+- `hololoom/chrono/trigger.py`
+- `hololoom/warp/space.py`
+- `hololoom/resonance/shed.py`
+- `hololoom/convergence/engine.py`
+- `hololoom/reflection/buffer.py`
 
 **Total Files Created**: 3
 - `demos/breathing_system_demo.py`
@@ -184,7 +184,7 @@ Selective activation:
 
 **Import Test**: ✓ Passed
 ```bash
-python -c "from HoloLoom.chrono.trigger import ChronoTrigger; print('OK')"
+python -c "from hololoom.chrono.trigger import ChronoTrigger; print('OK')"
 ```
 
 **Demo Ready**: ✓
@@ -219,8 +219,8 @@ ChronoTrigger (orchestrator)
 ## Usage Example
 
 ```python
-from HoloLoom.chrono.trigger import ChronoTrigger
-from HoloLoom.config import Config
+from hololoom.chrono.trigger import ChronoTrigger
+from hololoom.config import Config
 
 # Enable breathing
 config = Config.fused()

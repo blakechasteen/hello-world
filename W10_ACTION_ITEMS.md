@@ -104,7 +104,7 @@ LLM_PROVIDER=ollama  # or anthropic, openai
 **Steps**:
 1. Copy to `.env` locally
 2. Update values for your setup
-3. `HoloLoom/config.py` already respects these
+3. `hololoom/config.py` already respects these
 
 ---
 
@@ -177,14 +177,14 @@ def check_hololoom():
     """Check HoloLoom imports"""
     print("\n🧠 HoloLoom Imports:")
     try:
-        from HoloLoom import HoloLoom
+        from hololoom import HoloLoom
         print("  ✅ HoloLoom (main)")
     except ImportError as e:
         print(f"  ❌ HoloLoom - {e}")
         return False
 
     try:
-        from HoloLoom.lite import HoloLoomLite
+        from hololoom.lite import HoloLoomLite
         print("  ✅ HoloLoomLite")
     except ImportError as e:
         print(f"  ❌ HoloLoomLite - {e}")
@@ -262,7 +262,7 @@ def main():
         print("\nQuick start:")
         print("  python -m HoloLoom.lite repl")
         print("\nOr in Python:")
-        print("  from HoloLoom import HoloLoomLite")
+        print("  from hololoom import HoloLoomLite")
         print("  async with HoloLoomLite() as loom:")
         print("      await loom.experience('your knowledge')")
     else:
@@ -323,14 +323,14 @@ python verify_setup.py
 **Current**:
 ```toml
 [project.scripts]
-hololoom = "HoloLoom.cli:main"
+hololoom = "hololoom.cli:main"
 ```
 
 **Add these** (if not already present):
 ```toml
 [project.scripts]
-hololoom = "HoloLoom.cli:main"
-hololoom-lite = "HoloLoom.lite:main"
+hololoom = "hololoom.cli:main"
+hololoom-lite = "hololoom.lite:main"
 hololoom-verify = "verify_setup:main"
 ```
 
@@ -403,7 +403,7 @@ pip install hololoom[production]  # + Neo4j/Qdrant
 
 ### 8. Add Model Download Progress (1-2 hours)
 
-**File**: `HoloLoom/embedding/spectral.py` (or wherever models are downloaded)
+**File**: `hololoom/embedding/spectral.py` (or wherever models are downloaded)
 
 **Change**:
 ```python
@@ -534,7 +534,7 @@ python -m HoloLoom.install
 # Expected: Interactive, auto-detects platform
 
 # 2. Try lightweight runtime
-from HoloLoom.lite_minimal import HoloLoomMinimal
+from hololoom.lite_minimal import HoloLoomMinimal
 # Expected: Works without torch
 ```
 

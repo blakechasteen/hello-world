@@ -61,7 +61,7 @@ Action:
 ### 1.2 Unified Entry Point
 ```python
 # Current (confusing):
-from HoloLoom.unified_api import HoloLoom          # Legacy
+from hololoom.unified_api import HoloLoom          # Legacy
 from dev.protocol_modules_mythrl import MythRLShuttle  # New
 
 # Proposed (unified):
@@ -93,13 +93,13 @@ result = await weaver.process(query)
 
 **Current Situation**:
 - `dev/protocol_modules_mythrl.py` (566 lines) - Shuttle with protocols
-- `HoloLoom/weaving_orchestrator.py` - Legacy 9-step weaving
+- `hololoom/weaving_orchestrator.py` - Legacy 9-step weaving
 - Parallel implementations of same concepts
 
 **Consolidation Plan**:
 ```
 Step 1: Protocol standardization
-  - Move protocols from dev/ to HoloLoom/protocols/
+  - Move protocols from dev/ to hololoom/protocols/
   - Standardize: PatternSelectionProtocol, DecisionEngineProtocol, etc.
   - Update all implementations to use standardized protocols
 
@@ -142,7 +142,7 @@ Action:
 
 ### 2.3 Protocol Directory Structure
 ```
-HoloLoom/
+hololoom/
   protocols/          # NEW: Centralized protocol definitions
     memory.py         # MemoryStore, MemoryQuery, Strategy
     pattern.py        # PatternSelectionProtocol
@@ -222,11 +222,11 @@ print(f"Backend health: {metrics.backend_status}")
 
 ### Archive (Move to `archive/legacy/`)
 ```
-✗ HoloLoom/orchestrator.py           → Keep weaving_orchestrator.py
-✗ HoloLoom/weaving_shuttle.py        → Duplicate of weaving_orchestrator
-✗ HoloLoom/bootstrap_system.py       → One-time use, completed
-✗ HoloLoom/validate_pipeline.py      → Superseded by tests
-✗ HoloLoom/visualize_bootstrap.py    → Dev tool, archived
+✗ hololoom/orchestrator.py           → Keep weaving_orchestrator.py
+✗ hololoom/weaving_shuttle.py        → Duplicate of weaving_orchestrator
+✗ hololoom/bootstrap_system.py       → One-time use, completed
+✗ hololoom/validate_pipeline.py      → Superseded by tests
+✗ hololoom/visualize_bootstrap.py    → Dev tool, archived
 ```
 
 ### Consolidate (Merge into single files)
@@ -234,15 +234,15 @@ print(f"Backend health: {metrics.backend_status}")
 → smart_weaving_orchestrator.py + analytical_orchestrator.py
   Merge into: weaving_orchestrator.py with mode='smart'|'analytical'
 
-→ HoloLoom/memory/routing/*.py (4 files)
-  Merge into: HoloLoom/memory/router.py (single unified router)
+→ hololoom/memory/routing/*.py (4 files)
+  Merge into: hololoom/memory/router.py (single unified router)
 ```
 
 ### Relocate (Better organization)
 ```
-dev/protocol_modules_mythrl.py → HoloLoom/protocols/
+dev/protocol_modules_mythrl.py → hololoom/protocols/
 dev/analysis_scripts/*.py → tools/analysis/
-adaptive_learning_protocols.py → HoloLoom/protocols/adaptive.py
+adaptive_learning_protocols.py → hololoom/protocols/adaptive.py
 ```
 
 ---

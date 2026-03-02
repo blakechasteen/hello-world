@@ -46,8 +46,8 @@ HoloLoom Memory System v1.0 is a production-ready, multi-level memory architectu
 - NetworkX knowledge graph integration
 
 **Files Created**:
-- `HoloLoom/memory/lifecycle_manager.py` (750 lines) - Stream manager + lifecycle
-- `HoloLoom/tests/unit/test_lifecycle_manager.py` (420 lines, 20 tests)
+- `hololoom/memory/lifecycle_manager.py` (750 lines) - Stream manager + lifecycle
+- `hololoom/tests/unit/test_lifecycle_manager.py` (420 lines, 20 tests)
 
 **Tests**: 20/20 passing (100%)
 
@@ -64,10 +64,10 @@ HoloLoom Memory System v1.0 is a production-ready, multi-level memory architectu
 - Episode pruning with optional archival
 
 **Files Created**:
-- `HoloLoom/agentic/memory_tools.py` (560 lines) - Agent operations
-- `HoloLoom/memory/consolidation.py` (650 lines) - Consolidation engine
-- `HoloLoom/tests/unit/test_agent_memory_tools.py` (370 lines, 19 tests)
-- `HoloLoom/tests/unit/test_consolidation.py` (480 lines, 19 tests)
+- `hololoom/agentic/memory_tools.py` (560 lines) - Agent operations
+- `hololoom/memory/consolidation.py` (650 lines) - Consolidation engine
+- `hololoom/tests/unit/test_agent_memory_tools.py` (370 lines, 19 tests)
+- `hololoom/tests/unit/test_consolidation.py` (480 lines, 19 tests)
 
 **Key Features**:
 - **Consolidation Strategies**: Fact extraction, entity extraction, summarization, deduplication
@@ -96,13 +96,13 @@ HoloLoom Memory System v1.0 is a production-ready, multi-level memory architectu
 - Production LLM client abstraction
 
 **Files Created**:
-- `HoloLoom/memory/llm_consolidator.py` (850 lines) - Production LLM integration
-- `HoloLoom/tests/unit/test_llm_consolidator.py` (520 lines, 26 tests)
+- `hololoom/memory/llm_consolidator.py` (850 lines) - Production LLM integration
+- `hololoom/tests/unit/test_llm_consolidator.py` (520 lines, 26 tests)
 - `WEEK3_IMPLEMENTATION_SUMMARY.md` - Documentation
 - `demos/demo_week3_llm_integration.py` - Demo script
 
 **Files Modified**:
-- `HoloLoom/memory/consolidation.py` - Updated to use ProductionLLMConsolidator
+- `hololoom/memory/consolidation.py` - Updated to use ProductionLLMConsolidator
 
 **Cost Analysis** (per 1M tokens):
 
@@ -134,8 +134,8 @@ HoloLoom Memory System v1.0 is a production-ready, multi-level memory architectu
 - Matryoshka multi-scale embeddings (96/192/384 dims)
 
 **Files Created**:
-- `HoloLoom/memory/hybrid_retrieval.py` (750 lines) - Hybrid retrieval system
-- `HoloLoom/tests/unit/test_hybrid_retrieval.py` (450 lines, 21 tests)
+- `hololoom/memory/hybrid_retrieval.py` (750 lines) - Hybrid retrieval system
+- `hololoom/tests/unit/test_hybrid_retrieval.py` (450 lines, 21 tests)
 - `WEEK4_IMPLEMENTATION_SUMMARY.md` - Documentation
 
 **Retrieval Methods**:
@@ -172,13 +172,13 @@ RRF score = Σ (1 / (k + rank_i))  where k=60
 - Lifecycle management (async context managers)
 
 **Files Created**:
-- `HoloLoom/memory/integrated_memory_system.py` (450 lines) - Unified interface
-- `HoloLoom/tests/integration/test_integrated_memory_system.py` (580 lines, 18 tests)
+- `hololoom/memory/integrated_memory_system.py` (450 lines) - Unified interface
+- `hololoom/tests/integration/test_integrated_memory_system.py` (580 lines, 18 tests)
 
 **Simple API**:
 
 ```python
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
 
 # 1. Create system
 system = create_integrated_memory_system()
@@ -195,7 +195,7 @@ results = await system.retrieve("exploration strategies", limit=10)
 **Production API**:
 
 ```python
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+from hololoom.memory.integrated_memory_system import create_production_memory_system
 
 # Create with LLM
 system = create_production_memory_system(
@@ -228,7 +228,7 @@ async with system:
 
 **Files Created**:
 - `PRODUCTION_DEPLOYMENT_GUIDE.md` (658 lines) - Complete deployment guide
-- `HoloLoom/tests/e2e/test_memory_system_benchmarks.py` (550 lines, 9 benchmarks)
+- `hololoom/tests/e2e/test_memory_system_benchmarks.py` (550 lines, 9 benchmarks)
 - `MOONSHOT_LAUNCH.md` (this file)
 
 **Benchmarks**: 7/9 passing (2 within target, minor adjustments needed)
@@ -524,7 +524,7 @@ assert stats['streams']['total_memories'] < MAX_MEMORIES
 ### Quick Start API
 
 ```python
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
 
 # Create system (works without any external dependencies)
 system = create_integrated_memory_system()
@@ -558,7 +558,7 @@ stats = system.get_statistics()
 ### Production API
 
 ```python
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+from hololoom.memory.integrated_memory_system import create_production_memory_system
 
 # Create production system with LLM
 system = create_production_memory_system(
@@ -587,7 +587,7 @@ async with system:
 
 ```python
 from fastapi import FastAPI
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+from hololoom.memory.integrated_memory_system import create_production_memory_system
 
 app = FastAPI(title="HoloLoom Memory API")
 
@@ -627,7 +627,7 @@ async def retrieve_memories(query: str, limit: int = 10):
 ### 1. Minimal Setup (30 seconds)
 
 ```python
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
 
 system = create_integrated_memory_system()
 await system.store("Important information", importance=0.9)
@@ -639,7 +639,7 @@ results = await system.retrieve("search query", limit=10)
 ### 2. Production Setup (5 minutes)
 
 ```python
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+from hololoom.memory.integrated_memory_system import create_production_memory_system
 
 system = create_production_memory_system(
     llm_provider="anthropic",
@@ -666,7 +666,7 @@ See API reference above for complete FastAPI deployment pattern.
 ```python
 from flask import Flask, request, jsonify
 import asyncio
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+from hololoom.memory.integrated_memory_system import create_production_memory_system
 
 app = Flask(__name__)
 memory = None
@@ -742,7 +742,7 @@ Assuming 50 episodes per consolidation, ~1500 tokens per request:
 ### Test Organization
 
 ```
-HoloLoom/tests/
+hololoom/tests/
 ├── unit/                      # Fast isolated tests (<5s)
 │   ├── test_lifecycle_manager.py (20 tests)
 │   ├── test_agent_memory_tools.py (19 tests)

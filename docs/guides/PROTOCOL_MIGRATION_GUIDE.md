@@ -1,5 +1,5 @@
 # Protocol Migration Guide
-## Migrating to Canonical Protocols (HoloLoom/protocols/__init__.py)
+## Migrating to Canonical Protocols (hololoom/protocols/__init__.py)
 
 **Date**: 2025-10-27  
 **Status**: In Progress
@@ -8,12 +8,12 @@
 
 ## Overview
 
-Phase 2 consolidation created canonical protocol definitions in `HoloLoom/protocols/__init__.py`. This guide documents the migration process to update all modules to use these canonical protocols.
+Phase 2 consolidation created canonical protocol definitions in `hololoom/protocols/__init__.py`. This guide documents the migration process to update all modules to use these canonical protocols.
 
 ## Canonical Protocol Location
 
 ```python
-from HoloLoom.protocols import (
+from hololoom.protocols import (
     # Core Protocols
     Embedder,
     MotifDetector,
@@ -36,7 +36,7 @@ from HoloLoom.protocols import (
 
 ##Files Requiring Migration
 
-### 1. **HoloLoom/policy/unified.py** (PolicyEngine)
+### 1. **hololoom/policy/unified.py** (PolicyEngine)
 **Current**: Defines `PolicyEngine` protocol locally
 **Action**: Import from `HoloLoom.protocols`, add deprecation warning to local definition
 **Priority**: HIGH (Core policy component)
@@ -48,7 +48,7 @@ class PolicyEngine(Protocol):
     def choose_action(...):  ...
 
 # AFTER
-from HoloLoom.protocols import PolicyEngine
+from hololoom.protocols import PolicyEngine
 # Keep local definition with deprecation warning for compatibility
 import warnings
 class _DeprecatedPolicyEngine(Protocol):  # Rename with underscore
@@ -56,37 +56,37 @@ class _DeprecatedPolicyEngine(Protocol):  # Rename with underscore
 warnings.warn("Importing PolicyEngine from policy.unified is deprecated. Use HoloLoom.protocols", DeprecationWarning)
 ```
 
-### 2. **HoloLoom/embedding/spectral.py** (Embedder)
+### 2. **hololoom/embedding/spectral.py** (Embedder)
 **Current**: Defines `Embedder` protocol locally
 **Action**: Import from `HoloLoom.protocols`
 **Priority**: HIGH (Used in all embedding operations)
 
-### 3. **HoloLoom/memory/protocol.py** (MemoryStore, MemoryNavigator, PatternDetector)
+### 3. **hololoom/memory/protocol.py** (MemoryStore, MemoryNavigator, PatternDetector)
 **Current**: Defines 3 memory protocols locally
 **Action**: Import all 3 from `HoloLoom.protocols`
 **Priority**: HIGH (Core memory backend interface)
 
-### 4. **HoloLoom/Modules/Features.py** (MotifDetector, Embedder)
+### 4. **hololoom/Modules/Features.py** (MotifDetector, Embedder)
 **Current**: Defines `MotifDetector` and duplicate `Embedder`
 **Action**: Import from `HoloLoom.protocols`, remove duplicates
 **Priority**: MEDIUM (Feature extraction)
 
-### 5. **HoloLoom/memory/routing/protocol.py** (RoutingStrategy)
+### 5. **hololoom/memory/routing/protocol.py** (RoutingStrategy)
 **Current**: Defines `RoutingStrategy`, `LearnableStrategy`, `ExperimentalStrategy`
 **Action**: Import `RoutingStrategy` from canonical, keep experimental ones local
 **Priority**: MEDIUM (Routing intelligence)
 
-### 6. **HoloLoom/memory/routing/execution_patterns.py** (ExecutionEngine)
+### 6. **hololoom/memory/routing/execution_patterns.py** (ExecutionEngine)
 **Current**: Defines `ExecutionEngine` protocol locally
 **Action**: Import from `HoloLoom.protocols`
 **Priority**: MEDIUM (Tool execution)
 
-### 7. **HoloLoom/memory/graph.py** (KGStore)
+### 7. **hololoom/memory/graph.py** (KGStore)
 **Current**: Defines `KGStore` protocol locally
 **Action**: Keep local (domain-specific protocol, not in canonical set)
 **Priority**: LOW (Specialized protocol)
 
-### 8. **HoloLoom/memory/cache.py** (Retriever)
+### 8. **hololoom/memory/cache.py** (Retriever)
 **Current**: Defines `Retriever` protocol locally
 **Action**: Keep local (internal caching protocol, not in canonical set)
 **Priority**: LOW (Internal use only)
@@ -118,7 +118,7 @@ warnings.warn("Importing PolicyEngine from policy.unified is deprecated. Use Hol
 ### Step 1: Add canonical import at top of file
 ```python
 # Add to imports section
-from HoloLoom.protocols import ProtocolName
+from hololoom.protocols import ProtocolName
 ```
 
 ### Step 2: Rename local protocol definition (if keeping for compatibility)
@@ -126,7 +126,7 @@ from HoloLoom.protocols import ProtocolName
 # Rename local definition
 class _DeprecatedProtocolName(Protocol):  # Add underscore prefix
     """
-    DEPRECATED: Import from HoloLoom.protocols instead.
+    DEPRECATED: Import from hololoom.protocols instead.
     This local definition will be removed in a future version.
     """
     ...
@@ -135,7 +135,7 @@ class _DeprecatedProtocolName(Protocol):  # Add underscore prefix
 import warnings
 warnings.warn(
     "Importing ProtocolName from this module is deprecated. "
-    "Use 'from HoloLoom.protocols import ProtocolName' instead.",
+    "Use 'from hololoom.protocols import ProtocolName' instead.",
     DeprecationWarning,
     stacklevel=2
 )
@@ -147,16 +147,16 @@ ProtocolName = _DeprecatedProtocolName
 ### Step 3: Update all internal usages
 ```python
 # BEFORE
-from HoloLoom.policy.unified import PolicyEngine
+from hololoom.policy.unified import PolicyEngine
 
 # AFTER
-from HoloLoom.protocols import PolicyEngine
+from hololoom.protocols import PolicyEngine
 ```
 
 ### Step 4: Test
 ```powershell
-$env:PYTHONPATH = "."; python -c "from HoloLoom.protocols import PolicyEngine; print('✓')"
-$env:PYTHONPATH = "."; python HoloLoom/test_unified_policy.py
+$env:PYTHONPATH = "."; python -c "from hololoom.protocols import PolicyEngine; print('✓')"
+$env:PYTHONPATH = "."; python hololoom/test_unified_policy.py
 ```
 
 ---
@@ -186,7 +186,7 @@ $env:PYTHONPATH = "."; python HoloLoom/test_unified_policy.py
 After migration, verify:
 - [ ] All tests pass (`pytest tests/`)
 - [ ] No circular import errors
-- [ ] Type checking passes (`mypy HoloLoom/`)
+- [ ] Type checking passes (`mypy hololoom/`)
 - [ ] Demos run successfully
 - [ ] IDE autocomplete works for protocols
 - [ ] Deprecation warnings appear for old imports

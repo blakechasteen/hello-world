@@ -10,7 +10,7 @@
 
 ### 1. Core Implementation
 
-**File**: `HoloLoom/redteam/sandbox/sandboxed_executor.py` (~1,100 lines)
+**File**: `hololoom/redteam/sandbox/sandboxed_executor.py` (~1,100 lines)
 
 Complete wrapper implementation that provides transparent sandbox integration for attack execution:
 
@@ -70,7 +70,7 @@ async def sandboxed_attack_execution(strategy, payload, context, config=None) ->
 
 ### 4. Test Suite
 
-**File**: `HoloLoom/redteam/sandbox/tests/test_sandboxed_executor.py` (~600 lines)
+**File**: `hololoom/redteam/sandbox/tests/test_sandboxed_executor.py` (~600 lines)
 
 **30+ comprehensive tests**:
 - ✅ Initialization (4 tests)
@@ -90,7 +90,7 @@ All tests use pytest async fixtures and proper cleanup.
 
 ### 5. Comprehensive Demo
 
-**File**: `HoloLoom/redteam/sandbox/demo_sandboxed_executor.py` (~500 lines)
+**File**: `hololoom/redteam/sandbox/demo_sandboxed_executor.py` (~500 lines)
 
 **10 featured demonstrations**:
 
@@ -112,7 +112,7 @@ python -m HoloLoom.redteam.sandbox.demo_sandboxed_executor
 
 ### 6. Documentation
 
-**README**: `HoloLoom/redteam/sandbox/SANDBOXED_EXECUTOR_README.md` (~300 lines)
+**README**: `hololoom/redteam/sandbox/SANDBOXED_EXECUTOR_README.md` (~300 lines)
 
 Comprehensive user documentation covering:
 - Quick start (3 usage patterns)
@@ -131,7 +131,7 @@ Comprehensive user documentation covering:
 - Security considerations
 - Logging setup
 
-**Implementation Summary**: `HoloLoom/redteam/sandbox/SANDBOXED_EXECUTOR_IMPLEMENTATION.md` (~400 lines)
+**Implementation Summary**: `hololoom/redteam/sandbox/SANDBOXED_EXECUTOR_IMPLEMENTATION.md` (~400 lines)
 
 Complete technical documentation including:
 - Implementation details
@@ -146,7 +146,7 @@ Complete technical documentation including:
 
 ### 7. Package Integration
 
-**Updated**: `HoloLoom/redteam/sandbox/__init__.py`
+**Updated**: `hololoom/redteam/sandbox/__init__.py`
 
 Exports all key components:
 ```python
@@ -172,8 +172,8 @@ __all__ = [
 ### Pattern 1: Async Context Manager (Recommended)
 
 ```python
-from HoloLoom.redteam.sandbox import create_sandboxed_executor
-from HoloLoom.redteam.strategies import AttackStrategy
+from hololoom.redteam.sandbox import create_sandboxed_executor
+from hololoom.redteam.strategies import AttackStrategy
 
 async with await create_sandboxed_executor() as executor:
     result = await executor.execute_attack(
@@ -207,7 +207,7 @@ async with await create_sandboxed_executor(config=config) as executor:
 ### Pattern 3: One-Off Execution
 
 ```python
-from HoloLoom.redteam.sandbox import sandboxed_attack_execution
+from hololoom.redteam.sandbox import sandboxed_attack_execution
 
 result = await sandboxed_attack_execution(
     AttackStrategy.UNICODE_BYPASS,

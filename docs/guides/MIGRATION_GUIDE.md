@@ -4,7 +4,7 @@
 **Date**: November 2025
 **Est. Migration Time**: 15-30 minutes
 
-This guide helps you upgrade from HoloLoom v1.0 to v1.1, which adds production hardening and smart query routing.
+This guide helps you upgrade from hololoom v1.0 to v1.1, which adds production hardening and smart query routing.
 
 ---
 
@@ -35,8 +35,8 @@ pip install psutil  # For resource monitoring
 
 **Before (v1.0)**:
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 config = Config.fused()
 orchestrator = WeavingOrchestrator(cfg=config, shards=shards)
@@ -44,8 +44,8 @@ orchestrator = WeavingOrchestrator(cfg=config, shards=shards)
 
 **After (v1.1)** - Basic upgrade:
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 config = Config.fused()
 # All new features disabled by default - no breaking changes!
@@ -54,8 +54,8 @@ orchestrator = WeavingOrchestrator(cfg=config, shards=shards)
 
 **After (v1.1)** - With production hardening:
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 config = Config.fused()
 
@@ -73,9 +73,9 @@ orchestrator = WeavingOrchestrator(
 
 **After (v1.1)** - With smart routing:
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.routing import create_smart_router
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.routing import create_smart_router
 
 config = Config.fused()
 
@@ -124,7 +124,7 @@ If deploying with FastAPI/production web server:
 
 ```python
 from fastapi import FastAPI
-from HoloLoom.context import create_health_checker
+from hololoom.context import create_health_checker
 
 app = FastAPI()
 health_checker = create_health_checker()
@@ -175,7 +175,7 @@ orchestrator = WeavingOrchestrator(cfg=config, shards=shards)
 **Benefits**: 15x average speedup on common queries (greetings, simple lookups)
 
 ```python
-from HoloLoom.routing import create_smart_router
+from hololoom.routing import create_smart_router
 
 router = create_smart_router(enable_fast_paths=True)
 
@@ -219,8 +219,8 @@ orchestrator = WeavingOrchestrator(
 **Who**: Production deployments wanting both performance and reliability
 
 ```python
-from HoloLoom.routing import create_smart_router
-from HoloLoom.context import ProductionConfig
+from hololoom.routing import create_smart_router
+from hololoom.context import ProductionConfig
 
 # Load production config
 prod_config = ProductionConfig.production()
@@ -283,7 +283,7 @@ pytest tests/ -v
 
 ```bash
 # Run production hardening tests
-pytest HoloLoom/context/ -v
+pytest hololoom/context/ -v
 
 # Expected: 25/25 passing
 ```
@@ -292,7 +292,7 @@ pytest HoloLoom/context/ -v
 
 ```bash
 # Run routing tests
-pytest HoloLoom/routing/ -v
+pytest hololoom/routing/ -v
 
 # Expected: 36/36 passing
 ```
@@ -369,7 +369,7 @@ orchestrator = WeavingOrchestrator(
 **Fix**:
 ```python
 # Check circuit breaker status
-from HoloLoom.context import get_circuit_breaker_registry
+from hololoom.context import get_circuit_breaker_registry
 
 registry = get_circuit_breaker_registry()
 status = registry.get_status("sql_backend")
@@ -396,7 +396,7 @@ orchestrator = WeavingOrchestrator(
 
 **Fix**: Pre-warm the classifier:
 ```python
-from HoloLoom.routing import create_smart_router
+from hololoom.routing import create_smart_router
 
 router = create_smart_router(enable_fast_paths=True)
 

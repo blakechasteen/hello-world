@@ -1,7 +1,7 @@
 # Backend Protocol Mismatch - RESOLVED ✅
 
 ## Issue Summary
-The HoloLoom system had a "Backend protocol mismatch" where existing knowledge graph (KG) backends didn't implement the complete `MemoryStore` protocol defined in `HoloLoom/memory/protocol.py`.
+The HoloLoom system had a "Backend protocol mismatch" where existing knowledge graph (KG) backends didn't implement the complete `MemoryStore` protocol defined in `hololoom/memory/protocol.py`.
 
 ## Root Cause
 Three main memory store implementations were missing required protocol methods:
@@ -16,15 +16,15 @@ All three stores were missing:
 
 ## Solution Applied
 
-### 1. Neo4j Store (`HoloLoom/memory/stores/neo4j_store.py`)
+### 1. Neo4j Store (`hololoom/memory/stores/neo4j_store.py`)
 ✅ **Added `store_many()`**: Batch operation that calls `store()` for each memory
 ✅ **Added `get_by_id()`**: Retrieves KNOT node by ID and reconstructs thread connections
 
-### 2. Mem0 Store (`HoloLoom/memory/stores/mem0_store.py`) 
+### 2. Mem0 Store (`hololoom/memory/stores/mem0_store.py`) 
 ✅ **Added `store_many()`**: Batch operation for multiple memories
 ✅ **Added `get_by_id()`**: Uses mem0's `get()` API to retrieve by ID
 
-### 3. Qdrant Store (`HoloLoom/memory/stores/qdrant_store.py`)
+### 3. Qdrant Store (`hololoom/memory/stores/qdrant_store.py`)
 ✅ **Added `store_many()`**: Batch operation for multi-scale vector storage  
 ✅ **Added `get_by_id()`**: Retrieves from vector collections by ID
 
@@ -75,9 +75,9 @@ spinner -> MemoryShards -> Memory.from_shard() -> store_many() -> Storage
 ```
 
 ## Files Modified
-1. `HoloLoom/memory/stores/neo4j_store.py` - Added missing protocol methods
-2. `HoloLoom/memory/stores/mem0_store.py` - Added missing protocol methods  
-3. `HoloLoom/memory/stores/qdrant_store.py` - Added missing protocol methods
+1. `hololoom/memory/stores/neo4j_store.py` - Added missing protocol methods
+2. `hololoom/memory/stores/mem0_store.py` - Added missing protocol methods  
+3. `hololoom/memory/stores/qdrant_store.py` - Added missing protocol methods
 4. `test_protocol_fix.py` - Windows-safe compliance verification
 
 ## Next Steps

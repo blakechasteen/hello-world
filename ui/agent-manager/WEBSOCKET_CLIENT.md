@@ -656,5 +656,5 @@ useEffect(() => {
 ## See Also
 
 - [Agent Manager API Documentation](../API.md)
-- [Backend WebSocket Handler](../../../HoloLoom/chatops/handlers/websocket_progress.py)
+- [Backend WebSocket Handler](../../../hololoom/chatops/handlers/websocket_progress.py)
 - [React Integration Examples](./examples/)

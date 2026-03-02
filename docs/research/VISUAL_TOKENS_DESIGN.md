@@ -326,7 +326,7 @@ results = kg.search_multimodal(
 ### File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── memory/
 │   ├── photo_tokens.py (NEW - 400 lines)
 │   │   - PhotoToken dataclass
@@ -362,8 +362,8 @@ demos/
 ### User-Facing API
 
 ```python
-from HoloLoom import HoloLoom
-from HoloLoom.memory.photo_tokens import PhotoTokenMemory
+from hololoom import HoloLoom
+from hololoom.memory.photo_tokens import PhotoTokenMemory
 
 async with HoloLoom() as loom:
     # Store a photo

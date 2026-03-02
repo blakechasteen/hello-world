@@ -9,7 +9,7 @@ Complete implementation of the **Git Operations ability** for Proto - a Tier 2 P
 ## Deliverables
 
 ### 1. Main Implementation
-- **File**: `HoloLoom/departments/proto/abilities/core/git_operations.py`
+- **File**: `hololoom/departments/proto/abilities/core/git_operations.py`
 - **Size**: 827 lines, 27KB
 - **Status**: Production Ready
 - **Features**:
@@ -24,7 +24,7 @@ Complete implementation of the **Git Operations ability** for Proto - a Tier 2 P
   - Command timeouts
 
 ### 2. Test Suite
-- **File**: `HoloLoom/departments/proto/abilities/core/test_git_operations.py`
+- **File**: `hololoom/departments/proto/abilities/core/test_git_operations.py`
 - **Size**: 350+ lines
 - **Coverage**: 12+ test cases
 - **Tests Include**:
@@ -135,8 +135,8 @@ Complete implementation of the **Git Operations ability** for Proto - a Tier 2 P
 
 ### Basic Status Check
 ```python
-from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
-from HoloLoom.apps.departments.proto.abilities.protocol import AbilityContext
+from hololoom.apps.departments.proto.abilities.core import GitOperationsAbility
+from hololoom.apps.departments.proto.abilities.protocol import AbilityContext
 
 ability = GitOperationsAbility()
 context = AbilityContext(working_directory="/repo")
@@ -177,7 +177,7 @@ print(result.output["diff_output"])
 ## File Locations
 
 ```
-HoloLoom/departments/proto/abilities/core/
+hololoom/departments/proto/abilities/core/
 ├── git_operations.py                  # Main implementation (827 lines)
 ├── test_git_operations.py             # Test suite (350+ lines)
 ├── __init__.py                        # Updated with exports
@@ -201,12 +201,12 @@ __all__ = [
 
 ### 2. Direct Import
 ```python
-from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
+from hololoom.apps.departments.proto.abilities.core import GitOperationsAbility
 ```
 
 ### 3. Proto Integration
 ```python
-from HoloLoom.apps.departments.proto import Proto
+from hololoom.apps.departments.proto import Proto
 
 proto = Proto()
 proto.register_ability(GitOperationsAbility())
@@ -233,17 +233,17 @@ AbilityManifest(
 
 ### Run All Tests
 ```bash
-pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py -v
+pytest hololoom/departments/proto/abilities/core/test_git_operations.py -v
 ```
 
 ### Run Specific Test
 ```bash
-pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py::TestGitOperationsStatus -v
+pytest hololoom/departments/proto/abilities/core/test_git_operations.py::TestGitOperationsStatus -v
 ```
 
 ### With Coverage
 ```bash
-pytest HoloLoom/departments/proto/abilities/core/test_git_operations.py --cov
+pytest hololoom/departments/proto/abilities/core/test_git_operations.py --cov
 ```
 
 ## Quality Metrics
@@ -302,7 +302,7 @@ See: **GIT_OPERATIONS_SUMMARY.md**
 
 ### Import
 ```python
-from HoloLoom.apps.departments.proto.abilities.core import GitOperationsAbility
+from hololoom.apps.departments.proto.abilities.core import GitOperationsAbility
 ```
 
 ### Create

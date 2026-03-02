@@ -134,7 +134,7 @@ python RUN_TERMINAL_UI.py
 
 ### ChatOps Bot:
 ```bash
-python HoloLoom/chatops/run_bot.py --hololoom-mode fast
+python hololoom/chatops/run_bot.py --hololoom-mode fast
 ```
 
 **Commands:**

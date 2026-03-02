@@ -93,7 +93,7 @@ pip install spacy>=3.5.0 \
 python -m spacy download en_core_web_sm
 
 # Test full features
-PYTHONPATH=. python HoloLoom/unified_api.py
+PYTHONPATH=. python hololoom/unified_api.py
 ```
 
 **Additional Dependencies:**
@@ -164,7 +164,7 @@ docker-compose up -d
 **Configuration:**
 ```python
 # In your code
-from HoloLoom.memory.stores import Neo4jStore, QdrantStore, HybridNeo4jQdrant
+from hololoom.memory.stores import Neo4jStore, QdrantStore, HybridNeo4jQdrant
 
 # Neo4j only
 store = Neo4jStore(
@@ -199,7 +199,7 @@ For different data sources:
 pip install youtube-transcript-api>=0.6.0
 
 # Test
-PYTHONPATH=. python -c "from HoloLoom.spinningWheel import transcribe_youtube; import asyncio; asyncio.run(transcribe_youtube('dQw4w9WgXcQ'))"
+PYTHONPATH=. python -c "from hololoom.spinningWheel import transcribe_youtube; import asyncio; asyncio.run(transcribe_youtube('dQw4w9WgXcQ'))"
 ```
 
 ### Web Scraping
@@ -391,7 +391,7 @@ After installation, verify everything works:
 ### Test 1: Core System
 ```bash
 PYTHONPATH=. python -c "
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 import asyncio
 
 async def test():
@@ -405,7 +405,7 @@ asyncio.run(test())
 ### Test 2: Embeddings
 ```bash
 PYTHONPATH=. python -c "
-from HoloLoom.embedding.spectral import MatryoshkaEmbedding
+from hololoom.embedding.spectral import MatryoshkaEmbedding
 
 emb = MatryoshkaEmbedding([96, 192, 384])
 vec = emb.embed('Hello world')
@@ -416,7 +416,7 @@ print(f'✅ Embeddings working: {vec.shape}')
 ### Test 3: Knowledge Graph
 ```bash
 PYTHONPATH=. python -c "
-from HoloLoom.memory.graph import KG
+from hololoom.memory.graph import KG
 
 kg = KG()
 kg.add_entity('entity_1', 'Person', {'name': 'Alice'})
@@ -426,7 +426,7 @@ print(f'✅ Knowledge graph working: {kg.entity_count()} entities')
 
 ### Test 4: Policy Engine
 ```bash
-PYTHONPATH=. python HoloLoom/test_unified_policy.py
+PYTHONPATH=. python hololoom/test_unified_policy.py
 ```
 
 ### Test 5: Warp Drive
@@ -555,7 +555,7 @@ source .venv/bin/activate
 pip install torch numpy networkx gymnasium spacy sentence-transformers scipy
 python -m spacy download en_core_web_sm
 export PYTHONPATH=.
-python HoloLoom/unified_api.py
+python hololoom/unified_api.py
 ```
 
 ### Production Command Sequence

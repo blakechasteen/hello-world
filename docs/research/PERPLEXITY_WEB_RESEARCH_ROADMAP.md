@@ -62,9 +62,9 @@ Phase 6: Enterprise Features (Q4 2026)
 - ✅ Unit tests (matryoshka, citation, cache)
 
 **Files Created**:
-- HoloLoom/search/web_crawler_integration.py (350 lines)
+- hololoom/search/web_crawler_integration.py (350 lines)
 - test_web_crawler_integration.py (210 lines)
-- HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md (500+ lines)
+- hololoom/search/README_WEB_CRAWLER_INTEGRATION.md (500+ lines)
 - WEB_CRAWLER_INTEGRATION_COMPLETE.md (800+ lines)
 
 ---
@@ -109,7 +109,7 @@ Phase 6: Enterprise Features (Q4 2026)
 - ✅ Performance benchmarks
 
 **Files Created**:
-- HoloLoom/agentic/web_researcher.py (550 lines)
+- hololoom/agentic/web_researcher.py (550 lines)
 - demo_agentic_web_researcher.py (230 lines)
 - PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md (comprehensive)
 - PERPLEXITY_WEB_RESEARCH_QUICK_REF.md (quick reference)

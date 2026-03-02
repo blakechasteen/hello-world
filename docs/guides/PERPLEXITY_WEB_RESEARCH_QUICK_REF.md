@@ -11,7 +11,7 @@
 ### Basic Search (4-10s)
 
 ```python
-from HoloLoom.search.web_crawler_integration import search_and_crawl_web
+from hololoom.search.web_crawler_integration import search_and_crawl_web
 
 result = await search_and_crawl_web(
     query="What is Thompson Sampling?",
@@ -24,7 +24,7 @@ print(result.cited_response)
 ### Autonomous Research (10-30s)
 
 ```python
-from HoloLoom.agentic.web_researcher import research_web, ResearchStrategy
+from hololoom.agentic.web_researcher import research_web, ResearchStrategy
 
 result = await research_web(
     query="What are the tradeoffs of Thompson Sampling versus UCB?",
@@ -84,7 +84,7 @@ Depth 3+: Exceptional links (threshold 0.85)
 ## Configuration
 
 ```python
-from HoloLoom.search.web_crawler_integration import WebCrawlerSearchConfig
+from hololoom.search.web_crawler_integration import WebCrawlerSearchConfig
 
 config = WebCrawlerSearchConfig(
     search_provider="mock",  # or "serpapi", "google"
@@ -127,15 +127,15 @@ config = WebCrawlerSearchConfig(
 ## Files
 
 ### Core Implementation
-- [HoloLoom/search/web_crawler_integration.py](HoloLoom/search/web_crawler_integration.py) (350 lines)
-- [HoloLoom/agentic/web_researcher.py](HoloLoom/agentic/web_researcher.py) (550 lines)
+- [hololoom/search/web_crawler_integration.py](hololoom/search/web_crawler_integration.py) (350 lines)
+- [hololoom/agentic/web_researcher.py](hololoom/agentic/web_researcher.py) (550 lines)
 
 ### Tests & Demos
 - [test_web_crawler_integration.py](test_web_crawler_integration.py) (210 lines)
 - [demo_agentic_web_researcher.py](demo_agentic_web_researcher.py) (230 lines)
 
 ### Documentation
-- [HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md](HoloLoom/search/README_WEB_CRAWLER_INTEGRATION.md) (500+ lines)
+- [hololoom/search/README_WEB_CRAWLER_INTEGRATION.md](hololoom/search/README_WEB_CRAWLER_INTEGRATION.md) (500+ lines)
 - [WEB_CRAWLER_INTEGRATION_COMPLETE.md](WEB_CRAWLER_INTEGRATION_COMPLETE.md) (800+ lines)
 - [PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md](PERPLEXITY_STYLE_WEB_RESEARCH_OVERVIEW.md) (comprehensive)
 
@@ -164,7 +164,7 @@ export SERPAPI_KEY="your-key-here"
 
 ### Change Research Strategy
 ```python
-from HoloLoom.agentic.web_researcher import AgenticWebResearcher, ResearchStrategy
+from hololoom.agentic.web_researcher import AgenticWebResearcher, ResearchStrategy
 
 researcher = AgenticWebResearcher(
     config=Config.fast(),

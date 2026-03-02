@@ -52,7 +52,7 @@ We will implement a **three-tier memory backend architecture** with automatic fa
 
 **Configuration**:
 ```python
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 config = Config.fast()
 config.memory_backend = MemoryBackend.INMEMORY
@@ -138,7 +138,7 @@ config.enable_spring_dynamics = True
 **Key Feature**: HYBRID automatically falls back to INMEMORY if Docker services unavailable.
 
 ```python
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.backend_factory import create_memory_backend
 
 async def main():
     config = Config.fast()
@@ -237,8 +237,8 @@ config.memory_backend = MemoryBackend.HYPERSPACE   # Research
 ### Backend Factory
 
 ```python
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.config import Config, MemoryBackend
 
 async def create_memory_backend(config: Config):
     """Create memory backend based on configuration"""
@@ -374,9 +374,9 @@ class KGStore(Protocol):
 
 ## References
 
-- **Implementation**: `HoloLoom/memory/backend_factory.py` (231 lines, simplified from 550)
-- **Backends**: `HoloLoom/memory/graph.py` (INMEMORY), `HoloLoom/memory/neo4j_graph.py` (HYBRID)
-- **Tests**: `HoloLoom/tests/integration/test_backends_quick.py`
+- **Implementation**: `hololoom/memory/backend_factory.py` (231 lines, simplified from 550)
+- **Backends**: `hololoom/memory/graph.py` (INMEMORY), `hololoom/memory/neo4j_graph.py` (HYBRID)
+- **Tests**: `hololoom/tests/integration/test_backends_quick.py`
 - **Docker**: `docker-compose.yml` (Neo4j + Qdrant)
 - **Simplification Review**: `MEMORY_SIMPLIFICATION_REVIEW.md` (Task 1.3 - Oct 2025)
 

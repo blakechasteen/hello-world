@@ -163,7 +163,7 @@ console.log(result.inertia);     // Sum of squared distances
 The Rust package integrates seamlessly with HoloLoom's Python clustering:
 
 ```python
-# In HoloLoom/clustering/core.py
+# In hololoom/clustering/core.py
 try:
     from hololoom_rust import cosine_similarity_batch, kmeans, silhouette_score
     _HAVE_RUST = True

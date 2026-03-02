@@ -65,12 +65,12 @@ HoloLoom has **well-designed dependency management** with good separation of con
 
 Files with optional import handling (25 files):
 ```
-HoloLoom/config.py                    - Optional spacy, scipy
-HoloLoom/lite/memory.py               - Optional persistence
-HoloLoom/alignment/safety_guardrails.py - Optional LLM
-HoloLoom/memory/neo4j_graph.py        - Optional neo4j
-HoloLoom/memory/stores/hybrid_*       - Optional qdrant
-HoloLoom/dark_trace/domains/          - Optional templates
+hololoom/config.py                    - Optional spacy, scipy
+hololoom/lite/memory.py               - Optional persistence
+hololoom/alignment/safety_guardrails.py - Optional LLM
+hololoom/memory/neo4j_graph.py        - Optional neo4j
+hololoom/memory/stores/hybrid_*       - Optional qdrant
+hololoom/dark_trace/domains/          - Optional templates
 ... (19 more files)
 ```
 
@@ -99,8 +99,8 @@ else:
 
 ### Path 1: HoloLoom Lite (70% Complete) ⭐ **RECOMMENDED**
 
-**Entry point**: `HoloLoom/lite/`
-**Core file**: `HoloLoom/lite/core.py` (718 lines)
+**Entry point**: `hololoom/lite/`
+**Core file**: `hololoom/lite/core.py` (718 lines)
 **Dependencies**: 4 core only
 
 **Installation**:
@@ -127,7 +127,7 @@ pip install torch numpy networkx sentence-transformers
 
 ### Path 2: Full HoloLoom (100% features)
 
-**Entry point**: `from HoloLoom import HoloLoom`
+**Entry point**: `from hololoom import HoloLoom`
 **Dependencies**: 9 (4 core + 5 optional-but-expected)
 
 **Installation**:
@@ -258,10 +258,10 @@ cache_path = os.environ.get('HOLOLOOM_CACHE', os.path.expanduser('~/.cache/holol
 
 Files requiring `PYTHONPATH=.` (from grep results):
 ```
-HoloLoom/saas/examples/__init__.py
+hololoom/saas/examples/__init__.py
   - Run: PYTHONPATH=. uvicorn HoloLoom.saas.examples.auth_only_app:app
 
-HoloLoom/lite/README.md
+hololoom/lite/README.md
   - Implicit requirement (all CLI examples assume PYTHONPATH)
 ```
 
@@ -276,7 +276,7 @@ HoloLoom/lite/README.md
 ### What happens on first import?
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 ```
 
 **Lazy loading** (via `__getattr__`):

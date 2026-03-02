@@ -419,7 +419,7 @@ Results:
 
 - **Full Documentation**: `README_ELLE_DEMOS.md` (900+ lines)
 - **Architecture**: `ELLE_INTEGRATION_ARCHITECTURE.md`
-- **Voice Module**: `HoloLoom/voice/`
+- **Voice Module**: `hololoom/voice/`
   - `ar_context.py` - Spatial awareness
   - `command_router.py` - Intent parsing
   - `elle_bridge.py` - Integration
@@ -445,7 +445,7 @@ For issues or questions:
 1. Check the full documentation: `README_ELLE_DEMOS.md`
 2. Review the demo code comments
 3. Check the Elle integration architecture: `ELLE_INTEGRATION_ARCHITECTURE.md`
-4. Examine the actual implementation in `HoloLoom/voice/`
+4. Examine the actual implementation in `hololoom/voice/`
 
 ---
 

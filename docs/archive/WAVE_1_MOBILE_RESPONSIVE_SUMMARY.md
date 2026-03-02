@@ -27,7 +27,7 @@ Successfully added comprehensive mobile-first responsive CSS to the HoloLoom Wor
 
 ### CSS Modifications (609 lines)
 
-**File**: `HoloLoom/web_dashboard/workflow_builder.html`
+**File**: `hololoom/web_dashboard/workflow_builder.html`
 
 #### 1. Base Touch Optimizations (43 lines)
 ```css
@@ -132,7 +132,7 @@ Helper Classes:
 
 ### JavaScript Modifications (220 lines)
 
-**File**: `HoloLoom/web_dashboard/workflow_builder.js`
+**File**: `hololoom/web_dashboard/workflow_builder.js`
 
 #### 1. Touch Event Handlers (106 lines)
 Added to `makeNodeDraggable()` function:

@@ -228,7 +228,7 @@ Time      Strategy   Query                    Iterations  Quality Gain
 
 ### Server Components
 
-**`HoloLoom/dashboard_server.py` (600 lines)**:
+**`hololoom/dashboard_server.py` (600 lines)**:
 
 ```python
 # FastAPI app with WebSocket support
@@ -405,7 +405,7 @@ Dashboard displays:
 
 ### Change Update Frequency
 
-Edit `HoloLoom/dashboard_server.py`:
+Edit `hololoom/dashboard_server.py`:
 
 ```python
 # Line ~455
@@ -562,8 +562,8 @@ Planned improvements:
 ## See Also
 
 - **Phase 1**: [PROMPTLY_HOLOLOOM_INTEGRATION.md](PROMPTLY_HOLOLOOM_INTEGRATION.md) - Recursive reasoning
-- **Phase 2**: [HoloLoom/analytics/README.md](HoloLoom/analytics/README.md) - Analytics
-- **Phase 3**: [HoloLoom/agentic/SKILL_AGENTS_README.md](HoloLoom/agentic/SKILL_AGENTS_README.md) - Skills
+- **Phase 2**: [hololoom/analytics/README.md](hololoom/analytics/README.md) - Analytics
+- **Phase 3**: [hololoom/agentic/SKILL_AGENTS_README.md](hololoom/agentic/SKILL_AGENTS_README.md) - Skills
 - **Phase 4**: [MCP_SERVER_SETUP.md](MCP_SERVER_SETUP.md) - Claude Desktop integration
 
 ---
@@ -571,5 +571,5 @@ Planned improvements:
 **Version**: 1.0.0
 **Created**: 2025-11-16
 **Integration**: Promptly (Phases 1-4) → Real-time Dashboard
-**Server**: `HoloLoom/dashboard_server.py` (600 lines)
+**Server**: `hololoom/dashboard_server.py` (600 lines)
 **Demo**: `demos/demo_dashboard.py` (200 lines)

@@ -17,8 +17,8 @@ Successfully integrated visual tokens (PhotoTokens) into HoloLoom's unified memo
 ### Phase 1: Core Photo Memory (2.5 hours) ✅
 
 **Files Created**:
-- `HoloLoom/memory/photo_tokens.py` (650 lines)
-- `HoloLoom/memory/multimodal_encoder.py` (400 lines)
+- `hololoom/memory/photo_tokens.py` (650 lines)
+- `hololoom/memory/multimodal_encoder.py` (400 lines)
 - `demos/demo_photo_memory.py` (280 lines)
 
 **Key Features**:
@@ -30,7 +30,7 @@ Successfully integrated visual tokens (PhotoTokens) into HoloLoom's unified memo
 
 ### Phase 2: YarnGraph Integration (2 hours) ✅
 
-**File Modified**: `HoloLoom/memory/graph.py` (+338 lines)
+**File Modified**: `hololoom/memory/graph.py` (+338 lines)
 
 **New Methods**:
 1. `add_photo_node(photo_token)` - Add photos to knowledge graph
@@ -49,7 +49,7 @@ Successfully integrated visual tokens (PhotoTokens) into HoloLoom's unified memo
 
 ### Phase 3: HoloLoom API Integration (2 hours) ✅
 
-**File Modified**: `HoloLoom/hololoom.py` (+270 lines)
+**File Modified**: `hololoom/hololoom.py` (+270 lines)
 
 **New Methods**:
 ```python
@@ -120,7 +120,7 @@ async def link_photo_to_memory(photo_id, memory_id, relationship)
 ### 1. Basic Photo Memory
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 async with HoloLoom() as loom:
     # Remember a photo
@@ -301,10 +301,10 @@ edge = KGEdge(photo_id, time_thread_id, type="OCCURRED_AT")
 
 | File | Lines Added | Lines Modified | Purpose |
 |------|-------------|----------------|---------|
-| `HoloLoom/memory/photo_tokens.py` | 650 | - | PhotoToken + PhotoTokenMemory |
-| `HoloLoom/memory/multimodal_encoder.py` | 400 | - | CLIP + structural encoding |
-| `HoloLoom/memory/graph.py` | 338 | 10 | Multimodal graph support |
-| `HoloLoom/hololoom.py` | 270 | 60 | remember_photo(), recall() |
+| `hololoom/memory/photo_tokens.py` | 650 | - | PhotoToken + PhotoTokenMemory |
+| `hololoom/memory/multimodal_encoder.py` | 400 | - | CLIP + structural encoding |
+| `hololoom/memory/graph.py` | 338 | 10 | Multimodal graph support |
+| `hololoom/hololoom.py` | 270 | 60 | remember_photo(), recall() |
 | `demos/demo_photo_memory.py` | 280 | - | Photo memory demo |
 | `demos/demo_multimodal_memory.py` | 370 | - | Full integration demo |
 | **Total** | **2,308** | **70** | 6 files |
@@ -422,7 +422,7 @@ results = model(image)
 
 **DeepSeek-OCR** (already in HoloLoom):
 ```python
-from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
+from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
 
 spinner = DeepSeekOCRSpinner()
 text = await spinner.extract_text(image)

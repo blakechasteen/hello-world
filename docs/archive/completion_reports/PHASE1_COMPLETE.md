@@ -237,26 +237,26 @@ Analysis:
 ## 4. Files Created
 
 ### Bootstrap
-- `HoloLoom/bootstrap_system.py` (417 lines)
+- `hololoom/bootstrap_system.py` (417 lines)
   - Generates 100 diverse queries
   - Tracks learning curves
   - Records RL statistics
 
 ### Visualization
-- `HoloLoom/visualize_bootstrap.py` (220 lines)
+- `hololoom/visualize_bootstrap.py` (220 lines)
   - 9-panel dashboard
   - Learning curves
   - Cost efficiency charts
-- `HoloLoom/bootstrap_results/bootstrap_dashboard.png`
+- `hololoom/bootstrap_results/bootstrap_dashboard.png`
 
 ### Validation
-- `HoloLoom/validate_pipeline.py` (376 lines)
+- `hololoom/validate_pipeline.py` (376 lines)
   - 7 comprehensive tests
   - End-to-end integration
   - Performance benchmarks
 
 ### Documentation
-- `HoloLoom/PHASE1_COMPLETE.md` (this file)
+- `hololoom/PHASE1_COMPLETE.md` (this file)
 
 ---
 

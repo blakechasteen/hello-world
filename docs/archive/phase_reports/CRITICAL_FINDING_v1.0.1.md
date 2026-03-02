@@ -23,7 +23,7 @@
 
 ### The Code
 ```python
-# In HoloLoom/memory/unified.py
+# In hololoom/memory/unified.py
 
 def _recall_semantic(self, query, limit) -> List[Memory]:
     """Semantic strategy: Qdrant similarity."""
@@ -136,7 +136,7 @@ It defines:
 
 Connect to existing working backends:
 ```python
-# Use HoloLoom/memory/stores/hybrid_neo4j_qdrant.py
+# Use hololoom/memory/stores/hybrid_neo4j_qdrant.py
 # This DOES work!
 
 from memory.stores.hybrid_neo4j_qdrant import HybridNeo4jQdrant

@@ -13,12 +13,12 @@ This document tracks performance optimizations implemented in HoloLoom to improv
 ### Implementation
 
 **Files Added:**
-- [HoloLoom/performance/cache.py](HoloLoom/performance/cache.py) - LRU cache with TTL (95 lines)
-- [HoloLoom/performance/__init__.py](HoloLoom/performance/__init__.py) - Module exports
+- [hololoom/performance/cache.py](hololoom/performance/cache.py) - LRU cache with TTL (95 lines)
+- [hololoom/performance/__init__.py](hololoom/performance/__init__.py) - Module exports
 - [demos/performance_benchmark.py](demos/performance_benchmark.py) - Benchmark suite (200 lines)
 
 **Files Modified:**
-- [HoloLoom/weaving_shuttle.py](HoloLoom/weaving_shuttle.py)
+- [hololoom/weaving_shuttle.py](hololoom/weaving_shuttle.py)
   - Added QueryCache initialization (line 278)
   - Added cache check before weaving (line 356)
   - Added cache storage after weaving (line 629)

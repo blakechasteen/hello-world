@@ -10,7 +10,7 @@
 
 | # | Task | Status | Evidence |
 |---|------|--------|----------|
-| 1 | Protocol standardization | ✅ Complete | `HoloLoom/protocols/__init__.py` (10 protocols) |
+| 1 | Protocol standardization | ✅ Complete | `hololoom/protocols/__init__.py` (10 protocols) |
 | 2 | Backend consolidation | ✅ Complete | 3 backends (NETWORKX, NEO4J_QDRANT, HYPERSPACE) |
 | 3 | Intelligent routing | ✅ Complete | Auto-complexity with 4 levels (LITE/FAST/FULL/RESEARCH) |
 | 4 | Complex testing | ✅ Complete | 18/19 tests passing (94.7% success rate) |
@@ -74,21 +74,21 @@ RESEARCH: 400-800ms ✅ (target: <1000ms)
 ## 📁 Files Created/Modified
 
 ### New Files (Created This Phase)
-1. **HoloLoom/protocols/__init__.py** (150 lines)
+1. **hololoom/protocols/__init__.py** (150 lines)
    - 10 canonical protocol definitions
    - Single source of truth for interfaces
 
-2. **HoloLoom/memory/hyperspace.py** (520 lines)
+2. **hololoom/memory/hyperspace.py** (520 lines)
    - Intelligent multipass crawling
    - Matryoshka importance gating (0.6→0.75→0.85→0.9)
    - Graph traversal with fusion
 
-3. **HoloLoom/monitoring/dashboard.py** (400 lines)
+3. **hololoom/monitoring/dashboard.py** (400 lines)
    - MetricsCollector for data aggregation
    - MonitoringDashboard with rich library
    - Thread-safe concurrent query tracking
 
-4. **HoloLoom/monitoring/__init__.py** (10 lines)
+4. **hololoom/monitoring/__init__.py** (10 lines)
    - Module entry point
    - Exports MonitoringDashboard and MetricsCollector
 
@@ -105,27 +105,27 @@ RESEARCH: 400-800ms ✅ (target: <1000ms)
    - Migration guide
 
 ### Modified Files (Migrated)
-1. **HoloLoom/policy/unified.py**
+1. **hololoom/policy/unified.py**
    - Migrated DecisionEngine and ToolExecution protocols
    - Added deprecation warnings
    - 100% backward compatible
 
-2. **HoloLoom/memory/protocol.py**
+2. **hololoom/memory/protocol.py**
    - Migrated MemoryBackend protocol
    - Canonical import with fallback
    - Deprecation notices
 
-3. **HoloLoom/Modules/Features.py**
+3. **hololoom/Modules/Features.py**
    - Migrated MotifDetector and Embedder protocols
    - Backward compatibility aliases
    - Stacklevel=2 warnings
 
-4. **HoloLoom/memory/routing/protocol.py**
+4. **hololoom/memory/routing/protocol.py**
    - Migrated RoutingStrategy protocol
    - Try/except graceful fallback
    - Terminal append for compatibility
 
-5. **HoloLoom/memory/routing/execution_patterns.py**
+5. **hololoom/memory/routing/execution_patterns.py**
    - Migrated ExecutionEngine protocol
    - Forward reference fixes
    - Backward compatibility maintained
@@ -218,7 +218,7 @@ Beautiful dashboards with zero external dependencies:
 
 ### Test Suite Results
 ```
-$ $env:PYTHONPATH = "."; python HoloLoom/test_unified_policy.py
+$ $env:PYTHONPATH = "."; python hololoom/test_unified_policy.py
 
 ✅ test_tool_selection_epsilon_greedy
 ✅ test_tool_selection_thompson_sampling
@@ -266,13 +266,13 @@ TOTAL: 18/19 PASSED (94.7%)
 pip install rich  # For monitoring dashboard
 
 # Verify installation
-$env:PYTHONPATH = "."; python -c "from HoloLoom.monitoring import MonitoringDashboard; print('✅ Monitoring available')"
+$env:PYTHONPATH = "."; python -c "from hololoom.monitoring import MonitoringDashboard; print('✅ Monitoring available')"
 ```
 
 ### Basic Usage
 ```python
-from HoloLoom.unified_api import HoloLoom
-from HoloLoom.monitoring import MonitoringDashboard, get_global_collector
+from hololoom.unified_api import HoloLoom
+from hololoom.monitoring import MonitoringDashboard, get_global_collector
 
 # Create loom with monitoring enabled
 loom = await HoloLoom.create(pattern="fast", enable_monitoring=True)
@@ -408,10 +408,10 @@ $env:PYTHONPATH = "."; python demos/06_hybrid_memory.py
 - [x] Design rationale documented
 
 ### Deliverables
-- [x] HoloLoom/protocols/__init__.py (10 protocols)
-- [x] HoloLoom/memory/hyperspace.py (520 lines)
-- [x] HoloLoom/monitoring/dashboard.py (400 lines)
-- [x] HoloLoom/monitoring/__init__.py (10 lines)
+- [x] hololoom/protocols/__init__.py (10 protocols)
+- [x] hololoom/memory/hyperspace.py (520 lines)
+- [x] hololoom/monitoring/dashboard.py (400 lines)
+- [x] hololoom/monitoring/__init__.py (10 lines)
 - [x] demos/monitoring_dashboard_demo.py (250 lines)
 - [x] PHASE_2_ARCHITECTURE.md (1000+ lines)
 - [x] 5 files migrated with backward compatibility

@@ -28,7 +28,7 @@ Successfully integrated persistent memory backends with WeavingShuttle, enabling
 - ✅ UnifiedMemory (intelligent extraction)
 - ✅ Backend factory (NetworkX, Neo4j, Qdrant, Hybrid)
 
-**File:** [HoloLoom/memory/weaving_adapter.py](HoloLoom/memory/weaving_adapter.py)
+**File:** [hololoom/memory/weaving_adapter.py](hololoom/memory/weaving_adapter.py)
 
 ### 2. WeavingShuttle Enhancements
 **Updates:**
@@ -50,7 +50,7 @@ shuttle = WeavingShuttle(cfg=config, memory=memory)
 shuttle = WeavingShuttle(cfg=config, memory=unified_memory_backend)
 ```
 
-**File:** [HoloLoom/weaving_shuttle.py](HoloLoom/weaving_shuttle.py) (updated)
+**File:** [hololoom/weaving_shuttle.py](hololoom/weaving_shuttle.py) (updated)
 
 ### 3. Demo & Documentation
 - **persistent_memory_demo.py** - Complete walkthrough of all 3 options
@@ -68,14 +68,14 @@ shuttle = WeavingShuttle(cfg=config, memory=unified_memory_backend)
 
 **How It Works:**
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
 
 # Direct shards (legacy)
 shuttle = WeavingShuttle(cfg=Config.fast(), shards=shards)
 
 # Or with adapter (recommended)
-from HoloLoom.memory.weaving_adapter import create_weaving_memory
+from hololoom.memory.weaving_adapter import create_weaving_memory
 
 memory = create_weaving_memory("in_memory", shards=shards)
 shuttle = WeavingShuttle(cfg=Config.fast(), memory=memory)
@@ -101,8 +101,8 @@ shuttle = WeavingShuttle(cfg=Config.fast(), memory=memory)
 
 **How It Works:**
 ```python
-from HoloLoom.memory.weaving_adapter import create_weaving_memory
-from HoloLoom.weaving_shuttle import WeavingShuttle
+from hololoom.memory.weaving_adapter import create_weaving_memory
+from hololoom.weaving_shuttle import WeavingShuttle
 
 # Create unified memory
 memory = create_weaving_memory(
@@ -141,7 +141,7 @@ shuttle = WeavingShuttle(cfg=Config.fast(), memory=memory)
 
 **How It Works:**
 ```python
-from HoloLoom.memory.weaving_adapter import create_weaving_memory
+from hololoom.memory.weaving_adapter import create_weaving_memory
 
 # Create hybrid backend (Neo4j + Qdrant)
 memory = create_weaving_memory(
@@ -248,7 +248,7 @@ else:
 ## Files Created/Modified
 
 ### New Files
-1. **HoloLoom/memory/weaving_adapter.py** (500 lines)
+1. **hololoom/memory/weaving_adapter.py** (500 lines)
    - WeavingMemoryAdapter class
    - Factory methods
    - Conversion utilities
@@ -274,7 +274,7 @@ else:
    - Risk mitigation
 
 ### Modified Files
-1. **HoloLoom/weaving_shuttle.py**
+1. **hololoom/weaving_shuttle.py**
    - Added memory parameter
    - Smart backend detection
    - Backward compatibility
@@ -286,9 +286,9 @@ else:
 
 ### Quick Start (In-Memory)
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
+from hololoom.Documentation.types import Query, MemoryShard
 
 # Create memories
 shards = [
@@ -307,7 +307,7 @@ await shuttle.close()
 
 ### Production (Neo4j + Qdrant)
 ```python
-from HoloLoom.memory.weaving_adapter import create_weaving_memory
+from hololoom.memory.weaving_adapter import create_weaving_memory
 
 # Start Docker: docker-compose up -d
 
@@ -333,7 +333,7 @@ await shuttle.close()
 ### ChatOps Integration
 ```python
 # In hololoom_handlers.py
-from HoloLoom.memory.weaving_adapter import create_weaving_memory
+from hololoom.memory.weaving_adapter import create_weaving_memory
 
 # Initialize with persistent memory
 memory = create_weaving_memory(
@@ -408,7 +408,7 @@ QDRANT_CONFIG = {
 }
 
 # Create memory
-from HoloLoom.memory.weaving_adapter import create_weaving_memory
+from hololoom.memory.weaving_adapter import create_weaving_memory
 
 memory = create_weaving_memory(
     mode="hybrid",

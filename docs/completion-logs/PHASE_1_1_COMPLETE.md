@@ -16,7 +16,7 @@ Successfully integrated the three-tier semantic cache (AdaptiveSemanticCache) in
 ## Changes Made
 
 ### 1. Updated `WeavingOrchestrator.__init__()`
-**File:** [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py:260)
+**File:** [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py:260)
 
 Added parameter:
 ```python
@@ -24,7 +24,7 @@ enable_semantic_cache: bool = True  # Default enabled for 3-10× speedup
 ```
 
 ### 2. Added `_initialize_semantic_cache()` Method
-**File:** [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py:430-464)
+**File:** [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py:430-464)
 
 Initializes:
 - `SemanticSpectrum` with 244D dimensions
@@ -34,7 +34,7 @@ Initializes:
 Graceful fallback on failure (logs warning, continues without cache).
 
 ### 3. Added `_analyze_semantics()` Helper Method
-**File:** [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py:466-494)
+**File:** [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py:466-494)
 
 Provides cached semantic projections:
 - Checks hot tier (pre-loaded) - <0.001ms
@@ -43,7 +43,7 @@ Provides cached semantic projections:
 - Graceful fallback on cache failure
 
 ### 4. Enhanced Spacetime Metadata
-**File:** [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py:1101-1120)
+**File:** [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py:1101-1120)
 
 Added `semantic_cache` section to metadata:
 ```python
@@ -148,8 +148,8 @@ With typical query patterns (60-90% cache hit rate):
 ### Basic Usage (Cache Enabled by Default)
 
 ```python
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 config = Config.fast()
 async with WeavingOrchestrator(cfg=config, shards=shards) as orchestrator:
@@ -212,7 +212,7 @@ scores = orchestrator._analyze_semantics("hero's journey")
 
 ## Files Modified
 
-1. **HoloLoom/weaving_orchestrator.py** (4 changes)
+1. **hololoom/weaving_orchestrator.py** (4 changes)
    - Added `enable_semantic_cache` parameter
    - Added `_initialize_semantic_cache()` method
    - Added `_analyze_semantics()` helper

@@ -41,7 +41,7 @@ Extended the HoloLoom Warp Drive with rigorous analysis foundations:
 
 ## Deliverables
 
-### 1. Real Analysis Module ([HoloLoom/warp/math/analysis/real_analysis.py](HoloLoom/warp/math/analysis/real_analysis.py))
+### 1. Real Analysis Module ([hololoom/warp/math/analysis/real_analysis.py](hololoom/warp/math/analysis/real_analysis.py))
 
 **766 lines of rigorous continuous mathematics**
 
@@ -132,7 +132,7 @@ class RiemannIntegrator:
 
 ---
 
-### 2. Complex Analysis Module ([HoloLoom/warp/math/analysis/complex_analysis.py](HoloLoom/warp/math/analysis/complex_analysis.py))
+### 2. Complex Analysis Module ([hololoom/warp/math/analysis/complex_analysis.py](hololoom/warp/math/analysis/complex_analysis.py))
 
 **694 lines of complex-valued analysis**
 
@@ -233,7 +233,7 @@ class AnalyticContinuation:
 ### 3. Module Structure
 
 ```
-HoloLoom/warp/math/
+hololoom/warp/math/
 ├── __init__.py                      # Math module root
 └── analysis/
     ├── __init__.py                  # Analysis exports
@@ -243,12 +243,12 @@ HoloLoom/warp/math/
 
 **Clean Integration:**
 ```python
-from HoloLoom.warp.math.analysis import (
+from hololoom.warp.math.analysis import (
     MetricSpace, Differentiator, ComplexFunction, ResidueCalculator
 )
 
 # Or via warp
-from HoloLoom.warp import math
+from hololoom.warp import math
 space = math.MetricSpace(...)
 ```
 
@@ -287,8 +287,8 @@ All Tests Passed!
 
 ### Enhanced WarpSpace
 ```python
-from HoloLoom.warp import WarpSpace
-from HoloLoom.warp.math.analysis import MetricSpace, Differentiator
+from hololoom.warp import WarpSpace
+from hololoom.warp.math.analysis import MetricSpace, Differentiator
 
 # Warp space as metric space
 warp = WarpSpace(embedder, scales=[96, 192, 384])
@@ -311,7 +311,7 @@ grad = Differentiator.gradient(loss, current_params)
 
 ### Rigorous Convergence Analysis
 ```python
-from HoloLoom.warp.math.analysis import SequenceAnalyzer
+from hololoom.warp.math.analysis import SequenceAnalyzer
 
 # Track training loss
 training_losses = []
@@ -332,7 +332,7 @@ for epoch in range(num_epochs):
 
 ### Lipschitz-Constrained Networks
 ```python
-from HoloLoom.warp.math.analysis import ContinuityChecker, MetricSpace
+from hololoom.warp.math.analysis import ContinuityChecker, MetricSpace
 
 # Build network
 model = create_network()
@@ -349,7 +349,7 @@ print(f"Network is {L:.2f}-Lipschitz")
 
 ### Complex-Valued Signal Processing
 ```python
-from HoloLoom.warp.math.analysis import ComplexFunction, SeriesExpansion
+from hololoom.warp.math.analysis import ComplexFunction, SeriesExpansion
 
 # Fourier basis as complex functions
 def fourier_basis(k, T):
@@ -425,7 +425,7 @@ coeffs = SeriesExpansion.taylor_series(signal_func, center=t0)
 
 **Solution:**
 ```python
-from HoloLoom.warp.math.analysis import SequenceAnalyzer, MetricSpace
+from hololoom.warp.math.analysis import SequenceAnalyzer, MetricSpace
 
 # Track loss sequence
 losses = []
@@ -453,7 +453,7 @@ for epoch in range(max_epochs):
 
 **Solution:**
 ```python
-from HoloLoom.warp.math.analysis import ContinuityChecker, MetricSpace
+from hololoom.warp.math.analysis import ContinuityChecker, MetricSpace
 
 class LipschitzDiscriminator(nn.Module):
     def __init__(self, max_lipschitz=1.0):
@@ -479,7 +479,7 @@ class LipschitzDiscriminator(nn.Module):
 
 **Solution:**
 ```python
-from HoloLoom.warp.math.analysis import ResidueCalculator, ContourIntegrator
+from hololoom.warp.math.analysis import ResidueCalculator, ContourIntegrator
 
 def inverse_fourier_transform(F_omega, t):
     """
@@ -516,8 +516,8 @@ def inverse_fourier_transform(F_omega, t):
 
 **Solution:**
 ```python
-from HoloLoom.warp.math.analysis import MetricSpace, Differentiator
-from HoloLoom.warp import WarpSpace
+from hololoom.warp.math.analysis import MetricSpace, Differentiator
+from hololoom.warp import WarpSpace
 
 # Get embeddings
 warp = WarpSpace(embedder, scales=[384])
@@ -555,7 +555,7 @@ for point in embeddings[:5]:
 
 **Solution:**
 ```python
-from HoloLoom.warp.math.analysis import ConformalMapper, ComplexFunction
+from hololoom.warp.math.analysis import ConformalMapper, ComplexFunction
 
 def embed_2d_to_complex(embedding_2d):
     """Convert 2D embedding to complex number"""
@@ -633,15 +633,15 @@ The analysis foundations enable the next tier of mathematics:
 
 ### New Files (5)
 
-1. **[HoloLoom/warp/math/__init__.py](HoloLoom/warp/math/__init__.py)** - Math module root
-2. **[HoloLoom/warp/math/analysis/__init__.py](HoloLoom/warp/math/analysis/__init__.py)** - Analysis exports
-3. **[HoloLoom/warp/math/analysis/real_analysis.py](HoloLoom/warp/math/analysis/real_analysis.py)** - Real analysis (766 lines)
-4. **[HoloLoom/warp/math/analysis/complex_analysis.py](HoloLoom/warp/math/analysis/complex_analysis.py)** - Complex analysis (694 lines)
+1. **[hololoom/warp/math/__init__.py](hololoom/warp/math/__init__.py)** - Math module root
+2. **[hololoom/warp/math/analysis/__init__.py](hololoom/warp/math/analysis/__init__.py)** - Analysis exports
+3. **[hololoom/warp/math/analysis/real_analysis.py](hololoom/warp/math/analysis/real_analysis.py)** - Real analysis (766 lines)
+4. **[hololoom/warp/math/analysis/complex_analysis.py](hololoom/warp/math/analysis/complex_analysis.py)** - Complex analysis (694 lines)
 5. **[test_analysis_foundations.py](test_analysis_foundations.py)** - Test suite (109 lines)
 
 ### Modified Files (1)
 
-6. **[HoloLoom/warp/__init__.py](HoloLoom/warp/__init__.py)** - Added math/analysis to exports
+6. **[hololoom/warp/__init__.py](hololoom/warp/__init__.py)** - Added math/analysis to exports
 
 **Total**: 1,569 lines of rigorous mathematics
 
@@ -709,7 +709,7 @@ All integrated with:
 
 ```python
 # Real Analysis
-from HoloLoom.warp.math.analysis import MetricSpace, Differentiator
+from hololoom.warp.math.analysis import MetricSpace, Differentiator
 
 # Create metric space
 embeddings = [np.random.randn(10) for _ in range(100)]
@@ -726,7 +726,7 @@ grad = Differentiator.gradient(loss, np.array([1.0, 2.0, 3.0]))
 # Result: [2.0, 4.0, 6.0]
 
 # Complex Analysis
-from HoloLoom.warp.math.analysis import ComplexFunction, ResidueCalculator
+from hololoom.warp.math.analysis import ComplexFunction, ResidueCalculator
 
 # Holomorphic function
 f = ComplexFunction(lambda z: z**2)

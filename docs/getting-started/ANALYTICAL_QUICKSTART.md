@@ -20,7 +20,7 @@ python -m pip install -e .
 
 ```python
 import asyncio
-from HoloLoom.analytical_orchestrator import create_analytical_orchestrator
+from hololoom.analytical_orchestrator import create_analytical_orchestrator
 
 async def main():
     # Create orchestrator with all analysis enabled
@@ -272,7 +272,7 @@ if metrics['continuity']['lipschitz_constant'] > 500:
 
 1. **Read full documentation:** [ANALYTICAL_ORCHESTRATOR.md](ANALYTICAL_ORCHESTRATOR.md)
 2. **Run demos:** `python demos/analytical_weaving_demo.py`
-3. **Explore math modules:** [warp/math/analysis/](../HoloLoom/warp/math/analysis/)
+3. **Explore math modules:** [warp/math/analysis/](../hololoom/warp/math/analysis/)
 4. **Integrate with your pipeline:** Replace `WeavingOrchestrator` with `AnalyticalWeavingOrchestrator`
 
 ---
@@ -284,7 +284,7 @@ if metrics['continuity']['lipschitz_constant'] > 500:
 ```python
 # Error: Cannot import analytical_orchestrator
 # Solution: Ensure math modules are available
-from HoloLoom.warp.math.analysis import MetricSpace  # Test import
+from hololoom.warp.math.analysis import MetricSpace  # Test import
 ```
 
 ### Slow Performance

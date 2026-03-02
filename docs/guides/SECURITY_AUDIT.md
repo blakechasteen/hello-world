@@ -22,7 +22,7 @@ The mythRL codebase contains several security vulnerabilities requiring immediat
 ## CRITICAL Vulnerabilities (Immediate Action Required)
 
 ### 🔴 CRIT-1: Arbitrary Code Execution via `eval()`
-**File**: [HoloLoom/warp/math/smart_operation_selector.py:1081](HoloLoom/warp/math/smart_operation_selector.py#L1081)
+**File**: [hololoom/warp/math/smart_operation_selector.py:1081](hololoom/warp/math/smart_operation_selector.py#L1081)
 
 ```python
 # VULNERABLE CODE

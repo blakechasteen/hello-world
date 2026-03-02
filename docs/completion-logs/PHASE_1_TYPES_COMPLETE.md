@@ -2,13 +2,13 @@
 
 ## What Was Done
 
-### 1. Created `HoloLoom/protocols/types.py`
+### 1. Created `hololoom/protocols/types.py`
 - **ComplexityLevel** enum with LITE(3), FAST(5), FULL(7), RESEARCH(9)
 - **ProvenceTrace** dataclass for full computational provenance
 - **MythRLResult** dataclass for standardized results
 - Full documentation and examples for each type
 
-### 2. Updated `HoloLoom/protocols/__init__.py`
+### 2. Updated `hololoom/protocols/__init__.py`
 - Added import from `protocols.types`
 - Exported ComplexityLevel, ProvenceTrace, MythRLResult
 - Updated documentation header
@@ -26,14 +26,14 @@
 
 ```powershell
 # Test 1: Types import successfully
-$env:PYTHONPATH = "."; python -c "from HoloLoom.protocols.types import ComplexityLevel, ProvenceTrace, MythRLResult; print('✅ Types imported successfully')"
+$env:PYTHONPATH = "."; python -c "from hololoom.protocols.types import ComplexityLevel, ProvenceTrace, MythRLResult; print('✅ Types imported successfully')"
 Result: ✅ Success
 
 # Test 2: Protocols export types
-$env:PYTHONPATH = "."; python -c "from HoloLoom.protocols import ComplexityLevel, ProvenceTrace, MythRLResult, MemoryStore, PolicyEngine; print('✅ All protocols imported')"
+$env:PYTHONPATH = "."; python -c "from hololoom.protocols import ComplexityLevel, ProvenceTrace, MythRLResult, MemoryStore, PolicyEngine; print('✅ All protocols imported')"
 Result: ✅ Success
 
-# Test 3: dev/ imports from HoloLoom
+# Test 3: dev/ imports from hololoom
 $env:PYTHONPATH = "."; python -c "from dev.protocol_modules_mythrl import ComplexityLevel, MythRLShuttle; s = MythRLShuttle(); print('✅ Shuttle created')"
 Result: ✅ Success
 ```
@@ -43,26 +43,26 @@ Result: ✅ Success
 ### Before Phase 1
 - Types duplicated in `dev/protocol_modules_mythrl.py` (90+ lines)
 - No single source of truth
-- dev/ and HoloLoom/ disconnected
+- dev/ and hololoom/ disconnected
 
 ### After Phase 1
-- **Single source of truth**: `HoloLoom/protocols/types.py`
-- **Unified imports**: `from HoloLoom.protocols import ComplexityLevel, ProvenceTrace, MythRLResult`
+- **Single source of truth**: `hololoom/protocols/types.py`
+- **Unified imports**: `from hololoom.protocols import ComplexityLevel, ProvenceTrace, MythRLResult`
 - **90+ lines eliminated** from dev/
 - **Clean architecture**: Types → Protocols → Implementations
 
 ## File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── protocols/
 │   ├── __init__.py          # Exports types + protocols
 │   ├── types.py             # ✅ NEW: ComplexityLevel, ProvenceTrace, MythRLResult
 │   └── README.md            # (to be created)
 
 dev/
-├── protocol_modules_mythrl.py   # ✅ UPDATED: Imports from HoloLoom
-├── narrative_depth_protocol.py  # ✅ UPDATED: Imports from HoloLoom
+├── protocol_modules_mythrl.py   # ✅ UPDATED: Imports from hololoom
+├── narrative_depth_protocol.py  # ✅ UPDATED: Imports from hololoom
 └── ...
 ```
 

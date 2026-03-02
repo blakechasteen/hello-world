@@ -67,12 +67,12 @@ Plus 3 additional repository-level documents:
 
 ### Files Modified
 
-- **HoloLoom/web_dashboard/workflow_builder.html**
+- **hololoom/web_dashboard/workflow_builder.html**
   - Added 609 lines of CSS
   - Size: 1,165 lines → 1,773 lines
   - Git status: Modified ✓
 
-- **HoloLoom/web_dashboard/workflow_builder.js**
+- **hololoom/web_dashboard/workflow_builder.js**
   - Added 220 lines of JavaScript
   - Size: 2,365 lines → 2,636 lines
   - Git status: Modified ✓
@@ -305,15 +305,15 @@ See **MOBILE_RESPONSIVE_FEATURES.md** for complete Wave 2 roadmap and architectu
 ## Files Summary
 
 ### Modified (2)
-- `HoloLoom/web_dashboard/workflow_builder.html` (+609 CSS)
-- `HoloLoom/web_dashboard/workflow_builder.js` (+220 JS)
+- `hololoom/web_dashboard/workflow_builder.html` (+609 CSS)
+- `hololoom/web_dashboard/workflow_builder.js` (+220 JS)
 
 ### Created (7)
-- `HoloLoom/web_dashboard/README_MOBILE_RESPONSIVE.md` (documentation index)
-- `HoloLoom/web_dashboard/MOBILE_RESPONSIVE_FEATURES.md` (technical reference)
-- `HoloLoom/web_dashboard/MOBILE_QUICK_REFERENCE.md` (quick guide)
-- `HoloLoom/web_dashboard/IMPLEMENTATION_CHECKLIST.md` (testing plan)
-- `HoloLoom/web_dashboard/WAVE_1_VALIDATION_REPORT.md` (verification)
+- `hololoom/web_dashboard/README_MOBILE_RESPONSIVE.md` (documentation index)
+- `hololoom/web_dashboard/MOBILE_RESPONSIVE_FEATURES.md` (technical reference)
+- `hololoom/web_dashboard/MOBILE_QUICK_REFERENCE.md` (quick guide)
+- `hololoom/web_dashboard/IMPLEMENTATION_CHECKLIST.md` (testing plan)
+- `hololoom/web_dashboard/WAVE_1_VALIDATION_REPORT.md` (verification)
 - `WAVE_1_MOBILE_RESPONSIVE_SUMMARY.md` (executive summary)
 - `WAVE_1_COMPLETION_SUMMARY.md` (project completion)
 

@@ -17,7 +17,7 @@ Add this (update YOUR_PATH to your actual repository location):
   "mcpServers": {
     "hololoom-memory": {
       "command": "python",
-      "args": ["-m", "HoloLoom.memory.mcp_server"],
+      "args": ["-m", "hololoom.memory.mcp_server"],
       "cwd": "YOUR_PATH\\mythRL",
       "env": {
         "PYTHONPATH": "YOUR_PATH\\mythRL",
@@ -31,7 +31,7 @@ Add this (update YOUR_PATH to your actual repository location):
 }
 ```
 
-**Note**: This uses in-memory storage (no persistence). See [full guide](HoloLoom/Documentation/MCP_SETUP_GUIDE.md) for Neo4j/Mem0 setup.
+**Note**: This uses in-memory storage (no persistence). See [full guide](hololoom/Documentation/MCP_SETUP_GUIDE.md) for Neo4j/Mem0 setup.
 
 **Optional - Enable Neo4j** (for persistent graph storage):
 ```json
@@ -126,7 +126,7 @@ What's related to Hive Jodi? (graph)
 
 ## Full Documentation
 
-See [HoloLoom/Documentation/MCP_SETUP_GUIDE.md](HoloLoom/Documentation/MCP_SETUP_GUIDE.md)
+See [hololoom/Documentation/MCP_SETUP_GUIDE.md](hololoom/Documentation/MCP_SETUP_GUIDE.md)
 
 ---
 

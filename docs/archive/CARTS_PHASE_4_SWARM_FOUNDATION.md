@@ -1,7 +1,7 @@
 # CARTS Phase 4: Multi-Agent Swarm Foundation
 
 **Status**: ✅ Foundation Implementation Complete (November 2025)
-**Location**: `HoloLoom/redteam/swarm/`
+**Location**: `hololoom/redteam/swarm/`
 **Total Code**: 914 lines of production-ready code
 **Performance Target**: <10ms message latency
 **Test Status**: All syntax validation passing
@@ -63,7 +63,7 @@ Flexible message container for inter-agent communication.
 
 **Usage**:
 ```python
-from HoloLoom.redteam.swarm import AgentMessage, MessagePriority
+from hololoom.redteam.swarm import AgentMessage, MessagePriority
 
 msg = AgentMessage(
     sender="scout_1",
@@ -92,7 +92,7 @@ Task definition with parameters and scheduling.
 
 **Usage**:
 ```python
-from HoloLoom.redteam.swarm import AgentTask, MessagePriority
+from hololoom.redteam.swarm import AgentTask, MessagePriority
 
 task = AgentTask(
     task_type="probe_surface",
@@ -119,7 +119,7 @@ Execution result with metrics and discoveries.
 
 **Usage**:
 ```python
-from HoloLoom.redteam.swarm import AgentResult
+from hololoom.redteam.swarm import AgentResult
 
 result = AgentResult(
     task_id=task.task_id,
@@ -331,7 +331,7 @@ count = bus.clear_dead_letters()
 
 ```python
 import asyncio
-from HoloLoom.redteam.swarm import (
+from hololoom.redteam.swarm import (
     MessageBus, AgentMessage, AgentTask, MessagePriority
 )
 
@@ -619,11 +619,11 @@ class Coordinator:
 
 ## Files Created
 
-1. **HoloLoom/redteam/swarm/__init__.py** (52 lines)
+1. **hololoom/redteam/swarm/__init__.py** (52 lines)
    - Package interface
    - Public exports
 
-2. **HoloLoom/redteam/swarm/protocols.py** (378 lines)
+2. **hololoom/redteam/swarm/protocols.py** (378 lines)
    - AgentRole enum (4 roles)
    - AgentState enum (7 states)
    - MessagePriority enum (4 levels)
@@ -633,7 +633,7 @@ class Coordinator:
    - AgentProtocol interface (5 methods)
    - CoordinatorProtocol interface (4 methods)
 
-3. **HoloLoom/redteam/swarm/communication.py** (484 lines)
+3. **hololoom/redteam/swarm/communication.py** (484 lines)
    - MessageMetrics dataclass (14 metrics)
    - MessageBus class with:
      - Core methods: send(), receive(), broadcast()

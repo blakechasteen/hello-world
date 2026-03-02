@@ -40,7 +40,7 @@
 - 4 new canonical demos
 
 ### Phase 2: Weaving Integration ✅ (46k tokens)
-- Created [WeavingOrchestrator](HoloLoom/weaving_orchestrator.py) (562 lines)
+- Created [WeavingOrchestrator](hololoom/weaving_orchestrator.py) (562 lines)
 - Wired all 6 weaving modules together
 - Complete cycle operational
 - **Result:** Metaphor → REAL CODE
@@ -54,11 +54,11 @@
 6. Spacetime - Complete trace
 
 **Key Files:**
-- [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py)
+- [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py)
 - [PHASE2_WEAVING_COMPLETE.md](PHASE2_WEAVING_COMPLETE.md)
 
 ### Phase 3: Synthesis Integration ✅ (19k tokens)
-- Created [SynthesisBridge](HoloLoom/synthesis_bridge.py) (450 lines)
+- Created [SynthesisBridge](hololoom/synthesis_bridge.py) (450 lines)
 - Added Stage 3.5 to weaving cycle
 - All 3 synthesis modules integrated
 - **Result:** Real-time pattern extraction
@@ -71,7 +71,7 @@
 - Training data generation ready
 
 **Key Files:**
-- [HoloLoom/synthesis_bridge.py](HoloLoom/synthesis_bridge.py)
+- [hololoom/synthesis_bridge.py](hololoom/synthesis_bridge.py)
 - [PHASE3_SYNTHESIS_COMPLETE.md](PHASE3_SYNTHESIS_COMPLETE.md)
 
 ---
@@ -155,8 +155,8 @@ Trace Includes:
 6. SESSION_COMPLETE_INTEGRATION_SPRINT.md (this file)
 
 ### Code (3 major files)
-1. HoloLoom/weaving_orchestrator.py (562 lines)
-2. HoloLoom/synthesis_bridge.py (450 lines)
+1. hololoom/weaving_orchestrator.py (562 lines)
+2. hololoom/synthesis_bridge.py (450 lines)
 3. demos/01_quickstart.py
 4. demos/03_conversational.py
 5. demos/04_mcp_integration.py
@@ -196,7 +196,7 @@ mythRL/
 ├── archive/
 │   ├── old_tests/ (14 files)
 │   └── old_demos/ (19 files)
-└── HoloLoom/
+└── hololoom/
     ├── weaving_orchestrator.py ← NEW!
     ├── synthesis_bridge.py ← NEW!
     ├── loom/ (working)
@@ -418,13 +418,13 @@ All phases documented:
 ### Run Complete Weaving Cycle
 ```bash
 export PYTHONPATH=.
-python HoloLoom/weaving_orchestrator.py
+python hololoom/weaving_orchestrator.py
 ```
 
 ### Run Synthesis Bridge
 ```bash
 export PYTHONPATH=.
-python HoloLoom/synthesis_bridge.py
+python hololoom/synthesis_bridge.py
 ```
 
 ### Run Demos

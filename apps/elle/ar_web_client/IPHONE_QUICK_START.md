@@ -235,7 +235,7 @@ Use the ngrok HTTPS URL on iPhone instead of local IP.
 - Web Speech API integration
 
 ✅ **AR Visualizations**:
-- Text overlays (answers from HoloLoom)
+- Text overlays (answers from hololoom)
 - Highlights (bounding boxes)
 - Paths (navigation arrows)
 

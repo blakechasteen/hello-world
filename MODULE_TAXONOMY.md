@@ -115,8 +115,8 @@ These have their own users, their own UIs, their own reason to exist.
 |-----------------|-----|-----------|-----------|
 | `apps/elle/` | 30,948 | AR guide companion | `apps/elle/` ✅ |
 | `apps/trough/` + `apps/xterminator/` | 24,686 | Code quality QA | `apps/trough/` ✅ |
-| `HoloLoom/chatops/` | 44,221 | Matrix.org chatbot | `apps/chatops/` |
-| `HoloLoom/web_dashboard/` | 23,029 | Visual workflow builder | `apps/workflow_builder/` |
+| `hololoom/chatops/` | 44,221 | Matrix.org chatbot | `apps/chatops/` |
+| `hololoom/web_dashboard/` | 23,029 | Visual workflow builder | `apps/workflow_builder/` |
 | `apps/bosspig/` | 5,510 | Business doc slop detector | `apps/bosspig/` ✅ |
 | `apps/sous/` | 19,189 | Kitchen management AI | `apps/sous/` ✅ |
 
@@ -133,18 +133,18 @@ These are products, not modules.
 
 | Current Location | LOC | What It Is | Should Be |
 |-----------------|-----|-----------|-----------|
-| `HoloLoom/tests/` | 110,394 | Test suite | `tests/` (root) |
-| `HoloLoom/tools/` | 6,422 | Dev utilities | `scripts/` or `tools/` |
+| `hololoom/tests/` | 110,394 | Test suite | `tests/` (root) |
+| `hololoom/tools/` | 6,422 | Dev utilities | `scripts/` or `tools/` |
 | `infra/` | 11,934 | Docker, K8s, monitoring | `infra/` ✅ correct |
 | `demos/` | ~10,000 | Demo scripts | `demos/` ✅ correct |
 | `scripts/` | ~2,000 | Build/deploy scripts | `scripts/` ✅ correct |
-| `HoloLoom/skills/` | 9,603 | Claude Code skill definitions | `skills/` (root) |
-| `HoloLoom/mcp_tools/` | ~3,000 | MCP server tools | `tools/mcp/` |
-| `HoloLoom/telemetry/` | ~2,000 | Metrics collection | Part of core or infra |
-| `HoloLoom/tuning/` | ~1,500 | Hyperparameter tuning | `tools/tuning/` |
-| `HoloLoom/performance/` | ~3,000 | Profiling & benchmarks | `tools/performance/` |
-| `HoloLoom/datapig/` | 2,159 | Data quality assurance | `tools/datapig/` |
-| `HoloLoom/cve/` | 3,928 | Vulnerability assessment | `tools/security/` |
+| `hololoom/skills/` | 9,603 | Claude Code skill definitions | `skills/` (root) |
+| `hololoom/mcp_tools/` | ~3,000 | MCP server tools | `tools/mcp/` |
+| `hololoom/telemetry/` | ~2,000 | Metrics collection | Part of core or infra |
+| `hololoom/tuning/` | ~1,500 | Hyperparameter tuning | `tools/tuning/` |
+| `hololoom/performance/` | ~3,000 | Profiling & benchmarks | `tools/performance/` |
+| `hololoom/datapig/` | 2,159 | Data quality assurance | `tools/datapig/` |
+| `hololoom/cve/` | 3,928 | Vulnerability assessment | `tools/security/` |
 
 ---
 
@@ -154,32 +154,32 @@ These could go either way:
 
 | Directory | LOC | Question |
 |-----------|-----|---------|
-| `HoloLoom/agents/` | 8,938 | Core extension or app? (MCTS multi-agent) |
-| `HoloLoom/handoff/` | 3,894 | Core extension or app feature? (context handoffs) |
-| `HoloLoom/model_extension/` | 15,155 | Core extension or tooling? |
-| `HoloLoom/portal/` | 13,894 | Part of orchestrator or separate? |
-| `HoloLoom/shuttle/` | ~3,000 | Legacy compat or active? |
-| `HoloLoom/tapestry/` | ~3,000 | Session management - core or app? |
-| `HoloLoom/saas/` | ~5,000 | SaaS deployment layer |
-| `HoloLoom/lite/` | ~2,000 | Lightweight mode |
-| `HoloLoom/neural/` | ~2,000 | Neural network primitives - part of policy? |
-| `HoloLoom/ml/` | ~1,500 | ML utilities - part of embedding? |
-| `HoloLoom/math/` | ~1,000 | Math utilities - part of warp? |
-| `HoloLoom/input/` | ~1,000 | Input processing - part of spinningWheel? |
-| `HoloLoom/synthesis/` | ~1,000 | Output synthesis - part of fabric? |
-| `HoloLoom/weaving/` | ~1,000 | Weaving utilities - part of orchestrator? |
-| `HoloLoom/writing/` | 4,720 | NLG system |
-| `HoloLoom/llm/` | ~3,000 | LLM client abstraction |
-| `HoloLoom/conscience/` | ~2,000 | Ethical reasoning |
-| `HoloLoom/nested/` | ~1,000 | Nested contexts |
-| `HoloLoom/expansions/` | ~1,000 | Context expansion |
-| `HoloLoom/clustering/` | ~1,000 | Clustering algorithms |
-| `HoloLoom/safety/` | ~2,000 | Overlaps with alignment? |
-| `HoloLoom/promptly/` | ~2,000 | Overlaps with prompting? |
-| `HoloLoom/ts_core/` | ~1,000 | TypeScript core? |
-| `HoloLoom/lsp/` | ~1,000 | Language Server Protocol |
-| `HoloLoom/workflows/` | ~1,000 | Workflow definitions |
-| `holoLoom/` (root) | 16,742 | Duplicate package - merge into HoloLoom/ |
+| `hololoom/agents/` | 8,938 | Core extension or app? (MCTS multi-agent) |
+| `hololoom/handoff/` | 3,894 | Core extension or app feature? (context handoffs) |
+| `hololoom/model_extension/` | 15,155 | Core extension or tooling? |
+| `hololoom/portal/` | 13,894 | Part of orchestrator or separate? |
+| `hololoom/shuttle/` | ~3,000 | Legacy compat or active? |
+| `hololoom/tapestry/` | ~3,000 | Session management - core or app? |
+| `hololoom/saas/` | ~5,000 | SaaS deployment layer |
+| `hololoom/lite/` | ~2,000 | Lightweight mode |
+| `hololoom/neural/` | ~2,000 | Neural network primitives - part of policy? |
+| `hololoom/ml/` | ~1,500 | ML utilities - part of embedding? |
+| `hololoom/math/` | ~1,000 | Math utilities - part of warp? |
+| `hololoom/input/` | ~1,000 | Input processing - part of spinningWheel? |
+| `hololoom/synthesis/` | ~1,000 | Output synthesis - part of fabric? |
+| `hololoom/weaving/` | ~1,000 | Weaving utilities - part of orchestrator? |
+| `hololoom/writing/` | 4,720 | NLG system |
+| `hololoom/llm/` | ~3,000 | LLM client abstraction |
+| `hololoom/conscience/` | ~2,000 | Ethical reasoning |
+| `hololoom/nested/` | ~1,000 | Nested contexts |
+| `hololoom/expansions/` | ~1,000 | Context expansion |
+| `hololoom/clustering/` | ~1,000 | Clustering algorithms |
+| `hololoom/safety/` | ~2,000 | Overlaps with alignment? |
+| `hololoom/promptly/` | ~2,000 | Overlaps with prompting? |
+| `hololoom/ts_core/` | ~1,000 | TypeScript core? |
+| `hololoom/lsp/` | ~1,000 | Language Server Protocol |
+| `hololoom/workflows/` | ~1,000 | Workflow definitions |
+| `holoLoom/` (root) | 16,742 | Duplicate package - merge into hololoom/ |
 
 ---
 
@@ -331,7 +331,7 @@ No → optional peer.
 
 Suggested order, each step independently valuable:
 
-1. **Move apps out of `HoloLoom/`** — biggest clarity win, least breakage.
+1. **Move apps out of `hololoom/`** — biggest clarity win, least breakage.
    chatops, departments, web_dashboard, server → `apps/`
 
 2. **Consolidate micro-modules** — merge `neural/` into `policy/`, `math/`
@@ -344,7 +344,7 @@ Suggested order, each step independently valuable:
 4. **Flatten optional modules** — everything left in `hololoom/` that isn't
    `core/` stays as a flat peer. No `extensions/` wrapper.
 
-5. **Rename to lowercase** — `HoloLoom/` → `hololoom/`. Breaking change,
+5. **Rename to lowercase** — `hololoom/` → `hololoom/`. Breaking change,
    do last.
 
 6. **Add `pyproject.toml` extras** — define install groups:

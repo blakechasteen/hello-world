@@ -46,25 +46,25 @@
 
 ## The 11 Files Using Deprecated WeavingShuttle
 
-Replace `from HoloLoom.weaving_shuttle import WeavingShuttle` with:
+Replace `from hololoom.weaving_shuttle import WeavingShuttle` with:
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator as WeavingShuttle
+from hololoom.weaving_orchestrator import WeavingOrchestrator as WeavingShuttle
 # Or better:
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 ```
 
 **Files to update**:
-1. `HoloLoom/chatops/handlers/hololoom_handlers.py`
-2. `HoloLoom/tests/integration/test_enhanced_shuttle.py`
-3. `HoloLoom/tests/unit/test_orchestrator_refactoring.py`
-4. `HoloLoom/tests/unit/test_weaving_shuttle.py`
-5. `HoloLoom/tests/integration/test_shuttle_integration.py`
-6. `HoloLoom/tests/integration/test_complexity_tuning.py`
-7. `HoloLoom/tests/e2e/test_fused_mode_e2e.py`
-8. `HoloLoom/tests/e2e/test_full_pipeline.py`
-9. `HoloLoom/tests/e2e/test_fast_mode_e2e.py`
-10. `HoloLoom/tests/e2e/test_bare_mode_e2e.py`
-11. `HoloLoom/performance/benchmark.py`
+1. `hololoom/chatops/handlers/hololoom_handlers.py`
+2. `hololoom/tests/integration/test_enhanced_shuttle.py`
+3. `hololoom/tests/unit/test_orchestrator_refactoring.py`
+4. `hololoom/tests/unit/test_weaving_shuttle.py`
+5. `hololoom/tests/integration/test_shuttle_integration.py`
+6. `hololoom/tests/integration/test_complexity_tuning.py`
+7. `hololoom/tests/e2e/test_fused_mode_e2e.py`
+8. `hololoom/tests/e2e/test_full_pipeline.py`
+9. `hololoom/tests/e2e/test_fast_mode_e2e.py`
+10. `hololoom/tests/e2e/test_bare_mode_e2e.py`
+11. `hololoom/performance/benchmark.py`
 
 ---
 
@@ -96,12 +96,12 @@ from HoloLoom.weaving_orchestrator import WeavingOrchestrator
 ```
 Move these to .archive/:
 
-1. HoloLoom/weaving_orchestrator_refactored.py
-2. HoloLoom/shuttle/orchestrator_v2.py
-3. HoloLoom/redteam/refinement/quality_trajectory_updated.py
-4. HoloLoom/redteam/refinement/quality_trajectory_extensions.py
-5. HoloLoom/prompting/testing/golden_dataset.py
-6. HoloLoom/prompting/testing/golden_chains.py
+1. hololoom/weaving_orchestrator_refactored.py
+2. hololoom/shuttle/orchestrator_v2.py
+3. hololoom/redteam/refinement/quality_trajectory_updated.py
+4. hololoom/redteam/refinement/quality_trajectory_extensions.py
+5. hololoom/prompting/testing/golden_dataset.py
+6. hololoom/prompting/testing/golden_chains.py
 ```
 
 ---

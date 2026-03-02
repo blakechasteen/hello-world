@@ -18,7 +18,7 @@ Added comprehensive lifecycle management to HoloLoom using Python async context 
 
 ### 1. ReflectionBuffer Lifecycle Management
 
-**File**: `HoloLoom/reflection/buffer.py`
+**File**: `hololoom/reflection/buffer.py`
 
 **Added Methods**:
 - `__aenter__()` - Async context manager entry
@@ -42,7 +42,7 @@ async with ReflectionBuffer(capacity=1000, persist_path="./reflections") as buff
 
 ### 2. WeavingShuttle Lifecycle Management
 
-**File**: `HoloLoom/weaving_shuttle.py`
+**File**: `hololoom/weaving_shuttle.py`
 
 **Added to `__init__`**:
 - `_background_tasks: List[asyncio.Task]` - Track background tasks
@@ -152,9 +152,9 @@ Key Takeaways:
 ### Basic Usage
 
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
+from hololoom.Documentation.types import Query
 
 # Create config and shards
 config = Config.fast()
@@ -238,11 +238,11 @@ finally:
    - 290+ lines of demo code
    - Production-ready patterns
 
-3. **`HoloLoom/reflection/buffer.py`**
+3. **`hololoom/reflection/buffer.py`**
    - Added 60+ lines of lifecycle code
    - Full docstrings
 
-4. **`HoloLoom/weaving_shuttle.py`**
+4. **`hololoom/weaving_shuttle.py`**
    - Added 110+ lines of lifecycle code
    - Background task tracking
    - Full docstrings

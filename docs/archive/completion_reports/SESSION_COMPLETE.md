@@ -41,7 +41,7 @@ Connected pattern cards to memory retrieval:
 
 ### Code
 
-1. **[HoloLoom/memory/stores/hybrid_neo4j_qdrant.py](HoloLoom/memory/stores/hybrid_neo4j_qdrant.py)**
+1. **[hololoom/memory/stores/hybrid_neo4j_qdrant.py](hololoom/memory/stores/hybrid_neo4j_qdrant.py)**
    - Main hybrid memory store
    - Dual-write to Neo4j + Qdrant
    - 4 retrieval strategies
@@ -279,7 +279,7 @@ python test_hyperspace_direct.py
 
 ### Key Files
 
-- Implementation: `HoloLoom/memory/stores/hybrid_neo4j_qdrant.py`
+- Implementation: `hololoom/memory/stores/hybrid_neo4j_qdrant.py`
 - Integration: `loom_memory_integration_demo.py`
 - Documentation: `LOOM_MEMORY_MVP_COMPLETE.md`
 - Foundation: `HYPERSPACE_MEMORY_COMPLETE.md`

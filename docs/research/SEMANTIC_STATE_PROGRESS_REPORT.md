@@ -29,7 +29,7 @@
 
 ### Orchestrator Integration Points Identified
 
-**File**: `HoloLoom/weaving_orchestrator.py`
+**File**: `hololoom/weaving_orchestrator.py`
 
 #### Point 1: Features Creation (Line 1523)
 ```python
@@ -49,7 +49,7 @@ context.features = features
 semantic_state = None
 if 'semantic_projection' in dot_plasma.get('metadata', {}):
     try:
-        from HoloLoom.semantic_calculus.semantic_state import SemanticState
+        from hololoom.semantic_calculus.semantic_state import SemanticState
 
         # Get semantic projection from dot_plasma metadata
         semantic_proj = dot_plasma['metadata']['semantic_projection']
@@ -103,7 +103,7 @@ action_plan = await asyncio.wait_for(
 
 ### A. Policy Enhancement (2-3 hours)
 
-**File**: `HoloLoom/policy/unified.py`
+**File**: `hololoom/policy/unified.py`
 
 #### Change 1: NeuralCore.__init__ (Add semantic MLP)
 **Location**: ~Line 150-200
@@ -205,9 +205,9 @@ Demonstrates:
 """
 
 import asyncio
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import Query, MemoryShard
 
 def create_test_shards():
     """Create shards for topic shift testing."""
@@ -347,17 +347,17 @@ When resuming work:
 ## 📚 Key Files
 
 ### Created Today
-- ✅ `HoloLoom/semantic_calculus/semantic_state.py` (507 lines)
+- ✅ `hololoom/semantic_calculus/semantic_state.py` (507 lines)
 - ✅ `SEMANTIC_STATE_INTEGRATION_PLAN.md` (full architecture)
 - ✅ `SEMANTIC_STATE_PROGRESS_REPORT.md` (this file)
 
 ### To Modify
-- ⏳ `HoloLoom/weaving_orchestrator.py` (lines 1529, 1534)
-- ⏳ `HoloLoom/policy/unified.py` (NeuralCore class)
+- ⏳ `hololoom/weaving_orchestrator.py` (lines 1529, 1534)
+- ⏳ `hololoom/policy/unified.py` (NeuralCore class)
 
 ### To Create
 - ⏳ `demos/demo_semantic_state.py`
-- ⏳ `HoloLoom/tests/test_semantic_state.py`
+- ⏳ `hololoom/tests/test_semantic_state.py`
 
 ---
 

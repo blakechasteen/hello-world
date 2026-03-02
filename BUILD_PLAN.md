@@ -52,11 +52,11 @@ modules. It belongs in `protocols/` (Layer 0), not in `departments/` (Layer 3).
 The dashboard is a true end-user app with its own HTML/JS/CSS frontend.
 
 **Work**:
-1. `git mv HoloLoom/web_dashboard/ apps/workflow_builder/`
-2. Rewrite 44 self-imports: `from HoloLoom.web_dashboard.X` → `from workflow_builder.X`
+1. `git mv hololoom/web_dashboard/ apps/workflow_builder/`
+2. Rewrite 44 self-imports: `from hololoom.web_dashboard.X` → `from workflow_builder.X`
 3. Update ~80 imports FROM HoloLoom core to use absolute paths (they already are)
 4. Add `apps/workflow_builder/__init__.py` if needed
-5. Add re-export shim at old path: `HoloLoom/web_dashboard/__init__.py` that
+5. Add re-export shim at old path: `hololoom/web_dashboard/__init__.py` that
    warns and re-imports from new location
 6. Tests still pass
 
@@ -72,8 +72,8 @@ The dashboard is a true end-user app with its own HTML/JS/CSS frontend.
 They're coupled — move them as a unit.
 
 **Work**:
-1. `git mv HoloLoom/server/ apps/server/`
-2. `git mv HoloLoom/chatops/ apps/chatops/`
+1. `git mv hololoom/server/ apps/server/`
+2. `git mv hololoom/chatops/ apps/chatops/`
 3. Update self-imports in both packages
 4. Update cross-imports between them
 5. Fix `studio_server.py` at repo root (imports from server/)
@@ -93,7 +93,7 @@ the protocol that core depends on.
 
 **Work**:
 1. Verify PR 1 landed (protocol is in `protocols/`)
-2. `git mv HoloLoom/departments/ apps/departments/`
+2. `git mv hololoom/departments/ apps/departments/`
 3. Update self-imports
 4. Update any remaining references
 5. Re-export shim at old path
@@ -112,7 +112,7 @@ the protocol that core depends on.
 | **Wave 2**: Consolidate micro-modules | `math/`→`warp/`, `neural/`→`policy/`, `clustering/`→`memory/`, `nested/`→`orchestrator/` | Done |
 | **Wave 3**: Create `core/` | 13 core modules under `hololoom/core/`, `sys.meta_path` finder for transparent redirects | Done |
 | **Wave 4**: `pyproject.toml` extras | `pip install hololoom[voice,vision,server,ml,rl,production]` | Done |
-| **Wave 5**: Lowercase rename | `HoloLoom/` → `hololoom/`, 3,178 files updated | Done |
+| **Wave 5**: Lowercase rename | `hololoom/` → `hololoom/`, 3,178 files updated | Done |
 
 ---
 

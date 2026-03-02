@@ -2,7 +2,7 @@
 
 **Created:** 2025-10-25
 **Status:** OPERATIONAL
-**Location:** `HoloLoom/convergence/mcts_engine.py`
+**Location:** `hololoom/convergence/mcts_engine.py`
 
 ---
 
@@ -288,20 +288,20 @@ Currently single-level (root → tools). Could expand to:
 ## Code Locations
 
 **Core Implementation:**
-- `HoloLoom/convergence/mcts_engine.py` - Complete MCTS+TS implementation
+- `hololoom/convergence/mcts_engine.py` - Complete MCTS+TS implementation
   - `MCTSNode` - Tree node with TS priors
   - `MCTSFluxCapacitor` - Search algorithm
   - `MCTSConvergenceEngine` - Integration with orchestrator
 
 **Integration:**
-- `HoloLoom/weaving_orchestrator.py` - Orchestrator with MCTS
+- `hololoom/weaving_orchestrator.py` - Orchestrator with MCTS
   - `use_mcts=True` parameter
   - `mcts_simulations` configuration
   - Statistics tracking
 
 **Demo:**
-- Run: `python HoloLoom/weaving_orchestrator.py`
-- Standalone: `python HoloLoom/convergence/mcts_engine.py`
+- Run: `python hololoom/weaving_orchestrator.py`
+- Standalone: `python hololoom/convergence/mcts_engine.py`
 
 ---
 
@@ -309,7 +309,7 @@ Currently single-level (root → tools). Could expand to:
 
 ### Basic Usage
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 # Create with MCTS Flux Capacitor
 weaver = WeavingOrchestrator(
@@ -328,7 +328,7 @@ print(f"Visit counts: {spacetime.trace.mcts_stats['visit_counts']}")
 
 ### Standalone MCTS
 ```python
-from HoloLoom.convergence.mcts_engine import MCTSConvergenceEngine
+from hololoom.convergence.mcts_engine import MCTSConvergenceEngine
 
 # Create engine
 engine = MCTSConvergenceEngine(
@@ -362,7 +362,7 @@ weaver = WeavingOrchestrator(use_mcts=True, mcts_simulations=500)
 ### Standalone Test
 ```bash
 cd /c/Users/blake/Documents/mythRL
-python HoloLoom/convergence/mcts_engine.py
+python hololoom/convergence/mcts_engine.py
 ```
 
 **Output:**
@@ -389,7 +389,7 @@ Flux Capacitor operational!
 
 ### Integrated Test
 ```bash
-python HoloLoom/weaving_orchestrator.py
+python hololoom/weaving_orchestrator.py
 ```
 
 **Output:**

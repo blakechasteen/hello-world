@@ -34,7 +34,7 @@ window.HoloLoomInteractive.initialize();
 // Node metadata database
 const NODE_METADATA = {
   'Neural Policy': {
-    file: 'HoloLoom/policy/unified.py:200',
+    file: 'hololoom/policy/unified.py:200',
     description: 'Transformer-based tool selection',
     metrics: { latency: '~35ms', complexity: 'High' }
   }
@@ -166,7 +166,7 @@ Complete documentation covering:
 **Example**:
 1. New developer views 9-Layer Architecture
 2. Clicks "Neural Policy" node
-3. Sees: `HoloLoom/policy/unified.py:200`
+3. Sees: `hololoom/policy/unified.py:200`
 4. Clicks "Jump to Code"
 5. VS Code opens file at line 200
 6. Immediate context!

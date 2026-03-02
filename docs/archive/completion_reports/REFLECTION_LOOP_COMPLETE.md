@@ -11,8 +11,8 @@ We've successfully implemented a **complete reflection loop** that enables HoloL
 
 ### What We Built
 
-- **HoloLoom/reflection/buffer.py** (730 lines) - Complete reflection buffer with learning analysis
-- **HoloLoom/reflection/__init__.py** - Module exports
+- **hololoom/reflection/buffer.py** (730 lines) - Complete reflection buffer with learning analysis
+- **hololoom/reflection/__init__.py** - Module exports
 - **WeavingShuttle Integration** - Reflection methods added to shuttle
 - **Comprehensive Demo** - demos/reflection_demo.py shows learning in action
 
@@ -71,7 +71,7 @@ We've successfully implemented a **complete reflection loop** that enables HoloL
 
 ### 1. ReflectionBuffer
 
-**File:** `HoloLoom/reflection/buffer.py`
+**File:** `hololoom/reflection/buffer.py`
 
 **Purpose:** Episodic memory buffer that stores Spacetime artifacts and analyzes them for learning.
 
@@ -270,9 +270,9 @@ Tool Recommendations:
 ### Basic Reflection
 
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
+from hololoom.Documentation.types import Query, MemoryShard
 
 # Create shuttle with reflection enabled
 shuttle = WeavingShuttle(
@@ -489,13 +489,13 @@ LearningSignal(
 ## Files Created/Modified
 
 ### New Files
-1. **HoloLoom/reflection/buffer.py** (730 lines) - Reflection buffer implementation
-2. **HoloLoom/reflection/__init__.py** - Module exports
+1. **hololoom/reflection/buffer.py** (730 lines) - Reflection buffer implementation
+2. **hololoom/reflection/__init__.py** - Module exports
 3. **demos/reflection_demo.py** (300 lines) - Comprehensive demo
 4. **REFLECTION_LOOP_COMPLETE.md** (this file) - Documentation
 
 ### Modified Files
-1. **HoloLoom/weaving_shuttle.py** - Added reflection methods (~150 lines)
+1. **hololoom/weaving_shuttle.py** - Added reflection methods (~150 lines)
 
 ---
 
@@ -619,7 +619,7 @@ cd /path/to/mythRL
 python -c "
 import sys
 sys.path.insert(0, '.')
-from HoloLoom.reflection import buffer
+from hololoom.reflection import buffer
 import asyncio
 asyncio.run(buffer.demo())
 "

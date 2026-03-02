@@ -23,14 +23,14 @@ Each generator produces **5-10 production-ready attack payloads** with complete 
 ### ✅ New Files Created
 
 ```
-HoloLoom/redteam/strategies/
+hololoom/redteam/strategies/
 ├── __init__.py                          (50 lines)  - Package exports
 ├── cot_exploit.py                       (350 lines) - CoT reasoning attacks
 ├── tool_abuse.py                        (400 lines) - Tool abuse attacks
 ├── prompt_extraction.py                 (380 lines) - Prompt extraction attacks
 └── README.md                            (500+ lines)- Complete documentation
 
-HoloLoom/redteam/tests/
+hololoom/redteam/tests/
 └── test_attack_strategy_generators.py   (250 lines) - Comprehensive test suite
 ```
 
@@ -108,7 +108,7 @@ HoloLoom/redteam/tests/
 
 ### ✅ Unified Package Interface
 
-**File**: `HoloLoom/redteam/strategies/__init__.py`
+**File**: `hololoom/redteam/strategies/__init__.py`
 
 ```python
 from .cot_exploit import CoTExploitGenerator
@@ -124,7 +124,7 @@ __all__ = [
 
 **Usage**:
 ```python
-from HoloLoom.redteam.strategies import (
+from hololoom.redteam.strategies import (
     CoTExploitGenerator,
     ToolAbuseGenerator,
     PromptExtractionGenerator
@@ -133,7 +133,7 @@ from HoloLoom.redteam.strategies import (
 
 ### ✅ Comprehensive Test Suite
 
-**File**: `HoloLoom/redteam/tests/test_attack_strategy_generators.py` (250 lines)
+**File**: `hololoom/redteam/tests/test_attack_strategy_generators.py` (250 lines)
 
 **5 Test Functions**:
 1. `test_cot_exploit_generator()` - Validates all CoT methods
@@ -225,8 +225,8 @@ from HoloLoom.redteam.strategies import (
 ### With CARTS Orchestrator
 
 ```python
-from HoloLoom.redteam.strategies import CoTExploitGenerator
-from HoloLoom.redteam.orchestrator import CARTSOrchestrator
+from hololoom.redteam.strategies import CoTExploitGenerator
+from hololoom.redteam.orchestrator import CARTSOrchestrator
 
 # Generate attacks
 generator = CoTExploitGenerator()
@@ -245,7 +245,7 @@ for attack in attacks:
 ### With CARTS Tracker
 
 ```python
-from HoloLoom.redteam.tracker import RedTeamTracker
+from hololoom.redteam.tracker import RedTeamTracker
 
 tracker = RedTeamTracker()
 for attack, result in zip(attacks, results):
@@ -259,7 +259,7 @@ for attack, result in zip(attacks, results):
 ### With MRF Analytics
 
 ```python
-from HoloLoom.redteam.mrf_integration import MRFAnalytics
+from hololoom.redteam.mrf_integration import MRFAnalytics
 
 analytics = MRFAnalytics()
 for payload in attacks:
@@ -355,7 +355,7 @@ STRATEGY_CATEGORIES = {
 ### Quick Start
 
 ```python
-from HoloLoom.redteam.strategies import (
+from hololoom.redteam.strategies import (
     CoTExploitGenerator,
     ToolAbuseGenerator,
     PromptExtractionGenerator

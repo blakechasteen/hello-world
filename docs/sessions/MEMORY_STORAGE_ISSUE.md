@@ -52,7 +52,7 @@ Memories are not being stored from Claude Desktop because your OpenAI API quota 
 **How:**
 1. Sign up at https://openrouter.ai/
 2. Get API key
-3. Update [HoloLoom/memory/stores/mem0_store.py](HoloLoom/memory/stores/mem0_store.py):
+3. Update [hololoom/memory/stores/mem0_store.py](hololoom/memory/stores/mem0_store.py):
    ```python
    default_config = {
        "llm": {
@@ -79,8 +79,8 @@ Memories are not being stored from Claude Desktop because your OpenAI API quota 
 **How:**
 Already implemented! Use the Qdrant store directly:
 ```python
-from HoloLoom.memory.stores.qdrant_store import QdrantMemoryStore
-from HoloLoom.memory.protocol import Memory
+from hololoom.memory.stores.qdrant_store import QdrantMemoryStore
+from hololoom.memory.protocol import Memory
 from datetime import datetime
 
 # Create store
@@ -102,7 +102,7 @@ await store.store(mem)
 
 The simplest solution is to disable Mem0 and use just Qdrant + Neo4j:
 
-1. Edit [HoloLoom/memory/mcp_server.py](HoloLoom/memory/mcp_server.py) line 941:
+1. Edit [hololoom/memory/mcp_server.py](hololoom/memory/mcp_server.py) line 941:
    ```python
    await init_memory(
        user_id="blake",

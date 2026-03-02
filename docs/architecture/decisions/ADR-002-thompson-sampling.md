@@ -138,7 +138,7 @@ selected_tool = argmax(θ_i)
 ### Core Thompson Sampling
 
 ```python
-from HoloLoom.policy.thompson_sampling import ThompsonBandit
+from hololoom.policy.thompson_sampling import ThompsonBandit
 
 class ThompsonBandit:
     def __init__(self, n_arms: int, alpha_prior: float = 1.0, beta_prior: float = 1.0):
@@ -165,7 +165,7 @@ class ThompsonBandit:
 ### Integration with Policy Engine
 
 ```python
-from HoloLoom.policy.unified import UnifiedPolicy, BanditStrategy
+from hololoom.policy.unified import UnifiedPolicy, BanditStrategy
 
 policy = UnifiedPolicy(
     mem_dim=384,
@@ -288,7 +288,7 @@ class ContextualThompsonBandit:
         ...
 ```
 
-**Status**: Implemented in `HoloLoom/routing/learning/adaptive_updater.py`
+**Status**: Implemented in `hololoom/routing/learning/adaptive_updater.py`
 
 ### 2. Thompson Sampling + Neural Network Hybrid
 
@@ -306,7 +306,7 @@ neural_network.backward(loss)  # Gradient descent
 bandit.update(selected_tool, reward)  # Thompson Sampling
 ```
 
-**Status**: Production-ready in `HoloLoom/policy/unified.py`
+**Status**: Production-ready in `hololoom/policy/unified.py`
 
 ### 3. Multi-Armed Bandits for Department Routing
 
@@ -330,7 +330,7 @@ class DepartmentRouter:
         return response
 ```
 
-**Status**: Implemented in `HoloLoom/routing/learning/adaptive_updater.py` (Phase 3)
+**Status**: Implemented in `hololoom/routing/learning/adaptive_updater.py` (Phase 3)
 
 ---
 
@@ -357,10 +357,10 @@ class DepartmentRouter:
 ## References
 
 - **Thompson Sampling Paper**: Russo et al. (2018), "A Tutorial on Thompson Sampling"
-- **Implementation**: `HoloLoom/policy/thompson_sampling.py`
-- **Integration**: `HoloLoom/policy/unified.py` (BanditStrategy enum)
-- **Routing**: `HoloLoom/routing/learning/adaptive_updater.py` (Phase 3)
-- **Tests**: `HoloLoom/tests/unit/test_bayesian_policy.py` (25 tests)
+- **Implementation**: `hololoom/policy/thompson_sampling.py`
+- **Integration**: `hololoom/policy/unified.py` (BanditStrategy enum)
+- **Routing**: `hololoom/routing/learning/adaptive_updater.py` (Phase 3)
+- **Tests**: `hololoom/tests/unit/test_bayesian_policy.py` (25 tests)
 
 ---
 

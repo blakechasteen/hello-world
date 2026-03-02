@@ -165,7 +165,7 @@ if risk_score > threshold:
 ### 1. Safety Guardrails
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails, RiskLevel
+from hololoom.alignment import SafetyGuardrails, RiskLevel
 
 guardrails = SafetyGuardrails(enable_human_in_loop=True)
 
@@ -213,7 +213,7 @@ def score_risk(action: str, context: Dict[str, Any]) -> float:
 ### 2. Deception Detection
 
 ```python
-from HoloLoom.alignment import DeceptionDetector
+from hololoom.alignment import DeceptionDetector
 
 detector = DeceptionDetector()
 
@@ -237,7 +237,7 @@ if contradictions:
 ### 3. Instrumental Convergence Prevention
 
 ```python
-from HoloLoom.alignment import InstrumentalConvergenceDetector
+from hololoom.alignment import InstrumentalConvergenceDetector
 
 detector = InstrumentalConvergenceDetector()
 
@@ -260,7 +260,7 @@ if power_seeking:
 ### 4. Audit Trail
 
 ```python
-from HoloLoom.alignment import AuditTrail
+from hololoom.alignment import AuditTrail
 
 audit_trail = AuditTrail(persist_path="./alignment_logs")
 
@@ -310,8 +310,8 @@ await audit_trail.export("alignment_audit.json")
 Every department integrates with alignment framework:
 
 ```python
-from HoloLoom.departments import get_department
-from HoloLoom.alignment import create_guardrails
+from hololoom.departments import get_department
+from hololoom.alignment import create_guardrails
 
 # Create guardrails
 guardrails = create_guardrails(enable_human_in_loop=True)
@@ -348,9 +348,9 @@ async def safe_execute(request):
 
 ```python
 # Context Department + Alignment Framework
-from HoloLoom.departments import get_department
-from HoloLoom.alignment import AuditTrail
-from HoloLoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel
+from hololoom.departments import get_department
+from hololoom.alignment import AuditTrail
+from hololoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel
 
 context_dept = get_department("context")
 audit_trail = AuditTrail(persist_path="./hipaa_audit")
@@ -462,13 +462,13 @@ await audit_trail.log_decision(
 
 ## References
 
-- **Implementation**: `HoloLoom/alignment/`
+- **Implementation**: `hololoom/alignment/`
 - **Safety Guardrails**: `safety_guardrails.py` (450 lines)
 - **Deception Detection**: `deception_detection.py` (380 lines)
 - **Instrumental Convergence**: `instrumental_convergence.py` (290 lines)
 - **Audit Trail**: `audit_trail.py` (340 lines)
-- **Tests**: `HoloLoom/alignment/tests/` (46 functional + 13 performance)
-- **Documentation**: `HoloLoom/alignment/README.md` (1,200+ lines)
+- **Tests**: `hololoom/alignment/tests/` (46 functional + 13 performance)
+- **Documentation**: `hololoom/alignment/README.md` (1,200+ lines)
 - **Research**: Anthropic Constitutional AI, OpenAI GPT-4 System Card
 
 ---

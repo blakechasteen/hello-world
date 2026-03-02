@@ -100,7 +100,7 @@ mythRL/
 │   └── old_demos/                 # 19 demo files
 ├── docs/                          # ✨ NEW - Documentation
 │   └── sessions/                  # 13 session docs
-└── HoloLoom/                      # Source code (unchanged)
+└── hololoom/                      # Source code (unchanged)
     ├── loom/                      # ✅ Pattern cards
     ├── chrono/                    # ✅ Temporal control
     ├── warp/                      # ✅ Tensor manifold
@@ -132,7 +132,7 @@ The weaving architecture from CLAUDE.md is **fully coded**:
 **They just need to be wired together!** (Phase 2 task)
 
 ### ✅ Memory System Unified
-- Protocol-based interface ([memory/protocol.py](HoloLoom/memory/protocol.py))
+- Protocol-based interface ([memory/protocol.py](hololoom/memory/protocol.py))
 - 4 backends: simple, neo4j, qdrant, neo4j+qdrant
 - Works across all demos
 

@@ -91,7 +91,7 @@ All essential, no clutter:
 
 ```
 mythRL/
-├── HoloLoom/                    # Main package (653 Python files)
+├── hololoom/                    # Main package (653 Python files)
 ├── demos/                       # Demo scripts
 ├── experiments/                 # Experiment framework
 ├── archive/                     # All archived content
@@ -126,7 +126,7 @@ Root Files (18):
 Only the absolute essentials:
 - Core documentation (10 MD files)
 - Essential scripts (4 PY files)  
-- Package structure (HoloLoom/)
+- Package structure (hololoom/)
 - Development tools (demos/, experiments/, squad/, ui/)
 - Archive (complete history)
 - Build configs (requirements.txt, pytest.ini, LICENSE)
@@ -134,7 +134,7 @@ Only the absolute essentials:
 ## Verification
 
 ✓ All imports tested and working
-✓ No code changes to HoloLoom/
+✓ No code changes to hololoom/
 ✓ No functionality broken
 ✓ Complete history in organized archive
 ✓ Easy recovery for any archived file

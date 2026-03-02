@@ -149,7 +149,7 @@ loom/
   "mcpServers": {
     "HoloLoom-memory": {
       "command": "python",
-      "args": ["-m", "HoloLoom.memory.mcp_server"],
+      "args": ["-m", "hololoom.memory.mcp_server"],
       "env": {
         "PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"
       }
@@ -402,7 +402,7 @@ Fast filter (96-dim) → Medium recall (192-dim) → Precision (384-dim)
 HoloLoom Project Structure:
 
 c:\Users\blake\Documents\mythRL\
-├── HoloLoom/
+├── hololoom/
 │   ├── memory/
 │   │   ├── mcp_server.py          # MCP server (STDIO)
 │   │   ├── protocol.py            # Unified memory interface

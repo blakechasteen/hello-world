@@ -23,7 +23,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 
 ### Status: ✅ FULLY IMPLEMENTED (4/4 providers working)
 
-**Location**: `HoloLoom/llm/providers/`
+**Location**: `hololoom/llm/providers/`
 
 #### 1. Ollama Provider ✅ WORKING
 - **File**: `ollama_provider.py` (production code)
@@ -79,7 +79,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 
 ### Unified LLM Client
 
-**Location**: `HoloLoom/llm/unified_client.py`
+**Location**: `hololoom/llm/unified_client.py`
 - **Status**: ✅ WORKING
 - **Features**:
   - Auto-detection of available providers
@@ -91,7 +91,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 
 ### Server LLM API
 
-**Location**: `HoloLoom/server/llm_api.py`
+**Location**: `hololoom/server/llm_api.py`
 - **Status**: ✅ WORKING
 - **Features**:
   - Model whitelist validation (prevents arbitrary model injection)
@@ -106,7 +106,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 
 ### Status: ✅ FULLY IMPLEMENTED (3/3 core + 1 extended)
 
-**Location**: `HoloLoom/memory/stores/` and `HoloLoom/integrations/langchain/`
+**Location**: `hololoom/memory/stores/` and `hololoom/integrations/langchain/`
 
 #### 1. Qdrant Store ✅ WORKING (PRIMARY)
 - **File**: `stores/qdrant_store.py` (869 lines)
@@ -180,7 +180,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 
 ### Status: ✅ MOSTLY WORKING (12/14 APIs implemented)
 
-**Location**: `HoloLoom/server/`
+**Location**: `hololoom/server/`
 
 #### 1. Agentic API ✅ WORKING (PRIMARY)
 - **File**: `agentic_api.py` (61 KB - very comprehensive)
@@ -354,7 +354,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 
 ### Status: ✅ MOSTLY WORKING (8/8 major features)
 
-**Location**: `HoloLoom/chatops/`
+**Location**: `hololoom/chatops/`
 
 #### Core Matrix Bot ✅ WORKING
 - **File**: `core/matrix_bot.py`
@@ -443,7 +443,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 
 ### Status: ✅ MOSTLY WORKING (3/3 major components)
 
-**Location**: `HoloLoom/integrations/langchain/`
+**Location**: `hololoom/integrations/langchain/`
 
 #### 1. LLM Providers ✅ WORKING
 - **File**: `llm_providers.py` (454 lines)
@@ -503,7 +503,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 
 ### Status: ✅ PRODUCTION READY (Phases 1-10)
 
-**Location**: `HoloLoom/integrations/dark_trace_integration.py` (48 KB)
+**Location**: `hololoom/integrations/dark_trace_integration.py` (48 KB)
 - **Status**: Full production implementation
 - **Features**:
   - SAE (Sparse Autoencoder) decomposition
@@ -546,7 +546,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 ## Identified Stubs (Complete List)
 
 ### 1. ❌ Gemini LLM Provider (STUB)
-- **Location**: `HoloLoom/llm/providers/gemini_provider.py`
+- **Location**: `hololoom/llm/providers/gemini_provider.py`
 - **Status**: ~50 lines, minimal implementation
 - **Missing**:
   - `generate()` method implementation
@@ -556,7 +556,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 - **Priority**: Medium (fallback only, Anthropic+OpenAI sufficient)
 
 ### 2. ❌ WAF Middleware (INCOMPLETE)
-- **Location**: `HoloLoom/server/waf_middleware.py`
+- **Location**: `hololoom/server/waf_middleware.py`
 - **Status**: ~100 lines, partially implemented
 - **Identified Issue**: `raise NotImplementedError` in middleware attachment
 - **Missing**:
@@ -569,7 +569,7 @@ The codebase is **surprisingly comprehensive**. Only 2 minor areas are unimpleme
 - **Priority**: Medium (defensive layer, not critical)
 
 ### 3. ⚠️ Jira MCP Server (STUB)
-- **Location**: `HoloLoom/integrations/mcp/jira_server.py`
+- **Location**: `hololoom/integrations/mcp/jira_server.py`
 - **Status**: Minimal skeleton
 - **Missing**:
   - Jira API integration

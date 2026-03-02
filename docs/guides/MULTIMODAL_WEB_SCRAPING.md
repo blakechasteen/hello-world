@@ -48,7 +48,7 @@ pip install requests beautifulsoup4 pillow
 ### 2. Basic Usage
 
 ```python
-from HoloLoom.spinningWheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+from hololoom.spinningWheel.website import WebsiteSpinner, WebsiteSpinnerConfig
 
 # Configure with multimodal options
 config = WebsiteSpinnerConfig(
@@ -342,7 +342,7 @@ for img in images:
 pip install requests beautifulsoup4 pillow
 
 # Run multimodal ingestion
-python HoloLoom/spinningWheel/examples/multimodal_webpage_ingest.py \
+python hololoom/spinningWheel/examples/multimodal_webpage_ingest.py \
     https://en.wikipedia.org/wiki/Beekeeping
 
 # Compare text-only vs multimodal
@@ -426,13 +426,13 @@ Parse (BeautifulSoup)
 
 ### Key Classes
 
-**[`image_utils.py`](HoloLoom/spinningWheel/image_utils.py)**:
+**[`image_utils.py`](hololoom/spinningWheel/image_utils.py)**:
 - `ImageInfo` - Image metadata dataclass
 - `ImageExtractor` - Extract and filter images
 - Relevance scoring algorithm
 - Download and storage utilities
 
-**[`website.py`](HoloLoom/spinningWheel/website.py)**:
+**[`website.py`](hololoom/spinningWheel/website.py)**:
 - `WebsiteSpinner` - Main spinner class
 - `_extract_images()` - Image extraction integration
 - `_scrape_content()` - Returns (text, html) tuple
@@ -466,9 +466,9 @@ pip install pillow
 
 ## See Also
 
-- [WebsiteSpinner README](HoloLoom/spinningWheel/README_WEBSITE.md) - Full documentation
-- [TextSpinner README](HoloLoom/spinningWheel/README_TEXT.md) - Text processing
-- [MCP Setup Guide](HoloLoom/Documentation/MCP_SETUP_GUIDE.md) - Claude Desktop integration
+- [WebsiteSpinner README](hololoom/spinningWheel/README_WEBSITE.md) - Full documentation
+- [TextSpinner README](hololoom/spinningWheel/README_TEXT.md) - Text processing
+- [MCP Setup Guide](hololoom/Documentation/MCP_SETUP_GUIDE.md) - Claude Desktop integration
 
 ---
 

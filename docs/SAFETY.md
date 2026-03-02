@@ -78,7 +78,7 @@ We want adoption, not revenue extraction.
 The simplest contribution is using HoloLoom's safety features:
 
 ```python
-from HoloLoom.alignment import SafetyGuardrails, AuditTrail
+from hololoom.alignment import SafetyGuardrails, AuditTrail
 
 guardrails = SafetyGuardrails(enable_human_in_loop=True)
 audit_trail = AuditTrail()
@@ -114,10 +114,10 @@ We welcome academic collaborations.
 
 For detailed technical documentation:
 
-- **[Alignment Framework README](../HoloLoom/alignment/README.md)** - Complete API reference
-- **[Safety Guardrails](../HoloLoom/alignment/safety_guardrails.py)** - Risk classification and gating
-- **[Deception Detection](../HoloLoom/alignment/deception_detection.py)** - Goal transparency
-- **[Audit Trail](../HoloLoom/alignment/audit_trail.py)** - Decision provenance
+- **[Alignment Framework README](../hololoom/alignment/README.md)** - Complete API reference
+- **[Safety Guardrails](../hololoom/alignment/safety_guardrails.py)** - Risk classification and gating
+- **[Deception Detection](../hololoom/alignment/deception_detection.py)** - Goal transparency
+- **[Audit Trail](../hololoom/alignment/audit_trail.py)** - Decision provenance
 
 ---
 
@@ -136,7 +136,7 @@ AI safety is not a competitive advantage to be hoarded. It is a collective chall
 
 - **GitHub**: [HoloLoom Repository](https://github.com/anthropics/claude-code/issues)
 - **Documentation**: Start with [CONTRIBUTING.md](CONTRIBUTING.md)
-- **Examples**: See [HoloLoom/saas/examples/](../HoloLoom/saas/examples/)
+- **Examples**: See [hololoom/saas/examples/](../hololoom/saas/examples/)
 
 **Together, we can make AI safe.**
 

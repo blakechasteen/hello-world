@@ -43,7 +43,7 @@ A complete VS Code extension that **takes AI-generated broken code and makes it 
 ### Python Backend (HoloLoom Server)
 
 ```
-HoloLoom/
+hololoom/
 ├── server/
 │   └── agentic_api.py          # Updated with new endpoints (839 lines)
 │

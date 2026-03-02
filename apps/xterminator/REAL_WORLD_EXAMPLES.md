@@ -4,7 +4,7 @@ Charlotte's Template Fixer applied to actual HoloLoom codebase issues.
 
 ## Example 1: Add Error Handling to JSON Loading
 
-**File**: `HoloLoom/memory/cache.py` (hypothetical location)
+**File**: `hololoom/memory/cache.py` (hypothetical location)
 **Issue**: Missing error handling for JSON parsing
 **Template Applied**: `add_try_except_json`
 
@@ -45,7 +45,7 @@ def load_memory_index(path: Path) -> Dict:
 
 ## Example 2: Fix Timezone-Naive Datetime in Audit Trail
 
-**File**: `HoloLoom/alignment/audit_trail.py`
+**File**: `hololoom/alignment/audit_trail.py`
 **Issue**: Using naive datetime.now() for timestamps
 **Template Applied**: `fix_timezone_naive`
 
@@ -87,7 +87,7 @@ def log_decision(action: str, outcome: str):
 
 ## Example 3: Move API Key to Environment Variable
 
-**File**: `HoloLoom/llm/client.py` (hypothetical)
+**File**: `hololoom/llm/client.py` (hypothetical)
 **Issue**: Hardcoded API key in source code
 **Template Applied**: `move_to_env_var`
 
@@ -156,7 +156,7 @@ classifier = ClassificationEngine()
 classification = classifier.classify_issue(
     issue_category="error_handling",
     code_snippet='data = json.load(f)',
-    file_path="HoloLoom/memory/cache.py",
+    file_path="hololoom/memory/cache.py",
     line_number=142
 )
 

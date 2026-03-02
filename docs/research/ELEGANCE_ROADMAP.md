@@ -30,7 +30,7 @@
 ## Week 1: Clarity (Reduce Cognitive Load)
 
 ### Day 1-2: Orchestrator Simplification
-**Target:** `HoloLoom/weaving_orchestrator.py` (1963 lines → <1500 lines)
+**Target:** `hololoom/weaving_orchestrator.py` (1963 lines → <1500 lines)
 
 **Issues:**
 - Long methods (>50 lines)
@@ -52,7 +52,7 @@
 ---
 
 ### Day 3-4: Policy Engine Cleanup
-**Target:** `HoloLoom/policy/unified.py` (1200+ lines)
+**Target:** `hololoom/policy/unified.py` (1200+ lines)
 
 **Issues:**
 - Mixed bandit strategies in single class
@@ -68,7 +68,7 @@
 ---
 
 ### Day 5: Memory Backend Simplification
-**Target:** `HoloLoom/memory/graph.py`, `backend_factory.py`
+**Target:** `hololoom/memory/graph.py`, `backend_factory.py`
 
 **Issues:**
 - Backend creation logic spread across files
@@ -246,18 +246,18 @@ See: https://docs.hololoom.ai/execution-modes
 ### Linting
 ```bash
 # Complexity check
-radon cc HoloLoom/ -a -nb
+radon cc hololoom/ -a -nb
 
 # Type checking
-mypy HoloLoom/ --strict
+mypy hololoom/ --strict
 
 # Docstring coverage
-interrogate HoloLoom/ --verbose
+interrogate hololoom/ --verbose
 
 # Style
-black HoloLoom/
-isort HoloLoom/
-flake8 HoloLoom/
+black hololoom/
+isort hololoom/
+flake8 hololoom/
 ```
 
 ### CI Integration

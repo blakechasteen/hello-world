@@ -40,7 +40,7 @@ Cache Hit Rate: 58.3% (compositional reuse working!)
 **Impact**: Week 1 of 4-week roadmap complete (25%)
 
 ### What We Built
-- ✅ **[HoloLoom/semantic_calculus/semantic_state.py](HoloLoom/semantic_calculus/semantic_state.py)** (507 lines)
+- ✅ **[hololoom/semantic_calculus/semantic_state.py](hololoom/semantic_calculus/semantic_state.py)** (507 lines)
   - `SemanticState` class: 244D → 8D compression
   - Momentum computation (alignment across scales)
   - Complexity computation (diversity of dimensions)
@@ -139,7 +139,7 @@ Policy (Neural Network)
 3. `demos/demo_phase5_verification.py` - Verification demo
 
 ### Semantic State
-4. `HoloLoom/semantic_calculus/semantic_state.py` (507 lines)
+4. `hololoom/semantic_calculus/semantic_state.py` (507 lines)
 5. `SEMANTIC_STATE_INTEGRATION_PLAN.md` - Full architecture
 6. `SEMANTIC_STATE_PROGRESS_REPORT.md` - Detailed progress
 

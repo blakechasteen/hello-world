@@ -192,7 +192,7 @@ elif backend == MemoryBackend.CUSTOM:
 ### Old Code (Still Works)
 
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 config = Config.fused()
 # memory_backend auto-defaults to HYBRID
@@ -201,7 +201,7 @@ config = Config.fused()
 ### New Code (Explicit)
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 config = Config.fused()
 config.memory_backend = MemoryBackend.HYBRID  # Explicit
@@ -224,9 +224,9 @@ config.memory_backend = MemoryBackend.HYBRID  # Explicit
 
 ## Files Changed
 
-1. `HoloLoom/config.py` - Enum crushed from 140→7 lines
-2. `HoloLoom/memory/backend_factory.py` - Factory crushed from 550→231 lines
-3. `HoloLoom/memory/protocol.py` - Protocols crushed from 787→120 lines
+1. `hololoom/config.py` - Enum crushed from 140→7 lines
+2. `hololoom/memory/backend_factory.py` - Factory crushed from 550→231 lines
+3. `hololoom/memory/protocol.py` - Protocols crushed from 787→120 lines
 4. `test_memory_backend_simplification.py` - Updated for ruthless edition
 
 ## What's Next?

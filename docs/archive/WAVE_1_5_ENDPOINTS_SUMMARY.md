@@ -2,7 +2,7 @@
 
 **Date**: 2025-12-09
 **Status**: ✅ Complete
-**File**: `HoloLoom/web_dashboard/workflow_executor.py`
+**File**: `hololoom/web_dashboard/workflow_executor.py`
 
 ## Endpoints Added
 

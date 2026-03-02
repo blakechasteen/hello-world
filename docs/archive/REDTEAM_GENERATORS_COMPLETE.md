@@ -12,7 +12,7 @@ Completed implementation of two advanced attack strategy generators for the CART
 
 ## Files Created
 
-### 1. HoloLoom/redteam/strategy_generators/context_overflow.py (340 lines)
+### 1. hololoom/redteam/strategy_generators/context_overflow.py (340 lines)
 
 **Purpose:** Context flooding, memory poisoning, and multi-turn attack fragmentation
 
@@ -35,7 +35,7 @@ Completed implementation of two advanced attack strategy generators for the CART
 
 ---
 
-### 2. HoloLoom/redteam/strategy_generators/hierarchy_bypass.py (330 lines)
+### 2. hololoom/redteam/strategy_generators/hierarchy_bypass.py (330 lines)
 
 **Purpose:** Instruction priority confusion, nested injection, meta-instruction manipulation
 
@@ -61,7 +61,7 @@ Completed implementation of two advanced attack strategy generators for the CART
 
 ---
 
-### 3. Updated HoloLoom/redteam/strategy_generators/__init__.py (33 lines)
+### 3. Updated hololoom/redteam/strategy_generators/__init__.py (33 lines)
 
 **Changes:**
 - Added imports for `ContextOverflowGenerator` and `create_context_overflow_generator`
@@ -71,7 +71,7 @@ Completed implementation of two advanced attack strategy generators for the CART
 
 ---
 
-### 4. HoloLoom/redteam/strategy_generators/test_new_generators.py (250+ lines)
+### 4. hololoom/redteam/strategy_generators/test_new_generators.py (250+ lines)
 
 **Comprehensive Test Suite:**
 
@@ -101,7 +101,7 @@ Completed implementation of two advanced attack strategy generators for the CART
 
 ---
 
-### 5. HoloLoom/redteam/strategy_generators/GENERATORS_GUIDE.md (400+ lines)
+### 5. hololoom/redteam/strategy_generators/GENERATORS_GUIDE.md (400+ lines)
 
 **Comprehensive Documentation:**
 
@@ -258,7 +258,7 @@ reporter.generate_report(
 
 ### Basic Usage
 ```python
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     ContextOverflowGenerator,
     HierarchyBypassGenerator
 )
@@ -296,7 +296,7 @@ for difficulty in ["easy", "medium", "hard"]:
 
 ### Full Integration
 ```python
-from HoloLoom.redteam.orchestrator import RedTeamOrchestrator
+from hololoom.redteam.orchestrator import RedTeamOrchestrator
 
 orchestrator = RedTeamOrchestrator()
 
@@ -321,7 +321,7 @@ print(f"Attack success rate: {results.success_rate:.1%}")
 
 ### Test Results
 ```
-pytest HoloLoom/redteam/strategy_generators/test_new_generators.py -v
+pytest hololoom/redteam/strategy_generators/test_new_generators.py -v
 
 TestContextOverflowGenerator
   ✓ test_initialization
@@ -358,7 +358,7 @@ TestCrossGenerator
 
 ### Import Validation
 ```
-from HoloLoom.redteam.strategy_generators import (
+from hololoom.redteam.strategy_generators import (
     ContextOverflowGenerator,
     HierarchyBypassGenerator,
     create_context_overflow_generator,
@@ -414,7 +414,7 @@ from HoloLoom.redteam.strategy_generators import (
 
 ### Generated Files Structure
 ```
-HoloLoom/redteam/strategy_generators/
+hololoom/redteam/strategy_generators/
 ├── __init__.py (updated)
 ├── context_overflow.py (NEW - 340 lines)
 ├── hierarchy_bypass.py (NEW - 330 lines)

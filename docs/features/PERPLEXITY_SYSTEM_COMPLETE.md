@@ -91,7 +91,7 @@ We've built a **complete Perplexity-style intelligent search system** for HoloLo
 ## File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── search/                           # Matryoshka web search
 │   ├── protocol.py                   (200 lines)
 │   ├── matryoshka_search.py         (450 lines)
@@ -135,7 +135,7 @@ Total: 19 files, ~5,400 lines
 ### 1. Basic Web Search
 
 ```python
-from HoloLoom.search import MatryoshkaWebSearch, SearchConfig
+from hololoom.search import MatryoshkaWebSearch, SearchConfig
 
 config = SearchConfig(provider="serpapi", api_key="your_key")
 search = MatryoshkaWebSearch(config=config)
@@ -151,8 +151,8 @@ for result in results:
 ### 2. Web-Enhanced Agentic Research
 
 ```python
-from HoloLoom.agentic import WebResearchOrchestrator
-from HoloLoom.config import Config
+from hololoom.agentic import WebResearchOrchestrator
+from hololoom.config import Config
 
 orchestrator = await WebResearchOrchestrator.create(
     config=Config.fused(),
@@ -281,13 +281,13 @@ response2 = await client.post("/research/web", json={
 
 ```bash
 # All search tests
-pytest HoloLoom/search/tests/ -v
+pytest hololoom/search/tests/ -v
 
 # Specific test
-pytest HoloLoom/search/tests/test_matryoshka_search.py -v
+pytest hololoom/search/tests/test_matryoshka_search.py -v
 
 # With coverage
-pytest HoloLoom/search/tests/ --cov=HoloLoom.search --cov-report=html
+pytest hololoom/search/tests/ --cov=HoloLoom.search --cov-report=html
 ```
 
 ### Run Integration Demo

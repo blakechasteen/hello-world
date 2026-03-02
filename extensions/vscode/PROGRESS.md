@@ -228,13 +228,13 @@ Total: 5/5 tests passed 🎉
 
 2. **Path/String Type Mismatch**
    - **Problem**: `stats_path` was string but code called `.exists()` (Path method)
-   - **Location**: `HoloLoom/routing/query_classifier_moonshot.py:268`
+   - **Location**: `hololoom/routing/query_classifier_moonshot.py:268`
    - **Fix**: Wrapped string in `Path()` constructor: `Path(stats_path) if stats_path else Path(...)`
 
 3. **Case Sensitivity Issues**
    - **Problem**: Import failed for `HoloLoom.utils` (directory is `Utils` with capital U)
-   - **Fix**: Created symlink `HoloLoom/utils → Utils`
-   - **Also Fixed**: `HoloLoom/documentation → Documentation` (already existed)
+   - **Fix**: Created symlink `hololoom/utils → Utils`
+   - **Also Fixed**: `hololoom/documentation → Documentation` (already existed)
 
 **Result**: Server now starts successfully with all 4 memory shards initialized!
 

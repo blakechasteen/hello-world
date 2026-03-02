@@ -189,7 +189,7 @@ Expected tools:
   "mcpServers": {
     "hololoom-memory": {
       "command": "C:/Users/blake/Documents/mythRL/.venv/Scripts/python.exe",
-      "args": ["-m", "HoloLoom.memory.mcp_server"],
+      "args": ["-m", "hololoom.memory.mcp_server"],
       "env": {"PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"}
     }
   }

@@ -12,7 +12,7 @@
 **Goal**: Create canonical protocol definitions in one location
 
 **Implementation**:
-- Created `HoloLoom/protocols/__init__.py` (330 lines)
+- Created `hololoom/protocols/__init__.py` (330 lines)
 - Centralized 10 core protocol definitions:
   - **Core**: Embedder, MotifDetector, PolicyEngine
   - **Memory**: MemoryStore, MemoryNavigator, PatternDetector
@@ -25,17 +25,17 @@
 **Before**:
 ```
 15 scattered protocol definitions across:
-- HoloLoom/policy/unified.py
-- HoloLoom/memory/protocol.py
-- HoloLoom/embedding/spectral.py
-- HoloLoom/loom/command.py
+- hololoom/policy/unified.py
+- hololoom/memory/protocol.py
+- hololoom/embedding/spectral.py
+- hololoom/loom/command.py
 - etc.
 ```
 
 **After**:
 ```python
 # Single source of truth
-from HoloLoom.protocols import (
+from hololoom.protocols import (
     Embedder, MotifDetector, PolicyEngine,
     MemoryStore, MemoryNavigator, PatternDetector,
     RoutingStrategy, ExecutionEngine,
@@ -55,7 +55,7 @@ from HoloLoom.protocols import (
 **Goal**: Reduce complexity from 10 backends to 3 core strategies
 
 **Implementation**:
-- Updated `HoloLoom/config.py` MemoryBackend enum
+- Updated `hololoom/config.py` MemoryBackend enum
 - **3 Core Backends**:
   - `NETWORKX`: <10ms in-memory (development/testing)
   - `NEO4J_QDRANT`: ~50ms production hybrid (graph + vectors)
@@ -177,10 +177,10 @@ result = await weaver.query("Comprehensive analysis...")  # → RESEARCH
 **Goal**: Update modules to import from canonical `HoloLoom.protocols`
 
 **Remaining Work**:
-- Update `HoloLoom/policy/unified.py` to import PolicyEngine
-- Update `HoloLoom/memory/protocol.py` to import MemoryStore
-- Update `HoloLoom/embedding/spectral.py` to import Embedder
-- Update `HoloLoom/loom/command.py` to import RoutingStrategy
+- Update `hololoom/policy/unified.py` to import PolicyEngine
+- Update `hololoom/memory/protocol.py` to import MemoryStore
+- Update `hololoom/embedding/spectral.py` to import Embedder
+- Update `hololoom/loom/command.py` to import RoutingStrategy
 - Add deprecation warnings for old imports
 - Verify no circular import issues
 
@@ -225,7 +225,7 @@ async def multipass_crawl(query: str, max_passes: int = 4):
 
 **Plan**:
 - Install rich library (`pip install rich`)
-- Create `HoloLoom/monitoring/dashboard.py`:
+- Create `hololoom/monitoring/dashboard.py`:
   - Query count and success rate
   - Pattern distribution (BARE/FAST/FUSED)
   - Average latency per pattern

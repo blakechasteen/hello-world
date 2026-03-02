@@ -9,12 +9,12 @@
 
 ### 1. Core System (2,550 lines)
 
-✅ **`HoloLoom/workflows/__init__.py`** (100 lines)
+✅ **`hololoom/workflows/__init__.py`** (100 lines)
    - Package initialization
    - Public API exports
    - Clean namespace
 
-✅ **`HoloLoom/workflows/schema.py`** (500 lines)
+✅ **`hololoom/workflows/schema.py`** (500 lines)
    - NodeType enum (24 types)
    - WorkflowNode definition
    - WorkflowDefinition (JSON/YAML support)
@@ -23,7 +23,7 @@
    - RetryPolicy configuration
    - Workflow validation (cycle detection, reachability)
 
-✅ **`HoloLoom/workflows/executor.py`** (700 lines)
+✅ **`hololoom/workflows/executor.py`** (700 lines)
    - WorkflowExecutor main class
    - Topological ordering and execution
    - Parallel execution support
@@ -43,7 +43,7 @@
    - Integration with RAG department, chains, recursive reasoner
    - Complete execution trace generation
 
-✅ **`HoloLoom/workflows/state.py`** (350 lines)
+✅ **`hololoom/workflows/state.py`** (350 lines)
    - StateBackend abstract interface
    - InMemoryState implementation
    - SQLiteState implementation (file-based)
@@ -51,7 +51,7 @@
    - CheckpointManager for workflow recovery
    - Save/restore/list checkpoint operations
 
-✅ **`HoloLoom/workflows/templates.py`** (500 lines)
+✅ **`hololoom/workflows/templates.py`** (500 lines)
    - WorkflowTemplates class
    - 9 pre-built workflow templates:
      1. Simple Q&A
@@ -66,7 +66,7 @@
    - get_all_templates() method
    - list_templates() method
 
-✅ **`HoloLoom/workflows/integrations.py`** (300 lines)
+✅ **`hololoom/workflows/integrations.py`** (300 lines)
    - ChainExecutor for prompt chains
    - RecursiveExecutor for recursive reasoning
    - execute() method for chains
@@ -76,7 +76,7 @@
 
 ### 2. Documentation (3,000+ lines)
 
-✅ **`HoloLoom/workflows/README.md`** (2,500 lines)
+✅ **`hololoom/workflows/README.md`** (2,500 lines)
    - Comprehensive documentation
    - Overview and features
    - Quick start (3 examples)
@@ -95,7 +95,7 @@
    - Troubleshooting guide
    - Examples and use cases
 
-✅ **`HoloLoom/workflows/QUICK_START.md`** (500 lines)
+✅ **`hololoom/workflows/QUICK_START.md`** (500 lines)
    - 5-minute quick start guide
    - Installation instructions
    - Your first workflow (60 seconds)
@@ -133,7 +133,7 @@
 
 ### 3. Visual Builder Integration
 
-✅ **Enhanced `HoloLoom/web_dashboard/workflow_builder.html`** (Existing - 1,166 lines)
+✅ **Enhanced `hololoom/web_dashboard/workflow_builder.html`** (Existing - 1,166 lines)
    - Already supports 18+ agent types
    - Drag-and-drop workflow creation
    - Export to JSON/YAML
@@ -143,7 +143,7 @@
    - Version control
    - **Integration**: Uses same JSON schema as WorkflowDefinition
 
-✅ **Updated `HoloLoom/web_dashboard/workflow_executor.py`** (Existing - 763 lines)
+✅ **Updated `hololoom/web_dashboard/workflow_executor.py`** (Existing - 763 lines)
    - REST API endpoints
    - WebSocket support
    - Version management
@@ -206,7 +206,7 @@
 
 ### Unit Tests (PLANNED - December 2025)
 
-**File to Create**: `HoloLoom/workflows/tests/test_workflows.py` (~800 lines)
+**File to Create**: `hololoom/workflows/tests/test_workflows.py` (~800 lines)
 **Status**: Backlog - Core system production-ready, tests can be added incrementally
 
 **Test Coverage Needed**:
@@ -261,7 +261,7 @@ class TestIntegration:
 
 ### Integration Tests (PLANNED - December 2025)
 
-**File to Create**: `HoloLoom/workflows/tests/test_integration.py` (~400 lines)
+**File to Create**: `hololoom/workflows/tests/test_integration.py` (~400 lines)
 **Status**: Backlog - Can be added when integration points stabilize
 
 **Test Coverage**:
@@ -426,7 +426,7 @@ The system provides a solid foundation for visual workflow creation and can be u
 **Next Action**: Try the system!
 
 ```python
-from HoloLoom.workflows import WorkflowExecutor, WorkflowTemplates
+from hololoom.workflows import WorkflowExecutor, WorkflowTemplates
 
 async def main():
     workflow = WorkflowTemplates.simple_qa()

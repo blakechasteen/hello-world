@@ -7,7 +7,7 @@
 
 | Project | Status | Description | Entry Point |
 |---------|--------|-------------|-------------|
-| **HoloLoom/** | ✅ Active | Main neural decision-making system | `python -m HoloLoom` |
+| **hololoom/** | ✅ Active | Main neural decision-making system | `python -m HoloLoom` |
 | **elle/** | ✅ Active | AR guide system | `python talk_to_elle.py` |
 | **Sous/** | ✅ Active | Recipe/scheduling system | `python -m Sous` |
 | **trough/** | ✅ Active | AI slop detection (15 categories) | `python torugh.py` |
@@ -89,7 +89,7 @@ scripts/
 
 ### Immediate
 1. Review NeuroHood Dreams for production readiness
-2. Run full test suite: `pytest HoloLoom/tests/ -v`
+2. Run full test suite: `pytest hololoom/tests/ -v`
 3. Verify no import breakages from file moves
 
 ### Short-term

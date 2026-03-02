@@ -69,8 +69,8 @@ Every HoloLoom agent MUST implement this protocol. Partial implementations are R
 
 ```python
 from typing import Protocol, Set, List, Dict, Any, Optional
-from HoloLoom.alignment import SafetyGuardrails, AuditTrail
-from HoloLoom.agents.types import (
+from hololoom.alignment import SafetyGuardrails, AuditTrail
+from hololoom.agents.types import (
     AgentRequest, AgentResult, AgentStats,
     ReasoningStep, AgentCapability
 )
@@ -248,12 +248,12 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Set, List, Dict, Any, Optional
 
-from HoloLoom.agents import AgentProtocol, AgentCapability
-from HoloLoom.alignment import (
+from hololoom.agents import AgentProtocol, AgentCapability
+from hololoom.alignment import (
     SafetyGuardrails, AuditTrail, DecisionType,
     RiskLevel, GateResult
 )
-from HoloLoom.agents.types import AgentRequest, AgentResult, AgentStats, ReasoningStep
+from hololoom.agents.types import AgentRequest, AgentResult, AgentStats, ReasoningStep
 
 
 @dataclass
@@ -774,8 +774,8 @@ Every agent operates within a safety tier. This is NOT negotiable - your tier is
 ### Tier Declaration (MANDATORY)
 
 ```python
-from HoloLoom.agents import register_agent
-from HoloLoom.alignment import ResourceBounds
+from hololoom.agents import register_agent
+from hololoom.alignment import ResourceBounds
 
 # MANDATORY: Declare tier and bounds at registration
 # Failure to declare = sandbox tier enforced
@@ -1030,7 +1030,7 @@ All agent prompts MUST use MRF 7-component structure. Unstructured prompts are R
 ### Mandatory Components
 
 ```python
-from HoloLoom.prompting import MetapromptConfig
+from hololoom.prompting import MetapromptConfig
 
 # EVERY agent prompt MUST have ALL 7 components
 agent_mrf = MetapromptConfig(
@@ -1143,7 +1143,7 @@ agent_mrf = MetapromptConfig(
 ### MRF Enforcement
 
 ```python
-from HoloLoom.prompting import UnifiedMRF, RefinementStrategy, validate_mrf
+from hololoom.prompting import UnifiedMRF, RefinementStrategy, validate_mrf
 
 class MyAgent(AgentProtocol):
     def __init__(self):

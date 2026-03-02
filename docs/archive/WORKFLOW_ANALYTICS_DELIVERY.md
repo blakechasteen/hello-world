@@ -341,13 +341,13 @@ Status: All files created and verified ✅
 
 ### File Locations
 ```
-/HoloLoom/web_dashboard/workflow_analytics.html
-/HoloLoom/web_dashboard/ANALYTICS_INTEGRATION_GUIDE.md
-/HoloLoom/web_dashboard/ANALYTICS_FEATURES.md
-/HoloLoom/web_dashboard/WORKFLOW_ANALYTICS_README.md
-/HoloLoom/web_dashboard/analytics_endpoint.py
-/HoloLoom/web_dashboard/ANALYTICS_IMPLEMENTATION_SUMMARY.md
-/HoloLoom/web_dashboard/WORKFLOW_ANALYTICS_INDEX.md
+/hololoom/web_dashboard/workflow_analytics.html
+/hololoom/web_dashboard/ANALYTICS_INTEGRATION_GUIDE.md
+/hololoom/web_dashboard/ANALYTICS_FEATURES.md
+/hololoom/web_dashboard/WORKFLOW_ANALYTICS_README.md
+/hololoom/web_dashboard/analytics_endpoint.py
+/hololoom/web_dashboard/ANALYTICS_IMPLEMENTATION_SUMMARY.md
+/hololoom/web_dashboard/WORKFLOW_ANALYTICS_INDEX.md
 ```
 
 ---

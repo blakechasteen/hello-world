@@ -171,19 +171,19 @@ Now hallucination detection knows what's real!
 
 ### The 4-System Architecture
 
-1. **Codebase Ingestion** (`HoloLoom/agentic/codebase_ingestion.py`)
+1. **Codebase Ingestion** (`hololoom/agentic/codebase_ingestion.py`)
    - AST-based parsing for Python
    - Regex-based parsing for TypeScript/JavaScript
    - NetworkX knowledge graph construction
    - ~50-100 files/second indexing speed
 
-2. **Hallucination Detector** (`HoloLoom/agentic/hallucination_detector.py`)
+2. **Hallucination Detector** (`hololoom/agentic/hallucination_detector.py`)
    - Reference extraction (function calls, imports, class usage)
    - Existence verification against knowledge graph
    - Levenshtein distance similarity suggestions
    - Built-in function filtering (doesn't flag `print`, `len`, etc.)
 
-3. **Code Verifier** (`HoloLoom/agentic/code_verification.py`)
+3. **Code Verifier** (`hololoom/agentic/code_verification.py`)
    - Python: AST + mypy + pylint
    - TypeScript: tsc + eslint
    - Structured error parsing
@@ -324,7 +324,7 @@ Tested on medium Python/TypeScript projects:
 
 Trough is powered by HoloLoom's agentic reasoning system. To contribute:
 
-1. **Backend** (Python): `HoloLoom/agentic/` and `HoloLoom/server/`
+1. **Backend** (Python): `hololoom/agentic/` and `hololoom/server/`
 2. **Frontend** (TypeScript): `trough/src/`
 3. **Tests**: `tests/test_ai_slop_fixer_integration.py`
 

@@ -139,7 +139,7 @@ orchestrator = HoloLoomOrchestrator(cfg=config, shards=shards)
 **Target State:**
 ```python
 # Use unified memory with hybrid backends
-from HoloLoom.memory.unified import UnifiedMemory
+from hololoom.memory.unified import UnifiedMemory
 
 memory = UnifiedMemory(
     backend=MemoryBackend.NEO4J_QDRANT,

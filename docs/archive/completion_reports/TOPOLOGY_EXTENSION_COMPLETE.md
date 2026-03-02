@@ -62,7 +62,7 @@ Extended the Warp Drive with **Topological Data Analysis (TDA)** and **Persisten
 
 ## Deliverables
 
-### 1. Core Module (`HoloLoom/warp/topology.py`)
+### 1. Core Module (`hololoom/warp/topology.py`)
 
 **700+ lines implementing:**
 
@@ -163,7 +163,7 @@ Extended the Warp Drive with **Topological Data Analysis (TDA)** and **Persisten
 ### Complete Warp Drive Stack
 
 ```
-HoloLoom/warp/
+hololoom/warp/
 ├── space.py       # Core WarpSpace ✅
 ├── advanced.py    # Geometry, quantum, Fisher ✅
 ├── optimized.py   # GPU, sparse, batching ✅
@@ -249,7 +249,7 @@ features = TopologicalFeatureExtractor.extract_features(
 ### Basic Persistent Homology
 
 ```python
-from HoloLoom.warp.topology import PersistentHomology
+from hololoom.warp.topology import PersistentHomology
 
 # Compute topology
 ph = PersistentHomology(max_dimension=1)
@@ -268,7 +268,7 @@ for dim, diagram in diagrams.items():
 ### Mapper Network
 
 ```python
-from HoloLoom.warp.topology import MapperAlgorithm
+from hololoom.warp.topology import MapperAlgorithm
 
 # Build network
 mapper = MapperAlgorithm(n_intervals=10, overlap_percent=0.3)
@@ -285,7 +285,7 @@ for node in graph['nodes']:
 ### Topological Features
 
 ```python
-from HoloLoom.warp.topology import TopologicalFeatureExtractor
+from hololoom.warp.topology import TopologicalFeatureExtractor
 
 # Extract features
 features = TopologicalFeatureExtractor.extract_features(
@@ -302,8 +302,8 @@ clf.fit(features, labels)
 ### Complete Integration
 
 ```python
-from HoloLoom.warp import WarpSpace
-from HoloLoom.warp.topology import PersistentHomology, MapperAlgorithm
+from hololoom.warp import WarpSpace
+from hololoom.warp.topology import PersistentHomology, MapperAlgorithm
 
 # Standard warp space workflow
 warp = WarpSpace(embedder, scales=[96, 192, 384])
@@ -371,7 +371,7 @@ pip install scikit-tda
 
 ## Files Created
 
-1. **`HoloLoom/warp/topology.py`** (700+ lines)
+1. **`hololoom/warp/topology.py`** (700+ lines)
    - Persistent homology
    - Mapper algorithm
    - Feature extraction
@@ -389,7 +389,7 @@ pip install scikit-tda
 
 ### Modified Files
 
-4. **`HoloLoom/warp/__init__.py`**
+4. **`hololoom/warp/__init__.py`**
    - Added topology exports
    - Conditional import (graceful degradation)
 
@@ -489,7 +489,7 @@ Given points X and radius r:
 ### Immediate Use
 
 ```python
-from HoloLoom.warp.topology import PersistentHomology
+from hololoom.warp.topology import PersistentHomology
 
 # Start using it!
 ph = PersistentHomology()
@@ -551,7 +551,7 @@ diagrams = ph.compute(your_embeddings)
 
 ```bash
 # Test topology module
-python HoloLoom/warp/topology.py
+python hololoom/warp/topology.py
 
 # Run integration demos
 python demos/topology_warp_integration.py

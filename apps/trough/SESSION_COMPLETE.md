@@ -99,7 +99,7 @@ Successfully implemented all three Claude Agent SDK priorities for the Squad VS 
 3. **[squad/package.json](squad/package.json)** (+5 lines)
    - Registered `squad.refactorAndVerify` command
 
-4. **[HoloLoom/loom/command.py](HoloLoom/loom/command.py)** (1 line fix)
+4. **[hololoom/loom/command.py](hololoom/loom/command.py)** (1 line fix)
    - Fixed BARE pattern scale mismatch (96 → 768)
 
 ### Created
@@ -162,7 +162,7 @@ Successfully implemented all three Claude Agent SDK priorities for the Squad VS 
 - SpectralEmbeddings initialized with `sizes=[768]` (nomic-embed default)
 - Pattern auto-selection triggered mismatch
 
-**Fix**: [HoloLoom/loom/command.py:122](HoloLoom/loom/command.py#L122)
+**Fix**: [hololoom/loom/command.py:122](hololoom/loom/command.py#L122)
 ```python
 # Before
 scales=[96],
@@ -256,7 +256,7 @@ code .
 
 1. All code in [squad/src/](squad/src/)
 2. Tests in [squad/test_sdk_enhancements.ts](squad/test_sdk_enhancements.ts)
-3. Server fix in [HoloLoom/loom/command.py](HoloLoom/loom/command.py)
+3. Server fix in [hololoom/loom/command.py](hololoom/loom/command.py)
 4. No tech debt introduced
 
 ## Conclusion

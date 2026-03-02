@@ -18,7 +18,7 @@ Our system extracts **~1000 values** from rich semantic trajectories.
 ### Core Implementation
 
 #### 1. Semantic Micropolicy Nudging
-**[HoloLoom/policy/semantic_nudging.py](./HoloLoom/policy/semantic_nudging.py)** (15KB)
+**[hololoom/policy/semantic_nudging.py](./hololoom/policy/semantic_nudging.py)** (15KB)
 - `SemanticStateEncoder`: Compress 244D → 384D for policy
 - `SemanticRewardShaper`: Potential-based reward shaping
 - `SemanticNudgePolicy`: Policy wrapper with semantic guidance
@@ -27,7 +27,7 @@ Our system extracts **~1000 values** from rich semantic trajectories.
 **Purpose**: Make policy semantically aware - understand Warmth, Clarity, Wisdom as navigable dimensions.
 
 #### 2. Semantic Multi-Task Learning
-**[HoloLoom/reflection/semantic_learning.py](./HoloLoom/reflection/semantic_learning.py)** (18KB)
+**[hololoom/reflection/semantic_learning.py](./hololoom/reflection/semantic_learning.py)** (18KB)
 - `SemanticExperience`: Rich experience structure (THE BLOB)
 - `SemanticTrajectoryAnalyzer`: Extract learning signals (THE JOBS)
 - `SemanticMultiTaskLearner`: Neural heads for 6 auxiliary tasks
@@ -119,7 +119,7 @@ Our system extracts **~1000 values** from rich semantic trajectories.
 
 **Example**:
 ```python
-from HoloLoom.policy.semantic_nudging import (
+from hololoom.policy.semantic_nudging import (
     SemanticNudgePolicy,
     define_semantic_goals
 )
@@ -159,7 +159,7 @@ action_plan = await nudge_policy.decide(features, context, semantic_state)
 
 **Example**:
 ```python
-from HoloLoom.reflection.semantic_learning import (
+from hololoom.reflection.semantic_learning import (
     SemanticExperience,
     SemanticTrajectoryAnalyzer,
     SemanticMultiTaskLearner
@@ -255,8 +255,8 @@ python demos/semantic_multitask_learning_demo.py
 
 **For implementation**:
 1. [SEMANTIC_LEARNING_INTEGRATION.md](./SEMANTIC_LEARNING_INTEGRATION.md) - Full pipeline
-2. Review code in `HoloLoom/policy/semantic_nudging.py`
-3. Review code in `HoloLoom/reflection/semantic_learning.py`
+2. Review code in `hololoom/policy/semantic_nudging.py`
+3. Review code in `hololoom/reflection/semantic_learning.py`
 
 ---
 
@@ -315,8 +315,8 @@ hero_journey_goals = {
 ### With WeavingShuttle
 
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.policy.semantic_nudging import SemanticNudgePolicy
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.policy.semantic_nudging import SemanticNudgePolicy
 
 # Create shuttle with semantic policy
 shuttle = WeavingShuttle(config)
@@ -335,8 +335,8 @@ async with shuttle:
 ### With Reflection Buffer
 
 ```python
-from HoloLoom.reflection.buffer import ReflectionBuffer
-from HoloLoom.reflection.semantic_learning import SemanticTrajectoryAnalyzer
+from hololoom.reflection.buffer import ReflectionBuffer
+from hololoom.reflection.semantic_learning import SemanticTrajectoryAnalyzer
 
 # Enhanced buffer with semantic analysis
 buffer = ReflectionBuffer(capacity=10000)
@@ -352,8 +352,8 @@ signals = analyzer.analyze_experience(experience)
 ### With PPO Training
 
 ```python
-from HoloLoom.reflection.ppo_trainer import PPOTrainer
-from HoloLoom.reflection.semantic_learning import SemanticMultiTaskLearner
+from hololoom.reflection.ppo_trainer import PPOTrainer
+from hololoom.reflection.semantic_learning import SemanticMultiTaskLearner
 
 # Enhanced trainer with multi-task learning
 trainer = PPOTrainer(policy, config)
@@ -432,15 +432,15 @@ If learning is slow or unstable:
 ## 📚 Related Work
 
 ### Semantic Calculus Foundation
-- [HoloLoom/semantic_calculus/dimensions.py](./HoloLoom/semantic_calculus/dimensions.py) - 244D definition
-- [HoloLoom/semantic_calculus/integrator.py](./HoloLoom/semantic_calculus/integrator.py) - Geometric integration
+- [hololoom/semantic_calculus/dimensions.py](./hololoom/semantic_calculus/dimensions.py) - 244D definition
+- [hololoom/semantic_calculus/integrator.py](./hololoom/semantic_calculus/integrator.py) - Geometric integration
 - [demos/odyssey_244d_analysis.py](./demos/odyssey_244d_analysis.py) - Example application
 
 ### Policy Learning Foundation
-- [HoloLoom/policy/unified.py](./HoloLoom/policy/unified.py) - Neural policy core
-- [HoloLoom/reflection/buffer.py](./HoloLoom/reflection/buffer.py) - Experience storage
-- [HoloLoom/reflection/ppo_trainer.py](./HoloLoom/reflection/ppo_trainer.py) - PPO training
-- [HoloLoom/reflection/rewards.py](./HoloLoom/reflection/rewards.py) - Reward extraction
+- [hololoom/policy/unified.py](./hololoom/policy/unified.py) - Neural policy core
+- [hololoom/reflection/buffer.py](./hololoom/reflection/buffer.py) - Experience storage
+- [hololoom/reflection/ppo_trainer.py](./hololoom/reflection/ppo_trainer.py) - PPO training
+- [hololoom/reflection/rewards.py](./hololoom/reflection/rewards.py) - Reward extraction
 
 ---
 
@@ -532,7 +532,7 @@ This is the future of interpretable, value-aligned, goal-directed AI.
 - 📖 Start with [SEMANTIC_NUDGING_QUICKSTART.md](./SEMANTIC_NUDGING_QUICKSTART.md)
 - 🎓 Deep dive into [SEMANTIC_LEARNING_INTEGRATION.md](./SEMANTIC_LEARNING_INTEGRATION.md)
 - 🎮 Run `python demos/semantic_multitask_learning_demo.py`
-- 💻 Explore [HoloLoom/policy/semantic_nudging.py](./HoloLoom/policy/semantic_nudging.py)
+- 💻 Explore [hololoom/policy/semantic_nudging.py](./hololoom/policy/semantic_nudging.py)
 
 ---
 

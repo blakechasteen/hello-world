@@ -123,7 +123,7 @@ AUTO       → Auto-detect best available
 ### Configuration
 
 ```python
-from HoloLoom.redteam.sandbox import SandboxMode, SandboxConfig
+from hololoom.redteam.sandbox import SandboxMode, SandboxConfig
 
 config = SandboxConfig(
     mode=SandboxMode.AUTO,
@@ -143,7 +143,7 @@ if config.is_isolated:
 ### Resource Monitoring
 
 ```python
-from HoloLoom.redteam.sandbox import ResourceMonitor
+from hololoom.redteam.sandbox import ResourceMonitor
 
 monitor = ResourceMonitor(sample_interval_ms=100)
 
@@ -164,7 +164,7 @@ print(summary)  # Pretty-printed statistics
 ### Result Inspection
 
 ```python
-from HoloLoom.redteam.sandbox import SandboxResult
+from hololoom.redteam.sandbox import SandboxResult
 
 result = SandboxResult(...)
 
@@ -183,7 +183,7 @@ if result.had_violations:
 
 ```python
 import asyncio
-from HoloLoom.redteam.sandbox import SandboxMode, SandboxConfig, ResourceMonitor
+from hololoom.redteam.sandbox import SandboxMode, SandboxConfig, ResourceMonitor
 
 async def execute_attack(command):
     # Configuration
@@ -274,7 +274,7 @@ asyncio.run(execute_attack(["python", "attack.py"]))
 ## File Structure
 
 ```
-HoloLoom/redteam/sandbox/
+hololoom/redteam/sandbox/
 ├── __init__.py                      # Package exports, lazy loading
 ├── protocols.py                     # SandboxMode, SandboxConfig, SandboxResult, Protocols
 ├── monitor.py                       # ResourceMonitor, ResourceSample, ResourceSummary
@@ -291,7 +291,7 @@ The sandbox system integrates with CARTS red team module:
 
 ```python
 # In CARTS attack executor
-from HoloLoom.redteam.sandbox import SandboxConfig, ResourceMonitor
+from hololoom.redteam.sandbox import SandboxConfig, ResourceMonitor
 
 class CARTSAttackExecutor:
     def __init__(self):
@@ -382,7 +382,7 @@ class CARTSAttackExecutor:
 
 **Getting Help**:
 ```python
-from HoloLoom.redteam.sandbox import validate_sandbox_config
+from hololoom.redteam.sandbox import validate_sandbox_config
 
 # Check configuration validity
 warnings = validate_sandbox_config(your_config)

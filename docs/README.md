@@ -458,7 +458,7 @@ python scripts/validate_production.py --data-dir ./data 2>&1 | tee validation.lo
 ls -la data/
 
 # Check Python environment
-python -c "from HoloLoom.routing.query_classifier_adaptive import AdaptiveMoonshotClassifier"
+python -c "from hololoom.routing.query_classifier_adaptive import AdaptiveMoonshotClassifier"
 
 # Reinstall dependencies
 pip install -e .

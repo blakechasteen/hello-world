@@ -231,7 +231,7 @@ interface SubscribeRequest extends WSClientMessage {
 
 ### 1.4 Server Implementation
 
-**File**: `HoloLoom/server/streaming_api.py`
+**File**: `hololoom/server/streaming_api.py`
 
 ```python
 """
@@ -248,7 +248,7 @@ import asyncio
 import json
 import uuid
 
-from HoloLoom.memory.interleaved_generation import (
+from hololoom.memory.interleaved_generation import (
     stream_interleaved_expansion_generation,
     StreamMode,
     ContextChunk,
@@ -368,8 +368,8 @@ class StreamingManager:
         query: dict
     ) -> AsyncIterator[dict]:
         """Stream query results."""
-        from HoloLoom.config import Config
-        from HoloLoom.memory.backend_factory import create_memory_backend
+        from hololoom.config import Config
+        from hololoom.memory.backend_factory import create_memory_backend
 
         config = Config.fast()
         memory = await create_memory_backend(config)
@@ -1868,7 +1868,7 @@ describe('WebSocket Integration', () => {
 
 ```
 mythRL/
-├── HoloLoom/
+├── hololoom/
 │   └── server/
 │       ├── agentic_api.py          # Existing (add streaming endpoint)
 │       └── streaming_api.py        # New WebSocket streaming

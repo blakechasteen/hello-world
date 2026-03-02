@@ -33,10 +33,10 @@ Applied 4 fixes to break circular dependencies, but package imports still hang d
 
 ## Current Blocker 🚫
 
-**`HoloLoom/protocols/types.py` hangs despite only importing stdlib**
+**`hololoom/protocols/types.py` hangs despite only importing stdlib**
 
 ```bash
-PYTHONPATH=. timeout 3 python -c "from HoloLoom.protocols.types import ComplexityLevel"
+PYTHONPATH=. timeout 3 python -c "from hololoom.protocols.types import ComplexityLevel"
 # Exit code 124 (timeout)
 ```
 
@@ -64,12 +64,12 @@ When Python imports a package:
 ### Our Specific Issue
 
 ```
-HoloLoom/__init__.py
+hololoom/__init__.py
   ├─ from .hololoom import HoloLoom
-  │    └─ (now lazy) from HoloLoom.config import Config
+  │    └─ (now lazy) from hololoom.config import Config
   │
   ├─ from .memory.protocol import Memory
-  │    └─ from HoloLoom.protocols import ...
+  │    └─ from hololoom.protocols import ...
   │         └─ from .types import ComplexityLevel
   │              └─ HANGS (waiting for parent package import to complete)
   │
@@ -84,7 +84,7 @@ HoloLoom/__init__.py
 ```python
 # This works because it bypasses the package import:
 import importlib.util
-spec = importlib.util.spec_from_file_location('test', 'HoloLoom/protocols/types.py')
+spec = importlib.util.spec_from_file_location('test', 'hololoom/protocols/types.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)  # ✓ Works fine!
 ```
@@ -95,11 +95,11 @@ spec.loader.exec_module(module)  # ✓ Works fine!
 
 ### Option A: Minimal Import __init__.py (2-4 hours, RECOMMENDED)
 
-**Strategy**: Make `HoloLoom/__init__.py` ultra-minimal - only define what's exported, import lazily.
+**Strategy**: Make `hololoom/__init__.py` ultra-minimal - only define what's exported, import lazily.
 
 **Implementation**:
 ```python
-# HoloLoom/__init__.py (NEW VERSION)
+# hololoom/__init__.py (NEW VERSION)
 """
 HoloLoom - Unified Memory System
 """
@@ -129,7 +129,7 @@ def __getattr__(name):
 
 **Pros**:
 - Breaks all import-time dependencies
-- Backward compatible (users can still `from HoloLoom import HoloLoom`)
+- Backward compatible (users can still `from hololoom import HoloLoom`)
 - Fast fix (2-4 hours)
 
 **Cons**:
@@ -169,7 +169,7 @@ trough/
 
 **Implementation**:
 ```
-HoloLoom/
+hololoom/
 ├── core/              # Pure types, no imports
 │   ├── types.py
 │   └── enums.py
@@ -197,8 +197,8 @@ HoloLoom/
 
 ### Immediate Actions (Next 30 minutes):
 
-1. ✅ Create minimal `HoloLoom/__init__.py` with `__getattr__`
-2. ✅ Test that `from HoloLoom import HoloLoom` works
+1. ✅ Create minimal `hololoom/__init__.py` with `__getattr__`
+2. ✅ Test that `from hololoom import HoloLoom` works
 3. ✅ Test that ML logic detector can be imported
 
 ### Short-term (2-4 hours):
@@ -229,7 +229,7 @@ HoloLoom/
 ## Expected Outcomes
 
 ### After 30 minutes:
-- ✅ `from HoloLoom import HoloLoom` works
+- ✅ `from hololoom import HoloLoom` works
 - ✅ Can import ML logic detector
 - ✅ Ready to build xTerminator
 

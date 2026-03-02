@@ -81,7 +81,7 @@ mythRL/
 │   ├── vite.config.js
 │   └── tailwind.config.js
 │
-├── HoloLoom/
+├── hololoom/
 │   ├── cross_domain_adapter.py   # Cross-domain adaptation engine
 │   ├── streaming_depth.py        # Real-time streaming analyzer
 │   ├── matryoshka_depth.py      # Depth analysis core
@@ -182,7 +182,7 @@ ws.onmessage = (event) => {
 ### Add Custom Domain
 
 ```python
-from HoloLoom.cross_domain_adapter import DomainPluginBuilder, CrossDomainAdapter
+from hololoom.cross_domain_adapter import DomainPluginBuilder, CrossDomainAdapter
 
 # Build custom domain
 medical_domain = (

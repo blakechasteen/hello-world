@@ -691,7 +691,7 @@ top -p $(pgrep -f hololoom)
 # RES (resident) should not keep growing
 
 # 3. Check for unclosed resources
-grep -n "open\|socket\|connection" HoloLoom/server/*.py
+grep -n "open\|socket\|connection" hololoom/server/*.py
 
 # 4. Monitor by endpoint
 # Which endpoints cause memory growth?

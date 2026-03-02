@@ -53,7 +53,7 @@ A **complete Perplexity-style intelligent search system** with:
 ### New Files (Phase 2)
 
 ```
-HoloLoom/agentic/
+hololoom/agentic/
 └── web_research.py          (410 lines)  - Web-enhanced agentic research
 
 Total New: 410 lines
@@ -62,13 +62,13 @@ Total New: 410 lines
 ### Modified Files
 
 ```
-HoloLoom/agentic/__init__.py  - Added WebResearchOrchestrator exports
+hololoom/agentic/__init__.py  - Added WebResearchOrchestrator exports
 ```
 
 ### Phase 1 Files (Already Complete)
 
 ```
-HoloLoom/search/
+hololoom/search/
 ├── protocol.py               (200 lines)
 ├── matryoshka_search.py     (450 lines)
 ├── citation.py               (280 lines)
@@ -96,8 +96,8 @@ Total: ~4,500 lines
 ### Quick Start
 
 ```python
-from HoloLoom.agentic import WebResearchOrchestrator
-from HoloLoom.config import Config
+from hololoom.agentic import WebResearchOrchestrator
+from hololoom.config import Config
 import os
 
 # Create web-enabled orchestrator
@@ -131,8 +131,8 @@ for citation in result.search_results:
 ### Complete Example
 
 ```python
-from HoloLoom.agentic import WebResearchOrchestrator
-from HoloLoom.config import Config
+from hololoom.agentic import WebResearchOrchestrator
+from hololoom.config import Config
 import asyncio
 import os
 
@@ -282,8 +282,8 @@ HoloLoom Core
 ```bash
 # With real API (requires SERPAPI_KEY)
 SERPAPI_KEY=your_key python -c "
-from HoloLoom.agentic import WebResearchOrchestrator
-from HoloLoom.config import Config
+from hololoom.agentic import WebResearchOrchestrator
+from hololoom.config import Config
 import asyncio
 
 async def demo():
@@ -309,8 +309,8 @@ asyncio.run(demo())
 
 # With mock provider (no API key needed)
 python -c "
-from HoloLoom.agentic import WebResearchOrchestrator
-from HoloLoom.config import Config
+from hololoom.agentic import WebResearchOrchestrator
+from hololoom.config import Config
 import asyncio
 
 async def demo():

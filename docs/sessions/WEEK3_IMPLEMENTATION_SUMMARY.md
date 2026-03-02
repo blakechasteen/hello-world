@@ -10,7 +10,7 @@ Week 3 implements production-grade LLM integration for semantic fact extraction,
 
 ### Core Implementation
 
-1. **Production LLM Consolidator** (`HoloLoom/memory/llm_consolidator.py` - 850 lines)
+1. **Production LLM Consolidator** (`hololoom/memory/llm_consolidator.py` - 850 lines)
    - Multi-provider support (OpenAI, Anthropic, Ollama, vLLM)
    - Automatic fallback to rule-based extraction
    - Cost tracking and optimization
@@ -27,7 +27,7 @@ Week 3 implements production-grade LLM integration for semantic fact extraction,
    - Historical usage statistics
    - Export for billing/analysis
 
-4. **Updated Week 2 Integration** (`HoloLoom/memory/consolidation.py`)
+4. **Updated Week 2 Integration** (`hololoom/memory/consolidation.py`)
    - LLMConsolidator now wraps ProductionLLMConsolidator
    - Backward compatible with Week 2 tests
    - Additional parameters for model/API key
@@ -40,8 +40,8 @@ Week 3 implements production-grade LLM integration for semantic fact extraction,
 ### Basic Usage (Rule-Based Fallback)
 
 ```python
-from HoloLoom.memory.llm_consolidator import create_production_consolidator
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.memory.llm_consolidator import create_production_consolidator
+from hololoom.documentation.types import MemoryShard
 
 # Create consolidator without LLM (rule-based only)
 consolidator = create_production_consolidator(provider="none")
@@ -62,7 +62,7 @@ facts = await consolidator.extract_facts(episodes)
 ### OpenAI Integration
 
 ```python
-from HoloLoom.memory.llm_consolidator import create_production_consolidator
+from hololoom.memory.llm_consolidator import create_production_consolidator
 
 # Create consolidator with OpenAI
 consolidator = create_production_consolidator(
@@ -163,8 +163,8 @@ unique = await consolidator.deduplicate(memories)
 ### Updated Constructor
 
 ```python
-from HoloLoom.memory.consolidation import MemoryConsolidator
-from HoloLoom.memory.lifecycle_manager import ContextStreamManager
+from hololoom.memory.consolidation import MemoryConsolidator
+from hololoom.memory.lifecycle_manager import ContextStreamManager
 
 stream_manager = ContextStreamManager()
 
@@ -218,7 +218,7 @@ async with MemoryConsolidator(
 ### Per-Request Cost
 
 ```python
-from HoloLoom.memory.llm_consolidator import calculate_cost
+from hololoom.memory.llm_consolidator import calculate_cost
 
 # GPT-3.5-turbo example
 cost = calculate_cost(
@@ -359,16 +359,16 @@ facts = await consolidator.extract_facts(episodes)
 
 ```bash
 # All Week 3 tests
-pytest HoloLoom/tests/unit/test_llm_consolidator.py -v
+pytest hololoom/tests/unit/test_llm_consolidator.py -v
 
 # All Week 2 tests (still passing)
-pytest HoloLoom/tests/unit/test_consolidation.py -v
+pytest hololoom/tests/unit/test_consolidation.py -v
 
 # All Week 1+2+3 tests
-pytest HoloLoom/tests/unit/test_lifecycle_manager.py \
-       HoloLoom/tests/unit/test_agent_memory_tools.py \
-       HoloLoom/tests/unit/test_consolidation.py \
-       HoloLoom/tests/unit/test_llm_consolidator.py -v
+pytest hololoom/tests/unit/test_lifecycle_manager.py \
+       hololoom/tests/unit/test_agent_memory_tools.py \
+       hololoom/tests/unit/test_consolidation.py \
+       hololoom/tests/unit/test_llm_consolidator.py -v
 ```
 
 ---
@@ -432,7 +432,7 @@ export VLLM_BASE_URL="http://localhost:8000/v1"
 
 ```python
 import os
-from HoloLoom.memory.consolidation import MemoryConsolidator
+from hololoom.memory.consolidation import MemoryConsolidator
 
 # Read from environment
 consolidator = MemoryConsolidator(
@@ -472,8 +472,8 @@ consolidator = MemoryConsolidator(
 ### With Week 1 (Multi-Level Memory)
 
 ```python
-from HoloLoom.memory.lifecycle_manager import ContextStreamManager, MemoryScope
-from HoloLoom.memory.consolidation import MemoryConsolidator
+from hololoom.memory.lifecycle_manager import ContextStreamManager, MemoryScope
+from hololoom.memory.consolidation import MemoryConsolidator
 
 # Create multi-level memory manager
 stream_manager = ContextStreamManager()
@@ -499,7 +499,7 @@ semantic_facts = [m for m in agent_memories if m.metadata.get("type") == "semant
 ### With Week 2 (Agent Tools)
 
 ```python
-from HoloLoom.agentic.memory_tools import AgentMemoryTools
+from hololoom.agentic.memory_tools import AgentMemoryTools
 
 # Agent explicitly stores important episodes
 agent_tools = AgentMemoryTools(stream_manager)
@@ -558,14 +558,14 @@ Week 3 provides LLM-powered consolidation. Next:
 
 ### New Files (Week 3)
 
-1. **HoloLoom/memory/llm_consolidator.py** (850 lines)
+1. **hololoom/memory/llm_consolidator.py** (850 lines)
    - ProductionLLMConsolidator class
    - LLMClient abstraction
    - Multi-provider support
    - Cost tracking system
    - Factory functions
 
-2. **HoloLoom/tests/unit/test_llm_consolidator.py** (520 lines)
+2. **hololoom/tests/unit/test_llm_consolidator.py** (520 lines)
    - 26 comprehensive unit tests
    - Mock LLM testing
    - Cost calculation tests
@@ -578,7 +578,7 @@ Week 3 provides LLM-powered consolidation. Next:
 
 ### Modified Files (Week 3)
 
-1. **HoloLoom/memory/consolidation.py**
+1. **hololoom/memory/consolidation.py**
    - LLMConsolidator now wraps ProductionLLMConsolidator
    - Added llm_model and llm_api_key parameters
    - Updated get_statistics() to include LLM usage

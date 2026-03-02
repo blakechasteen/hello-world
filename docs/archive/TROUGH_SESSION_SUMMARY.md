@@ -8,7 +8,7 @@
 ## ✅ Completed Work
 
 ### 1. Comprehensive AI Slop Detector (COMPLETE)
-- **File**: `HoloLoom/agentic/ai_slop_detector.py` (1,200 lines)
+- **File**: `hololoom/agentic/ai_slop_detector.py` (1,200 lines)
 - **Coverage**: 15 detection categories
 - **Languages**: Python, TypeScript, JavaScript
 - **Status**: ✅ Fully implemented and documented
@@ -31,7 +31,7 @@
 15. ✅ Timezone issues
 
 ### 2. ML Logic Error Detector (CODE COMPLETE, BLOCKED)
-- **File**: `HoloLoom/agentic/ml_logic_detector.py` (715 lines)
+- **File**: `hololoom/agentic/ml_logic_detector.py` (715 lines)
 - **Algorithms**: 9/15 implemented
 - **Status**: ⚠️ Code complete but cannot import due to circular dependency
 
@@ -53,7 +53,7 @@
 - Confidence scoring (0.0-1.0)
 
 ### 3. Server Integration
-- **File**: `HoloLoom/server/agentic_api.py` (modified)
+- **File**: `hololoom/server/agentic_api.py` (modified)
 - **Endpoints Added**:
   - `POST /detect/slop` - Comprehensive AI slop detection ✅
   - `POST /detect/logic` - ML logic error detection ⚠️ (blocked)
@@ -136,8 +136,8 @@ MLLogicDetector
 ## 🎯 Code Statistics
 
 ### New Files Created
-1. `HoloLoom/agentic/ai_slop_detector.py` - 1,200 lines
-2. `HoloLoom/agentic/ml_logic_detector.py` - 715 lines
+1. `hololoom/agentic/ai_slop_detector.py` - 1,200 lines
+2. `hololoom/agentic/ml_logic_detector.py` - 715 lines
 3. `demos/demo_ml_logic_detector.py` - 150 lines
 4. `TROUGH_AI_SLOP_DETECTION_COMPLETE.md` - 644 lines
 5. `TROUGH_ML_LOGIC_DETECTION_COMPLETE.md` - 782 lines
@@ -150,7 +150,7 @@ MLLogicDetector
 **Grand Total**: 5,041 lines
 
 ### Modified Files
-1. `HoloLoom/server/agentic_api.py` - Added 2 endpoints
+1. `hololoom/server/agentic_api.py` - Added 2 endpoints
 
 ---
 
@@ -273,9 +273,9 @@ Even with the blocking issues, this session accomplished:
 4. **Success Criteria**: Demo runs without timeout, shows all 9 algorithms working
 
 **Files to Focus On**:
-- `HoloLoom/documentation/typed_dicts.py` - Remove numpy.typing
-- `HoloLoom/agentic/ml_logic_detector.py` - Lines 294-325 (CFG)
-- `HoloLoom/server/agentic_api.py` - Re-enable commented imports
+- `hololoom/documentation/typed_dicts.py` - Remove numpy.typing
+- `hololoom/agentic/ml_logic_detector.py` - Lines 294-325 (CFG)
+- `hololoom/server/agentic_api.py` - Re-enable commented imports
 
 **Expected Timeline**: 1-2 days to complete Phase 1 ✅
 

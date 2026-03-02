@@ -19,7 +19,7 @@ Matrix multiplications (matmuls) are the primary computational bottleneck in Hol
 
 ### A. Embedding Layer (BIGGEST BOTTLENECK)
 
-**Location**: `HoloLoom/embedding/spectral.py`
+**Location**: `hololoom/embedding/spectral.py`
 
 **Standard Approach** (WITH matmuls):
 ```python
@@ -38,7 +38,7 @@ scale_384 = full_embedding @ projection_matrix_384 # 768×384 matmul
 
 ### B. Policy Network (Neural Decision Making)
 
-**Location**: `HoloLoom/policy/unified.py`
+**Location**: `hololoom/policy/unified.py`
 
 **MLP Forward Pass**:
 ```python
@@ -64,7 +64,7 @@ class MLP:
 
 ### C. Attention Mechanisms
 
-**Location**: `HoloLoom/policy/unified.py` (MotifGatedMultiHeadAttention)
+**Location**: `hololoom/policy/unified.py` (MotifGatedMultiHeadAttention)
 
 **Attention Matmuls**:
 ```python
@@ -87,7 +87,7 @@ output = attn @ V  # (batch, seq, seq) @ (seq, head_dim)
 
 ### D. Warp Space Operations
 
-**Location**: `HoloLoom/warp/space.py`
+**Location**: `hololoom/warp/space.py`
 
 **Tensor Operations**:
 ```python
@@ -116,7 +116,7 @@ scale_384 = embedding @ W_384  # 30ms (768×384 matmul)
 
 **Key Insight**: Matryoshka embeddings have the "prefix property" - the first k dimensions form a valid k-dimensional embedding.
 
-**Implementation** (`HoloLoom/embedding/zero_copy.py`):
+**Implementation** (`hololoom/embedding/zero_copy.py`):
 ```python
 # FAST: Zero-copy array slicing (NO matmuls!)
 full_embedding = model.encode(text)  # 768d (2ms)
@@ -178,12 +178,12 @@ scale_384 = full_embedding[:384]      # <0.001ms (view, not copy)
 ### A. Zero-Copy Embeddings ✅
 
 **Status**: Production-ready (November 2025)
-**Location**: `HoloLoom/embedding/zero_copy.py`
-**Documentation**: `HoloLoom/embedding/ZERO_COPY_ARCHITECTURE.md`
+**Location**: `hololoom/embedding/zero_copy.py`
+**Documentation**: `hololoom/embedding/ZERO_COPY_ARCHITECTURE.md`
 
 **Enable via config**:
 ```python
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 config = Config.fast()
 config.enable_zero_copy_embeddings = True
@@ -201,7 +201,7 @@ config.zero_copy_cache_size = 10000
 
 **EmbeddingStore** (zero-copy persistence):
 ```python
-from HoloLoom.embedding.zero_copy import EmbeddingStore
+from hololoom.embedding.zero_copy import EmbeddingStore
 
 # Create mmap-backed store
 store = EmbeddingStore.create('embeddings.mmap', max_embeddings=10000, dim=768)
@@ -365,8 +365,8 @@ output = torch.sparse.mm(attn_sparse, V)
 
 ```python
 import torch
-from HoloLoom.policy.unified import create_policy
-from HoloLoom.protocols.types import Features
+from hololoom.policy.unified import create_policy
+from hololoom.protocols.types import Features
 
 # Create policy
 policy = create_policy(mem_dim=384, emb=None, scales=[96, 192, 384])
@@ -432,16 +432,16 @@ print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
 ## Files Reference
 
 ### Zero-Copy Implementation
-- **[zero_copy.py](HoloLoom/embedding/zero_copy.py:1)** - Main implementation
-- **[ZERO_COPY_ARCHITECTURE.md](HoloLoom/embedding/ZERO_COPY_ARCHITECTURE.md:1)** - Architecture docs
+- **[zero_copy.py](hololoom/embedding/zero_copy.py:1)** - Main implementation
+- **[ZERO_COPY_ARCHITECTURE.md](hololoom/embedding/ZERO_COPY_ARCHITECTURE.md:1)** - Architecture docs
 
 ### Policy Network
-- **[unified.py](HoloLoom/policy/unified.py:1)** - Neural policy with matmuls
-- **[bayesian_policy.py](HoloLoom/policy/bayesian_policy.py:1)** - Bayesian variant
+- **[unified.py](hololoom/policy/unified.py:1)** - Neural policy with matmuls
+- **[bayesian_policy.py](hololoom/policy/bayesian_policy.py:1)** - Bayesian variant
 
 ### Warp Space
-- **[space.py](HoloLoom/warp/space.py:1)** - Tensor operations
-- **[optimized.py](HoloLoom/warp/optimized.py:1)** - Optimized kernels
+- **[space.py](hololoom/warp/space.py:1)** - Tensor operations
+- **[optimized.py](hololoom/warp/optimized.py:1)** - Optimized kernels
 
 ---
 

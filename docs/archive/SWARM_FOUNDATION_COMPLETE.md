@@ -2,7 +2,7 @@
 
 **Status**: ✅ **COMPLETE** (November 2025)
 **Date**: 2025-11-05
-**Location**: `HoloLoom/redteam/swarm/`
+**Location**: `hololoom/redteam/swarm/`
 **Total Code**: 914 lines of production-ready code
 **All Tests**: PASSING (syntax validation, imports, verification)
 
@@ -12,7 +12,7 @@
 
 ### Files Created (3 Core Modules)
 
-#### 1. `HoloLoom/redteam/swarm/__init__.py` (52 lines)
+#### 1. `hololoom/redteam/swarm/__init__.py` (52 lines)
 **Purpose**: Package interface and public exports
 **Contents**:
 - Import statements for all protocol definitions and communication
@@ -26,7 +26,7 @@
 - AgentProtocol, CoordinatorProtocol (interfaces)
 - MessageBus (main communication component)
 
-#### 2. `HoloLoom/redteam/swarm/protocols.py` (378 lines)
+#### 2. `hololoom/redteam/swarm/protocols.py` (378 lines)
 **Purpose**: Protocol definitions and data class models
 **Contents**:
 
@@ -77,7 +77,7 @@
    - Task distribution and result aggregation
    - Methods: distribute_task(), aggregate_results(), broadcast(), get_agent_states()
 
-#### 3. `HoloLoom/redteam/swarm/communication.py` (484 lines)
+#### 3. `hololoom/redteam/swarm/communication.py` (484 lines)
 **Purpose**: High-performance async message bus implementation
 **Contents**:
 
@@ -573,9 +573,9 @@ The foundation is **ready for immediate use** in Phase 4a implementation.
 ## Contact & Support
 
 For questions about the swarm foundation:
-- See `HoloLoom/redteam/swarm/__init__.py` for public API
-- See `HoloLoom/redteam/swarm/protocols.py` for detailed specifications
-- See `HoloLoom/redteam/swarm/communication.py` for implementation details
+- See `hololoom/redteam/swarm/__init__.py` for public API
+- See `hololoom/redteam/swarm/protocols.py` for detailed specifications
+- See `hololoom/redteam/swarm/communication.py` for implementation details
 - See `CARTS_PHASE_4_SWARM_FOUNDATION.md` for comprehensive guide
 
 ---

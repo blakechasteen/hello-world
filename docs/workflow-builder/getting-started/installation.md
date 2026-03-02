@@ -40,7 +40,7 @@ cd mythRL
 ### 2. Start the Backend
 
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python workflow_executor.py
 ```
 
@@ -52,16 +52,16 @@ INFO:     Started reloader process
 
 ### 3. Open the UI
 
-Open `HoloLoom/web_dashboard/workflow_builder.html` in your browser.
+Open `hololoom/web_dashboard/workflow_builder.html` in your browser.
 
 **Option A**: File URL
 ```
-file:///path/to/mythRL/HoloLoom/web_dashboard/workflow_builder.html
+file:///path/to/mythRL/hololoom/web_dashboard/workflow_builder.html
 ```
 
 **Option B**: Serve with Python
 ```bash
-cd HoloLoom/web_dashboard
+cd hololoom/web_dashboard
 python -m http.server 8080
 # Open http://localhost:8080/workflow_builder.html
 ```
@@ -120,7 +120,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY HoloLoom /app/HoloLoom
 
 EXPOSE 8001
-CMD ["uvicorn", "HoloLoom.apps.workflow_builder.workflow_executor:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "hololoom.apps.workflow_builder.workflow_executor:app", "--host", "0.0.0.0", "--port", "8001"]
 ```
 
 ```yaml

@@ -32,7 +32,7 @@ Dashboard includes:
 - Cache hit rate
 
 ### 4. Prometheus Metrics Module ✓
-Created: `HoloLoom/performance/prometheus_metrics.py`
+Created: `hololoom/performance/prometheus_metrics.py`
 
 Metrics exposed:
 - `hololoom_query_duration_seconds` - Query latency
@@ -76,7 +76,7 @@ Services will be available at:
 - `monitoring/prometheus.yml`
 - `monitoring/grafana-dashboards/dashboard.yml`  
 - `monitoring/grafana-dashboards/hololoom-overview.json`
-- `HoloLoom/performance/prometheus_metrics.py`
+- `hololoom/performance/prometheus_metrics.py`
 - `PRODUCTION_DEPLOYMENT.md`
 
 **Modified**:

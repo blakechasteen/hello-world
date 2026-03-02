@@ -23,7 +23,7 @@ All features implemented with **zero breaking changes** to existing functionalit
 
 ### 1. Rate Limiting (Server)
 
-**File**: `HoloLoom/server/agentic_api.py`
+**File**: `hololoom/server/agentic_api.py`
 
 **Implementation**:
 ```python
@@ -60,7 +60,7 @@ class RateLimiter:
 
 ### 2. Query Size Validation (Server)
 
-**File**: `HoloLoom/server/agentic_api.py`
+**File**: `hololoom/server/agentic_api.py`
 
 **Implementation**:
 ```python
@@ -103,7 +103,7 @@ class QueryRequest(BaseModel):
 
 ### 3. Stats Tracking (Server)
 
-**File**: `HoloLoom/server/agentic_api.py`
+**File**: `hololoom/server/agentic_api.py`
 
 **Implementation**:
 ```python

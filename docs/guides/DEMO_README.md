@@ -89,24 +89,24 @@ After running the demo, explore:
 
 1. **Integration Tests**:
    ```bash
-   PYTHONPATH=. python HoloLoom/spinningWheel/tests/test_integration.py
+   PYTHONPATH=. python hololoom/spinningWheel/tests/test_integration.py
    ```
 
 2. **Unit Tests**:
    ```bash
-   PYTHONPATH=. python HoloLoom/spinningWheel/tests/run_tests.py
+   PYTHONPATH=. python hololoom/spinningWheel/tests/run_tests.py
    ```
 
 3. **Batch Utilities**:
    ```bash
    # See batch ingestion examples in:
-   HoloLoom/spinningWheel/batch_utils.py
+   hololoom/spinningWheel/batch_utils.py
    ```
 
 4. **Individual Spinners**:
    ```bash
    # Explore examples:
-   HoloLoom/spinningWheel/examples/
+   hololoom/spinningWheel/examples/
    ```
 
 ## Technical Details
@@ -200,5 +200,5 @@ Part of the HoloLoom project. See repository LICENSE for details.
 ## Support
 
 - GitHub Issues: https://github.com/blakechasteen/hello-world/issues
-- Documentation: See HoloLoom/spinningWheel/README.md
-- Tests: HoloLoom/spinningWheel/tests/
+- Documentation: See hololoom/spinningWheel/README.md
+- Tests: hololoom/spinningWheel/tests/

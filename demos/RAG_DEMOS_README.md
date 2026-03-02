@@ -248,7 +248,7 @@ async with SimpleRAG() as rag:
     ...
 
 # With custom config
-from HoloLoom.config import Config
+from hololoom.config import Config
 config = Config.fast()
 async with SimpleRAG(config=config) as rag:
     ...
@@ -407,16 +407,16 @@ result = await rag.query(question, mode="research")
 ## Next Steps
 
 1. **Run all 4 demos**: Follow the learning path above
-2. **Read SimpleRAG API docs**: See `HoloLoom/rag/simple_rag.py`
+2. **Read SimpleRAG API docs**: See `hololoom/rag/simple_rag.py`
 3. **Build your own**: Create a RAG app for your domain
 4. **Advanced features**: Explore caching, metrics, custom configs
 5. **Integration**: Use SimpleRAG in larger applications
 
 ## Documentation Links
 
-- **SimpleRAG API**: `HoloLoom/rag/simple_rag.py`
-- **HoloLoom Memory**: `HoloLoom/hololoom.py`
-- **Configuration**: `HoloLoom/config.py`
+- **SimpleRAG API**: `hololoom/rag/simple_rag.py`
+- **HoloLoom Memory**: `hololoom/hololoom.py`
+- **Configuration**: `hololoom/config.py`
 - **Complete Examples**: `demos/demo_simple_rag.py` (full-featured demo)
 
 ## Performance Characteristics

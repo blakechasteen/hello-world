@@ -12,7 +12,7 @@ Complete LRU cache with TTL for instant repeated queries.
 
 #### Files Created
 ```
-HoloLoom/performance/
+hololoom/performance/
 ├── cache.py                 (95 lines)  - LRU cache implementation
 └── __init__.py             (6 lines)   - Module exports
 
@@ -24,7 +24,7 @@ PERFORMANCE_IMPROVEMENTS.md  (450 lines) - Complete documentation
 
 #### Files Modified
 ```
-HoloLoom/weaving_shuttle.py
+hololoom/weaving_shuttle.py
 ├── +3 lines:  Import QueryCache
 ├── +2 lines:  Initialize cache (max_size=50, ttl=300s)
 ├── +4 lines:  Check cache before weaving
@@ -286,7 +286,7 @@ print(f"Hit rate: {stats['hit_rate']:.1%}")  # 66.7%
 ## Code Quality
 
 ### Clean Architecture
-- ✅ Separate module (`HoloLoom/performance/`)
+- ✅ Separate module (`hololoom/performance/`)
 - ✅ Single responsibility (caching only)
 - ✅ Easy to test and maintain
 - ✅ No coupling to other systems

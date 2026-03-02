@@ -28,8 +28,8 @@ Over 6 weeks (October-November 2025), we implemented a production-ready memory s
 - NetworkX knowledge graph integration
 
 **Files Created**:
-- `HoloLoom/memory/lifecycle_manager.py` (750 lines)
-- `HoloLoom/tests/unit/test_lifecycle_manager.py` (420 lines, 20 tests)
+- `hololoom/memory/lifecycle_manager.py` (750 lines)
+- `hololoom/tests/unit/test_lifecycle_manager.py` (420 lines, 20 tests)
 
 **Tests**: 20/20 passing ✅
 
@@ -46,10 +46,10 @@ Over 6 weeks (October-November 2025), we implemented a production-ready memory s
 - Episode pruning (optional)
 
 **Files Created**:
-- `HoloLoom/agentic/memory_tools.py` (560 lines)
-- `HoloLoom/memory/consolidation.py` (650 lines)
-- `HoloLoom/tests/unit/test_agent_memory_tools.py` (370 lines, 19 tests)
-- `HoloLoom/tests/unit/test_consolidation.py` (480 lines, 19 tests)
+- `hololoom/agentic/memory_tools.py` (560 lines)
+- `hololoom/memory/consolidation.py` (650 lines)
+- `hololoom/tests/unit/test_agent_memory_tools.py` (370 lines, 19 tests)
+- `hololoom/tests/unit/test_consolidation.py` (480 lines, 19 tests)
 
 **Key Features**:
 - Importance-based storage (0.0-1.0 scale)
@@ -82,8 +82,8 @@ Over 6 weeks (October-November 2025), we implemented a production-ready memory s
 - Production LLM client abstraction
 
 **Files Created**:
-- `HoloLoom/memory/llm_consolidator.py` (850 lines)
-- `HoloLoom/tests/unit/test_llm_consolidator.py` (520 lines, 26 tests)
+- `hololoom/memory/llm_consolidator.py` (850 lines)
+- `hololoom/tests/unit/test_llm_consolidator.py` (520 lines, 26 tests)
 - `WEEK3_IMPLEMENTATION_SUMMARY.md` (documentation)
 - `demos/demo_week3_llm_integration.py` (demo)
 
@@ -118,8 +118,8 @@ Over 6 weeks (October-November 2025), we implemented a production-ready memory s
 - Matryoshka multi-scale embeddings (96/192/384 dims)
 
 **Files Created**:
-- `HoloLoom/memory/hybrid_retrieval.py` (750 lines)
-- `HoloLoom/tests/unit/test_hybrid_retrieval.py` (450 lines, 21 tests)
+- `hololoom/memory/hybrid_retrieval.py` (750 lines)
+- `hololoom/tests/unit/test_hybrid_retrieval.py` (450 lines, 21 tests)
 - `WEEK4_IMPLEMENTATION_SUMMARY.md` (documentation)
 
 **Retrieval Methods**:
@@ -156,12 +156,12 @@ RRF score = Σ (1 / (k + rank_i))  where k=60
 - Lifecycle management (async context managers)
 
 **Files Created**:
-- `HoloLoom/memory/integrated_memory_system.py` (450 lines)
-- `HoloLoom/tests/integration/test_integrated_memory_system.py` (580 lines, 18 tests)
+- `hololoom/memory/integrated_memory_system.py` (450 lines)
+- `hololoom/tests/integration/test_integrated_memory_system.py` (580 lines, 18 tests)
 
 **Simple API**:
 ```python
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
 
 # 1. Create system
 system = create_integrated_memory_system()
@@ -175,7 +175,7 @@ results = await system.retrieve("exploration strategies", limit=10)
 
 **Production API**:
 ```python
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+from hololoom.memory.integrated_memory_system import create_production_memory_system
 
 # Create with LLM
 system = create_production_memory_system(
@@ -208,7 +208,7 @@ async with system:
 
 **Files Created**:
 - `PRODUCTION_DEPLOYMENT_GUIDE.md` (complete deployment guide)
-- `HoloLoom/tests/e2e/test_memory_system_benchmarks.py` (550 lines, 9 benchmarks)
+- `hololoom/tests/e2e/test_memory_system_benchmarks.py` (550 lines, 9 benchmarks)
 - `MOONSHOT_LAUNCH.md` (launch documentation)
 - `MEMORY_SYSTEM_V1_COMPLETE.md` (this file)
 
@@ -333,7 +333,7 @@ User Query
 ### Test Organization
 
 ```
-HoloLoom/tests/
+hololoom/tests/
 ├── unit/          # Fast isolated tests (<5s)     - 105 tests
 ├── integration/   # Multi-component tests (<30s)  - 18 tests
 └── e2e/           # Full pipeline tests (<2min)   - 9 benchmarks
@@ -347,7 +347,7 @@ HoloLoom/tests/
 
 **1. Minimal Setup** (30 seconds):
 ```python
-from HoloLoom.memory.integrated_memory_system import create_integrated_memory_system
+from hololoom.memory.integrated_memory_system import create_integrated_memory_system
 
 system = create_integrated_memory_system()
 await system.store("Important information", importance=0.9)
@@ -356,7 +356,7 @@ results = await system.retrieve("search query", limit=10)
 
 **2. Production Setup** (5 minutes):
 ```python
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+from hololoom.memory.integrated_memory_system import create_production_memory_system
 
 system = create_production_memory_system(
     llm_provider="anthropic",
@@ -373,7 +373,7 @@ async with system:
 **3. FastAPI Service**:
 ```python
 from fastapi import FastAPI
-from HoloLoom.memory.integrated_memory_system import create_production_memory_system
+from hololoom.memory.integrated_memory_system import create_production_memory_system
 
 app = FastAPI()
 

@@ -86,7 +86,7 @@ This checklist provides structured learning paths for new team members. Follow t
 
 | Time | Activity | Resource | Outcome |
 |------|----------|----------|---------|
-| 1 hr | RAG system overview | [HoloLoom/rag/README.md](../../HoloLoom/rag/README.md) | Understand 4-level RAG hierarchy |
+| 1 hr | RAG system overview | [hololoom/rag/README.md](../../hololoom/rag/README.md) | Understand 4-level RAG hierarchy |
 | 1 hr | Memory architecture | [docs/architecture/ARCHITECTURE_VISUAL_MAP.md](../architecture/ARCHITECTURE_VISUAL_MAP.md) | Trace data through 9-step cycle |
 | 1 hr | Run RAG demo | `PYTHONPATH=. python demos/demo_rag_qa_simple.py` | Ingest and query data |
 
@@ -123,7 +123,7 @@ This checklist provides structured learning paths for new team members. Follow t
 |------|----------|----------|---------|
 | 1 hr | 9-step weaving cycle | [CLAUDE.md](../../CLAUDE.md) (Weaving Architecture) | Understand full pipeline |
 | 1 hr | Step through orchestrator | Debug `WeavingOrchestrator.weave()` | Trace a query through code |
-| 1 hr | Explore protocols | [HoloLoom/protocols/](../../HoloLoom/protocols/) | Understand protocol-based design |
+| 1 hr | Explore protocols | [hololoom/protocols/](../../hololoom/protocols/) | Understand protocol-based design |
 
 **Checkpoint**: Can you trace a query through the full pipeline in the debugger?
 
@@ -157,7 +157,7 @@ This checklist provides structured learning paths for new team members. Follow t
 >
 > Steps 4-6 run in **parallel** via `asyncio.gather` for 40-120ms speedup.
 >
-> Read: [HoloLoom/orchestrator/stages/](../../HoloLoom/orchestrator/stages/) for implementation.
+> Read: [hololoom/orchestrator/stages/](../../hololoom/orchestrator/stages/) for implementation.
 
 </details>
 
@@ -170,7 +170,7 @@ This checklist provides structured learning paths for new team members. Follow t
 | Time | Activity | Resource | Outcome |
 |------|----------|----------|---------|
 | 30 min | Clone and setup | [README.md](../../README.md) | Development environment working |
-| 30 min | Run test suite | `pytest HoloLoom/tests/ -v` | All tests passing |
+| 30 min | Run test suite | `pytest hololoom/tests/ -v` | All tests passing |
 | 30 min | Explore codebase | `python -m HoloLoom.cli agent list` | Navigate confidently |
 | 30 min | Make first edit | Fix a typo or add a comment | First commit to repo |
 
@@ -192,7 +192,7 @@ pip install -r requirements.txt
 python scripts/verify_setup.py --level quick
 ```
 
-**Checkpoint**: Can you run `pytest HoloLoom/tests/unit/ -v` with all tests passing?
+**Checkpoint**: Can you run `pytest hololoom/tests/unit/ -v` with all tests passing?
 
 ---
 
@@ -202,8 +202,8 @@ python scripts/verify_setup.py --level quick
 
 | Time | Activity | Resource | Outcome |
 |------|----------|----------|---------|
-| 1 hr | Audit trail system | [HoloLoom/alignment/audit_trail.py](../../HoloLoom/alignment/audit_trail.py) | Understand provenance tracking |
-| 30 min | Safety guardrails | [HoloLoom/alignment/README.md](../../HoloLoom/alignment/README.md) | Understand risk gating |
+| 1 hr | Audit trail system | [hololoom/alignment/audit_trail.py](../../hololoom/alignment/audit_trail.py) | Understand provenance tracking |
+| 30 min | Safety guardrails | [hololoom/alignment/README.md](../../hololoom/alignment/README.md) | Understand risk gating |
 | 30 min | Run governance demo | Part of `demo_agent_hypervisor.py` | See safety in action |
 
 **Checkpoint**: Can you explain HoloLoom's compliance features to an enterprise client?
@@ -247,14 +247,14 @@ python scripts/verify_setup.py --level quick
 ### [BIZ] Data Ingestion
 
 - [ ] Ingest 3 different data sources (PDF, web, text)
-- [ ] Use SpinningWheel adapters (see [HoloLoom/spinningWheel/](../../HoloLoom/spinningWheel/))
+- [ ] Use SpinningWheel adapters (see [hololoom/spinningWheel/](../../hololoom/spinningWheel/))
 - [ ] Monitor memory graph growth
 - [ ] Create data quality report
 
 ### [DEV] Testing & Quality
 
-- [ ] Run unit tests (`HoloLoom/tests/unit/`)
-- [ ] Run integration tests (`HoloLoom/tests/integration/`)
+- [ ] Run unit tests (`hololoom/tests/unit/`)
+- [ ] Run integration tests (`hololoom/tests/integration/`)
 - [ ] Add test for one new edge case
 - [ ] Review code coverage
 
@@ -403,8 +403,8 @@ hololoom cluster nodes
 
 **Key Documentation**:
 - Architecture: [ARCHITECTURE_VISUAL_MAP.md](../architecture/ARCHITECTURE_VISUAL_MAP.md)
-- RAG System: [HoloLoom/rag/README.md](../../HoloLoom/rag/README.md)
-- Alignment: [HoloLoom/alignment/README.md](../../HoloLoom/alignment/README.md)
+- RAG System: [hololoom/rag/README.md](../../hololoom/rag/README.md)
+- Alignment: [hololoom/alignment/README.md](../../hololoom/alignment/README.md)
 - Full Reference: [HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md](../HOLOLOOM_MASTER_SCOPE_AND_SEQUENCE.md)
 
 ---

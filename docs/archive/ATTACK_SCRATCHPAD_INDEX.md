@@ -1,7 +1,7 @@
 # Attack Scratchpad: Complete Documentation Index
 
 **Status**: ✅ **PRODUCTION READY**
-**Module**: `HoloLoom/redteam/provenance/`
+**Module**: `hololoom/redteam/provenance/`
 **Test Status**: 22/22 PASSING (100%)
 **Date**: November 2025
 
@@ -80,10 +80,10 @@
 → Read: **ATTACK_SCRATCHPAD_QUICK_REF.md**
 
 ### "I want to see it in action"
-→ Run: `python HoloLoom/redteam/provenance/demo_attack_provenance.py`
+→ Run: `python hololoom/redteam/provenance/demo_attack_provenance.py`
 
 ### "I want to verify all tests pass"
-→ Run: `pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v`
+→ Run: `pytest hololoom/redteam/provenance/test_attack_scratchpad.py -v`
 
 ---
 
@@ -91,7 +91,7 @@
 
 ### Core Implementation
 ```
-HoloLoom/redteam/provenance/
+hololoom/redteam/provenance/
 ├── attack_scratchpad.py          # Main implementation (510 lines)
 │   ├── AttackScratchpadEntry     # Dataclass for single attack
 │   ├── AttackChain               # Dataclass for multi-step attacks
@@ -248,12 +248,12 @@ Target defense mechanisms:
 
 ### 1. Install (Optional - uses stdlib only)
 ```bash
-# No installation needed, already in HoloLoom/redteam/provenance/
+# No installation needed, already in hololoom/redteam/provenance/
 ```
 
 ### 2. Import
 ```python
-from HoloLoom.redteam.provenance import (
+from hololoom.redteam.provenance import (
     AttackScratchpad,
     AttackStrategy,
     DefenseLayer
@@ -319,11 +319,11 @@ scratchpad.export_to_json("attack_audit.json")
 ## 🔗 Cross-References
 
 ### Related HoloLoom Systems
-- **HoloLoom/recursive/scratchpad.py** - Original scratchpad pattern
-- **HoloLoom/redteam/generation/** - Attack generation
-- **HoloLoom/redteam/sandbox/** - Safe attack execution
-- **HoloLoom/redteam/learning/** - Learn from attacks
-- **HoloLoom/redteam/visualization/** - Visualize results
+- **hololoom/recursive/scratchpad.py** - Original scratchpad pattern
+- **hololoom/redteam/generation/** - Attack generation
+- **hololoom/redteam/sandbox/** - Safe attack execution
+- **hololoom/redteam/learning/** - Learn from attacks
+- **hololoom/redteam/visualization/** - Visualize results
 
 ### CARTS Integration Points
 - **CARTS Attack Generator** → AttackScratchpad
@@ -357,10 +357,10 @@ A: Responses are truncated to 500 chars in JSON export. Use metadata for sensiti
 A: No! Uses Python stdlib only. No external packages required.
 
 **Q: How do I run the demo?**
-A: `python HoloLoom/redteam/provenance/demo_attack_provenance.py`
+A: `python hololoom/redteam/provenance/demo_attack_provenance.py`
 
 **Q: How do I run the tests?**
-A: `pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v`
+A: `pytest hololoom/redteam/provenance/test_attack_scratchpad.py -v`
 
 ---
 
@@ -394,7 +394,7 @@ A: `pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v`
 
 **Beginner** (5 min)
 1. Read: ATTACK_SCRATCHPAD_QUICK_REF.md (Quick Start section)
-2. Run: `python HoloLoom/redteam/provenance/demo_attack_provenance.py`
+2. Run: `python hololoom/redteam/provenance/demo_attack_provenance.py`
 
 **Intermediate** (15 min)
 1. Read: ATTACK_SCRATCHPAD_COMPLETE.md (Usage Examples)
@@ -420,7 +420,7 @@ A: `pytest HoloLoom/redteam/provenance/test_attack_scratchpad.py -v`
 ### For Immediate Use
 ```bash
 cd c:\Users\blake\OneDrive\Documents\mythRL
-python HoloLoom/redteam/provenance/demo_attack_provenance.py
+python hololoom/redteam/provenance/demo_attack_provenance.py
 ```
 
 ### For Integration

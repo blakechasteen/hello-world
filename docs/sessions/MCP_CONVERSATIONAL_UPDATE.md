@@ -126,7 +126,7 @@ Results: 5 turns, 2 remembered (40% signal, 60% noise)
 ## Technical Implementation
 
 ### Location
-`HoloLoom/memory/mcp_server.py` (now 697 lines)
+`hololoom/memory/mcp_server.py` (now 697 lines)
 
 ### Key Features
 1. **Importance Scoring Function** (lines 72-143)
@@ -271,14 +271,14 @@ This update brings the ConversationalAutoLoom intelligence to the MCP server:
 
 ## Files Modified
 
-- `HoloLoom/memory/mcp_server.py` - Added chat & conversation_stats tools
+- `hololoom/memory/mcp_server.py` - Added chat & conversation_stats tools
 - `demo_mcp.py` - Updated to show new features
 - `MCP_CONVERSATIONAL_UPDATE.md` - This document
 
 ## See Also
 
-- `HoloLoom/conversational.py` - Standalone ConversationalAutoLoom
-- `HoloLoom/CONVERSATIONAL_README.md` - Full conversational docs
+- `hololoom/conversational.py` - Standalone ConversationalAutoLoom
+- `hololoom/CONVERSATIONAL_README.md` - Full conversational docs
 - `example_conversational.py` - Working demo
 
 **The future is conversational, and it filters noise! 🚀**

@@ -549,7 +549,7 @@ See: `demos/output/interactive_dashboard_XXXXX.html`
 
 ### C. Code & Documentation
 
-See: `HoloLoom/` directory
+See: `hololoom/` directory
 - 20,000+ lines of production code
 - Full test coverage
 - Integration guides

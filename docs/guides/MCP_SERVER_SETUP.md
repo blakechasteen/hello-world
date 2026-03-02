@@ -69,7 +69,7 @@ Edit `claude_desktop_config.json` and add:
       "command": "python",
       "args": [
         "-m",
-        "HoloLoom.mcp_server_promptly"
+        "hololoom.mcp_server_promptly"
       ],
       "env": {
         "PYTHONPATH": "/path/to/mythRL"
@@ -377,7 +377,7 @@ When using `hololoom_weave` or skills, you can specify:
 }
 ```
 
-(See `HoloLoom/agentic/SKILL_AGENTS_README.md` for all 13 skills)
+(See `hololoom/agentic/SKILL_AGENTS_README.md` for all 13 skills)
 
 ## Troubleshooting
 
@@ -408,7 +408,7 @@ When using `hololoom_weave` or skills, you can specify:
 
 **Check**:
 ```bash
-PYTHONPATH=. python -c "from HoloLoom.agentic.skill_agents import SkillRegistry; import asyncio; registry = SkillRegistry(); asyncio.run(registry.load_all_skills()); print(f'Loaded {len(registry.skills)} skills')"
+PYTHONPATH=. python -c "from hololoom.agentic.skill_agents import SkillRegistry; import asyncio; registry = SkillRegistry(); asyncio.run(registry.load_all_skills()); print(f'Loaded {len(registry.skills)} skills')"
 ```
 
 Should output: `Loaded 13 skills`
@@ -436,7 +436,7 @@ Should output: `Loaded 13 skills`
 
 ### Change HoloLoom Config Mode
 
-Edit `HoloLoom/mcp_server_promptly.py`:
+Edit `hololoom/mcp_server_promptly.py`:
 
 ```python
 # Line ~51
@@ -445,7 +445,7 @@ config = Config.fast()  # Change to Config.fused() for higher quality
 
 ### Enable More Verbose Logging
 
-Edit `HoloLoom/mcp_server_promptly.py`:
+Edit `hololoom/mcp_server_promptly.py`:
 
 ```python
 # Line ~42
@@ -454,7 +454,7 @@ logging.basicConfig(level=logging.DEBUG)  # More detailed logs
 
 ### Custom Skill Directory
 
-Edit `HoloLoom/mcp_server_promptly.py`:
+Edit `hololoom/mcp_server_promptly.py`:
 
 ```python
 # Add to initialize_hololoom()
@@ -466,13 +466,13 @@ skill_registry = SkillRegistry(skills_dir="/path/to/custom/skills")
 1. **Try the skills**: Start with `skill_code_reviewer` on some code
 2. **Explore strategies**: Test CRITIQUE vs DECOMPOSE vs EXPLORE
 3. **Use analytics**: Track which skills/strategies work best
-4. **Create custom skills**: See `HoloLoom/agentic/SKILL_AGENTS_README.md`
+4. **Create custom skills**: See `hololoom/agentic/SKILL_AGENTS_README.md`
 
 ## See Also
 
 - **Phase 1**: [PROMPTLY_HOLOLOOM_INTEGRATION.md](PROMPTLY_HOLOLOOM_INTEGRATION.md) - Recursive reasoning
-- **Phase 2**: [HoloLoom/analytics/README.md](HoloLoom/analytics/README.md) - Analytics
-- **Phase 3**: [HoloLoom/agentic/SKILL_AGENTS_README.md](HoloLoom/agentic/SKILL_AGENTS_README.md) - Professional skills
+- **Phase 2**: [hololoom/analytics/README.md](hololoom/analytics/README.md) - Analytics
+- **Phase 3**: [hololoom/agentic/SKILL_AGENTS_README.md](hololoom/agentic/SKILL_AGENTS_README.md) - Professional skills
 - **Phase 5**: [DASHBOARD.md](DASHBOARD.md) - Real-time visualization (coming soon)
 
 ---
@@ -480,4 +480,4 @@ skill_registry = SkillRegistry(skills_dir="/path/to/custom/skills")
 **Version**: 1.0.0
 **Created**: 2025-11-16
 **Integration**: Promptly (Phases 1-3) → Claude Desktop
-**MCP Server**: `HoloLoom/mcp_server_promptly.py` (750 lines)
+**MCP Server**: `hololoom/mcp_server_promptly.py` (750 lines)

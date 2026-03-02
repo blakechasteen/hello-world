@@ -16,7 +16,7 @@ Instead of being locked into a single backend, you can now:
 
 ### MemoryBackend Enum
 
-New enum in `HoloLoom/config.py` with 9 strategies:
+New enum in `hololoom/config.py` with 9 strategies:
 
 ```python
 class MemoryBackend(Enum):
@@ -81,10 +81,10 @@ class Config:
 
 ### Factory Pattern
 
-New file: `HoloLoom/memory/backend_factory.py` (551 lines)
+New file: `hololoom/memory/backend_factory.py` (551 lines)
 
 ```python
-from HoloLoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.backend_factory import create_memory_backend
 
 # Create backend from config
 config = Config.fused()
@@ -122,7 +122,7 @@ class HybridMemoryStore:
 ### Example 1: Development (Fast Prototyping)
 
 ```python
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.config import Config, MemoryBackend
 
 config = Config.fast()
 config.memory_backend = MemoryBackend.NETWORKX  # In-memory, no setup
@@ -295,7 +295,7 @@ Test Results: 4/6 passed
 ## File Structure
 
 ```
-HoloLoom/
+hololoom/
 ├── config.py                        # (+155 lines) MemoryBackend enum
 ├── memory/
 │   ├── backend_factory.py           # (551 lines) Factory pattern

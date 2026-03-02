@@ -252,7 +252,7 @@ git commit -m "feat(scope): description"
 pre-commit run --all-files                                    # Format
 pre-commit run mypy --hook-stage manual --all-files          # Type check
 pre-commit run bandit --hook-stage manual --all-files        # Security
-pytest HoloLoom/tests/ -v                                    # Run tests
+pytest hololoom/tests/ -v                                    # Run tests
 git push origin feature-branch                                # Push
 ```
 
@@ -294,9 +294,9 @@ See **`CODE_QUALITY_GUIDE.md`** for detailed troubleshooting.
 ### Command Line
 ```bash
 # Format before commit
-black HoloLoom/
-isort HoloLoom/
-ruff check --fix HoloLoom/
+black hololoom/
+isort hololoom/
+ruff check --fix hololoom/
 
 # Or let pre-commit do it
 pre-commit run --all-files

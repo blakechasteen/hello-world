@@ -23,7 +23,7 @@ pip install Pillow numpy openai-clip torch
 ### 1. Store Photos
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 async with HoloLoom() as loom:
     # Simple photo storage
@@ -137,7 +137,7 @@ photo.metadata           # Arbitrary data
 ### Full Cycle Demo
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 async with HoloLoom() as loom:
     # 1. Experience text

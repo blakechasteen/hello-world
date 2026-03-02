@@ -242,9 +242,9 @@ Stage 7: Spacetime
 **User Experience:**
 ```python
 # Multiple imports, unclear usage
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.synthesis.enriched_memory import MemoryEnricher
-from HoloLoom.memory.protocol import create_unified_memory
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.synthesis.enriched_memory import MemoryEnricher
+from hololoom.memory.protocol import create_unified_memory
 # ... complex setup required
 ```
 
@@ -265,7 +265,7 @@ from HoloLoom.memory.protocol import create_unified_memory
 **User Experience:**
 ```python
 # Single import, clean API
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 loom = await HoloLoom.create()
 response = await loom.query("What is HoloLoom?")
@@ -369,7 +369,7 @@ export PYTHONPATH=.
 
 ### Quick Start
 ```python
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 # Create HoloLoom instance
 loom = await HoloLoom.create(
@@ -401,7 +401,7 @@ print(f"Chats: {stats['chat_count']}")
 ### Run Demo
 ```bash
 export PYTHONPATH=.
-python HoloLoom/unified_api.py
+python hololoom/unified_api.py
 ```
 
 ---
@@ -417,9 +417,9 @@ python HoloLoom/unified_api.py
 ### Architecture Documentation
 - [INTEGRATION_SPRINT.md](INTEGRATION_SPRINT.md) - Sprint plan
 - [CLEANUP_INVENTORY.md](CLEANUP_INVENTORY.md) - File inventory
-- [HoloLoom/weaving_orchestrator.py](HoloLoom/weaving_orchestrator.py) - Orchestrator code
-- [HoloLoom/synthesis_bridge.py](HoloLoom/synthesis_bridge.py) - Synthesis bridge code
-- [HoloLoom/unified_api.py](HoloLoom/unified_api.py) - Unified API code
+- [hololoom/weaving_orchestrator.py](hololoom/weaving_orchestrator.py) - Orchestrator code
+- [hololoom/synthesis_bridge.py](hololoom/synthesis_bridge.py) - Synthesis bridge code
+- [hololoom/unified_api.py](hololoom/unified_api.py) - Unified API code
 
 ### Demo Files
 - [demos/01_quickstart.py](demos/01_quickstart.py) - Basic usage

@@ -12,7 +12,7 @@ This document summarizes the complete analysis suite for HoloLoom's Warp Drive m
 ## Modules Delivered
 
 ### 1. Real Analysis (766 lines)
-**File**: `HoloLoom/warp/math/analysis/real_analysis.py`
+**File**: `hololoom/warp/math/analysis/real_analysis.py`
 
 **Core Classes**:
 - `MetricSpace`: Metric axioms, Cauchy sequences, completeness
@@ -34,7 +34,7 @@ This document summarizes the complete analysis suite for HoloLoom's Warp Drive m
 - Convergence testing with configurable tolerance
 
 ### 2. Complex Analysis (694 lines)
-**File**: `HoloLoom/warp/math/analysis/complex_analysis.py`
+**File**: `hololoom/warp/math/analysis/complex_analysis.py`
 
 **Core Classes**:
 - `ComplexFunction`: Cauchy-Riemann equations, holomorphic functions
@@ -57,7 +57,7 @@ This document summarizes the complete analysis suite for HoloLoom's Warp Drive m
 - Conformal map catalog (Möbius, exponential, Joukowski)
 
 ### 3. Functional Analysis (586 lines)
-**File**: `HoloLoom/warp/math/analysis/functional_analysis.py`
+**File**: `hololoom/warp/math/analysis/functional_analysis.py`
 
 **Core Classes**:
 - `NormedSpace`: Banach space foundations
@@ -80,7 +80,7 @@ This document summarizes the complete analysis suite for HoloLoom's Warp Drive m
 - Sobolev space norms for PDEs
 
 ### 4. Measure Theory (505 lines)
-**File**: `HoloLoom/warp/math/analysis/measure_theory.py`
+**File**: `hololoom/warp/math/analysis/measure_theory.py`
 
 **Core Classes**:
 - `SigmaAlgebra`: Measurable sets, complements, unions, generated algebras
@@ -103,7 +103,7 @@ This document summarizes the complete analysis suite for HoloLoom's Warp Drive m
 - Discrete and continuous measure support
 
 ### 5. Fourier & Harmonic Analysis (466 lines)
-**File**: `HoloLoom/warp/math/analysis/fourier_harmonic.py`
+**File**: `hololoom/warp/math/analysis/fourier_harmonic.py`
 
 **Core Classes**:
 - `FourierTransform`: FFT, inverse FFT, power/magnitude/phase spectra, bandpass filtering
@@ -124,7 +124,7 @@ This document summarizes the complete analysis suite for HoloLoom's Warp Drive m
 - Gabor transform for time-frequency localization
 
 ### 6. Stochastic Calculus (467 lines)
-**File**: `HoloLoom/warp/math/analysis/stochastic_calculus.py`
+**File**: `hololoom/warp/math/analysis/stochastic_calculus.py`
 
 **Core Classes**:
 - `BrownianMotion`: Path generation, GBM, Brownian bridges, first passage times
@@ -148,7 +148,7 @@ This document summarizes the complete analysis suite for HoloLoom's Warp Drive m
 - Ornstein-Uhlenbeck process (mean-reverting)
 
 ### 7. Advanced Topics (406 lines)
-**File**: `HoloLoom/warp/math/analysis/advanced_topics.py`
+**File**: `hololoom/warp/math/analysis/advanced_topics.py`
 
 **Core Classes**:
 - `WaveFrontSet`: Singularity detection in phase space
@@ -232,7 +232,7 @@ This document summarizes the complete analysis suite for HoloLoom's Warp Drive m
 
 ```python
 # Top-level import
-from HoloLoom.warp.math.analysis import (
+from hololoom.warp.math.analysis import (
     # Real Analysis
     MetricSpace, SequenceAnalyzer, Differentiator,
     # Complex Analysis
@@ -253,7 +253,7 @@ from HoloLoom.warp.math.analysis import (
 ### Module Hierarchy
 
 ```
-HoloLoom/warp/math/
+hololoom/warp/math/
 ├── __init__.py (math module root)
 └── analysis/
     ├── __init__.py (analysis exports)
@@ -270,7 +270,7 @@ HoloLoom/warp/math/
 
 ### Example 1: Metric Space Analysis
 ```python
-from HoloLoom.warp.math.analysis import MetricSpace
+from hololoom.warp.math.analysis import MetricSpace
 import numpy as np
 
 # Embeddings as points in metric space
@@ -287,7 +287,7 @@ d = space.distance(embeddings[0], embeddings[1])
 
 ### Example 2: Fourier Analysis
 ```python
-from HoloLoom.warp.math.analysis import FourierTransform
+from hololoom.warp.math.analysis import FourierTransform
 import numpy as np
 
 # Signal
@@ -303,7 +303,7 @@ filtered = FourierTransform.apply_bandpass_filter(signal, 8, 12, sample_rate=100
 
 ### Example 3: Stochastic Differential Equations
 ```python
-from HoloLoom.warp.math.analysis import StochasticDifferentialEquation
+from hololoom.warp.math.analysis import StochasticDifferentialEquation
 
 # Define SDE: dX = 0.1*X dt + 0.2*X dB (GBM)
 mu = lambda t, x: 0.1 * x
@@ -320,7 +320,7 @@ paths = result.X  # Shape: (100 paths, 1001 time points)
 
 ### Example 4: Wavelet Decomposition
 ```python
-from HoloLoom.warp.math.analysis import WaveletTransform
+from hololoom.warp.math.analysis import WaveletTransform
 import numpy as np
 
 # Signal

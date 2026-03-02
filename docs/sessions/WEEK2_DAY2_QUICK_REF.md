@@ -12,11 +12,11 @@
 
 | File | Lines | Tests | Focus |
 |------|-------|-------|-------|
-| [test_config_edge_cases.py](HoloLoom/tests/unit/test_config_edge_cases.py) | 379 | 35+ | Configuration validation |
-| [test_weaving_orchestrator_edge_cases.py](HoloLoom/tests/unit/test_weaving_orchestrator_edge_cases.py) | 390 | 25+ | Orchestrator robustness |
-| [test_memory_graph_edge_cases.py](HoloLoom/tests/unit/test_memory_graph_edge_cases.py) | 571 | 30+ | Knowledge graph edge cases |
-| [test_bayesian_policy_edge_cases.py](HoloLoom/tests/unit/test_bayesian_policy_edge_cases.py) | 548 | 35+ | Thompson Sampling edge cases |
-| [test_spectral_edge_cases.py](HoloLoom/tests/unit/test_spectral_edge_cases.py) | 1,275 | 35+ | Embedding edge cases |
+| [test_config_edge_cases.py](hololoom/tests/unit/test_config_edge_cases.py) | 379 | 35+ | Configuration validation |
+| [test_weaving_orchestrator_edge_cases.py](hololoom/tests/unit/test_weaving_orchestrator_edge_cases.py) | 390 | 25+ | Orchestrator robustness |
+| [test_memory_graph_edge_cases.py](hololoom/tests/unit/test_memory_graph_edge_cases.py) | 571 | 30+ | Knowledge graph edge cases |
+| [test_bayesian_policy_edge_cases.py](hololoom/tests/unit/test_bayesian_policy_edge_cases.py) | 548 | 35+ | Thompson Sampling edge cases |
+| [test_spectral_edge_cases.py](hololoom/tests/unit/test_spectral_edge_cases.py) | 1,275 | 35+ | Embedding edge cases |
 | **Total** | **3,163** | **160+** | **All critical modules** |
 
 ---
@@ -27,27 +27,27 @@
 
 ```bash
 # All edge case tests (~5 seconds)
-pytest HoloLoom/tests/unit/test_*_edge_cases.py -v
+pytest hololoom/tests/unit/test_*_edge_cases.py -v
 
 # Specific module
-pytest HoloLoom/tests/unit/test_config_edge_cases.py -v
-pytest HoloLoom/tests/unit/test_weaving_orchestrator_edge_cases.py -v
-pytest HoloLoom/tests/unit/test_memory_graph_edge_cases.py -v
-pytest HoloLoom/tests/unit/test_bayesian_policy_edge_cases.py -v
-pytest HoloLoom/tests/unit/test_spectral_edge_cases.py -v
+pytest hololoom/tests/unit/test_config_edge_cases.py -v
+pytest hololoom/tests/unit/test_weaving_orchestrator_edge_cases.py -v
+pytest hololoom/tests/unit/test_memory_graph_edge_cases.py -v
+pytest hololoom/tests/unit/test_bayesian_policy_edge_cases.py -v
+pytest hololoom/tests/unit/test_spectral_edge_cases.py -v
 ```
 
 ### Run All Tests
 
 ```bash
 # All unit tests (<5s)
-pytest HoloLoom/tests/unit/ -v
+pytest hololoom/tests/unit/ -v
 
 # All integration tests (<30s)
-pytest HoloLoom/tests/integration/ -v
+pytest hololoom/tests/integration/ -v
 
 # Everything
-pytest HoloLoom/tests/ -v
+pytest hololoom/tests/ -v
 ```
 
 ---
@@ -65,7 +65,7 @@ pytest HoloLoom/tests/ -v
 - ✅ All backend-mode combinations → Validated
 - ✅ Config serialization roundtrip → Preserved
 
-**Run**: `pytest HoloLoom/tests/unit/test_config_edge_cases.py -v`
+**Run**: `pytest hololoom/tests/unit/test_config_edge_cases.py -v`
 
 ---
 
@@ -82,7 +82,7 @@ pytest HoloLoom/tests/ -v
 - ✅ Multiple close() calls → Safe idempotent
 - ❌ Use after close → Raises RuntimeError
 
-**Run**: `pytest HoloLoom/tests/unit/test_weaving_orchestrator_edge_cases.py -v`
+**Run**: `pytest hololoom/tests/unit/test_weaving_orchestrator_edge_cases.py -v`
 
 ---
 
@@ -99,7 +99,7 @@ pytest HoloLoom/tests/ -v
 - ✅ Concurrent reads (10 parallel) → No conflicts
 - ⚠️ Spectral features on single node → May fail (acceptable)
 
-**Run**: `pytest HoloLoom/tests/unit/test_memory_graph_edge_cases.py -v`
+**Run**: `pytest hololoom/tests/unit/test_memory_graph_edge_cases.py -v`
 
 ---
 
@@ -117,7 +117,7 @@ pytest HoloLoom/tests/ -v
 - ✅ Negative rewards → Clamped to [0, 1]
 - ✅ Very large logits (1000.0) → No overflow
 
-**Run**: `pytest HoloLoom/tests/unit/test_bayesian_policy_edge_cases.py -v`
+**Run**: `pytest hololoom/tests/unit/test_bayesian_policy_edge_cases.py -v`
 
 ---
 
@@ -135,7 +135,7 @@ pytest HoloLoom/tests/ -v
 - ✅ 100-text batch → Efficient parallel embedding
 - ❌ Zero fusion weights → Rejected (invalid)
 
-**Run**: `pytest HoloLoom/tests/unit/test_spectral_edge_cases.py -v`
+**Run**: `pytest hololoom/tests/unit/test_spectral_edge_cases.py -v`
 
 ---
 
@@ -185,7 +185,7 @@ pytest HoloLoom/tests/ -v
 
 **How**:
 1. List all modules: `find HoloLoom -name "*.py"`
-2. List all tests: `find HoloLoom/tests/unit -name "*.py"`
+2. List all tests: `find hololoom/tests/unit -name "*.py"`
 3. Identify gaps: modules without tests
 4. Create targeted edge case tests
 
@@ -294,7 +294,7 @@ def test_multiple_close_calls(self):
 
 1. **Performance Baseline Establishment**:
    ```bash
-   pytest HoloLoom/tests/integration/test_performance_regression.py -v
+   pytest hololoom/tests/integration/test_performance_regression.py -v
    # Saves baselines to performance_baselines.json
    ```
 

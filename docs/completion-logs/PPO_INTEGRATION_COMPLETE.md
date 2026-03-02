@@ -45,7 +45,7 @@ Implemented complete PPO integration infrastructure for policy learning in HoloL
 
 ### Implementation
 
-Created `HoloLoom/reflection/rewards.py` (370 lines) with:
+Created `hololoom/reflection/rewards.py` (370 lines) with:
 
 #### 1. RewardConfig
 ```python
@@ -96,12 +96,12 @@ experience = extractor.extract_experience(spacetime, feedback)
 
 ### Implementation
 
-Modified `HoloLoom/reflection/buffer.py`:
+Modified `hololoom/reflection/buffer.py`:
 
 #### 1. Added RewardExtractor
 ```python
 # In __init__:
-from HoloLoom.reflection.rewards import RewardExtractor, RewardConfig
+from hololoom.reflection.rewards import RewardExtractor, RewardConfig
 
 self.reward_extractor = RewardExtractor(config=reward_config)
 ```
@@ -138,7 +138,7 @@ batch = buffer.get_ppo_batch(batch_size=64, recent_only=True)
 
 ### Implementation
 
-Created `HoloLoom/reflection/ppo_trainer.py` (520 lines):
+Created `hololoom/reflection/ppo_trainer.py` (520 lines):
 
 #### 1. PPOConfig
 ```python
@@ -255,7 +255,7 @@ Demonstrates complete learning cycle:
 ### Core Implementation (3 files, ~1,260 lines)
 
 ```
-HoloLoom/reflection/
+hololoom/reflection/
 ├── rewards.py (370 lines) - Reward extraction and shaping
 ├── ppo_trainer.py (520 lines) - PPO training logic
 └── (buffer.py modified, +70 lines) - Integration
@@ -269,13 +269,13 @@ PPO_INTEGRATION_COMPLETE.md (this file, 850 lines)
 ### Modified Files (1 file, +70 lines)
 
 ```
-HoloLoom/reflection/buffer.py
+hololoom/reflection/buffer.py
 ├── +Import RewardExtractor (line 38)
 ├── +Initialize reward_extractor (line 170)
 ├── +Replace _derive_reward() (lines 226-255)
 └── +Add get_ppo_batch() (lines 605-678)
 
-HoloLoom/policy/unified.py
+hololoom/policy/unified.py
 └── Fix malformed docstring (lines 1-5)
 ```
 
@@ -350,9 +350,9 @@ R = w_base * confidence
 ### Basic Usage
 
 ```python
-from HoloLoom.reflection.buffer import ReflectionBuffer
-from HoloLoom.reflection.ppo_trainer import PPOTrainer, PPOConfig
-from HoloLoom.weaving_shuttle import WeavingShuttle
+from hololoom.reflection.buffer import ReflectionBuffer
+from hololoom.reflection.ppo_trainer import PPOTrainer, PPOConfig
+from hololoom.weaving_shuttle import WeavingShuttle
 
 # Create components
 buffer = ReflectionBuffer(capacity=1000, persist_path="./reflections")
@@ -376,7 +376,7 @@ for episode in range(100):
 ### Advanced: Custom Rewards
 
 ```python
-from HoloLoom.reflection.rewards import RewardConfig, RewardExtractor
+from hololoom.reflection.rewards import RewardConfig, RewardExtractor
 
 # Custom reward configuration
 reward_config = RewardConfig(
@@ -493,13 +493,13 @@ def decode_action(action_index):
 
 ```bash
 # Test reward extraction
-PYTHONPATH=. python HoloLoom/reflection/rewards.py
+PYTHONPATH=. python hololoom/reflection/rewards.py
 
 # Test PPO trainer
-PYTHONPATH=. python HoloLoom/reflection/ppo_trainer.py
+PYTHONPATH=. python hololoom/reflection/ppo_trainer.py
 
 # Test reflection buffer
-PYTHONPATH=. python HoloLoom/reflection/buffer.py
+PYTHONPATH=. python hololoom/reflection/buffer.py
 ```
 
 **Results**:

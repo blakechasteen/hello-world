@@ -57,7 +57,7 @@ class PhotoTokenMemory:
 
 ### YarnGraph (Existing)
 
-Located in `HoloLoom/memory/graph.py`:
+Located in `hololoom/memory/graph.py`:
 
 ```python
 class KG:  # Alias: YarnGraph
@@ -76,7 +76,7 @@ class KG:  # Alias: YarnGraph
 
 ### 1. Extend YarnGraph Node Types
 
-**File**: `HoloLoom/memory/graph.py` (lines ~50-100)
+**File**: `hololoom/memory/graph.py` (lines ~50-100)
 
 Add photo node type:
 
@@ -118,7 +118,7 @@ def to_yarn_node(self) -> Dict:
 **New Method**: `YarnGraph.add_photo_node()`
 
 ```python
-# Add to HoloLoom/memory/graph.py
+# Add to hololoom/memory/graph.py
 class KG:
     def add_photo_node(self, photo_token: PhotoToken) -> str:
         """
@@ -141,7 +141,7 @@ class KG:
         # Create edges to related entities (from caption/tags)
         if photo_token.caption:
             # Extract entities from caption (using existing motif extraction)
-            from HoloLoom.motif.base import extract_entities
+            from hololoom.motif.base import extract_entities
             entities = extract_entities(photo_token.caption)
 
             for entity in entities:
@@ -208,7 +208,7 @@ class KG:
             ]
 
             # Score by caption similarity (simple baseline)
-            from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+            from hololoom.embedding.spectral import MatryoshkaEmbeddings
             embedder = MatryoshkaEmbeddings()
 
             query_emb = embedder.embed([query])[0]
@@ -288,7 +288,7 @@ results = kg.search_multimodal(
 
 ### Step 1: Extend YarnGraph (2 hours)
 
-**File**: `HoloLoom/memory/graph.py`
+**File**: `hololoom/memory/graph.py`
 
 - [ ] Add `photo_token` to NODE_TYPES
 - [ ] Implement `add_photo_node(photo_token)`
@@ -297,7 +297,7 @@ results = kg.search_multimodal(
 
 ### Step 2: Multimodal Search (3 hours)
 
-**File**: `HoloLoom/memory/graph.py`
+**File**: `hololoom/memory/graph.py`
 
 - [ ] Implement `search_multimodal(query, return_types, k)`
 - [ ] CLIP-based photo scoring (if available)
@@ -307,7 +307,7 @@ results = kg.search_multimodal(
 
 ### Step 3: HoloLoom API Integration (2 hours)
 
-**File**: `HoloLoom/hololoom.py`
+**File**: `hololoom/hololoom.py`
 
 - [ ] Add `remember_photo(image, caption, tags)` method
 - [ ] Add `recall(query, include_photos=True)` parameter
@@ -331,7 +331,7 @@ results = kg.search_multimodal(
 ### User-Facing API (HoloLoom.py)
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 async with HoloLoom() as loom:
     # Store text memory
@@ -379,7 +379,7 @@ async with HoloLoom() as loom:
 
 ### Unit Tests
 
-**File**: `HoloLoom/tests/unit/test_photo_yarngraph.py`
+**File**: `hololoom/tests/unit/test_photo_yarngraph.py`
 
 ```python
 async def test_add_photo_node():
@@ -404,7 +404,7 @@ async def test_multimodal_search():
 
 ### Integration Tests
 
-**File**: `HoloLoom/tests/integration/test_multimodal_memory.py`
+**File**: `hololoom/tests/integration/test_multimodal_memory.py`
 
 ```python
 async def test_experience_and_recall_with_photos():
@@ -472,7 +472,7 @@ async def link_similar_photos(memory: PhotoTokenMemory, kg: KG, threshold=0.8):
 Extract text from images (DeepSeek-OCR):
 
 ```python
-from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
+from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
 
 spinner = DeepSeekOCRSpinner()
 text = await spinner.extract_text(image)

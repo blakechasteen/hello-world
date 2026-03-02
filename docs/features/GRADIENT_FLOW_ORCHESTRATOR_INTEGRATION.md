@@ -49,9 +49,9 @@ Result: Physics-enhanced tool selection!
 Gradient flow router is automatically initialized in WeavingOrchestrator:
 
 ```python
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import Query
 
 config = Config.fast()
 shards = create_memory_shards()
@@ -177,7 +177,7 @@ decision = await gradient_router.select_tool(query.text)
 
 | File | Lines Changed | Purpose |
 |------|---------------|---------|
-| `HoloLoom/weaving_orchestrator.py` | +52 | Added gradient router initialization and blending |
+| `hololoom/weaving_orchestrator.py` | +52 | Added gradient router initialization and blending |
 | `demos/demo_gradient_flow_orchestrator.py` | +180 (new) | Integration demo |
 
 **Total**: ~232 lines of integration code

@@ -2,7 +2,7 @@
 
 ## What Was Wrong
 
-The original `mcp_server.py` tried to import through `HoloLoom/__init__.py` which has circular dependency issues with `HoloLoom.documentation.types`.
+The original `mcp_server.py` tried to import through `hololoom/__init__.py` which has circular dependency issues with `HoloLoom.documentation.types`.
 
 ## Solution
 
@@ -27,7 +27,7 @@ File: `C:\Users\blake\AppData\Roaming\Claude\claude_desktop_config.json`
     "HoloLoom-memory": {
       "command": "C:/Users/blake/Documents/mythRL/.venv/Scripts/python.exe",
       "args": [
-        "c:/Users/blake/Documents/mythRL/HoloLoom/memory/mcp_server_standalone.py"
+        "c:/Users/blake/Documents/mythRL/hololoom/memory/mcp_server_standalone.py"
       ],
       "env": {
         "PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"
@@ -73,7 +73,7 @@ What's the memory system health?
 
 ## Files Created
 
-- `HoloLoom/memory/mcp_server_standalone.py` - Working MCP server (225 lines)
+- `hololoom/memory/mcp_server_standalone.py` - Working MCP server (225 lines)
 - `fix_claude_config.py` - Config generator
 - `CLAUDE_MCP_FIXED.md` - This file
 

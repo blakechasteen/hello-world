@@ -11,9 +11,9 @@
 ### 1. Performance Monitoring System ✅
 
 **Files Created:**
-- `HoloLoom/performance/profiler.py` (330 lines)
-- `HoloLoom/performance/metrics.py` (260 lines)
-- `HoloLoom/performance/__init__.py` (updated)
+- `hololoom/performance/profiler.py` (330 lines)
+- `hololoom/performance/metrics.py` (260 lines)
+- `hololoom/performance/__init__.py` (updated)
 
 **Features:**
 - **Profiler**: Hierarchical timing and memory tracking
@@ -32,7 +32,7 @@
 
 **Usage:**
 ```python
-from HoloLoom.performance import Profiler, get_global_metrics
+from hololoom.performance import Profiler, get_global_metrics
 
 # Profiling
 async with Profiler("query_processing") as prof:
@@ -52,7 +52,7 @@ stats = metrics.get_latency_stats("query")  # p50, p95, p99
 ### 2. Benchmark Suite ✅
 
 **Files Created:**
-- `HoloLoom/performance/benchmark.py` (380 lines)
+- `hololoom/performance/benchmark.py` (380 lines)
 
 **Features:**
 - Automated performance testing across execution modes
@@ -92,7 +92,7 @@ WeavingShuttle-FUSED      fused      50       890.12     1250.45    1.12     678
 ### 3. Terminal UI Dashboard ✅
 
 **Files Created:**
-- `HoloLoom/performance/dashboard.py` (350 lines)
+- `hololoom/performance/dashboard.py` (350 lines)
 
 **Features:**
 - Real-time performance monitoring
@@ -250,7 +250,7 @@ Memory Usage:
 1. **WeavingShuttle** - Now profile-aware
    ```python
    # Add profiling to weaving cycle
-   from HoloLoom.performance import Profiler
+   from hololoom.performance import Profiler
 
    async with Profiler("weave_cycle") as prof:
        spacetime = await shuttle.weave(query)
@@ -258,7 +258,7 @@ Memory Usage:
    ```
 
 2. **RoutingProfiler** - Specialized for routing decisions
-   - Already exists at `HoloLoom/performance/routing_profiler.py`
+   - Already exists at `hololoom/performance/routing_profiler.py`
    - Tracks backend latency, pattern distribution
    - Provides optimization recommendations
 

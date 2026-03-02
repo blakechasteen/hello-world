@@ -170,7 +170,7 @@ def authenticate_user(username: str, password: str) -> Optional[str]:
 ### Server (Python - FastAPI)
 
 ```
-HoloLoom/server/agentic_api.py
+hololoom/server/agentic_api.py
 ├─ RateLimiter (60 req/min per IP)
 ├─ ServerStats (uptime, latencies, success rates)
 ├─ AISlopDetector (15 categories)

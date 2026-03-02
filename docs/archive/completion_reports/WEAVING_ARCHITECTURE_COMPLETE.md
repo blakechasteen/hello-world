@@ -11,7 +11,7 @@ We've successfully implemented the **complete HoloLoom weaving architecture**! T
 
 ### What We Built
 
-- **HoloLoom/weaving_shuttle.py** (687 lines) - Full weaving architecture implementation
+- **hololoom/weaving_shuttle.py** (687 lines) - Full weaving architecture implementation
 - **9-Step Weaving Cycle** - Complete integration of all components
 - **Spacetime Artifacts** - Full computational provenance
 - **All 3 modes tested** - BARE, FAST, FUSED all working
@@ -69,7 +69,7 @@ Query
 ## Components Integrated
 
 ### 1. Loom Command (Pattern Card Selector)
-- **File:** `HoloLoom/loom/command.py`
+- **File:** `hololoom/loom/command.py`
 - **Purpose:** Selects execution template (BARE/FAST/FUSED)
 - **Integration:** ✅ Step 1 - Pattern selection with auto-detection
 - **Features:**
@@ -78,7 +78,7 @@ Query
   - Quality vs speed tradeoffs
 
 ### 2. Chrono Trigger (Temporal Control)
-- **File:** `HoloLoom/chrono/trigger.py`
+- **File:** `hololoom/chrono/trigger.py`
 - **Purpose:** Manages time-dependent aspects
 - **Integration:** ✅ Step 2 - Temporal window creation
 - **Features:**
@@ -88,7 +88,7 @@ Query
   - Background maintenance (heartbeat)
 
 ### 3. Yarn Graph (Thread Storage)
-- **File:** `HoloLoom/weaving_shuttle.py` (simple implementation)
+- **File:** `hololoom/weaving_shuttle.py` (simple implementation)
 - **Purpose:** Stores discrete memory threads
 - **Integration:** ✅ Step 3 - Thread selection from memory
 - **Features:**
@@ -97,7 +97,7 @@ Query
   - Easy extension to Neo4j backend
 
 ### 4. Resonance Shed (Feature Interference)
-- **File:** `HoloLoom/resonance/shed.py`
+- **File:** `hololoom/resonance/shed.py`
 - **Purpose:** Multi-modal feature extraction
 - **Integration:** ✅ Step 4 - Creates DotPlasma features
 - **Features:**
@@ -108,7 +108,7 @@ Query
   - **BUG FIX:** Changed `await embedder.encode()` to `embedder.encode()` (not async)
 
 ### 5. Warp Space (Tensor Tensioning)
-- **File:** `HoloLoom/warp/space.py`
+- **File:** `hololoom/warp/space.py`
 - **Purpose:** Continuous mathematical manifold
 - **Integration:** ✅ Step 5 - Tensions threads for computation
 - **Features:**
@@ -117,7 +117,7 @@ Query
   - Track operations and field statistics
 
 ### 6. Convergence Engine (Decision Collapse)
-- **File:** `HoloLoom/convergence/engine.py`
+- **File:** `hololoom/convergence/engine.py`
 - **Purpose:** Continuous → Discrete collapse
 - **Integration:** ✅ Step 7 - Tool selection from probabilities
 - **Features:**
@@ -127,7 +127,7 @@ Query
   - Confidence scores
 
 ### 7. Spacetime Fabric (Woven Output)
-- **File:** `HoloLoom/fabric/spacetime.py`
+- **File:** `hololoom/fabric/spacetime.py`
 - **Purpose:** 4D output with full lineage
 - **Integration:** ✅ Step 9 - Complete computational provenance
 - **Features:**
@@ -230,11 +230,11 @@ spacetime = Spacetime(...)  # Complete lineage!
 ## Code Quality
 
 ### Files Modified
-1. **HoloLoom/weaving_shuttle.py** (NEW) - 687 lines
-2. **HoloLoom/resonance/shed.py** - Fixed async bug
-3. **HoloLoom/orchestrator.py** - Keep as simple version
-4. **HoloLoom/config.py** - Already consolidated BanditStrategy
-5. **HoloLoom/policy/unified.py** - Already fixed dimension bug
+1. **hololoom/weaving_shuttle.py** (NEW) - 687 lines
+2. **hololoom/resonance/shed.py** - Fixed async bug
+3. **hololoom/orchestrator.py** - Keep as simple version
+4. **hololoom/config.py** - Already consolidated BanditStrategy
+5. **hololoom/policy/unified.py** - Already fixed dimension bug
 
 ### Code Statistics
 - **Lines:** 687 (weaving_shuttle.py)
@@ -250,36 +250,36 @@ spacetime = Spacetime(...)  # Complete lineage!
 ### 1. Resonance Shed Async Bug
 **Problem:** `await embedder.encode()` failed because `encode()` is not async
 **Fix:** Changed to `embedder.encode()` (synchronous call)
-**File:** HoloLoom/resonance/shed.py:177
+**File:** hololoom/resonance/shed.py:177
 
 ### 2. ChronoTrigger Initialization
 **Problem:** `execution_limits` parameter doesn't exist
 **Fix:** Pass config object with `pipeline_timeout` attribute
-**File:** HoloLoom/weaving_shuttle.py:320
+**File:** hololoom/weaving_shuttle.py:320
 
 ### 3. DotPlasma Key Mismatch
 **Problem:** Used `'embedding'` and `'motif'` instead of `'psi'` and `'motifs'`
 **Fix:** Updated to use correct plasma keys
-**File:** HoloLoom/weaving_shuttle.py:435-440
+**File:** hololoom/weaving_shuttle.py:435-440
 
 ### 4. Embedding Dimension Mismatch
 **Problem:** Policy created with cfg.scales but embedder used pattern_spec.scales
 **Fix:** Create pattern-specific embedder for each query
-**File:** HoloLoom/weaving_shuttle.py:356-359
+**File:** hololoom/weaving_shuttle.py:356-359
 
 ### 5. Thread Count Logging
 **Problem:** Logged `len(shed.threads)` after `lower()` which clears threads
 **Fix:** Extract count from `dot_plasma['threads']` instead
-**File:** HoloLoom/weaving_shuttle.py:368-369
+**File:** hololoom/weaving_shuttle.py:368-369
 
 ---
 
 ## Usage Example
 
 ```python
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config
-from HoloLoom.Documentation.types import Query, MemoryShard
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config
+from hololoom.Documentation.types import Query, MemoryShard
 
 # Create memory shards
 shards = [
@@ -367,11 +367,11 @@ spacetime_dict = spacetime.to_dict()
 ## Files Created/Modified
 
 ### New Files
-1. **HoloLoom/weaving_shuttle.py** (687 lines) - Main implementation
+1. **hololoom/weaving_shuttle.py** (687 lines) - Main implementation
 2. **WEAVING_ARCHITECTURE_COMPLETE.md** (this file) - Documentation
 
 ### Modified Files
-1. **HoloLoom/resonance/shed.py** - Fixed async bug (line 176)
+1. **hololoom/resonance/shed.py** - Fixed async bug (line 176)
 2. **ORCHESTRATOR_REFACTOR_SUMMARY.md** - Referenced in planning
 3. **HOLOLOOM_STRATEGIC_ROADMAP.md** - Priority 1 complete!
 
@@ -437,7 +437,7 @@ cd /path/to/mythRL
 python -c "
 import sys
 sys.path.insert(0, '.')
-from HoloLoom import weaving_shuttle
+from hololoom import weaving_shuttle
 import asyncio
 asyncio.run(weaving_shuttle.main())
 "

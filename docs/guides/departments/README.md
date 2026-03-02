@@ -49,7 +49,7 @@ See [ADR-001: Multi-Department Architecture](../../architecture/decisions/ADR-00
 
 **Example**:
 ```python
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 
 rag_dept = get_department("rag")
 
@@ -88,7 +88,7 @@ print(f"Sources: {len(response['result']['sources'])}")
 
 **Example**:
 ```python
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 
 planning_dept = get_department("planning")
 
@@ -126,7 +126,7 @@ print(f"Execution order: {response['result']['execution_order']}")
 
 **Example**:
 ```python
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 
 orchestration_dept = get_department("orchestration")
 
@@ -166,7 +166,7 @@ print(f"Results: {len(response['result']['results'])}")
 
 **Example**:
 ```python
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 
 infra_dept = get_department("infrastructure")
 
@@ -216,8 +216,8 @@ if response['result']['cpu_percent'] > 80:
 
 **Example**:
 ```python
-from HoloLoom.departments import get_department
-from HoloLoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel
+from hololoom.departments import get_department
+from hololoom.apps.departments.protocol import PrivacyEnvelope, PrivacyLevel
 
 context_dept = get_department("context")
 
@@ -326,7 +326,7 @@ To create a new department:
 
 1. **Inherit from BaseDepartment**:
 ```python
-from HoloLoom.apps.departments.protocol import BaseDepartment, DepartmentRequest, DepartmentResponse
+from hololoom.apps.departments.protocol import BaseDepartment, DepartmentRequest, DepartmentResponse
 
 class MyDepartment(BaseDepartment):
     def __init__(self, department_id: str):
@@ -351,7 +351,7 @@ class MyDepartment(BaseDepartment):
 
 2. **Register Department**:
 ```python
-from HoloLoom.departments import register_department
+from hololoom.departments import register_department
 
 register_department("my_dept", MyDepartment("my_dept"))
 ```
@@ -368,7 +368,7 @@ response = await dept.process(request)
 
 ```python
 import pytest
-from HoloLoom.departments import get_department
+from hololoom.departments import get_department
 
 @pytest.mark.asyncio
 async def test_department_health():
@@ -459,7 +459,7 @@ config = Config.fast()  # ~150ms
 
 **Solution**:
 ```python
-from HoloLoom.departments import register_department, get_department
+from hololoom.departments import register_department, get_department
 
 # Register before using
 register_department("my_dept", MyDepartment("my_dept"))

@@ -205,7 +205,7 @@ netsh advfirewall firewall add rule name="Elle Web" dir=in action=allow protocol
 
 **Causes & Fixes**:
 
-**1. Response from HoloLoom is empty**:
+**1. Response from hololoom is empty**:
 - Check Terminal 1 for errors
 - Try different query: "What is machine learning?"
 

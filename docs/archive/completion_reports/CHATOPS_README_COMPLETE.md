@@ -78,20 +78,20 @@ pip install -e ../Promptly/promptly/
 
 ```bash
 # Copy example config
-cp HoloLoom/chatops/example_config.yaml HoloLoom/chatops/config.yaml
+cp hololoom/chatops/example_config.yaml hololoom/chatops/config.yaml
 
 # Edit with your Matrix credentials
-nano HoloLoom/chatops/config.yaml
+nano hololoom/chatops/config.yaml
 ```
 
 ### 3. Run
 
 ```bash
 # Terminal UI (recommended)
-python HoloLoom/chatops/chatops_terminal_ui.py
+python hololoom/chatops/chatops_terminal_ui.py
 
 # Or direct bot
-python HoloLoom/chatops/run_chatops.py
+python hololoom/chatops/run_chatops.py
 ```
 
 ---
@@ -99,7 +99,7 @@ python HoloLoom/chatops/run_chatops.py
 ## 📁 File Structure
 
 ```
-HoloLoom/chatops/
+hololoom/chatops/
 ├── Core System
 │   ├── matrix_bot.py                   # Matrix.org client (380 lines)
 │   ├── chatops_bridge.py              # Integration layer (450 lines)
@@ -154,7 +154,7 @@ HoloLoom/chatops/
 The complete system visualized in a beautiful terminal interface:
 
 ```bash
-python HoloLoom/chatops/chatops_terminal_ui.py
+python hololoom/chatops/chatops_terminal_ui.py
 ```
 
 **Features:**
@@ -184,7 +184,7 @@ python HoloLoom/chatops/chatops_terminal_ui.py
 
 **Example**:
 ```python
-from HoloLoom.chatops.self_improving_bot import SelfImprovingBot
+from hololoom.chatops.self_improving_bot import SelfImprovingBot
 
 bot = SelfImprovingBot()
 await bot.start_improvement_cycle()
@@ -207,7 +207,7 @@ await bot.start_improvement_cycle()
 
 **Example**:
 ```python
-from HoloLoom.chatops.team_learning import TeamLearningSystem
+from hololoom.chatops.team_learning import TeamLearningSystem
 
 system = TeamLearningSystem()
 
@@ -237,7 +237,7 @@ docs = await system.generate_documentation("incident_response")
 
 **Example**:
 ```python
-from HoloLoom.chatops.workflow_marketplace import WorkflowMarketplace
+from hololoom.chatops.workflow_marketplace import WorkflowMarketplace
 
 marketplace = WorkflowMarketplace()
 
@@ -273,7 +273,7 @@ marketplace.rate(
 
 **Example**:
 ```python
-from HoloLoom.chatops.predictive_quality import PredictiveQualitySystem
+from hololoom.chatops.predictive_quality import PredictiveQualitySystem
 
 system = PredictiveQualitySystem()
 
@@ -310,7 +310,7 @@ system.learn(query, predicted_quality, actual_quality)
 
 **Example**:
 ```python
-from HoloLoom.chatops.multi_agent import MultiAgentSystem
+from hololoom.chatops.multi_agent import MultiAgentSystem
 
 system = MultiAgentSystem()
 
@@ -598,7 +598,7 @@ This is a **next-generation AI system** that rivals commercial offerings. 🚀
 ## 📞 Support
 
 For questions or issues:
-1. Check documentation in `HoloLoom/chatops/`
+1. Check documentation in `hololoom/chatops/`
 2. Review examples in integration guides
 3. Use terminal UI for live exploration
 4. Consult code comments (comprehensive docstrings)

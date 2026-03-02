@@ -6,7 +6,7 @@ Continued development across three major subsystems: TextSpinner implementation,
 ## 1. TextSpinner Implementation ✅
 
 ### What Was Built
-- **Complete TextSpinner class** ([HoloLoom/spinningWheel/text.py](HoloLoom/spinningWheel/text.py))
+- **Complete TextSpinner class** ([hololoom/spinningWheel/text.py](hololoom/spinningWheel/text.py))
   - 392 lines of production-ready code
   - Multiple chunking strategies: paragraph, sentence, character
   - Basic entity extraction with proper noun detection
@@ -25,7 +25,7 @@ Continued development across three major subsystems: TextSpinner implementation,
 - **Convenience Function**: `spin_text()` for quick one-liners
 
 ### Integration
-- Already integrated into MCP server ([HoloLoom/memory/mcp_server.py:700-750](HoloLoom/memory/mcp_server.py))
+- Already integrated into MCP server ([hololoom/memory/mcp_server.py:700-750](hololoom/memory/mcp_server.py))
 - `process_text` tool fully functional
 - Converts text → MemoryShards → Memory objects → Multi-backend storage
 
@@ -38,8 +38,8 @@ Continued development across three major subsystems: TextSpinner implementation,
 - **All tests passed** ✅
 
 ### Files Modified
-- `HoloLoom/spinningWheel/text.py` - Created (392 lines)
-- `HoloLoom/spinningWheel/__init__.py` - Updated exports
+- `hololoom/spinningWheel/text.py` - Created (392 lines)
+- `hololoom/spinningWheel/__init__.py` - Updated exports
 - `test_text_spinner_isolated.py` - Created test suite
 - `test_text_spinner_complete.py` - Created comprehensive tests
 
@@ -52,10 +52,10 @@ Inconsistent import case sensitivity (`HoloLoom` vs `HoloLoom`) causing `ModuleN
 
 ### Solution
 Fixed imports in 4 core modules:
-- `HoloLoom/policy/unified.py:55-56` - Fixed HoloLoom.Documentation imports
-- `HoloLoom/embedding/spectral.py:30` - Fixed HoloLoom.Documentation.types
-- `HoloLoom/memory/cache.py:32-33` - Fixed HoloLoom imports
-- `HoloLoom/motif/base.py:12` - Fixed HoloLoom.Documentation.types
+- `hololoom/policy/unified.py:55-56` - Fixed HoloLoom.Documentation imports
+- `hololoom/embedding/spectral.py:30` - Fixed HoloLoom.Documentation.types
+- `hololoom/memory/cache.py:32-33` - Fixed HoloLoom imports
+- `hololoom/motif/base.py:12` - Fixed HoloLoom.Documentation.types
 
 ### Impact
 - Package now imports correctly across all platforms
@@ -67,7 +67,7 @@ Fixed imports in 4 core modules:
 ## 3. AudioSpinner Restoration ✅
 
 ### Problem
-`HoloLoom/spinningWheel/audio.py` was corrupted (only contained method fragment, no class definition)
+`hololoom/spinningWheel/audio.py` was corrupted (only contained method fragment, no class definition)
 
 ### Solution
 - Identified file was never properly committed to git
@@ -83,14 +83,14 @@ Fixed imports in 4 core modules:
 - Proper metadata management
 
 ### Files
-- `HoloLoom/spinningWheel/audio.py` - Reconstructed (147 lines)
+- `hololoom/spinningWheel/audio.py` - Reconstructed (147 lines)
 
 ---
 
 ## 4. Neo4j Backend Integration 🔄
 
 ### Configuration Added
-**File**: `HoloLoom/config.py`
+**File**: `hololoom/config.py`
 ```python
 class KGBackend(Enum):
     NETWORKX = "networkx"  # Default, in-memory
@@ -106,7 +106,7 @@ class Config:
 ```
 
 ### Implementation
-**File**: `HoloLoom/memory/neo4j_graph.py`
+**File**: `hololoom/memory/neo4j_graph.py`
 - 580+ lines of production Neo4j integration
 - Implements KGStore protocol for drop-in replacement
 - Features:
@@ -209,19 +209,19 @@ class Promptly:
 ## Files Changed Summary
 
 ### Modified (Committed Previously)
-- `HoloLoom/config.py` (+18 lines) - Neo4j configuration
-- `HoloLoom/spinningWheel/__init__.py` (+8 lines) - TextSpinner exports
+- `hololoom/config.py` (+18 lines) - Neo4j configuration
+- `hololoom/spinningWheel/__init__.py` (+8 lines) - TextSpinner exports
 
 ### Modified (Uncommitted)
 - `Promptly/promptly/promptly.py` (+303 lines) - Skills system
-- `HoloLoom/policy/unified.py` (import fixes)
-- `HoloLoom/embedding/spectral.py` (import fixes)
-- `HoloLoom/memory/cache.py` (import fixes)
-- `HoloLoom/motif/base.py` (import fixes)
+- `hololoom/policy/unified.py` (import fixes)
+- `hololoom/embedding/spectral.py` (import fixes)
+- `hololoom/memory/cache.py` (import fixes)
+- `hololoom/motif/base.py` (import fixes)
 
 ### Created (Uncommitted)
-- `HoloLoom/spinningWheel/text.py` (392 lines)
-- `HoloLoom/spinningWheel/audio.py` (147 lines - reconstructed)
+- `hololoom/spinningWheel/text.py` (392 lines)
+- `hololoom/spinningWheel/audio.py` (147 lines - reconstructed)
 - `test_text_spinner_isolated.py` (127 lines)
 - `test_text_spinner_complete.py` (440 lines)
 - `test_neo4j_backend.py` (260 lines)
@@ -341,20 +341,20 @@ Promptly Skills System:
 - Metadata and file attachment support
 
 Files Added:
-- HoloLoom/spinningWheel/text.py (392 lines)
-- HoloLoom/spinningWheel/audio.py (147 lines)
+- hololoom/spinningWheel/text.py (392 lines)
+- hololoom/spinningWheel/audio.py (147 lines)
 - test_text_spinner_isolated.py (127 lines)
 - test_text_spinner_complete.py (440 lines)
 - test_neo4j_backend.py (260 lines)
 
 Files Modified:
-- HoloLoom/config.py (+18 lines - Neo4j config)
-- HoloLoom/spinningWheel/__init__.py (+8 - exports)
+- hololoom/config.py (+18 lines - Neo4j config)
+- hololoom/spinningWheel/__init__.py (+8 - exports)
 - Promptly/promptly/promptly.py (+303 - Skills system)
-- HoloLoom/policy/unified.py (import fixes)
-- HoloLoom/embedding/spectral.py (import fixes)
-- HoloLoom/memory/cache.py (import fixes)
-- HoloLoom/motif/base.py (import fixes)
+- hololoom/policy/unified.py (import fixes)
+- hololoom/embedding/spectral.py (import fixes)
+- hololoom/memory/cache.py (import fixes)
+- hololoom/motif/base.py (import fixes)
 
 Tested and verified:
 - All TextSpinner chunking modes working

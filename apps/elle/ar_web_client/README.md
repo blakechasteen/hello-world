@@ -397,7 +397,7 @@ Edit `src/components/AROverlay.tsx` to customize visual style based on Elle's my
 
 - **[HOLOLOOM_INTEGRATION_FRAMEWORK.md](../../HOLOLOOM_INTEGRATION_FRAMEWORK.md)** - Complete integration architecture
 - **[elle/README.md](../README.md)** - Elle architecture overview
-- **[HoloLoom/server/README.md](../../HoloLoom/server/README.md)** - Backend API reference
+- **[hololoom/server/README.md](../../hololoom/server/README.md)** - Backend API reference
 
 ### Key Concepts
 

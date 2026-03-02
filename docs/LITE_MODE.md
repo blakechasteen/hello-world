@@ -3,7 +3,7 @@
 **Simplified API for quick startup and minimal dependencies.**
 
 **Status**: Production Ready (December 2025)
-**Location**: `HoloLoom/lite/`
+**Location**: `hololoom/lite/`
 **Lines**: ~1,600 across core + 4 UI modes
 
 ## Overview
@@ -22,7 +22,7 @@ HoloLoom Lite provides a streamlined entry point with:
 ### Programmatic API
 
 ```python
-from HoloLoom import HoloLoomLite
+from hololoom import HoloLoomLite
 
 async with HoloLoomLite() as loom:
     # 1. Store memories
@@ -168,7 +168,7 @@ class LiteResult:
 ### Default (Recommended)
 
 ```python
-from HoloLoom import HoloLoomLite
+from hololoom import HoloLoomLite
 
 # Uses Config.lite() preset by default
 loom = HoloLoomLite()
@@ -177,8 +177,8 @@ loom = HoloLoomLite()
 ### Custom Configuration
 
 ```python
-from HoloLoom import HoloLoomLite
-from HoloLoom.config import Config
+from hololoom import HoloLoomLite
+from hololoom.config import Config
 
 # Customize the lite config
 config = Config.lite()
@@ -275,7 +275,7 @@ python -m HoloLoom.lite desktop
 
 **With sharing** (public URL):
 ```python
-from HoloLoom.lite.ui import launch
+from hololoom.lite.ui import launch
 launch("desktop", share=True)
 ```
 
@@ -358,15 +358,15 @@ async with HoloLoomLite() as loom:
 
 ```python
 # Before (Full HoloLoom)
-from HoloLoom import HoloLoom
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom import HoloLoom
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 async with HoloLoom() as loom:
     await loom.experience("content")
     memories = await loom.recall("query")
 
 # After (HoloLoom Lite)
-from HoloLoom import HoloLoomLite
+from hololoom import HoloLoomLite
 
 async with HoloLoomLite() as loom:
     await loom.experience("content")  # Same API!
@@ -377,12 +377,12 @@ async with HoloLoomLite() as loom:
 
 ```python
 # From Lite
-from HoloLoom import HoloLoomLite
+from hololoom import HoloLoomLite
 loom = HoloLoomLite()
 
 # To Full (when you need more features)
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config
+from hololoom import HoloLoom
+from hololoom.config import Config
 
 loom = HoloLoom()  # Use full system
 # or

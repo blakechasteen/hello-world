@@ -200,13 +200,13 @@ All legacy protocols migrated using consistent pattern:
 
 ```python
 # Step 1: Import canonical protocol
-from HoloLoom.protocols import ProtocolName as CanonicalProtocolName
+from hololoom.protocols import ProtocolName as CanonicalProtocolName
 
 # Step 2: Rename local definition to deprecated
 class _DeprecatedProtocolName(Protocol):
     """
     DEPRECATED: This protocol definition is deprecated.
-    Use the canonical version from HoloLoom.protocols instead.
+    Use the canonical version from hololoom.protocols instead.
     
     This local definition will be removed in v3.0.
     """
@@ -219,7 +219,7 @@ ProtocolName = CanonicalProtocolName
 import warnings
 warnings.warn(
     f"Importing {ProtocolName.__name__} from this module is deprecated. "
-    f"Import from HoloLoom.protocols instead.",
+    f"Import from hololoom.protocols instead.",
     DeprecationWarning,
     stacklevel=2
 )
@@ -722,14 +722,14 @@ Success: ✅
 ### Integration Example
 
 ```python
-# In HoloLoom/config.py - add monitoring flag
+# In hololoom/config.py - add monitoring flag
 @dataclass
 class Config:
     # ... existing fields ...
     enable_monitoring: bool = False
 
 # In weaving_orchestrator.py
-from HoloLoom.monitoring import get_global_collector
+from hololoom.monitoring import get_global_collector
 
 class WeavingOrchestrator:
     def __init__(self, config: Config):
@@ -755,7 +755,7 @@ class WeavingOrchestrator:
             )
 
 # View dashboard
-from HoloLoom.monitoring import MonitoringDashboard, get_global_collector
+from hololoom.monitoring import MonitoringDashboard, get_global_collector
 
 collector = get_global_collector()
 dashboard = MonitoringDashboard(collector)
@@ -960,14 +960,14 @@ Failure Modes:
 
 **Old**:
 ```python
-from HoloLoom.memory.protocol import MemoryBackend
-from HoloLoom.policy.unified import DecisionEngine
-from HoloLoom.Modules.Features import MotifDetector, Embedder
+from hololoom.memory.protocol import MemoryBackend
+from hololoom.policy.unified import DecisionEngine
+from hololoom.Modules.Features import MotifDetector, Embedder
 ```
 
 **New**:
 ```python
-from HoloLoom.protocols import (
+from hololoom.protocols import (
     MemoryBackend,
     DecisionEngine,
     MotifDetector,
@@ -985,7 +985,7 @@ config = Config.fast()
 
 **New**:
 ```python
-from HoloLoom.memory.backend import MemoryBackend
+from hololoom.memory.backend import MemoryBackend
 
 config = Config.fast()
 config.memory_backend = MemoryBackend.NEO4J_QDRANT  # Explicit backend selection
@@ -996,7 +996,7 @@ config.enable_monitoring = True  # Enable metrics collection
 
 **New Code**:
 ```python
-from HoloLoom.monitoring import get_global_collector, MonitoringDashboard
+from hololoom.monitoring import get_global_collector, MonitoringDashboard
 
 # In your application initialization
 if config.enable_monitoring:
@@ -1023,7 +1023,7 @@ memory = NetworkXMemory()
 
 **New (Manual selection)**:
 ```python
-from HoloLoom.memory.backend import MemoryBackend, create_memory_backend
+from hololoom.memory.backend import MemoryBackend, create_memory_backend
 
 memory = create_memory_backend(MemoryBackend.HYPERSPACE)
 ```
@@ -1032,8 +1032,8 @@ memory = create_memory_backend(MemoryBackend.HYPERSPACE)
 
 If you see warnings like:
 ```
-DeprecationWarning: Importing MotifDetector from HoloLoom.Modules.Features is deprecated.
-Import from HoloLoom.protocols instead.
+DeprecationWarning: Importing MotifDetector from hololoom.Modules.Features is deprecated.
+Import from hololoom.protocols instead.
 ```
 
 **Action**: Update imports to use canonical protocols (see Step 1)
@@ -1078,21 +1078,21 @@ After migration, verify:
 
 | File | Purpose | Lines | Status |
 |------|---------|-------|--------|
-| `HoloLoom/protocols/__init__.py` | Canonical protocol definitions | 150 | ✅ Complete |
-| `HoloLoom/memory/backend.py` | Backend enum and factory | 80 | ✅ Complete |
-| `HoloLoom/memory/hyperspace.py` | HYPERSPACE implementation | 520 | ✅ Complete |
-| `HoloLoom/memory/routing/strategy.py` | Intelligent routing logic | 200 | ✅ Complete |
-| `HoloLoom/monitoring/dashboard.py` | Monitoring dashboard | 400 | ✅ Complete |
+| `hololoom/protocols/__init__.py` | Canonical protocol definitions | 150 | ✅ Complete |
+| `hololoom/memory/backend.py` | Backend enum and factory | 80 | ✅ Complete |
+| `hololoom/memory/hyperspace.py` | HYPERSPACE implementation | 520 | ✅ Complete |
+| `hololoom/memory/routing/strategy.py` | Intelligent routing logic | 200 | ✅ Complete |
+| `hololoom/monitoring/dashboard.py` | Monitoring dashboard | 400 | ✅ Complete |
 
 ### Migrated Files
 
 | File | Protocols Migrated | Status |
 |------|-------------------|--------|
-| `HoloLoom/policy/unified.py` | DecisionEngine, ToolExecution | ✅ Complete |
-| `HoloLoom/memory/protocol.py` | MemoryBackend | ✅ Complete |
-| `HoloLoom/Modules/Features.py` | MotifDetector, Embedder | ✅ Complete |
-| `HoloLoom/memory/routing/protocol.py` | RoutingStrategy | ✅ Complete |
-| `HoloLoom/memory/routing/execution_patterns.py` | ExecutionEngine | ✅ Complete |
+| `hololoom/policy/unified.py` | DecisionEngine, ToolExecution | ✅ Complete |
+| `hololoom/memory/protocol.py` | MemoryBackend | ✅ Complete |
+| `hololoom/Modules/Features.py` | MotifDetector, Embedder | ✅ Complete |
+| `hololoom/memory/routing/protocol.py` | RoutingStrategy | ✅ Complete |
+| `hololoom/memory/routing/execution_patterns.py` | ExecutionEngine | ✅ Complete |
 
 ### Test Files
 

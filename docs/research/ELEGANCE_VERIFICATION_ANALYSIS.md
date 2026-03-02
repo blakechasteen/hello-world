@@ -321,13 +321,13 @@ Performance:
 ```bash
 # Unit tests (fast)
 cd c:/Users/blake/OneDrive/Documents/mythRL
-.venv/Scripts/python.exe -m pytest HoloLoom/tests/unit/ -v
+.venv/Scripts/python.exe -m pytest hololoom/tests/unit/ -v
 
 # Integration tests
-.venv/Scripts/python.exe -m pytest HoloLoom/tests/integration/ -v
+.venv/Scripts/python.exe -m pytest hololoom/tests/integration/ -v
 
 # E2E tests
-.venv/Scripts/python.exe -m pytest HoloLoom/tests/e2e/ -v
+.venv/Scripts/python.exe -m pytest hololoom/tests/e2e/ -v
 
 # With coverage (need to fix pytest plugin)
 .venv/Scripts/python.exe -m pytest --cov=HoloLoom --cov-report=html
@@ -336,13 +336,13 @@ cd c:/Users/blake/OneDrive/Documents/mythRL
 ### Code Analysis:
 ```bash
 # Complexity (when fixed)
-.venv/Scripts/python.exe -m radon cc HoloLoom/ -a -nb
+.venv/Scripts/python.exe -m radon cc hololoom/ -a -nb
 
 # Docstring coverage (when fixed)
-.venv/Scripts/python.exe -m interrogate HoloLoom/ -v
+.venv/Scripts/python.exe -m interrogate hololoom/ -v
 
 # Type checking
-mypy HoloLoom/ --strict
+mypy hololoom/ --strict
 ```
 
 ---

@@ -44,7 +44,7 @@ The orchestrator controls which mathematical operations are exposed through a **
 
 ### 1. Pattern Card Selection (Orchestrator)
 
-**File:** [weaving_shuttle.py:428-440](../HoloLoom/weaving_shuttle.py#L428-L440)
+**File:** [weaving_shuttle.py:428-440](../hololoom/weaving_shuttle.py#L428-L440)
 
 ```python
 if pattern_spec.enable_semantic_flow:
@@ -63,7 +63,7 @@ if pattern_spec.enable_semantic_flow:
 
 ### 2. Configuration Presets
 
-**File:** [semantic_calculus/config.py:60-91](../HoloLoom/semantic_calculus/config.py#L60-L91)
+**File:** [semantic_calculus/config.py:60-91](../hololoom/semantic_calculus/config.py#L60-L91)
 
 Three presets control feature exposure:
 
@@ -93,7 +93,7 @@ SemanticCalculusConfig.comprehensive()
 
 ### 3. Feature Extraction (Integration Point)
 
-**File:** [semantic_calculus/analyzer.py:99-155](../HoloLoom/semantic_calculus/analyzer.py#L99-L155)
+**File:** [semantic_calculus/analyzer.py:99-155](../hololoom/semantic_calculus/analyzer.py#L99-L155)
 
 The `extract_features()` method **conditionally exposes** math based on config:
 
@@ -134,7 +134,7 @@ def extract_features(self, text: str) -> Dict[str, Any]:
 
 ### 4. Factory Function Assembly
 
-**File:** [semantic_calculus/analyzer.py:158-222](../HoloLoom/semantic_calculus/analyzer.py#L158-L222)
+**File:** [semantic_calculus/analyzer.py:158-222](../hololoom/semantic_calculus/analyzer.py#L158-L222)
 
 The factory function **conditionally creates** components:
 
@@ -162,7 +162,7 @@ def create_semantic_analyzer(embed_fn, config):
 
 ## What Gets Exposed to ResonanceShed
 
-**File:** [resonance/shed.py:218-226](../HoloLoom/resonance/shed.py#L218-L226)
+**File:** [resonance/shed.py:218-226](../hololoom/resonance/shed.py#L218-L226)
 
 ResonanceShed only calls **one method**:
 

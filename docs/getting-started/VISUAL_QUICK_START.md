@@ -69,7 +69,7 @@ graph LR
 
 #### 1️⃣ Experience (Store Memories)
 ```python
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 loom = HoloLoom()
 await loom.experience("Dogs are mammals that bark")
@@ -106,7 +106,7 @@ await loom.reflect(memories, feedback={"helpful": True})
 **Try this 3-line example:**
 
 ```python
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 async def my_first_query():
     async with HoloLoom() as loom:
@@ -227,7 +227,7 @@ graph LR
 
 **Code Example:**
 ```python
-from HoloLoom import HoloLoom, Config
+from hololoom import HoloLoom, Config
 
 # Fast mode (default, recommended)
 loom = HoloLoom(config=Config.fast())
@@ -264,7 +264,7 @@ graph TD
 
 **Code Example:**
 ```python
-from HoloLoom import Config, MemoryBackend
+from hololoom import Config, MemoryBackend
 
 config = Config.fast()
 
@@ -340,7 +340,7 @@ You've completed the Visual Quick Start Guide!
 **Quick Reference Card:**
 
 ```python
-from HoloLoom import HoloLoom, Config
+from hololoom import HoloLoom, Config
 
 # Create system
 loom = HoloLoom(config=Config.fast())

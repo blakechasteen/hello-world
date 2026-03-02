@@ -52,7 +52,7 @@ React AR Client
    - `ar_adapter.py` - Main adapter (event → request → viz)
    - `platform_bridge.py` - WebXR/ARCore/ARKit abstraction
 
-2. `HoloLoom/server/ar_api.py` - FastAPI + WebSocket server
+2. `hololoom/server/ar_api.py` - FastAPI + WebSocket server
    - Session management
    - Real-time AR communication
    - Integration with HoloLoom orchestrator
@@ -184,7 +184,7 @@ ELLE: (fades overlays gracefully)
 - [x] `elle/adapters/ar_adapter/ar_renderer.py` (195 lines)
 - [x] `elle/adapters/ar_adapter/ar_adapter.py` (350 lines)
 - [x] `elle/adapters/ar_adapter/platform_bridge.py` (470 lines)
-- [x] `HoloLoom/server/ar_api.py` (410 lines)
+- [x] `hololoom/server/ar_api.py` (410 lines)
 
 **Backend Total**: ~1,705 lines
 

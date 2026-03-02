@@ -114,7 +114,7 @@ Grafana:          http://localhost:3000 (admin/admin)
 docker exec -it voice-agent bash
 
 # Run tests
-python -m pytest HoloLoom/voice/tests/ -v
+python -m pytest hololoom/voice/tests/ -v
 
 # Run demo
 python demos/demo_voice_agent.py
@@ -305,7 +305,7 @@ kubectl logs -n hololoom-voice -l app=voice-agent -f
 # Test pod health
 kubectl exec -n hololoom-voice -it \
   $(kubectl get pod -n hololoom-voice -l app=voice-agent -o jsonpath='{.items[0].metadata.name}') \
-  -- python -c "from HoloLoom.voice import VoiceAgent; print('healthy')"
+  -- python -c "from hololoom.voice import VoiceAgent; print('healthy')"
 ```
 
 ### Access Application
@@ -831,7 +831,7 @@ kubectl get secret voice-agent-secrets -n hololoom-voice \
 
 # Test TTS
 kubectl exec -n hololoom-voice -it <pod-name> -- \
-  python -c "from HoloLoom.voice import OpenAITTS; \
+  python -c "from hololoom.voice import OpenAITTS; \
   tts = OpenAITTS(); \
   print('TTS initialized')"
 ```
@@ -853,11 +853,11 @@ kubectl logs -n hololoom-voice -l app=voice-agent -f | grep DEBUG
 ```bash
 # Check liveness probe
 kubectl exec -n hololoom-voice -it <pod-name> -- \
-  python -c "from HoloLoom.voice import VoiceAgent; print('alive')"
+  python -c "from hololoom.voice import VoiceAgent; print('alive')"
 
 # Check readiness probe
 kubectl exec -n hololoom-voice -it <pod-name> -- \
-  python -c "from HoloLoom.voice import VoiceAgent; print('ready')"
+  python -c "from hololoom.voice import VoiceAgent; print('ready')"
 ```
 
 ---
@@ -865,7 +865,7 @@ kubectl exec -n hololoom-voice -it <pod-name> -- \
 ## 📞 Support
 
 ### Documentation
-- **README**: `HoloLoom/voice/README.md`
+- **README**: `hololoom/voice/README.md`
 - **Architecture**: `PHASE_2_VOICE_MODE_ARCHITECTURE.md`
 - **Code Review**: `ELLE_AUDIO_REVIEW_SUMMARY.md`
 
