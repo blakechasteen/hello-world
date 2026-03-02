@@ -13,21 +13,21 @@ This shows the full power of the Phase 3 skill system.
 
 import asyncio
 import json
-from HoloLoom.skills.base import SkillInput, get_registry
-from HoloLoom.skills.cache import SkillCache
-from HoloLoom.skills.executor import SkillExecutor
-from HoloLoom.skills.composition import (
+from hololoom.skills.base import SkillInput, get_registry
+from hololoom.skills.cache import SkillCache
+from hololoom.skills.executor import SkillExecutor
+from hololoom.skills.composition import (
     SkillWorkflow,
     execute_step,
     parallel_step,
     conditional_step,
     transform_step
 )
-from HoloLoom.skills.metrics import get_tracker
+from hololoom.skills.metrics import get_tracker
 
 # Import some skills (they register themselves)
-from HoloLoom.skills.creative import graphviz_skill
-from HoloLoom.skills.testing import pytest_runner
+from hololoom.skills.creative import graphviz_skill
+from hololoom.skills.testing import pytest_runner
 
 
 def print_section(title: str):
@@ -44,7 +44,7 @@ async def demo_cache():
     cache = SkillCache(max_size=3, default_ttl=3600.0)
 
     # Simulate some skill results
-    from HoloLoom.skills.base import SkillOutput, SkillStatus
+    from hololoom.skills.base import SkillOutput, SkillStatus
 
     # Cache 3 results
     print(" Caching 3 results...")

@@ -79,7 +79,7 @@ async def run_mrf_planning():
 
     # Try to import MRF
     try:
-        from HoloLoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategyType, ModelProvider
+        from hololoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategyType, ModelProvider
         mrf_available = True
         mrf = UnifiedMRF()
     except ImportError as e:
@@ -297,7 +297,7 @@ async def run_mrf_planning():
     ├── Task: Implement !weave command
     ├── Code:
     │   async def handle_weave(room, event, args, bot):
-    │       from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    │       from hololoom.weaving_orchestrator import WeavingOrchestrator
     │       async with WeavingOrchestrator(cfg=config) as orch:
     │           spacetime = await orch.weave(Query(text=' '.join(args)))
     │           await bot.send_message(room, format_spacetime(spacetime))
@@ -308,7 +308,7 @@ async def run_mrf_planning():
     ├── Commands: !memory recall, !memory store, !memory search
     ├── Code:
     │   async def handle_memory_recall(room, event, args, bot):
-    │       from HoloLoom.memory.unified import UnifiedMemory
+    │       from hololoom.memory.unified import UnifiedMemory
     │       memories = await memory.recall(' '.join(args), limit=5)
     │       await bot.send_message(room, format_memories(memories))
     └── Effort: 3-4 hours
@@ -317,7 +317,7 @@ async def run_mrf_planning():
     ├── File: HoloLoom/chatops/core/chatops_orchestrator.py
     ├── Task: Gate all tool executions through SafetyGuardrails
     ├── Code:
-    │   from HoloLoom.alignment import SafetyGuardrails
+    │   from hololoom.alignment import SafetyGuardrails
     │
     │   async def execute_command(self, command, context):
     │       gate_result = await self.guardrails.gate_action(command, context)
@@ -330,7 +330,7 @@ async def run_mrf_planning():
     ├── File: HoloLoom/chatops/core/chatops_bridge.py
     ├── Task: Add RAG context to all responses
     ├── Code:
-    │   from HoloLoom.rag import SimpleRAG
+    │   from hololoom.rag import SimpleRAG
     │
     │   async def enhance_response(self, query, response):
     │       async with SimpleRAG() as rag:

@@ -137,7 +137,7 @@ def similar(query: str, limit: int, min_quality: float, output_format: str):
 def context(name: str, k: int, task: Optional[str], output_format: str):
     """Retrieve RAG context for a prompt.
 
-    Gets relevant context from HoloLoom memory that can
+    Gets relevant context from hololoom memory that can
     enhance the prompt's execution.
 
     Examples:
@@ -202,7 +202,7 @@ def context(name: str, k: int, task: Optional[str], output_format: str):
 def enhance(name: str, task: Optional[str], context_k: int, output: Optional[str], output_format: str):
     """Enhance a prompt with RAG context.
 
-    Retrieves relevant context from HoloLoom memory and
+    Retrieves relevant context from hololoom memory and
     injects it into the prompt for better results.
 
     Examples:

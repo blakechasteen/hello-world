@@ -3,8 +3,8 @@ Measure computational cost of semantic projection operations
 """
 import numpy as np
 import time
-from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS, SemanticSpectrum
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 def measure_operations():
     print("=" * 70)

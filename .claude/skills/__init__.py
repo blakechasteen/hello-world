@@ -77,7 +77,7 @@ TEMPLATES_DIR = SKILLS_ROOT / "templates"
 
 # Check for HoloLoom integration
 try:
-    from HoloLoom.agentic.skill_agents import (
+    from hololoom.agentic.skill_agents import (
         SkillRegistry as HoloLoomSkillRegistry,
         execute_skill as hololoom_execute_skill,
         SkillTemplate,

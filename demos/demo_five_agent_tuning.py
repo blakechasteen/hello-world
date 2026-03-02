@@ -13,7 +13,7 @@ This demo:
 
 import asyncio
 import numpy as np
-from HoloLoom.tuning import (
+from hololoom.tuning import (
     MasterTuningCoordinator,
     TimeoutTuner,
     CacheTuner,
@@ -21,10 +21,10 @@ from HoloLoom.tuning import (
     MemoryTuner,
     ComplexityTuner,
 )
-from HoloLoom.tuning.cache_tuner import CacheMetrics
-from HoloLoom.tuning.threshold_tuner import QualityMetrics
-from HoloLoom.tuning.memory_tuner import RetrievalMetrics, QueryComplexity
-from HoloLoom.tuning.complexity_tuner import ComplexityMetrics, ExecutionMode
+from hololoom.tuning.cache_tuner import CacheMetrics
+from hololoom.tuning.threshold_tuner import QualityMetrics
+from hololoom.tuning.memory_tuner import RetrievalMetrics, QueryComplexity
+from hololoom.tuning.complexity_tuner import ComplexityMetrics, ExecutionMode
 
 # ANSI colors for terminal output
 class Colors:
@@ -231,7 +231,7 @@ def print_system_status(coordinator: MasterTuningCoordinator):
 
     # Execution Modes
     print(f"\n  Execution Modes:")
-    from HoloLoom.tuning.complexity_tuner import QueryComplexity as ComplexityEnum
+    from hololoom.tuning.complexity_tuner import QueryComplexity as ComplexityEnum
     for complexity in ComplexityEnum:
         mode = complexity_tuner.get_adaptive_mode(complexity)
         print(f"    {complexity.value:12s}: {mode.value:6s}")

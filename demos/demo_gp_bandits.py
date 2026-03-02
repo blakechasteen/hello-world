@@ -27,11 +27,11 @@ import matplotlib.pyplot as plt
 from typing import List, Dict, Any
 
 # HoloLoom imports
-from HoloLoom.config import Config
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Features, Context, MemoryShard
-from HoloLoom.policy.unified import create_policy, BanditStrategy
-from HoloLoom.policy.gp_policy import create_gp_policy, GPConfig
+from hololoom.config import Config
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Features, Context, MemoryShard
+from hololoom.policy.unified import create_policy, BanditStrategy
+from hololoom.policy.gp_policy import create_gp_policy, GPConfig
 
 
 # ============================================================================

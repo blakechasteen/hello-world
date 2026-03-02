@@ -27,9 +27,9 @@ try:
     if str(hololoom_path) not in sys.path:
         sys.path.insert(0, str(hololoom_path))
 
-    from HoloLoom.memory.graph import KG, KGEdge
-    from HoloLoom.memory.unified import UnifiedMemory
-    from HoloLoom.config import Config
+    from hololoom.memory.graph import KG, KGEdge
+    from hololoom.memory.unified import UnifiedMemory
+    from hololoom.config import Config
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     pass

@@ -32,11 +32,11 @@ from typing import Dict, List
 import asyncio
 
 # HoloLoom imports
-from HoloLoom.semantic_calculus import SemanticSpectrum, EXTENDED_244_DIMENSIONS
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
-from HoloLoom.embedding.spectral import create_embedder
-from HoloLoom.policy.semantic_nudging import (
+from hololoom.semantic_calculus import SemanticSpectrum, EXTENDED_244_DIMENSIONS
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.embedding.spectral import create_embedder
+from hololoom.policy.semantic_nudging import (
     SemanticRewardShaper,
     aggregate_by_category,
     define_semantic_goals

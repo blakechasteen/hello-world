@@ -26,8 +26,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Import RAG system
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.rag.embedding_plugins import (
+from hololoom.rag import SimpleRAG
+from hololoom.rag.embedding_plugins import (
     MatryoshkaEmbedding,
     HuggingFaceEmbedding,
     OpenAIEmbedding,
@@ -182,7 +182,7 @@ async def demo_protocol_compliance():
     print("DEMO 5: Protocol Compliance Validation")
     print("=" * 70)
 
-    from HoloLoom.rag.embedding_plugins import validate_embedding_provider
+    from hololoom.rag.embedding_plugins import validate_embedding_provider
 
     providers_to_validate = [
         ("MatryoshkaEmbedding", MatryoshkaEmbedding()),

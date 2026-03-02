@@ -30,10 +30,10 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.visualization.dashboard import (
+from hololoom.visualization.dashboard import (
     Dashboard, Panel, PanelType, PanelSize, LayoutType
 )
-from HoloLoom.visualization.html_renderer import HTMLRenderer, save_dashboard
+from hololoom.visualization.html_renderer import HTMLRenderer, save_dashboard
 from datetime import datetime
 
 

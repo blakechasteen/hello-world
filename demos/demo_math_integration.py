@@ -18,17 +18,17 @@ import time
 from typing import List, Dict, Any, Tuple
 
 # Math modules
-from HoloLoom.warp.math.information import entropy, mutual_information, InformationMetrics
-from HoloLoom.warp.math.graph import (
+from hololoom.warp.math.information import entropy, mutual_information, InformationMetrics
+from hololoom.warp.math.graph import (
     compute_laplacian, fiedler_vector, algebraic_connectivity,
     KnowledgeGraphClusterer, SpectralClustering
 )
-from HoloLoom.warp.math.decision.game_theory import NormalFormGame, NashEquilibrium
-from HoloLoom.warp.math.causal import CausalGraph
-from HoloLoom.warp.math.decision.regret_minimization import Hedge
+from hololoom.warp.math.decision.game_theory import NormalFormGame, NashEquilibrium
+from hololoom.warp.math.causal import CausalGraph
+from hololoom.warp.math.decision.regret_minimization import Hedge
 
 # HoloLoom components
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.graph import KG, KGEdge
 
 import networkx as nx
 
@@ -108,7 +108,7 @@ def demo_information_theory_rag():
     print(f"{'Source Pair':<25} {'MI':>10} {'Interpretation':>20}")
     print("-" * 60)
 
-    from HoloLoom.warp.math.information import DistributionPair
+    from hololoom.warp.math.information import DistributionPair
 
     for name, joint in source_pairs:
         pair = DistributionPair(joint=joint)

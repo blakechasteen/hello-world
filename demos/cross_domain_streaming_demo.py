@@ -28,8 +28,8 @@ import time
 from typing import Dict, List, Any
 from enum import Enum
 
-from HoloLoom.cross_domain_adapter import CrossDomainAdapter, NarrativeDomain
-from HoloLoom.streaming_depth import StreamingNarrativeAnalyzer, StreamEventType
+from hololoom.cross_domain_adapter import CrossDomainAdapter, NarrativeDomain
+from hololoom.streaming_depth import StreamingNarrativeAnalyzer, StreamEventType
 
 
 class DomainStreamingAnalyzer:

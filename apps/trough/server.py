@@ -16,15 +16,15 @@ from pydantic import BaseModel
 import uvicorn
 
 # HoloLoom imports
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.agentic import (
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.agentic import (
     create_agentic_orchestrator,
     AgenticOrchestrator,
     ReasoningMode,
     AgenticResult
 )
-from HoloLoom.alignment.audit_trail import AuditTrail
+from hololoom.alignment.audit_trail import AuditTrail
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -14,10 +14,10 @@ Usage:
 
 import asyncio
 from pathlib import Path
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.recursive import FullLearningEngine
-from HoloLoom.protocols.types import Query
+from hololoom import HoloLoom
+from hololoom.config import Config, MemoryBackend
+from hololoom.recursive import FullLearningEngine
+from hololoom.protocols.types import Query
 import sys
 
 # Elle's personality and responses

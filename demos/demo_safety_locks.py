@@ -9,8 +9,8 @@ import os
 import sys
 sys.path.insert(0, '.')
 
-from HoloLoom.config import Config
-from HoloLoom.safety import (
+from hololoom.config import Config
+from hololoom.safety import (
     SafetyLock,
     Layer6Capability,
     Layer6BlockedException,

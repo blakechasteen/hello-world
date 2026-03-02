@@ -27,8 +27,8 @@ from datetime import datetime
 import warnings
 
 # HoloLoom imports
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import MemoryShard
 
 # Optional dependencies
 try:

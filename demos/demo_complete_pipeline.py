@@ -21,10 +21,10 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.awareness.compositional_awareness import CompositionalAwarenessLayer
-from HoloLoom.awareness.context_packer import SmartContextPacker, TokenBudget
-from HoloLoom.awareness.dual_stream import DualStreamGenerator
-from HoloLoom.awareness.meta_awareness import MetaAwarenessLayer
+from hololoom.awareness.compositional_awareness import CompositionalAwarenessLayer
+from hololoom.awareness.context_packer import SmartContextPacker, TokenBudget
+from hololoom.awareness.dual_stream import DualStreamGenerator
+from hololoom.awareness.meta_awareness import MetaAwarenessLayer
 
 
 def print_section(title: str, char: str = "=", width: int = 80):

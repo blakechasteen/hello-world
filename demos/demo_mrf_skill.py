@@ -19,7 +19,7 @@ from typing import Dict, Any
 from pathlib import Path
 
 # Import MRF components
-from HoloLoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategyType, ModelProvider
+from hololoom.prompting.unified_mrf import UnifiedMRF, RefinementStrategyType, ModelProvider
 
 
 def print_section(title: str, emoji: str = "[*]"):

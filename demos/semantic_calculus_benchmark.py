@@ -16,14 +16,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import time
 import numpy as np
-from HoloLoom.semantic_calculus import (
+from hololoom.semantic_calculus import (
     SemanticFlowCalculus,
     SemanticSpectrum,
     GeometricIntegrator,
     EmbeddingCache,
     HAS_NUMBA,
 )
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.embedding.spectral import create_embedder
 
 
 def benchmark_embedding_cache():

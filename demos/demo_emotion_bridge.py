@@ -20,7 +20,7 @@ import os
 # Add HoloLoom to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from HoloLoom.voice.emotion_bridge import (
+from hololoom.voice.emotion_bridge import (
     EmotionBridge,
     EmotionBridgeConfig,
     enhance_voice_agent_with_emotions,
@@ -117,10 +117,10 @@ async def demo_voice_agent_integration():
     print("="*70 + "\n")
 
     try:
-        from HoloLoom.voice import VoiceAgent
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
-        from HoloLoom.protocols.types import MemoryShard
+        from hololoom.voice import VoiceAgent
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
+        from hololoom.protocols.types import MemoryShard
     except ImportError as e:
         print(f"⚠️  Skipping - HoloLoom imports not available: {e}")
         return

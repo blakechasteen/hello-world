@@ -16,9 +16,9 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.unified_api import HoloLoom
-from HoloLoom.matryoshka_interpreter import MatryoshkaInterpreter
-from HoloLoom.visualization import (
+from hololoom.unified_api import HoloLoom
+from hololoom.matryoshka_interpreter import MatryoshkaInterpreter
+from hololoom.visualization import (
     MatryoshkaAnalysis,
     StreamOfThought,
     ResonanceVisualization,
@@ -28,9 +28,9 @@ from HoloLoom.visualization import (
 
 # Try to import analysis modules
 try:
-    from HoloLoom.resonance.shed import ResonanceShed
-    from HoloLoom.warp.space import WarpSpace
-    from HoloLoom.convergence.engine import ConvergenceEngine
+    from hololoom.resonance.shed import ResonanceShed
+    from hololoom.warp.space import WarpSpace
+    from hololoom.convergence.engine import ConvergenceEngine
     ANALYSIS_MODULES_AVAILABLE = True
 except ImportError as e:
     print(f"⚠️  Analysis modules not fully available: {e}")

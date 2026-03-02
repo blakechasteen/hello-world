@@ -12,7 +12,7 @@ import sys
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from HoloLoom.hololoom import HoloLoom  # Memory-focused API
+from hololoom.hololoom import HoloLoom  # Memory-focused API
 
 
 def cosine_similarity(v1: np.ndarray, v2: np.ndarray) -> float:

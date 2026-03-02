@@ -42,7 +42,7 @@ except ImportError:
     PIL_AVAILABLE = False
     sys.exit(1)
 
-from HoloLoom.memory.photo_tokens import PhotoTokenMemory, PhotoToken
+from hololoom.memory.photo_tokens import PhotoTokenMemory, PhotoToken
 
 
 def create_test_image(

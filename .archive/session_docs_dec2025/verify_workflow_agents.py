@@ -25,9 +25,9 @@ from pathlib import Path
 # Add core path to sys.path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom import HoloLoom
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query
+from hololoom import HoloLoom
+from hololoom.config import Config
+from hololoom.protocols.types import Query
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

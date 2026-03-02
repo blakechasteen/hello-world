@@ -38,17 +38,17 @@ from collections import defaultdict, deque
 import asyncio
 
 # HoloLoom imports
-from HoloLoom.semantic_calculus import SemanticSpectrum, EXTENDED_244_DIMENSIONS
-from HoloLoom.semantic_calculus.analyzer import create_semantic_analyzer
-from HoloLoom.semantic_calculus.config import SemanticCalculusConfig
-from HoloLoom.embedding.spectral import create_embedder
-from HoloLoom.reflection.semantic_learning import (
+from hololoom.semantic_calculus import SemanticSpectrum, EXTENDED_244_DIMENSIONS
+from hololoom.semantic_calculus.analyzer import create_semantic_analyzer
+from hololoom.semantic_calculus.config import SemanticCalculusConfig
+from hololoom.embedding.spectral import create_embedder
+from hololoom.reflection.semantic_learning import (
     SemanticExperience,
     SemanticTrajectoryAnalyzer,
     SemanticLearningConfig,
     SemanticCurriculumDesigner
 )
-from HoloLoom.policy.semantic_nudging import (
+from hololoom.policy.semantic_nudging import (
     SemanticRewardShaper,
     aggregate_by_category,
     define_semantic_goals

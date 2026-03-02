@@ -15,7 +15,7 @@ from demos.jenny import register_demo, demo_phase
 
 # Jenny imports
 try:
-    from HoloLoom.visualization.jenny_renderer_registry import (
+    from hololoom.visualization.jenny_renderer_registry import (
         RendererRegistry,
         RenderTarget,
     )

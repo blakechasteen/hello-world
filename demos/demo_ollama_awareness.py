@@ -30,7 +30,7 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.awareness import (
+from hololoom.awareness import (
     CompositionalAwarenessLayer,
     DualStreamGenerator,
     MetaAwarenessLayer,
@@ -56,7 +56,7 @@ async def demo_ollama_integration():
         console.print("[dim]Falling back to template mode...[/]\n")
         use_llm = False
     else:
-        from HoloLoom.awareness import OllamaLLM
+        from hololoom.awareness import OllamaLLM
 
         # Try to initialize Ollama
         try:
@@ -153,7 +153,7 @@ async def demo_comparison():
         console.print("[yellow]Ollama not available - skipping comparison[/]")
         return
 
-    from HoloLoom.awareness import OllamaLLM
+    from hololoom.awareness import OllamaLLM
 
     try:
         llm = OllamaLLM(model="llama3.2:3b")

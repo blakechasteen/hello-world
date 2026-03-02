@@ -29,12 +29,12 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import List, Dict
 
-from HoloLoom.semantic_calculus.dimension_selector import (
+from hololoom.semantic_calculus.dimension_selector import (
     SmartDimensionSelector,
     SelectionStrategy,
 )
-from HoloLoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.semantic_calculus.dimensions import EXTENDED_244_DIMENSIONS
+from hololoom.embedding.spectral import create_embedder
 
 
 def visualize_selection_comparison(output_dir: Path):

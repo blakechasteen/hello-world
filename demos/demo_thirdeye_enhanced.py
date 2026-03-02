@@ -18,7 +18,7 @@ import json
 from pathlib import Path
 
 # Enhanced composer (integrates all systems)
-from HoloLoom.thirdeye.visualizers.enhanced_composer import (
+from hololoom.thirdeye.visualizers.enhanced_composer import (
     EnhancedSceneComposer,
     ComposerConfig,
     get_enhanced_composer,
@@ -26,23 +26,23 @@ from HoloLoom.thirdeye.visualizers.enhanced_composer import (
 )
 
 # Individual components for detailed demos
-from HoloLoom.thirdeye.visualizers.conversation_memory import (
+from hololoom.thirdeye.visualizers.conversation_memory import (
     ConversationMemory,
     EntityType,
     RelationType,
     get_conversation_memory,
 )
-from HoloLoom.thirdeye.visualizers.semantic_extractor import (
+from hololoom.thirdeye.visualizers.semantic_extractor import (
     SemanticExtractor,
     get_semantic_extractor,
 )
-from HoloLoom.thirdeye.visualizers.visual_styles import (
+from hololoom.thirdeye.visualizers.visual_styles import (
     StyleName,
     get_style,
     get_style_for_mood,
     STYLES,
 )
-from HoloLoom.thirdeye.visualizers.layer_composer import (
+from hololoom.thirdeye.visualizers.layer_composer import (
     LayerComposer,
     LayerType,
 )

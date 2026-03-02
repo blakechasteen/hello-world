@@ -21,7 +21,7 @@ if __name__ == "__main__":
     logger.info("")
 
     uvicorn.run(
-        "HoloLoom.apps.server.agentic_api_integrated:app",
+        "hololoom.apps.server.agentic_api_integrated:app",
         host="0.0.0.0",
         port=8001,  # Using 8001 instead of 8000
         reload=True,

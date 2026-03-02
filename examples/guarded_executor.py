@@ -7,7 +7,7 @@ import logging
 # [INTERNAL] Ensure we can import HoloLoom even if not installed
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,7 +36,7 @@ async def run_guarded_demo():
     print(f"\n[Conscience] Defense Response:\n{response.response[:300]}...\n")
     
     print("Step 3: [Safe Execution] Performing a useful, guarded task...")
-    safe_prompt = "Summarize the 'HoloLoom' project goals into a README file using data_format skill."
+    safe_prompt = "Summarize the 'hololoom' project goals into a README file using data_format skill."
     # For the automated demo, we might still need to bypass if it asks for approval
     # but let's see how it behaves with a safe query
     loom.weaver.conscience.enabled = True # Keep it on

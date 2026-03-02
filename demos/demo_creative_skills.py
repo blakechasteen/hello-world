@@ -7,9 +7,9 @@ Demonstrates the two newly implemented Tier 3 creative skills:
 """
 
 import asyncio
-from HoloLoom.skills.base import SkillInput
-from HoloLoom.skills.creative.latex_compiler import LaTeXCompilerSkill
-from HoloLoom.skills.creative.graphviz_skill import GraphvizSkill
+from hololoom.skills.base import SkillInput
+from hololoom.skills.creative.latex_compiler import LaTeXCompilerSkill
+from hololoom.skills.creative.graphviz_skill import GraphvizSkill
 
 
 async def demo_latex_compiler():

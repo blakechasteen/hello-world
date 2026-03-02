@@ -27,9 +27,9 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 import logging
 
-from HoloLoom.config import Config
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.documentation.types import MemoryShard
 
 logging.basicConfig(level=logging.WARNING)  # Quiet for benchmarking
 logger = logging.getLogger(__name__)

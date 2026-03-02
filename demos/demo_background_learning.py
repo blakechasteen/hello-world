@@ -20,10 +20,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import asyncio
 import time
 
-from HoloLoom.agents.background_learner import create_agent_pool
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
-from HoloLoom.documentation.types import Query
+from hololoom.agents.background_learner import create_agent_pool
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.documentation.types import Query
 
 
 async def create_test_knowledge():

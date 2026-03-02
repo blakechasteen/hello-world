@@ -16,7 +16,7 @@ from demos.jenny import register_demo, demo_phase
 
 # Jenny imports
 try:
-    from HoloLoom.visualization.jenny_accessibility import (
+    from hololoom.visualization.jenny_accessibility import (
         AriaRole,
         AriaLive,
         AriaRelevant,

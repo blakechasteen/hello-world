@@ -20,8 +20,8 @@ Usage:
 """
 
 import asyncio
-from HoloLoom.agentic.ml_logic_detector import MLLogicDetector
-from HoloLoom.agentic.codebase_ingestion import Language
+from hololoom.agentic.ml_logic_detector import MLLogicDetector
+from hololoom.agentic.codebase_ingestion import Language
 
 
 # Test cases with known logic errors

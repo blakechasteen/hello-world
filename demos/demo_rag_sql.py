@@ -38,7 +38,7 @@ except ImportError:
     print("⚠ Install 'rich' for beautiful output: pip install rich")
 
 # HoloLoom imports
-from HoloLoom.rag.sql_integration import (
+from hololoom.rag.sql_integration import (
     SQLRAGMixin,
     SQLAdapter,
     TextToSQLTranslator,
@@ -68,7 +68,7 @@ class DemoRAG(SQLRAGMixin):
 
     async def _query_semantic_only(self, question: str, max_sources: int):
         """Override semantic query for demo."""
-        from HoloLoom.rag.sql_integration import SQLRAGResult
+        from hololoom.rag.sql_integration import SQLRAGResult
 
         # Simple keyword matching
         question_lower = question.lower()

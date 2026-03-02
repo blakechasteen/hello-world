@@ -122,8 +122,8 @@ GradientFlowEngine
 ### Example Usage
 
 ```python
-from HoloLoom.physics.gradient_flow import GradientFlowRouter
-from HoloLoom.routing.flow_router import create_flow_router
+from hololoom.physics.gradient_flow import GradientFlowRouter
+from hololoom.routing.flow_router import create_flow_router
 
 # Create router with load landscape
 router = create_flow_router(
@@ -206,7 +206,7 @@ FluidDynamicsEngine
 ### Example Usage
 
 ```python
-from HoloLoom.physics.fluid_dynamics import ContextFlowEngine
+from hololoom.physics.fluid_dynamics import ContextFlowEngine
 
 # Create fluid dynamics engine
 flow = ContextFlowEngine(
@@ -282,7 +282,7 @@ ThermodynamicsEngine
 ### Example Usage
 
 ```python
-from HoloLoom.physics.thermodynamics import ThermodynamicOptimizer
+from hololoom.physics.thermodynamics import ThermodynamicOptimizer
 
 # Create thermodynamic optimizer
 thermo = ThermodynamicOptimizer(
@@ -355,7 +355,7 @@ WaveMechanicsEngine
 ### Example Usage
 
 ```python
-from HoloLoom.physics.wave_mechanics import WavePatternDetector
+from hololoom.physics.wave_mechanics import WavePatternDetector
 
 # Create wave detector
 wave = WavePatternDetector(wave_speed=1.0)
@@ -428,7 +428,7 @@ StatisticalMechanicsEngine
 ### Example Usage
 
 ```python
-from HoloLoom.physics.statistical_mechanics import BoltzmannEngine
+from hololoom.physics.statistical_mechanics import BoltzmannEngine
 
 # Create statistical mechanics engine
 stat_mech = BoltzmannEngine(temperature=1.0)

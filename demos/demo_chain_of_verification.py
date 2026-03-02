@@ -20,7 +20,7 @@ import asyncio
 import sys
 sys.path.insert(0, '.')
 
-from HoloLoom.verification import (
+from hololoom.verification import (
     # Main chain
     VerificationChain,
     verify_response,

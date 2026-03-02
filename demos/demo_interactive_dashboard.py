@@ -17,10 +17,10 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.visualization.dashboard import (
+from hololoom.visualization.dashboard import (
     Dashboard, Panel, PanelType, PanelSize, LayoutType
 )
-from HoloLoom.visualization.html_renderer import HTMLRenderer
+from hololoom.visualization.html_renderer import HTMLRenderer
 
 
 def create_interactive_dashboard() -> Dashboard:

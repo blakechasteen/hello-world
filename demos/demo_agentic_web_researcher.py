@@ -5,7 +5,7 @@ Autonomous multi-step research agent with planning, execution, and verification.
 """
 
 import asyncio
-from HoloLoom.agentic.web_researcher import (
+from hololoom.agentic.web_researcher import (
     AgenticWebResearcher,
     ResearchStrategy,
     research_web

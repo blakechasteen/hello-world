@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.reasoning.deductive import (
+from hololoom.reasoning.deductive import (
     Fact, Rule, KnowledgeBase, DeductiveReasoner, create_fact, create_rule
 )
 

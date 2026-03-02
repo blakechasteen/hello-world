@@ -41,7 +41,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 try:
     import networkx as nx
@@ -398,7 +398,7 @@ async def main():
 
         # Check if we can decompress
         try:
-            from HoloLoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
+            from hololoom.spinningWheel.deepseek_ocr_spinner import DeepSeekOCRSpinner
             ocr_available = True
         except ImportError:
             ocr_available = False

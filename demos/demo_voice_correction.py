@@ -35,7 +35,7 @@ async def demo_voice_correction():
     print("  3. System learns patterns")
     print("  4. Future receipts auto-corrected")
 
-    from HoloLoom.spinningWheel.voice_correction import (
+    from hololoom.spinningWheel.voice_correction import (
         VoiceCorrector,
         SelfTuningEngine,
         IntentParser

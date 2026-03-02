@@ -36,9 +36,9 @@ def fix_file(filepath):
 
     original = content
 
-    # Pattern 1: from HoloLoom.documentation.types import X, Y, Z
+    # Pattern 1: from hololoom.documentation.types import X, Y, Z
     # Need to split based on what's imported
-    pattern = r'from HoloLoom\.documentation\.types import ([^\n]+)'
+    pattern = r'from hololoom\.documentation\.types import ([^\n]+)'
 
     def replace_import(match):
         imports = match.group(1).strip()
@@ -62,9 +62,9 @@ def fix_file(filepath):
         # Build replacement
         lines = []
         if protocol_imports:
-            lines.append(f"from HoloLoom.protocols.types import {', '.join(protocol_imports)}")
+            lines.append(f"from hololoom.protocols.types import {', '.join(protocol_imports)}")
         if spacetime_imports:
-            lines.append(f"from HoloLoom.fabric.spacetime import {', '.join(spacetime_imports)}")
+            lines.append(f"from hololoom.fabric.spacetime import {', '.join(spacetime_imports)}")
 
         return '\n'.join(lines)
 

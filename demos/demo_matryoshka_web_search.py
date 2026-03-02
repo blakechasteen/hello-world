@@ -3,7 +3,7 @@
 Demo: Matryoshka Web Search - Perplexity-Style Search with HoloLoom
 =====================================================================
 Demonstrates the complete Matryoshka web search system:
-1. Three-stage adaptive retrieval (96d ’ 192d ’ 384d)
+1. Three-stage adaptive retrieval (96d ï¿½ 192d ï¿½ 384d)
 2. Inline citations (Perplexity-style)
 3. Memory shard conversion
 4. Performance analysis
@@ -24,7 +24,7 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.search import (
+from hololoom.search import (
     MatryoshkaWebSearch,
     SearchConfig,
     CitationFormatter,
@@ -69,7 +69,7 @@ async def demo_basic_search():
         print(f"   Scores: 96d={result.score_96d:.3f}, "
               f"192d={result.score_192d:.3f}, "
               f"384d={result.score_384d:.3f}")
-        print(f"   Rank: {result.original_rank} ’ {result.final_rank} "
+        print(f"   Rank: {result.original_rank} ï¿½ {result.final_rank} "
               f"(re-ranked by Matryoshka)")
         print(f"   Snippet: {result.snippet[:100]}...")
         print()
@@ -162,18 +162,18 @@ async def demo_performance_comparison():
 
     # This demo illustrates the speedup (actual timing depends on API/network)
     print("Matryoshka Three-Stage Search:")
-    print("  Stage 1 (96d):  100 results × 96d  = 9,600 dims   (~50ms)")
-    print("  Stage 2 (192d): 20 results × 192d  = 3,840 dims   (~15ms)")
-    print("  Stage 3 (384d): 10 results × 384d  = 3,840 dims   (~15ms)")
+    print("  Stage 1 (96d):  100 results ï¿½ 96d  = 9,600 dims   (~50ms)")
+    print("  Stage 2 (192d): 20 results ï¿½ 192d  = 3,840 dims   (~15ms)")
+    print("  Stage 3 (384d): 10 results ï¿½ 384d  = 3,840 dims   (~15ms)")
     print("  Total: ~80ms\n")
 
     print("Traditional Single-Scale Search:")
-    print("  Stage 1 (384d): 100 results × 384d = 38,400 dims  (~500ms)")
+    print("  Stage 1 (384d): 100 results ï¿½ 384d = 38,400 dims  (~500ms)")
     print("  Total: ~500ms\n")
 
-    print("Speedup: 6.25×")
+    print("Speedup: 6.25ï¿½")
     print("\nWith Phase 5 compositional cache:")
-    print("  Hot path: 0.03ms (291× speedup!)")
+    print("  Hot path: 0.03ms (291ï¿½ speedup!)")
     print("  Cache hit rate: ~77.8%")
 
 
@@ -209,7 +209,7 @@ async def demo_cache_effectiveness():
     # Calculate speedup
     if stats1['avg_time_ms'] > 0:
         speedup = stats1['avg_time_ms'] / max(stats2['avg_time_ms'], 0.1)
-        print(f"\nCache speedup: {speedup:.1f}×")
+        print(f"\nCache speedup: {speedup:.1f}ï¿½")
 
     print(f"\nCache statistics:")
     cache_stats = search.cache.get_stats()

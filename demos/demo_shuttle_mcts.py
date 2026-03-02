@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import asyncio
-from HoloLoom.shuttle import create_hololoom_shuttle
+from hololoom.shuttle import create_hololoom_shuttle
 
 
 def print_section(title: str):

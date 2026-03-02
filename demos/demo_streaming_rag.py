@@ -16,8 +16,8 @@ import sys
 import time
 from typing import List
 
-from HoloLoom.rag import SimpleRAG, StreamToken
-from HoloLoom.config import Config
+from hololoom.rag import SimpleRAG, StreamToken
+from hololoom.config import Config
 
 
 async def print_tokens_streaming(rag: SimpleRAG, question: str) -> None:

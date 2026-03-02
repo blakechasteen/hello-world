@@ -17,7 +17,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from HoloLoom.voice.tracing import TracingManager, TracingConfig
+from hololoom.voice.tracing import TracingManager, TracingConfig
 
 
 async def benchmark_decorator_overhead():

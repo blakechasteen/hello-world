@@ -7,9 +7,9 @@ Tests that TRIVIAL/SIMPLE queries use fast paths and COMPLEX queries use full pi
 
 import asyncio
 import time
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 
 # Test queries for each complexity level

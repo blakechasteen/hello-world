@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 if __name__ == "__main__":
-    server_path = Path(__file__).parent / "HoloLoom" / "web_dashboard" / "agentic_server.py"
+    server_path = Path(__file__).parent / "hololoom" / "web_dashboard" / "agentic_server.py"
 
     print("\n" + "="*70)
     print("  >> Launching HoloLoom Agentic Dashboard")

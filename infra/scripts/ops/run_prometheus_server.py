@@ -20,7 +20,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Now import and run the server
-from HoloLoom.alignment.prometheus_server import start_metrics_server
+from hololoom.alignment.prometheus_server import start_metrics_server
 
 if __name__ == "__main__":
     print("="*80)

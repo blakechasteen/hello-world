@@ -82,7 +82,7 @@ class ARContext:
     Complete AR spatial context at a moment in time.
 
     Represents user's position, orientation, gaze, and all visible objects.
-    Integrated from HoloLoom/voice/ar_context.py patterns.
+    Integrated from hololoom/voice/ar_context.py patterns.
     """
     # User state
     user_position: Vector3

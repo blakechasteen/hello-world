@@ -24,7 +24,7 @@ from typing import List
 # Add path for imports
 sys.path.insert(0, '.')
 
-from HoloLoom.redteam.probes import (
+from hololoom.redteam.probes import (
     AttackProbeType,
     AttackProbe,
     ProbeResult,

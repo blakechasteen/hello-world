@@ -16,7 +16,7 @@ Shows how HoloLoom makes AI decisions fully interpretable.
 import sys
 sys.path.insert(0, '.')
 
-from HoloLoom.explainability import (
+from hololoom.explainability import (
     # Individual techniques
     FeatureAttributor,
     AttributionMethod,
@@ -263,7 +263,7 @@ def demo_5_decision_tree_extraction():
         print(f"  {i}. {rule}")
 
     print("\nDecision Tree Visualization:")
-    from HoloLoom.explainability.decision_tree_extractor import visualize_tree
+    from hololoom.explainability.decision_tree_extractor import visualize_tree
     print(visualize_tree(tree))
 
 

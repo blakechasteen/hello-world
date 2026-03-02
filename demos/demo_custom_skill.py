@@ -22,8 +22,8 @@ import asyncio
 from pathlib import Path
 import yaml
 
-from HoloLoom.agentic import execute_skill, get_registry
-from HoloLoom.config import Config
+from hololoom.agentic import execute_skill, get_registry
+from hololoom.config import Config
 
 
 # Step 1: Define the skill template as Python dict
@@ -364,7 +364,7 @@ Integration Examples:
 
    python3 << EOF
    import asyncio
-   from HoloLoom.agentic import execute_skill
+   from hololoom.agentic import execute_skill
 
    async def main():
        result = await execute_skill(
@@ -409,7 +409,7 @@ Integration Examples:
    # commit-gen.py
    import subprocess
    import asyncio
-   from HoloLoom.agentic import execute_skill
+   from hololoom.agentic import execute_skill
 
    async def main():
        # Get git diff

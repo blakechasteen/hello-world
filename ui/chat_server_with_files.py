@@ -40,9 +40,9 @@ memory_backend = None
 
 # Try to import HoloLoom components
 try:
-    from HoloLoom.spinningWheel.auto import spin
-    from HoloLoom.config import Config, MemoryBackend
-    from HoloLoom.memory.backend_factory import create_memory_backend
+    from hololoom.spinningWheel.auto import spin
+    from hololoom.config import Config, MemoryBackend
+    from hololoom.memory.backend_factory import create_memory_backend
     SPINNERS_AVAILABLE = True
     MEMORY_AVAILABLE = True
     print("✓ SpinningWheel available")
@@ -160,7 +160,7 @@ async def ingest_url(url: str = Form(...)):
 
     try:
         # Use website spinner directly for proper URL scraping
-        from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+        from hololoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
 
         config = WebsiteSpinnerConfig(
             extract_images=False,  # Text only for now

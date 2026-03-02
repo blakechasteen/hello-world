@@ -20,8 +20,8 @@ import statistics
 from typing import List, Dict, Tuple
 
 # Core imports
-from HoloLoom import HoloLoom, Config
-from HoloLoom.documentation.types import MemoryShard
+from hololoom import HoloLoom, Config
+from hololoom.documentation.types import MemoryShard
 
 
 def create_benchmark_shards() -> List[MemoryShard]:

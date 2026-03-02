@@ -41,8 +41,8 @@ def demo_future_integration():
         # ... manually create dashboard ...
 
     FUTURE (automatic):
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.visualization import auto
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.visualization import auto
 
         orchestrator = WeavingOrchestrator(cfg=config)
         spacetime = await orchestrator.weave(query)
@@ -73,7 +73,7 @@ def demo_simulated_integration():
 
     from dataclasses import dataclass, field
     from typing import Dict, Any
-    from HoloLoom.visualization import auto
+    from hololoom.visualization import auto
 
     # Simulate a Spacetime result from a query
     @dataclass
@@ -159,8 +159,8 @@ def demo_memory_visualization():
     print("""
     Integration with HoloLoom memory backends:
 
-    from HoloLoom.memory.backend_factory import create_memory_backend
-    from HoloLoom.visualization import auto
+    from hololoom.memory.backend_factory import create_memory_backend
+    from hololoom.visualization import auto
 
     # Create memory backend (NetworkX, Neo4j, etc.)
     memory = await create_memory_backend(config)
@@ -184,7 +184,7 @@ def demo_memory_visualization():
     """)
 
     # Simulate with mock network data
-    from HoloLoom.visualization.auto import _build_network_dashboard
+    from hololoom.visualization.auto import _build_network_dashboard
 
     network_data = {
         'network': {
@@ -206,7 +206,7 @@ def demo_memory_visualization():
 
     dashboard = _build_network_dashboard(network_data, "Bee Treatment Knowledge Graph")
 
-    from HoloLoom.visualization import save
+    from hololoom.visualization import save
     save(dashboard, 'dashboards/memory_network.html')
 
     print("\n[+] Memory graph visualized: dashboards/memory_network.html")
@@ -227,8 +227,8 @@ def demo_reflection_buffer_analysis():
     print("""
     Integration with HoloLoom learning system:
 
-    from HoloLoom.reflection.buffer import ReflectionBuffer
-    from HoloLoom.visualization import auto
+    from hololoom.reflection.buffer import ReflectionBuffer
+    from hololoom.visualization import auto
 
     # Reflection buffer tracks query performance over time
     buffer = ReflectionBuffer()

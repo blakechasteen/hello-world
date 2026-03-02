@@ -26,7 +26,7 @@ from typing import List, Dict, Any
 # Add project root to path
 sys.path.insert(0, ".")
 
-from HoloLoom.prompting.testing import (
+from hololoom.prompting.testing import (
     PromptTestConfig,
     PromptTestCase,
     PromptTestResult,

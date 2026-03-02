@@ -14,7 +14,7 @@ Date: November 2025
 """
 
 import asyncio
-from HoloLoom.spinningWheel.voice_scratchpad import VoiceScratchpad, VoicePrompt, VoiceResponse
+from hololoom.spinningWheel.voice_scratchpad import VoiceScratchpad, VoicePrompt, VoiceResponse
 
 
 # ============================================================================

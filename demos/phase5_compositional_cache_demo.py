@@ -25,9 +25,9 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent
 sys.path.insert(0, str(repo_root))
 
-from HoloLoom.motif.xbar_chunker import UniversalGrammarChunker
-from HoloLoom.warp.merge import MergeOperator
-from HoloLoom.performance.compositional_cache import CompositionalCache
+from hololoom.motif.xbar_chunker import UniversalGrammarChunker
+from hololoom.warp.merge import MergeOperator
+from hololoom.performance.compositional_cache import CompositionalCache
 
 
 # ============================================================================

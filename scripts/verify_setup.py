@@ -228,11 +228,11 @@ class CoreImportsCheck(Check):
 
     async def run(self) -> CheckResult:
         imports = {
-            "HoloLoom": False,
-            "HoloLoom.config": False,
-            "HoloLoom.weaving_orchestrator": False,
-            "HoloLoom.policy.unified": False,
-            "HoloLoom.memory.unified": False,
+            "hololoom": False,
+            "hololoom.config": False,
+            "hololoom.weaving_orchestrator": False,
+            "hololoom.policy.unified": False,
+            "hololoom.memory.unified": False,
         }
 
         errors = []
@@ -309,8 +309,8 @@ class RAGImportsCheck(Check):
 
     async def run(self) -> CheckResult:
         try:
-            from HoloLoom.rag import SimpleRAG
-            from HoloLoom.rag.multimodal_rag import MultimodalRAG
+            from hololoom.rag import SimpleRAG
+            from hololoom.rag.multimodal_rag import MultimodalRAG
             return self._success("RAG system modules available")
         except ImportError as e:
             return self._failure(f"RAG import failed: {e}")
@@ -329,7 +329,7 @@ class InMemoryBackendCheck(Check):
 
     async def run(self) -> CheckResult:
         try:
-            from HoloLoom.memory.graph import KG
+            from hololoom.memory.graph import KG
             kg = KG()
             kg.add_entity("test", {"type": "test"})
             return self._success("In-memory backend working")
@@ -404,7 +404,7 @@ class ConfigModesCheck(Check):
 
     async def run(self) -> CheckResult:
         try:
-            from HoloLoom.config import Config
+            from hololoom.config import Config
 
             modes = {}
             for mode in ['bare', 'fast', 'fused']:
@@ -431,7 +431,7 @@ class MemoryBackendConfigCheck(Check):
 
     async def run(self) -> CheckResult:
         try:
-            from HoloLoom.config import Config, MemoryBackend
+            from hololoom.config import Config, MemoryBackend
 
             backends = [b.value for b in MemoryBackend]
 
@@ -456,7 +456,7 @@ class PolicyEngineCheck(Check):
 
     async def run(self) -> CheckResult:
         try:
-            from HoloLoom.policy.unified import create_policy
+            from hololoom.policy.unified import create_policy
             import numpy as np
 
             # Create minimal policy
@@ -484,7 +484,7 @@ class ThompsonSamplingCheck(Check):
 
     async def run(self) -> CheckResult:
         try:
-            from HoloLoom.convergence.engine import ThompsonBandit
+            from hololoom.convergence.engine import ThompsonBandit
 
             bandit = ThompsonBandit(n_arms=4)
 
@@ -515,9 +515,9 @@ class WeavingCycleCheck(Check):
 
     async def run(self) -> CheckResult:
         try:
-            from HoloLoom.config import Config
-            from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-            from HoloLoom.protocols.types import Query
+            from hololoom.config import Config
+            from hololoom.weaving_orchestrator import WeavingOrchestrator
+            from hololoom.protocols.types import Query
 
             config = Config.bare()
 
@@ -551,9 +551,9 @@ class ImportLatencyCheck(Check):
         import sys
 
         modules = [
-            "HoloLoom.config",
-            "HoloLoom.policy.unified",
-            "HoloLoom.memory.unified",
+            "hololoom.config",
+            "hololoom.policy.unified",
+            "hololoom.memory.unified",
         ]
 
         latencies = {}

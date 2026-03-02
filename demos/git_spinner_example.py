@@ -22,12 +22,12 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.spinningWheel.git_spinner import (
+from hololoom.spinningWheel.git_spinner import (
     GitSpinner,
     spin_repository,
     spin_repository_incremental
 )
-from HoloLoom.spinningWheel.utils import process_with_progress
+from hololoom.spinningWheel.utils import process_with_progress
 
 
 # ============================================================================
@@ -189,8 +189,8 @@ async def example_memory_integration():
     print("="*70)
 
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
-        from HoloLoom.config import Config, MemoryBackend
+        from hololoom.memory.backend_factory import create_memory_backend
+        from hololoom.config import Config, MemoryBackend
     except ImportError:
         print("\n⚠ HoloLoom memory backend not available")
         print("  Install required dependencies or use MinimalMemory fallback")
@@ -241,8 +241,8 @@ async def example_custom_importance():
     print("Example 6: Custom Importance Scoring")
     print("="*70)
 
-    from HoloLoom.spinningWheel.protocol import ImportanceSignals, ImportanceScore
-    from HoloLoom.spinningWheel.git_spinner import GitCommit
+    from hololoom.spinningWheel.protocol import ImportanceSignals, ImportanceScore
+    from hololoom.spinningWheel.git_spinner import GitCommit
 
     # Create custom spinner with modified scoring
     class CustomGitSpinner(GitSpinner):

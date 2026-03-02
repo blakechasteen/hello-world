@@ -24,10 +24,10 @@ if sys.platform == 'win32':
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.terminal_ui import TerminalUI
-from HoloLoom.protocols.types import MemoryShard
+from hololoom.config import Config, MemoryBackend
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.terminal_ui import TerminalUI
+from hololoom.protocols.types import MemoryShard
 
 
 def create_test_shards():
@@ -44,7 +44,7 @@ def create_test_shards():
         MemoryShard(
             id=str(uuid.uuid4()),
             text="HoloLoom uses a 9-step weaving cycle: Loom Command, Chrono Trigger, Yarn Graph, Resonance Shed, Warp Space, Memory Crawl, Convergence, Tool Execution, Spacetime.",
-            entities=["HoloLoom", "Loom Command", "Chrono Trigger", "Yarn Graph", "Resonance Shed", "Warp Space"],
+            entities=["hololoom", "Loom Command", "Chrono Trigger", "Yarn Graph", "Resonance Shed", "Warp Space"],
             motifs=["weaving", "pipeline"],
             timestamp=0.0,
             metadata={"source": "documentation", "confidence": 0.9}
@@ -117,7 +117,7 @@ async def demo_pattern_selection():
     print("DEMO 2: Pattern Selection")
     print("="*70)
 
-    from HoloLoom.loom.command import PatternCard
+    from hololoom.loom.command import PatternCard
 
     config = create_config()
     orchestrator = WeavingOrchestrator(cfg=config, shards=create_test_shards())

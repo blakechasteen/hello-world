@@ -25,7 +25,7 @@ try:
     if str(hololoom_path) not in sys.path:
         sys.path.insert(0, str(hololoom_path))
 
-    from HoloLoom.rag import SimpleRAG
+    from hololoom.rag import SimpleRAG
     HOLOLOOM_RAG_AVAILABLE = True
 except ImportError:
     pass

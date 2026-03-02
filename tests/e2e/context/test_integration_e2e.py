@@ -21,7 +21,7 @@ sys.path.insert(0, str(repo_root))
 import asyncio
 import pytest
 import time
-from HoloLoom.context import (
+from hololoom.context import (
     # Configuration
     ProductionConfig,
     # Error handling
@@ -141,7 +141,7 @@ async def test_error_recovery():
         return {"result": "Success after retry"}
 
     # Retry with error handler
-    from HoloLoom.context.error_handling import retry
+    from hololoom.context.error_handling import retry
 
     @retry(max_attempts=3, initial_delay=0.01, retry_on=(BackendError,))
     async def query_with_retry():

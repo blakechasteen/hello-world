@@ -21,7 +21,7 @@ from datetime import datetime
 # Add parent to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.agentic import (
+from hololoom.agentic import (
     # Multi-Agent Protocol (Phase 7.1)
     AgentCapability,
     AgentStatus,

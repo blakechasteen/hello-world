@@ -20,7 +20,7 @@ import asyncio
 import logging
 from typing import Dict, Any
 
-from HoloLoom.agents.policy_governance import (
+from hololoom.agents.policy_governance import (
     PolicyEngine,
     RoleBasedAccessControl,
     TopicGovernance,
@@ -32,11 +32,11 @@ from HoloLoom.agents.policy_governance import (
     GovernancePolicy,
     PolicyRule
 )
-from HoloLoom.agents.collaborative_agents import (
+from hololoom.agents.collaborative_agents import (
     CollaborativeAgentManager,
     MessageType
 )
-from HoloLoom.agents.multi_agent_communication import Budget
+from hololoom.agents.multi_agent_communication import Budget
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

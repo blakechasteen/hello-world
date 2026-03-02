@@ -20,13 +20,13 @@ import asyncio
 from pathlib import Path
 from typing import List
 
-from HoloLoom.spinningWheel.pdf_spinner import (
+from hololoom.spinningWheel.pdf_spinner import (
     PDFSpinner,
     spin_pdf,
     create_pdf_scorer
 )
-from HoloLoom.spinningWheel.protocol import SpinResult
-from HoloLoom.documentation.types import MemoryShard
+from hololoom.spinningWheel.protocol import SpinResult
+from hololoom.documentation.types import MemoryShard
 
 
 # =============================================================================

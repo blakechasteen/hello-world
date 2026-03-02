@@ -15,8 +15,8 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import asyncio
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
 
 
 async def main():

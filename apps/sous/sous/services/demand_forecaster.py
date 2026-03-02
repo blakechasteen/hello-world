@@ -19,8 +19,8 @@ import asyncio
 
 # HoloLoom imports
 try:
-    from HoloLoom import HoloLoom
-    from HoloLoom.config import Config
+    from hololoom import HoloLoom
+    from hololoom.config import Config
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False

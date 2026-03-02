@@ -26,9 +26,9 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.config import Config
-from HoloLoom.recursive import FullLearningEngine
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.config import Config
+from hololoom.recursive import FullLearningEngine
 
 
 def create_demo_shards() -> list[MemoryShard]:

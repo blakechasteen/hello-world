@@ -18,9 +18,9 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.recursive import ScratchpadOrchestrator, ScratchpadConfig
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
+from hololoom.recursive import ScratchpadOrchestrator, ScratchpadConfig
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
 
 
 # ============================================================================

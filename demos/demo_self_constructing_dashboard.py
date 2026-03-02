@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Any
 import webbrowser
 
-from HoloLoom.visualization import DashboardConstructor, DashboardRenderer
+from hololoom.visualization import DashboardConstructor, DashboardRenderer
 
 
 # Mock Spacetime for demo (replace with actual HoloLoom integration)

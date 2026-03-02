@@ -21,7 +21,7 @@ from typing import List, Dict
 import sys
 sys.path.insert(0, '.')
 
-from HoloLoom.routing.query_classifier_moonshot import MoonshotQueryClassifier
+from hololoom.routing.query_classifier_moonshot import MoonshotQueryClassifier
 
 # ============================================================================
 # COMPREHENSIVE TEST CASES (1000+ queries)

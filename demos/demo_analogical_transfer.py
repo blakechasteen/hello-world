@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.reasoning.analogical import (
+from hololoom.reasoning.analogical import (
     AnalogicalReasoner, Domain, Entity, Relation, Case,
     create_entity, create_relation, create_domain
 )

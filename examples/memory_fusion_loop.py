@@ -7,7 +7,7 @@ import logging
 # [INTERNAL] Ensure we can import HoloLoom even if not installed
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

@@ -9,7 +9,7 @@ Date: November 13, 2025
 
 import asyncio
 from pathlib import Path
-from HoloLoom.routing.learning import (
+from hololoom.routing.learning import (
     AdaptiveUpdater,
     DeploymentStrategy,
     Pattern,
@@ -106,7 +106,7 @@ async def main():
     validation_dir = Path("./test_deployment")
     validation_file = validation_dir / "validation_set.json"
 
-    from HoloLoom.routing.learning import create_validation_set
+    from hololoom.routing.learning import create_validation_set
     queries = create_sample_validation_set()
     create_validation_set(queries, str(validation_file))
 

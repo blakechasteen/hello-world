@@ -25,15 +25,15 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.memory.repository_context import (
+from hololoom.memory.repository_context import (
     create_repo_manager,
     AccessLevel,
     RepositoryContextManager,
     AgentQueryContext
 )
-from HoloLoom.agentic import AgenticOrchestrator, ReasoningMode
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query
+from hololoom.agentic import AgenticOrchestrator, ReasoningMode
+from hololoom.config import Config
+from hololoom.documentation.types import Query
 
 
 # ============================================================================
@@ -182,8 +182,8 @@ async def demo_scenario_1_code_review_agent():
 
     # Register repositories
     await repo_mgr.add_repository(
-        name="HoloLoom",
-        path=str(Path(__file__).parent.parent / "HoloLoom"),
+        name="hololoom",
+        path=str(Path(__file__).parent.parent / "hololoom"),
         tags={"python", "ml", "core"},
         access_level=AccessLevel.PUBLIC,
         description="Core HoloLoom system",
@@ -211,7 +211,7 @@ async def demo_scenario_1_code_review_agent():
     # Create Code Review Agent
     code_review_context = repo_mgr.create_agent_context(
         agent_id="code_reviewer",
-        allowed_repos={"HoloLoom", "squad"},  # Code only
+        allowed_repos={"hololoom", "squad"},  # Code only
         blocked_repos={"cos"},  # No business docs
         allowed_tags={"python", "typescript"}
     )
@@ -255,8 +255,8 @@ async def demo_scenario_2_security_audit_agent():
 
     # Register with security tags
     await repo_mgr.add_repository(
-        name="HoloLoom",
-        path=str(Path(__file__).parent.parent / "HoloLoom"),
+        name="hololoom",
+        path=str(Path(__file__).parent.parent / "hololoom"),
         tags={"python", "ml", "security"},
         access_level=AccessLevel.INTERNAL,
         auto_index=False
@@ -265,7 +265,7 @@ async def demo_scenario_2_security_audit_agent():
     # Create Security Audit Agent
     security_context = repo_mgr.create_agent_context(
         agent_id="security_auditor",
-        allowed_repos={"HoloLoom"},
+        allowed_repos={"hololoom"},
         allowed_tags={"security", "alignment", "guardrails"},
         access_level=AccessLevel.INTERNAL
     )
@@ -300,8 +300,8 @@ async def demo_scenario_3_ml_research_agent():
     repo_mgr = await create_repo_manager()
 
     await repo_mgr.add_repository(
-        name="HoloLoom",
-        path=str(Path(__file__).parent.parent / "HoloLoom"),
+        name="hololoom",
+        path=str(Path(__file__).parent.parent / "hololoom"),
         tags={"python", "ml", "embeddings", "policy", "bandits"},
         access_level=AccessLevel.PUBLIC,
         auto_index=False
@@ -310,7 +310,7 @@ async def demo_scenario_3_ml_research_agent():
     # Create ML Research Agent - only ML tags
     ml_context = repo_mgr.create_agent_context(
         agent_id="ml_researcher",
-        allowed_repos={"HoloLoom"},
+        allowed_repos={"hololoom"},
         allowed_tags={"ml", "embeddings", "policy", "bandits", "thompson_sampling"},
         blocked_tags={"business", "deployment", "infrastructure"}
     )
@@ -355,8 +355,8 @@ async def demo_scenario_4_business_intelligence_agent():
 
     # Register code repo (blocked for this agent)
     await repo_mgr.add_repository(
-        name="HoloLoom",
-        path=str(Path(__file__).parent.parent / "HoloLoom"),
+        name="hololoom",
+        path=str(Path(__file__).parent.parent / "hololoom"),
         tags={"python", "ml"},
         access_level=AccessLevel.PUBLIC,
         auto_index=False
@@ -366,7 +366,7 @@ async def demo_scenario_4_business_intelligence_agent():
     bi_context = repo_mgr.create_agent_context(
         agent_id="business_analyst",
         allowed_repos={"cos"},  # Only business data
-        blocked_repos={"HoloLoom", "squad"},  # No code access
+        blocked_repos={"hololoom", "squad"},  # No code access
         allowed_tags={"business", "finance"},
         access_level=AccessLevel.PRIVATE  # Can access private repos
     )
@@ -410,8 +410,8 @@ async def demo_scenario_5_parallel_agent_swarm():
 
     # Register all repos
     await repo_mgr.add_repository(
-        name="HoloLoom",
-        path=str(Path(__file__).parent.parent / "HoloLoom"),
+        name="hololoom",
+        path=str(Path(__file__).parent.parent / "hololoom"),
         tags={"python", "ml"},
         access_level=AccessLevel.PUBLIC,
         auto_index=False
@@ -449,7 +449,7 @@ async def demo_scenario_5_parallel_agent_swarm():
             agent_id="backend_dev",
             query_context=repo_mgr.create_agent_context(
                 agent_id="backend_dev",
-                allowed_repos={"HoloLoom"},
+                allowed_repos={"hololoom"},
                 allowed_tags={"python"}
             ),
             reasoning_mode=ReasoningMode.DIRECT
@@ -459,7 +459,7 @@ async def demo_scenario_5_parallel_agent_swarm():
             agent_id="security_auditor",
             query_context=repo_mgr.create_agent_context(
                 agent_id="security_auditor",
-                allowed_repos={"HoloLoom", "squad"},
+                allowed_repos={"hololoom", "squad"},
                 blocked_repos={"cos"},
                 access_level=AccessLevel.INTERNAL
             ),
@@ -470,7 +470,7 @@ async def demo_scenario_5_parallel_agent_swarm():
             agent_id="ml_researcher",
             query_context=repo_mgr.create_agent_context(
                 agent_id="ml_researcher",
-                allowed_repos={"HoloLoom"},
+                allowed_repos={"hololoom"},
                 allowed_tags={"ml", "embeddings", "policy"}
             ),
             reasoning_mode=ReasoningMode.RESEARCH
@@ -481,7 +481,7 @@ async def demo_scenario_5_parallel_agent_swarm():
             query_context=repo_mgr.create_agent_context(
                 agent_id="business_analyst",
                 allowed_repos={"cos"},
-                blocked_repos={"HoloLoom", "squad"},
+                blocked_repos={"hololoom", "squad"},
                 access_level=AccessLevel.PRIVATE
             ),
             reasoning_mode=ReasoningMode.ANALYTICAL

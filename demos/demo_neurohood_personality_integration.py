@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from NeuroHood import NeuroHood, NeuroHoodConfig
 from NeuroHood.personality import PersonalitySystem
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.embedding.spectral import create_embedder
 
 
 async def main():

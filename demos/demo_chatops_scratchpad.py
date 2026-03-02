@@ -29,12 +29,12 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.apps.chatops.scratchpad import (
+from hololoom.apps.chatops.scratchpad import (
     ScratchPadConfig,
     ArtifactScope,
     ArtifactType,
 )
-from HoloLoom.apps.chatops.scratchpad.manager import (
+from hololoom.apps.chatops.scratchpad.manager import (
     ScratchPadManager,
     create_and_start_manager,
 )

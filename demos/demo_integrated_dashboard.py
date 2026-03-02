@@ -23,8 +23,8 @@ from datetime import datetime
 from dataclasses import dataclass, field
 from typing import Dict, List, Any
 
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import MemoryShard, Query
+from hololoom.config import Config
+from hololoom.documentation.types import MemoryShard, Query
 
 
 # ============================================================================
@@ -68,7 +68,7 @@ async def demo_one_shot_api():
     print("="*80)
     print("\nThis is the simplest API - just pass a query and get a dashboard!\n")
 
-    from HoloLoom.visualization import weave_and_visualize
+    from hololoom.visualization import weave_and_visualize
 
     # Create config and shards
     cfg = Config.fast()
@@ -112,7 +112,7 @@ async def demo_dashboard_orchestrator():
     print("="*80)
     print("\nShows extended orchestrator with dashboard capabilities\n")
 
-    from HoloLoom.visualization import DashboardOrchestrator
+    from hololoom.visualization import DashboardOrchestrator
 
     # Create config and shards
     cfg = Config.fast()
@@ -167,8 +167,8 @@ async def demo_network_graph():
     print("="*80)
     print("\nGenerates dashboard with force-directed graph visualization\n")
 
-    from HoloLoom.visualization import DashboardConstructor, HTMLRenderer
-    from HoloLoom.visualization.dashboard import (
+    from hololoom.visualization import DashboardConstructor, HTMLRenderer
+    from hololoom.visualization.dashboard import (
         Dashboard, Panel, PanelType, PanelSize, LayoutType
     )
 

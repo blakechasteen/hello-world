@@ -240,7 +240,7 @@ async def main():
     )
     parser.add_argument(
         '--dir',
-        default='HoloLoom',
+        default='hololoom',
         help='Directory to scan (default: HoloLoom)'
     )
     parser.add_argument(

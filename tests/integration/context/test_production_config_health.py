@@ -23,7 +23,7 @@ sys.path.insert(0, str(repo_root))
 import asyncio
 import pytest
 import os
-from HoloLoom.context.production_config import (
+from hololoom.context.production_config import (
     Environment,
     ProductionConfig,
     MonitoringConfig,
@@ -35,19 +35,19 @@ from HoloLoom.context.production_config import (
     create_config,
     detect_environment
 )
-from HoloLoom.context.health_check import (
+from hololoom.context.health_check import (
     HealthStatus,
     ComponentCheck,
     HealthCheckResult,
     HealthChecker,
     create_health_checker
 )
-from HoloLoom.context.monitoring import (
+from hololoom.context.monitoring import (
     PerformanceMonitor,
     ResourceMonitor,
     LearningMetricsMonitor
 )
-from HoloLoom.context.circuit_breaker import (
+from hololoom.context.circuit_breaker import (
     CircuitBreakerRegistry,
     create_circuit_breaker_registry
 )

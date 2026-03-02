@@ -21,7 +21,7 @@ from datetime import datetime
 # Add repository to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.visualization.rag_dashboard import RAGDashboard, RAGResult
+from hololoom.visualization.rag_dashboard import RAGDashboard, RAGResult
 
 
 def generate_sample_queries(n_queries: int = 15) -> list:

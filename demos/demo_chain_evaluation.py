@@ -27,7 +27,7 @@ from typing import List, Dict, Any
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.chaining import (
+from hololoom.chaining import (
     # Core
     Chain,
     ChainStep,
@@ -43,7 +43,7 @@ from HoloLoom.chaining import (
     create_judge,
     create_evaluator,
 )
-from HoloLoom.prompting.analytics.ab_testing import ABTest, create_ab_test
+from hololoom.prompting.analytics.ab_testing import ABTest, create_ab_test
 
 
 # ============================================================================

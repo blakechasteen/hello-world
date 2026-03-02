@@ -31,8 +31,8 @@ from NeuroHood.causal import (
 )
 from NeuroHood.causal.temporal import NeuroHoodTemporalEngine
 from NeuroHood.departments import HOADepartment, MediationDepartment
-from HoloLoom.protocols.department import DepartmentRequest
-from HoloLoom.embedding.spectral import create_embedder
+from hololoom.protocols.department import DepartmentRequest
+from hololoom.embedding.spectral import create_embedder
 
 
 async def main():

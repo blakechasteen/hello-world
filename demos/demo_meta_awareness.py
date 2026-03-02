@@ -21,9 +21,9 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from HoloLoom.awareness.compositional_awareness import CompositionalAwarenessLayer
-from HoloLoom.awareness.dual_stream import DualStreamGenerator
-from HoloLoom.awareness.meta_awareness import MetaAwarenessLayer
+from hololoom.awareness.compositional_awareness import CompositionalAwarenessLayer
+from hololoom.awareness.dual_stream import DualStreamGenerator
+from hololoom.awareness.meta_awareness import MetaAwarenessLayer
 
 
 async def demo_meta_awareness_basic():

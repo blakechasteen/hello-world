@@ -7,11 +7,11 @@ Run: PYTHONPATH=. python demo_smart_routing.py
 """
 import asyncio
 import time
-from HoloLoom.routing import QueryClassifier, QueryComplexity
-from HoloLoom.routing.fast_paths import handle_trivial_query, handle_simple_query
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
+from hololoom.routing import QueryClassifier, QueryComplexity
+from hololoom.routing.fast_paths import handle_trivial_query, handle_simple_query
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
 
 async def main():
     print("=" * 80)

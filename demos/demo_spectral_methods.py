@@ -21,13 +21,13 @@ import sys
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.embedding.spectral import SpectralFusion, MatryoshkaEmbeddings
-from HoloLoom.embedding.spectral_multiscale import (
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.embedding.spectral import SpectralFusion, MatryoshkaEmbeddings
+from hololoom.embedding.spectral_multiscale import (
     create_multiscale_analyzer,
     create_hierarchical_clusterer
 )
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 
 def create_test_knowledge_graph() -> KG:
@@ -91,7 +91,7 @@ async def demo_wavelets(kg: KG):
     print("DEMO 1: Graph Wavelets - Local Community Detection")
     print("=" * 70)
 
-    from HoloLoom.warp.spectral_methods import GraphLaplacian, SpectralWavelet, LaplacianType
+    from hololoom.warp.spectral_methods import GraphLaplacian, SpectralWavelet, LaplacianType
 
     # Create Laplacian
     laplacian = GraphLaplacian(kg, laplacian_type=LaplacianType.NORMALIZED)

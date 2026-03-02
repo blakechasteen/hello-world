@@ -7,9 +7,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from HoloLoom.memory.weaving_adapter import WeavingMemoryAdapter, create_weaving_memory
-from HoloLoom.Documentation.types import MemoryShard, Query
-from HoloLoom.config import Config, MemoryBackend
+from hololoom.memory.weaving_adapter import WeavingMemoryAdapter, create_weaving_memory
+from hololoom.Documentation.types import MemoryShard, Query
+from hololoom.config import Config, MemoryBackend
 
 
 async def test_hybrid_memory():
@@ -120,8 +120,8 @@ async def test_direct_backend():
     print("="*70 + "\n")
 
     try:
-        from HoloLoom.memory.backend_factory import create_memory_backend
-        from HoloLoom.memory.protocol import Memory, MemoryQuery, Strategy
+        from hololoom.memory.backend_factory import create_memory_backend
+        from hololoom.memory.protocol import Memory, MemoryQuery, Strategy
         from datetime import datetime
 
         config = Config.fused()

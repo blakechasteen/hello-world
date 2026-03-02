@@ -28,11 +28,11 @@ from datetime import datetime
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.weaving_shuttle import WeavingShuttle
-from HoloLoom.config import Config, ExecutionMode, MemoryBackend
-from HoloLoom.Documentation.types import Query, MemoryShard
-from HoloLoom.memory.backend_factory import create_memory_backend
-from HoloLoom.memory.protocol import Memory as BackendMemory
+from hololoom.weaving_shuttle import WeavingShuttle
+from hololoom.config import Config, ExecutionMode, MemoryBackend
+from hololoom.Documentation.types import Query, MemoryShard
+from hololoom.memory.backend_factory import create_memory_backend
+from hololoom.memory.protocol import Memory as BackendMemory
 
 
 # ============================================================================

@@ -23,11 +23,11 @@ import logging
 from datetime import datetime
 import numpy as np
 
-from HoloLoom.analytical_orchestrator import (
+from hololoom.analytical_orchestrator import (
     AnalyticalWeavingOrchestrator,
     create_analytical_orchestrator
 )
-from HoloLoom.config import Config
+from hololoom.config import Config
 
 logging.basicConfig(
     level=logging.INFO,

@@ -9,8 +9,8 @@ and directly tests the integration points.
 """
 
 import asyncio
-from HoloLoom.protocols.types import MemoryShard, Query
-from HoloLoom.config import Config
+from hololoom.protocols.types import MemoryShard, Query
+from hololoom.config import Config
 
 
 async def quick_test():
@@ -31,7 +31,7 @@ async def quick_test():
 
     print("\n[Test 1] Testing WeavingOrchestrator awareness_layer parameter...")
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
         config = Config.bare()  # Use BARE for fastest initialization
 
         async with WeavingOrchestrator(cfg=config, shards=shards, awareness_layer=None) as orchestrator:
@@ -45,7 +45,7 @@ async def quick_test():
 
     print("\n[Test 2] Testing RAGResult epistemic_confidence field...")
     try:
-        from HoloLoom.rag.simple_rag import RAGResult
+        from hololoom.rag.simple_rag import RAGResult
         result = RAGResult(
             response="Test",
             sources=["source1"],
@@ -61,7 +61,7 @@ async def quick_test():
 
     print("\n[Test 3] Testing SafetyGuardrails epistemic_confidence parameter...")
     try:
-        from HoloLoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest
+        from hololoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest
         guardrails = SafetyGuardrails(enable_human_in_loop=False)
 
         request = ActionRequest(
@@ -80,8 +80,8 @@ async def quick_test():
 
     print("\n[Test 4] Testing AgenticResult aggregated_epistemic_confidence field...")
     try:
-        from HoloLoom.agentic.core import AgenticResult
-        from HoloLoom.protocols.types import Spacetime
+        from hololoom.agentic.core import AgenticResult
+        from hololoom.protocols.types import Spacetime
 
         # Create minimal Spacetime
         spacetime = Spacetime(
@@ -91,7 +91,7 @@ async def quick_test():
             metadata={}
         )
 
-        from HoloLoom.agentic.core import ReasoningMode, AgenticIntent
+        from hololoom.agentic.core import ReasoningMode, AgenticIntent
         result = AgenticResult(
             spacetime=spacetime,
             intent=AgenticIntent.VERIFY,

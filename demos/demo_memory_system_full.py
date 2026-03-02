@@ -42,7 +42,7 @@ async def test_knowledge_graph():
     print_section("1. KNOWLEDGE GRAPH (KG)")
 
     try:
-        from HoloLoom.memory.graph import KG, KGEdge
+        from hololoom.memory.graph import KG, KGEdge
 
         # Create knowledge graph
         kg = KG()
@@ -95,7 +95,7 @@ async def test_activation_field():
     print_section("2. ACTIVATION FIELD")
 
     try:
-        from HoloLoom.memory.activation_field import ActivationField
+        from hololoom.memory.activation_field import ActivationField
         import numpy as np
 
         # Create activation field
@@ -150,11 +150,11 @@ async def test_awareness_graph():
     try:
         import networkx as nx
         import numpy as np
-        from HoloLoom.memory.awareness_graph import AwarenessGraph
+        from hololoom.memory.awareness_graph import AwarenessGraph
 
         # Create a mock semantic calculus (simplified for demo)
         # Import real MatryoshkaScale for proper dict key matching
-        from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaScale
+        from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaScale
 
         class MockSemanticCalculus:
             async def stream_analyze(self, word_stream):
@@ -231,7 +231,7 @@ async def test_memory_conductor():
     print_section("4. MEMORY CONDUCTOR")
 
     try:
-        from HoloLoom.memory.symphony import (
+        from hololoom.memory.symphony import (
             MemoryConductor,
             MemoryQuery,
             MemoryStrategy,
@@ -316,7 +316,7 @@ async def test_unified_memory():
     print_section("5. UNIFIED MEMORY API")
 
     try:
-        from HoloLoom.memory.unified import (
+        from hololoom.memory.unified import (
             UnifiedMemory,
             Memory,
             RecallStrategy,
@@ -391,7 +391,7 @@ async def test_hololoom_main_api():
 
     try:
         # Import from hololoom.py (memory-focused) not unified_api.py
-        from HoloLoom.hololoom import HoloLoom
+        from hololoom.hololoom import HoloLoom
 
         print("  Creating HoloLoom instance (may take a moment)...")
 

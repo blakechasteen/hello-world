@@ -27,8 +27,8 @@ from pathlib import Path
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.visualization import WidgetBuilder
-from HoloLoom.visualization.html_renderer import HTMLRenderer
+from hololoom.visualization import WidgetBuilder
+from hololoom.visualization.html_renderer import HTMLRenderer
 
 
 def demo_bee_survival():

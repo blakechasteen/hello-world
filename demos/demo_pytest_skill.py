@@ -19,8 +19,8 @@ import time
 from typing import Dict, Any
 
 # Import Pytest Runner Skill
-from HoloLoom.skills.testing.pytest_runner import PytestRunnerSkill
-from HoloLoom.skills.base import SkillInput, SkillStatus
+from hololoom.skills.testing.pytest_runner import PytestRunnerSkill
+from hololoom.skills.base import SkillInput, SkillStatus
 
 
 def print_section(title: str, emoji: str = "[*]"):

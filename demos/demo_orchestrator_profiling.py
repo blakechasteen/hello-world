@@ -20,9 +20,9 @@ import asyncio
 import time
 import os
 from typing import List
-from HoloLoom.config import Config
-from HoloLoom.documentation.types import Query, MemoryShard
-from HoloLoom.performance.profiler import Profiler, ProfilerRegistry
+from hololoom.config import Config
+from hololoom.documentation.types import Query, MemoryShard
+from hololoom.performance.profiler import Profiler, ProfilerRegistry
 
 # Test queries (realistic mix)
 TEST_QUERIES = [
@@ -88,7 +88,7 @@ async def profile_orchestrator():
     config = Config.fast()
     config.enable_zero_copy_embeddings = False
 
-    from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+    from hololoom.weaving_orchestrator import WeavingOrchestrator
 
     registry = ProfilerRegistry()
 

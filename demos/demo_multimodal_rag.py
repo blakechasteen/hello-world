@@ -19,7 +19,7 @@ import sys
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.rag.multimodal_rag import MultimodalRAG
+from hololoom.rag.multimodal_rag import MultimodalRAG
 
 
 # ============================================================================

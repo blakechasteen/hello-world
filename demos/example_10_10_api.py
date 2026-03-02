@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, '.')
 
 import asyncio
-from HoloLoom import HoloLoom, Memory, ActivationStrategy
+from hololoom import HoloLoom, Memory, ActivationStrategy
 
 
 async def example_basic():

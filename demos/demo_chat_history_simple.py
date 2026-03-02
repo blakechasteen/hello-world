@@ -12,9 +12,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.apps.workflow_builder.conversation_manager import ConversationManager
-from HoloLoom.spinningWheel import ChatHistorySpinner, ingest_chat_history
-from HoloLoom import HoloLoom
+from hololoom.apps.workflow_builder.conversation_manager import ConversationManager
+from hololoom.spinningWheel import ChatHistorySpinner, ingest_chat_history
+from hololoom import HoloLoom
 
 
 async def main():

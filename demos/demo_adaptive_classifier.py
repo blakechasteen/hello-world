@@ -22,7 +22,7 @@ import sys
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.routing.query_classifier_adaptive import (
+from hololoom.routing.query_classifier_adaptive import (
     AdaptiveMoonshotClassifier,
     create_adaptive_classifier
 )

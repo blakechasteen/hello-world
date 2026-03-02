@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import asyncio
-from HoloLoom.memory.graph import KG, KGEdge
+from hololoom.memory.graph import KG, KGEdge
 from datetime import datetime
 
 

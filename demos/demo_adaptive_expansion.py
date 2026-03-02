@@ -18,8 +18,8 @@ import asyncio
 import time
 from typing import Dict, List
 
-from HoloLoom.memory.graph import KG, KGEdge
-from HoloLoom.memory.adaptive_expansion import (
+from hololoom.memory.graph import KG, KGEdge
+from hololoom.memory.adaptive_expansion import (
     AdaptiveExpander,
     expand_context_adaptive,
     ExpansionResult

@@ -13,7 +13,7 @@ import sys
 # Add parent to path
 sys.path.insert(0, '.')
 
-from HoloLoom.policy.unified import create_policy, BanditStrategy
+from hololoom.policy.unified import create_policy, BanditStrategy
 
 
 async def run_experiment():

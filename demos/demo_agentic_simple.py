@@ -20,7 +20,7 @@ print("="*80)
 print("\nChecking dependencies...")
 
 try:
-    from HoloLoom.documentation.types import Query, MemoryShard
+    from hololoom.documentation.types import Query, MemoryShard
     print("✓ Core types imported")
 except ImportError as e:
     print(f"✗ Could not import types: {e}")
@@ -29,14 +29,14 @@ except ImportError as e:
     sys.exit(1)
 
 try:
-    from HoloLoom.config import Config
+    from hololoom.config import Config
     print("✓ Config imported")
 except ImportError as e:
     print(f"✗ Could not import config: {e}")
     sys.exit(1)
 
 try:
-    from HoloLoom.alignment.audit_trail import AuditTrail
+    from hololoom.alignment.audit_trail import AuditTrail
     print("✓ AuditTrail imported")
 except ImportError as e:
     print(f"✗ Could not import audit_trail: {e}")
@@ -44,7 +44,7 @@ except ImportError as e:
 
 print("\nAttempting to import agentic system...")
 try:
-    from HoloLoom.agentic.core import (
+    from hololoom.agentic.core import (
         AgenticOrchestrator,
         ReasoningMode,
         AgenticIntent,
@@ -111,7 +111,7 @@ Option 1: HTTP Server (Recommended)
   4. Use from VS Code Squad extension
 
 Option 2: Python API
-  from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
+  from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
 
   async with create_agentic_orchestrator(config, shards) as agent:
       result = await agent.reason(

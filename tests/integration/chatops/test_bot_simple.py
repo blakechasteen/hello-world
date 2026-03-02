@@ -25,8 +25,8 @@ async def test_imports():
 
     # Test HoloLoom
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
         print_test("HoloLoom imports", True)
         hololoom_ok = True
     except Exception as e:
@@ -50,8 +50,8 @@ async def test_hololoom_init():
     print("\n=== TEST 2: HoloLoom Initialization ===\n")
 
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
 
         config = Config.bare()
         orchestrator = WeavingOrchestrator(
@@ -77,8 +77,8 @@ async def test_memory_operations():
     print("\n=== TEST 3: Memory Operations ===\n")
 
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
 
         orchestrator = WeavingOrchestrator(
             config=Config.bare(),
@@ -107,8 +107,8 @@ async def test_weaving():
     print("\n=== TEST 4: Weaving Cycle ===\n")
 
     try:
-        from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-        from HoloLoom.config import Config
+        from hololoom.weaving_orchestrator import WeavingOrchestrator
+        from hololoom.config import Config
 
         orchestrator = WeavingOrchestrator(
             config=Config.bare(),

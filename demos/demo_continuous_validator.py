@@ -10,7 +10,7 @@ Date: November 13, 2025
 import asyncio
 import time
 from pathlib import Path
-from HoloLoom.routing.learning import (
+from hololoom.routing.learning import (
     ContinuousValidator,
     ValidationQuery,
     create_validation_set

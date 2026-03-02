@@ -21,7 +21,7 @@ sys.path.insert(0, str(repo_root))
 import asyncio
 import pytest
 import time
-from HoloLoom.context.error_handling import (
+from hololoom.context.error_handling import (
     # Exceptions
     ContextError,
     RoutingError,

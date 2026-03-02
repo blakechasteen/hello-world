@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from HoloLoom.recursive.action_items import (
+from hololoom.recursive.action_items import (
     ActionItemTracker,
     ActionCategory,
     ActionStatus,

@@ -12,7 +12,7 @@ This demo:
 
 import asyncio
 import numpy as np
-from HoloLoom.tuning import MasterTuningCoordinator, TimeoutTuner
+from hololoom.tuning import MasterTuningCoordinator, TimeoutTuner
 
 # ANSI colors for terminal output
 class Colors:

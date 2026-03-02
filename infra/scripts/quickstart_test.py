@@ -3,7 +3,7 @@ Quick test to verify HoloLoom is working
 Run: PYTHONPATH=. python quickstart_test.py
 """
 import asyncio
-from HoloLoom import HoloLoom
+from hololoom import HoloLoom
 
 async def test():
     print("🚀 Testing HoloLoom...")

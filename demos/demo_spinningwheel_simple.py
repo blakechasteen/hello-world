@@ -43,7 +43,7 @@ def metric(name, value):
 
 async def demo_text_spinner():
     """Demo: TextSpinner - Process plain text documents."""
-    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
+    from hololoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     section("1. TextSpinner - Plain Text Processing")
 
@@ -68,7 +68,7 @@ async def demo_text_spinner():
 
 async def demo_website_spinner():
     """Demo: WebsiteSpinner - Scrape web content."""
-    from HoloLoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
+    from hololoom.spinning_wheel.website import WebsiteSpinner, WebsiteSpinnerConfig
 
     section("2. WebsiteSpinner - Web Content Extraction")
 
@@ -105,7 +105,7 @@ async def demo_website_spinner():
 
 async def demo_youtube_spinner():
     """Demo: YouTubeSpinner - Extract video transcripts."""
-    from HoloLoom.spinning_wheel.youtube import YouTubeSpinner, YouTubeSpinnerConfig
+    from hololoom.spinning_wheel.youtube import YouTubeSpinner, YouTubeSpinnerConfig
 
     section("3. YouTubeSpinner - Video Transcript Extraction")
 
@@ -134,7 +134,7 @@ async def demo_youtube_spinner():
 
 async def demo_batch_processing():
     """Demo: Batch processing simulation."""
-    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
+    from hololoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     section("4. Batch Processing - Multiple Documents")
 
@@ -164,7 +164,7 @@ async def demo_batch_processing():
 
 async def demo_performance_benchmark():
     """Demo: Performance benchmarking."""
-    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
+    from hololoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     section("5. Performance Benchmark")
 
@@ -186,12 +186,12 @@ async def demo_performance_benchmark():
 
 async def demo_memory_integration():
     """Demo: Integration with memory system."""
-    from HoloLoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
+    from hololoom.spinning_wheel.text import TextSpinner, TextSpinnerConfig
 
     section("6. Memory Integration")
 
     try:
-        from HoloLoom.memory.protocol import shards_to_memories
+        from hololoom.memory.protocol import shards_to_memories
 
         text = "How do I prevent swarming in my beehive during spring buildup season?"
         spinner = TextSpinner(TextSpinnerConfig())

@@ -15,15 +15,15 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 # Add HoloLoom to path
-hololoom_path = Path(__file__).parent.parent.parent.parent / "HoloLoom"
+hololoom_path = Path(__file__).parent.parent.parent.parent / "hololoom"
 if hololoom_path.exists():
     sys.path.insert(0, str(hololoom_path.parent))
 
 try:
-    from HoloLoom import HoloLoom
-    from HoloLoom.rag import SimpleRAG
-    from HoloLoom.agentic import create_agentic_orchestrator, ReasoningMode
-    from HoloLoom.config import Config
+    from hololoom import HoloLoom
+    from hololoom.rag import SimpleRAG
+    from hololoom.agentic import create_agentic_orchestrator, ReasoningMode
+    from hololoom.config import Config
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     HOLOLOOM_AVAILABLE = False
@@ -92,7 +92,7 @@ class SousHoloLoomBridge:
 
         # Initialize agentic orchestrator if enabled
         if self.enable_agentic:
-            from HoloLoom.memory.backend_factory import create_memory_backend
+            from hololoom.memory.backend_factory import create_memory_backend
             memory = await create_memory_backend(self.config)
             shards = []  # Will be populated as we learn
 

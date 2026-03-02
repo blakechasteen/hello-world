@@ -23,17 +23,17 @@ print("Category Theory + Representation Theory Integration")
 print("=" * 70)
 
 # Import HoloLoom components
-from HoloLoom.warp.category import (
+from hololoom.warp.category import (
     Category, Morphism, Functor, NaturalTransformation,
     YonedaEmbedding, MonoidalCategory
 )
-from HoloLoom.warp.representation import (
+from hololoom.warp.representation import (
     Group, cyclic_group, symmetric_group,
     Representation, trivial_representation, regular_representation,
     CharacterTable, EquivariantMap
 )
-from HoloLoom.warp.space import WarpSpace
-from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+from hololoom.warp.space import WarpSpace
+from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
 
 # ===========================================================================

@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
-    from HoloLoom.mcp_tools import server
+    from hololoom.mcp_tools import server
     MCP_AVAILABLE = True
 except ImportError:
     print("ERROR: Could not import HoloLoom MCP tools")

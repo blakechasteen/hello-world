@@ -28,7 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.visualization import auto, save
+from hololoom.visualization import auto, save
 
 
 def demo_one_liner():
@@ -153,7 +153,7 @@ def demo_comparison_old_vs_new():
 
     print("\nOLD WAY (manual, verbose):")
     print("""
-    from HoloLoom.visualization import (
+    from hololoom.visualization import (
         DashboardConstructor, StrategySelector, HTMLRenderer,
         Dashboard, Panel, PanelType, LayoutType
     )
@@ -188,7 +188,7 @@ def demo_comparison_old_vs_new():
 
     print("\nNEW WAY (ruthless):")
     print("""
-    from HoloLoom.visualization import auto
+    from hololoom.visualization import auto
 
     auto(data, save_path='output.html')
 

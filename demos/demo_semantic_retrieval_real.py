@@ -53,7 +53,7 @@ async def test_1_raw_embeddings():
     print()
 
     try:
-        from HoloLoom.embedding.spectral import MatryoshkaEmbeddings
+        from hololoom.embedding.spectral import MatryoshkaEmbeddings
 
         embedder = MatryoshkaEmbeddings()
         print_status(True, f"MatryoshkaEmbeddings created")
@@ -119,7 +119,7 @@ async def test_2_semantic_calculus():
     print()
 
     try:
-        from HoloLoom.semantic_calculus.matryoshka_streaming import (
+        from hololoom.semantic_calculus.matryoshka_streaming import (
             MatryoshkaSemanticCalculus,
             MatryoshkaScale
         )
@@ -171,8 +171,8 @@ async def test_3_awareness_graph_storage():
 
     try:
         import networkx as nx
-        from HoloLoom.memory.awareness_graph import AwarenessGraph
-        from HoloLoom.semantic_calculus.matryoshka_streaming import (
+        from hololoom.memory.awareness_graph import AwarenessGraph
+        from hololoom.semantic_calculus.matryoshka_streaming import (
             MatryoshkaSemanticCalculus,
             MatryoshkaScale
         )
@@ -245,8 +245,8 @@ async def test_4_semantic_retrieval():
 
     try:
         import networkx as nx
-        from HoloLoom.memory.awareness_graph import AwarenessGraph
-        from HoloLoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
+        from hololoom.memory.awareness_graph import AwarenessGraph
+        from hololoom.semantic_calculus.matryoshka_streaming import MatryoshkaSemanticCalculus
 
         # Create fresh components
         graph_backend = nx.MultiDiGraph()
@@ -350,7 +350,7 @@ async def test_5_full_hololoom_api():
     print()
 
     try:
-        from HoloLoom.hololoom import HoloLoom
+        from hololoom.hololoom import HoloLoom
 
         print("  Creating HoloLoom instance...")
 

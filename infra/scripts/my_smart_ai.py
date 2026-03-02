@@ -4,8 +4,8 @@ Run: PYTHONPATH=. python my_smart_ai.py
 """
 import asyncio
 from pathlib import Path
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.config import Config
+from hololoom.rag import SimpleRAG
+from hololoom.config import Config
 
 async def main():
     print("🧠 YOUR Smart AI - HoloLoom RAG System\n")

@@ -24,8 +24,8 @@ import warnings
 warnings.filterwarnings('ignore')
 
 try:
-    from HoloLoom.semantic_calculus.flow import create_semantic_flow, SemanticFlowState
-    from HoloLoom.semantic_calculus.dimensions import (
+    from hololoom.semantic_calculus.flow import create_semantic_flow, SemanticFlowState
+    from hololoom.semantic_calculus.dimensions import (
         SemanticSpectrum,
         STANDARD_DIMENSIONS,
         EXTENDED_244_DIMENSIONS,

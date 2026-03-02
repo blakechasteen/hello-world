@@ -22,12 +22,12 @@ from datetime import datetime
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.thirdeye.visualizers import (
+from hololoom.thirdeye.visualizers import (
     VisualScene,
     VisualElement,
     VisualizationMode,
 )
-from HoloLoom.thirdeye.collab import (
+from hololoom.thirdeye.collab import (
     CollaborativeScene,
     SceneOperation,
     SceneOperationType,

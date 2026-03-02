@@ -22,14 +22,14 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('.'))
 
-from HoloLoom.nested.ultra_fast import (
+from hololoom.nested.ultra_fast import (
     UltraFastOptimizer,
     AgentType,
     DecisionType,
     route_subquery_fast,
     should_verify_fast
 )
-from HoloLoom.nested.hierarchy import (
+from hololoom.nested.hierarchy import (
     NestedLearningHierarchy,
     NestedLearningContext,
     OptimizationLevel

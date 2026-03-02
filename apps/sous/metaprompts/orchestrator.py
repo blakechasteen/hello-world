@@ -17,7 +17,7 @@ from typing import Dict, List
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from HoloLoom.prompting.metaprompt import create_metaprompt_with_strategy
+    from hololoom.prompting.metaprompt import create_metaprompt_with_strategy
     HOLOLOOM_AVAILABLE = True
 except ImportError:
     print("⚠️  HoloLoom not found. Install with: pip install anthropic ollama")

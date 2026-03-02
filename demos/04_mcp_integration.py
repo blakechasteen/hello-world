@@ -52,7 +52,7 @@ def show_mcp_config():
          "command": "python",
          "args": [
            "-m",
-           "HoloLoom.memory.mcp_server"
+           "hololoom.memory.mcp_server"
          ],
          "env": {
            "PYTHONPATH": "C:\\\\Users\\\\YOUR_USERNAME\\\\Documents\\\\mythRL"
@@ -100,7 +100,7 @@ def show_mcp_config():
     Claude: [Uses store_memory tool]
 
     You: "What do you remember about HoloLoom?"
-    Claude: [Uses search_memories tool with query "HoloLoom"]
+    Claude: [Uses search_memories tool with query "hololoom"]
 
     You: "Let's chat about the architecture"
     Claude: [Uses chat tool, which auto-stores important exchanges]

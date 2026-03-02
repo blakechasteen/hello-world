@@ -17,14 +17,14 @@ import asyncio
 from pathlib import Path
 from datetime import datetime
 
-from HoloLoom.alignment.safety_guardrails import (
+from hololoom.alignment.safety_guardrails import (
     SafetyGuardrails,
     ActionRequest,
     ActionCategory,
     RiskLevel,
     create_guardrails,
 )
-from HoloLoom.alignment.deception_detection import (
+from hololoom.alignment.deception_detection import (
     DeceptionDetector,
     BehavioralProbe,
     ProbeType,
@@ -32,19 +32,19 @@ from HoloLoom.alignment.deception_detection import (
     ActionObservation,
     create_detector,
 )
-from HoloLoom.alignment.instrumental_convergence import (
+from hololoom.alignment.instrumental_convergence import (
     InstrumentalConvergenceGuard,
     ResourceBounds,
     ResourceType,
     create_guard,
 )
-from HoloLoom.alignment.audit_trail import (
+from hololoom.alignment.audit_trail import (
     AuditTrail,
     DecisionType,
     OutcomeType,
     create_audit_trail,
 )
-from HoloLoom.alignment.api_compatibility import patch_alignment_api
+from hololoom.alignment.api_compatibility import patch_alignment_api
 
 
 # =============================================================================

@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.unified_api import HoloLoom
+from hololoom.unified_api import HoloLoom
 
 
 app = FastAPI(title="mythRL Narrative Intelligence API", version="1.0.0")

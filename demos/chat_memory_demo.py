@@ -19,9 +19,9 @@ if sys.platform == 'win32':
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from HoloLoom.config import Config, MemoryBackend
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.protocols.types import Query
+from hololoom.config import Config, MemoryBackend
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.protocols.types import Query
 
 
 async def main():
@@ -41,7 +41,7 @@ async def main():
     print("[2] Creating WeavingOrchestrator...")
 
     # Create some test shards for memory
-    from HoloLoom.protocols.types import MemoryShard
+    from hololoom.protocols.types import MemoryShard
     import uuid
     test_shards = [
         MemoryShard(
@@ -55,7 +55,7 @@ async def main():
         MemoryShard(
             id=str(uuid.uuid4()),
             text="HoloLoom uses a 9-step weaving cycle: Loom Command, Chrono Trigger, Yarn Graph, Resonance Shed, Warp Space, Memory Crawl, Convergence, Tool Execution, Spacetime.",
-            entities=["HoloLoom", "Loom Command", "Chrono Trigger", "Yarn Graph", "Resonance Shed", "Warp Space"],
+            entities=["hololoom", "Loom Command", "Chrono Trigger", "Yarn Graph", "Resonance Shed", "Warp Space"],
             motifs=["weaving", "pipeline"],
             timestamp=0.0,
             metadata={"source": "documentation", "confidence": 0.9}

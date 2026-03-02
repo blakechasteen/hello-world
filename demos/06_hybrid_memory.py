@@ -25,7 +25,7 @@ import os
 # Add repo root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.weaving_orchestrator import WeavingOrchestrator
 
 
 async def main():

@@ -133,9 +133,9 @@ def benchmark_standard_packing(
     target_tokens: int = 1000
 ) -> BenchmarkResult:
     """Benchmark standard 6-signal packing (without INFORMATION_CONTENT)."""
-    from HoloLoom.context_packing import ContextPacker, ContextPackerConfig
-    from HoloLoom.context_packing.config import ImportanceScorerConfig
-    from HoloLoom.context_packing.protocol import ImportanceSignal
+    from hololoom.context_packing import ContextPacker, ContextPackerConfig
+    from hololoom.context_packing.config import ImportanceScorerConfig
+    from hololoom.context_packing.protocol import ImportanceSignal
 
     # Create config with 6-signal weights (no INFORMATION_CONTENT)
     config = ContextPackerConfig.balanced()
@@ -180,7 +180,7 @@ def benchmark_information_packing(
     use_cache: bool = True
 ) -> BenchmarkResult:
     """Benchmark Phase 5 7-signal packing with information budget."""
-    from HoloLoom.context_packing import information_budget_pack
+    from hololoom.context_packing import information_budget_pack
 
     start_time = time.perf_counter()
     nodes, scales, mi_scores = information_budget_pack(

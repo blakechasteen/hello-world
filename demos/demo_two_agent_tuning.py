@@ -9,9 +9,9 @@ based on which one has been most impactful recently.
 
 import asyncio
 import random
-from HoloLoom.tuning import MasterTuningCoordinator
-from HoloLoom.tuning.timeout_tuner import TimeoutTuner
-from HoloLoom.tuning.cache_tuner import CacheTuner, CacheMetrics
+from hololoom.tuning import MasterTuningCoordinator
+from hololoom.tuning.timeout_tuner import TimeoutTuner
+from hololoom.tuning.cache_tuner import CacheTuner, CacheMetrics
 
 
 def print_header(text: str):

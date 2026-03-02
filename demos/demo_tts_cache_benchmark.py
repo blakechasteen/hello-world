@@ -29,7 +29,7 @@ import sys
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.voice.tts_cache import TTSCache, CacheConfig, REDIS_AVAILABLE
+from hololoom.voice.tts_cache import TTSCache, CacheConfig, REDIS_AVAILABLE
 
 
 # ============================================================================

@@ -131,7 +131,7 @@ class CircularImportDetector:
                         parts = line.split()
                         if len(parts) >= 2:
                             module = parts[1]
-                            if module.startswith('HoloLoom'):
+                            if module.startswith('hololoom'):
                                 imports.add(module)
 
                     # import X
@@ -139,7 +139,7 @@ class CircularImportDetector:
                         parts = line.split()
                         if len(parts) >= 2:
                             module = parts[1].split('.')[0]
-                            if module == 'HoloLoom':
+                            if module == 'hololoom':
                                 imports.add(module)
 
         except Exception as e:
@@ -249,7 +249,7 @@ def test_minimal_import(file_path: str):
     print("\n3. Checking for HoloLoom imports...")
     hololoom_imports = []
     for line in content.split('\n'):
-        if 'from HoloLoom' in line or 'import HoloLoom' in line:
+        if 'from hololoom' in line or 'import HoloLoom' in line:
             hololoom_imports.append(line.strip())
 
     if hololoom_imports:
@@ -264,7 +264,7 @@ def test_minimal_import(file_path: str):
 # Heavy Import Finder
 # ============================================================================
 
-def find_heavy_imports(package_name: str = "HoloLoom"):
+def find_heavy_imports(package_name: str = "hololoom"):
     """Find modules that take longest to import."""
     print(f"Profiling imports in {package_name}...")
     print("=" * 80)
@@ -331,7 +331,7 @@ def main():
 
     elif command == "check-circular":
         if len(sys.argv) < 3:
-            package_path = Path("HoloLoom")
+            package_path = Path("hololoom")
         else:
             package_path = Path(sys.argv[2])
 
@@ -356,7 +356,7 @@ def main():
         test_minimal_import(file_path)
 
     elif command == "find-heavy-imports":
-        package = sys.argv[2] if len(sys.argv) >= 3 else "HoloLoom"
+        package = sys.argv[2] if len(sys.argv) >= 3 else "hololoom"
         find_heavy_imports(package)
 
     else:

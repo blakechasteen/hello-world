@@ -18,7 +18,7 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent
 sys.path.insert(0, str(repo_root))
 
-from HoloLoom.rag import SimpleRAG, RAGResult
+from hololoom.rag import SimpleRAG, RAGResult
 
 
 def print_header(text: str):

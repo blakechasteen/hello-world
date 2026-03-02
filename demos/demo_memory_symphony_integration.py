@@ -28,8 +28,8 @@ async def main():
     print()
 
     try:
-        from HoloLoom import HoloLoom
-        from HoloLoom.config import Config
+        from hololoom import HoloLoom
+        from hololoom.config import Config
         print("  >> HoloLoom imported successfully")
         print("  >> This gives us access to all 11 memory systems!")
         print()

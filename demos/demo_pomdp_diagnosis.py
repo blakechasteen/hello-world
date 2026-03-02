@@ -18,9 +18,9 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.causal import CausalDAG, CausalNode, CausalEdge
-from HoloLoom.planning.planner import HierarchicalPlanner, Goal
-from HoloLoom.planning.pomdp import (
+from hololoom.causal import CausalDAG, CausalNode, CausalEdge
+from hololoom.planning.planner import HierarchicalPlanner, Goal
+from hololoom.planning.pomdp import (
     BeliefState, ObservationModel, BeliefUpdater, POMDPPlanner
 )
 import numpy as np

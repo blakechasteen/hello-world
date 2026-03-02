@@ -23,10 +23,10 @@ from datetime import datetime
 # Add HoloLoom to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from HoloLoom.visualization import (
+from hololoom.visualization import (
     Dashboard, Panel, PanelType, PanelSize, LayoutType
 )
-from HoloLoom.visualization.html_renderer import HTMLRenderer
+from hololoom.visualization.html_renderer import HTMLRenderer
 
 
 # Mock Spacetime for demo

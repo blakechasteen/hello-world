@@ -20,13 +20,13 @@ import asyncio
 import logging
 from typing import List
 
-from HoloLoom.config import Config
-from HoloLoom.protocols.types import Query, MemoryShard
-from HoloLoom.weaving_orchestrator import WeavingOrchestrator
-from HoloLoom.rag import SimpleRAG
-from HoloLoom.alignment import SafetyGuardrails
-from HoloLoom.agentic import AgenticOrchestrator, ReasoningMode, create_agentic_orchestrator
-from HoloLoom.memory.awareness_graph import AwarenessGraph
+from hololoom.config import Config
+from hololoom.protocols.types import Query, MemoryShard
+from hololoom.weaving_orchestrator import WeavingOrchestrator
+from hololoom.rag import SimpleRAG
+from hololoom.alignment import SafetyGuardrails
+from hololoom.agentic import AgenticOrchestrator, ReasoningMode, create_agentic_orchestrator
+from hololoom.memory.awareness_graph import AwarenessGraph
 
 # Setup logging
 logging.basicConfig(
@@ -158,7 +158,7 @@ async def demo_3_alignment_epistemic_humility():
     print("DEMO 3: Alignment with Epistemic Humility")
     print("="*80)
 
-    from HoloLoom.alignment.safety_guardrails import ActionRequest, RiskLevel
+    from hololoom.alignment.safety_guardrails import ActionRequest, RiskLevel
 
     guardrails = SafetyGuardrails(enable_human_in_loop=False)
 

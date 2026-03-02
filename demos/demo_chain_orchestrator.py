@@ -20,7 +20,7 @@ import asyncio
 import logging
 from typing import Dict, Any, Optional
 
-from HoloLoom.chaining import (
+from hololoom.chaining import (
     Chain,
     ChainStep,
     StepType,
@@ -28,7 +28,7 @@ from HoloLoom.chaining import (
     ChainPatterns,
     Conditions,
 )
-from HoloLoom.protocols.department import DepartmentRequest, DepartmentResponse, ConfidenceMetadata
+from hololoom.protocols.department import DepartmentRequest, DepartmentResponse, ConfidenceMetadata
 from unittest.mock import AsyncMock, MagicMock
 
 # Configure logging

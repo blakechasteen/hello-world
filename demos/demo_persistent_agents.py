@@ -18,7 +18,7 @@ Scenario:
 import asyncio
 from pathlib import Path
 
-from HoloLoom.agents.persistent_agent import (
+from hololoom.agents.persistent_agent import (
     PersistentBackgroundAgent,
     AgentManager,
 )

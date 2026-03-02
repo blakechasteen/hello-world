@@ -17,7 +17,7 @@ from typing import List, Dict, Tuple
 
 sys.path.insert(0, '.')
 
-from HoloLoom.policy.unified import create_policy, BanditStrategy
+from hololoom.policy.unified import create_policy, BanditStrategy
 
 
 def generate_html_visualization(

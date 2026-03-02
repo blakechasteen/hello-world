@@ -5,8 +5,8 @@ import torch
 # Ensure we can import HoloLoom
 sys.path.append(os.getcwd())
 
-from HoloLoom.eggroll.mirror_core import MirrorCoreAgent
-from HoloLoom.eggroll.architectures import get_model, NeuromorphicNet
+from hololoom.eggroll.mirror_core import MirrorCoreAgent
+from hololoom.eggroll.architectures import get_model, NeuromorphicNet
 
 def test_initialization():
     print("Testing MirrorCoreAgent Initialization with Spiking model...")
@@ -44,14 +44,14 @@ def test_initialization():
 
 def test_integration_flow():
     print("\nTesting EggrollIntegration flow (Mocking Backend)...")
-    from HoloLoom.eggroll.integration import EggrollIntegration
+    from hololoom.eggroll.integration import EggrollIntegration
     
     try:
         # We don't want to actually run the loop, just init
         # But we do want to verify LoomNode creation
         
         # Manually verify LoomNode init signature usage
-        from HoloLoom.eggroll.loom_node import LoomNode
+        from hololoom.eggroll.loom_node import LoomNode
         
         # Simulate passing unexpected kwargs if any
         # The report said "unexpected keyword argument 'worker_id'"
