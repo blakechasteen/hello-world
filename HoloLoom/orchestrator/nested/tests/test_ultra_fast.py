@@ -14,7 +14,7 @@ import torch
 import asyncio
 import time
 
-from HoloLoom.nested.ultra_fast import (
+from HoloLoom.orchestrator.nested.ultra_fast import (
     UltraFastOptimizer,
     WorkingMemory,
     SubQueryRouter,
