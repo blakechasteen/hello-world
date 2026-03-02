@@ -35,7 +35,74 @@ Advanced users can still import internal components:
 # Requires Python 3.7+ for module-level __getattr__
 # ============================================================================
 
+import importlib as _importlib
 import sys as _sys
+
+
+# ============================================================================
+# CORE MODULE REDIRECT: HoloLoom.X → HoloLoom.core.X
+# ============================================================================
+# Core modules now live under HoloLoom/core/.  This meta-path finder
+# transparently redirects old import paths so that
+#   ``from HoloLoom.memory.graph import KG``
+# resolves to ``HoloLoom.core.memory.graph``.
+#
+# Installed BEFORE any other imports to avoid circular dependency issues.
+# ============================================================================
+
+_CORE_MODULES = frozenset({
+    "protocols", "memory", "embedding", "policy", "convergence",
+    "warp", "fabric", "chrono", "resonance", "loom",
+    "recursive", "reflection", "orchestrator",
+})
+
+
+class _CoreRedirectFinder:
+    """Redirect HoloLoom.{core_module} → HoloLoom.core.{core_module}."""
+
+    _PREFIX = "HoloLoom."
+
+    def find_spec(self, fullname, path, target=None):
+        if not fullname.startswith(self._PREFIX):
+            return None
+        rest = fullname[len(self._PREFIX):]
+        top = rest.split(".")[0]
+        if top not in _CORE_MODULES:
+            return None
+        new_name = fullname.replace("HoloLoom.", "HoloLoom.core.", 1)
+        real_spec = _importlib.util.find_spec(new_name)
+        if real_spec is None:
+            return None
+        real_spec.loader = _CoreRedirectLoader(new_name)
+        return _importlib.machinery.ModuleSpec(
+            fullname,
+            _CoreRedirectLoader(new_name),
+            origin=real_spec.origin,
+            is_package=real_spec.submodule_search_locations is not None,
+        )
+
+
+class _CoreRedirectLoader:
+    """Loader that imports the real core module and aliases it."""
+
+    def __init__(self, real_name):
+        self._real_name = real_name
+
+    def create_module(self, spec):
+        return None  # use default
+
+    def exec_module(self, module):
+        real = _importlib.import_module(self._real_name)
+        module.__dict__.update(real.__dict__)
+        module.__path__ = getattr(real, "__path__", [])
+        module.__loader__ = self
+        _sys.modules[module.__name__] = real
+        _sys.modules[self._real_name] = real
+
+
+if not any(isinstance(f, _CoreRedirectFinder) for f in _sys.meta_path):
+    _sys.meta_path.insert(0, _CoreRedirectFinder())
+
 from .__version__ import __version__
 
 __all__ = [

@@ -28,20 +28,20 @@ Public API:
 Created: 2025-11-22 (Elegance Pass Refactoring - Phase 3)
 """
 
-from HoloLoom.orchestrator.core.complexity_detection import (
+from .complexity_detection import (
     assess_complexity_level,
     create_provenance_trace,
 )
-from HoloLoom.orchestrator.core.metrics_collection import (
+from .metrics_collection import (
     get_reflection_metrics,
     get_recursive_learning_stats,
     get_metrics,
 )
-from HoloLoom.orchestrator.core.background_tasks import (
+from .background_tasks import (
     start_background_consolidation,
     spawn_background_task,
 )
-from HoloLoom.orchestrator.core.stat_mech_integration import (
+from .stat_mech_integration import (
     shards_to_microstates,
     macrostates_to_shards,
     background_consolidation_loop,
