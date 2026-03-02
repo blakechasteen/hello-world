@@ -23,10 +23,10 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 import logging
 
-from ..weaving_orchestrator import WeavingOrchestrator
-from ..config import Config
-from ..documentation.types import Query, MemoryShard
-from ..fabric.spacetime import Spacetime
+from HoloLoom.weaving_orchestrator import WeavingOrchestrator
+from HoloLoom.config import Config
+from HoloLoom.documentation.types import Query, MemoryShard
+from HoloLoom.fabric.spacetime import Spacetime
 from .base import BaseDepartment
 from .protocol import (
     DepartmentRequest,

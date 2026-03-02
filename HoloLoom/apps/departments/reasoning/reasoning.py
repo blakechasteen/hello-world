@@ -1143,7 +1143,7 @@ class ReasoningDepartment(BaseDepartment):
 
         # For now, return a mock KG (in practice, fetch from infrastructure department)
         # This will be implemented properly when integrating with infrastructure
-        from ...memory.graph import KG
+        from HoloLoom.memory.graph import KG
 
         self._knowledge_graph = KG()
         return self._knowledge_graph

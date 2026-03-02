@@ -42,3 +42,5 @@ class _DeprecatedFinder:
 
 if not any(isinstance(f, _DeprecatedFinder) for f in sys.meta_path):
     sys.meta_path.insert(0, _DeprecatedFinder())
+
+from HoloLoom.apps.chatops import *  # noqa: E402,F401,F403
