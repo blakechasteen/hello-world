@@ -104,26 +104,29 @@ the protocol that core depends on.
 
 ---
 
-## Future Waves (not yet scoped)
+## Completed Waves
 
-These come after the apps are out:
-
-| Wave | Work | Depends on |
+| Wave | Work | Status |
 |---|---|---|
-| **Wave 2**: Consolidate micro-modules | Merge `neural/`→`policy/`, `math/`→`warp/`, etc. | Wave 1 done |
-| **Wave 3**: Create `core/` | Move 13 core dirs under `core/`, update imports | Wave 2 done |
-| **Wave 4**: `pyproject.toml` extras | Define `pip install hololoom[voice,vision]` | Wave 3 done |
-| **Wave 5**: Lowercase rename | `HoloLoom/` → `hololoom/` | Wave 4 done, breaking change |
+| **Wave 1**: Extract apps | PRs 1-4: protocols, web_dashboard, server+chatops, departments → `apps/` | Done |
+| **Wave 2**: Consolidate micro-modules | `math/`→`warp/`, `neural/`→`policy/`, `clustering/`→`memory/`, `nested/`→`orchestrator/` | Done |
+| **Wave 3**: Create `core/` | 13 core modules under `hololoom/core/`, `sys.meta_path` finder for transparent redirects | Done |
+| **Wave 4**: `pyproject.toml` extras | `pip install hololoom[voice,vision,server,ml,rl,production]` | Done |
+| **Wave 5**: Lowercase rename | `HoloLoom/` → `hololoom/`, 3,178 files updated | Done |
 
 ---
 
-## Already Done
+## All Done
 
 - [x] Codebase review (`CODEBASE_REVIEW.md`)
 - [x] Module taxonomy (`MODULE_TAXONOMY.md`)
 - [x] Reverse import analysis (all 4 targets investigated)
 - [x] Lazy import fix for spinner → web_dashboard coupling
-- [ ] PR 1: Extract department protocol
-- [ ] PR 2: Move web_dashboard
-- [ ] PR 3: Move server + chatops
-- [ ] PR 4: Move departments
+- [x] PR 1: Extract department protocol
+- [x] PR 2: Move web_dashboard
+- [x] PR 3: Move server + chatops
+- [x] PR 4: Move departments
+- [x] Wave 2: Consolidate micro-modules (PRs 5-7, 9; skipped ml/ — not micro)
+- [x] Wave 3: Create core/ directory (13 modules, meta_path finder)
+- [x] Wave 4: pyproject.toml extras (voice, vision, server, ml, rl, production)
+- [x] Wave 5: Lowercase rename (hololoom/, PEP 8)
