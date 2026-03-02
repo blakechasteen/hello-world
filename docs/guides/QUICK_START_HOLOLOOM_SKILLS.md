@@ -1,408 +1,87 @@
-# Quick Start: HoloLoom Skills for Claude Desktop
+# HoloLoom Skills for Claude Desktop
 
-**Get up and running in 5 minutes**
+Setup guide for the SpinningWheel and Loom skills in Claude Desktop.
 
----
+## Skills
 
-## What You're Getting
+| Skill | Purpose | Trigger |
+|-------|---------|---------|
+| **spinning-wheel** | Data ingestion (web, docs, browser history) | "Add this to memory", "Ingest this URL" |
+| **loom** | Memory retrieval and synthesis | "What did I learn about...", "How does X relate to Y" |
 
-**Two Claude Desktop skills that make HoloLoom usable:**
+## Setup
 
-1. **spinning-wheel** - Smart data ingestion (websites, docs, browser history)
-2. **loom** - Intelligent memory retrieval and synthesis
-
----
-
-## Setup Steps
-
-### 1. Verify Skills Are Installed
+### 1. Verify Skills Exist
 
 ```bash
-# Check skills directory
 ls ~/.claude/skills/
-
-# Should show:
-# spinning-wheel/
-# loom/
+# Should show: spinning-wheel/ and loom/
 ```
 
-✅ **Already done!** Skills were created in `~/.claude/skills/`
+### 2. Configure MCP Server
 
-### 2. Update Claude Desktop Config
+See [MCP_SERVER_SETUP.md](MCP_SERVER_SETUP.md) for the full config. The key entry in your Claude Desktop config:
 
-**Location:** This file needs to be copied to Claude Desktop's config location.
-
-**Current location:**
-```
-c:\Users\blake\Documents\mythRL\mcp_server\claude_desktop_config.json
-```
-
-**Claude Desktop looks for config at:**
-```
-Windows: %APPDATA%\Claude\claude_desktop_config.json
-Mac: ~/Library/Application Support/Claude/claude_desktop_config.json
-Linux: ~/.config/Claude/claude_desktop_config.json
-```
-
-**Action needed:**
-
-```bash
-# Windows (PowerShell)
-Copy-Item "c:\Users\blake\Documents\mythRL\mcp_server\claude_desktop_config.json" "$env:APPDATA\Claude\claude_desktop_config.json"
-
-# OR manually copy the file to the correct location
-```
-
-**The config now includes:**
 ```json
 {
   "mcpServers": {
     "HoloLoom-memory": {
       "command": "python",
-      "args": ["-m", "hololoom.memory.mcp_server"],
-      "env": {
-        "PYTHONPATH": "c:\\Users\\blake\\Documents\\mythRL"
-      }
+      "args": ["-m", "hololoom.mcp_tools.server"],
+      "env": { "PYTHONPATH": "/path/to/mythRL" }
     }
   }
 }
 ```
 
-### 3. Ensure Services Are Running
+### 3. Start Backends (Optional)
 
 ```bash
-# Check Neo4j
-neo4j status
-
-# If not running:
-neo4j start
-
-# Check Qdrant (if using Docker)
-docker ps | grep qdrant
-
-# If not running:
-docker run -p 6333:6333 -d qdrant/qdrant
+cd config && docker-compose up -d  # Neo4j + Qdrant
 ```
 
 ### 4. Restart Claude Desktop
 
-**Important:** Claude Desktop only loads skills and MCP config at startup.
+Skills and MCP config only load at startup.
 
-1. Quit Claude Desktop completely
-2. Restart Claude Desktop
-3. Wait for initialization (~5-10 seconds)
-
----
-
-## Test Your Setup
-
-### Test 1: Skills Loaded
-
-**In Claude Desktop:**
+## Test
 
 ```
 You: "What can the spinning-wheel skill do?"
-
 Expected: Claude explains ingestion capabilities
-```
 
-```
-You: "What can the loom skill do?"
+You: "Add this article to memory: https://docs.anthropic.com"
+Expected: SpinningWheel ingests the page, stores chunks
 
-Expected: Claude explains memory retrieval capabilities
-```
-
-### Test 2: MCP Server Connected
-
-```
-You: "Check memory health"
-
-Expected: Claude calls HoloLoom-memory:memory_health
-Shows Neo4j and Qdrant status
-```
-
-### Test 3: Ingest Data (SpinningWheel)
-
-```
-You: "Add this article to memory: https://docs.anthropic.com/en/docs/intro-to-claude"
-
-Expected:
-- SpinningWheel skill activates
-- Scrapes webpage
-- Calls HoloLoom-memory:ingest_webpage
-- Reports: "Stored X chunks from article"
-```
-
-### Test 4: Retrieve Data (Loom)
-
-```
 You: "What did I just learn about Claude?"
-
-Expected:
-- Loom skill activates
-- Calls HoloLoom-memory:recall_memories
-- Returns memories with citations
+Expected: Loom retrieves and synthesizes stored memories
 ```
-
-### Test 5: Conversational Intelligence
-
-```
-You: "How do embeddings work in my memory system?"
-
-Expected:
-- Loom skill assesses complexity
-- Selects appropriate strategy
-- Retrieves relevant memories
-- Synthesizes answer with provenance
-```
-
----
-
-## Understanding HTTP vs STDIO
-
-**Your question: "How do I get an HTTP MCP endpoint? What is it?"**
-
-### Answer: You Don't Need HTTP (STDIO Works!)
-
-**What you have:**
-- HoloLoom MCP server uses **STDIO** (Standard Input/Output)
-- This is the **recommended** way for local MCP servers
-- Claude Desktop launches it as a subprocess
-
-**What STDIO means:**
-```
-Claude Desktop starts:
-  python -m HoloLoom.memory.mcp_server
-
-Claude Desktop communicates via:
-  stdin/stdout (like piping commands)
-
-Benefits:
-  ✅ Simple setup (no ports/networking)
-  ✅ Automatic process management
-  ✅ No security concerns (local only)
-  ✅ Recommended by Anthropic
-```
-
-**When you'd need HTTP:**
-```
-Remote server (access from multiple machines)
-Cloud deployment
-Web-based integrations
-
-For local Claude Desktop use → STDIO is better
-```
-
----
-
-## Architecture at a Glance
-
-```
-You type query in Claude Desktop
-        ↓
-Claude loads appropriate skill (spinning-wheel or loom)
-        ↓
-Skill provides workflow guidance
-        ↓
-Claude calls MCP tools (HoloLoom-memory:*)
-        ↓
-MCP server (STDIO) processes request
-        ↓
-Data stored in Neo4j + Qdrant
-        ↓
-Claude receives result
-        ↓
-Skill formats response
-        ↓
-You see answer with citations
-```
-
----
 
 ## Example Workflows
 
-### Workflow 1: Research a Topic
+### Research a Topic
 
 ```
-1. You: "Ingest all Claude API docs"
-   → SpinningWheel: Recursive crawl (~30 pages)
-
-2. You: "What did I learn about agents?"
-   → Loom: Retrieve with temporal strategy
-
-3. You: "How do agent skills work?"
-   → Loom: Retrieve with semantic strategy
-
-4. You: "Synthesize best practices for agents"
-   → Loom: Fused strategy with synthesis
+1. "Ingest all Claude API docs"         -> SpinningWheel crawls ~30 pages
+2. "What did I learn about agents?"     -> Loom retrieves with temporal strategy
+3. "Synthesize best practices"          -> Loom fused strategy with synthesis
 ```
 
-### Workflow 2: Process Your Notes
+### Process Local Notes
 
 ```
-1. You: "Process ~/org/notes.org"
-   → SpinningWheel: Org-mode chunking
-
-2. You: "What are my notes about mirrorCore?"
-   → Loom: Semantic search
-
-3. You: "Show all my project ideas"
-   → Loom: Pattern matching
+1. "Process ~/notes/project.md"         -> SpinningWheel chunks and stores
+2. "What are my notes about X?"         -> Loom semantic search
 ```
 
-### Workflow 3: Browser History Mining
+## Troubleshooting
 
-```
-1. You: "Ingest my Chrome history from this week about AI"
-   → SpinningWheel: Filter + batch process
+| Issue | Fix |
+|-------|-----|
+| "Skill not found" | Check `~/.claude/skills/` exists, restart Claude Desktop |
+| "MCP server failed" | Test manually: `python -m hololoom.mcp_tools.server` |
+| "Memory unavailable" | Start backends: `cd config && docker-compose up -d` |
 
-2. You: "What domains did I research most?"
-   → Loom: Aggregate statistics
+## Architecture
 
-3. You: "Summarize my AI research"
-   → Loom: Cross-domain synthesis
-```
-
----
-
-## Common Issues
-
-### Issue: "Skill not found"
-
-**Solution:**
-- Check `~/.claude/skills/spinning-wheel/SKILL.md` exists
-- Check `~/.claude/skills/loom/SKILL.md` exists
-- Restart Claude Desktop
-
-### Issue: "MCP server connection failed"
-
-**Solution:**
-```bash
-# Test server manually
-python -m HoloLoom.memory.mcp_server
-
-# Check PYTHONPATH
-echo $PYTHONPATH  # Should include c:\Users\blake\Documents\mythRL
-
-# Verify imports work
-python -c "from hololoom.memory import protocol"
-```
-
-### Issue: "Memory backend unavailable"
-
-**Solution:**
-```bash
-# Check Neo4j
-neo4j status
-# If down: neo4j start
-
-# Check Qdrant
-docker ps | grep qdrant
-# If down: docker run -p 6333:6333 -d qdrant/qdrant
-
-# Then restart Claude Desktop
-```
-
-### Issue: "Tool call failed"
-
-**Solution:**
-- Check tool name is correct (e.g., `HoloLoom-memory:recall_memories`)
-- Check parameters are valid JSON
-- Look for error in Claude Desktop console logs
-
----
-
-## What's Next
-
-### After Basic Testing
-
-1. **Run evaluations** (test cases in `evaluations/`)
-2. **Try complex queries** (synthesis, cross-domain)
-3. **Build your knowledge graph** (ingest docs, notes, research)
-
-### Feature Exploration
-
-- Try different retrieval strategies (temporal, semantic, graph, fused)
-- Use conversational interface (`chat` tool)
-- Process long documents (`process_text` tool)
-- Crawl documentation sites (recursive crawler)
-
-### Advanced Usage
-
-- Customize importance thresholds (conversational filtering)
-- Adjust matryoshka scales (performance tuning)
-- Build custom retrieval patterns
-- Create domain-specific ingestion workflows
-
----
-
-## Getting Help
-
-**Documentation:**
-- [Full Architecture](HOLOLOOM_CLAUDE_DESKTOP_ARCHITECTURE.md)
-- [SpinningWheel README](~/.claude/skills/spinning-wheel/README.md)
-- [Loom SKILL.md](~/.claude/skills/loom/SKILL.md)
-
-**Workflows:**
-- [Website Ingestion](~/.claude/skills/spinning-wheel/workflows/website.md)
-- [Memory Recall](~/.claude/skills/loom/workflows/recall_workflow.md)
-
-**Examples:**
-- [SpinningWheel Examples](~/.claude/skills/spinning-wheel/examples/example_usage.md)
-
----
-
-## Success Checklist
-
-- [ ] Skills directory exists: `~/.claude/skills/`
-- [ ] Config copied to Claude Desktop config location
-- [ ] Neo4j running
-- [ ] Qdrant running
-- [ ] Claude Desktop restarted
-- [ ] Skills respond to "What can you do?"
-- [ ] MCP health check works
-- [ ] Can ingest webpage
-- [ ] Can retrieve memories
-- [ ] Conversational filtering works
-
-**All checked?** You're ready to build your knowledge graph! 🎉
-
----
-
-## Quick Reference
-
-### SpinningWheel Commands
-
-```
-"Add [URL] to memory"
-"Process my [browser] history from [timeframe]"
-"Ingest [file path]"
-"Crawl [documentation site]"
-"Process this text: [paste]"
-```
-
-### Loom Commands
-
-```
-"What did I learn about [topic]?"
-"How does [X] relate to [Y]?"
-"Synthesize insights about [topic]"
-"What was I working on [timeframe]?"
-"Show memories from [domain/source]"
-```
-
-### MCP Tools (Direct)
-
-```
-HoloLoom-memory:recall_memories
-HoloLoom-memory:store_memory
-HoloLoom-memory:process_text
-HoloLoom-memory:ingest_webpage
-HoloLoom-memory:chat
-HoloLoom-memory:memory_health
-HoloLoom-memory:conversation_stats
-```
-
----
-
-**Ready? Restart Claude Desktop and try: "What can spinning-wheel do?"**
+See [HOLOLOOM_CLAUDE_DESKTOP_ARCHITECTURE.md](HOLOLOOM_CLAUDE_DESKTOP_ARCHITECTURE.md) for the full two-skill architecture.
