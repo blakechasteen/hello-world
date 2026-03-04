@@ -117,5 +117,6 @@ pip install hololoom[all]         # everything
 ## Detailed Documentation
 
 See @docs/ for architecture diagrams, API references, and feature guides.
+See @docs/ROADMAP.md for the v1.0 → v2.0 roadmap.
 See @BUILD_PLAN.md for the completed restructuring history.
 See @MODULE_TAXONOMY.md for the full module classification.
