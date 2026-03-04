@@ -124,17 +124,26 @@ Explainability and monitoring for trust.
 
 ### Interface
 
-Cognitive UI — the v2.0 track. This is the long game.
+Cognitive UI — the v2.0 track. Compose existing components into a unified consciousness shell.
 
-| Component | Purpose | Data source |
-|-----------|---------|-------------|
-| Memory Palace | Spatial knowledge navigation (force-directed graph) | KG, AwarenessGraph |
-| Active Thinking | Query input + live reasoning timeline | WeavingOrchestrator |
-| Awareness Metrics | System state sparklines and gauges | `get_metrics()` |
+**Built** (`hololoom-ui/` — Next.js 14 + React 18 + TypeScript + Tailwind monorepo):
 
-Stack: React 18 + TypeScript + D3.js/Three.js. FastAPI WebSocket backend. Existing `visualization/` module (Tufte library, 3,500+ LOC) provides primitives. Spatial computing via existing `spatial/` module.
+| Component | Location | Status |
+|-----------|----------|--------|
+| MemoryGraph | `components/memory/MemoryGraph.tsx` | Canvas force-directed, zoom/pan/select |
+| ChatInterface | `components/ChatInterface.tsx` | 4 reasoning modes, confidence badges |
+| PerformanceOverview | `components/analytics/PerformanceOverview.tsx` | Sparklines, trend indicators |
+| API client + WebSocket | `packages/api-client/` | Pattern subscriptions, auto-reconnect |
+| Design system | `packages/design-system/` | 12 components, 3 themes |
+| WeavingIndicator | Design system | 9-stage visual progress |
 
-Design principles: no modals, no spinners, keyboard-first. Every pixel conveys information.
+**Not built** (4 phases, see `docs/design/COGNITIVE_UI.md`):
+1. Unified three-pane shell (Memory Palace + Active Thinking + Awareness)
+2. Live WebSocket wiring (pages currently use mock data)
+3. Cross-pane interaction (node click → chat, reasoning step → graph highlight)
+4. Enriched backend events (stage details, bandit candidates, motif detection)
+
+Design principles: no modals, no spinners, keyboard-first. Panes communicate through typed reducer context, never import each other.
 
 **Requires**: v1.0.0 stable (needs frozen API to build on).
 
