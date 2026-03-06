@@ -351,6 +351,9 @@ interface Message {
     toolUsed?: string;
     cached?: boolean;
     latencyMs?: number;
+    reasoningMode?: string;
+    safetyLevel?: string;
+    sourcesCount?: number;
   };
 }
 

@@ -56,7 +56,7 @@ export function MemoryTimeline({
           ['Matryoshka', 'Embedding'],
         ][i % 6],
         activation: Math.random(),
-        consolidation: hoursAgo < 1 ? 'recent' : hoursAgo < 24 ? 'consolidating' : 'consolidated',
+        consolidation: (hoursAgo < 1 ? 'recent' : hoursAgo < 24 ? 'consolidating' : 'consolidated') as TimelineMemory['consolidation'],
       };
     }).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 

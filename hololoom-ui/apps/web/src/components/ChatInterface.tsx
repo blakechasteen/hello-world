@@ -26,11 +26,10 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
     messages,
     sendMessage,
     isLoading,
-    currentProgress,
     error,
-    clearError,
-    clearMessages,
+    clearConversation,
   } = useConversation();
+  const [currentProgress, setCurrentProgress] = useState<{ step: number; message?: string; details?: string } | null>(null);
 
   const [input, setInput] = useState('');
   const [selectedMode, setSelectedMode] = useState<ReasoningMode>('direct');
@@ -129,13 +128,13 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
                   )}
                   {message.metadata.reasoningMode && (
                     <ReasoningBadge
-                      mode={message.metadata.reasoningMode}
+                      mode={message.metadata.reasoningMode as ReasoningMode}
                       size="sm"
                     />
                   )}
                   {message.metadata.safetyLevel && (
                     <SafetyBadge
-                      level={message.metadata.safetyLevel}
+                      level={message.metadata.safetyLevel as 'safe' | 'caution' | 'warning' | 'danger'}
                       size="sm"
                     />
                   )}
@@ -194,9 +193,9 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
           <div className="flex items-center justify-between bg-safety-danger/10 border border-safety-danger/30 rounded-lg px-4 py-3">
             <div className="flex items-center gap-2">
               <SafetyBadge level="danger" size="sm" showLabel={false} />
-              <span className="text-sm text-safety-danger">{error}</span>
+              <span className="text-sm text-safety-danger">{error.message}</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={clearError}>
+            <Button variant="ghost" size="sm" onClick={clearConversation}>
               Dismiss
             </Button>
           </div>
@@ -279,7 +278,7 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
             </span>
           </div>
           {messages.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearMessages}>
+            <Button variant="ghost" size="sm" onClick={clearConversation}>
               Clear chat
             </Button>
           )}

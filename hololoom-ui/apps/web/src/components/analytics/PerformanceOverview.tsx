@@ -16,7 +16,7 @@ interface PerformanceOverviewProps {
 }
 
 export function PerformanceOverview({ metrics }: PerformanceOverviewProps) {
-  const cards = [
+  const cards: MetricCardProps[] = [
     {
       label: 'Avg Latency',
       value: `${metrics.avgLatency.toFixed(1)}ms`,

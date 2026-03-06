@@ -12,7 +12,7 @@ import { cn } from '../utils/cn';
 // TYPES
 // =============================================================================
 
-export type CardVariant = 'default' | 'outlined' | 'elevated' | 'cosmic';
+export type CardVariant = 'default' | 'outlined' | 'elevated' | 'cosmic' | 'interactive';
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -55,6 +55,13 @@ const variantStyles: Record<CardVariant, string> = {
     bg-gradient-to-br from-cosmic-void-light to-cosmic-void
     border border-cosmic-nebula/20
     shadow-glow-nebula
+  `,
+  interactive: `
+    bg-bg-elevated
+    border border-border-secondary
+    hover:border-cosmic-nebula/30
+    hover:shadow-md
+    cursor-pointer
   `,
 };
 
@@ -124,7 +131,7 @@ Card.displayName = 'Card';
 // SUBCOMPONENTS
 // =============================================================================
 
-export interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   /** Title text */
   title?: React.ReactNode;
   /** Subtitle text */

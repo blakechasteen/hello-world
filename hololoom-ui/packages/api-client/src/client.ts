@@ -131,7 +131,7 @@ export class HoloLoomClient {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          const errorBody = await response.json().catch(() => ({}));
+          const errorBody = await response.json().catch(() => ({})) as Record<string, unknown>;
 
           if (response.status === 429) {
             const retryAfter = parseInt(response.headers.get('Retry-After') || '60', 10);
@@ -148,10 +148,10 @@ export class HoloLoomClient {
           }
 
           throw new HoloLoomApiError({
-            code: errorBody.code || `HTTP_${response.status}`,
-            message: errorBody.message || response.statusText,
-            details: errorBody.details,
-            traceId: errorBody.traceId,
+            code: String(errorBody.code || `HTTP_${response.status}`),
+            message: String(errorBody.message || response.statusText),
+            details: errorBody.details as Record<string, unknown> | undefined,
+            traceId: errorBody.traceId as string | undefined,
           });
         }
 

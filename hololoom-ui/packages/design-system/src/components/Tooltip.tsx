@@ -14,7 +14,7 @@ import { cn } from '../utils/cn';
 
 export type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 
-export interface TooltipProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface TooltipProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'content'> {
   /** Tooltip content */
   content: React.ReactNode;
   /** Position relative to trigger */

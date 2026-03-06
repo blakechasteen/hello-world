@@ -19,6 +19,7 @@ export type BadgeVariant =
   | 'danger'
   | 'info'
   | 'cosmic'
+  | 'accent'
   | 'outline';
 
 export type BadgeSize = 'sm' | 'md' | 'lg';
@@ -52,6 +53,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   danger: 'bg-safety-danger-bg text-safety-danger border-safety-danger/20',
   info: 'bg-cosmic-aurora/10 text-cosmic-aurora border-cosmic-aurora/20',
   cosmic: 'bg-gradient-to-r from-cosmic-nebula/20 to-cosmic-aurora/20 text-cosmic-starlight border-cosmic-nebula/30',
+  accent: 'bg-cosmic-nebula/10 text-cosmic-nebula border-cosmic-nebula/20',
   outline: 'bg-transparent text-fg-primary border-border-primary',
 };
 

@@ -130,14 +130,14 @@ function SourceCard({ source, index }: { source: Source; index: number }) {
 
       {source.metadata && (
         <div className="flex items-center gap-3 text-xs text-fg-tertiary">
-          {source.metadata.timestamp && (
+          {source.metadata.timestamp != null && (
             <span>
               {formatRelativeTime(source.metadata.timestamp as number)}
             </span>
           )}
-          {source.metadata.accessCount && (
+          {source.metadata.accessCount != null && (
             <span>
-              {source.metadata.accessCount} accesses
+              {String(source.metadata.accessCount)} accesses
             </span>
           )}
         </div>

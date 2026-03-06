@@ -14,8 +14,6 @@ export {
   CardFooter,
   type CardProps,
   type CardHeaderProps,
-  type CardBodyProps,
-  type CardFooterProps,
   type CardVariant,
 } from './Card';
 
@@ -54,6 +52,7 @@ export {
 export {
   ReasoningBadge,
   type ReasoningBadgeProps,
+  type ReasoningBadgeSize,
   type ReasoningMode,
 } from './ReasoningBadge';
 

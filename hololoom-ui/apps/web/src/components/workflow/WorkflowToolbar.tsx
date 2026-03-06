@@ -78,7 +78,7 @@ export function WorkflowToolbar({
             onChange={onLoad}
             className="hidden"
           />
-          <Button variant="secondary" size="sm" as="span" className="cursor-pointer">
+          <Button variant="secondary" size="sm" className="cursor-pointer">
             <UploadIcon />
             <span className="ml-1.5">Load</span>
           </Button>

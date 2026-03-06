@@ -14,9 +14,13 @@ import { cn } from '../utils/cn';
 
 export type ReasoningMode = 'direct' | 'verify' | 'research' | 'plan_execute';
 
+export type ReasoningBadgeSize = 'sm' | 'md' | 'lg';
+
 export interface ReasoningBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Reasoning mode */
   mode: ReasoningMode;
+  /** Size variant */
+  size?: ReasoningBadgeSize;
   /** Show icon */
   showIcon?: boolean;
   /** Show description */
@@ -91,6 +95,7 @@ export const ReasoningBadge = forwardRef<HTMLSpanElement, ReasoningBadgeProps>(
     {
       className,
       mode,
+      size = 'md',
       showIcon = true,
       showDescription = false,
       compact = false,
@@ -99,6 +104,12 @@ export const ReasoningBadge = forwardRef<HTMLSpanElement, ReasoningBadgeProps>(
     ref
   ) => {
     const config = modeConfig[mode];
+
+    const sizeClasses = {
+      sm: 'px-1.5 py-0.5 text-xs',
+      md: 'px-2.5 py-1 text-sm',
+      lg: 'px-3 py-1.5 text-base',
+    };
 
     if (compact) {
       return (
@@ -122,7 +133,8 @@ export const ReasoningBadge = forwardRef<HTMLSpanElement, ReasoningBadgeProps>(
       <span
         ref={ref}
         className={cn(
-          'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium',
+          'inline-flex items-center gap-1.5 rounded-full font-medium',
+          sizeClasses[size],
           config.bgColor,
           config.color,
           className

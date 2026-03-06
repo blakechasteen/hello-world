@@ -12,7 +12,7 @@ import { cn } from '../utils/cn';
 // TYPES
 // =============================================================================
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'cosmic';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'cosmic' | 'default';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -78,6 +78,12 @@ const variantStyles: Record<ButtonVariant, string> = {
     hover:animate-aurora
     shadow-glow-nebula hover:shadow-glow-nebula-intense
     focus-visible:ring-cosmic-aurora
+    active:scale-[0.98]
+  `,
+  default: `
+    bg-interactive-primary text-fg-inverse
+    hover:bg-interactive-primary-hover
+    focus-visible:ring-cosmic-nebula
     active:scale-[0.98]
   `,
 };
