@@ -17,9 +17,11 @@ import type { ReasoningMode } from '@hololoom/api-client';
 
 interface ChatInterfaceProps {
   className?: string;
+  pendingReference?: { nodeId: string; content: string } | null;
+  onClearReference?: () => void;
 }
 
-export function ChatInterface({ className }: ChatInterfaceProps) {
+export function ChatInterface({ className, pendingReference, onClearReference }: ChatInterfaceProps) {
   const {
     messages,
     sendMessage,
@@ -240,6 +242,18 @@ export function ChatInterface({ className }: ChatInterfaceProps) {
             </div>
           )}
         </div>
+
+        {/* Reference pill from graph selection */}
+        {pendingReference && (
+          <div className="flex items-center gap-2 px-4 py-1 text-sm">
+            <span className="px-2 py-0.5 rounded-full bg-bg-tertiary text-cosmic-nebula text-xs">
+              @{pendingReference.content}
+            </span>
+            <button onClick={onClearReference} className="text-fg-tertiary hover:text-fg-secondary text-xs">
+              ×
+            </button>
+          </div>
+        )}
 
         {/* Input form */}
         <form onSubmit={handleSubmit} className="flex gap-2">

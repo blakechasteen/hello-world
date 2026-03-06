@@ -7,6 +7,7 @@ interface MemoryGraphProps {
   searchQuery: string;
   onNodeSelect: (nodeId: string) => void;
   selectedNodeId: string | null;
+  highlightedNodeIds?: Set<string>;
 }
 
 interface GraphNode {
@@ -45,6 +46,7 @@ export function MemoryGraph({
   searchQuery,
   onNodeSelect,
   selectedNodeId,
+  highlightedNodeIds,
 }: MemoryGraphProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -175,6 +177,15 @@ export function MemoryGraph({
           ctx.stroke();
         }
 
+        // Highlight ring (from consciousness shell)
+        if (highlightedNodeIds?.has(node.id) && !isSelected) {
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, nodeRadius + 6, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(99, 102, 241, 0.6)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
         // Hover ring
         if (isHovered && !isSelected) {
           ctx.beginPath();
@@ -201,7 +212,7 @@ export function MemoryGraph({
     };
 
     draw();
-  }, [nodes, edges, transform, selectedNodeId, hoveredNode]);
+  }, [nodes, edges, transform, selectedNodeId, hoveredNode, highlightedNodeIds]);
 
   // Handle mouse events
   const handleMouseDown = (e: React.MouseEvent) => {

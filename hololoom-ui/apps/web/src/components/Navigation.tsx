@@ -14,6 +14,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Chat', href: '/chat' },
   { label: 'Memory', href: '/memory' },
+  { label: 'Consciousness', href: '/consciousness' },
   { label: 'Workflows', href: '/workflow' },
   { label: 'Safety', href: '/safety', badge: 'Live' },
   { label: 'Analytics', href: '/analytics' },
