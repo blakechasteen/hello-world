@@ -47,6 +47,9 @@ class AgentCapability(Enum):
     # General
     GENERAL = "general"            # General-purpose agent
 
+    # Deep Thinking (System 2)
+    DEEP_THINKING = "deep_thinking"  # Slow deliberation on dedicated GPU(s)
+
 
 class MessageType(Enum):
     """Types of inter-agent messages."""

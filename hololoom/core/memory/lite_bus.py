@@ -38,6 +38,8 @@ from .bus_config import (
     ResolutionPath,
 )
 from .bus import MemoryQuery, MemoryItem, MemoryResult
+from .version_log import MemoryDelta
+from .security_screen import SecurityScreenError
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +62,7 @@ class StoredItem:
     access_count: int = 0
     last_accessed: Optional[str] = None
     ttl_seconds: Optional[float] = None  # None = never expires
+    token_estimate: int = 0  # Pre-computed token cost (content + properties)
 
     def is_expired(self) -> bool:
         if self.ttl_seconds is None:
@@ -80,6 +83,7 @@ class StoredItem:
             "importance": self.importance,
             "timestamp": self.timestamp,
             "access_count": self.access_count,
+            "token_estimate": self.token_estimate,
             **self.properties,
         }
 
@@ -97,12 +101,13 @@ class StoredItem:
             "access_count": self.access_count,
             "last_accessed": self.last_accessed,
             "ttl_seconds": self.ttl_seconds,
+            "token_estimate": self.token_estimate,
         }
 
     @classmethod
     def from_snapshot(cls, d: Dict[str, Any]) -> "StoredItem":
         """Reconstruct StoredItem from snapshot dict."""
-        return cls(
+        item = cls(
             id=d["id"],
             content=d["content"],
             memory_type=d["memory_type"],
@@ -114,7 +119,14 @@ class StoredItem:
             access_count=d.get("access_count", 0),
             last_accessed=d.get("last_accessed"),
             ttl_seconds=d.get("ttl_seconds"),
+            token_estimate=d.get("token_estimate", 0),
         )
+        # Backfill for v1 snapshots that lack token_estimate
+        if item.token_estimate == 0:
+            item.token_estimate = max(1, len(item.content) // 4) + sum(
+                len(str(v)) // 4 for v in item.properties.values()
+            )
+        return item
 
 
 # =============================================================================
@@ -133,6 +145,13 @@ class LiteMemoryBus:
         config: Optional[MemoryBusConfig] = None,
         semantic_fn: Optional[Callable] = None,
         default_ttl: Optional[float] = None,
+        retrieval_planner: Optional["RetrievalPlanner"] = None,
+        version_log: Optional["VersionLog"] = None,
+        synthesis_fn: Optional[Callable] = None,
+        security_screen: Optional[Callable] = None,
+        query_cache: Optional["QueryCache"] = None,
+        multi_resolution: Optional["MultiResolutionRenderer"] = None,
+        repo_cache: Optional["RepoCache"] = None,
     ):
         """
         Args:
@@ -140,10 +159,25 @@ class LiteMemoryBus:
             semantic_fn: Optional async fn(query_text, max_results) → List[Dict]
                         for Level 4 semantic search. If None, Level 4 returns [].
             default_ttl: Default TTL in seconds for stored items (None = no expiry)
+            retrieval_planner: Optional planner to short-circuit cascade levels
+                              based on query complexity (SimpleMem idea).
+            version_log: Optional append-only delta log for versioned memory
+                        history with rollback/diff support (Letta/GCC idea).
+            synthesis_fn: Optional async fn(content, candidates) → SynthesisResult
+                         for write-time dedup/merge (SimpleMem idea).
+            security_screen: Optional fn(content) → bool. Returns True if safe,
+                            False to block storage (Repomix idea).
         """
         self.config = config or MemoryBusConfig()
         self.semantic_fn = semantic_fn
         self.default_ttl = default_ttl
+        self._retrieval_planner = retrieval_planner
+        self._version_log = version_log
+        self._synthesis_fn = synthesis_fn
+        self._security_screen = security_screen
+        self._query_cache = query_cache
+        self._multi_resolution = multi_resolution
+        self._repo_cache = repo_cache
 
         # Core stores
         self._items: Dict[str, StoredItem] = {}              # id → StoredItem
@@ -171,6 +205,15 @@ class LiteMemoryBus:
         self._total_tokens_used = 0
         self._initialized = False
 
+        # Generation counter: monotonically increasing on every mutation.
+        # Used by QueryCache/RenderCache to detect staleness.
+        self._generation: int = 0
+
+    @property
+    def generation(self) -> int:
+        """Monotonic counter incremented on every mutation. Cache staleness signal."""
+        return self._generation
+
     # =========================================================================
     # Lifecycle (matches MemoryBus API)
     # =========================================================================
@@ -197,7 +240,7 @@ class LiteMemoryBus:
     # Snapshot Persistence
     # =========================================================================
 
-    SNAPSHOT_VERSION = 1
+    SNAPSHOT_VERSION = 2  # v2: added StoredItem.token_estimate
 
     def to_snapshot_dict(self) -> Dict[str, Any]:
         """Serialize graph state to a dict (items, edges, aliases)."""
@@ -240,6 +283,7 @@ class LiteMemoryBus:
             self._by_type[item.memory_type].append(item_id)
             if item.entity_type:
                 self._by_entity_type[item.entity_type].append(item_id)
+        self._generation += 1
 
     def save_snapshot(self, path: str) -> None:
         """Save full graph state to a JSON file (atomic write)."""
@@ -257,6 +301,12 @@ class LiteMemoryBus:
             sum(len(e) for e in self._edges.values()) // 2,
             len(self._aliases), path,
         )
+        # Also persist version log alongside snapshot
+        if self._version_log:
+            self._version_log.save(p.with_suffix(".deltas.json"))
+        # Also persist repo cache alongside snapshot
+        if self._repo_cache:
+            self._repo_cache.save(str(p) + ".repo_cache.json")
 
     def load_snapshot(self, path: str) -> bool:
         """Load graph state from a JSON snapshot.
@@ -279,6 +329,13 @@ class LiteMemoryBus:
             sum(len(e) for e in self._edges.values()) // 2,
             len(self._aliases), path,
         )
+        # Also load version log if present alongside snapshot
+        if self._version_log:
+            deltas_path = p.with_suffix(".deltas.json")
+            self._version_log.load(deltas_path)
+        # Also load repo cache if present alongside snapshot
+        if self._repo_cache:
+            self._repo_cache.load(str(p) + ".repo_cache.json")
         return True
 
     # =========================================================================
@@ -288,44 +345,52 @@ class LiteMemoryBus:
     async def query(self, q: MemoryQuery) -> MemoryResult:
         """Query through the 4-level resolution cascade."""
         self._gc_expired()
+
+        # Query cache: return cached result if bus state unchanged
+        if self._query_cache:
+            cached = self._query_cache.get(q, self._generation)
+            if cached is not None:
+                self._query_count += 1
+                return cached
+
         loop_id = str(uuid.uuid4())[:8]
+
+        # Retrieval planning: determine how deep to cascade (SimpleMem idea)
+        plan = self._retrieval_planner.plan(q) if self._retrieval_planner else None
+        max_level = plan.max_cascade_level if plan else 4
+
+        def _return(result):
+            self._audit_log(loop_id, q, result)
+            if self._query_cache:
+                self._query_cache.put(q, result, self._generation)
+            return result
 
         # Level 1: EXACT — lookup by entity ID(s)
         if q.entity_ids:
             items = self._query_exact(q.entity_ids)
             if items:
-                result = self._build_result(items, q, ResolutionPath.EXACT)
-                self._audit_log(loop_id, q, result)
-                return result
+                return _return(self._build_result(items, q, ResolutionPath.EXACT))
 
         # Level 2: STRUCTURED — predicate filters
         if q.entity_type or q.memory_type or q.time_after or q.time_before:
             items = self._query_structured(q)
             if items:
-                result = self._build_result(items, q, ResolutionPath.STRUCTURED)
-                self._audit_log(loop_id, q, result)
-                return result
+                return _return(self._build_result(items, q, ResolutionPath.STRUCTURED))
 
         # Level 3: GRAPH — keyword search + adjacency traversal
-        if q.intent:
+        if max_level >= 3 and q.intent:
             items = self._query_graph(q)
             if items:
-                result = self._build_result(items, q, ResolutionPath.GRAPH)
-                self._audit_log(loop_id, q, result)
-                return result
+                return _return(self._build_result(items, q, ResolutionPath.GRAPH))
 
         # Level 4: SEMANTIC — delegate to pluggable function
-        if q.semantic_text or q.intent:
+        if max_level >= 4 and (q.semantic_text or q.intent):
             items = await self._query_semantic(q)
             if items:
-                result = self._build_result(items, q, ResolutionPath.SEMANTIC)
-                self._audit_log(loop_id, q, result)
-                return result
+                return _return(self._build_result(items, q, ResolutionPath.SEMANTIC))
 
         # Nothing matched
-        result = MemoryResult(items=[], query=q, resolution_path="none", token_estimate=0)
-        self._audit_log(loop_id, q, result)
-        return result
+        return _return(MemoryResult(items=[], query=q, resolution_path="none", token_estimate=0))
 
     def _query_exact(self, entity_ids: List[str]) -> List[Dict]:
         """Level 1: Direct ID lookup."""
@@ -415,21 +480,71 @@ class LiteMemoryBus:
 
     async def store(self, item: MemoryItem) -> str:
         """Store a memory item. Returns the item ID."""
+        # Security screen: block sensitive content before any processing (Repomix idea)
+        if self._security_screen and not self._security_screen(item.content):
+            raise SecurityScreenError("content", "Memory content failed security screening")
+
         node_id = str(uuid.uuid4())[:12]
         now = datetime.utcnow().isoformat()
+
+        props = item.properties or {}
+
+        # Write-time synthesis: check for merge/link before storing (SimpleMem idea)
+        _synthesis_result = None
+        if self._synthesis_fn and self.semantic_fn:
+            try:
+                similar = await self.semantic_fn(item.content, 3)
+                if similar:
+                    candidates = [
+                        self._items[s["id"]] for s in similar
+                        if s.get("id") in self._items
+                    ]
+                    if candidates:
+                        _synthesis_result = await self._synthesis_fn(item.content, candidates)
+                        if _synthesis_result.action == "merge_into" and _synthesis_result.target_id:
+                            target = self._items[_synthesis_result.target_id]
+                            old_snapshot = target.to_snapshot()
+                            target.content = _synthesis_result.merged_content or item.content
+                            target.importance = max(target.importance, item.importance)
+                            target.touch()
+                            target.token_estimate = max(1, len(target.content) // 4) + sum(
+                                len(str(v)) // 4 for v in target.properties.values()
+                            )
+                            if self._version_log:
+                                self._version_log.record(MemoryDelta(
+                                    delta_id=str(uuid.uuid4())[:12],
+                                    timestamp=now,
+                                    operation="merge",
+                                    item_id=_synthesis_result.target_id,
+                                    before=old_snapshot,
+                                    after=target.to_snapshot(),
+                                    metadata={"merged_content": item.content[:100]},
+                                ))
+                            return _synthesis_result.target_id
+                        elif _synthesis_result.action == "supersedes" and _synthesis_result.target_id:
+                            self._forget(_synthesis_result.target_id)
+                            # Fall through to normal store
+            except Exception as e:
+                logger.warning("Synthesis failed, storing normally: %s", e)
+                _synthesis_result = None
 
         stored = StoredItem(
             id=node_id,
             content=item.content,
             memory_type=item.memory_type,
-            entity_type=(item.properties or {}).get("type"),
+            entity_type=props.get("type"),
             entity_ids=item.entity_ids or [],
-            properties=item.properties or {},
+            properties=props,
             importance=item.importance,
             timestamp=now,
             ttl_seconds=self.default_ttl,
         )
+        # Pre-compute token estimate (Repomix idea: know your context cost)
+        stored.token_estimate = max(1, len(item.content) // 4) + sum(
+            len(str(v)) // 4 for v in props.values()
+        )
         self._items[node_id] = stored
+        self._generation += 1
         self._by_type[item.memory_type].append(node_id)
         if stored.entity_type:
             self._by_entity_type[stored.entity_type].append(node_id)
@@ -444,6 +559,24 @@ class LiteMemoryBus:
         if item.memory_type == "entity":
             self._aliases[item.content.lower()] = node_id
 
+        # Version log: record store delta (Letta/GCC idea)
+        if self._version_log:
+            self._version_log.record(MemoryDelta(
+                delta_id=str(uuid.uuid4())[:12],
+                timestamp=now,
+                operation="store",
+                item_id=node_id,
+                before=None,
+                after=stored.to_snapshot(),
+                metadata={"memory_type": item.memory_type},
+            ))
+
+        # Post-store synthesis edges: create SIMILAR_TO links (reuses pre-store result)
+        if _synthesis_result and _synthesis_result.action == "link_to" and _synthesis_result.edges:
+            for src, tgt, rel in _synthesis_result.edges:
+                actual_src = node_id if src == "__NEW__" else src
+                await self.store_edge(actual_src, tgt, rel)
+
         self._audit_log(
             str(uuid.uuid4())[:8], None,
             detail={"action": "store", "node_id": node_id, "type": item.memory_type}
@@ -454,6 +587,7 @@ class LiteMemoryBus:
         """Add a relationship between two items."""
         self._edges[source_id].append((target_id, rel_type))
         self._edges[target_id].append((source_id, rel_type))
+        self._generation += 1
 
     # =========================================================================
     # Entity Resolution
@@ -515,7 +649,19 @@ class LiteMemoryBus:
     def _forget(self, item_id: str):
         """Remove a single item and its edges."""
         if item_id in self._items:
+            # Version log: record forget delta before removal
+            if self._version_log:
+                self._version_log.record(MemoryDelta(
+                    delta_id=str(uuid.uuid4())[:12],
+                    timestamp=datetime.utcnow().isoformat(),
+                    operation="forget",
+                    item_id=item_id,
+                    before=self._items[item_id].to_snapshot(),
+                    after=None,
+                    metadata={},
+                ))
             item = self._items.pop(item_id)
+            self._generation += 1
             # Clean up type indices
             if item_id in self._by_type.get(item.memory_type, []):
                 self._by_type[item.memory_type].remove(item_id)
@@ -553,6 +699,7 @@ class LiteMemoryBus:
                     forgotten += 1
 
         if forgotten:
+            self._generation += 1
             logger.info("Decay: forgot %d low-importance items", forgotten)
         return forgotten
 
@@ -598,20 +745,51 @@ class LiteMemoryBus:
     def _build_result(
         self, items: List[Dict], q: MemoryQuery, path: ResolutionPath
     ) -> MemoryResult:
-        """Build result with token budget enforcement."""
-        token_estimate = sum(self._estimate_tokens(item) for item in items)
+        """Build result with token budget enforcement and multi-resolution packing."""
+        budget = self.config.token_budget_absolute
+        token_estimate = sum(self._item_tokens(item) for item in items)
         truncated = False
 
-        if token_estimate > self.config.token_budget_absolute:
+        if token_estimate > budget:
             fitted = []
+            overflow = []
             running = 0
             for item in items:
-                item_tokens = self._estimate_tokens(item)
-                if running + item_tokens > self.config.token_budget_absolute:
+                item_tokens = self._item_tokens(item)
+                if running + item_tokens > budget:
                     truncated = True
-                    break
-                fitted.append(item)
-                running += item_tokens
+                    overflow.append(item)
+                else:
+                    fitted.append(item)
+                    running += item_tokens
+
+            # Multi-resolution: pack overflow items at COMPACT/STUB resolution
+            if self._multi_resolution and overflow:
+                from .multi_resolution import RenderResolution
+                keywords = (q.intent or "").lower().split()
+                for item_dict in overflow:
+                    item_id = item_dict.get("id", "")
+                    importance = item_dict.get("importance", 0.0)
+                    # Score to decide resolution
+                    if keywords:
+                        content = str(item_dict.get("content", "")).lower()
+                        kw_score = sum(1 for kw in keywords if kw in content) / len(keywords)
+                    else:
+                        kw_score = 0.0
+                    effective = 0.6 * importance + 0.4 * kw_score
+                    if effective >= self._multi_resolution.policy.compact_threshold:
+                        cost = self._multi_resolution.policy.compact_max_tokens
+                        res = RenderResolution.COMPACT
+                    else:
+                        cost = self._multi_resolution.policy.stub_max_tokens
+                        res = RenderResolution.STUB
+                    if running + cost <= budget:
+                        item_dict["_render_resolution"] = res.value
+                        fitted.append(item_dict)
+                        running += cost
+                    if running >= budget:
+                        break
+
             items = fitted
             token_estimate = running
 
@@ -628,7 +806,16 @@ class LiteMemoryBus:
         )
 
     @staticmethod
+    def _item_tokens(item: Dict) -> int:
+        """Use pre-computed token_estimate if available, fall back to heuristic."""
+        cached = item.get("token_estimate", 0)
+        if cached > 0:
+            return cached
+        return max(1, len(str(item)) // 4)
+
+    @staticmethod
     def _estimate_tokens(item: Dict) -> int:
+        """Legacy heuristic token estimation. Prefer _item_tokens()."""
         return max(1, len(str(item)) // 4)
 
     # =========================================================================

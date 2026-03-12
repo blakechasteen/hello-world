@@ -106,7 +106,8 @@ class ConfidenceMetadata:
         cls,
         score: float,
         justification: Optional[List[str]] = None,
-        sources: Optional[List[str]] = None
+        sources: Optional[List[str]] = None,
+        uncertainty_sources: Optional[List[str]] = None,
     ) -> 'ConfidenceMetadata':
         """
         Create ConfidenceMetadata from numeric score.
@@ -117,10 +118,14 @@ class ConfidenceMetadata:
             score: Numeric confidence (0-1)
             justification: Why we're confident (optional)
             sources: Where signal came from (optional)
+            uncertainty_sources: Alias for sources (department convention)
 
         Returns:
             ConfidenceMetadata with level determined from score
         """
+        # Allow uncertainty_sources as alias for sources
+        if uncertainty_sources and not sources:
+            sources = uncertainty_sources
         # Determine level from score
         if score < 0.2:
             level = ConfidenceLevel.CRITICAL

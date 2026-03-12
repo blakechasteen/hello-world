@@ -25,6 +25,9 @@ from dataclasses import dataclass, field
 import numpy as np
 import networkx as nx
 
+# Feature flag: embedding drift detection (default OFF, log-only when on)
+_DRIFT_DETECT = os.environ.get("HOLOLOOM_DRIFT_DETECT", "").lower() in ("true", "1", "yes")
+
 # Import only from shared types layer
 # Use the project's shared types module (avoid shadowing stdlib `types`)
 from hololoom.protocols.types import Vector
@@ -627,6 +630,126 @@ def create_embedder(
 
 
 # ============================================================================
+# Embedding Drift Detection (via Information Geometry)
+# ============================================================================
+
+class EmbeddingDriftDetector:
+    """
+    Detects distribution drift in embedding populations using geodesic
+    distance on the Gaussian statistical manifold.
+
+    The embedding distribution at time t is modeled as N(μ_t, σ_t²).
+    Drift = geodesic distance on the Gaussian manifold between the
+    current and reference distributions.
+
+    The Gaussian manifold has constant negative curvature -1/2 (it IS
+    the hyperbolic plane ℍ²). The geodesic distance is:
+
+        d(p₁, p₂) = sqrt(2) · arccosh(1 + (μ₁-μ₂)² / (2σ₁σ₂) + (σ₁²+σ₂²) / (2σ₁σ₂) - 1)
+
+    For high-dimensional embeddings, we project to per-dimension
+    statistics and aggregate.
+    """
+
+    def __init__(self, window_size: int = 100, alarm_threshold: float = 2.0):
+        """
+        Args:
+            window_size: Number of recent embeddings to track
+            alarm_threshold: Geodesic distance threshold for drift alarm
+        """
+        self.window_size = window_size
+        self.alarm_threshold = alarm_threshold
+        self._reference_mu: Optional[np.ndarray] = None
+        self._reference_sigma: Optional[np.ndarray] = None
+        self._buffer: List[np.ndarray] = []
+
+    def observe(self, embedding: np.ndarray) -> Optional[Dict]:
+        """
+        Observe a new embedding. Returns drift report if window is full.
+
+        Args:
+            embedding: Embedding vector
+
+        Returns:
+            Dict with drift metrics, or None if window not yet full
+        """
+        self._buffer.append(embedding)
+
+        if len(self._buffer) < self.window_size:
+            return None
+
+        # Compute current window statistics
+        window = np.array(self._buffer[-self.window_size:])
+        current_mu = np.mean(window, axis=0)
+        current_sigma = np.std(window, axis=0) + 1e-10
+
+        # Set reference on first full window
+        if self._reference_mu is None:
+            self._reference_mu = current_mu.copy()
+            self._reference_sigma = current_sigma.copy()
+            return {"drift": 0.0, "alarm": False, "status": "reference_set"}
+
+        # Geodesic distance per dimension, then aggregate
+        drift = self._gaussian_geodesic_distance(
+            self._reference_mu, self._reference_sigma,
+            current_mu, current_sigma
+        )
+
+        alarm = drift > self.alarm_threshold
+
+        # Trim buffer
+        if len(self._buffer) > self.window_size * 2:
+            self._buffer = self._buffer[-self.window_size:]
+
+        return {
+            "drift": float(drift),
+            "alarm": alarm,
+            "threshold": self.alarm_threshold,
+            "window_size": self.window_size,
+        }
+
+    def reset_reference(self) -> None:
+        """Set current window as new reference (after acknowledged drift)."""
+        if len(self._buffer) >= self.window_size:
+            window = np.array(self._buffer[-self.window_size:])
+            self._reference_mu = np.mean(window, axis=0)
+            self._reference_sigma = np.std(window, axis=0) + 1e-10
+
+    @staticmethod
+    def _gaussian_geodesic_distance(
+        mu1: np.ndarray, sigma1: np.ndarray,
+        mu2: np.ndarray, sigma2: np.ndarray
+    ) -> float:
+        """
+        Geodesic distance on the product of 1D Gaussian manifolds.
+
+        For each dimension i:
+            d_i² = 2·log(σ_i2/σ_i1)² + (μ_i1-μ_i2)²·(1/σ_i1² + 1/σ_i2²)
+
+        Total: d = sqrt(mean(d_i²))
+
+        This is the Fisher-Rao distance, equivalent to the geodesic
+        distance on ℍ² for each dimension.
+        """
+        # Per-dimension squared geodesic distance (simplified closed form)
+        log_ratio = np.log(sigma2 / sigma1)
+        mu_diff = mu1 - mu2
+        inv_var_sum = 1.0 / sigma1**2 + 1.0 / sigma2**2
+
+        d_sq = 2.0 * log_ratio**2 + mu_diff**2 * inv_var_sum
+        return float(np.sqrt(np.mean(d_sq)))
+
+
+def create_drift_detector(
+    window_size: int = 100, alarm_threshold: float = 2.0
+) -> Optional["EmbeddingDriftDetector"]:
+    """Factory: returns EmbeddingDriftDetector if HOLOLOOM_DRIFT_DETECT is enabled, else None."""
+    if not _DRIFT_DETECT:
+        return None
+    return EmbeddingDriftDetector(window_size=window_size, alarm_threshold=alarm_threshold)
+
+
+# ============================================================================
 # Example Usage
 # ============================================================================
 
@@ -657,7 +780,7 @@ if __name__ == "__main__":
         vecs_192 = emb.encode_scales(texts, size=192)
         print(f"  Shape: {vecs_192.shape}")
         
-        # Test spectral features
+        # Test spectral features + drift detection
         print("\n=== Spectral Features Demo ===\n")
         
         # Create sample graph

@@ -24,12 +24,16 @@ Components:
 """
 
 import logging
+import os
 import numpy as np
 from typing import Dict, List, Any, Optional, Tuple
 from enum import Enum
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
+
+# Feature flag: adaptive Bregman blending (default OFF, use hardcoded 0.7)
+_BREGMAN_BLEND = os.environ.get("HOLOLOOM_BREGMAN_BLEND", "").lower() in ("true", "1", "yes")
 
 
 # ============================================================================
@@ -244,6 +248,43 @@ class ConvergenceEngine:
 
         return noisy_probs
 
+    def _bregman_blend_weight(self, neural_probs: np.ndarray,
+                              bandit_priors: np.ndarray) -> float:
+        """
+        Compute adaptive neural/bandit blend weight via Bregman divergence.
+
+        Uses KL divergence (the Bregman divergence of negative entropy)
+        between neural predictions and bandit priors. When they agree
+        (low KL), neural weight is high (~0.8). When they disagree
+        (high KL), bandit weight increases to pull toward empirical evidence.
+
+        Weight = 0.8 · exp(-KL) + 0.2, clamped to [0.3, 0.9].
+
+        Falls back to 0.7 (original hardcoded value) if computation fails.
+
+        Args:
+            neural_probs: Neural network probability distribution
+            bandit_priors: Bandit posterior means
+
+        Returns:
+            Neural weight in [0.3, 0.9]
+        """
+        try:
+            # Safe KL: KL(neural || bandit) = Σ p_i log(p_i / q_i)
+            p = np.clip(neural_probs, 1e-10, None)
+            q = np.clip(bandit_priors, 1e-10, None)
+            # Normalize
+            p = p / np.sum(p)
+            q = q / np.sum(q)
+            kl = float(np.sum(p * np.log(p / q)))
+
+            # Adaptive weight: high agreement → trust neural (0.8+)
+            # high disagreement → shift toward bandit
+            weight = 0.8 * np.exp(-kl) + 0.2
+            return float(np.clip(weight, 0.3, 0.9))
+        except Exception:
+            return 0.7  # Original default
+
     def collapse(
         self,
         neural_probs: np.ndarray,
@@ -298,11 +339,19 @@ class ConvergenceEngine:
             # Blend neural predictions with bandit priors
             bandit_priors = self.bandit.get_priors()
 
-            # Weighted combination (70% neural, 30% bandit)
-            blended = 0.7 * neural_probs + 0.3 * bandit_priors
+            # Blend weight: adaptive (Bregman KL) or hardcoded
+            if _BREGMAN_BLEND:
+                # Adaptive weighting via Bregman divergence:
+                # When neural and bandit agree (low divergence), trust neural more.
+                # When they disagree (high divergence), weight bandit higher
+                # to pull toward empirical evidence.
+                neural_weight = self._bregman_blend_weight(neural_probs, bandit_priors)
+            else:
+                neural_weight = 0.7  # Original hardcoded value
+            blended = neural_weight * neural_probs + (1 - neural_weight) * bandit_priors
             tool_idx = int(np.argmax(blended))
             confidence = float(blended[tool_idx])
-            strategy_info = "bayesian_blend_(0.7neural+0.3bandit)"
+            strategy_info = f"bayesian_blend_({neural_weight:.2f}neural+{1-neural_weight:.2f}bandit)"
 
         elif strategy == CollapseStrategy.PURE_THOMPSON:
             # Pure Thompson: ignore neural network
