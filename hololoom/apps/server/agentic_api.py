@@ -409,6 +409,68 @@ try:
 except ImportError as e:
     logger.warning(f"Failed to mount modular routers: {e}")
 
+# Promptly Chat (conversational endpoint with soul + memory)
+try:
+    from hololoom.apps.server.promptly_chat import router as promptly_chat_router
+    app.include_router(promptly_chat_router)
+    logger.info("Promptly chat router mounted at /promptly/chat")
+except ImportError as e:
+    logger.warning(f"Failed to mount Promptly chat router: {e}")
+
+# Elle Chat (calm operational intelligence with soul + memory)
+try:
+    from hololoom.apps.server.elle_chat import router as elle_chat_router
+    app.include_router(elle_chat_router)
+    logger.info("Elle chat router mounted at /elle/chat")
+except ImportError as e:
+    logger.warning(f"Failed to mount Elle chat router: {e}")
+
+# Department Federation (MCP inter-department routing over HTTP)
+try:
+    from hololoom.apps.server.department_api import router as department_router
+    app.include_router(department_router)
+    logger.info("Department federation router mounted at /departments/*")
+except ImportError as e:
+    logger.warning(f"Failed to mount department federation router: {e}")
+
+# Jenny Generative UI (adaptive visualization runtime)
+try:
+    from hololoom.apps.server.jenny_api import router as jenny_router, shutdown_runtime as jenny_shutdown
+    app.include_router(jenny_router)
+    logger.info("Jenny UI router mounted at /jenny/*")
+except ImportError as e:
+    jenny_shutdown = None
+    logger.warning(f"Failed to mount Jenny router: {e}")
+
+# Spatial WebSocket (Stage 3 — conversation visualization in AR/XR)
+import os as _os
+if _os.environ.get("PROMPTLY_JENNY_SPATIAL", "").lower() == "true":
+    try:
+        from hololoom.apps.server.spatial_websocket import setup_spatial_routes
+        setup_spatial_routes(app)
+        logger.info("Spatial WebSocket mounted at /ws/spatial/{room_id}")
+    except ImportError as e:
+        logger.debug("Spatial WebSocket not available: %s", e)
+
+# Spatial Inspector (Stage 4 — debug consumer for spatial WebSocket)
+from pathlib import Path as _Path
+_inspector_path = _Path(__file__).parent / "static" / "spatial_inspector.html"
+if _inspector_path.exists():
+    from fastapi.responses import HTMLResponse as _HTMLResponse
+
+    @app.get("/spatial/{room_id}/inspector")
+    async def spatial_inspector(room_id: str):
+        """Serve the spatial debug inspector for a given room."""
+        html = _inspector_path.read_text()
+        # Inject the room_id so it auto-connects
+        html = html.replace(
+            'value="default"',
+            f'value="{room_id}"',
+        )
+        return _HTMLResponse(content=html)
+
+    logger.info("Spatial inspector mounted at /spatial/{room_id}/inspector")
+
 
 # Helper function for secure client IP extraction
 def _get_client_ip(request: Request) -> str:
@@ -657,7 +719,13 @@ async def startup():
         from hololoom.memory.backend_factory import create_memory_backend
         from hololoom.config import MemoryBackend
 
-        state.config.memory_backend = MemoryBackend.HYBRID  # Use persistent storage
+        # Use INMEMORY if Neo4j/Qdrant unavailable; override with HOLOLOOM_MEMORY env var
+        import os
+        _mem_override = os.environ.get("HOLOLOOM_MEMORY", "").lower()
+        if _mem_override == "inmemory":
+            state.config.memory_backend = MemoryBackend.INMEMORY
+        else:
+            state.config.memory_backend = MemoryBackend.HYBRID  # Use persistent storage
         state.memory_backend = await create_memory_backend(state.config)
         logger.info(f"Memory backend: {state.config.memory_backend.value}")
 
@@ -704,6 +772,14 @@ async def startup():
 
     # Create orchestrator (lazy init - see get_orchestrator)
 
+    # Initialize UnifiedBus (signal backbone for all execution)
+    try:
+        from hololoom.apps.server.bus_setup import startup_bus
+        await startup_bus()
+        logger.info("UnifiedBus initialized (signal backbone active)")
+    except Exception as e:
+        logger.warning(f"UnifiedBus unavailable: {e}")
+
     # Attach server state to app for routers (W2 SWOT Remediation - Dec 2025)
     app.state.server_state = state
 
@@ -730,6 +806,22 @@ async def shutdown():
             logger.info("SaaS backend closed")
         except Exception as e:
             logger.warning(f"Error closing SaaS backend: {e}")
+
+    # Close Jenny runtime
+    if jenny_shutdown is not None:
+        try:
+            await jenny_shutdown()
+            logger.info("Jenny runtime stopped")
+        except Exception as e:
+            logger.warning(f"Error stopping Jenny runtime: {e}")
+
+    # Stop UnifiedBus
+    try:
+        from hololoom.apps.server.bus_setup import shutdown_bus
+        await shutdown_bus()
+        logger.info("UnifiedBus stopped")
+    except Exception as e:
+        logger.warning(f"Error stopping UnifiedBus: {e}")
 
     # Close orchestrator
     if state.orchestrator:
@@ -845,6 +937,59 @@ def _format_steps(steps: List[Dict]) -> List[ReasoningStepResponse]:
         )
         for step in steps
     ]
+
+
+# ============================================================================
+# Bus Signal Helpers
+# ============================================================================
+
+async def _bus_emit_query(text: str, mode: str, correlation_id: str) -> None:
+    """Emit QUERY signal to bus. Non-blocking, non-fatal."""
+    try:
+        from hololoom.apps.server.bus_setup import get_bus
+        bus = get_bus()
+        if bus is None:
+            return
+        from hololoom.core.bus import Signal, SignalKind, SignalPriority
+        await bus.emit(Signal(
+            kind=SignalKind.QUERY,
+            priority=SignalPriority.NORMAL,
+            source="agentic_api",
+            payload={"text": text[:500], "mode": mode, "speed_weight": 0.5},
+            correlation_id=correlation_id,
+        ))
+    except Exception:
+        pass
+
+
+async def _bus_emit_result(
+    correlation_id: str, success: bool, confidence: float, duration_ms: float,
+    mode: str, steps: int, error: str = "",
+) -> None:
+    """Emit EXECUTION_COMPLETE/FAILED to bus. Strategy selector learns from this."""
+    try:
+        from hololoom.apps.server.bus_setup import get_bus
+        bus = get_bus()
+        if bus is None:
+            return
+        from hololoom.core.bus import Signal, SignalKind, SignalPriority
+        kind = SignalKind.EXECUTION_COMPLETE if success else SignalKind.EXECUTION_FAILED
+        await bus.emit(Signal(
+            kind=kind,
+            priority=SignalPriority.NORMAL,
+            source="agentic_api",
+            payload={
+                "success": success,
+                "confidence": confidence,
+                "duration_ms": duration_ms,
+                "mode": mode,
+                "steps_executed": steps,
+                "error": error,
+            },
+            correlation_id=correlation_id,
+        ))
+    except Exception:
+        pass
 
 
 # ============================================================================
@@ -976,6 +1121,10 @@ async def query_endpoint(request: QueryRequest):
         # END SAFETY GATING
         # ========================================================================
 
+        # Notify bus (strategy selector learns, journal records)
+        correlation_id = f"query-{start_time.isoformat()}"
+        await _bus_emit_query(text_value, request.mode, correlation_id)
+
         # Run agentic reasoning (now safety-approved)
         logger.info(f"Query: {request.text[:100]}... (mode={request.mode})")
         result: AgenticResult = await orchestrator.reason(
@@ -997,6 +1146,16 @@ async def query_endpoint(request: QueryRequest):
         # Track stats
         if state.stats:
             state.stats.record_query(request.mode, latency_ms, success=True)
+
+        # Notify bus — strategy selector backprops from this
+        await _bus_emit_result(
+            correlation_id=correlation_id,
+            success=True,
+            confidence=result.spacetime.confidence,
+            duration_ms=latency_ms,
+            mode=request.mode,
+            steps=len(result.steps_taken),
+        )
 
         # ========================================================================
         # AUDIT TRAIL LOGGING (Alignment Framework Integration)
@@ -1071,6 +1230,14 @@ async def query_endpoint(request: QueryRequest):
             latency_ms = (time() * 1000) - start_time_ms
             state.stats.record_query(request.mode, latency_ms, success=False)
             state.stats.record_error(type(e).__name__)
+
+        # Notify bus of failure — strategy selector learns
+        await _bus_emit_result(
+            correlation_id=correlation_id,
+            success=False, confidence=0.0,
+            duration_ms=(time() * 1000) - start_time_ms,
+            mode=request.mode, steps=0, error=str(e),
+        )
 
         # Return error with retry suggestion
         raise HTTPException(
