@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from hololoom.protocols.recursive_reasoning import (
     RefinementStrategy,
     RefinementStep,
-    StrategyS electorProtocol
+    StrategySelectorProtocol
 )
 
 logger = logging.getLogger(__name__)
