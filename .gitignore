@@ -112,3 +112,29 @@ infra/kubernetes/secrets.yaml
 build/
 reports/
 dist/
+
+# Session artifacts (completion reports, status docs)
+*_COMPLETE.md
+*_COMPLETE_*.md
+*_SUMMARY.md
+*_STATUS*.md
+*_GUIDE.md
+*_ROADMAP_COMPLETE.md
+PROCESSING_STATUS.md
+INTEGRATION_STATUS.md
+
+# SQLite WAL/SHM files
+*.db-shm
+*.db-wal
+
+# Node.js (hololoom-ui)
+node_modules/
+.next/
+.turbo/
+
+# Demo/test data
+demo_*/
+agents_memory/
+hololoom_data/
+cos/
+squad/
