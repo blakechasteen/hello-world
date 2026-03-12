@@ -126,7 +126,17 @@ Explainability and monitoring for trust.
 
 Cognitive UI — the v2.0 track. Compose existing components into a unified consciousness shell.
 
-**Built** (`hololoom-ui/` — Next.js 14 + React 18 + TypeScript + Tailwind monorepo):
+**Jenny Conversation Stages** (complete, Mar 2026):
+
+| Stage | What | Status |
+|-------|------|--------|
+| 1 | Static HTML panels → Matrix per message | Done |
+| 2 | ConversationGraph → evolving TABLE/COMPARISON/GRAPH panels with trajectory detection | Done |
+| 3 | ConversationGraph → positioned 3D overlays via WebSocket (`/ws/spatial/{room_id}`) | Done |
+
+See [Jenny Roadmap](../hololoom/visualization/JENNY_ROADMAP.md) for Stages 4-8 and the intelligence track.
+
+**React frontend** (`hololoom-ui/` — Next.js 14 + React 18 + TypeScript + Tailwind monorepo):
 
 | Component | Location | Status |
 |-----------|----------|--------|

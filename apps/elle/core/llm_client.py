@@ -98,7 +98,7 @@ class AnthropicClient:
     def __init__(
         self,
         api_key: str,
-        model: str = "claude-3-5-sonnet-20241022",
+        model: str = "claude-sonnet-4-5-20250514",
         timeout: int = 30,
     ):
         self.api_key = api_key
@@ -146,32 +146,29 @@ class OllamaClient:
     """
     Ollama LLM client for local model inference.
 
-    Connects to Ollama server (default: http://localhost:11434).
-    Supports any model available in Ollama (llama3.2, mistral, etc).
+    Connects to Ollama server (default: http://127.0.0.1:11434).
+    Supports any model available in Ollama (qwen3.5, llama3.2, etc).
     """
 
     def __init__(
         self,
-        base_url: str = "http://localhost:11434",
-        model: str = "llama3.2:3b",
+        base_url: str = "http://127.0.0.1:11434",
+        model: str = "qwen3.5:9b",
         timeout: int = 120,
     ):
+        import httpx
+
         self.base_url = base_url.rstrip('/')
         self.model = model
         self.timeout = timeout
+        self._client = httpx.Client(base_url=self.base_url, timeout=timeout)
 
         # Verify ollama is available
         try:
-            import requests
-            response = requests.get(f"{self.base_url}/api/tags", timeout=5)
+            response = self._client.get("/api/tags", timeout=5)
             if response.status_code != 200:
                 raise ConnectionError(f"Ollama not responding at {self.base_url}")
-        except ImportError:
-            raise ImportError(
-                "requests package not installed. "
-                "Install with: pip install requests"
-            )
-        except Exception as e:
+        except httpx.ConnectError as e:
             raise ConnectionError(
                 f"Cannot connect to Ollama at {self.base_url}. "
                 f"Make sure Ollama is running: ollama serve. Error: {e}"
@@ -184,56 +181,24 @@ class OllamaClient:
         max_tokens: Optional[int] = None,
         **kwargs
     ) -> str:
-        """
-        Call Ollama API for completion.
-
-        Args:
-            prompt: The prompt to send
-            temperature: Sampling temperature (0-1)
-            max_tokens: Optional token limit (uses num_predict in Ollama)
-            **kwargs: Additional Ollama options
-
-        Returns:
-            Generated text response
-        """
-        import requests
-
-        # Build request payload
+        """Call Ollama generate API."""
         payload = {
             "model": self.model,
             "prompt": prompt,
             "stream": False,
-            "options": {
-                "temperature": temperature,
-            }
+            "options": {"temperature": temperature},
         }
-
-        # Add max tokens if specified
         if max_tokens:
             payload["options"]["num_predict"] = max_tokens
-
-        # Add any additional options
         for key, value in kwargs.items():
             if key not in ("model", "prompt", "stream"):
                 payload["options"][key] = value
 
         try:
-            response = requests.post(
-                f"{self.base_url}/api/generate",
-                json=payload,
-                timeout=self.timeout
-            )
+            response = self._client.post("/api/generate", json=payload)
             response.raise_for_status()
-
-            result = response.json()
-            return result.get("response", "")
-
-        except requests.exceptions.Timeout:
-            raise RuntimeError(
-                f"Ollama request timed out after {self.timeout}s. "
-                "Try increasing timeout or using a smaller model."
-            )
-        except requests.exceptions.RequestException as e:
+            return response.json().get("response", "")
+        except Exception as e:
             raise RuntimeError(f"Ollama API error: {e}")
 
     def chat(
@@ -243,43 +208,24 @@ class OllamaClient:
         max_tokens: Optional[int] = None,
         **kwargs
     ) -> str:
-        """
-        Chat completion with message history.
-
-        Args:
-            messages: List of {"role": "user/assistant/system", "content": "..."}
-            temperature: Sampling temperature
-            max_tokens: Optional token limit
-
-        Returns:
-            Assistant's response text
-        """
-        import requests
-
+        """Chat completion with message history."""
         payload = {
             "model": self.model,
             "messages": messages,
             "stream": False,
-            "options": {
-                "temperature": temperature,
-            }
+            "think": False,  # Disable thinking mode (qwen3.5 puts all output there)
+            "options": {"temperature": temperature},
         }
-
         if max_tokens:
             payload["options"]["num_predict"] = max_tokens
 
         try:
-            response = requests.post(
-                f"{self.base_url}/api/chat",
-                json=payload,
-                timeout=self.timeout
-            )
+            response = self._client.post("/api/chat", json=payload)
             response.raise_for_status()
-
-            result = response.json()
-            return result.get("message", {}).get("content", "")
-
-        except requests.exceptions.RequestException as e:
+            msg = response.json().get("message", {})
+            # Prefer content, fall back to thinking field
+            return msg.get("content", "") or msg.get("thinking", "")
+        except Exception as e:
             raise RuntimeError(f"Ollama chat API error: {e}")
 
 

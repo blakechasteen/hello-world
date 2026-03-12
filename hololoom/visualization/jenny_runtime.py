@@ -566,6 +566,112 @@ class JennyRuntime:
                 "query": query,
             }
 
+    async def compile_spacetime(
+        self,
+        spacetime: Any,
+        features: Optional[Dict[str, Any]] = None,
+        panel_count: int = 4,
+    ) -> List[JennyPanel]:
+        """
+        Compile a Spacetime object into Jenny panels.
+
+        Bridge between the weaving pipeline and Jenny's panel system.
+        Extracts query, response, confidence, and metadata from Spacetime
+        and generates appropriate panels.
+
+        Args:
+            spacetime: Spacetime object from the weaving pipeline
+            features: Optional extracted features from the pipeline
+            panel_count: Maximum number of panels to generate
+
+        Returns:
+            List of JennyPanel objects
+        """
+        if not self._started:
+            await self.start()
+
+        # Extract data from Spacetime
+        query = getattr(spacetime, 'query_text', '') or ''
+        response = getattr(spacetime, 'response', '') or ''
+        confidence = getattr(spacetime, 'confidence', 0.8)
+        tool_used = getattr(spacetime, 'tool_used', '')
+        sources = getattr(spacetime, 'sources_used', [])
+        metadata = getattr(spacetime, 'metadata', {})
+        trace = getattr(spacetime, 'trace', None)
+
+        context = {
+            'response': response,
+            'confidence': confidence,
+            'tool_used': tool_used,
+            'sources': sources,
+            'features': features or {},
+            **metadata,
+        }
+
+        # Build panels based on what the Spacetime contains
+        panels: List[JennyPanel] = []
+
+        # 1. Always: primary response panel
+        primary = await self.ask(query, context={
+            **context,
+            'text': response,
+        })
+        panels.append(primary)
+
+        if len(panels) >= panel_count:
+            return panels
+
+        # 2. Confidence panel if below threshold
+        if confidence < 0.7:
+            conf_panel = await self.ask(
+                query,
+                context={**context, 'value': confidence},
+                panel_type=PanelTypeJenny.CONFIDENCE,
+            )
+            panels.append(conf_panel)
+            if len(panels) >= panel_count:
+                return panels
+
+        # 3. Timeline panel if trace has multiple stages
+        threads_activated = metadata.get('threads_activated', 0)
+        if trace and threads_activated > 2:
+            graph_panel = await self.ask(
+                query,
+                context=context,
+                panel_type=PanelTypeJenny.GRAPH,
+            )
+            panels.append(graph_panel)
+            if len(panels) >= panel_count:
+                return panels
+
+        # 4. Sources panel if multiple sources used
+        if len(sources) > 1:
+            sources_panel = await self.ask(
+                query,
+                context={**context, 'sources': sources},
+                panel_type=PanelTypeJenny.SOURCES,
+            )
+            panels.append(sources_panel)
+            if len(panels) >= panel_count:
+                return panels
+
+        # 5. Metric panel if duration is notable
+        duration_ms = metadata.get('duration_ms', 0)
+        if duration_ms > 100:
+            metric_panel = await self.ask(
+                query,
+                context={
+                    **context,
+                    'value': duration_ms,
+                    'unit': 'ms',
+                    'format': 'number',
+                },
+                panel_type=PanelTypeJenny.METRIC,
+            )
+            panels.append(metric_panel)
+
+        return panels[:panel_count]
+
     async def act(
         self,
         panel: Union[JennyPanel, str],

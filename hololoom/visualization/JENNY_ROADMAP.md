@@ -1,372 +1,188 @@
-# Jenny Roadmap: What's Next + MRF Integration
+# Jenny Roadmap
 
-**Status**: MVP Complete (Week 4), Phase 2.1-2.2 Implemented
-**Date**: December 2025
-**Updated**: December 2025
-
-## Current State (MVP Complete + Phase 2 Progress)
-
-Jenny Week 1-4 MVP delivered:
-- **Week 1**: Compiler + Spec model (JennySpec, QueryAnalysis)
-- **Week 2**: Lifecycle + Renderer (NASCENT→STABLE→DISSOLVING→ARCHIVED)
-- **Week 3**: Actions + Streaming (PIN, DISMISS, WHY, SSE/WebSocket)
-- **Week 4**: Runtime + Orchestrator Integration (JennyRuntime, WeavingOrchestrator)
-
-**Phase 2 Progress** (December 2025):
-- ✅ **2.1**: MRF-Enhanced Panel Generation (jenny_mrf.py)
-- ✅ **2.2**: Thompson Sampling Panel Type Selection (PanelTypeLearner)
-- 🔲 **2.3**: LLM-Based Panel Compilation (planned)
-
-**Test Coverage**: 257 tests passing (239 unit + 18 integration)
-- Jenny unit tests: 198 (original) + 41 (MRF) = 239
-- Jenny integration tests: 18
+**Updated**: 2026-03-11
+**Status**: Foundation complete. Conversation Stages 1-3 done. Spatial WebSocket broadcasting. No consumer yet.
 
 ---
 
-## Phase 2: Intelligence Enhancement (In Progress)
+## Current State
 
-### 2.1 MRF-Enhanced Panel Generation ✅ IMPLEMENTED
+### Foundation (MVP, Dec 2025)
 
-**Status**: ✅ Complete (December 2025)
-**Location**: `HoloLoom/visualization/jenny_mrf.py`
+Jenny is HoloLoom's generative UI runtime. "Disposable pixels, durable decisions."
 
-**Goal**: Use Metaprompt Refinement Framework to generate higher-quality panel content.
+**Panel system**: 13 types (TEXT, CODE, TABLE, GRAPH, CONFIDENCE, TIMELINE, MEMORY_MAP, METRIC, REASONING, SOURCES, ACTIONS, WHY, COMPARISON). Full lifecycle: NASCENT -> STABLE -> DISSOLVING -> ARCHIVED.
 
-**What Was Implemented**:
-- `generate_why_panel_mrf()` - MRF-enhanced WHY panel using ELEGANCE strategy
-- `JennyMRFCompiler` - Full MRF-enhanced compiler extending base JennyCompiler
-- Rule-based fallback when MRF unavailable (graceful degradation)
+**Intelligence**: Thompson Sampling panel type learner (Beta priors, persistence to JSON). MRF-enhanced compilation (ELEGANCE, VERIFY strategies). LLM compiler with fallback chain (LLM -> MRF -> heuristics).
 
-**Integration Points**:
+**Runtime**: JennyRuntime orchestrator, StreamingManager, SpecLedger provenance, 6 actions (PIN, DISMISS, WHY, EXPAND, COPY, EXPORT). 5 renderers: HTML, Terminal, JSON, React (props), AR (overlay spec).
 
-| Jenny Component | MRF Enhancement | Benefit |
-|-----------------|-----------------|---------|
-| `_detect_jenny_panel_type()` | Thompson Sampling learning | Learn optimal panel type per query type |
-| WHY meta-panel | ELEGANCE strategy | Clarity → Simplicity → Beauty |
-| REASONING panel | VERIFY strategy | Accuracy + Completeness + Consistency passes |
-| SOURCES panel | ELEGANCE strategy | Clearer attribution |
-| Query analysis | MRF prompt analysis | Better intent detection |
+**Tests**: 257 passing (239 unit + 18 integration).
 
-**Usage**:
+### Conversation Awareness (Stages 1-3, Mar 2026)
 
-```python
-from HoloLoom.visualization.jenny_mrf import JennyMRFCompiler
+| Stage | What | Key Files |
+|-------|------|-----------|
+| 1 | Static HTML panels -> Matrix per message | `matrix_renderer.py` |
+| 2 | ConversationGraph -> evolving TABLE/COMPARISON/GRAPH panels | `conversation_graph.py`, `conversation_analyzer.py`, `conversation_strategy.py` |
+| 3 | ConversationGraph -> positioned 3D overlays via WebSocket | `spatial_dispatcher.py`, `spatial_websocket.py` |
 
-# Create MRF-enhanced compiler
-compiler = JennyMRFCompiler(enable_learning=True)
+**Architecture after Stage 3**:
 
-# Compile with MRF enhancement
-specs = await compiler.compile(spacetime)
-
-# After user interaction (pin/dismiss), update learning
-compiler.update_learning("factual", PanelTypeJenny.TEXT, success=True, confidence=0.9)
-
-# View learning statistics
-stats = compiler.get_learning_statistics()
+```
+User message -> Ollama -> response
+                |
+        ConversationGraph.add_turn()
+                |
+        +-------+-------+
+        |               |
+   Stage 2:         Stage 3:
+   Trajectory ->    Trajectory ->
+   panel type ->    layout algo ->
+   Matrix HTML      spatial scene ->
+                    /ws/spatial/{room_id}
 ```
 
-### 2.2 Thompson Sampling for Panel Type Selection ✅ IMPLEMENTED
+**Key types**: `Trajectory` enum (EXPLORING, COMPARING, DEEP_DIVE, DECIDING, WRAPPING_UP). `ConversationGraph` with 4 output methods: `to_table_spec()`, `to_graph_spec()`, `to_comparison_spec()`, `to_spatial_overlay()`.
 
-**Status**: ✅ Complete (December 2025)
-**Location**: `HoloLoom/visualization/jenny_mrf.py`
-
-**Goal**: Learn which panel types work best for different query types.
-
-**What Was Implemented**:
-- `PanelTypePrior` - Beta distribution wrapper with sample/update methods
-- `PanelTypeLearner` - Full Thompson Sampling learner with persistence
-- Exploration bonus for encouraging diversity
-- State persistence to disk (JSON format)
-- Complete statistics and history tracking
-
-**Key Features**:
-- Beta(α, β) priors per (query_type, panel_type) pair
-- Success: α ← α + confidence
-- Failure: β ← β + (1 - confidence)
-- Expected value: E[X] = α / (α + β)
-- Exploration bonus parameter for forced diversity
-
-**Usage**:
-
-```python
-from HoloLoom.visualization.jenny_mrf import PanelTypeLearner, PanelTypeJenny
-
-# Create learner with persistence
-learner = PanelTypeLearner(persist_path="./jenny_learning.json")
-
-# Select panel type using Thompson Sampling
-candidates = [PanelTypeJenny.TEXT, PanelTypeJenny.CONFIDENCE, PanelTypeJenny.GRAPH]
-selected = learner.select("factual", candidates)
-
-# Update based on user interaction
-learner.update("factual", selected, success=True, confidence=0.85)
-
-# Get best panel type (without sampling)
-best = learner.get_best_panel_type("factual")
-
-# View statistics
-stats = learner.get_statistics()
-print(f"Total selections: {stats['total_selections']}")
-```
-
-**Tests**: 41 unit tests covering:
-- Prior initialization and updates
-- Thompson Sampling selection
-- Learning improves over time
-- Exploration bonus
-- State persistence
-- Graceful handling of corrupted state
-
-### 2.3 LLM-Based Panel Compilation
-
-**Goal**: Replace rule-based panel generation with LLM-generated content.
-
-**Current State**: Heuristic-based (regex patterns, threshold checks)
-**Target State**: LLM understands intent and generates appropriate visualization
-
-**Implementation**:
-
-```python
-# In jenny_compiler.py
-class LLMJennyCompiler(JennyCompiler):
-    """LLM-based panel compiler using MRF."""
-
-    async def compile_with_llm(self, spacetime, llm_provider: str = "claude") -> JennySpec:
-        """Use LLM to determine best panel type and content."""
-
-        # Build MRF-enhanced prompt for panel selection
-        prompt = await self.mrf.refine_prompt(
-            original_prompt=f"""
-            Analyze this query response and determine the best visualization:
-
-            Query: {spacetime.trace.query if hasattr(spacetime.trace, 'query') else 'unknown'}
-            Response: {spacetime.response[:500]}
-            Confidence: {spacetime.confidence}
-            Threads: {len(getattr(spacetime.trace, 'threads_activated', []))}
-            Duration: {getattr(spacetime.trace, 'duration_ms', 0)}ms
-
-            Available panel types: TEXT, CODE, GRAPH, CONFIDENCE, TIMELINE, METRIC, REASONING, SOURCES
-
-            Output JSON: {{"panel_type": "...", "reason": "...", "content_structure": {{...}}}}
-            """,
-            strategy=RefinementStrategyType.VERIFY
-        )
-
-        # Call LLM
-        result = await self.llm_client.generate(prompt["enhanced_prompt"])
-
-        return self._parse_llm_response(result)
-```
+**Feature flags**: `PROMPTLY_JENNY_CONVERSATION=true` (Stage 2), `PROMPTLY_JENNY_SPATIAL=true` (Stage 3).
 
 ---
 
-## Phase 3: Advanced Renderers
+## Built But Not Wired
 
-### 3.1 React Component Renderer
+Things that exist in the codebase but aren't connected to the live conversation pipeline:
 
-**Goal**: Generate React component props instead of static HTML.
-
-```python
-class ReactRenderer(JennyRendererBase):
-    """Render Jenny panels as React component props."""
-
-    @property
-    def supported_targets(self) -> List[RenderTarget]:
-        return [RenderTarget.REACT]
-
-    def render(self, spec: JennySpec) -> str:
-        """Generate React component JSON props."""
-        return json.dumps({
-            "component": f"Jenny{spec.panel_type.value.title()}Panel",
-            "props": {
-                "id": spec.spec_id,
-                "lifecycle": spec.lifecycle.value,
-                "content": spec.content,
-                "actions": [a.__dict__ for a in spec.actions],
-                "position": spec.position,
-                "size": spec.size.value,
-            }
-        })
-```
-
-### 3.2 AR Spatial Renderer
-
-**Goal**: Generate spatial overlays for AR glasses.
-
-```python
-class ARRenderer(JennyRendererBase):
-    """Render Jenny panels as AR spatial overlays."""
-
-    @property
-    def supported_targets(self) -> List[RenderTarget]:
-        return [RenderTarget.AR]
-
-    def render(self, spec: JennySpec) -> str:
-        """Generate AR overlay specification."""
-        return json.dumps({
-            "overlay_type": "floating_panel",
-            "anchor": "head_locked",  # Or world_locked for persistent panels
-            "distance_m": 1.5,  # 1.5m from user
-            "size": self._map_size_to_meters(spec.size),
-            "content": self._render_ar_content(spec),
-            "gestures": ["pinch_to_pin", "swipe_to_dismiss"],
-        })
-```
+| Capability | Where | Gap |
+|-----------|-------|-----|
+| Thompson Sampling for conversation panels | `jenny_mrf.py` | Strategy uses static `_TRAJECTORY_PANEL` dict, not learned selection |
+| LLM-based panel compilation | `jenny_llm_compiler.py` | Exists but not called from promptly_chat |
+| 4 unused layout algorithms | `knowledge_overlay.py` (CIRCULAR, CLUSTER, SPATIAL, MEMORY_PALACE) | Dispatcher maps to 4 of 8 |
+| 7 overlay styles beyond CARD | `knowledge_overlay.py` (SPHERE, HOLOGRAM, GLOW, CONSTELLATION...) | All overlays default to CARD |
+| 5 visibility modes | `knowledge_overlay.py` (PROXIMITY, GAZE, GESTURE, CONTEXT, QUERY) | All overlays always visible |
+| 6 edge styles beyond LINE | `knowledge_overlay.py` (ARROW, BEAM, PARTICLES, DASHED, GRADIENT, PULSING) | All edges use default |
+| Memory Palace rooms | `spatial/memory_palace.py` | Not connected to conversation sessions |
+| Streaming panel updates | `jenny_streaming.py` (StreamingManager, DataSourceProtocol) | In-memory callbacks, no WS bridge |
+| React components | `hololoom-ui/` (MemoryGraph, ChatInterface, PerformanceOverview) | Mock data, no WebSocket connection |
+| Panel accessibility | `jenny_accessibility.py` | Exists but not integrated into renderers |
+| WebSocket API client | `packages/api-client/` (useProgressSubscription, pattern subscriptions) | Built for `/ws/progress` which doesn't exist yet |
 
 ---
 
-## Phase 4: Collaborative Panels
+## Future Stages
 
-### 4.1 Multi-User Shared Panels
+Each stage independently valuable. Each has a clear "you can stop here" boundary.
 
-**Goal**: Panels that multiple users can see and interact with simultaneously.
+### Stage 4: First Spatial Consumer
 
-**Features**:
-- Shared lifecycle across sessions
-- Conflict resolution for simultaneous actions
-- Real-time synchronization via WebSocket
-- User attribution for actions
+The spatial WebSocket broadcasts to nobody. Stage 4 gives it a consumer.
 
-### 4.2 Panel Templates
+**Option A: Debug Inspector** (~100 LOC)
+- Standalone HTML page with vanilla JS
+- Connects to `/ws/spatial/{room_id}`, renders as 2D force graph (canvas)
+- No build step, just `<script>` tag
+- Serves from `GET /spatial/{room_id}/inspector`
 
-**Goal**: User-defined panel templates for domain-specific visualizations.
+**Option B: React Three.js Component** (~300 LOC)
+- `SpatialScene.tsx` in `hololoom-ui/`
+- `@react-three/fiber` + `@react-three/drei`
+- Floating cards in 3D, edges as lines, orbit controls, click-to-select
+- Connects via existing `useProgressSubscription` hook
 
-```python
-@dataclass(frozen=True)
-class PanelTemplate:
-    """User-defined panel template."""
-    template_id: str
-    name: str
-    panel_type: PanelTypeJenny
-    layout: Dict[str, Any]
-    default_actions: List[JennyAction]
-    css_overrides: Optional[str] = None
-```
+**Recommendation**: A first (validates pipeline), then B (real UI).
 
----
+### Stage 5: Learned Conversation Panels
 
-## Phase 5: Accessibility & Animation
+Currently `_TRAJECTORY_PANEL` is a static dict. Make it adaptive.
 
-### 5.1 Full ARIA Support
+- Wire `PanelTypeLearner` into `ConversationVisualizationStrategy`
+- User signals: pin = success, dismiss = failure (already tracked by SpecLedger)
+- Trajectory becomes a "query type" for the bandit: `Trajectory.EXPLORING` -> which panel type works best?
+- Fallback to static dict if learner has < 10 observations per trajectory
+- New Trajectory members: `TEACHING` (one-sided explanation), `BRAINSTORMING` (rapid-fire ideas)
+- Feature flag: `PROMPTLY_JENNY_LEARNED=true`
 
-**Goal**: Screen reader optimization for all panel types.
+### Stage 6: Rich Spatial Vocabulary
 
-- Semantic HTML structure
-- ARIA live regions for streaming updates
-- Keyboard navigation
-- Focus management during transitions
+The spatial module has 8 overlay styles, 7 edge styles, 6 visibility modes. Stage 3 uses one of each.
 
-### 5.2 Animation System
+**Overlay style mapping** (node metadata -> style):
+- High importance (>0.8) -> GLOW (attention-drawing)
+- Entities (@mentions, URLs) -> HOLOGRAM (data-like)
+- Clusters of co-occurring topics -> CONSTELLATION
+- Default -> CARD
 
-**Goal**: Smooth transitions between lifecycle states.
+**Edge style mapping** (relationship -> style):
+- `co_occurs` -> LINE (neutral)
+- `compared_with` -> GRADIENT (tension)
+- `leads_to` -> ARROW (directionality)
+- Recent (last 2 turns) -> PULSING
 
-```css
-/* Lifecycle animations */
-.jenny-panel[data-lifecycle="nascent"] {
-    animation: spawn-in 300ms ease-out;
-}
+**Visibility modes** (trajectory-dependent):
+- `exploring` -> all ALWAYS (overview)
+- `deep_dive` -> center ALWAYS, periphery PROXIMITY (focus)
+- `wrapping_up` -> all CONTEXT (fade out)
 
-.jenny-panel[data-lifecycle="dissolving"] {
-    animation: dissolve-out 300ms ease-in;
-}
+~50 lines of mapping logic in `SpatialSceneDispatcher._rebuild_scene()`.
 
-@keyframes spawn-in {
-    from { opacity: 0; transform: scale(0.8) translateY(20px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
+### Stage 7: Memory Palace Sessions
 
-@keyframes dissolve-out {
-    from { opacity: 1; transform: scale(1); }
-    to { opacity: 0; transform: scale(0.9); filter: blur(4px); }
-}
-```
+Map conversation sessions to spatial rooms.
 
----
+- Each room_id gets a `MemoryPalaceRoom`
+- Trajectory determines room theme: `exploring` = open atrium, `deep_dive` = study, `comparing` = courtroom, `deciding` = war room
+- Topics become placed objects, not floating cards
+- Session boundaries (15-min gap) create new rooms connected by doorways
+- Walking between rooms = browsing conversation history
 
-## Implementation Timeline
+**Depends on**: Stage 6 (rich vocabulary makes spatial immersion worth it).
 
-| Phase | Features | Estimated Effort |
-|-------|----------|------------------|
-| **2.1** | MRF-Enhanced Panel Generation | 2-3 days |
-| **2.2** | Thompson Sampling Learning | 1-2 days |
-| **2.3** | LLM-Based Compilation | 3-4 days |
-| **3.1** | React Renderer | 2-3 days |
-| **3.2** | AR Renderer | 4-5 days |
-| **4.1** | Multi-User Panels | 1 week |
-| **4.2** | Panel Templates | 2-3 days |
-| **5.1** | Accessibility | 2-3 days |
-| **5.2** | Animation System | 1-2 days |
+### Stage 8: Cross-Pane Interaction
 
-**Total Phase 2-5**: ~4-5 weeks
+The v2.0 bridge. Jenny's conversation awareness meets the Cognitive UI vision.
+
+- Click a spatial node -> reference it in chat ("Tell me more about {topic}")
+- Reasoning step in chat -> highlight related nodes in spatial scene
+- Trajectory change -> animate layout transition (FORCE_DIRECTED morphs to RADIAL)
+- Panel lifecycle events -> spatial overlay lifecycle (NASCENT = fade-in)
+
+**Requires**: Stage 4 (spatial consumer) + WeavingContext state bus from `docs/design/COGNITIVE_UI.md`. This bridges Jenny and the consciousness shell.
+
+**Key constraint**: v2.0 Cognitive Interface requires v1.0.0 stable (frozen API). Cross-pane interaction is the first concrete deliverable of that track.
 
 ---
 
-## Priority Recommendations
+## Intelligence Track
 
-### High Priority (Phase 2 - Start Now)
+Parallel to the spatial stages. Improve conversation understanding quality.
 
-1. **MRF Integration for WHY panels** - Immediate quality improvement
-2. **Thompson Sampling for panel selection** - Self-improving system
-3. **LLM-based query analysis** - Better intent detection
-
-### Medium Priority (Phase 3)
-
-4. **React Renderer** - Modern web app integration
-5. **Accessibility** - WCAG compliance
-
-### Lower Priority (Phase 4-5)
-
-6. **AR Renderer** - Future-proofing
-7. **Multi-User Panels** - Enterprise features
-8. **Animation System** - Polish
+| Feature | What | Effort |
+|---------|------|--------|
+| LLM topic extraction | Replace regex with Ollama call. Keep regex as <100ms fallback. | 1 day |
+| Sentiment trajectory | Detect emotional arc (curious -> frustrated -> satisfied). New metadata on ConversationNode. | 1 day |
+| Cross-room patterns | Topics that recur across rooms -> "you always ask about X". Lightweight cross-room index. | 2 days |
+| Comparison depth | When COMPARING, extract pro/con lists per topic. Richer COMPARISON panels. | 1 day |
+| Decision detection | When DECIDING and user states a choice, mark the decision. New `DECIDED` trajectory? | 1 day |
 
 ---
 
-## Quick Win: MRF WHY Panel Integration
+## Metrics
 
-**Immediate implementation** (can start today):
-
-```python
-# In jenny_compiler.py - enhance _generate_why_panel()
-async def _generate_why_panel_mrf(self, spec: JennySpec, spacetime: Spacetime) -> Dict[str, Any]:
-    """Generate WHY panel content using MRF for better explanations."""
-
-    from HoloLoom.prompting import UnifiedMRF
-
-    mrf = UnifiedMRF()
-
-    # Use ELEGANCE strategy for clear, simple, beautiful explanations
-    enhanced = await mrf.refine_prompt(
-        original_prompt=f"""
-        Explain why this UI was chosen:
-        - Panel Type: {spec.panel_type.value}
-        - Confidence: {spacetime.confidence}
-        - Threads: {len(getattr(spacetime.trace, 'threads_activated', []))}
-        - Response length: {len(spacetime.response)} chars
-        """,
-        strategy=RefinementStrategyType.ELEGANCE,
-        context={"audience": "end_user", "tone": "helpful"}
-    )
-
-    return {
-        "explanation": enhanced["enhanced_prompt"],
-        "factors": self._extract_decision_factors(spec, spacetime),
-        "alternatives": self._list_alternative_panels(spec.panel_type),
-    }
-```
+| Metric | Current | Target | How |
+|--------|---------|--------|-----|
+| Topic extraction quality | Regex (4 patterns) | LLM-upgraded | A/B test on 100 conversations |
+| Trajectory accuracy | Heuristic (weight distribution) | Learned + heuristic | User feedback |
+| Panel usefulness | Unknown | 30%+ pin rate | SpecLedger analytics |
+| Spatial scene latency | ~5ms rebuild | <10ms | Monitor as node count grows |
+| WebSocket delivery | Full state per update | Delta patches if >100 overlays | Not needed until graph exceeds 50-node cap |
 
 ---
 
-## Success Metrics
+## Sources
 
-| Metric | Current | Target | How to Measure |
-|--------|---------|--------|----------------|
-| Panel selection accuracy | 75% (heuristic) | 90%+ (learned) | User satisfaction surveys |
-| WHY panel helpfulness | N/A | 4.5/5 rating | In-panel feedback |
-| Time to first panel | ~150ms | ~100ms | Trace metrics |
-| Panel pin rate | 15% | 30% | SpecLedger analytics |
-| Session replay usage | N/A | 20% of sessions | SpecLedger analytics |
-
----
-
-*Last Updated: December 2025*
+- [Conversation graph](conversation_graph.py) -- Trajectory enum, 4 output methods
+- [Spatial dispatcher](spatial_dispatcher.py) -- ConversationGraph -> KnowledgeOverlayManager bridge
+- [Spatial WebSocket](../apps/server/spatial_websocket.py) -- Room-scoped scene broadcasting
+- [Knowledge overlay manager](../spatial/knowledge_overlay.py) -- 8 layouts, 8 styles, 6 visibility modes
+- [Cognitive UI design](../docs/design/COGNITIVE_UI.md) -- Three-pane consciousness shell (v2.0)
+- [Main roadmap](../docs/ROADMAP.md) -- v1.0 -> v2.0 milestones

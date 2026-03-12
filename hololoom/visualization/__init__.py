@@ -27,7 +27,11 @@ from .widget_builder import WidgetBuilder, DataAnalyzer, InsightGenerator
 
 # Legacy/Advanced APIs (prefer auto() instead)
 from .html_renderer import HTMLRenderer
-from .orchestrator_integration import DashboardOrchestrator, weave_and_visualize
+try:
+    from .orchestrator_integration import DashboardOrchestrator, weave_and_visualize
+except ImportError:
+    DashboardOrchestrator = None  # type: ignore[assignment,misc]
+    weave_and_visualize = None  # type: ignore[assignment]
 
 # Jenny Generative UI Runtime (December 2025 - MVP Week 1)
 # Philosophy: "Disposable pixels, durable decisions"
@@ -103,6 +107,11 @@ from .jenny_runtime import (
     create_runtime,
     jenny_session,
 )
+
+# Jenny Conversation Awareness (Stage 2+3)
+from .conversation_graph import ConversationGraph, ConversationNode, ConversationEdge, Trajectory
+from .conversation_analyzer import ConversationAnalyzer
+from .conversation_strategy import ConversationVisualizationStrategy
 
 # Jenny MRF Integration (December 2025 - Phase B+C)
 # MRF-enhanced compilation with Thompson Sampling learning
@@ -220,6 +229,14 @@ __all__ = [
     'ACTION_LEARNING_MAP',
     'create_mrf_compiler',
     'create_learning_callback',
+
+    # Jenny Conversation Awareness (Stage 2+3)
+    'ConversationGraph',
+    'ConversationNode',
+    'ConversationEdge',
+    'Trajectory',
+    'ConversationAnalyzer',
+    'ConversationVisualizationStrategy',
 
     # Jenny LLM Integration (Phase A)
     'LLMJennyCompiler',

@@ -212,23 +212,30 @@ class EllePolicy:
     def _parse_response(self, response_text: str) -> ElleAction:
         """
         Parse LLM response into ElleAction.
-        
-        Expects JSON matching the format in base_prompt.txt.
+
+        Tries JSON first (matching base_prompt.txt format).
+        Falls back to treating plain text as a consulting utterance —
+        local models (qwen, llama) don't always follow JSON format.
         """
-        
+
         try:
-            # Try to extract JSON from response
-            # (LLMs sometimes wrap it in markdown or explanation)
             json_str = self._extract_json(response_text)
             data = json.loads(json_str)
-            
-            # Parse into ElleAction
             return self._json_to_action(data)
-            
-        except (json.JSONDecodeError, KeyError) as e:
-            self.logger.error(f"Failed to parse response: {e}")
-            self.logger.debug(f"Raw response: {response_text}")
-            raise PolicyError(f"Invalid response format: {e}")
+        except (json.JSONDecodeError, KeyError, PolicyError):
+            pass
+
+        # Fallback: treat raw text as a plain utterance
+        text = response_text.strip()
+        if text:
+            self.logger.debug("No JSON in response, using plain text fallback")
+            return ElleAction(
+                mode=ElleMode.CONSULTING,
+                utterance=text,
+                reasoning="plain-text fallback (model did not return JSON)",
+            )
+
+        raise PolicyError("Empty response from LLM")
     
     def _extract_json(self, text: str) -> str:
         """Extract JSON from potentially wrapped response."""

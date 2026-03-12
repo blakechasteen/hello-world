@@ -440,7 +440,7 @@ def create_llm_client(
             )
         return AnthropicClient(
             api_key=api_key,
-            model=model or "claude-3-5-sonnet-20241022",
+            model=model or "claude-sonnet-4-5-20250514",
         )
 
     elif provider_lower == "openai":
@@ -457,7 +457,7 @@ def create_llm_client(
 
     elif provider_lower in ("ollama", "local"):
         return OllamaClient(
-            model=model or "llama3.2:3b",
+            model=model or "qwen3.5:9b",
         )
 
     else:
@@ -521,8 +521,8 @@ Environment variables:
     parser.add_argument(
         "--provider",
         choices=["anthropic", "openai", "ollama"],
-        default="anthropic",
-        help="LLM provider (default: anthropic)"
+        default="ollama",
+        help="LLM provider (default: ollama)"
     )
 
     parser.add_argument(
@@ -613,7 +613,7 @@ Environment variables:
                 rag_bridge = create_rag_bridge(
                     llm_provider=args.rag_provider,
                     llm_model=args.rag_model or (
-                        "llama3.2:3b" if args.rag_provider == "ollama" else None
+                        "qwen3.5:9b" if args.rag_provider == "ollama" else None
                     ),
                     enable_caching=True,
                 )
