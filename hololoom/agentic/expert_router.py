@@ -24,6 +24,7 @@ import math
 from datetime import datetime
 from collections import defaultdict
 
+from hololoom.bandits.beta_arm import BetaArm
 from .protocol import AgentCapability, AgentStatus, SelectionStrategy
 
 if TYPE_CHECKING:
@@ -35,30 +36,46 @@ class ThompsonPrior:
     """
     Beta distribution prior for Thompson Sampling.
 
+    Delegates Beta math to BetaArm (canonical implementation).
     Maintains α (successes) and β (failures) for each agent.
     """
-    alpha: float = 1.0  # Successes + 1 (start with uniform prior)
-    beta: float = 1.0   # Failures + 1
+    _arm: BetaArm = field(default_factory=BetaArm)
+
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
 
     def sample(self) -> float:
         """Sample from Beta(alpha, beta) distribution."""
-        return random.betavariate(self.alpha, self.beta)
+        return self._arm.sample()
 
     def expected_value(self) -> float:
         """Expected value E[X] = α / (α + β)."""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
     def update_success(self, confidence: float = 1.0) -> None:
         """Update prior after successful outcome."""
-        self.alpha += confidence
+        self._arm.update(success=True, weight=confidence)
 
     def update_failure(self, confidence: float = 0.0) -> None:
         """Update prior after failed outcome."""
-        self.beta += (1.0 - confidence)
+        self._arm.update(success=False, weight=(1.0 - confidence))
 
     def total_observations(self) -> int:
         """Total number of observations (excluding prior)."""
-        return int(self.alpha + self.beta - 2)
+        return int(self._arm.total_observations())
 
 
 @dataclass

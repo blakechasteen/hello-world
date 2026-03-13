@@ -18,6 +18,8 @@ import random
 import math
 import json
 
+from hololoom.bandits.beta_arm import BetaArm
+
 logger = logging.getLogger(__name__)
 
 
@@ -60,32 +62,46 @@ class BetaPrior:
     """
     Beta distribution prior for Thompson Sampling.
 
+    Delegates Beta math to BetaArm (canonical implementation).
+
     Beta(alpha, beta) represents belief about probability of success.
     - alpha: pseudo-count of successes (positive outcomes)
     - beta: pseudo-count of failures (negative outcomes)
 
     Higher alpha means higher expected success rate.
     """
-    alpha: float = 1.0  # Prior successes (start uniform)
-    beta: float = 1.0   # Prior failures
+    _arm: BetaArm = field(default_factory=BetaArm)
+
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
 
     @property
     def expected_value(self) -> float:
         """Expected success probability: E[X] = alpha / (alpha + beta)"""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
     @property
     def variance(self) -> float:
         """Variance of the Beta distribution."""
-        total = self.alpha + self.beta
-        return (self.alpha * self.beta) / (total * total * (total + 1))
+        return self._arm.variance()
 
     @property
     def confidence(self) -> float:
         """Confidence in the estimate (inverse of variance, normalized)."""
-        total = self.alpha + self.beta
-        # More observations = higher confidence
-        return min(1.0, (total - 2) / 50)  # Normalize to 0-1
+        return self._arm.confidence(saturation=50.0)
 
     def sample(self) -> float:
         """
@@ -93,7 +109,7 @@ class BetaPrior:
 
         Returns a random value representing believed success probability.
         """
-        return random.betavariate(self.alpha, self.beta)
+        return self._arm.sample()
 
     def update(self, success: bool, weight: float = 1.0):
         """
@@ -103,10 +119,7 @@ class BetaPrior:
             success: Whether the action was successful
             weight: Weight of update (default 1.0)
         """
-        if success:
-            self.alpha += weight
-        else:
-            self.beta += weight
+        self._arm.update(success, weight)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -118,7 +131,7 @@ class BetaPrior:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'BetaPrior':
-        return cls(alpha=data.get("alpha", 1.0), beta=data.get("beta", 1.0))
+        return cls(_arm=BetaArm(alpha=data.get("alpha", 1.0), beta=data.get("beta", 1.0)))
 
 
 @dataclass

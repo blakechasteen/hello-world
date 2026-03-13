@@ -37,6 +37,8 @@ import logging
 import random
 import numpy as np
 from enum import Enum
+
+from hololoom.bandits.beta_arm import BetaArm
 from typing import List, Dict, Any, Optional, Tuple, Callable, Awaitable, Protocol, runtime_checkable
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -229,31 +231,45 @@ class EvaluationContext(str, Enum):
 
 @dataclass
 class StrategyPrior:
-    """Beta distribution prior for a single elicitation strategy."""
-    alpha: float = 1.0  # Successes + 1
-    beta: float = 1.0   # Failures + 1
+    """Beta distribution prior for a single elicitation strategy.
+
+    Delegates Beta math to BetaArm (canonical implementation).
+    """
+    _arm: BetaArm = field(default_factory=BetaArm)
+
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
 
     def sample(self) -> float:
         """Sample from Beta(alpha, beta)."""
-        return np.random.beta(self.alpha, self.beta)
+        return self._arm.sample()
 
     def update(self, success: bool, weight: float = 1.0) -> None:
         """Update prior based on outcome."""
-        if success:
-            self.alpha += weight
-        else:
-            self.beta += weight
+        self._arm.update(success, weight)
 
     @property
     def expected_value(self) -> float:
         """Expected success rate E[X] = α / (α + β)."""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
     @property
     def uncertainty(self) -> float:
         """Uncertainty measure (higher = less confident)."""
-        total = self.alpha + self.beta
-        return 1.0 / total
+        return self._arm.uncertainty()
 
 
 class ThompsonStrategySelector:

@@ -628,6 +628,98 @@ class MoonshotQueryClassifier:
                 'avg_latency_by_tier': dict(self.stats.avg_latency_by_tier),
             }, f, indent=2)
 
+    # ========================================================================
+    # Pattern Management (Phase 5 - Routing & RBAC Integration)
+    # ========================================================================
+
+    def update_patterns(self, patterns: List, shadow: bool = False):
+        """
+        Merge Pattern objects into the classifier's pattern storage.
+
+        Patterns are merged into the appropriate tier regex dicts based on
+        their target complexity. Shadow mode stores patterns separately
+        for comparison without affecting production classification.
+
+        Args:
+            patterns: List of Pattern-like objects with .regex, .confidence,
+                      and .complexity attributes
+            shadow: If True, store in shadow storage only (no production impact)
+        """
+        if not patterns:
+            return
+
+        installed = 0
+        for pattern in patterns:
+            try:
+                regex_str = getattr(pattern, 'regex', None) or getattr(pattern, 'pattern', None)
+                confidence = getattr(pattern, 'confidence', 0.85)
+                complexity = getattr(pattern, 'complexity', 'simple')
+
+                if not regex_str:
+                    logger.warning(f"Skipping pattern with no regex: {pattern}")
+                    continue
+
+                compiled = re.compile(regex_str, re.IGNORECASE)
+
+                if shadow:
+                    # Store in shadow dict for comparison (no production impact)
+                    if not hasattr(self, '_shadow_patterns'):
+                        self._shadow_patterns = {}
+                    self._shadow_patterns[compiled] = {
+                        'confidence': confidence,
+                        'complexity': complexity,
+                    }
+                else:
+                    # Merge into production tier regex dicts
+                    complexity_lower = complexity.lower() if isinstance(complexity, str) else complexity.value.lower()
+                    target_dict = {
+                        'trivial': self._trivial_regex,
+                        'simple': self._simple_regex,
+                        'complex': self._complex_regex,
+                        'research': self._research_regex,
+                    }.get(complexity_lower)
+
+                    if target_dict is not None:
+                        target_dict[compiled] = confidence
+                    else:
+                        logger.warning(f"Unknown complexity '{complexity}' for pattern '{regex_str}'")
+                        continue
+
+                installed += 1
+            except re.error as e:
+                logger.error(f"Invalid regex pattern '{regex_str}': {e}")
+            except Exception as e:
+                logger.error(f"Error installing pattern: {e}")
+
+        mode = "shadow" if shadow else "production"
+        logger.info(f"Installed {installed}/{len(patterns)} patterns in {mode} mode")
+
+    def get_active_patterns(self) -> List[Dict]:
+        """
+        Return current production patterns as dicts.
+
+        Returns:
+            List of dicts with 'regex', 'confidence', 'complexity' keys
+        """
+        active = []
+
+        tier_map = {
+            'trivial': self._trivial_regex,
+            'simple': self._simple_regex,
+            'complex': self._complex_regex,
+            'research': self._research_regex,
+        }
+
+        for complexity, regex_dict in tier_map.items():
+            for compiled_pattern, confidence in regex_dict.items():
+                active.append({
+                    'regex': compiled_pattern.pattern,
+                    'confidence': confidence,
+                    'complexity': complexity,
+                })
+
+        return active
+
 
 # Convenience function
 def classify_query_moonshot(

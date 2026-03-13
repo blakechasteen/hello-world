@@ -351,6 +351,7 @@ class DeceptionDetector:
 
         return passed, deception_score
 
+    # [SAE READY] Replace Jaccard word overlap with SAE feature decomposition
     def _calculate_deception_score(
         self,
         expected: str,

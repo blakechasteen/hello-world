@@ -14,11 +14,13 @@ Algorithm:
 - Update based on query outcome
 """
 
+import math
 import numpy as np
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple, Optional
 import logging
 
+from hololoom.bandits.beta_arm import BetaArm
 
 logger = logging.getLogger(__name__)
 
@@ -27,48 +29,70 @@ logger = logging.getLogger(__name__)
 # Bandit Arm
 # ============================================================================
 
+
 @dataclass
 class BanditArm:
     """
-    Single backend (arm) in the bandit
+    Single backend (arm) in the bandit.
 
-    Uses Beta distribution for success probability modeling
+    Delegates Beta math to BetaArm (canonical implementation).
+    Preserves the external API from ts_core.arm.BanditArm.
     """
-    name: str
-    alpha: float = 1.0  # Success parameter (prior = 1.0)
-    beta: float = 1.0   # Failure parameter (prior = 1.0)
+    name: str = ""
+    _arm: BetaArm = field(default_factory=BetaArm)
     total_pulls: int = 0
     total_successes: int = 0
     total_failures: int = 0
 
-    def expected_reward(self) -> float:
-        """Expected reward (mean of Beta distribution)"""
-        return self.alpha / (self.alpha + self.beta)
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
+
+    @property
+    def mean(self) -> float:
+        """Expected reward: mean of Beta distribution."""
+        return self._arm.expected_value()
 
     def sample(self) -> float:
-        """Sample from Beta distribution"""
-        return np.random.beta(self.alpha, self.beta)
+        """Draw from Beta(alpha, beta)."""
+        return self._arm.sample()
+
+    def update(self, success: bool, weight: float = 1.0) -> None:
+        """Update arm with observation."""
+        self.total_pulls += 1
+        self._arm.update(success, weight)
+        if success:
+            self.total_successes += 1
+        else:
+            self.total_failures += 1
 
     def confidence_interval(self, confidence: float = 0.95) -> Tuple[float, float]:
-        """
-        Calculate confidence interval
-
-        Args:
-            confidence: Confidence level (default: 0.95)
-
-        Returns:
-            (lower, upper) bounds
-        """
-        # Use percentiles of Beta distribution
+        """Calculate confidence interval via Monte Carlo sampling."""
         samples = np.random.beta(self.alpha, self.beta, 10000)
-        lower = np.percentile(samples, (1 - confidence) * 100 / 2)
-        upper = np.percentile(samples, 100 - (1 - confidence) * 100 / 2)
+        lower = float(np.percentile(samples, (1 - confidence) * 100 / 2))
+        upper = float(np.percentile(samples, 100 - (1 - confidence) * 100 / 2))
         return lower, upper
 
     def ci_width(self, confidence: float = 0.95) -> float:
-        """Confidence interval width (measure of uncertainty)"""
+        """Confidence interval width (measure of uncertainty)."""
         lower, upper = self.confidence_interval(confidence)
         return upper - lower
+
+    def expected_reward(self) -> float:
+        """Expected reward (mean of Beta distribution)."""
+        return self._arm.expected_value()
 
 
 # ============================================================================

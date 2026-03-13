@@ -148,6 +148,44 @@ class TSBandit:
         else:
             self.fail[arm] += abs(reward)
 
+    def save(self, path: str) -> None:
+        """Atomic save of bandit state to JSON."""
+        import json, tempfile, os
+        state = {
+            "n_arms": self.n_arms,
+            "strategy": self.strategy.value,
+            "epsilon": self.epsilon,
+            "success": self.success.tolist(),
+            "fail": self.fail.tolist(),
+            "pulls": self.pulls.tolist(),
+        }
+        dir_name = os.path.dirname(path) or "."
+        with tempfile.NamedTemporaryFile(
+            mode="w", dir=dir_name, suffix=".tmp", delete=False
+        ) as f:
+            json.dump(state, f, indent=2)
+            tmp = f.name
+        os.replace(tmp, path)  # Atomic on POSIX, near-atomic on Windows
+
+    @classmethod
+    def load(cls, path: str) -> "TSBandit":
+        """Load bandit state from JSON. Returns fresh bandit if file missing/corrupt."""
+        import json, os
+        if not os.path.exists(path):
+            raise FileNotFoundError(path)
+        with open(path) as f:
+            state = json.load(f)
+        strategy = BanditStrategy(state["strategy"])
+        bandit = cls(
+            n_arms=state["n_arms"],
+            strategy=strategy,
+            epsilon=state.get("epsilon", 0.1),
+        )
+        bandit.success = np.array(state["success"])
+        bandit.fail = np.array(state["fail"])
+        bandit.pulls = np.array(state["pulls"])
+        return bandit
+
     def get_stats(self) -> Dict[int, Dict[str, float]]:
         """Get statistics for all arms."""
         stats = {}

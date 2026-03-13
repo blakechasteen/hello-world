@@ -15,6 +15,8 @@ from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from hololoom.bandits.beta_arm import BetaArm
+
 from hololoom.protocols.recursive_reasoning import (
     RefinementStrategy,
     RefinementStep,
@@ -81,7 +83,10 @@ class QueryClassifier:
 
 @dataclass
 class StrategyStats:
-    """Statistics for a refinement strategy."""
+    """Statistics for a refinement strategy.
+
+    Delegates Beta math to BetaArm (canonical implementation).
+    """
     strategy: RefinementStrategy
     total_uses: int = 0
     successful_uses: int = 0  # Improvement > 0
@@ -89,9 +94,24 @@ class StrategyStats:
     avg_improvement: float = 0.0
     success_rate: float = 0.0
 
-    # Thompson Sampling parameters
-    alpha: float = 1.0  # Successes
-    beta: float = 1.0   # Failures
+    # Thompson Sampling via BetaArm
+    _arm: BetaArm = field(default_factory=BetaArm)
+
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
 
     def update(self, improvement: float):
         """Update stats with new outcome."""
@@ -100,9 +120,9 @@ class StrategyStats:
 
         if improvement > 0:
             self.successful_uses += 1
-            self.alpha += improvement  # Weight by improvement
+            self._arm.update(success=True, weight=improvement)
         else:
-            self.beta += abs(improvement) if improvement < 0 else 0.01
+            self._arm.update(success=False, weight=abs(improvement) if improvement < 0 else 0.01)
 
         # Recalculate averages
         self.avg_improvement = self.total_improvement / self.total_uses
@@ -110,11 +130,11 @@ class StrategyStats:
 
     def get_thompson_sample(self) -> float:
         """Sample from Beta distribution for Thompson Sampling."""
-        return np.random.beta(self.alpha, self.beta)
+        return self._arm.sample()
 
     def get_expected_reward(self) -> float:
         """Get expected reward (mean of Beta distribution)."""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
 
 # ============================================================================

@@ -29,6 +29,8 @@ from datetime import datetime
 import re
 import hashlib
 
+from hololoom.bandits.beta_arm import BetaArm
+
 logger = logging.getLogger("hololoom.alignment.constitutional_critique")
 
 
@@ -183,14 +185,31 @@ class PrincipleWeightPrior:
     """
     Beta distribution prior for principle weight learning.
 
+    Delegates Beta math to BetaArm (canonical implementation).
+
     Uses Thompson Sampling to adaptively adjust principle weights
     based on observed violations and their severity.
 
     December 2025: Added for adaptive principle importance learning.
     """
-    alpha: float = 1.0  # Successes (principle was important for catching issues)
-    beta: float = 1.0   # Failures (principle was not discriminative)
+    _arm: BetaArm = field(default_factory=BetaArm)
     base_weight: float = 1.0  # Original weight from principle definition
+
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
 
     def sample(self) -> float:
         """
@@ -199,13 +218,13 @@ class PrincipleWeightPrior:
         Returns:
             Sampled weight multiplier (0.5 to 2.0 range)
         """
-        sampled = random.betavariate(self.alpha, self.beta)
+        sampled = self._arm.sample()
         # Map to [0.5, 2.0] range centered on base_weight
         return self.base_weight * (0.5 + sampled * 1.5)
 
     def expected_weight(self) -> float:
         """Get expected weight based on posterior mean."""
-        expected = self.alpha / (self.alpha + self.beta)
+        expected = self._arm.expected_value()
         return self.base_weight * (0.5 + expected * 1.5)
 
     def update_success(self, severity_weight: float = 1.0):
@@ -215,7 +234,7 @@ class PrincipleWeightPrior:
         Args:
             severity_weight: Weight based on violation severity (0.0-1.0)
         """
-        self.alpha += severity_weight
+        self._arm.update(success=True, weight=severity_weight)
 
     def update_failure(self, weight: float = 0.1):
         """
@@ -224,7 +243,7 @@ class PrincipleWeightPrior:
         Args:
             weight: Small weight since no violation doesn't mean principle is unimportant
         """
-        self.beta += weight
+        self._arm.update(success=False, weight=weight)
 
 
 class AdaptivePrincipleWeighter:

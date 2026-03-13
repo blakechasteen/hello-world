@@ -24,6 +24,8 @@ from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from hololoom.bandits.beta_arm import BetaArm
+
 
 class Voice(IntEnum):
     """
@@ -200,6 +202,8 @@ class Wisdom:
     """
     Learned patterns from past judgments.
 
+    Delegates Beta math to BetaArm (canonical implementation).
+
     Wisdom captures what has worked and what hasn't, enabling
     the conscience to improve over time.
 
@@ -208,8 +212,7 @@ class Wisdom:
         description: What this wisdom represents
         success_count: Times this pattern led to good outcomes
         failure_count: Times this pattern led to bad outcomes
-        alpha: Thompson Sampling alpha (prior successes)
-        beta: Thompson Sampling beta (prior failures)
+        _arm: BetaArm for Thompson Sampling
         contexts: Contexts where this wisdom applies
         last_updated: When this wisdom was last updated
 
@@ -221,15 +224,30 @@ class Wisdom:
     description: str
     success_count: int = 0
     failure_count: int = 0
-    alpha: float = 1.0  # Thompson Sampling prior (successes)
-    beta: float = 1.0   # Thompson Sampling prior (failures)
+    _arm: BetaArm = field(default_factory=BetaArm)
     contexts: List[str] = field(default_factory=list)
     last_updated: datetime = field(default_factory=datetime.now)
 
     @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
+
+    @property
     def expected_success_rate(self) -> float:
         """Expected success rate using Thompson Sampling."""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
     @property
     def total_observations(self) -> int:
@@ -245,13 +263,13 @@ class Wisdom:
     def update_success(self, confidence: float = 1.0) -> None:
         """Update wisdom with successful outcome."""
         self.success_count += 1
-        self.alpha += confidence
+        self._arm.update(success=True, weight=confidence)
         self.last_updated = datetime.now()
 
     def update_failure(self, confidence: float = 1.0) -> None:
         """Update wisdom with failed outcome."""
         self.failure_count += 1
-        self.beta += confidence
+        self._arm.update(success=False, weight=confidence)
         self.last_updated = datetime.now()
 
     def to_dict(self) -> Dict[str, Any]:

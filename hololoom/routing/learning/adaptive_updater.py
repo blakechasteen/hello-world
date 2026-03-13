@@ -496,8 +496,9 @@ class AdaptiveUpdater:
 
     def _get_current_patterns(self) -> List:
         """Get current patterns from classifier."""
-        # This would interface with the classifier's pattern storage
-        # For now, return empty list (to be implemented during integration)
+        if hasattr(self.classifier, 'get_active_patterns'):
+            return self.classifier.get_active_patterns()
+        logger.debug("Classifier has no get_active_patterns(); returning empty list")
         return []
 
     def _install_patterns(self, patterns: List, shadow: bool = False):
@@ -508,10 +509,13 @@ class AdaptiveUpdater:
             patterns: List of Pattern objects
             shadow: If True, run in shadow mode (no production impact)
         """
-        # This would interface with the classifier to update patterns
-        # For now, just log (to be implemented during integration)
         mode = "shadow" if shadow else "production"
-        logger.info(f"Installing {len(patterns)} patterns in {mode} mode")
+        if hasattr(self.classifier, 'update_patterns'):
+            self.classifier.update_patterns(patterns, shadow=shadow)
+            logger.info(f"Installed {len(patterns)} patterns in {mode} mode via classifier")
+        else:
+            logger.info(f"Installing {len(patterns)} patterns in {mode} mode "
+                       f"(classifier lacks update_patterns, log only)")
 
     def get_deployment_status(self) -> Dict:
         """Get current deployment status."""

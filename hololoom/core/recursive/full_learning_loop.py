@@ -78,6 +78,35 @@ class ThompsonPriors:
         beta = self.tool_priors[tool]["beta"]
         return (alpha * beta) / ((alpha + beta) ** 2 * (alpha + beta + 1))
 
+    def save(self, path: str) -> None:
+        """Atomic save of Thompson priors to JSON."""
+        import json, tempfile, os
+        # Convert defaultdict to plain dict for serialization
+        state = {"tool_priors": dict(self.tool_priors)}
+        dir_name = os.path.dirname(path) or "."
+        with tempfile.NamedTemporaryFile(
+            mode="w", dir=dir_name, suffix=".tmp", delete=False
+        ) as f:
+            json.dump(state, f, indent=2)
+            tmp = f.name
+        os.replace(tmp, path)  # Atomic on POSIX, near-atomic on Windows
+
+    @classmethod
+    def load(cls, path: str) -> "ThompsonPriors":
+        """Load Thompson priors from JSON. Raises FileNotFoundError if missing."""
+        import json, os
+        if not os.path.exists(path):
+            raise FileNotFoundError(path)
+        with open(path) as f:
+            state = json.load(f)
+        priors = cls()
+        for tool, vals in state.get("tool_priors", {}).items():
+            priors.tool_priors[tool] = {
+                "alpha": vals["alpha"],
+                "beta": vals["beta"],
+            }
+        return priors
+
 
 @dataclass
 class PolicyWeights:

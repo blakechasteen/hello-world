@@ -8,6 +8,7 @@ Date: November 13, 2025
 Phase: 3 - Adaptive Learning
 """
 
+import asyncio
 import json
 import logging
 from dataclasses import dataclass, field
@@ -405,6 +406,40 @@ class ContinuousValidator:
         """
         cutoff = datetime.now().timestamp() - (days * 86400)
         return [r for r in self.validation_history if r.timestamp >= cutoff]
+
+    # ========================================================================
+    # Background Self-Scheduling (Phase 5 - Routing & RBAC Integration)
+    # ========================================================================
+
+    async def start_background_validation(self, interval_s: float = 3600.0):
+        """
+        Run continuous validation on a background loop.
+
+        Executes validate_hourly() at each interval. Designed to be
+        launched via asyncio.create_task() from the server startup handler.
+
+        Args:
+            interval_s: Seconds between validation runs (default: 1 hour)
+        """
+        self._running = True
+        logger.info(f"Background validation started (interval={interval_s}s)")
+        while self._running:
+            await asyncio.sleep(interval_s)
+            if not self._running:
+                break
+            try:
+                result = await self.validate_hourly()
+                logger.info(f"Background validation tick: "
+                           f"accuracy={result.overall_accuracy:.1%}, "
+                           f"regression={result.regression_detected}")
+            except Exception as e:
+                logger.error(f"Background validation error: {e}")
+        logger.info("Background validation stopped")
+
+    def stop_background_validation(self):
+        """Stop the background validation loop."""
+        self._running = False
+        logger.info("Background validation stop requested")
 
     def export_validation_history(self, output_path: str):
         """Export validation history to JSON."""

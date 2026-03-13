@@ -289,6 +289,7 @@ class AdversarialDetector:
         self.jailbreak_regex = [re.compile(p, re.IGNORECASE) for p in self.JAILBREAK_PATTERNS]
         self.exhaustion_regex = [re.compile(p, re.IGNORECASE) for p in self.EXHAUSTION_PATTERNS]
 
+    # [SAE READY] Replace regex patterns with SAE adversarial feature detection
     def detect(self, text: str) -> tuple[bool, str]:
         """
         Detect adversarial patterns in text.

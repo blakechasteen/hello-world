@@ -435,8 +435,8 @@ class SemanticNudgePolicy:
         # Preserve original ordering but add small semantic bias
         adjusted_probs = {}
         for tool, base_prob in action_plan.tool_probs.items():
-            # Add small bonus to all tools (encourages exploration toward goal)
-            semantic_bonus = nudge_strength * base_prob
+            # Add uniform additive bonus to all tools (encourages exploration toward goal)
+            semantic_bonus = nudge_strength / len(action_plan.tool_probs)
             adjusted_probs[tool] = base_prob + semantic_bonus
 
         # Renormalize

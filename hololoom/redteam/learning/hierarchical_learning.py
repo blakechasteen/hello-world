@@ -27,6 +27,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Set, Tuple
 
+from hololoom.bandits.beta_arm import BetaArm
 from ..strategies import AttackStrategy
 from ..mutator import MutationType
 from .learning_protocols import (
@@ -46,39 +47,54 @@ class HierarchicalArm:
     """
     A single arm at any level of the hierarchy.
 
-    Uses Beta distribution for Thompson Sampling.
+    Delegates Beta math to BetaArm (canonical implementation).
     """
 
     level: LearningLevel
     arm_id: str  # Strategy name, payload ID, or mutation type
     parent_id: Optional[str] = None  # Link to parent level
-    alpha: float = 1.0
-    beta: float = 1.0
+    _arm: BetaArm = field(default_factory=BetaArm)
     total_pulls: int = 0
     total_rewards: float = 0.0
     children: Set[str] = field(default_factory=set)
     last_updated: Optional[str] = None
 
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
+
     def sample(self) -> float:
         """Sample from Beta distribution (Thompson Sampling)."""
-        return random.betavariate(self.alpha, self.beta)
+        return self._arm.sample()
 
     def update(self, success: bool, reward: float = 1.0):
         """Update arm based on result."""
         self.total_pulls += 1
 
         if success:
-            self.alpha += reward
+            self._arm.update(success=True, weight=reward)
             self.total_rewards += reward
         else:
-            self.beta += 1.0
+            self._arm.update(success=False, weight=1.0)
 
         self.last_updated = datetime.now().isoformat()
 
     @property
     def expected_reward(self) -> float:
         """Expected reward (mean of Beta distribution)."""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
     @property
     def success_rate(self) -> float:
@@ -90,8 +106,7 @@ class HierarchicalArm:
     @property
     def uncertainty(self) -> float:
         """Uncertainty (variance of Beta distribution)."""
-        a, b = self.alpha, self.beta
-        return (a * b) / ((a + b) ** 2 * (a + b + 1))
+        return self._arm.variance()
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
@@ -117,8 +132,7 @@ class HierarchicalArm:
             level=LearningLevel(data['level']),
             arm_id=data['arm_id'],
             parent_id=data.get('parent_id'),
-            alpha=data['alpha'],
-            beta=data['beta'],
+            _arm=BetaArm(alpha=data['alpha'], beta=data['beta']),
             total_pulls=data['total_pulls'],
             total_rewards=data['total_rewards'],
             children=set(data.get('children', [])),

@@ -28,6 +28,8 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional, Tuple, Callable
 from enum import Enum
 
+from hololoom.bandits.beta_arm import BetaArm
+
 logger = logging.getLogger(__name__)
 
 
@@ -109,24 +111,42 @@ class LearningInteraction:
 
 @dataclass
 class ThompsonSamplingState:
-    """State of Thompson Sampling for a single arm/action."""
+    """State of Thompson Sampling for a single arm/action.
+
+    Delegates Beta math to BetaArm (canonical implementation).
+    """
     arm_id: str
-    alpha: float  # Success count + prior
-    beta: float  # Failure count + prior
+    _arm: BetaArm = field(default_factory=BetaArm)
     pulls: int = 0  # Total times this arm was pulled
+
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
 
     @property
     def expected_reward(self) -> float:
         """Expected reward: α / (α + β)."""
-        return self.alpha / (self.alpha + self.beta) if (self.alpha + self.beta) > 0 else 0.5
+        return self._arm.expected_value() if (self._arm.alpha + self._arm.beta) > 0 else 0.5
 
     @property
     def variance(self) -> float:
         """Variance of Beta distribution."""
-        total = self.alpha + self.beta
+        total = self._arm.alpha + self._arm.beta
         if total == 0:
             return 0.25
-        return (self.alpha * self.beta) / (total ** 2 * (total + 1))
+        return self._arm.variance()
 
 
 # =============================================================================

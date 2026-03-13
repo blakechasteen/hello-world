@@ -46,6 +46,8 @@ from typing import Dict, List, Optional, Any, Tuple
 from pathlib import Path
 import json
 
+from hololoom.bandits.beta_arm import BetaArm
+
 from .jenny_spec import (
     JennySpec,
     PanelTypeJenny,
@@ -98,25 +100,43 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PanelTypePrior:
-    """Beta distribution prior for panel type selection."""
-    alpha: float = 1.0  # Successes + 1
-    beta: float = 1.0   # Failures + 1
+    """Beta distribution prior for panel type selection.
+
+    Delegates Beta math to BetaArm (canonical implementation).
+    """
+    _arm: BetaArm = field(default_factory=BetaArm)
+
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
 
     def sample(self) -> float:
         """Sample from Beta(alpha, beta)."""
-        return random.betavariate(self.alpha, self.beta)
+        return self._arm.sample()
 
     def expected_value(self) -> float:
         """Expected value E[X] = alpha / (alpha + beta)."""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
     def update_success(self, confidence: float = 1.0):
         """Update prior on success."""
-        self.alpha += confidence
+        self._arm.update(success=True, weight=confidence)
 
     def update_failure(self, confidence: float = 1.0):
         """Update prior on failure."""
-        self.beta += (1.0 - confidence)
+        self._arm.update(success=False, weight=(1.0 - confidence))
 
 
 class PanelTypeLearner:
@@ -306,8 +326,7 @@ class PanelTypeLearner:
             for key, prior_data in state.get("priors", {}).items():
                 qt, pt = key.split(":", 1)
                 self.priors[(qt, pt)] = PanelTypePrior(
-                    alpha=prior_data["alpha"],
-                    beta=prior_data["beta"]
+                    _arm=BetaArm(alpha=prior_data["alpha"], beta=prior_data["beta"])
                 )
 
             logger.info(f"Loaded {len(self.priors)} priors from {self.persist_path}")

@@ -455,6 +455,7 @@ class InstrumentalConvergenceGuard:
         self.autonomy_start_time = datetime.now()
         logger.info("Autonomy tracking reset")
 
+    # [SAE READY] Replace substring match with learned modification signatures
     def detect_self_modification(self, action_description: str) -> bool:
         """
         Detect potential self-modification attempts.
@@ -491,6 +492,7 @@ class InstrumentalConvergenceGuard:
 
         return False
 
+    # [SAE READY] Replace keyword grep with interpretable feature activation patterns
     async def detect_power_seeking(
         self,
         actions: List[str],

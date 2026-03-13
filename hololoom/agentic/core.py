@@ -249,25 +249,16 @@ class AgenticOrchestrator:
                     self.logger.info("Awareness layer extracted from orchestrator for epistemic tracking")
 
         # Safety Integration (Dec 2025) - MRF Safe Integration Phase
-        # Implements ELEGANCE single gate pattern: one safety check at reason() entry
-        self.enable_safety = enable_safety and SAFETY_AVAILABLE
+        # Receives singleton from caller; does NOT auto-create (Phase 2 consolidation)
         self.safety_adapter = None
+        self.enable_safety = False
 
-        if self.enable_safety:
-            if safety_adapter is not None:
-                self.safety_adapter = safety_adapter
-                self.logger.info("Safety adapter provided - agentic reasoning will be gated")
-            elif hasattr(learning_engine, 'orchestrator'):
-                # Try to extract guardrails from orchestrator (same pattern as awareness_layer)
-                orchestrator = learning_engine.orchestrator
-                if hasattr(orchestrator, 'guardrails') and orchestrator.guardrails:
-                    self.safety_adapter = create_safety_adapter(orchestrator.guardrails)
-                    self.logger.info("Safety adapter created from orchestrator guardrails")
-
-            # Auto-create with safe defaults if none available (safe by default)
-            if self.safety_adapter is None:
-                self.safety_adapter = create_safety_adapter(auto_create=True)
-                self.logger.info("Auto-created safety adapter with safe defaults")
+        if safety_adapter is not None and SAFETY_AVAILABLE:
+            self.safety_adapter = safety_adapter
+            self.enable_safety = True
+            self.logger.info("Safety adapter provided - agentic reasoning will be gated")
+        elif enable_safety and SAFETY_AVAILABLE:
+            self.logger.info("Safety enabled but no adapter provided - disabled")
 
         # Conscience Integration (Dec 2025) - Phase 2B Per-Step Gating
         # Implements per-step safety checks in VERIFY, RESEARCH, PLAN_EXECUTE modes
@@ -293,23 +284,16 @@ class AgenticOrchestrator:
                 self.logger.info("Auto-created conscience adapter for per-step gating")
 
         # Deception Detection (Dec 2025) - E1.3 Alignment Enrichment
-        # Behavioral probes and goal transparency for multi-step reasoning
-        self.enable_deception_detection = enable_deception_detection and DECEPTION_AVAILABLE
+        # Receives singleton from caller; does NOT auto-create (Phase 2 consolidation)
         self.deception_detector = None
+        self.enable_deception_detection = False
 
-        if self.enable_deception_detection:
-            if deception_detector is not None:
-                self.deception_detector = deception_detector
-                self.logger.info("Deception detector provided - goal-action alignment enabled")
-            else:
-                # Auto-create with default configuration
-                try:
-                    self.deception_detector = DeceptionDetector()
-                    self.logger.info("Auto-created deception detector for goal transparency")
-                except Exception as e:
-                    self.logger.warning(f"Failed to create deception detector: {e}")
-                    self.deception_detector = None
-                    self.enable_deception_detection = False
+        if deception_detector is not None and DECEPTION_AVAILABLE:
+            self.deception_detector = deception_detector
+            self.enable_deception_detection = True
+            self.logger.info("Deception detector provided - goal-action alignment enabled")
+        elif enable_deception_detection and DECEPTION_AVAILABLE:
+            self.logger.info("Deception detection enabled but no detector provided - disabled")
 
         # Instrumental Convergence Prevention (Dec 2025) - E1.4 Alignment Enrichment
         # Resource bounds, autonomy limits, and power-seeking detection
@@ -1818,7 +1802,8 @@ async def create_agentic_orchestrator(
     audit_trail: Optional[AuditTrail] = None,
     monitor: Optional[Any] = None,  # Agent Monitor for real-time tracking (Nov 2025)
     safety_adapter: Optional['AgenticSafetyAdapter'] = None,  # Safety Integration (Dec 2025)
-    enable_safety: bool = True  # Safe by default - MRF ELEGANCE principle
+    enable_safety: bool = True,  # Safe by default - MRF ELEGANCE principle
+    deception_detector: Optional['DeceptionDetector'] = None,  # Phase 2 singleton consolidation
 ) -> AgenticOrchestrator:
     """
     Create agentic orchestrator with full learning system.
@@ -1832,6 +1817,7 @@ async def create_agentic_orchestrator(
         monitor: Optional agent monitor for real-time tracking (Nov 2025)
         safety_adapter: Optional safety adapter (auto-created if enable_safety=True)
         enable_safety: Enable safety gating (default True - safe by default)
+        deception_detector: Optional DeceptionDetector singleton (None = disabled)
 
     Returns:
         AgenticOrchestrator ready to use
@@ -1860,5 +1846,6 @@ async def create_agentic_orchestrator(
         enable_goal_tracking=enable_goal_tracking,
         monitor=monitor,
         safety_adapter=safety_adapter,
-        enable_safety=enable_safety
+        enable_safety=enable_safety,
+        deception_detector=deception_detector,
     )

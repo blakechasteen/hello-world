@@ -18,7 +18,6 @@ import asyncio
 import logging
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from collections import defaultdict, deque
 from time import time
 
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
@@ -26,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 
 from hololoom.agentic import create_agentic_orchestrator, ReasoningMode, AgenticResult
+from hololoom.apps.server.api.middleware.rate_limiter import RateLimiter, ServerStats
 # from hololoom.agentic.codebase_ingestion import CodebaseIndexer, Language as CodeLanguage
 # from hololoom.agentic.hallucination_detector import HallucinationDetector
 # from hololoom.agentic.code_verification import CodeVerifier
@@ -33,9 +33,10 @@ from hololoom.agentic import create_agentic_orchestrator, ReasoningMode, Agentic
 from hololoom.agentic.ml_logic_detector import MLLogicDetector, Language as CodeLanguage
 from hololoom.config import Config
 from hololoom.protocols.types import Query, MemoryShard
-from hololoom.alignment.audit_trail import AuditTrail
+from hololoom.alignment.audit_trail import AuditTrail, DecisionType, OutcomeType
 from hololoom.alignment.safety_guardrails import SafetyGuardrails, ActionRequest, RiskLevel
-from hololoom.alignment.deception_detection import DeceptionDetector
+from hololoom.alignment.deception_detection import DeceptionDetector, BehavioralProbe, ProbeType
+from hololoom.agentic.safety_adapter import create_safety_adapter
 
 # SaaS API Components (Dec 2025)
 try:
@@ -56,157 +57,27 @@ except ImportError:
     MONITORING_AVAILABLE = False
     logger.warning("Agent monitoring unavailable (monitoring.py not found)")
 
+# Continuous Validator (Phase 5 - Routing & RBAC)
+try:
+    from hololoom.routing.learning.continuous_validator import ContinuousValidator
+    from hololoom.routing.query_classifier_moonshot import MoonshotQueryClassifier
+    CONTINUOUS_VALIDATOR_AVAILABLE = True
+except ImportError:
+    CONTINUOUS_VALIDATOR_AVAILABLE = False
+
+# Policy Governance / RBAC (Phase 5 - Routing & RBAC)
+try:
+    from hololoom.agents.policy_governance import (
+        GovernancePolicy, PolicyDecision, PolicyEngine,
+        RoleBasedAccessControl, TopicGovernance, PolicyTemplates
+    )
+    GOVERNANCE_AVAILABLE = True
+except ImportError:
+    GOVERNANCE_AVAILABLE = False
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# ============================================================================
-# Rate Limiting & Stats Tracking
-# ============================================================================
-
-class RateLimiter:
-    """
-    Simple in-memory rate limiter using sliding window.
-
-    Tracks requests per IP and enforces configurable limits.
-    """
-
-    def __init__(self, max_requests: int = 60, window_seconds: int = 60):
-        """
-        Initialize rate limiter.
-
-        Args:
-            max_requests: Maximum requests allowed in window
-            window_seconds: Time window in seconds
-        """
-        self.max_requests = max_requests
-        self.window_seconds = window_seconds
-        self.requests: Dict[str, deque] = defaultdict(deque)
-        self._lock = asyncio.Lock()  # Async-safe access
-
-    async def check_rate_limit(self, client_id: str) -> bool:
-        """
-        Check if client is within rate limit.
-
-        Args:
-            client_id: Client identifier (IP address)
-
-        Returns:
-            True if within limit, False if exceeded
-        """
-        async with self._lock:  # Async-safe critical section
-            now = time()
-            cutoff = now - self.window_seconds
-
-            # Remove old requests outside window
-            while self.requests[client_id] and self.requests[client_id][0] < cutoff:
-                self.requests[client_id].popleft()
-
-            # Check if limit exceeded
-            if len(self.requests[client_id]) >= self.max_requests:
-                return False
-
-            # Record this request
-            self.requests[client_id].append(now)
-            return True
-
-    async def get_remaining(self, client_id: str) -> int:
-        """Get remaining requests for client (async-safe)."""
-        async with self._lock:  # SECURITY: Ensure consistent read
-            now = time()
-            cutoff = now - self.window_seconds
-
-            # Count requests in current window
-            count = sum(1 for t in self.requests[client_id] if t >= cutoff)
-            return max(0, self.max_requests - count)
-
-
-class ServerStats:
-    """
-    Track server statistics.
-
-    Monitors uptime, query counts, latencies, and error rates.
-    """
-
-    # SECURITY: Max unique keys to prevent unbounded memory growth
-    MAX_MODES = 20
-    MAX_ERROR_TYPES = 100
-
-    def __init__(self):
-        self.start_time = time()
-        self.total_queries = 0
-        self.successful_queries = 0
-        self.failed_queries = 0
-        self.latencies: deque = deque(maxlen=1000)  # Last 1000 latencies
-        self.queries_by_mode: Dict[str, int] = defaultdict(int)
-        self.errors_by_type: Dict[str, int] = defaultdict(int)
-
-    def record_query(self, mode: str, latency_ms: float, success: bool):
-        """Record a query completion."""
-        self.total_queries += 1
-        self.latencies.append(latency_ms)
-
-        # SECURITY: Only track known modes to prevent memory exhaustion
-        if len(self.queries_by_mode) < self.MAX_MODES or mode in self.queries_by_mode:
-            self.queries_by_mode[mode] += 1
-
-        if success:
-            self.successful_queries += 1
-        else:
-            self.failed_queries += 1
-
-    def record_error(self, error_type: str):
-        """Record an error occurrence."""
-        # SECURITY: Only track limited error types to prevent memory exhaustion
-        if len(self.errors_by_type) < self.MAX_ERROR_TYPES or error_type in self.errors_by_type:
-            self.errors_by_type[error_type] += 1
-
-    def get_uptime(self) -> float:
-        """Get server uptime in seconds."""
-        return time() - self.start_time
-
-    def get_avg_latency(self) -> float:
-        """Get average latency in milliseconds."""
-        if not self.latencies:
-            return 0.0
-        return sum(self.latencies) / len(self.latencies)
-
-    def get_p95_latency(self) -> float:
-        """Get 95th percentile latency."""
-        if not self.latencies:
-            return 0.0
-        sorted_latencies = sorted(self.latencies)
-        idx = int(len(sorted_latencies) * 0.95)
-        return sorted_latencies[idx] if idx < len(sorted_latencies) else sorted_latencies[-1]
-
-    def get_success_rate(self) -> float:
-        """Get success rate as percentage."""
-        if self.total_queries == 0:
-            return 100.0
-        return (self.successful_queries / self.total_queries) * 100
-
-    def get_stats_dict(self) -> Dict[str, Any]:
-        """Get all stats as dictionary."""
-        return {
-            "uptime_seconds": self.get_uptime(),
-            "uptime_formatted": self._format_uptime(self.get_uptime()),
-            "total_queries": self.total_queries,
-            "successful_queries": self.successful_queries,
-            "failed_queries": self.failed_queries,
-            "success_rate": round(self.get_success_rate(), 2),
-            "avg_latency_ms": round(self.get_avg_latency(), 2),
-            "p95_latency_ms": round(self.get_p95_latency(), 2),
-            "queries_by_mode": dict(self.queries_by_mode),
-            "errors_by_type": dict(self.errors_by_type)
-        }
-
-    @staticmethod
-    def _format_uptime(seconds: float) -> str:
-        """Format uptime as human-readable string."""
-        hours, remainder = divmod(int(seconds), 3600)
-        minutes, seconds = divmod(remainder, 60)
-        return f"{hours}h {minutes}m {seconds}s"
 
 
 # ============================================================================
@@ -424,6 +295,22 @@ try:
     logger.info("Elle chat router mounted at /elle/chat")
 except ImportError as e:
     logger.warning(f"Failed to mount Elle chat router: {e}")
+
+# Coz Query API (Company Operating System — structured business data access)
+try:
+    from hololoom.apps.server.coz_api import router as coz_router
+    app.include_router(coz_router)
+    logger.info("Coz query router mounted at /coz/*")
+except ImportError as e:
+    logger.warning(f"Failed to mount Coz query router: {e}")
+
+# Memory Bus (cross-agent observation store)
+try:
+    from hololoom.apps.server.memory_bus import router as memory_bus_router
+    app.include_router(memory_bus_router)
+    logger.info("Memory bus router mounted at /memory/*")
+except ImportError as e:
+    logger.warning(f"Failed to mount memory bus router: {e}")
 
 # Department Federation (MCP inter-department routing over HTTP)
 try:
@@ -654,6 +541,9 @@ class ServerState:
     stats: Optional[ServerStats] = None  # Server statistics
     monitor: Optional[Any] = None  # Agent monitoring (Nov 2025)
     saas_backend: Optional[Any] = None  # SaaS backend (Dec 2025)
+    continuous_validator: Optional[Any] = None  # Continuous validation (Phase 5)
+    _validator_task: Optional[Any] = None  # Background validation task (Phase 5)
+    governance_engine: Optional[Any] = None  # Policy/RBAC engine (Phase 5)
 
 
 state = ServerState()
@@ -780,6 +670,40 @@ async def startup():
     except Exception as e:
         logger.warning(f"UnifiedBus unavailable: {e}")
 
+    # Initialize Continuous Validator (Phase 5 - Routing & RBAC)
+    if CONTINUOUS_VALIDATOR_AVAILABLE:
+        try:
+            classifier = MoonshotQueryClassifier(enable_semantic_tier=False)
+            state.continuous_validator = ContinuousValidator(
+                classifier=classifier,
+                validation_set_path="./data/validation_set.json",
+            )
+            state._validator_task = asyncio.create_task(
+                state.continuous_validator.start_background_validation(interval_s=3600.0)
+            )
+            logger.info("Continuous validator started (hourly background validation)")
+        except Exception as e:
+            logger.warning(f"Continuous validator initialization failed: {e}")
+            state.continuous_validator = None
+    else:
+        logger.info("Continuous validator disabled (routing module not available)")
+
+    # Initialize Policy Governance / RBAC (Phase 5 - Routing & RBAC)
+    if GOVERNANCE_AVAILABLE:
+        try:
+            rbac = RoleBasedAccessControl()
+            topic_gov = TopicGovernance()
+            state.governance_engine = PolicyEngine(rbac=rbac, topic_governance=topic_gov)
+            # Register production policy template
+            prod_policy = PolicyTemplates.production()
+            state.governance_engine.register_policy(prod_policy)
+            logger.info("Policy governance engine initialized (production template)")
+        except Exception as e:
+            logger.warning(f"Policy governance initialization failed: {e}")
+            state.governance_engine = None
+    else:
+        logger.info("Policy governance disabled (policy_governance module not available)")
+
     # Attach server state to app for routers (W2 SWOT Remediation - Dec 2025)
     app.state.server_state = state
 
@@ -790,6 +714,20 @@ async def startup():
 async def shutdown():
     """Cleanup on shutdown."""
     logger.info("Shutting down HoloLoom server...")
+
+    # Stop continuous validator (Phase 5)
+    if state.continuous_validator:
+        try:
+            state.continuous_validator.stop_background_validation()
+            if state._validator_task and not state._validator_task.done():
+                state._validator_task.cancel()
+                try:
+                    await state._validator_task
+                except asyncio.CancelledError:
+                    pass
+            logger.info("Continuous validator stopped")
+        except Exception as e:
+            logger.warning(f"Error stopping continuous validator: {e}")
 
     # Stop agent monitoring
     if MONITORING_AVAILABLE and state.monitor:
@@ -903,7 +841,9 @@ async def get_orchestrator():
             enable_verification=True,
             enable_goal_tracking=True,
             audit_trail=state.audit_trail,
-            monitor=state.monitor  # Agent monitoring (Nov 2025)
+            monitor=state.monitor,  # Agent monitoring (Nov 2025)
+            safety_adapter=create_safety_adapter(state.safety_guardrails) if state.safety_guardrails else None,  # Phase 2 singleton consolidation
+            deception_detector=state.deception_detector,  # Phase 2 singleton consolidation
         )
         logger.info("Orchestrator ready!")
 
@@ -1060,6 +1000,41 @@ async def query_endpoint(request: QueryRequest):
             }
 
         # ========================================================================
+        # RBAC / GOVERNANCE CHECK (Phase 5 - before safety gating)
+        # ========================================================================
+        if state.governance_engine and GOVERNANCE_AVAILABLE:
+            from hololoom.agents.policy_governance import (
+                CommunicationRequest as GovRequest, Priority as GovPriority
+            )
+            gov_request = GovRequest(
+                from_agent=getattr(request, 'agent_id', 'anonymous'),
+                to_agent="hololoom_server",
+                message_type="query",
+                topic=mode_key,
+                content=text_value,
+                priority=GovPriority.MEDIUM,
+                metadata={"mode": mode_key, "max_steps": request.max_steps},
+            )
+            gov_decision, gov_reason = state.governance_engine.evaluate_communication_request(
+                gov_request
+            )
+
+            if gov_decision == PolicyDecision.DENY:
+                logger.warning(f"RBAC DENY: {gov_reason}")
+                raise HTTPException(
+                    status_code=403,
+                    detail={
+                        "error": "governance_denied",
+                        "reason": gov_reason,
+                        "message": f"Request denied by governance policy: {gov_reason}",
+                    }
+                )
+            elif gov_decision == PolicyDecision.ESCALATE:
+                logger.info(f"RBAC ESCALATE: {gov_reason} (proceeding with audit)")
+                # Escalation is logged via the engine's audit trail; proceed
+            # ALLOW / AUDIT_ONLY / DEFER — proceed normally
+
+        # ========================================================================
         # SAFETY GATING (Alignment Framework Integration)
         # ========================================================================
         if state.safety_guardrails:
@@ -1193,6 +1168,36 @@ async def query_endpoint(request: QueryRequest):
                 logger.error(f"Failed to log to audit trail: {e}")
         # ========================================================================
         # END AUDIT TRAIL LOGGING
+        # ========================================================================
+
+        # ========================================================================
+        # DECEPTION MONITORING (Phase 2 — monitoring only, not enforcement)
+        # ========================================================================
+        if state.deception_detector:
+            try:
+                probe = BehavioralProbe(
+                    probe_type=ProbeType.HONESTY,
+                    scenario=f"Response to query: {text_value[:100]}",
+                    expected_behavior=text_value,
+                )
+                _passed, deception_score = state.deception_detector.run_probe(
+                    probe, actual_behavior=response_text
+                )
+                if state.audit_trail:
+                    state.audit_trail.log_decision(
+                        decision_type=DecisionType.DECEPTION_CHECK,
+                        outcome=OutcomeType.APPROVED,
+                        reason=f"Deception monitoring (Jaccard score={deception_score:.2f})",
+                        query_text=text_value,
+                        action_description="deception_monitoring",
+                        confidence=1.0 - deception_score,
+                        metadata={"deception_score": deception_score},
+                    )
+                # Don't block — Jaccard is too crude for enforcement
+            except Exception as e:
+                logger.debug(f"Deception monitoring skipped: {e}")
+        # ========================================================================
+        # END DECEPTION MONITORING
         # ========================================================================
 
         # Format response (matches TypeScript AgenticResult interface)

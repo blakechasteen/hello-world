@@ -24,6 +24,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 
+from hololoom.bandits.beta_arm import BetaArm
 from .strategies import AttackStrategy
 
 
@@ -31,6 +32,8 @@ from .strategies import AttackStrategy
 class BanditArm:
     """
     A single arm in the multi-armed bandit.
+
+    Delegates Beta math to BetaArm (canonical implementation).
 
     Uses Beta distribution for Thompson Sampling:
     - α (alpha): Prior successes + 1
@@ -41,15 +44,30 @@ class BanditArm:
     """
 
     strategy: AttackStrategy
-    alpha: float = 1.0  # Prior successes + 1
-    beta: float = 1.0   # Prior failures + 1
+    _arm: BetaArm = field(default_factory=BetaArm)
     total_pulls: int = 0
     total_rewards: float = 0.0
     last_updated: Optional[str] = None
 
+    @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
+
     def sample(self) -> float:
         """Sample from Beta distribution (Thompson Sampling)."""
-        return random.betavariate(self.alpha, self.beta)
+        return self._arm.sample()
 
     def update(self, success: bool, reward: float = 1.0):
         """
@@ -62,19 +80,17 @@ class BanditArm:
         self.total_pulls += 1
 
         if success:
-            # Increase alpha proportionally to reward
-            self.alpha += reward
+            self._arm.update(success=True, weight=reward)
             self.total_rewards += reward
         else:
-            # Increase beta (failure)
-            self.beta += 1.0
+            self._arm.update(success=False, weight=1.0)
 
         self.last_updated = datetime.now().isoformat()
 
     @property
     def expected_reward(self) -> float:
         """Expected reward (mean of Beta distribution)."""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
     @property
     def success_rate(self) -> float:
@@ -86,8 +102,7 @@ class BanditArm:
     @property
     def uncertainty(self) -> float:
         """Uncertainty (variance of Beta distribution)."""
-        a, b = self.alpha, self.beta
-        return (a * b) / ((a + b) ** 2 * (a + b + 1))
+        return self._arm.variance()
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
@@ -108,8 +123,7 @@ class BanditArm:
         """Create from dictionary."""
         return cls(
             strategy=AttackStrategy(data['strategy']),
-            alpha=data['alpha'],
-            beta=data['beta'],
+            _arm=BetaArm(alpha=data['alpha'], beta=data['beta']),
             total_pulls=data['total_pulls'],
             total_rewards=data['total_rewards'],
             last_updated=data.get('last_updated'),

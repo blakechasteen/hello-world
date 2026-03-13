@@ -32,7 +32,8 @@ from typing import Dict, Any, Optional, List, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-import numpy as np
+
+from hololoom.bandits.beta_arm import BetaArm
 
 from hololoom.protocols.conscience import (
     ConscienceDecision,
@@ -52,27 +53,43 @@ class CalibrationPrior:
     """
     Beta distribution prior for a step type.
 
+    Delegates Beta math to BetaArm (canonical implementation).
+
     Alpha = number of correct decisions (successes)
     Beta = number of incorrect decisions (failures)
 
     Mean = α / (α + β)
     Variance = αβ / ((α+β)²(α+β+1))
     """
-    alpha: float = 1.0  # Successes (start with uniform prior)
-    beta: float = 1.0   # Failures
+    _arm: BetaArm = field(default_factory=BetaArm)
     updates: int = 0    # Total updates
     last_update: Optional[datetime] = None
 
     @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
+
+    @property
     def mean(self) -> float:
         """Expected probability of correct decision."""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
     @property
     def variance(self) -> float:
         """Uncertainty in the probability estimate."""
-        total = self.alpha + self.beta
-        return (self.alpha * self.beta) / (total ** 2 * (total + 1))
+        return self._arm.variance()
 
     @property
     def confidence(self) -> float:
@@ -81,13 +98,11 @@ class CalibrationPrior:
 
         Based on total observations - more data = more confidence.
         """
-        # Confidence scales with observations (saturates around 100)
-        total = self.alpha + self.beta - 2  # Subtract initial 1+1
-        return min(1.0, total / 100.0)
+        return self._arm.confidence(saturation=100.0)
 
     def sample(self) -> float:
         """Sample from the Beta distribution."""
-        return np.random.beta(self.alpha, self.beta)
+        return self._arm.sample()
 
     def update(self, success: bool, weight: float = 1.0) -> None:
         """
@@ -97,10 +112,7 @@ class CalibrationPrior:
             success: Whether the conscience decision was correct
             weight: Weight for this update (0.0-1.0)
         """
-        if success:
-            self.alpha += weight
-        else:
-            self.beta += weight
+        self._arm.update(success, weight)
         self.updates += 1
         self.last_update = datetime.now()
 
@@ -120,8 +132,10 @@ class CalibrationPrior:
     def from_dict(cls, data: Dict[str, Any]) -> 'CalibrationPrior':
         """Create from dictionary."""
         prior = cls(
-            alpha=data.get("alpha", 1.0),
-            beta=data.get("beta", 1.0),
+            _arm=BetaArm(
+                alpha=data.get("alpha", 1.0),
+                beta=data.get("beta", 1.0),
+            ),
             updates=data.get("updates", 0),
         )
         if data.get("last_update"):

@@ -34,6 +34,8 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from collections import defaultdict
 
+from hololoom.bandits.beta_arm import BetaArm
+
 
 # =============================================================================
 # Learning Timescales
@@ -329,6 +331,8 @@ class PerAttackLearner:
 class ThompsonSamplingPrior:
     """Thompson Sampling prior for strategy selection.
 
+    Delegates Beta math to BetaArm (canonical implementation).
+
     Uses Beta(α, β) distribution:
     - α = successes + 1
     - β = failures + 1
@@ -337,22 +341,35 @@ class ThompsonSamplingPrior:
     """
 
     strategy_id: str
-    alpha: float = 1.0  # Prior successes + 1
-    beta: float = 1.0   # Prior failures + 1
+    _arm: BetaArm = field(default_factory=BetaArm)
     total_attempts: int = 0
     last_updated: float = field(default_factory=time.time)
     context_stats: Dict[str, Tuple[float, float]] = field(default_factory=dict)
 
     @property
+    def alpha(self) -> float:
+        return self._arm.alpha
+
+    @alpha.setter
+    def alpha(self, value: float) -> None:
+        self._arm.alpha = value
+
+    @property
+    def beta(self) -> float:
+        return self._arm.beta
+
+    @beta.setter
+    def beta(self, value: float) -> None:
+        self._arm.beta = value
+
+    @property
     def expected_reward(self) -> float:
         """Calculate expected reward."""
-        return self.alpha / (self.alpha + self.beta)
+        return self._arm.expected_value()
 
     def sample(self) -> float:
         """Sample from Beta distribution for Thompson Sampling."""
-        import random
-        # Use random.betavariate for sampling
-        return random.betavariate(self.alpha, self.beta)
+        return self._arm.sample()
 
     def update(self, success: bool, confidence: float = 1.0) -> None:
         """Update prior based on outcome.
@@ -365,9 +382,9 @@ class ThompsonSamplingPrior:
         self.last_updated = time.time()
 
         if success:
-            self.alpha += confidence
+            self._arm.update(success=True, weight=confidence)
         else:
-            self.beta += (1.0 - confidence)
+            self._arm.update(success=False, weight=(1.0 - confidence))
 
 
 class PerTaskLearner:

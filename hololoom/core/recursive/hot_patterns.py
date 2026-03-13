@@ -242,11 +242,13 @@ class HotPatternTracker:
         elapsed = now - self.last_decay
 
         if elapsed >= self.decay_interval:
-            # Apply exponential decay to all heat scores
+            n_intervals = int(elapsed / self.decay_interval)
+            decay_factor = self.decay_rate ** n_intervals
+            # Apply compounding exponential decay to all heat scores
             for record in self.usage.values():
-                # Decay access count (heat proxy)
-                record.access_count = int(record.access_count * self.decay_rate)
-                record.success_count = int(record.success_count * self.decay_rate)
+                # Keep counts as floats internally; cast to int at API boundaries
+                record.access_count = max(0.0, record.access_count * decay_factor)
+                record.success_count = max(0.0, record.success_count * decay_factor)
 
             self.last_decay = now
             self.logger.debug(

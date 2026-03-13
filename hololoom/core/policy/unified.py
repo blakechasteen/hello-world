@@ -312,6 +312,7 @@ class TinyTransformerBlock(nn.Module):
 # Neural Core - The Policy Network
 # ============================================================================
 
+# [SAE READY] Replace random weights with SAE-decomposed feature training
 class NeuralCore(nn.Module):
     """
     Neural decision engine using transformer architecture.
