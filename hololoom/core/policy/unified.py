@@ -48,9 +48,12 @@ from typing import Dict, List, Optional, Protocol, Tuple, Any
 
 import numpy as np
 import logging
+import time as _time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from hololoom.dark_trace.sae.activation_buffer import get_activation_buffer, ActivationSample
 
 # Import only from shared types and embedding (package-relative)
 from hololoom.protocols.types import Features, Context, ActionPlan, BanditStrategy
@@ -411,6 +414,16 @@ class NeuralCore(nn.Module):
 
         # Tool selection logits
         logits = self.tool_head(self.readout(pooled))
+
+        # SAE activation tap — record pooled features for interpretability training
+        _buf = get_activation_buffer()
+        if _buf is not None:
+            _buf.record_sync(ActivationSample(
+                timestamp=_time.time(),
+                source="neural_core",
+                activation=pooled.detach().cpu().numpy().squeeze(),
+                tool_selected=self.tools[logits.argmax().item()],
+            ))
 
         return logits, pooled
 

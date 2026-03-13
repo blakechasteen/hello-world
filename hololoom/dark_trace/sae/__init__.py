@@ -85,6 +85,23 @@ from hololoom.dark_trace.sae.lens import (
     SAELens,
 )
 
+# Activation buffer
+from hololoom.dark_trace.sae.activation_buffer import (
+    ActivationBuffer,
+    ActivationSample,
+    init_activation_buffer,
+    get_activation_buffer,
+)
+
+# SAE-backed governance detectors
+from hololoom.dark_trace.sae.detectors import (
+    FeatureMap,
+    SAEDeceptionDetector,
+    SAEPowerSeekingDetector,
+    SAESelfModificationDetector,
+    SAEAdversarialDetector,
+)
+
 # Legacy (backward compatibility)
 # For new projects, use ResearchSAE and ResearchTrainer instead
 from hololoom.dark_trace.sae.legacy import (
@@ -117,6 +134,17 @@ __all__ = [
     "FeatureLabel",
     # Lens
     "SAELens",
+    # Activation buffer
+    "ActivationBuffer",
+    "ActivationSample",
+    "init_activation_buffer",
+    "get_activation_buffer",
+    # SAE-backed governance detectors
+    "FeatureMap",
+    "SAEDeceptionDetector",
+    "SAEPowerSeekingDetector",
+    "SAESelfModificationDetector",
+    "SAEAdversarialDetector",
     # Legacy (backward compatibility)
     "SparseAutoEncoder",
     "DarkSaeTrainer",

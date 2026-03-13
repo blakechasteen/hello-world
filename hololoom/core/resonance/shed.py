@@ -20,9 +20,12 @@ Lifecycle:
 """
 
 import logging
+import time as _time
 import numpy as np
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
+
+from hololoom.dark_trace.sae.activation_buffer import get_activation_buffer, ActivationSample
 
 from hololoom.alignment.safety_guardrails import (
     ActionCategory,
@@ -210,6 +213,19 @@ class ResonanceShed:
 
         # Interfere (combine features)
         plasma = self.interfere()
+
+        # SAE activation tap — record DotPlasma psi vectors
+        _buf = get_activation_buffer()
+        if _buf is not None:
+            psi = plasma.get("psi")
+            if psi is not None:
+                psi_arr = np.asarray(psi, dtype=np.float32) if not isinstance(psi, np.ndarray) else psi
+                if psi_arr.ndim == 1 and psi_arr.size > 0:
+                    _buf.record_sync(ActivationSample(
+                        timestamp=_time.time(),
+                        source="dot_plasma",
+                        activation=psi_arr,
+                    ))
 
         # Lower (finalize)
         self.lower()

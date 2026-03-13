@@ -19,11 +19,14 @@ coarse-to-fine processing across the pipeline.
 
 import os
 import hashlib
+import time as _time
 import warnings
 from typing import List, Dict, Tuple, Optional, Protocol, Callable, Union
 from dataclasses import dataclass, field
 import numpy as np
 import networkx as nx
+
+from hololoom.dark_trace.sae.activation_buffer import get_activation_buffer, ActivationSample
 
 # Feature flag: embedding drift detection (default OFF, log-only when on)
 _DRIFT_DETECT = os.environ.get("HOLOLOOM_DRIFT_DETECT", "").lower() in ("true", "1", "yes")
@@ -293,6 +296,18 @@ class MatryoshkaEmbeddings:
                 out[d] = self.external_heads[d](base)
             else:
                 out[d] = base @ self.proj[d]
+
+        # SAE activation tap — record embeddings at each scale
+        _buf = get_activation_buffer()
+        if _buf is not None:
+            for scale, vecs in out.items():
+                for vec in vecs:
+                    _buf.record_sync(ActivationSample(
+                        timestamp=_time.time(),
+                        source=f"embedding_{scale}",
+                        activation=vec,
+                    ))
+
         return out
     
     def encode(self, texts: List[str]) -> np.ndarray:

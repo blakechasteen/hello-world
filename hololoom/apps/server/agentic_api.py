@@ -312,6 +312,14 @@ try:
 except ImportError as e:
     logger.warning(f"Failed to mount memory bus router: {e}")
 
+# Coz Proactive (scheduled insight generation)
+try:
+    from hololoom.apps.server.coz_proactive import router as coz_proactive_router
+    app.include_router(coz_proactive_router)
+    logger.info("Coz proactive router mounted at /coz/proactive/*")
+except ImportError as e:
+    logger.warning(f"Failed to mount Coz proactive router: {e}")
+
 # Department Federation (MCP inter-department routing over HTTP)
 try:
     from hololoom.apps.server.department_api import router as department_router
@@ -704,6 +712,22 @@ async def startup():
     else:
         logger.info("Policy governance disabled (policy_governance module not available)")
 
+    # Initialize SAE activation buffer for interpretability training
+    try:
+        from hololoom.dark_trace.sae.activation_buffer import init_activation_buffer
+        state.activation_buffer = init_activation_buffer(
+            flush_dir="./data/sae_activations",
+            flush_threshold=512,
+        )
+        state._activation_flush_task = asyncio.create_task(
+            state.activation_buffer.start_background_flush()
+        )
+        logger.info("SAE activation buffer initialized (flush_threshold=512)")
+    except Exception as e:
+        logger.warning(f"SAE activation buffer initialization failed: {e}")
+        state.activation_buffer = None
+        state._activation_flush_task = None
+
     # Attach server state to app for routers (W2 SWOT Remediation - Dec 2025)
     app.state.server_state = state
 
@@ -736,6 +760,17 @@ async def shutdown():
             logger.info("Agent monitoring stopped")
         except Exception as e:
             logger.warning(f"Error stopping monitoring: {e}")
+
+    # Stop SAE activation buffer
+    if hasattr(state, 'activation_buffer') and state.activation_buffer:
+        state.activation_buffer.stop()
+        if hasattr(state, '_activation_flush_task') and state._activation_flush_task and not state._activation_flush_task.done():
+            state._activation_flush_task.cancel()
+            try:
+                await state._activation_flush_task
+            except asyncio.CancelledError:
+                pass
+        logger.info("SAE activation buffer stopped")
 
     # Close SaaS backend (Dec 2025)
     if SAAS_AVAILABLE and state.saas_backend:
