@@ -76,10 +76,13 @@ The world's first comprehensive AI law is 138 days from full enforcement:
 
 #### 2. NIST AI Risk Management Framework
 
-- **72% of organizations** now use AI in at least one function
-- **Fewer than 30%** have formal AI risk management
-- **67% increase** in reported AI incidents over two years (Stanford AI Index 2025)
-- NIST AI RMF is becoming the **de facto standard** that regulators reference
+- **78% of organizations** have integrated AI into at least one function (McKinsey 2024)
+- **80% of Fortune 500** now use active AI agents (Microsoft, February 2026)
+- **Only 17%** report adopting agentic AI — massive governance gap
+- **42% of enterprises fail to scale AI** due to fragmented oversight (ModelOp)
+- **61% of organizations** at strategic or embedded stage for Responsible AI (PwC 2025)
+- **U.S. states passed 82 AI-related bills** in 2024 alone; federal agencies introduced 59 AI regulations
+- NIST AI RMF is the **de facto standard** that regulators and procurement teams reference
 
 HoloLoom's 4-function alignment maps directly to NIST's 4-function framework:
 | NIST Function | HoloLoom Implementation |
@@ -96,6 +99,8 @@ HoloLoom's 4-function alignment maps directly to NIST's 4-function framework:
 - **GDPR** (EU): Data provenance, right to erasure
 - **South Korea AI Basic Act** (Jan 2026): Europe-style transparency
 - **U.S. Executive Order**: Federal agencies adopting AI-TRiSM, $500M for safe-AI grants
+- **SEC 2026 Priorities**: AI governance now ranks above cryptocurrency as top examination focus
+- **2026 International AI Safety Report** (Yoshua Bengio, 100+ experts, 30+ countries): *"AI safety is no longer mainly a model issue, but rather a system and deployment issue"* — validates HoloLoom's system-level approach
 
 ### The Market Opportunity
 
@@ -103,13 +108,15 @@ HoloLoom's 4-function alignment maps directly to NIST's 4-function framework:
 
 | Year | Market Size | Growth Driver |
 |------|-------------|---------------|
-| 2024 | ~$200M | Early voluntary adoption |
+| 2024 | ~$198-750M | Early voluntary adoption (range reflects different analyst scopes) |
 | 2025 | ~$340M | EU AI Act Phase 1 enforcement |
 | **2026** | **~$492M** | **EU AI Act high-risk enforcement** |
 | 2027 | ~$650M | Regulated product AI requirements |
-| 2030 | **$1B+** | Full global regulatory coverage |
+| 2030 | **$1-5.6B** | Full global regulatory coverage |
 
-*Sources: Gartner (Feb 2026), Mordor Intelligence, GM Insights*
+*Sources: Gartner (Feb 2026), GM Insights ($198M base, 49.2% CAGR), Wissen Research ($750M base, 40% CAGR to $5.64B), MarketsandMarkets (cloud segment 72% share)*
+
+**Note:** Market size estimates vary widely by analyst scope. The conservative Gartner $492M (2026) figure is our baseline; the aggressive Wissen $5.64B (2030) figure represents the upside if governance becomes mandatory across all AI deployments.
 
 **Key buyer segments:**
 - Government agencies: 20% of spending
@@ -138,6 +145,22 @@ Research interest in neurosymbolic AI has exploded:
 
 ## Part III: Competitive Landscape
 
+### The Frontier Lab Landscape
+
+The major AI labs are investing heavily in safety — but their work remains internal or research-stage:
+
+| Lab | Safety Work | Limitation for Enterprises |
+|-----|-----------|---------------------------|
+| **Anthropic** | Best safety reputation (A grade in 2 categories, Future of Life AI Safety Index). First to use mechanistic interpretability in pre-deployment assessment (Claude 4.5). Goal: "detect most AI model problems by 2027" | Internal tools only. Can't be self-hosted or audited. Proprietary. |
+| **Google DeepMind** | Released Gemma Scope 2 (largest open-source interpretability toolkit). Pivoting to "pragmatic interpretability" | Toolkit for their models only. No orchestration, no learning. |
+| **OpenAI** | Published SAE latent attribution for debugging misalignment. Partnered with ROOST for open-source safety | Research papers. No production-ready governance platform. |
+| **METR** (formerly ARC Evals) | Third-party evaluations of autonomous capabilities for Anthropic/OpenAI | Evaluation only, no production tooling |
+| **Redwood Research** | Protocols robust against deceptive AI. Demonstrated LLMs can fake alignment during training | Research-focused, limited production output |
+
+**Key insight from the field's own leaders:** MIT Technology Review named mechanistic interpretability a *"breakthrough technology for 2026"*, but Neel Nanda (a leading researcher) noted in September 2025: *"The most ambitious vision of mechanistic interpretability I once dreamed of is probably dead."* SAE-reconstructed activations still cause **10-40% performance degradation** on downstream tasks.
+
+**HoloLoom's advantage:** We're not trying to fully interpret LLM internals. We use structured AI as the authority and LLMs as supervised participants — interpretability of the *system* rather than the *model*. This sidesteps the fundamental SAE limitations that even Anthropic hasn't solved.
+
 ### The Guardrails Gap
 
 Every existing AI safety solution addresses **one layer** of the problem. None address the architecture:
@@ -151,6 +174,27 @@ Every existing AI safety solution addresses **one layer** of the problem. None a
 | **LLM Guard / Lakera** | Input/output scanning | Rule-based, no adaptation |
 
 **The common pattern:** All of these are **guardrails bolted onto LLM-first architectures.** They're trying to make an inherently opaque system safe by wrapping it in rules.
+
+### The Orchestration Framework Gap
+
+All major orchestration frameworks use the **LLM-as-orchestrator** paradigm — and suffer for it:
+
+| Framework | Strength | Fatal Flaw |
+|-----------|----------|-----------|
+| **LangChain/LangGraph** | 600+ integrations, LangSmith observability | 25% higher debugging time; LLM decides everything |
+| **LlamaIndex** | Best RAG/data ingestion | Limited beyond search/retrieval |
+| **CrewAI** | Simplest multi-agent setup | **3x token overhead** for managerial LLM coordination |
+| **AutoGen** (Microsoft) | Best human-in-the-loop | Struggles with deterministic outputs |
+
+*Source: [Arsum framework comparison, 2026](https://arsum.com/blog/posts/ai-agent-frameworks/)*
+
+**All four share the same architectural problem:**
+1. **Non-determinism**: LLMs produce variable outputs, making reliable orchestration difficult
+2. **Token waste**: CrewAI's 3x overhead for simple tasks is symptomatic of LLM-as-orchestrator
+3. **No learning**: None learn from past interactions to improve future decisions
+4. **No formal safety**: Safety is bolted on (guardrails, filters) rather than architecturally integrated
+
+**The industry is waking up to this.** 2026 predictions validate HoloLoom's approach: *"Agents will no longer rely solely on the LLM's internal weights for logic; instead, they will utilize Reasoning Tools — calling external math solvers or symbolic logic engines."* — [AI in 2026 Predictions](https://dr-arsanjani.medium.com/ai-in-2026-predictions-mapped-to-the-agentic-ai-maturity-model-c6f851a40ef5)
 
 **HoloLoom's fundamental difference:** Safety isn't a wrapper. It's the architecture. Structured AI is the authority. LLMs are supervised participants. You don't need to guard against hallucinations if the reasoning is symbolic. You don't need to detect deception if every decision has cryptographic provenance.
 
@@ -179,8 +223,24 @@ Every existing AI safety solution addresses **one layer** of the problem. None a
 | **EY Growth Platforms** | Internal (Big 4) | Growth opportunity discovery | HoloLoom is open-source, customizable, broader |
 | **UnlikelyAI** | Undisclosed | Insurance claims processing | HoloLoom is domain-agnostic, more features |
 | **Beyond Limits** | ~$130M total | Industrial AI (oil, gas, manufacturing) | HoloLoom has better interpretability, safety framework |
+| **Permion** (USA) | Undisclosed | Neurosymbolic virtual machine (edge/cloud) | Closest approach; HoloLoom has Thompson Sampling learning + safety |
+| **ExtensityAI** (Austria) | Undisclosed | Research automation with symbolic reasoning | Narrow domain; HoloLoom is general-purpose |
+| **Growth Protocol** (USA) | Undisclosed | Business ontologies + neural models | Business-only; HoloLoom covers safety + reasoning |
 
-**Key insight:** No competitor combines **all three**: neurosymbolic reasoning + continuous learning + complete interpretability. HoloLoom does.
+*Source: [StartUs Insights Neurosymbolic AI Companies 2026](https://www.startus-insights.com/innovators-guide/neurosymbolic-ai-companies/)*
+
+**Key insight:** No competitor combines **all three**: neurosymbolic reasoning + continuous learning + complete interpretability. The research agent found **no commercial competitor** combining Thompson Sampling exploration with graph-based memory in a neurosymbolic architecture. This appears genuinely unique.
+
+### Validated Differentiation Matrix
+
+| Capability | HoloLoom | Closest Competitor | Gap |
+|-----------|----------|-------------------|-----|
+| **Thompson Sampling + Knowledge Graph** | Native, production-ready | No commercial equivalent found | **Unique** |
+| **Structured AI orchestrating LLMs** | Core architecture | Emerging in 2026 predictions, no mature product | **12-18 months ahead of trend** |
+| **SAE interpretability (Dark Trace)** | 10 phases, production-integrated | Anthropic (research), DeepMind (Gemma Scope) | Labs-only; no productized equivalent |
+| **Multi-timescale learning (7 loops)** | Per-query to offline | None combine all 7 | **Unique combination** |
+| **Built-in alignment framework** | Architecturally integrated | Bolt-on guardrails (LangChain, etc.) | **Architectural advantage** |
+| **Graph-based memory + RAG** | Level 4 Agentic + Graph RAG | LlamaIndex (Level 2-3) | **1-2 levels deeper** |
 
 ---
 
@@ -535,7 +595,9 @@ Safety becomes a **public good**, not a proprietary advantage.
 | **LLM integration incomplete** | HIGH | Complete in Week 3-4 (Phase 0) |
 | **Setup complexity limits adoption** | HIGH | HoloLoom Lite (pip install) |
 | **Enterprise skepticism of safety claims** | MEDIUM | Open source = verify yourself |
+| **Anthropic's interpretability speed** | MEDIUM-HIGH | Their SAE work is closest to Dark Trace and they move fast (goal: detect most problems by 2027). Mitigation: our system-level interpretability sidesteps the 10-40% SAE performance degradation they face |
 | **OpenAI/Anthropic build competing features** | MEDIUM | They can't open-source their approach; moat is community + openness |
+| **LangChain ecosystem lock-in** | MEDIUM | 600+ integrations create switching costs. Mitigation: position as complementary layer, not replacement |
 | **Talent for specialized domains** | MEDIUM | Partner program (Deloitte, EY) provides domain expertise |
 | **Learning validation gap** | MEDIUM | Publish empirical results (Phase 0, Week 7-8) |
 | **SOC 2 timeline (12+ months)** | LOW | Start early (Phase 1), doesn't block all sales |
@@ -576,32 +638,58 @@ Safety becomes a **public good**, not a proprietary advantage.
 
 ### Regulatory
 - [EU AI Act Implementation Timeline](https://artificialintelligenceact.eu/implementation-timeline/) - Full enforcement Aug 2, 2026
-- [EU AI Act 2026 Compliance Guide](https://secureprivacy.ai/blog/eu-ai-act-2026-compliance) - Key requirements
-- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework) - Voluntary standard becoming de facto requirement
-- [NIST AI RMF 2025 Updates](https://www.ispartnersllc.com/blog/nist-ai-rmf-2025-updates-what-you-need-to-know-about-the-latest-framework-changes/)
+- [EU AI Act 2026 Compliance Guide](https://sombrainc.com/blog/ai-regulations-2026-eu-ai-act) - "Screenshots and declarations are no longer sufficient — only operational evidence counts"
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework) - De facto standard for procurement
+- [EU AI Act vs NIST AI RMF (CSA)](https://cloudsecurityalliance.org/blog/2025/01/29/how-can-iso-iec-42001-nist-ai-rmf-help-comply-with-the-eu-ai-act) - Cross-framework mapping
+- [Latest AI Regulations Update (Credo AI)](https://www.credo.ai/blog/latest-ai-regulations-update-what-enterprises-need-to-know) - 59 federal + 82 state AI regulations in 2024
+- [SEC 2026 Examination Priorities](https://www.corporatecomplianceinsights.com/2026-operational-guide-cybersecurity-ai-governance-emerging-risks/) - AI governance above cryptocurrency
+- [2026 International AI Safety Report](https://internationalaisafetyreport.org/publication/international-ai-safety-report-2026) - 100+ experts, 30+ countries
 
 ### Market Size
-- [Gartner: AI Governance Spending to Reach $492M in 2026, $1B by 2030](https://www.gartner.com/en/newsroom/press-releases/2026-02-17-gartner-global-ai-regulations-fuel-billion-dollar-market-for-ai-governance-platforms)
-- [Mordor Intelligence: AI Governance Market](https://www.mordorintelligence.com/industry-reports/ai-governance-market) - $340M (2025) → $1.51B (2031), 28.15% CAGR
-- [AI Safety Market Size (July 2025)](https://quickmarketpitch.com/blogs/news/ai-safety-how-big)
+- [Gartner: AI Governance $492M in 2026](https://www.gartner.com/en/newsroom/press-releases/2026-02-17-gartner-global-ai-regulations-fuel-billion-dollar-market-for-ai-governance-platforms) - Conservative baseline
+- [GM Insights](https://www.gminsights.com/industry-analysis/ai-governance-market) - $197.9M (2024), 49.2% CAGR through 2034
+- [Wissen Research](https://www.wissenresearch.com/ai-governance-market-report/) - $750M (2024), 40% CAGR to $5.64B (2030) — aggressive estimate
+- [MarketsandMarkets](https://www.marketsandmarkets.com/Market-Reports/ai-governance-market-176187291.html) - Cloud segment dominates (72% share)
+- [Microsoft: 80% Fortune 500 Use AI Agents](https://www.microsoft.com/en-us/security/blog/2026/02/10/80-of-fortune-500-use-active-ai-agents-observability-governance-and-security-shape-the-new-frontier/) (February 2026)
+- [PwC 2025 Responsible AI Survey](https://www.pwc.com/us/en/tech-effect/ai-analytics/responsible-ai-survey.html) - 61% at strategic stage, 18% still early
 
 ### Neurosymbolic AI
 - [WEF: The Power of Neurosymbolic AI](https://www.weforum.org/stories/2025/12/neurosymbolic-ai-real-world-outcomes/) - "No hallucinations, auditable workings"
+- [Gartner 2025 AI Hype Cycle: Neuro-Symbolic AI](https://allegrograph.com/the-rise-of-neuro-symbolic-ai-a-spotlight-in-gartners-2025-ai-hype-cycle/) - Named as emerging technology
+- [Neurosymbolic AI 2026](https://kyield.substack.com/p/neurosymbolic-ai-2026) - 112 papers (2015) → 9,050 (2025-2026)
+- [StartUs Insights: Neurosymbolic AI Companies](https://www.startus-insights.com/innovators-guide/neurosymbolic-ai-companies/) - 2026 competitor landscape
 - [EY Neurosymbolic AI Platform](https://www.ey.com/en_us/insights/strategy/ey-growth-platforms-neurosymbolic-ai) - Enterprise adoption signal
-- [Kognitos $25M Series B](https://www.businesswire.com/news/home/20250624144427/en/Kognitos-Launches-Neurosymbolic-AI-Platform) - Hallucination-free automation
-- [Neurosymbolic AI 2026](https://kyield.substack.com/p/neurosymbolic-ai-2026) - Research landscape overview
-- [Cogent: 2026 Makes Machines Actually Understand](https://www.cogentinfo.com/resources/the-year-of-neuro-symbolic-ai-how-2026-makes-machines-actually-understand)
+- [Kognitos $25M Series B](https://www.businesswire.com/news/home/20250624144427/en/Kognitos-Launches-Neurosymbolic-AI-Platform)
 
-### AI Safety & Guardrails
-- [NeMo Guardrails](https://github.com/NVIDIA-NeMo/Guardrails) - NVIDIA's conversational safety toolkit
-- [Guardrails AI + NeMo Integration](https://guardrailsai.com/blog/nemoguardrails-integration) - Output validation approach
-- [ClawMoat vs LlamaFirewall vs NeMo](https://dev.to/darbogach/clawmoat-vs-llamafirewall-vs-nemo-guardrails-which-open-source-ai-agent-security-tool-should-you-128h)
-- [2025 AI Safety Index - Future of Life Institute](https://futureoflife.org/ai-safety-index-summer-2025/)
+### AI Safety & Frontier Labs
+- [Future of Life AI Safety Index](https://futureoflife.org/ai-safety-index-winter-2025/) - Anthropic highest (C+), only A grades
+- [MIT Technology Review: Mechanistic Interpretability Breakthrough 2026](https://www.technologyreview.com/2026/01/12/1130003/mechanistic-interpretability-ai-research-models-2026-breakthrough-technologies/)
+- [Gemma Scope 2 (DeepMind)](https://gist.github.com/bigsnarfdude/629f19f635981999c51a8bd44c6e2a54) - Largest open-source interpretability toolkit
+- [ROOST 2025 Review](https://roost.tools/blog/roost-in-review-a-look-back-on-2025/) - Open-source safety infrastructure
+- [AI Safety Foundation SAE Tools](https://github.com/ai-safety-foundation/sparse_autoencoder) - Open-source SAE for interpretability
+- [MATS Summer 2026](https://www.matsprogram.org/program/summer-2026) - 120 fellows, largest AI safety cohort
+- [Redwood Research](https://www.redwoodresearch.org/) - Protocols robust against deceptive AI
+
+### Orchestration Frameworks
+- [AI Agent Frameworks Compared 2026 (Arsum)](https://arsum.com/blog/posts/ai-agent-frameworks/) - LangChain vs CrewAI vs AutoGen
+- [Top Agent Frameworks (TechAhead)](https://www.techaheadcorp.com/blog/top-agent-frameworks/) - CrewAI 3x token overhead analysis
+- [AI in 2026 Predictions (Arsanjani)](https://dr-arsanjani.medium.com/ai-in-2026-predictions-mapped-to-the-agentic-ai-maturity-model-c6f851a40ef5) - "Structured reasoning tools" replacing LLM-as-orchestrator
 
 ### Enterprise AI Adoption
-- [WEF: Proof Over Promise](https://www.weforum.org/publications/proof-over-promise-insights-on-real-world-ai-adoption-from-2025-minds-organizations/) - Real-world AI adoption insights
+- [WEF: Proof Over Promise](https://www.weforum.org/publications/proof-over-promise-insights-on-real-world-ai-adoption-from-2025-minds-organizations/)
 - [Davos 2026: AI ROI Over Hype](https://fortune.com/2026/01/20/davos-world-economic-forum-leaders-shift-focus-to-ai-roi/)
 - [2026 AI Safety Report: 7 Key Findings](https://ai2.work/technology/2026-ai-safety-report-7-key-findings-every-business-leader-needs/)
+- [IBM AI Safety Report Analysis](https://www.ibm.com/think/news/new-global-ai-safety-report-means-enterprise)
+
+### Key Research Papers (2025-2026)
+- [Neurosymbolic AI for Safe High-Stakes Applications](https://www.preprints.org/manuscript/202511.1342) (Nov 2025) - Built-in safety guardrails and transparent decision traces
+- [Comprehensive Review of Neuro-symbolic AI](https://link.springer.com/article/10.1007/s13369-025-10887-3) (Dec 2025, Springer) - Robustness, uncertainty, intervenability
+- [GRACE: Neuro-Symbolic Architecture for Safe AI Alignment](https://arxiv.org/html/2502.11269v1) (2026) - Reason-based alignment
+- [Mechanistic Interpretability Consensus Paper](https://arxiv.org/pdf/2510.02917) (Jan 2025, ICLR 2026) - 29 researchers, 18 organizations, field's open problems
+- [SAE Neural Operators for Interpretability](https://arxiv.org/abs/2509.03738) (Sep 2025) - Infinite-dimensional function spaces
+- [Oxford: Automated Interpretability-Driven Model Auditing](https://aigi.ox.ac.uk/wp-content/uploads/2026/01/Automated_interp_Research_Agenda.pdf) (Jan 2026)
+- [Neurosymbolic Graph Enrichment for Grounded World Models](https://www.sciencedirect.com/science/article/pii/S030645732500069X) (Mar 2025) - Logic Augmented Generation
+- [Handbook on Neurosymbolic AI and Knowledge Graphs](https://ebooks.iospress.nl/volume/handbook-on-neurosymbolic-ai-and-knowledge-graphs) (IOS Press) - KGLM framework
 
 ---
 
