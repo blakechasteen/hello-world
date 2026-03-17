@@ -352,6 +352,96 @@ This document serves the same function for HoloLoom. Without it, the architectur
 
 **Design principle**: The Selvage is written for a reader who is intelligent but has no context. If someone encounters HoloLoom's codebase for the first time, this document should give them the intellectual framework to understand *why* the system is built the way it is — not just *how*.
 
+### Extended Vocabulary: The 2026 Structured AI Strategy
+
+The following terms come from HoloLoom's 2026 Strategic Vision (`HOLOLOOM_STRATEGY_2026.md`). They represent the shift from HoloLoom as a *technical project* to HoloLoom as a *market position* — specifically, the thesis that structured AI should be the authority over LLMs, not the other way around.
+
+These terms matter because they are the language HoloLoom uses to explain itself to the world outside the codebase: investors, enterprise buyers, regulators, and the research community.
+
+#### Structured AI
+**What it means in the strategy**: The entire reasoning, decision-making, and safety apparatus that is *not* an LLM. Knowledge graphs, Thompson Sampling, convergence engines, causal inference, safety guardrails, audit trails — everything that operates on formal logic, symbolic structure, or principled statistics rather than learned weights in a language model.
+
+**Why it matters**: The 2026 strategy inverts the industry's default architecture. Most AI systems put the LLM in charge and bolt safety on after. HoloLoom puts structured AI in charge and uses LLMs as *supervised participants*. "Structured AI as the Authority" is the thesis statement of the entire strategy.
+
+**The inversion**:
+```
+Industry default:              HoloLoom:
+LLM (authority)                Structured AI (authority)
+  └─ Guardrails (wrapper)        ├─ Safety Guardrails (built-in)
+  └─ Hope it works               ├─ Knowledge Graph (grounded)
+                                 ├─ Thompson Sampling (learns)
+                                 ├─ Audit Trail (provenance)
+                                 └─ LLM (supervised participant)
+```
+
+#### Neurosymbolic AI
+**What it means in the strategy**: The formal name for what HoloLoom *is*. A system that combines neural methods (embeddings, attention, learned policies) with symbolic methods (knowledge graphs, formal logic, causal inference, rule-based safety). The term comes from the AI research community and is now used by the World Economic Forum, EY, Gartner, and the academic literature.
+
+**Why it matters**: "Neurosymbolic AI" is HoloLoom's market category. The strategy calls for repositioning from generic "AI tool" to "neurosymbolic AI safety platform." The WEF's December 2025 endorsement — *"Neurosymbolic AI operates without the potentially catastrophic hallucinations common in other AI systems, and its decision-making process is completely transparent and auditable"* — describes HoloLoom's architecture exactly.
+
+**Research signal**: Google Scholar resources labeled "neurosymbolic AI" went from 112 (2015–2016) to 9,050 (2025–2026) — an 80x increase. HoloLoom was built before the term became mainstream.
+
+#### Safety by Construction
+**What it means in the strategy**: Safety is not a feature, a wrapper, or a compliance checkbox. It is a property of the architecture. You cannot remove the safety from HoloLoom without removing the intelligence, because they are the same thing — the structured reasoning *is* the safety mechanism.
+
+**Contrast with "safety by guardrail"**: Most AI safety products (NeMo Guardrails, Guardrails AI, LlamaFirewall, LLM Guard) add safety *around* an LLM. They filter inputs, validate outputs, and hope the rules catch problems. This is "safety by guardrail." HoloLoom's position is that this approach is fundamentally insufficient — you cannot make a black box safe by wrapping it in rules, because the rules can't anticipate every failure mode of a system they can't see into.
+
+**The tagline**: *"AI Safety Through Architecture, Not Afterthought."*
+
+#### The Regulatory Tsunami
+**What it means in the strategy**: Three converging regulatory forces that create a *mandatory* market for what HoloLoom provides:
+
+1. **EU AI Act** (full high-risk enforcement: August 2, 2026) — penalties up to €35M or 7% of global annual turnover. Requires audit trails, human oversight, transparency, robustness testing, risk management. HoloLoom meets all requirements natively.
+
+2. **NIST AI Risk Management Framework** — the de facto standard for U.S. federal procurement and increasingly for private enterprise. HoloLoom's 4-module alignment maps directly to NIST's 4 functions (GOVERN → Safety Guardrails, MAP → Dark Trace, MEASURE → Confidence + Analytics, MANAGE → Audit Trail + Circuit Breakers).
+
+3. **Industry-specific regulations** (HIPAA, SOC 2, GDPR, KOSA, SEC AI governance priorities, OMB M-26-04 federal AI governance directive) — all converging on the same requirement: *prove your AI is safe, auditable, and explainable*.
+
+**Why it matters**: The regulations transform HoloLoom from "interesting technology" to "compliance requirement." Enterprise buyers in healthcare, finance, legal, and government don't choose HoloLoom because it's elegant — they choose it because the alternative is regulatory penalties.
+
+#### HoloLoom Lite / Pro / Enterprise
+**What they are**: The three-tier product strategy for market entry.
+
+| Tier | Price | What It Is | Purpose |
+|------|-------|------------|---------|
+| **Lite** | Free, open source | `pip install hololoom-lite`. 5 methods: experience(), recall(), query(), reflect(), audit(). In-memory, zero dependencies. Safety enabled by default. | Adoption funnel. Get developers using HoloLoom with zero friction. |
+| **Pro** | $500–$5,000/month SaaS | Full 9-step weaving, persistent memory (Neo4j + Qdrant), Dark Trace interpretability dashboard, EU AI Act compliance reports, Thompson Sampling continuous learning. | Revenue. Mid-market customers who need production features. |
+| **Enterprise** | $50K–$200K/year | Everything in Pro + on-premise/private cloud, custom safety policies per domain, SOC 2/HIPAA compliance packages, dedicated support + SLA, Federation network (optional). | Large enterprise in regulated industries. |
+
+**The conversion path**: Lite → Pro → Enterprise is a natural upgrade funnel. Developers discover HoloLoom through Lite. When they need persistence, interpretability, or compliance reports, they upgrade to Pro. When their organization needs on-premise deployment, custom policies, or compliance certification, they upgrade to Enterprise.
+
+#### Federation Network
+**What it means in the strategy**: The long-term vision for decentralized AI safety. A network where every node (hospital, bank, university, government agency, startup) runs HoloLoom with local data sovereignty, contributes to shared safety knowledge, and verifies other nodes' safety claims through Byzantine consensus.
+
+**Why it matters**: Safety becomes a *public good*, not a proprietary advantage. No single company controls the safety layer. The network gets smarter as more nodes join. This is the endgame — not just a product, but an infrastructure.
+
+**Technical foundation**: Already partially built — the Federation system (`hololoom/federation/`) implements SWIM Gossip Protocol + Kademlia DHT for decentralized node discovery and communication.
+
+#### The Guardrails Gap
+**What it means in the strategy**: The observation that every existing AI safety product addresses *one layer* of the problem — conversational flow control (NeMo), output validation (Guardrails AI), prompt security (LlamaFirewall), input/output scanning (LLM Guard) — but none addresses the *architecture*. They are all guardrails bolted onto LLM-first systems.
+
+**HoloLoom's position**: The gap is not that guardrails are bad. The gap is that guardrails alone are insufficient. You also need structured reasoning, continuous learning, interpretability, causal inference, and cryptographic provenance. HoloLoom provides the full stack.
+
+#### Defensible Moats
+**What they are in the strategy**: Six reasons HoloLoom can't be easily replicated, even by well-funded competitors.
+
+1. **Architectural moat** (12+ month lead): The 9-step weaving cycle would require competitors to abandon their LLM-first architectures entirely.
+2. **Learning system moat** (6–12 month lead): Making 7 learning systems work together without interference is combinatorially complex.
+3. **Interpretability moat** (12+ month lead): 244 semantic dimensions + SAE decomposition + Dark Trace = the most comprehensive interpretability suite outside Anthropic's internal tools.
+4. **Data moat** (grows with adoption): Every deployment trains domain-specific Thompson Sampling priors that competitors would need years to replicate.
+5. **Community moat** (grows with time): Open source creates a verification flywheel — researchers verify, contributors improve, enterprises trust.
+6. **Regulatory moat** (timing): First open-source platform mapping directly to EU AI Act and NIST AI RMF becomes the reference architecture consultants recommend.
+
+#### AIBOM (AI Bill of Materials)
+**What it means**: Mandated by OMB M-26-04 for all federal AI systems. An inventory of all AI components, data sources, and models used in a system — analogous to SBOM (Software Bill of Materials) in cybersecurity.
+
+**HoloLoom's response**: Spacetime provenance already tracks every component involved in every decision. An AIBOM is a natural export from the existing audit trail.
+
+#### The 30-Second Pitch
+**What it is**: The compressed strategic narrative for investor/buyer conversations.
+
+> *"Every AI safety solution today tries to make a black box safe by wrapping it in rules. HoloLoom does the opposite: structured AI makes the decisions, LLMs are supervised participants. The result? No hallucinations from the reasoning layer, cryptographic audit trails on every decision, 244 interpretable dimensions you can inspect, and a system that learns from every interaction. It's open source, it maps directly to EU AI Act requirements, and it ships with safety enabled by default. We're not bolting safety onto AI. We're building AI that's safe by construction."*
+
 ---
 
 ## Part III: The Convergence
