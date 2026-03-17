@@ -11,9 +11,10 @@ Usage:
 """
 
 import argparse
+import json
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import torch
@@ -46,6 +47,35 @@ def load_activation_batches(
     combined = np.concatenate(all_activations, axis=0)
     logger.info(f"Total activations: {combined.shape}")
     return combined
+
+
+def load_governance_labels(
+    labels_dir: str,
+) -> List[Dict]:
+    """Load governance label JSON files produced by GovernanceFeedbackCollector.
+
+    Returns a flat list of labeled samples, each containing 'text',
+    'correlation_id', 'activation_source', and 'labels' (list of dicts
+    with checkpoint, primary_score, shadow_score, governance_outcome).
+
+    These can be used as weighted cross-entropy targets during supervised
+    SAE fine-tuning — each label's primary_score maps to a governance
+    feature direction the SAE should learn to separate.
+    """
+    labels_path = Path(labels_dir)
+    if not labels_path.exists():
+        logger.warning(f"Labels directory not found: {labels_path}")
+        return []
+
+    all_samples: List[Dict] = []
+    for json_file in sorted(labels_path.glob("labels_*.json")):
+        with open(json_file) as f:
+            batch = json.load(f)
+        all_samples.extend(batch)
+        logger.info(f"Loaded {len(batch)} governance labels from {json_file.name}")
+
+    logger.info(f"Total governance labels: {len(all_samples)}")
+    return all_samples
 
 
 def train_sae(
@@ -194,8 +224,23 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--l1", type=float, default=3e-4)
+    parser.add_argument(
+        "--labels-dir",
+        default=None,
+        help="Directory of governance label JSON files (from GovernanceFeedbackCollector). "
+             "Used as weighted cross-entropy targets for supervised fine-tuning.",
+    )
 
     args = parser.parse_args()
+
+    # Load governance labels if provided
+    governance_labels = None
+    if args.labels_dir:
+        governance_labels = load_governance_labels(args.labels_dir)
+        if governance_labels:
+            logger.info(f"Loaded {len(governance_labels)} governance labels for supervised training")
+        else:
+            logger.warning("--labels-dir specified but no labels found")
 
     if args.mode == "single":
         activations = load_activation_batches(args.activation_dir, "neural_core")

@@ -1,0 +1,34 @@
+# Detector Registry Configuration
+# Primary: enforced detector. Shadow: logged for comparison, not enforced.
+# Graduation: criteria for auto-promoting shadow to primary.
+
+detectors:
+  deception:
+    primary: heuristic
+    shadow: sae
+    graduation:
+      min_samples: 500
+      agreement_threshold: 0.85
+      max_mean_delta: 0.15
+      auto_graduate: true
+
+  adversarial:
+    primary: heuristic
+    shadow: sae
+    graduation:
+      min_samples: 1000
+      agreement_threshold: 0.90
+      max_mean_delta: 0.10
+      auto_graduate: true
+
+  power_seeking:
+    primary: heuristic
+    shadow: null
+
+  self_modification:
+    primary: heuristic
+    shadow: sae
+    graduation:
+      min_samples: 200
+      agreement_threshold: 0.80
+      auto_graduate: false

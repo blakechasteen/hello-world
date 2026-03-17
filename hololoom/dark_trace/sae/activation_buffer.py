@@ -13,10 +13,9 @@ for supervised feature discovery.
 import asyncio
 import json
 import logging
-import os
 import time
 from collections import deque
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
@@ -148,15 +147,31 @@ class ActivationBuffer:
         }
 
 
-# Global singleton — imported by tap points
+# ---------------------------------------------------------------------------
+# Singleton access — supports both module-global and server-state injection.
+#
+# Tap points call get_activation_buffer().  By default it returns the
+# module-level _global_buffer.  When the server starts it can call
+# set_activation_buffer(buf) to inject the instance it owns, so the
+# same object is reachable from both server_state and tap-point code.
+# ---------------------------------------------------------------------------
+
 _global_buffer: Optional[ActivationBuffer] = None
 
 
 def get_activation_buffer() -> Optional[ActivationBuffer]:
+    """Return the shared ActivationBuffer (or None if not yet initialized)."""
     return _global_buffer
 
 
+def set_activation_buffer(buf: ActivationBuffer) -> None:
+    """Inject a buffer created elsewhere (e.g., server startup)."""
+    global _global_buffer
+    _global_buffer = buf
+
+
 def init_activation_buffer(**kwargs) -> ActivationBuffer:
+    """Create a new buffer and install it as the global singleton."""
     global _global_buffer
     _global_buffer = ActivationBuffer(**kwargs)
     return _global_buffer

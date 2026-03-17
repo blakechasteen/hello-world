@@ -113,6 +113,9 @@ class ContinuousValidator:
         # Alerts queue
         self.alerts = []
 
+        # Background validation flag
+        self._running = False
+
         # Load validation set
         self.validation_set = self._load_validation_set()
 
