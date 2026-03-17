@@ -194,6 +194,9 @@ class LiteMemoryBus:
         self._audit: List[Dict[str, Any]] = []
         self._max_audit = 1000
 
+        # Post-store hooks: list of fn(item_id, StoredItem) callables
+        self._post_store_hooks: List[Callable] = []
+
         # Stats
         self._query_count = 0
         self._resolution_counts: Dict[str, int] = {
@@ -372,7 +375,7 @@ class LiteMemoryBus:
                 return _return(self._build_result(items, q, ResolutionPath.EXACT))
 
         # Level 2: STRUCTURED — predicate filters
-        if q.entity_type or q.memory_type or q.time_after or q.time_before:
+        if q.entity_type or q.memory_type or q.time_after or q.time_before or q.properties_match:
             items = self._query_structured(q)
             if items:
                 return _return(self._build_result(items, q, ResolutionPath.STRUCTURED))
@@ -391,6 +394,13 @@ class LiteMemoryBus:
 
         # Nothing matched
         return _return(MemoryResult(items=[], query=q, resolution_path="none", token_estimate=0))
+
+    def get_item(self, item_id: str) -> Optional[StoredItem]:
+        """Public accessor for a stored item by ID. Returns None if not found or expired."""
+        item = self._items.get(item_id)
+        if item is None or item.is_expired():
+            return None
+        return item
 
     def _query_exact(self, entity_ids: List[str]) -> List[Dict]:
         """Level 1: Direct ID lookup."""
@@ -420,6 +430,16 @@ class LiteMemoryBus:
                 continue
             if item.importance < q.min_importance:
                 continue
+            # Properties match: all specified keys must equal
+            if q.properties_match:
+                props = item.properties or {}
+                skip = False
+                for k, v in q.properties_match.items():
+                    if props.get(k) != v:
+                        skip = True
+                        break
+                if skip:
+                    continue
             item.touch()
             results.append(item.to_dict())
 
@@ -581,6 +601,14 @@ class LiteMemoryBus:
             str(uuid.uuid4())[:8], None,
             detail={"action": "store", "node_id": node_id, "type": item.memory_type}
         )
+
+        # Fire post-store hooks (e.g. LiveSemanticIndex.hook_store)
+        for hook in self._post_store_hooks:
+            try:
+                hook(node_id, stored)
+            except Exception as e:
+                logger.warning("Post-store hook failed: %s", e)
+
         return node_id
 
     async def store_edge(self, source_id: str, target_id: str, rel_type: str = "RELATED_TO"):

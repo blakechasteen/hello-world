@@ -72,6 +72,7 @@ class MemoryQuery:
     semantic_text: Optional[str] = None
     max_results: int = 5
     min_importance: float = 0.1
+    properties_match: Optional[Dict[str, Any]] = None
 
 
 @dataclass
