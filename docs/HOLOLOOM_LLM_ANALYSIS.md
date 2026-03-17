@@ -442,6 +442,133 @@ LLM (authority)                Structured AI (authority)
 
 > *"Every AI safety solution today tries to make a black box safe by wrapping it in rules. HoloLoom does the opposite: structured AI makes the decisions, LLMs are supervised participants. The result? No hallucinations from the reasoning layer, cryptographic audit trails on every decision, 244 interpretable dimensions you can inspect, and a system that learns from every interaction. It's open source, it maps directly to EU AI Act requirements, and it ships with safety enabled by default. We're not bolting safety onto AI. We're building AI that's safe by construction."*
 
+#### The Realization
+**What it means in the strategy**: The moment of recognition that what was built as a technical project is actually a market-ready neurosymbolic AI platform — and that the market is about to demand exactly this. Part I of the strategy document. The realization is not that HoloLoom is good technology. The realization is that HoloLoom is what the World Economic Forum, EY, Gartner, Gary Marcus, and Judea Pearl have all been independently calling for.
+
+#### LLM-as-Orchestrator Paradigm
+**What it means**: The dominant architecture in 2024–2026 where an LLM makes all decisions and orchestrates other components. Used by LangChain, LlamaIndex, CrewAI, AutoGen. The strategy identifies this as a *wrong turn* — LLMs produce variable outputs, waste tokens on coordination (CrewAI: 3x overhead), can't learn from past interactions, and have no formal safety.
+
+**HoloLoom's inversion**: Structured AI orchestrates. The LLM is one tool among many, called when needed, supervised by deterministic logic.
+
+#### Supervised Participant
+**What it means**: The role LLMs play in HoloLoom's architecture. An LLM is not the brain — it is a skilled consultant called in when the structured reasoning system determines natural language generation, summarization, or creative elaboration is needed. The structured system decides *when* to call the LLM, *what* to ask it, and *whether to trust* the response.
+
+#### Cryptographic Audit Trail
+**What it means**: Every decision HoloLoom makes is logged with SHA-256 chain sealing, creating a tamper-proof record. If anyone modifies a past decision log, the cryptographic chain breaks and the tampering is detectable. This is not just logging — it is *provenance with integrity guarantees*.
+
+**Why it matters for regulation**: The EU AI Act requires "traceability." SOC 2 requires audit logs. HIPAA requires access logging. A cryptographic audit trail satisfies all three simultaneously.
+
+#### Spacetime Provenance
+**What it means in the strategy**: The specific mechanism by which HoloLoom achieves traceability. Every Spacetime output contains a complete `WeavingTrace` — which pattern was selected, which memories were retrieved, which features were extracted, which tool was chosen, and why. This maps directly to the EU AI Act's requirement for "accuracy metrics and performance monitoring."
+
+#### AI-TRiSM
+**What it means**: Gartner's framework — AI Trust, Risk, and Security Management. The analyst category that HoloLoom falls into. Gartner predicts the AI governance platform market will reach $492M in 2026, driven by EU AI Act enforcement. HoloLoom's positioning as a "neurosymbolic AI safety platform" sits squarely in this category.
+
+#### Phase 0: Foundation / "Make It Real"
+**What it means**: The immediate priority (March–June 2026). Fix 3 critical security vulnerabilities (eval(), pickle, command injection), complete Anthropic/OpenAI LLM integration, ship `pip install hololoom-lite`, create the 60-second demo, publish learning validation results. This is not feature work — this is *removing the barriers between the technology and the market*.
+
+#### Phase 1: Validation / "Prove It Works"
+**What it means**: July–December 2026. Get 3 paying pilot customers, publish benchmarks against LLM-first systems, complete EU AI Act compliance documentation, reach 1,000+ GitHub stars, initiate SOC 2 audit. The goal is empirical proof that the architecture delivers on its promises.
+
+#### Phase 2: Scale / "Make It Standard"
+**What it means**: 2027. Department Marketplace (Healthcare, Finance, Legal departments with 70/30 revenue share), Partnership channel (Deloitte, Accenture, EY, KPMG), Academic program (free for research), Federation v1. Target: $2M ARR.
+
+#### Department Marketplace
+**What it means**: A marketplace where domain-specific "departments" (Healthcare, Finance, Legal, etc.) can be purchased as add-ons to HoloLoom Pro/Enterprise. Each department contains domain-specific safety policies, compliance mappings, and specialized reasoning. Revenue model: 70/30 split (HoloLoom keeps 30%).
+
+#### EU AI Act
+**What it is**: The world's first comprehensive AI law. Full high-risk enforcement begins August 2, 2026 — 138 days from the strategy's writing date. Penalties up to €35M or 7% of global annual turnover. Requires: accuracy metrics, robustness testing, cybersecurity resilience, human oversight, transparency, traceability. HoloLoom meets all requirements natively through Spacetime provenance, Thompson Sampling, Safety Guardrails, human-in-the-loop escalation, and the cryptographic audit trail.
+
+#### NIST AI RMF (AI Risk Management Framework)
+**What it is**: The U.S. de facto standard for AI governance, referenced by federal procurement and increasingly by private enterprise. Has 4 core functions: GOVERN, MAP, MEASURE, MANAGE. HoloLoom maps directly: GOVERN → Safety Guardrails + Department Policies; MAP → Dark Trace + Semantic Calculus; MEASURE → Confidence scores + Analytics; MANAGE → Audit Trail + Circuit Breakers + Human-in-Loop.
+
+#### OMB M-26-04
+**What it is**: The U.S. Office of Management and Budget directive (April 2026) establishing AI governance requirements for all federal agencies. Mandates AIBOM (AI Bill of Materials), model cards, fairness testing, audit trails, human-in-the-loop, stress testing, explainability, and incident response plans. HoloLoom meets 7 of 8 requirements out of the box.
+
+#### HIPAA
+**What it is in the strategy context**: The U.S. healthcare privacy law. Requires audit logs, encryption, and Business Associate Agreements. One of HoloLoom's target verticals — healthcare organizations need AI that is both useful and HIPAA-compliant. HoloLoom's cryptographic audit trail and safety gating meet HIPAA requirements natively.
+
+#### SOC 2
+**What it is in the strategy context**: An annual third-party security audit (~$50K). Required for enterprise sales in finance, healthcare, and government. The strategy calls for initiating SOC 2 in Phase 1 (H2 2026). Not a technology — a certification that proves your technology is trustworthy.
+
+#### KOSA (Kids Online Safety Act)
+**What it is**: U.S. legislation that passed the Senate 91-3 (rare bipartisan support). Establishes safety requirements for AI systems used by minors. The strategy connects HoloLoom to child safety as part of its broader mission: *"build AI systems our children can trust."*
+
+#### GDPR
+**What it is in the strategy context**: EU data protection regulation. Requires data provenance and right to erasure. HoloLoom's memory lifecycle management (archive instead of delete, complete provenance) aligns with GDPR requirements.
+
+#### SEC 2026 Examination Priorities
+**What it means**: The U.S. Securities and Exchange Commission now ranks AI governance *above cryptocurrency* as a top examination priority. Signal that financial services companies face regulatory pressure to adopt AI governance tooling.
+
+#### 2026 International AI Safety Report
+**What it is**: A report by Yoshua Bengio and 100+ experts from 30+ countries. Key finding: *"AI safety is no longer mainly a model issue, but rather a system and deployment issue."* This directly validates HoloLoom's system-level approach — safety through architecture, not through fixing individual models.
+
+#### Gary Marcus Vindication
+**What it means in the strategy**: Gary Marcus — the most vocal critic of LLM-only approaches — predicted in 2022 that LLMs would plateau on reasoning, hallucinate persistently, and require hybrid architectures. He was dismissed as a naysayer. By 2025, every major lab acknowledged these exact problems. The strategy positions HoloLoom as *"what Marcus has been asking for"* — the practical implementation of his thesis that AI needs structured symbolic components.
+
+#### Judea Pearl's Limitations
+**What it means in the strategy**: Pearl's argument that there are *"mathematical limitations that are not crossable by scaling up"* — that LLMs learn how we *describe* the world, not how the world *works*. HoloLoom's Causal Reasoning engine implements Pearl's do-calculus, giving it the counterfactual inference that LLMs fundamentally cannot achieve through pattern matching alone.
+
+#### AlphaProof / AlphaGeometry
+**What they are in the strategy**: DeepMind systems that won IMO medals by using formal verification to vet neural proposals — structured symbolic reasoning as the authority over neural networks. The strategy cites them as empirical proof that the neurosymbolic approach works: *"That's exactly what HoloLoom does."*
+
+#### The Neurosymbolic Moment
+**What it means**: The convergence of signals — WEF endorsement, EY platform launch, Kognitos funding, Gartner hype cycle placement, 80x increase in research papers — indicating that neurosymbolic AI is transitioning from academic curiosity to enterprise requirement. Gartner places it on a 2-5 year horizon before broad adoption. HoloLoom is already built.
+
+#### NeMo Guardrails
+**What it is in the strategy**: NVIDIA's conversational flow control framework. Representative of the "guardrails bolted onto LLMs" approach. Limitation: no learning, no memory, no interpretability. Used as a contrast to HoloLoom's architectural safety.
+
+#### Guardrails AI
+**What it is in the strategy**: Output validation framework. Checks LLM outputs against rules. Limitation: no structured reasoning, no audit trail. Another bolt-on safety example.
+
+#### LlamaFirewall
+**What it is in the strategy**: Meta's prompt security framework. Blocks adversarial inputs. Limitation: no causal reasoning, no provenance. Addresses one attack vector, not the architecture.
+
+#### CrewAI
+**What it is in the strategy**: Multi-agent framework cited for its 3x token overhead on simple tasks — a symptom of the LLM-as-orchestrator paradigm. When an LLM coordinates other LLMs, you pay triple in tokens for the managerial overhead.
+
+#### Kognitos
+**What it is in the strategy**: The closest funded competitor ($25M Series B, June 2025). Neurosymbolic AI for business process automation. Limitation: narrow domain focus. HoloLoom has deeper memory, interpretability, and learning.
+
+#### Beyond Limits
+**What it is in the strategy**: Industrial AI company (~$130M total funding). Neurosymbolic AI for oil, gas, manufacturing. Limitation: industrial-only. HoloLoom has better interpretability and a broader safety framework.
+
+#### Permion
+**What it is in the strategy**: Closest architectural competitor. Neurosymbolic virtual machine for edge/cloud. Limitation: no Thompson Sampling learning, no safety framework comparable to HoloLoom's.
+
+#### Thorn
+**What it is in the strategy**: Organization founded by Ashton Kutcher & Demi Moore that builds AI safety tools specifically for child protection. Cited as proof that the child safety AI market exists and matters. Connects to HoloLoom's mission statement.
+
+#### Common Sense Media
+**What it is in the strategy**: Organization that rates AI products for child safety. Creates market pressure on every platform to demonstrate responsible AI. Part of the regulatory/social pressure landscape HoloLoom is positioned to address.
+
+#### METR (formerly ARC Evals)
+**What it is in the strategy**: Third-party evaluator of autonomous AI capabilities. Conducts evaluations for Anthropic and OpenAI. Cited as evaluation-only — no production tooling. Validates the need but doesn't fill it.
+
+#### Neel Nanda's SAE Assessment
+**What it means in the strategy**: Leading mechanistic interpretability researcher who stated in September 2025: *"The most ambitious vision of mechanistic interpretability I once dreamed of is probably dead."* SAE-reconstructed activations still cause 10-40% performance degradation. The strategy uses this to argue that HoloLoom's *system-level* interpretability (244 semantic dimensions + structured reasoning provenance) sidesteps the fundamental limitations of *model-level* interpretability.
+
+#### Responsible AI Market
+**What it is**: The broader market category encompassing governance, bias detection, explainability, and audit tooling. Sized at $1.09B (2024) → $10.26B by 2030 at 45.2% CAGR (NextMSC Research). Larger than the AI governance sub-market alone. HoloLoom addresses multiple segments simultaneously.
+
+#### AI Governance Market
+**What it is**: The specific market for AI governance platforms. Conservative estimate: $492M (2026, Gartner). Aggressive estimate: $5.64B by 2030 (Wissen Research). The wide range reflects different analyst scopes. The strategy uses the Gartner figure as baseline.
+
+#### Davos 2026 Signal
+**What it means**: The World Economic Forum's 2026 theme shifted from AI hype to AI ROI — enterprises want proof, not promises. The strategy reads this as favorable: HoloLoom's empirical learning validation and interpretability provide the proof that the market now demands.
+
+#### The Safety Network
+**What it means**: The long-term Federation vision where safety is a *public good* maintained by a decentralized network of nodes (hospitals, banks, universities, government agencies, startups). Each node runs HoloLoom with local data sovereignty, contributes to shared safety knowledge, and verifies other nodes through Byzantine consensus. No single entity controls the safety layer.
+
+#### hololoom.ai
+**What it is**: The planned website for HoloLoom's public-facing identity. Part of Phase 0 deliverables. Safety-first messaging, 60-second demo, EU AI Act compliance mapping.
+
+#### "Structured AI as Authority" Thesis Paper
+**What it is**: A planned 2-3 page paper for arXiv submission (Phase 0) and conference presentation (NeurIPS 2026 / ICML 2026 workshop). Formalizes HoloLoom's core architectural argument for the academic community.
+
+#### HoloLoom (The Name)
+**What it means**: *Holographic* (every part contains the whole) + *Loom* (weaving threads into fabric). Every decision contains the full context of how it was made (holographic provenance), woven from independent threads of reasoning. Safety is woven into the fabric — you can't separate the safety from the intelligence.
+
 ---
 
 ## Part III: The Convergence
