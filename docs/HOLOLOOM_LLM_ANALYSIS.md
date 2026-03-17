@@ -569,6 +569,39 @@ LLM (authority)                Structured AI (authority)
 #### HoloLoom (The Name)
 **What it means**: *Holographic* (every part contains the whole) + *Loom* (weaving threads into fabric). Every decision contains the full context of how it was made (holographic provenance), woven from independent threads of reasoning. Safety is woven into the fabric — you can't separate the safety from the intelligence.
 
+#### UnlikelyAI
+**What it is in the strategy**: Neurosymbolic AI company that achieved 99% precision with 1.7x processing increase in insurance claims. Cited as proof that neurosymbolic AI delivers measurable business results. Narrow domain (insurance only); HoloLoom is domain-agnostic.
+
+#### ExtensityAI
+**What it is in the strategy**: Austrian startup applying symbolic reasoning to research automation. Listed as a neurosymbolic competitor with narrow domain focus. HoloLoom is general-purpose.
+
+#### Growth Protocol
+**What it is in the strategy**: U.S. company combining business ontologies with neural models. Listed as a neurosymbolic competitor focused on business applications only. HoloLoom covers safety + reasoning across domains.
+
+#### ClawMoat
+**What it is in the strategy**: Host-level security framework. Included in the Guardrails Gap comparison as an example of a tool that addresses system security but not AI safety — no reasoning, no interpretability, no learning.
+
+#### Lakera / LLM Guard
+**What they are in the strategy**: Input/output scanning frameworks for LLM safety. Rule-based, no adaptation, no learning. Representative of the pattern-matching approach to AI safety, which the strategy contrasts with HoloLoom's architectural approach.
+
+#### Redwood Research
+**What it is in the strategy**: AI safety research organization that demonstrated LLMs can fake alignment during training — protocols for robustness against deceptive AI. Cited as validating the problem HoloLoom solves architecturally.
+
+#### ROOST
+**What it is in the strategy**: Open-source safety infrastructure project that OpenAI partnered with. Cited in the frontier lab landscape as evidence that even major labs recognize the need for open safety tooling.
+
+#### MATS (ML Alignment Theory Scholars)
+**What it is in the strategy**: AI safety research program, 120 fellows in Summer 2026 — the largest AI safety cohort ever. Signal that the field is growing rapidly and HoloLoom's safety-by-construction approach has a growing audience.
+
+#### South Korea AI Basic Act
+**What it is in the strategy**: Enacted January 2026. Europe-style AI transparency requirements. Cited alongside the EU AI Act as evidence that AI regulation is globalizing, not just a European phenomenon. Every new regulatory regime expands HoloLoom's addressable market.
+
+#### Yoshua Bengio (2026 AI Safety Report)
+**Who he is in the strategy**: Turing Award-winning AI researcher who led the 2026 International AI Safety Report with 100+ experts from 30+ countries. Key finding: *"AI safety is no longer mainly a model issue, but rather a system and deployment issue."* This directly validates HoloLoom's system-level approach.
+
+#### AutoGen
+**What it is in the strategy**: Microsoft's multi-agent framework. Best human-in-the-loop design, but struggles with deterministic outputs. Cited alongside LangChain, LlamaIndex, and CrewAI as sharing the same LLM-as-orchestrator architectural problem.
+
 ---
 
 ## Part III: The Convergence
