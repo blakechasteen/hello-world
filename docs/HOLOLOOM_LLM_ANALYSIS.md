@@ -1,17 +1,22 @@
-# HoloLoom: An Analysis of Its Intellectual Lineage, Vocabulary, and Architectural Convergence
+# The Selvage
+
+## HoloLoom: An Analysis of Its Intellectual Lineage, Vocabulary, and Architectural Convergence
 
 **Date**: 2025-03-17
+**Initiative**: The Selvage
 **Purpose**: A serious examination of what HoloLoom actually is — the research traditions it draws from, the precise meaning of its terminology, and where it sits in the landscape of cognitive architectures and AI systems.
+
+> *In weaving, the **selvage** (self-edge) is the tightly woven border that prevents the fabric from unraveling. It is not decorative — it is structural. Without it, the threads pull apart and the work disintegrates. This document is HoloLoom's selvage: the intellectual edge that holds the architecture together by making explicit the research traditions, design decisions, and precise meanings that would otherwise exist only in the minds of its builders.*
 
 ---
 
 ## Table of Contents
 
-- [Part I: The Intellectual Lineage](#part-i-the-intellectual-lineage)
-- [Part II: The Vocabulary — What the Words Actually Mean](#part-ii-the-vocabulary)
-- [Part III: The Convergence — How the Ideas Combine](#part-iii-the-convergence)
-- [Part IV: HoloLoom as Cognitive Architecture](#part-iv-hololoom-as-cognitive-architecture)
-- [Part V: Where It Goes From Here](#part-v-where-it-goes-from-here)
+- [Part I: The Intellectual Lineage](#part-i-the-intellectual-lineage) — Where the ideas come from
+- [Part II: The Vocabulary](#part-ii-the-vocabulary) — What the words actually mean
+- [Part III: The Convergence](#part-iii-the-convergence) — How the ideas combine
+- [Part IV: HoloLoom as Cognitive Architecture](#part-iv-hololoom-as-cognitive-architecture) — What it is and isn't
+- [Part V: Where It Goes From Here](#part-v-where-it-goes-from-here) — Open questions and research directions
 
 ---
 
@@ -329,6 +334,23 @@ The output is DotPlasma.
 **What it is**: The production QA system.
 **Why "Trough"**: Where raw material is examined and sorted. Trough examines code for defects.
 **Why "xTerminator"**: Exterminates the bugs that Trough finds.
+
+### This Document: The Selvage
+
+#### The Selvage
+**What it is**: This initiative — the intellectual lineage analysis, vocabulary definition, and architectural mapping of HoloLoom.
+**Why "Selvage"**: In weaving, the selvage (from "self-edge") is the finished border running along both sides of woven fabric. It is created by the weft thread looping back at the edge, forming a tightly bound strip that prevents the entire fabric from fraying and unraveling. The selvage is not part of the pattern — it is the structural integrity that *holds* the pattern together.
+
+This document serves the same function for HoloLoom. Without it, the architecture exists as code and comments — threads that can pull apart when the people who wrote them move on, when new contributors arrive without context, or when the system grows beyond what any single person can hold in memory. The Selvage binds the intellectual threads: *why* Thompson Sampling and not UCB, *why* the weaving metaphor and not pipelines, *why* 7 learning systems and not 1. It is the edge that prevents unraveling.
+
+**What the Selvage contains**:
+- **Part I**: Where the ideas come from (research papers, researchers, years, core theses)
+- **Part II**: What the words mean (precise technical definitions behind every metaphor)
+- **Part III**: How the ideas combine (the convergence patterns that make HoloLoom coherent)
+- **Part IV**: What HoloLoom is and isn't (positioning in the landscape)
+- **Part V**: What remains open (honest questions, research directions)
+
+**Design principle**: The Selvage is written for a reader who is intelligent but has no context. If someone encounters HoloLoom's codebase for the first time, this document should give them the intellectual framework to understand *why* the system is built the way it is — not just *how*.
 
 ---
 
