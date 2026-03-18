@@ -88,6 +88,7 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
             'absolute z-tooltip pointer-events-none',
             'opacity-0 invisible',
             'group-hover:opacity-100 group-hover:visible',
+            'group-focus-within:opacity-100 group-focus-within:visible',
             'transition-all duration-fast',
             posStyles.container
           )}

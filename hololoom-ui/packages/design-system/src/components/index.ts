@@ -93,3 +93,8 @@ export {
   AvatarGroup,
   type AvatarGroupProps,
 } from './Avatar';
+
+export {
+  ErrorBoundary,
+  type ErrorBoundaryProps,
+} from './ErrorBoundary';

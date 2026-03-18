@@ -73,7 +73,7 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
   return (
     <div className={`flex flex-col h-full ${className}`}>
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" role="log" aria-live="polite" aria-label="Chat messages">
         {messages.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cosmic-nebula/20 to-cosmic-aurora/20 flex items-center justify-center mb-4">
@@ -212,6 +212,8 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
             <span className="text-xs text-fg-tertiary">Reasoning Mode:</span>
             <button
               onClick={() => setShowModeSelector(!showModeSelector)}
+              aria-expanded={showModeSelector}
+              aria-label={`Reasoning mode: ${selectedMode}. Click to change.`}
               className="flex items-center gap-1 text-xs text-cosmic-nebula hover:text-cosmic-aurora transition-colors"
             >
               <ReasoningBadge mode={selectedMode} size="sm" />
@@ -224,6 +226,7 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
               {reasoningModes.map(({ mode, label, description }) => (
                 <button
                   key={mode}
+                  aria-pressed={selectedMode === mode}
                   onClick={() => {
                     setSelectedMode(mode);
                     setShowModeSelector(false);
@@ -262,6 +265,7 @@ export function ChatInterface({ className, pendingReference, onClearReference }:
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask HoloLoom anything..."
+            aria-label="Chat message input"
             disabled={isLoading}
             className="flex-1"
           />

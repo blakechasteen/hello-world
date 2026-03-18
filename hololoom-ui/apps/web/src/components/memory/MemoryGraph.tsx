@@ -56,6 +56,7 @@ export function MemoryGraph({
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [focusedNodeIndex, setFocusedNodeIndex] = useState(-1);
 
   // Generate mock graph data
   useEffect(() => {
@@ -288,10 +289,10 @@ export function MemoryGraph({
             <ResetIcon />
             <span className="ml-1">Reset</span>
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setTransform((p) => ({ ...p, scale: p.scale * 1.2 }))}>
+          <Button variant="ghost" size="sm" aria-label="Zoom in" onClick={() => setTransform((p) => ({ ...p, scale: p.scale * 1.2 }))}>
             <ZoomInIcon />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setTransform((p) => ({ ...p, scale: p.scale * 0.8 }))}>
+          <Button variant="ghost" size="sm" aria-label="Zoom out" onClick={() => setTransform((p) => ({ ...p, scale: p.scale * 0.8 }))}>
             <ZoomOutIcon />
           </Button>
         </div>
@@ -302,12 +303,35 @@ export function MemoryGraph({
           <canvas
             ref={canvasRef}
             className="w-full h-full cursor-grab active:cursor-grabbing"
+            role="img"
+            aria-label={`Knowledge graph with ${nodes.length} nodes and ${edges.length} connections. Use arrow keys to navigate nodes, Enter to select.`}
+            tabIndex={0}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             onClick={handleClick}
             onWheel={handleWheel}
+            onKeyDown={(e) => {
+              if (nodes.length === 0) return;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                const next = (focusedNodeIndex + 1) % nodes.length;
+                setFocusedNodeIndex(next);
+                setHoveredNode(nodes[next].id);
+              } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prev = focusedNodeIndex <= 0 ? nodes.length - 1 : focusedNodeIndex - 1;
+                setFocusedNodeIndex(prev);
+                setHoveredNode(nodes[prev].id);
+              } else if (e.key === 'Enter' && focusedNodeIndex >= 0) {
+                e.preventDefault();
+                onNodeSelect(nodes[focusedNodeIndex].id);
+              } else if (e.key === 'Escape') {
+                setFocusedNodeIndex(-1);
+                setHoveredNode(null);
+              }
+            }}
           />
         </div>
 

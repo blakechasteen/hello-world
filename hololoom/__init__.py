@@ -35,6 +35,7 @@ Advanced users can still import internal components:
 # Requires Python 3.7+ for module-level __getattr__
 # ============================================================================
 
+import difflib as _difflib
 import importlib as _importlib
 import sys as _sys
 
@@ -232,4 +233,12 @@ def __getattr__(name):
         _sys.modules.setdefault(__name__ + '.yarn', yarn)
         return yarn
 
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    _valid_names = list(__all__) + [
+        'awareness', 'memory_symphony', 'yarn', 'create_hololoom',
+        'Documentation', 'documentation',
+    ]
+    suggestions = _difflib.get_close_matches(name, _valid_names, n=3, cutoff=0.6)
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    if suggestions:
+        msg += f". Did you mean: {', '.join(repr(s) for s in suggestions)}?"
+    raise AttributeError(msg)
