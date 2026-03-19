@@ -20,12 +20,10 @@ Core Insight:
     naturally optimizing context window packing without manual tuning.
 """
 
-from typing import Dict, List, Optional, Set, Tuple
-import numpy as np
 from dataclasses import dataclass
-import asyncio
+from typing import Optional
 
-from .pressure_field import PressureField, PressureSource
+from .pressure_field import PressureField
 from .velocity_field import VelocityField
 
 try:
@@ -40,10 +38,10 @@ class FlowState:
     """Current state of the flow system."""
     timestep: int
     time: float
-    pressure_stats: Dict[str, float]
-    velocity_stats: Dict[str, float]
+    pressure_stats: dict[str, float]
+    velocity_stats: dict[str, float]
     tokens_used: int
-    sparse_regions: List[str]
+    sparse_regions: list[str]
 
 
 class ContextFlowEngine:
@@ -100,7 +98,7 @@ class ContextFlowEngine:
         self.tokens_used = 0
 
         # Graph structure (if no KG provided)
-        self.neighbors: Dict[str, List[str]] = {}
+        self.neighbors: dict[str, list[str]] = {}
 
     def add_edge(self, source: str, target: str):
         """Add an edge to the graph structure."""
@@ -115,7 +113,7 @@ class ContextFlowEngine:
         if source not in self.neighbors[target]:
             self.neighbors[target].append(source)
 
-    def get_neighbors(self, node: str) -> List[str]:
+    def get_neighbors(self, node: str) -> list[str]:
         """Get neighbors of a node."""
         if self.graph and HAS_GRAPH:
             # Use KG if available
@@ -135,7 +133,7 @@ class ContextFlowEngine:
         node: str,
         importance: float,
         tokens: int = 0,
-        text: Optional[str] = None
+        text: str | None = None
     ):
         """
         Inject context at a node (creates high-pressure source).
@@ -152,7 +150,7 @@ class ContextFlowEngine:
         self.pressure.inject_pressure(node, importance, tokens, text)
         self.tokens_used += tokens
 
-    def step(self, dt: Optional[float] = None):
+    def step(self, dt: float | None = None):
         """
         Single Navier-Stokes timestep.
 
@@ -231,7 +229,7 @@ class ContextFlowEngine:
             new_p = current_p + delta
             self.pressure.set_pressure(node, new_p)
 
-    def detect_sparse_regions(self) -> List[str]:
+    def detect_sparse_regions(self) -> list[str]:
         """
         Find low-pressure (sparse context) regions.
 
@@ -243,7 +241,7 @@ class ContextFlowEngine:
             nodes=nodes
         )
 
-    def generate_reverse_prompt(self, node: str) -> Optional[str]:
+    def generate_reverse_prompt(self, node: str) -> str | None:
         """
         Generate query to fill sparse region.
 
@@ -286,7 +284,7 @@ class ContextFlowEngine:
         self,
         max_tokens: int,
         sort_by: str = "pressure"
-    ) -> List[Tuple[str, float, Optional[str]]]:
+    ) -> list[tuple[str, float, str | None]]:
         """
         Extract optimally packed context.
 

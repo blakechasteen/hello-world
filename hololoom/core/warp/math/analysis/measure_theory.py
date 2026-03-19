@@ -29,10 +29,11 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, List, Set, Tuple, Optional, Union, FrozenSet, Any
-from dataclasses import dataclass
 import logging
+from collections.abc import Callable
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class SigmaAlgebra:
     3. A₁, A₂, ... ∈ Σ ⟹ ⋃ Aᵢ ∈ Σ (closed under countable unions)
     """
 
-    def __init__(self, space: Set, sets: List[FrozenSet]):
+    def __init__(self, space: set, sets: list[frozenset]):
         """
         Initialize sigma-algebra.
 
@@ -64,22 +65,22 @@ class SigmaAlgebra:
 
         logger.info(f"Sigma-algebra on space of size {len(self.space)}")
 
-    def contains(self, subset: Set) -> bool:
+    def contains(self, subset: set) -> bool:
         """Check if subset is measurable (in sigma-algebra)."""
         return frozenset(subset) in self.sets
 
-    def complement(self, subset: Set) -> FrozenSet:
+    def complement(self, subset: set) -> frozenset:
         """Compute complement of subset."""
         return self.space - frozenset(subset)
 
-    def union(self, subsets: List[Set]) -> FrozenSet:
+    def union(self, subsets: list[set]) -> frozenset:
         """Compute union of subsets."""
         result = frozenset()
         for s in subsets:
             result = result | frozenset(s)
         return result
 
-    def intersection(self, subsets: List[Set]) -> FrozenSet:
+    def intersection(self, subsets: list[set]) -> frozenset:
         """Compute intersection of subsets."""
         if not subsets:
             return self.space
@@ -90,7 +91,7 @@ class SigmaAlgebra:
         return result
 
     @staticmethod
-    def generate_from_sets(space: Set, generating_sets: List[Set]) -> 'SigmaAlgebra':
+    def generate_from_sets(space: set, generating_sets: list[set]) -> 'SigmaAlgebra':
         """
         Generate smallest sigma-algebra containing generating_sets.
 
@@ -142,7 +143,7 @@ class SigmaAlgebra:
         return SigmaAlgebra(space, list(sigma_sets))
 
     @staticmethod
-    def power_set_algebra(space: Set) -> 'SigmaAlgebra':
+    def power_set_algebra(space: set) -> 'SigmaAlgebra':
         """
         Create power set sigma-algebra (all subsets measurable).
 
@@ -185,7 +186,7 @@ class Measure:
     """
 
     def __init__(self, sigma_algebra: SigmaAlgebra,
-                 measure_function: Optional[Callable[[FrozenSet], float]] = None):
+                 measure_function: Callable[[frozenset], float] | None = None):
         """
         Initialize measure.
 
@@ -203,7 +204,7 @@ class Measure:
 
         logger.info(f"Measure on sigma-algebra with {len(sigma_algebra.sets)} sets")
 
-    def __call__(self, subset: Union[Set, FrozenSet]) -> float:
+    def __call__(self, subset: set | frozenset) -> float:
         """Evaluate measure μ(A)."""
         subset_frozen = frozenset(subset)
 
@@ -236,7 +237,7 @@ class Measure:
     @staticmethod
     def dirac_measure(sigma_algebra: SigmaAlgebra, point) -> 'Measure':
         """Dirac measure: δₓ(A) = 1 if x ∈ A, 0 otherwise."""
-        def dirac(s: FrozenSet) -> float:
+        def dirac(s: frozenset) -> float:
             return 1.0 if point in s else 0.0
 
         return Measure(sigma_algebra, dirac)
@@ -278,7 +279,7 @@ class LebesgueMeasure:
         return 0.0
 
     @staticmethod
-    def measure_nd(bounds: List[Tuple[float, float]]) -> float:
+    def measure_nd(bounds: list[tuple[float, float]]) -> float:
         """
         Lebesgue measure of n-dimensional box.
 
@@ -319,7 +320,7 @@ class MeasurableFunction:
         """Evaluate f(x)."""
         return self.function(x)
 
-    def preimage(self, threshold: float) -> FrozenSet:
+    def preimage(self, threshold: float) -> frozenset:
         """
         Preimage f⁻¹((-∞, threshold]).
 
@@ -331,7 +332,7 @@ class MeasurableFunction:
         }
         return frozenset(preimage_set)
 
-    def is_measurable(self, test_thresholds: Optional[List[float]] = None) -> bool:
+    def is_measurable(self, test_thresholds: list[float] | None = None) -> bool:
         """
         Check if function is measurable.
 
@@ -367,8 +368,8 @@ class LebesgueIntegrator:
 
     @staticmethod
     def integrate_simple_function(
-        coefficients: List[float],
-        sets: List[FrozenSet],
+        coefficients: list[float],
+        sets: list[frozenset],
         measure: Measure
     ) -> float:
         """
@@ -440,7 +441,7 @@ class LebesgueIntegrator:
     @staticmethod
     def integrate_simple_function_lebesgue(
         values: np.ndarray,
-        intervals: List[Tuple[float, float]]
+        intervals: list[tuple[float, float]]
     ) -> float:
         """
         TRUE Lebesgue integration via simple functions.
@@ -479,7 +480,7 @@ class ConvergenceTheorems:
 
     @staticmethod
     def verify_monotone_convergence(
-        sequence_functions: List[MeasurableFunction],
+        sequence_functions: list[MeasurableFunction],
         limit_function: MeasurableFunction,
         measure: Measure,
         tolerance: float = 1e-6
@@ -511,7 +512,7 @@ class ConvergenceTheorems:
 
     @staticmethod
     def verify_dominated_convergence(
-        sequence_functions: List[MeasurableFunction],
+        sequence_functions: list[MeasurableFunction],
         limit_function: MeasurableFunction,
         dominating_function: MeasurableFunction,
         measure: Measure,

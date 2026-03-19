@@ -26,11 +26,12 @@ References:
 - Gatt & Krahmer (2018): "Survey of the State of the Art in NLG"
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
-import logging
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ class InterpretedValue:
     normalized_value: float
     significance: ValueSignificance
     label: str
-    context: Dict[str, Any] = field(default_factory=dict)
+    context: dict[str, Any] = field(default_factory=dict)
     anomaly: bool = False
 
 
@@ -94,7 +95,7 @@ class PatternInterpretation:
     pattern_type: str
     strength: float
     description: str
-    evidence: Dict[str, Any] = field(default_factory=dict)
+    evidence: dict[str, Any] = field(default_factory=dict)
     confidence: float = 1.0
 
 
@@ -112,7 +113,7 @@ class DataInterpreter:
         self,
         value: float,
         value_type: str = "generic",
-        reference_range: Optional[Tuple[float, float]] = None
+        reference_range: tuple[float, float] | None = None
     ) -> InterpretedValue:
         """
         Interpret single numerical value.
@@ -168,7 +169,7 @@ class DataInterpreter:
         self,
         values: np.ndarray,
         value_type: str = "generic"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Interpret array of values - find patterns, trends, anomalies.
 
@@ -208,7 +209,7 @@ class DataInterpreter:
     def interpret_matrix(
         self,
         matrix: np.ndarray
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Interpret matrix - structure, correlations, clusters.
 
@@ -244,7 +245,7 @@ class DataInterpreter:
             return (value + 1) / 2
         return value
 
-    def _normalize_distance(self, value: float, ref_range: Optional[Tuple[float, float]]) -> float:
+    def _normalize_distance(self, value: float, ref_range: tuple[float, float] | None) -> float:
         """Normalize distance to [0, 1]."""
         if ref_range:
             min_val, max_val = ref_range
@@ -363,7 +364,7 @@ class DataInterpreter:
     # Internal Helpers - Anomaly Detection
     # ========================================================================
 
-    def _is_anomaly(self, value: float, value_type: str, ref_range: Optional[Tuple[float, float]]) -> bool:
+    def _is_anomaly(self, value: float, value_type: str, ref_range: tuple[float, float] | None) -> bool:
         """Check if value is anomalous."""
         # Simple heuristics
         if value_type in ["similarity", "probability"]:
@@ -388,7 +389,7 @@ class DataInterpreter:
     # Internal Helpers - Statistics
     # ========================================================================
 
-    def _compute_statistics(self, values: np.ndarray) -> Dict[str, float]:
+    def _compute_statistics(self, values: np.ndarray) -> dict[str, float]:
         """Compute descriptive statistics."""
         return {
             "mean": float(np.mean(values)),
@@ -405,7 +406,7 @@ class DataInterpreter:
     # Internal Helpers - Trend Detection
     # ========================================================================
 
-    def _detect_trend(self, values: np.ndarray) -> Optional[PatternInterpretation]:
+    def _detect_trend(self, values: np.ndarray) -> PatternInterpretation | None:
         """Detect trend in time series."""
         if len(values) < 3:
             return None
@@ -441,7 +442,7 @@ class DataInterpreter:
     # Internal Helpers - Anomaly Detection (Array)
     # ========================================================================
 
-    def _detect_anomalies(self, values: np.ndarray) -> List[Dict[str, Any]]:
+    def _detect_anomalies(self, values: np.ndarray) -> list[dict[str, Any]]:
         """Detect anomalous values using z-score."""
         anomalies = []
 
@@ -468,7 +469,7 @@ class DataInterpreter:
     # Internal Helpers - Pattern Detection
     # ========================================================================
 
-    def _detect_patterns(self, values: np.ndarray, value_type: str) -> List[PatternInterpretation]:
+    def _detect_patterns(self, values: np.ndarray, value_type: str) -> list[PatternInterpretation]:
         """Detect patterns in values."""
         patterns = []
 
@@ -509,7 +510,7 @@ class DataInterpreter:
     # Internal Helpers - Matrix Analysis
     # ========================================================================
 
-    def _analyze_structure(self, matrix: np.ndarray) -> Dict[str, Any]:
+    def _analyze_structure(self, matrix: np.ndarray) -> dict[str, Any]:
         """Analyze matrix structure."""
         structure = {}
 
@@ -535,7 +536,7 @@ class DataInterpreter:
 
         return structure
 
-    def _find_correlations(self, matrix: np.ndarray) -> List[Dict[str, Any]]:
+    def _find_correlations(self, matrix: np.ndarray) -> list[dict[str, Any]]:
         """Find strong correlations in matrix."""
         correlations = []
 
@@ -576,7 +577,7 @@ class EnhancedMathResult:
         self.interpreter = DataInterpreter()
         self.interpretation = self._interpret()
 
-    def _interpret(self) -> Dict[str, Any]:
+    def _interpret(self) -> dict[str, Any]:
         """Apply data understanding to raw result."""
         result = self.raw_result
 
@@ -631,7 +632,7 @@ class EnhancedMathResult:
         else:
             return "generic"
 
-    def _generate_insights(self, interpretation: Dict[str, Any]) -> List[str]:
+    def _generate_insights(self, interpretation: dict[str, Any]) -> list[str]:
         """Generate high-level insights from interpretation."""
         insights = []
 
@@ -700,7 +701,7 @@ if __name__ == "__main__":
     interp = interpreter.interpret_array(values, "similarity")
 
     print(f"  Values: {values}")
-    print(f"  Statistics:")
+    print("  Statistics:")
     for key, val in interp["statistics"].items():
         print(f"    {key}: {val:.3f}")
     print(f"  Anomalies: {len(interp['anomalies'])}")
@@ -721,7 +722,7 @@ if __name__ == "__main__":
     enhanced = EnhancedMathResult("inner_product", raw_result)
 
     print(f"  Operation: {enhanced.operation}")
-    print(f"  Insights:")
+    print("  Insights:")
     for insight in enhanced.interpretation["insights"]:
         print(f"    - {insight}")
     print()

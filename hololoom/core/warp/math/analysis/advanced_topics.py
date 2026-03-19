@@ -35,11 +35,12 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Union
-from dataclasses import dataclass
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
 from fractions import Fraction
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class WaveFrontSet:
         signal: np.ndarray,
         sample_rate: float = 1.0,
         threshold: float = 1e-6
-    ) -> List[Tuple[int, float]]:
+    ) -> list[tuple[int, float]]:
         """
         Compute approximate wave front set for 1D signal.
 
@@ -335,7 +336,7 @@ class PAdicNumber:
     Represented as rational approximation with p-adic valuation.
     """
 
-    def __init__(self, value: Union[int, Fraction], p: int = 2):
+    def __init__(self, value: int | Fraction, p: int = 2):
         """
         Initialize p-adic number.
 
@@ -428,7 +429,7 @@ class HenselsLemma:
         a: int,
         p: int,
         k: int
-    ) -> Optional[int]:
+    ) -> int | None:
         """
         Lift solution from mod p^k to mod p^(k+1).
 
@@ -468,7 +469,7 @@ class HenselsLemma:
         f_prime: Callable[[int], int],
         p: int,
         max_precision: int = 5
-    ) -> Optional[List[int]]:
+    ) -> list[int] | None:
         """
         Find p-adic roots by successive lifting.
 

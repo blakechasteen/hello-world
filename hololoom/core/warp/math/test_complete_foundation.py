@@ -15,9 +15,8 @@ print("=" * 70)
 print("\n[1/6] Testing Analysis modules...")
 try:
     from hololoom.warp.math.analysis import (
-        MetricSpace, ComplexFunction, HilbertSpace,
-        LebesgueMeasure, FourierTransform, BrownianMotion,
-        Entropy as AnalysisEntropy, RootFinder, RandomVariable
+        BrownianMotion,
+        MetricSpace,
     )
 
     # Quick functional test
@@ -31,10 +30,7 @@ except Exception as e:
 # Test 2: Algebra modules
 print("\n[2/6] Testing Algebra modules...")
 try:
-    from hololoom.warp.math.algebra import (
-        Group, Ring, Field, GaloisGroup,
-        Module, ChainComplex
-    )
+    from hololoom.warp.math.algebra import Group
 
     # Quick functional test
     Z5 = Group.cyclic(5)
@@ -48,9 +44,10 @@ except Exception as e:
 print("\n[3/6] Testing Geometry & Physics modules...")
 try:
     from hololoom.warp.math.geometry import (
-        SmoothManifold, TangentSpace, VectorField,
-        RiemannianMetric, Christoffel, Geodesic,
-        LagrangianMechanics, HamiltonianMechanics, SymplecticManifold
+        HamiltonianMechanics,
+        LagrangianMechanics,
+        RiemannianMetric,
+        SmoothManifold,
     )
 
     # Quick functional test
@@ -66,9 +63,9 @@ except Exception as e:
 print("\n[4/6] Testing Decision & Information modules...")
 try:
     from hololoom.warp.math.decision import (
-        Entropy, MutualInformation, ChannelCapacity,
-        NormalFormGame, NashEquilibrium, AuctionTheory,
-        NetworkFlows, DynamicProgramming, InventoryTheory
+        Entropy,
+        NetworkFlows,
+        NormalFormGame,
     )
 
     # Quick functional test
@@ -84,8 +81,8 @@ except Exception as e:
 print("\n[5/6] Testing Logic & Foundations modules...")
 try:
     from hololoom.warp.math.logic import (
-        PropositionalLogic, FirstOrderLogic, GodelTheorems,
-        TuringMachine, ChurchTuringThesis, ComplexityClasses
+        GodelTheorems,
+        TuringMachine,
     )
 
     # Quick functional test
@@ -100,10 +97,8 @@ except Exception as e:
 print("\n[6/6] Testing cross-module integration...")
 try:
     # Information theory entropy
-    from hololoom.warp.math.decision import Entropy as InfoEntropy
-
     # Probability theory entropy
-    from hololoom.warp.math.analysis import Entropy as ProbEntropy
+    from hololoom.warp.math.decision import Entropy as InfoEntropy
 
     # They should compute same result
     probs = np.array([0.25, 0.25, 0.25, 0.25])
@@ -111,7 +106,7 @@ try:
     # Note: ProbEntropy is a class, InfoEntropy has static methods
 
     # Riemannian geometry + Hamiltonian mechanics
-    from hololoom.warp.math.geometry import RiemannianMetric, HamiltonianMechanics
+    from hololoom.warp.math.geometry import HamiltonianMechanics, RiemannianMetric
 
     metric = RiemannianMetric.sphere(radius=1.0)
     hamiltonian = HamiltonianMechanics.simple_harmonic_oscillator(m=1.0, k=1.0)

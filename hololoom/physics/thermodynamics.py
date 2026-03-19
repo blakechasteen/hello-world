@@ -49,11 +49,10 @@ Phase: 3 - Thermodynamic Optimization
 from __future__ import annotations
 
 import math
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 
+import numpy as np
 
 # ============================================================================
 # Temperature Scheduling
@@ -185,7 +184,7 @@ class EnergyCalculator:
         cost: float = 0.0,
         error: float = 0.0,
         latency: float = 0.0,
-        weights: Optional[Dict[str, float]] = None
+        weights: dict[str, float] | None = None
     ) -> float:
         """
         Compute internal energy from multiple cost components.
@@ -212,12 +211,12 @@ class EnergyCalculator:
 
     @staticmethod
     def compute_action_energies(
-        actions: List[str],
-        costs: Dict[str, float],
-        errors: Dict[str, float],
-        latencies: Dict[str, float],
-        weights: Optional[Dict[str, float]] = None
-    ) -> Dict[str, float]:
+        actions: list[str],
+        costs: dict[str, float],
+        errors: dict[str, float],
+        latencies: dict[str, float],
+        weights: dict[str, float] | None = None
+    ) -> dict[str, float]:
         """
         Compute energy for each action.
 
@@ -274,8 +273,8 @@ class EntropyCalculator:
 
     @staticmethod
     def diversity_score(
-        actions: List[str],
-        action_counts: Dict[str, int]
+        actions: list[str],
+        action_counts: dict[str, int]
     ) -> float:
         """
         Diversity score based on action distribution.
@@ -320,7 +319,7 @@ class ThermodynamicState:
     temperature: float            # Temperature T
     free_energy: float           # Free energy F = E - T*S
     timestep: int                # Current timestep
-    action_counts: Dict[str, int] = field(default_factory=dict)  # Action history
+    action_counts: dict[str, int] = field(default_factory=dict)  # Action history
 
 
 class ThermodynamicOptimizer:
@@ -396,9 +395,9 @@ class ThermodynamicOptimizer:
 
     def select_action(
         self,
-        actions: List[str],
-        energies: Dict[str, float],
-        temperature: Optional[float] = None
+        actions: list[str],
+        energies: dict[str, float],
+        temperature: float | None = None
     ) -> str:
         """
         Select action via Boltzmann distribution.
@@ -435,7 +434,7 @@ class ThermodynamicOptimizer:
         self,
         action: str,
         energy: float,
-        actions: Optional[List[str]] = None
+        actions: list[str] | None = None
     ):
         """
         Update thermodynamic state after action.
@@ -474,7 +473,7 @@ class ThermodynamicOptimizer:
 
         self.state.timestep += 1
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get current thermodynamic statistics."""
         return {
             "energy": self.state.energy,

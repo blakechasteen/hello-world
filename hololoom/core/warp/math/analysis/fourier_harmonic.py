@@ -28,10 +28,10 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Union
-from dataclasses import dataclass
 import logging
+from collections.abc import Callable
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +151,7 @@ class FourierSeries:
         signal: np.ndarray,
         period: float,
         n_harmonics: int = 10
-    ) -> Tuple[np.ndarray, np.ndarray, float]:
+    ) -> tuple[np.ndarray, np.ndarray, float]:
         """
         Compute Fourier series coefficients.
 
@@ -310,7 +310,7 @@ class WaveletTransform:
         return cwt_matrix
 
     @staticmethod
-    def discrete_wavelet_transform(signal: np.ndarray, wavelet: str = 'haar', level: int = 2) -> Tuple[np.ndarray, List[np.ndarray]]:
+    def discrete_wavelet_transform(signal: np.ndarray, wavelet: str = 'haar', level: int = 2) -> tuple[np.ndarray, list[np.ndarray]]:
         """
         Discrete Wavelet Transform (DWT).
 
@@ -321,7 +321,7 @@ class WaveletTransform:
         """
         # Simple Haar DWT implementation
         if wavelet != 'haar':
-            logger.warning(f"Only Haar wavelet supported, using Haar")
+            logger.warning("Only Haar wavelet supported, using Haar")
 
         approx = signal.copy()
         details = []
@@ -350,7 +350,7 @@ class WaveletTransform:
     @staticmethod
     def inverse_discrete_wavelet_transform(
         approx: np.ndarray,
-        details: List[np.ndarray]
+        details: list[np.ndarray]
     ) -> np.ndarray:
         """
         Inverse Discrete Wavelet Transform.
@@ -548,5 +548,260 @@ __all__ = [
     'FourierTransform',
     'FourierSeries',
     'WaveletTransform',
-    'TimeFrequencyAnalysis'
+    'TimeFrequencyAnalysis',
+    'SpectralTimeSeries',
+    'MultitaperSpectral',
 ]
+
+
+# ============================================================================
+# TIME SERIES SPECTRAL ANALYSIS
+# ============================================================================
+
+class SpectralTimeSeries:
+    """Spectral methods specifically for time series analysis.
+
+    Extends the Fourier/wavelet tools above with time-series-specific
+    methods: periodogram, Welch PSD estimation, dominant frequency detection.
+    """
+
+    @staticmethod
+    def periodogram(series: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Raw periodogram: |FFT(x)|^2 / N.
+
+        The periodogram is the simplest spectral estimator but has high
+        variance — each frequency bin is estimated from a single sample.
+
+        Args:
+            series: Input time series (real-valued).
+
+        Returns:
+            (frequencies, power) where frequencies are normalized [0, 0.5]
+            and power is |X(f)|^2 / N.
+        """
+        N = len(series)
+        # Remove mean to focus on oscillatory components
+        centered = series - np.mean(series)
+
+        # One-sided FFT
+        freqs = np.fft.rfftfreq(N)
+        fft_vals = np.fft.rfft(centered)
+
+        # Periodogram: |X(f)|^2 / N
+        power = (np.abs(fft_vals) ** 2) / N
+
+        # Double the power for one-sided spectrum (except DC and Nyquist)
+        if N % 2 == 0:
+            power[1:-1] *= 2
+        else:
+            power[1:] *= 2
+
+        return freqs, power
+
+    @staticmethod
+    def welch(series: np.ndarray, segment_length: int = 256,
+              overlap: float = 0.5) -> tuple[np.ndarray, np.ndarray]:
+        """Welch's method: averaged modified periodograms.
+
+        Reduces variance at cost of frequency resolution by:
+        1. Dividing data into overlapping segments
+        2. Windowing each segment (Hann)
+        3. Computing periodogram of each
+        4. Averaging across segments
+
+        Args:
+            series: Input time series.
+            segment_length: Length of each segment. Clamped to len(series).
+            overlap: Fraction of overlap between segments, in [0, 1).
+
+        Returns:
+            (frequencies, psd_estimate) — averaged power spectral density.
+        """
+        N = len(series)
+        segment_length = min(segment_length, N)
+        hop = max(1, int(segment_length * (1.0 - overlap)))
+
+        # Hann window and its power normalization
+        window = np.hanning(segment_length)
+        win_power = np.mean(window ** 2)
+
+        freqs = np.fft.rfftfreq(segment_length)
+        n_freq_bins = len(freqs)
+        accumulated = np.zeros(n_freq_bins)
+        n_segments = 0
+
+        start = 0
+        while start + segment_length <= N:
+            segment = series[start:start + segment_length]
+            segment = (segment - np.mean(segment)) * window
+
+            fft_vals = np.fft.rfft(segment)
+            power = (np.abs(fft_vals) ** 2) / (segment_length * win_power)
+
+            accumulated += power
+            n_segments += 1
+            start += hop
+
+        if n_segments == 0:
+            # Fallback: use entire series as single segment
+            return SpectralTimeSeries.periodogram(series)
+
+        psd = accumulated / n_segments
+
+        # One-sided scaling
+        if segment_length % 2 == 0:
+            psd[1:-1] *= 2
+        else:
+            psd[1:] *= 2
+
+        return freqs, psd
+
+    @staticmethod
+    def dominant_frequencies(series: np.ndarray, top_k: int = 3) -> list[tuple[float, float]]:
+        """Find the top_k dominant frequencies.
+
+        Uses the periodogram and finds peaks by selecting the k frequency
+        bins with highest power, excluding DC (f=0).
+
+        Args:
+            series: Input time series.
+            top_k: Number of dominant frequencies to return.
+
+        Returns:
+            [(frequency, power)] sorted by power descending.
+        """
+        freqs, power = SpectralTimeSeries.periodogram(series)
+
+        # Exclude DC component (index 0)
+        if len(freqs) > 1:
+            freqs_no_dc = freqs[1:]
+            power_no_dc = power[1:]
+        else:
+            return [(freqs[0], power[0])]
+
+        # Get indices of top_k peaks
+        k = min(top_k, len(power_no_dc))
+        top_indices = np.argsort(power_no_dc)[-k:][::-1]
+
+        return [(float(freqs_no_dc[i]), float(power_no_dc[i])) for i in top_indices]
+
+    @staticmethod
+    def spectral_density(series: np.ndarray, method: str = 'welch') -> np.ndarray:
+        """Estimate power spectral density.
+
+        Args:
+            series: Input time series.
+            method: 'welch' (default, lower variance) or 'periodogram' (higher resolution).
+
+        Returns:
+            Power spectral density array.
+        """
+        if method == 'welch':
+            _, psd = SpectralTimeSeries.welch(series)
+        elif method == 'periodogram':
+            _, psd = SpectralTimeSeries.periodogram(series)
+        else:
+            logger.warning(f"Unknown method '{method}', falling back to Welch")
+            _, psd = SpectralTimeSeries.welch(series)
+        return psd
+
+
+class MultitaperSpectral:
+    """Multitaper spectral estimation using Slepian sequences.
+
+    Better bias-variance tradeoff than single-taper methods. Uses multiple
+    orthogonal tapers (DPSS / Slepian sequences) to produce independent
+    spectral estimates, then averages them.
+
+    The bandwidth parameter W controls the tradeoff:
+    - Larger W = more bias, less variance (smoother estimate)
+    - Smaller W = less bias, more variance (sharper peaks)
+    """
+
+    @staticmethod
+    def _dpss(N: int, n_tapers: int, bandwidth: float) -> np.ndarray:
+        """Compute Discrete Prolate Spheroidal Sequences (Slepian tapers).
+
+        Approximated via the tridiagonal matrix method:
+        The DPSS are eigenvectors of a tridiagonal matrix with entries:
+          diagonal: ((N-1)/2 - n)^2 * cos(2*pi*W)
+          off-diagonal: n*(N-n)/2
+
+        Args:
+            N: Length of the data.
+            n_tapers: Number of tapers to compute.
+            bandwidth: Half-bandwidth parameter W (in normalized frequency).
+
+        Returns:
+            Array of shape (n_tapers, N) containing the taper sequences.
+        """
+        W = bandwidth / N
+
+        # Build the tridiagonal matrix
+        n = np.arange(N, dtype=np.float64)
+        diagonal = ((N - 1.0) / 2.0 - n) ** 2 * np.cos(2.0 * np.pi * W)
+
+        off_diag = np.zeros(N - 1)
+        for i in range(N - 1):
+            off_diag[i] = (i + 1.0) * (N - 1.0 - i) / 2.0
+
+        # Construct symmetric tridiagonal matrix
+        T = np.diag(diagonal) + np.diag(off_diag, 1) + np.diag(off_diag, -1)
+
+        # Eigendecomposition — largest eigenvalues correspond to best tapers
+        eigenvalues, eigenvectors = np.linalg.eigh(T)
+
+        # Take the n_tapers with largest eigenvalues (they are sorted ascending)
+        indices = np.argsort(eigenvalues)[-n_tapers:][::-1]
+        tapers = eigenvectors[:, indices].T
+
+        # Normalize each taper to unit energy
+        for i in range(n_tapers):
+            tapers[i] /= np.linalg.norm(tapers[i])
+
+        return tapers
+
+    @staticmethod
+    def estimate(series: np.ndarray, n_tapers: int = 4,
+                 bandwidth: float = 2.5) -> tuple[np.ndarray, np.ndarray]:
+        """Multitaper PSD estimate.
+
+        Uses DPSS (discrete prolate spheroidal sequences) as tapers.
+        Each taper produces an independent spectral estimate; averaging
+        across tapers reduces variance while controlling spectral leakage.
+
+        Args:
+            series: Input time series (real-valued).
+            n_tapers: Number of Slepian tapers (typically 2*bandwidth - 1).
+            bandwidth: Half-bandwidth parameter controlling resolution.
+
+        Returns:
+            (frequencies, psd) — multitaper power spectral density estimate.
+        """
+        N = len(series)
+        centered = series - np.mean(series)
+
+        n_tapers = min(n_tapers, N - 1)  # Can't have more tapers than data - 1
+
+        # Compute DPSS tapers
+        tapers = MultitaperSpectral._dpss(N, n_tapers, bandwidth)
+
+        freqs = np.fft.rfftfreq(N)
+        n_freq_bins = len(freqs)
+        psd_sum = np.zeros(n_freq_bins)
+
+        for k in range(n_tapers):
+            tapered = centered * tapers[k]
+            fft_vals = np.fft.rfft(tapered)
+            psd_sum += np.abs(fft_vals) ** 2
+
+        # Average across tapers and normalize
+        psd = psd_sum / (n_tapers * N)
+
+        # One-sided scaling
+        if N % 2 == 0:
+            psd[1:-1] *= 2
+        else:
+            psd[1:] *= 2
+
+        return freqs, psd

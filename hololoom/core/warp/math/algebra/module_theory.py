@@ -32,11 +32,12 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Any
-from dataclasses import dataclass
-from .abstract_algebra import Ring
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
+
+from .abstract_algebra import Ring
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class Module:
     def __init__(
         self,
         ring: Ring,
-        elements: List[Any],
+        elements: list[Any],
         addition: Callable[[Any, Any], Any],
         scalar_mult: Callable[[Any, Any], Any],
         zero: Any,
@@ -71,7 +72,7 @@ class Module:
 
         logger.info(f"Module {name} over {ring.name} with {len(elements)} elements")
 
-    def is_submodule(self, subset: List[Any]) -> bool:
+    def is_submodule(self, subset: list[Any]) -> bool:
         """Check if subset is a submodule."""
         # Closed under addition and scalar multiplication
         for a in subset:
@@ -128,11 +129,11 @@ class ModuleHomomorphism:
         """Apply homomorphism."""
         return self.mapping(element)
 
-    def kernel(self) -> List[Any]:
+    def kernel(self) -> list[Any]:
         """ker(φ) = {m ∈ M : φ(m) = 0}"""
         return [m for m in self.source.elements if self.mapping(m) == self.target.zero]
 
-    def image(self) -> List[Any]:
+    def image(self) -> list[Any]:
         """im(φ) = {φ(m) : m ∈ M}"""
         return list(set(self.mapping(m) for m in self.source.elements))
 
@@ -209,7 +210,7 @@ class ExactSequence:
     Exact at Mᵢ: im(fᵢ₋₁) = ker(fᵢ)
     """
 
-    def __init__(self, modules: List[Module], homomorphisms: List[ModuleHomomorphism]):
+    def __init__(self, modules: list[Module], homomorphisms: list[ModuleHomomorphism]):
         """Initialize exact sequence."""
         self.modules = modules
         self.homomorphisms = homomorphisms

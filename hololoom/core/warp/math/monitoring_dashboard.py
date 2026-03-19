@@ -20,15 +20,15 @@ Features:
 - Anomaly detection
 """
 
-import time
 import json
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, field, asdict
-from collections import deque, defaultdict
-from datetime import datetime
-from pathlib import Path
-import numpy as np
 import logging
+import time
+from collections import defaultdict, deque
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class RequestMetrics:
     timestamp: float
     query: str
     intent: str
-    operations_executed: List[str]
+    operations_executed: list[str]
     total_cost: float
     latency_ms: float
     success: bool
@@ -89,7 +89,7 @@ class MetricsCollector:
         self.recent_requests: deque = deque(maxlen=window_size)
 
         # Aggregated metrics history
-        self.aggregate_history: List[AggregateMetrics] = []
+        self.aggregate_history: list[AggregateMetrics] = []
 
         # Counters
         self.total_requests = 0
@@ -167,7 +167,7 @@ class MetricsCollector:
                    f"{aggregate.success_rate:.1%} success, "
                    f"{aggregate.avg_latency_ms:.0f}ms avg latency")
 
-    def get_current_metrics(self) -> Dict[str, Any]:
+    def get_current_metrics(self) -> dict[str, Any]:
         """Get current metrics snapshot."""
         if not self.recent_requests:
             return {"error": "No requests recorded"}
@@ -208,7 +208,7 @@ class ABTester:
     Randomly assigns requests to variants and tracks comparative performance.
     """
 
-    def __init__(self, variants: List[ABVariant]):
+    def __init__(self, variants: list[ABVariant]):
         """
         Args:
             variants: List of test variants
@@ -236,7 +236,7 @@ class ABTester:
         if variant_name in self.variant_metrics:
             self.variant_metrics[variant_name].record_request(metrics)
 
-    def get_comparison(self) -> Dict[str, Any]:
+    def get_comparison(self) -> dict[str, Any]:
         """Get comparative metrics across variants."""
         comparison = {}
 
@@ -266,7 +266,7 @@ class AlertRule:
         self.name = name
         self.threshold = threshold
 
-    def check(self, metrics: Dict[str, Any]) -> Optional[str]:
+    def check(self, metrics: dict[str, Any]) -> str | None:
         """Check if alert should fire. Returns alert message or None."""
         raise NotImplementedError
 
@@ -274,7 +274,7 @@ class AlertRule:
 class LatencyAlert(AlertRule):
     """Alert on high latency."""
 
-    def check(self, metrics: Dict[str, Any]) -> Optional[str]:
+    def check(self, metrics: dict[str, Any]) -> str | None:
         agg = metrics.get("recent_aggregate")
         if not agg:
             return None
@@ -287,7 +287,7 @@ class LatencyAlert(AlertRule):
 class SuccessRateAlert(AlertRule):
     """Alert on low success rate."""
 
-    def check(self, metrics: Dict[str, Any]) -> Optional[str]:
+    def check(self, metrics: dict[str, Any]) -> str | None:
         success_rate = metrics.get("success_rate", 1.0)
 
         if success_rate < self.threshold:
@@ -298,7 +298,7 @@ class SuccessRateAlert(AlertRule):
 class CostAlert(AlertRule):
     """Alert on high cost."""
 
-    def check(self, metrics: Dict[str, Any]) -> Optional[str]:
+    def check(self, metrics: dict[str, Any]) -> str | None:
         agg = metrics.get("recent_aggregate")
         if not agg:
             return None
@@ -311,13 +311,13 @@ class CostAlert(AlertRule):
 class AlertManager:
     """Manages alert rules and fires alerts."""
 
-    def __init__(self, rules: List[AlertRule] = None):
+    def __init__(self, rules: list[AlertRule] = None):
         self.rules = rules or []
-        self.fired_alerts: List[Dict[str, Any]] = []
+        self.fired_alerts: list[dict[str, Any]] = []
 
         logger.info(f"AlertManager initialized with {len(self.rules)} rules")
 
-    def check_alerts(self, metrics: Dict[str, Any]):
+    def check_alerts(self, metrics: dict[str, Any]):
         """Check all alert rules against current metrics."""
         for rule in self.rules:
             alert_msg = rule.check(metrics)
@@ -336,7 +336,7 @@ class AlertManager:
 
         logger.warning(f"ALERT [{rule_name}]: {message}")
 
-    def get_recent_alerts(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_recent_alerts(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent alerts."""
         return self.fired_alerts[-limit:]
 
@@ -355,8 +355,8 @@ class MonitoringDashboard:
     def __init__(
         self,
         enable_ab_testing: bool = False,
-        ab_variants: List[ABVariant] = None,
-        alert_rules: List[AlertRule] = None
+        ab_variants: list[ABVariant] = None,
+        alert_rules: list[AlertRule] = None
     ):
         """
         Args:
@@ -394,7 +394,7 @@ class MonitoringDashboard:
         current_metrics = self.metrics_collector.get_current_metrics()
         self.alert_manager.check_alerts(current_metrics)
 
-    def get_dashboard_state(self) -> Dict[str, Any]:
+    def get_dashboard_state(self) -> dict[str, Any]:
         """Get complete dashboard state."""
         state = {
             "metrics": self.metrics_collector.get_current_metrics(),

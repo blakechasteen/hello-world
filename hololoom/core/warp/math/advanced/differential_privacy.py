@@ -31,11 +31,12 @@ Author: Claude Code
 Date: December 2025 (Math Module Expansion)
 """
 
-import numpy as np
-from typing import List, Optional, Callable, Tuple, Dict, Any, Union
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import math
+from typing import Any
+
+import numpy as np
 
 
 class PrivacyMechanism(Enum):
@@ -63,7 +64,7 @@ class PrivacyBudget:
     epsilon: float = 0.0
     delta: float = 0.0
     queries_made: int = 0
-    history: List[Tuple[float, float]] = field(default_factory=list)
+    history: list[tuple[float, float]] = field(default_factory=list)
 
     def add_query(self, epsilon: float, delta: float = 0.0) -> None:
         """Record a privacy expenditure."""
@@ -152,10 +153,10 @@ def compute_sensitivity(
 
 
 def laplace_mechanism(
-    value: Union[float, np.ndarray],
+    value: float | np.ndarray,
     sensitivity: float,
     epsilon: float
-) -> Union[float, np.ndarray]:
+) -> float | np.ndarray:
     """
     Laplace mechanism for ε-differential privacy.
 
@@ -184,11 +185,11 @@ def laplace_mechanism(
 
 
 def gaussian_mechanism(
-    value: Union[float, np.ndarray],
+    value: float | np.ndarray,
     sensitivity: float,
     epsilon: float,
     delta: float = 1e-5
-) -> Union[float, np.ndarray]:
+) -> float | np.ndarray:
     """
     Gaussian mechanism for (ε,δ)-differential privacy.
 
@@ -217,7 +218,7 @@ def gaussian_mechanism(
 
 
 def exponential_mechanism(
-    candidates: List[Any],
+    candidates: list[Any],
     utility_fn: Callable[[Any], float],
     sensitivity: float,
     epsilon: float
@@ -263,9 +264,9 @@ def exponential_mechanism(
 
 
 def compose_privacy(
-    mechanisms: List[Tuple[float, float]],
+    mechanisms: list[tuple[float, float]],
     composition_type: str = "basic"
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """
     Compose multiple privacy guarantees.
 
@@ -327,10 +328,10 @@ class DifferentialPrivacy:
 
     def query(
         self,
-        value: Union[float, np.ndarray],
+        value: float | np.ndarray,
         sensitivity: float,
-        epsilon: Optional[float] = None
-    ) -> Union[float, np.ndarray]:
+        epsilon: float | None = None
+    ) -> float | np.ndarray:
         """
         Answer a query with differential privacy.
 
@@ -372,10 +373,10 @@ class DifferentialPrivacy:
 
     def select(
         self,
-        candidates: List[Any],
+        candidates: list[Any],
         utility_fn: Callable[[Any], float],
         sensitivity: float,
-        epsilon: Optional[float] = None
+        epsilon: float | None = None
     ) -> Any:
         """
         Private selection from candidates.
@@ -434,7 +435,7 @@ class PrivateAggregator:
 
     def aggregate_sum(
         self,
-        vectors: List[np.ndarray],
+        vectors: list[np.ndarray],
         num_contributors: int
     ) -> np.ndarray:
         """
@@ -461,7 +462,7 @@ class PrivateAggregator:
 
     def aggregate_mean(
         self,
-        vectors: List[np.ndarray],
+        vectors: list[np.ndarray],
         num_contributors: int
     ) -> np.ndarray:
         """
@@ -571,7 +572,7 @@ class PrivateMemoryRetrieval:
         scores: np.ndarray,
         k: int,
         sensitivity: float = 1.0
-    ) -> List[int]:
+    ) -> list[int]:
         """
         Private selection of top-k items.
 
@@ -644,7 +645,7 @@ if __name__ == "__main__":
     candidates = ['Option A', 'Option B', 'Option C', 'Option D']
     utilities = {'Option A': 10, 'Option B': 8, 'Option C': 5, 'Option D': 2}
 
-    selection_counts = {c: 0 for c in candidates}
+    selection_counts = dict.fromkeys(candidates, 0)
     for _ in range(1000):
         selected = exponential_mechanism(
             candidates,

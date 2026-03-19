@@ -27,17 +27,18 @@ Applications:
     - Load balancing
 """
 
-from typing import Dict, List, Callable, Optional, Tuple, Any
-import numpy as np
-from dataclasses import dataclass
 import random
+from collections.abc import Callable
+from dataclasses import dataclass
+
+import numpy as np
 
 
 @dataclass
 class Target:
     """A routing target (server, tool, component, etc.)."""
     name: str
-    metrics: Dict[str, float]  # load, latency, cost, etc.
+    metrics: dict[str, float]  # load, latency, cost, etc.
 
 
 @dataclass
@@ -79,7 +80,7 @@ class GradientFlowEngine:
 
     def __init__(
         self,
-        loss_fn: Callable[[Dict[str, float]], float],
+        loss_fn: Callable[[dict[str, float]], float],
         learning_rate: float = 0.1,
         noise_level: float = 0.05,
         dt: float = 0.01
@@ -98,13 +99,13 @@ class GradientFlowEngine:
         self.noise_level = noise_level
         self.dt = dt
 
-    def compute_loss(self, target_metrics: Dict[str, float]) -> float:
+    def compute_loss(self, target_metrics: dict[str, float]) -> float:
         """Compute loss for a target."""
         return self.loss_fn(target_metrics)
 
     def compute_gradient(
         self,
-        targets: List[Target],
+        targets: list[Target],
         position: float
     ) -> float:
         """
@@ -134,7 +135,7 @@ class GradientFlowEngine:
         gradient = (loss_plus - loss_minus) / (2 * epsilon)
         return gradient
 
-    def _interpolate_loss(self, targets: List[Target], position: float) -> float:
+    def _interpolate_loss(self, targets: list[Target], position: float) -> float:
         """
         Interpolate loss at a continuous position.
 
@@ -160,9 +161,9 @@ class GradientFlowEngine:
 
     def step(
         self,
-        targets: List[Target],
+        targets: list[Target],
         position: float
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Single gradient descent step.
 
@@ -195,10 +196,10 @@ class GradientFlowEngine:
 
     def route(
         self,
-        targets: List[str],
-        target_metrics: List[Dict[str, float]],
+        targets: list[str],
+        target_metrics: list[dict[str, float]],
         max_steps: int = 10,
-        initial_position: Optional[float] = None
+        initial_position: float | None = None
     ) -> RouteDecision:
         """
         Route query by following gradient downhill.
@@ -246,18 +247,18 @@ class GradientFlowEngine:
 
 # Common loss functions
 
-def load_loss(metrics: Dict[str, float]) -> float:
+def load_loss(metrics: dict[str, float]) -> float:
     """Loss based on server load only."""
     return metrics.get("load", 0.0)
 
 
-def latency_loss(metrics: Dict[str, float]) -> float:
+def latency_loss(metrics: dict[str, float]) -> float:
     """Loss based on latency only."""
     latency = metrics.get("latency", 0.0)
     return latency / 100.0  # Normalize to 0-1
 
 
-def cost_loss(metrics: Dict[str, float]) -> float:
+def cost_loss(metrics: dict[str, float]) -> float:
     """Loss based on cost only."""
     return metrics.get("cost", 0.0)
 
@@ -266,7 +267,7 @@ def combined_loss(
     load_weight: float = 0.5,
     latency_weight: float = 0.3,
     cost_weight: float = 0.2
-) -> Callable[[Dict[str, float]], float]:
+) -> Callable[[dict[str, float]], float]:
     """
     Create combined loss function.
 
@@ -278,7 +279,7 @@ def combined_loss(
     Returns:
         Loss function combining all metrics
     """
-    def loss_fn(metrics: Dict[str, float]) -> float:
+    def loss_fn(metrics: dict[str, float]) -> float:
         load = metrics.get("load", 0.0)
         latency = metrics.get("latency", 0.0) / 100.0  # Normalize
         cost = metrics.get("cost", 0.0)
@@ -293,7 +294,7 @@ def combined_loss(
     return loss_fn
 
 
-def quality_loss(metrics: Dict[str, float]) -> float:
+def quality_loss(metrics: dict[str, float]) -> float:
     """
     Loss based on quality (inverted - lower quality = higher loss).
 
@@ -307,7 +308,7 @@ def create_tool_selection_loss(
     cost_weight: float = 0.3,
     quality_weight: float = 0.5,
     latency_weight: float = 0.2
-) -> Callable[[Dict[str, float]], float]:
+) -> Callable[[dict[str, float]], float]:
     """
     Loss function for tool selection.
 
@@ -321,7 +322,7 @@ def create_tool_selection_loss(
     Returns:
         Loss function for tool selection
     """
-    def loss_fn(metrics: Dict[str, float]) -> float:
+    def loss_fn(metrics: dict[str, float]) -> float:
         cost = metrics.get("cost", 0.0)
         quality = metrics.get("quality", 1.0)
         latency = metrics.get("latency", 0.0) / 200.0  # Normalize to 0-1

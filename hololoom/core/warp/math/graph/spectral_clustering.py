@@ -29,10 +29,11 @@ Author: Claude Code
 Date: December 2025 (Math Module Expansion)
 """
 
-import numpy as np
-from typing import List, Tuple, Optional, Dict, Any, Union
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
+
+import numpy as np
 
 try:
     import networkx as nx
@@ -78,7 +79,7 @@ class ClusterResult:
     n_clusters: int              # Number of clusters found
     embedding: SpectralEmbedding # Underlying spectral embedding
     inertia: float               # k-means inertia
-    silhouette: Optional[float] = None  # Silhouette score if computed
+    silhouette: float | None = None  # Silhouette score if computed
 
 
 class GraphLaplacian:
@@ -172,7 +173,7 @@ class GraphLaplacian:
 
 
 def compute_laplacian(
-    graph_data: Union[np.ndarray, Any],
+    graph_data: np.ndarray | Any,
     laplacian_type: LaplacianType = LaplacianType.SYMMETRIC,
     data_type: str = "adjacency"
 ) -> np.ndarray:
@@ -253,7 +254,7 @@ def spectral_embed(
     )
 
 
-def fiedler_vector(L: np.ndarray) -> Tuple[np.ndarray, float]:
+def fiedler_vector(L: np.ndarray) -> tuple[np.ndarray, float]:
     """
     Compute Fiedler vector and algebraic connectivity.
 
@@ -307,7 +308,7 @@ class SpectralClustering:
         self,
         n_clusters: int = 2,
         laplacian_type: LaplacianType = LaplacianType.SYMMETRIC,
-        n_components: Optional[int] = None,
+        n_components: int | None = None,
         normalize_rows: bool = True
     ):
         """
@@ -387,7 +388,7 @@ class SpectralClustering:
         X: np.ndarray,
         k: int,
         max_iters: int = 100
-    ) -> Tuple[np.ndarray, float]:
+    ) -> tuple[np.ndarray, float]:
         """
         Simple k-means implementation with k-means++ initialization.
 
@@ -511,7 +512,7 @@ class KnowledgeGraphClusterer:
             laplacian_type=laplacian_type
         )
 
-    def cluster_from_networkx(self, G) -> Dict[str, Any]:
+    def cluster_from_networkx(self, G) -> dict[str, Any]:
         """
         Cluster a NetworkX graph.
 
@@ -574,10 +575,10 @@ class KnowledgeGraphClusterer:
 
     def cluster_from_embeddings(
         self,
-        node_ids: List[str],
+        node_ids: list[str],
         embeddings: np.ndarray,
         sigma: float = 1.0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Cluster nodes by embedding similarity.
 
@@ -611,9 +612,9 @@ class KnowledgeGraphClusterer:
 
     def find_similar_clusters(
         self,
-        cluster_result: Dict[str, Any],
+        cluster_result: dict[str, Any],
         similarity_threshold: float = 0.8
-    ) -> List[Tuple[int, int, float]]:
+    ) -> list[tuple[int, int, float]]:
         """
         Find pairs of clusters that might be merged.
 
@@ -678,7 +679,7 @@ if __name__ == "__main__":
         clusterer = KnowledgeGraphClusterer(n_clusters=2)
         kg_result = clusterer.cluster_from_networkx(G)
 
-        print(f"\nKnowledge graph clustering:")
+        print("\nKnowledge graph clustering:")
         for cluster_id, members in kg_result["clusters"].items():
             print(f"  Cluster {cluster_id}: {members}")
 

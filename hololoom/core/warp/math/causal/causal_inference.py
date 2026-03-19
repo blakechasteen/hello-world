@@ -29,13 +29,11 @@ Author: Claude Code
 Date: December 2025 (Math Module Expansion)
 """
 
-import numpy as np
-from typing import (
-    List, Dict, Set, Tuple, Optional, Callable, Any, Union
-)
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from abc import ABC, abstractmethod
+
+import numpy as np
 
 try:
     import networkx as nx
@@ -63,11 +61,11 @@ class CausalQuery:
         conditioning: Variables to condition on
         intervention_values: Values for do() operation
     """
-    outcome: List[str]
-    treatment: List[str]
+    outcome: list[str]
+    treatment: list[str]
     query_type: CausalQueryType = CausalQueryType.INTERVENTIONAL
-    conditioning: List[str] = field(default_factory=list)
-    intervention_values: Dict[str, float] = field(default_factory=dict)
+    conditioning: list[str] = field(default_factory=list)
+    intervention_values: dict[str, float] = field(default_factory=dict)
 
     def __str__(self) -> str:
         if self.query_type == CausalQueryType.INTERVENTIONAL:
@@ -83,9 +81,9 @@ class CausalQuery:
 class IdentificationResult:
     """Result of causal effect identification."""
     identifiable: bool
-    estimand: Optional[str] = None  # Statistical estimand if identifiable
-    adjustment_set: Optional[Set[str]] = None
-    formula: Optional[str] = None
+    estimand: str | None = None  # Statistical estimand if identifiable
+    adjustment_set: set[str] | None = None
+    formula: str | None = None
     explanation: str = ""
 
 
@@ -103,8 +101,8 @@ class CausalGraph:
             self.graph = nx.DiGraph()
         else:
             # Fallback: dict of adjacency lists
-            self._parents: Dict[str, Set[str]] = {}
-            self._children: Dict[str, Set[str]] = {}
+            self._parents: dict[str, set[str]] = {}
+            self._children: dict[str, set[str]] = {}
 
     def add_edge(self, parent: str, child: str) -> None:
         """Add causal edge: parent → child."""
@@ -123,34 +121,34 @@ class CausalGraph:
             self._parents[child].add(parent)
             self._children[parent].add(child)
 
-    def add_edges(self, edges: List[Tuple[str, str]]) -> None:
+    def add_edges(self, edges: list[tuple[str, str]]) -> None:
         """Add multiple edges."""
         for parent, child in edges:
             self.add_edge(parent, child)
 
     @property
-    def nodes(self) -> Set[str]:
+    def nodes(self) -> set[str]:
         """Get all nodes in graph."""
         if HAS_NETWORKX:
             return set(self.graph.nodes())
         else:
             return set(self._parents.keys()) | set(self._children.keys())
 
-    def parents(self, node: str) -> Set[str]:
+    def parents(self, node: str) -> set[str]:
         """Get direct parents of node."""
         if HAS_NETWORKX:
             return set(self.graph.predecessors(node))
         else:
             return self._parents.get(node, set())
 
-    def children(self, node: str) -> Set[str]:
+    def children(self, node: str) -> set[str]:
         """Get direct children of node."""
         if HAS_NETWORKX:
             return set(self.graph.successors(node))
         else:
             return self._children.get(node, set())
 
-    def ancestors(self, node: str) -> Set[str]:
+    def ancestors(self, node: str) -> set[str]:
         """Get all ancestors of node."""
         if HAS_NETWORKX:
             return nx.ancestors(self.graph, node)
@@ -164,7 +162,7 @@ class CausalGraph:
                     queue.extend(self.parents(current))
             return result
 
-    def descendants(self, node: str) -> Set[str]:
+    def descendants(self, node: str) -> set[str]:
         """Get all descendants of node."""
         if HAS_NETWORKX:
             return nx.descendants(self.graph, node)
@@ -178,7 +176,7 @@ class CausalGraph:
                     queue.extend(self.children(current))
             return result
 
-    def do(self, intervention_vars: Set[str]) -> 'CausalGraph':
+    def do(self, intervention_vars: set[str]) -> 'CausalGraph':
         """
         Create mutilated graph for do() operation.
 
@@ -202,9 +200,9 @@ class CausalGraph:
 
     def d_separated(
         self,
-        x: Set[str],
-        y: Set[str],
-        z: Set[str]
+        x: set[str],
+        y: set[str],
+        z: set[str]
     ) -> bool:
         """
         Check if X and Y are d-separated given Z.
@@ -282,7 +280,7 @@ class CausalGraph:
         self,
         treatment: str,
         outcome: str,
-        adjustment: Set[str]
+        adjustment: set[str]
     ) -> bool:
         """
         Check if adjustment set satisfies back-door criterion.
@@ -313,7 +311,7 @@ class CausalGraph:
         self,
         treatment: str,
         outcome: str
-    ) -> Optional[Set[str]]:
+    ) -> set[str] | None:
         """
         Find a valid adjustment set using back-door criterion.
 
@@ -359,16 +357,16 @@ class StructuralEquation:
         noise_dist: Noise distribution (callable returning sample)
     """
     variable: str
-    parents: List[str]
-    function: Callable[[Dict[str, float]], float]
+    parents: list[str]
+    function: Callable[[dict[str, float]], float]
     noise_dist: Callable[[], float] = field(
         default_factory=lambda: lambda: np.random.normal(0, 0.1)
     )
 
     def evaluate(
         self,
-        parent_values: Dict[str, float],
-        noise: Optional[float] = None
+        parent_values: dict[str, float],
+        noise: float | None = None
     ) -> float:
         """
         Evaluate equation given parent values.
@@ -408,16 +406,16 @@ class StructuralCausalModel:
 
     def __init__(self):
         """Initialize empty SCM."""
-        self.equations: Dict[str, StructuralEquation] = {}
+        self.equations: dict[str, StructuralEquation] = {}
         self.graph = CausalGraph()
-        self._topological_order: Optional[List[str]] = None
+        self._topological_order: list[str] | None = None
 
     def add_equation(
         self,
         variable: str,
-        parents: List[str],
-        function: Callable[[Dict[str, float]], float],
-        noise_dist: Optional[Callable[[], float]] = None
+        parents: list[str],
+        function: Callable[[dict[str, float]], float],
+        noise_dist: Callable[[], float] | None = None
     ) -> None:
         """
         Add structural equation for a variable.
@@ -446,13 +444,13 @@ class StructuralCausalModel:
         self._topological_order = None
 
     @property
-    def topological_order(self) -> List[str]:
+    def topological_order(self) -> list[str]:
         """Get variables in topological order."""
         if self._topological_order is None:
             self._topological_order = self._compute_topological_order()
         return self._topological_order
 
-    def _compute_topological_order(self) -> List[str]:
+    def _compute_topological_order(self) -> list[str]:
         """Compute topological ordering of variables."""
         if HAS_NETWORKX:
             return list(nx.topological_sort(self.graph.graph))
@@ -475,8 +473,8 @@ class StructuralCausalModel:
     def sample(
         self,
         n_samples: int = 1,
-        interventions: Optional[Dict[str, float]] = None
-    ) -> Dict[str, np.ndarray]:
+        interventions: dict[str, float] | None = None
+    ) -> dict[str, np.ndarray]:
         """
         Sample from the SCM (possibly under intervention).
 
@@ -510,9 +508,9 @@ class StructuralCausalModel:
 
     def intervene(
         self,
-        interventions: Dict[str, float],
+        interventions: dict[str, float],
         n_samples: int = 1000
-    ) -> Dict[str, np.ndarray]:
+    ) -> dict[str, np.ndarray]:
         """
         Perform intervention do(X=x) and sample.
 
@@ -527,8 +525,8 @@ class StructuralCausalModel:
 
     def counterfactual(
         self,
-        evidence: Dict[str, float],
-        intervention: Dict[str, float],
+        evidence: dict[str, float],
+        intervention: dict[str, float],
         query_var: str
     ) -> float:
         """
@@ -569,7 +567,7 @@ class StructuralCausalModel:
 
         return values.get(query_var, 0.0)
 
-    def _abduct_noise(self, evidence: Dict[str, float]) -> Dict[str, float]:
+    def _abduct_noise(self, evidence: dict[str, float]) -> dict[str, float]:
         """
         Infer noise terms given evidence (simplified).
 
@@ -594,17 +592,17 @@ class StructuralCausalModel:
 
 def do_intervention(
     scm: StructuralCausalModel,
-    intervention: Dict[str, float],
+    intervention: dict[str, float],
     n_samples: int = 1000
-) -> Dict[str, np.ndarray]:
+) -> dict[str, np.ndarray]:
     """Perform do() intervention on SCM."""
     return scm.intervene(intervention, n_samples)
 
 
 def counterfactual(
     scm: StructuralCausalModel,
-    evidence: Dict[str, float],
-    intervention: Dict[str, float],
+    evidence: dict[str, float],
+    intervention: dict[str, float],
     query_var: str
 ) -> float:
     """Compute counterfactual query."""
@@ -668,7 +666,7 @@ def find_adjustment_set(
     graph: CausalGraph,
     treatment: str,
     outcome: str
-) -> Optional[Set[str]]:
+) -> set[str] | None:
     """Find valid adjustment set for back-door criterion."""
     return graph.find_adjustment_set(treatment, outcome)
 
@@ -684,7 +682,7 @@ class CausalReasoner:
         - Feature selection: Which features causally affect outcome?
     """
 
-    def __init__(self, scm: Optional[StructuralCausalModel] = None):
+    def __init__(self, scm: StructuralCausalModel | None = None):
         """
         Args:
             scm: Structural causal model (or build one later)
@@ -694,8 +692,8 @@ class CausalReasoner:
     def add_causal_mechanism(
         self,
         effect: str,
-        causes: List[str],
-        mechanism: Callable[[Dict[str, float]], float]
+        causes: list[str],
+        mechanism: Callable[[dict[str, float]], float]
     ) -> None:
         """
         Add causal mechanism: effect = f(causes).
@@ -709,10 +707,10 @@ class CausalReasoner:
 
     def what_if(
         self,
-        intervention: Dict[str, float],
+        intervention: dict[str, float],
         query: str,
         n_samples: int = 1000
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Answer "what if" question via intervention.
 
@@ -737,8 +735,8 @@ class CausalReasoner:
 
     def would_have_been(
         self,
-        observed: Dict[str, float],
-        counterfactual_action: Dict[str, float],
+        observed: dict[str, float],
+        counterfactual_action: dict[str, float],
         query: str
     ) -> float:
         """
@@ -769,7 +767,7 @@ class CausalDiscovery:
     @staticmethod
     def from_correlation(
         data: np.ndarray,
-        var_names: List[str],
+        var_names: list[str],
         threshold: float = 0.3
     ) -> CausalGraph:
         """

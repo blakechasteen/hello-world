@@ -11,9 +11,9 @@ Physics Model:
     - Advection: (v·∇)v (velocity influences itself)
 """
 
-from typing import Dict, List, Tuple
-import numpy as np
 from dataclasses import dataclass
+
+import numpy as np
 
 
 @dataclass
@@ -53,7 +53,7 @@ class VelocityField:
         Args:
             viscosity: Damping coefficient (0.0 = no damping, 1.0 = high damping)
         """
-        self.velocities: Dict[Tuple[str, str], FlowVector] = {}
+        self.velocities: dict[tuple[str, str], FlowVector] = {}
         self.viscosity = viscosity
 
     def set_velocity(
@@ -127,7 +127,7 @@ class VelocityField:
     def advect(
         self,
         source: str,
-        neighbors: List[str],
+        neighbors: list[str],
         dt: float = 0.01
     ):
         """
@@ -196,14 +196,14 @@ class VelocityField:
         """
         return self.get_inflow(node) - self.get_outflow(node)
 
-    def get_flow_vectors(self, node: str) -> List[FlowVector]:
+    def get_flow_vectors(self, node: str) -> list[FlowVector]:
         """Get all flow vectors originating from a node."""
         return [
             flow for (src, tgt), flow in self.velocities.items()
             if src == node
         ]
 
-    def get_statistics(self) -> Dict[str, float]:
+    def get_statistics(self) -> dict[str, float]:
         """Get velocity field statistics."""
         if not self.velocities:
             return {

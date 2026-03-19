@@ -20,10 +20,11 @@ Applications:
     - Feature selection (mutual information)
 """
 
-import numpy as np
-from typing import List, Tuple, Dict, Optional, Callable
-from collections import Counter
 import heapq
+from collections import Counter
+from collections.abc import Callable
+
+import numpy as np
 
 
 class Entropy:
@@ -319,7 +320,7 @@ class SourceCoding:
     """
 
     @staticmethod
-    def huffman_code(probabilities: np.ndarray) -> Dict[int, str]:
+    def huffman_code(probabilities: np.ndarray) -> dict[int, str]:
         """
         Huffman coding: optimal prefix-free code.
 
@@ -363,7 +364,7 @@ class SourceCoding:
         return np.sum(base ** (-code_lengths)) <= 1.0 + 1e-10
 
     @staticmethod
-    def shannon_fano_code(probabilities: np.ndarray) -> List[int]:
+    def shannon_fano_code(probabilities: np.ndarray) -> list[int]:
         """
         Shannon-Fano code lengths: l_i = ceil(-log p_i).
 
@@ -415,7 +416,7 @@ class ErrorCorrection:
         return codeword
 
     @staticmethod
-    def hamming_7_4_decode(received: np.ndarray) -> Tuple[np.ndarray, bool]:
+    def hamming_7_4_decode(received: np.ndarray) -> tuple[np.ndarray, bool]:
         """
         Hamming (7,4) decode with error correction.
 

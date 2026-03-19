@@ -11,9 +11,9 @@ Physics Model:
     - Pressure gradients drive information flow
 """
 
-from typing import Dict, List, Optional, Set
+from dataclasses import dataclass
+
 import numpy as np
-from dataclasses import dataclass, field
 
 
 @dataclass
@@ -22,7 +22,7 @@ class PressureSource:
     node: str
     importance: float  # 0.0 - 1.0
     tokens: int = 0
-    text: Optional[str] = None
+    text: str | None = None
 
 
 class PressureField:
@@ -48,15 +48,15 @@ class PressureField:
         Args:
             default_pressure: Default pressure for new nodes (0.0 = sparse)
         """
-        self.pressures: Dict[str, float] = {}
-        self.sources: Dict[str, PressureSource] = {}
+        self.pressures: dict[str, float] = {}
+        self.sources: dict[str, PressureSource] = {}
         self.default_pressure = default_pressure
 
     def set_pressure(
         self,
         node: str,
         pressure: float,
-        source: Optional[PressureSource] = None
+        source: PressureSource | None = None
     ):
         """
         Set pressure at a node.
@@ -79,7 +79,7 @@ class PressureField:
         node: str,
         importance: float,
         tokens: int = 0,
-        text: Optional[str] = None
+        text: str | None = None
     ):
         """
         Inject pressure at a node (like injecting water into a system).
@@ -101,8 +101,8 @@ class PressureField:
     def compute_gradient(
         self,
         node: str,
-        neighbors: List[str]
-    ) -> Dict[str, float]:
+        neighbors: list[str]
+    ) -> dict[str, float]:
         """
         Compute pressure gradient at a node.
 
@@ -132,8 +132,8 @@ class PressureField:
     def detect_sparse_regions(
         self,
         threshold: float = 0.3,
-        nodes: Optional[Set[str]] = None
-    ) -> List[str]:
+        nodes: set[str] | None = None
+    ) -> list[str]:
         """
         Find low-pressure (sparse context) regions.
 
@@ -154,8 +154,8 @@ class PressureField:
     def get_high_pressure_regions(
         self,
         threshold: float = 0.7,
-        nodes: Optional[Set[str]] = None
-    ) -> List[str]:
+        nodes: set[str] | None = None
+    ) -> list[str]:
         """
         Find high-pressure (important context) regions.
 
@@ -176,7 +176,7 @@ class PressureField:
     def diffuse(
         self,
         node: str,
-        neighbors: List[str],
+        neighbors: list[str],
         diffusion_rate: float = 0.1
     ):
         """
@@ -199,7 +199,7 @@ class PressureField:
             new_pressure = neighbor_pressure + delta
             self.set_pressure(neighbor, new_pressure)
 
-    def get_statistics(self) -> Dict[str, float]:
+    def get_statistics(self) -> dict[str, float]:
         """Get pressure field statistics."""
         if not self.pressures:
             return {

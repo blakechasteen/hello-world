@@ -19,10 +19,11 @@ Research-backed approaches:
 Expected benefit: Much better interpretability and user trust.
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass, field
 import logging
+from dataclasses import dataclass, field
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ class WhyExplanation:
     operation: str
     reason: str
     full_explanation: str
-    supporting_evidence: Dict[str, Any] = field(default_factory=dict)
+    supporting_evidence: dict[str, Any] = field(default_factory=dict)
     confidence: float = 1.0
 
 
@@ -64,7 +65,7 @@ class WhyNotExplanation:
     operation: str
     reason: str
     full_explanation: str
-    blockers: List[str] = field(default_factory=list)
+    blockers: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -82,8 +83,8 @@ class CounterfactualExplanation:
     operation: str
     current_score: float
     required_score: float
-    changes_needed: List[str] = field(default_factory=list)
-    minimal_change: Optional[str] = None
+    changes_needed: list[str] = field(default_factory=list)
+    minimal_change: str | None = None
 
 
 # ============================================================================
@@ -103,7 +104,7 @@ class FeatureImportanceAnalyzer:
         selected_operation: str,
         selector_function: callable,
         top_k: int = 5
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Analyze feature importance for operation selection.
 
@@ -164,8 +165,8 @@ class ExplanationGenerator:
     def explain_why(
         self,
         operation: str,
-        context_features: Dict[str, Any],
-        selection_metadata: Dict[str, Any]
+        context_features: dict[str, Any],
+        selection_metadata: dict[str, Any]
     ) -> WhyExplanation:
         """
         Generate "why was this operation chosen?" explanation.
@@ -227,7 +228,7 @@ class ExplanationGenerator:
         self,
         operation: str,
         selected_operation: str,
-        selection_metadata: Dict[str, Any]
+        selection_metadata: dict[str, Any]
     ) -> WhyNotExplanation:
         """
         Generate "why wasn't this operation chosen?" explanation.
@@ -279,8 +280,8 @@ class ExplanationGenerator:
         self,
         operation: str,
         selected_operation: str,
-        context_features: Dict[str, Any],
-        selection_metadata: Dict[str, Any]
+        context_features: dict[str, Any],
+        selection_metadata: dict[str, Any]
     ) -> CounterfactualExplanation:
         """
         Generate counterfactual explanation.
@@ -336,7 +337,7 @@ class ExplanationGenerator:
     # Internal Helpers
     # ========================================================================
 
-    def _create_feature_names(self) -> Dict[int, str]:
+    def _create_feature_names(self) -> dict[int, str]:
         """Create human-readable names for context features."""
         names = {}
 
@@ -362,7 +363,7 @@ class ExplanationGenerator:
 
         return names
 
-    def _extract_context_factors(self, context_features: Dict[str, Any]) -> List[str]:
+    def _extract_context_factors(self, context_features: dict[str, Any]) -> list[str]:
         """Extract human-readable context factors."""
         factors = []
 
@@ -427,7 +428,7 @@ class ExplainableSelector:
         query_text: str,
         intent: str = None,
         **kwargs
-    ) -> Tuple[str, Dict[str, Any]]:
+    ) -> tuple[str, dict[str, Any]]:
         """
         Select operation and store info for explanation.
 
@@ -557,7 +558,7 @@ if __name__ == "__main__":
     why = explainable.explain_why()
     print(f"  Reason: {why.reason}")
     print(f"  Explanation: {why.full_explanation}")
-    print(f"  Evidence:")
+    print("  Evidence:")
     for key, val in why.supporting_evidence.items():
         print(f"    {key}: {val}")
     print()
@@ -568,7 +569,7 @@ if __name__ == "__main__":
     why_not = explainable.explain_why_not("gradient")
     print(f"  Reason: {why_not.reason}")
     print(f"  Explanation: {why_not.full_explanation}")
-    print(f"  Blockers:")
+    print("  Blockers:")
     for blocker in why_not.blockers:
         print(f"    - {blocker}")
     print()
@@ -580,7 +581,7 @@ if __name__ == "__main__":
     print(f"  Current score: {counterfactual.current_score:.2f}")
     print(f"  Required score: {counterfactual.required_score:.2f}")
     print(f"  Gap: {counterfactual.required_score - counterfactual.current_score:.2f}")
-    print(f"\n  Changes needed:")
+    print("\n  Changes needed:")
     for change in counterfactual.changes_needed:
         print(f"    - {change}")
     print(f"\n  Minimal change: {counterfactual.minimal_change}")

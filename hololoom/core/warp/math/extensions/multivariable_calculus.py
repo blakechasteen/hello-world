@@ -20,9 +20,10 @@ Applications:
     - Geometric PDEs
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Dict
+from collections.abc import Callable
 from dataclasses import dataclass
+
+import numpy as np
 
 
 @dataclass
@@ -307,7 +308,7 @@ class SurfaceIntegral:
 
     @staticmethod
     def flux(field: VectorField, surface: Callable[[float, float], np.ndarray],
-            u_range: Tuple[float, float], v_range: Tuple[float, float],
+            u_range: tuple[float, float], v_range: tuple[float, float],
             n_u: int = 20, n_v: int = 20) -> float:
         """
         Flux of vector field through surface: ∫∫_S F · n dS.
@@ -442,7 +443,7 @@ class GradientCurlDiv:
     """
 
     @staticmethod
-    def identities() -> Dict[str, str]:
+    def identities() -> dict[str, str]:
         """Important vector calculus identities."""
         return {
             "curl_of_gradient": "curl(grad f) = 0 (conservative fields)",
@@ -531,25 +532,25 @@ if __name__ == "__main__":
     print("\n[Test 1] Gradient of f = x² + y² + z²")
     grad = example_gradient_field()
     print(f"∇f at (1,2,3) = {grad}")
-    print(f"Expected: (2, 4, 6)")
+    print("Expected: (2, 4, 6)")
 
     # Test 2: Divergence
     print("\n[Test 2] Divergence of radial field")
     div = example_divergence()
     print(f"div F at (1,1,1) = {div:.4f}")
-    print(f"Expected: 3.0")
+    print("Expected: 3.0")
 
     # Test 3: Curl
     print("\n[Test 3] Curl of rotation field")
     curl_val = example_curl()
     print(f"curl F at (1,1,0) = {curl_val}")
-    print(f"Expected: (0, 0, 2)")
+    print("Expected: (0, 0, 2)")
 
     # Test 4: Line integral
     print("\n[Test 4] Line integral (work)")
     work = example_line_integral()
     print(f"Work along line: {work:.4f}")
-    print(f"Expected: 1.5 (for radial field)")
+    print("Expected: 1.5 (for radial field)")
 
     # Test 5: Fundamental theorems
     print("\n[Test 5] Fundamental theorems")

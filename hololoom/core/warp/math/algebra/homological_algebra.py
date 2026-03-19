@@ -31,12 +31,11 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Dict
-from dataclasses import dataclass
-from .abstract_algebra import Ring
-from .module_theory import Module, ModuleHomomorphism, ExactSequence
 import logging
+from dataclasses import dataclass
+
+from .abstract_algebra import Ring
+from .module_theory import ExactSequence, Module, ModuleHomomorphism
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +55,8 @@ class ChainComplex:
 
     def __init__(
         self,
-        modules: Dict[int, Module],
-        differentials: Dict[int, ModuleHomomorphism],
+        modules: dict[int, Module],
+        differentials: dict[int, ModuleHomomorphism],
         name: str = "C"
     ):
         """
@@ -99,7 +98,7 @@ class ChainComplex:
 
         return True
 
-    def cycles(self, n: int) -> List:
+    def cycles(self, n: int) -> list:
         """
         n-cycles: Z_n(C) = ker(d_n).
 
@@ -110,7 +109,7 @@ class ChainComplex:
 
         return self.differentials[n].kernel()
 
-    def boundaries(self, n: int) -> List:
+    def boundaries(self, n: int) -> list:
         """
         n-boundaries: B_n(C) = im(d_{n+1}).
 
@@ -147,7 +146,7 @@ class QuotientModule:
     Elements: Cosets m + N
     """
     module: Module
-    submodule: List
+    submodule: list
     name: str = "M/N"
 
     def order(self) -> int:
@@ -179,8 +178,8 @@ class CochainComplex:
 
     def __init__(
         self,
-        modules: Dict[int, Module],
-        differentials: Dict[int, ModuleHomomorphism],
+        modules: dict[int, Module],
+        differentials: dict[int, ModuleHomomorphism],
         name: str = "C"
     ):
         """Initialize cochain complex."""
@@ -310,8 +309,8 @@ class SpectralSequence:
 
     def __init__(self, name: str = "E"):
         """Initialize spectral sequence."""
-        self.pages: Dict[int, Dict[Tuple[int, int], Module]] = {}
-        self.differentials: Dict[int, Dict[Tuple[int, int], ModuleHomomorphism]] = {}
+        self.pages: dict[int, dict[tuple[int, int], Module]] = {}
+        self.differentials: dict[int, dict[tuple[int, int], ModuleHomomorphism]] = {}
         self.name = name
 
     def set_page(self, r: int, p: int, q: int, module: Module):

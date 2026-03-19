@@ -17,9 +17,9 @@ Usage:
     context = await packer.pack(enable_reverse_prompting=True)
 """
 
-from typing import Dict, List, Optional, Tuple, Callable, Awaitable
-import asyncio
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+from typing import Optional
 
 from .fluid_dynamics import ContextFlowEngine, FlowState
 
@@ -33,12 +33,12 @@ except ImportError:
 @dataclass
 class PackedContext:
     """Result of adaptive context packing."""
-    nodes: List[Tuple[str, float, Optional[str]]]  # (node, importance, text)
+    nodes: list[tuple[str, float, str | None]]  # (node, importance, text)
     tokens_used: int
     tokens_available: int
-    flow_states: List[FlowState]  # History of flow states
-    reverse_prompts_executed: List[str]  # Reverse prompts that were executed
-    final_pressure_map: Dict[str, float]
+    flow_states: list[FlowState]  # History of flow states
+    reverse_prompts_executed: list[str]  # Reverse prompts that were executed
+    final_pressure_map: dict[str, float]
 
 
 class AdaptivePacker:
@@ -71,9 +71,7 @@ class AdaptivePacker:
         max_tokens: int = 8000,
         viscosity: float = 0.01,
         sparse_threshold: float = 0.3,
-        reverse_prompt_callback: Optional[
-            Callable[[str], Awaitable[Tuple[int, str]]]
-        ] = None
+        reverse_prompt_callback: Callable[[str], Awaitable[tuple[int, str]]] | None = None
     ):
         """
         Initialize adaptive packer.
@@ -93,15 +91,15 @@ class AdaptivePacker:
             sparse_threshold=sparse_threshold
         )
         self.reverse_prompt_callback = reverse_prompt_callback
-        self.flow_history: List[FlowState] = []
-        self.reverse_prompts_executed: List[str] = []
+        self.flow_history: list[FlowState] = []
+        self.reverse_prompts_executed: list[str] = []
 
     def inject(
         self,
         node: str,
         importance: float,
         tokens: int = 0,
-        text: Optional[str] = None
+        text: str | None = None
     ):
         """
         Inject context at a node (creates high-pressure source).
@@ -206,7 +204,7 @@ class AdaptivePacker:
                             self.reverse_prompts_executed.append(reverse_prompt)
                             reverse_tokens_used += tokens
 
-                        except Exception as e:
+                        except Exception:
                             # Graceful degradation if reverse prompt fails
                             pass
 
@@ -222,7 +220,7 @@ class AdaptivePacker:
             final_pressure_map=dict(self.engine.pressure.pressures)
         )
 
-    def get_flow_summary(self) -> Dict[str, any]:
+    def get_flow_summary(self) -> dict[str, any]:
         """Get summary of flow dynamics."""
         if not self.flow_history:
             return {

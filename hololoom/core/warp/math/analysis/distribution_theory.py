@@ -27,10 +27,10 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, Tuple, Optional, List
-from dataclasses import dataclass
 import logging
+from collections.abc import Callable
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ class SchwartzFunction:
         return SchwartzFunction(lambda x: np.exp(-x**2 / (2 * sigma**2)))
 
     @staticmethod
-    def bump_function(support: Tuple[float, float] = (-1, 1)) -> 'SchwartzFunction':
+    def bump_function(support: tuple[float, float] = (-1, 1)) -> 'SchwartzFunction':
         """
         Smooth bump function with compact support.
 

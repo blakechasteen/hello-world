@@ -20,9 +20,9 @@ Applications:
     - Optimal transport on manifolds
 """
 
+from collections.abc import Callable
+
 import numpy as np
-from typing import Callable, List, Tuple, Optional, Dict
-from dataclasses import dataclass
 
 
 class RiemannianMetric:
@@ -186,7 +186,7 @@ class Geodesic:
         self.christoffel = Christoffel(metric)
 
     def integrate(self, initial_point: np.ndarray, initial_velocity: np.ndarray,
-                 t_final: float, dt: float = 0.01) -> Tuple[np.ndarray, np.ndarray]:
+                 t_final: float, dt: float = 0.01) -> tuple[np.ndarray, np.ndarray]:
         """
         Integrate geodesic equation from initial conditions.
 

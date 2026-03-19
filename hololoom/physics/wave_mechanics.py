@@ -47,11 +47,10 @@ Phase: 4 - Wave Mechanics
 from __future__ import annotations
 
 import math
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Set
-from dataclasses import dataclass, field
 from collections import defaultdict
+from dataclasses import dataclass
 
+import numpy as np
 
 # ============================================================================
 # Wave Field - Amplitude Distribution
@@ -85,10 +84,10 @@ class WaveField:
         self.damping = damping
 
         # Wave state at each node
-        self.states: Dict[str, WaveState] = {}
+        self.states: dict[str, WaveState] = {}
 
         # Graph structure (adjacency list)
-        self.graph: Dict[str, Set[str]] = defaultdict(set)
+        self.graph: dict[str, set[str]] = defaultdict(set)
 
     def add_edge(self, source: str, target: str):
         """Add edge to graph (undirected)."""
@@ -231,7 +230,7 @@ class WaveField:
 @dataclass
 class InterferencePattern:
     """Detected interference pattern."""
-    nodes: List[str]              # Nodes in pattern
+    nodes: list[str]              # Nodes in pattern
     amplitude: float              # Total amplitude
     type: str                     # "constructive" or "destructive"
     strength: float              # Interference strength (0-1)
@@ -249,7 +248,7 @@ class InterferenceCalculator:
     def detect_interference(
         wave_field: WaveField,
         threshold: float = 0.5
-    ) -> Tuple[List[InterferencePattern], List[InterferencePattern]]:
+    ) -> tuple[list[InterferencePattern], list[InterferencePattern]]:
         """
         Detect constructive and destructive interference.
 
@@ -322,7 +321,7 @@ class InterferenceCalculator:
 @dataclass
 class ResonancePattern:
     """Detected resonance (standing wave)."""
-    nodes: List[str]              # Nodes in resonance
+    nodes: list[str]              # Nodes in resonance
     frequency: float              # Resonant frequency
     amplitude: float              # Standing wave amplitude
     quality_factor: float         # Q factor (sharpness of resonance)
@@ -346,7 +345,7 @@ class ResonanceDetector:
             history_length: Number of timesteps to analyze
         """
         self.history_length = history_length
-        self.amplitude_history: Dict[str, List[float]] = defaultdict(list)
+        self.amplitude_history: dict[str, list[float]] = defaultdict(list)
 
     def record(self, wave_field: WaveField):
         """Record current wave field state."""
@@ -361,7 +360,7 @@ class ResonanceDetector:
         self,
         min_amplitude: float = 0.3,
         min_quality: float = 5.0
-    ) -> List[ResonancePattern]:
+    ) -> list[ResonancePattern]:
         """
         Detect standing waves via FFT.
 
@@ -471,7 +470,7 @@ class WaveMechanicsEngine:
     def get_interference_patterns(
         self,
         threshold: float = 0.5
-    ) -> Tuple[List[InterferencePattern], List[InterferencePattern]]:
+    ) -> tuple[list[InterferencePattern], list[InterferencePattern]]:
         """
         Get constructive and destructive interference patterns.
 
@@ -490,7 +489,7 @@ class WaveMechanicsEngine:
         self,
         min_amplitude: float = 0.3,
         min_quality: float = 5.0
-    ) -> List[ResonancePattern]:
+    ) -> list[ResonancePattern]:
         """
         Get resonance patterns (standing waves).
 
@@ -506,7 +505,7 @@ class WaveMechanicsEngine:
             min_quality=min_quality
         )
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get wave field statistics."""
         return {
             "timestep": self.timestep,

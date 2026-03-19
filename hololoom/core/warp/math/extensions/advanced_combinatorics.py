@@ -19,10 +19,9 @@ Applications:
     - Statistical mechanics
 """
 
-import numpy as np
-from typing import List, Tuple, Dict, Optional, Callable
 from functools import lru_cache
-from dataclasses import dataclass
+
+import numpy as np
 
 
 class GeneratingFunction:
@@ -158,7 +157,7 @@ class IntegerPartition:
         return result
 
     @staticmethod
-    def generate_partitions(n: int) -> List[List[int]]:
+    def generate_partitions(n: int) -> list[list[int]]:
         """
         Generate all partitions of n.
 
@@ -176,7 +175,7 @@ class IntegerPartition:
         return partitions
 
     @staticmethod
-    def ferrers_diagram(partition: List[int]) -> str:
+    def ferrers_diagram(partition: list[int]) -> str:
         """
         Ferrers diagram: visual representation of partition.
 
@@ -188,7 +187,7 @@ class IntegerPartition:
         return '\n'.join('*' * part for part in partition)
 
     @staticmethod
-    def conjugate(partition: List[int]) -> List[int]:
+    def conjugate(partition: list[int]) -> list[int]:
         """
         Conjugate partition: transpose Ferrers diagram.
 
@@ -304,7 +303,7 @@ class CatalanNumbers:
         return comb(2 * n, n) // (n + 1)
 
     @staticmethod
-    def dyck_paths(n: int) -> List[str]:
+    def dyck_paths(n: int) -> list[str]:
         """
         Generate all Dyck paths of length 2n.
 
@@ -325,7 +324,7 @@ class CatalanNumbers:
         return paths
 
     @staticmethod
-    def applications() -> Dict[str, str]:
+    def applications() -> dict[str, str]:
         """Catalan number applications."""
         return {
             "binary_trees": "Number of binary trees with n internal nodes",

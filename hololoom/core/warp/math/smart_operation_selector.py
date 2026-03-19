@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Smart Mathematical Operation Selector with RL/ML
 =================================================
@@ -21,25 +20,32 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import logging
-import json
 import ast
-from typing import Dict, List, Any, Optional, Callable, Tuple
-from dataclasses import dataclass, field, asdict
-from enum import Enum
+import json
+import logging
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
+
 import numpy as np
 
 # Import base selector
 try:
     from .operation_selector import (
-        MathOperation, OperationPlan, MathDomain, OperationLevel,
-        QueryIntent, MathOperationSelector
+        MathDomain,
+        MathOperation,
+        MathOperationSelector,
+        OperationLevel,
+        OperationPlan,
+        QueryIntent,
     )
 except ImportError:
     from operation_selector import (
-        MathOperation, OperationPlan, MathDomain, OperationLevel,
-        QueryIntent, MathOperationSelector
+        MathOperation,
+        MathOperationSelector,
+        OperationPlan,
+        QueryIntent,
     )
 
 # Import contextual bandit
@@ -72,7 +78,7 @@ class ComposedOperation:
         estimated_cost: Sum of component costs
         composition_type: How operations are combined
     """
-    operations: List[MathOperation]
+    operations: list[MathOperation]
     name: str
     estimated_cost: int
     composition_type: str = "sequential"  # or "parallel", "branching"
@@ -105,8 +111,8 @@ class OperationComposer:
 
     def compose_sequential(
         self,
-        operations: List[MathOperation],
-        name: Optional[str] = None
+        operations: list[MathOperation],
+        name: str | None = None
     ) -> ComposedOperation:
         """
         Sequential composition: f ∘ g ∘ h.
@@ -133,8 +139,8 @@ class OperationComposer:
 
     def compose_parallel(
         self,
-        operations: List[MathOperation],
-        name: Optional[str] = None
+        operations: list[MathOperation],
+        name: str | None = None
     ) -> ComposedOperation:
         """
         Parallel composition: (f, g, h) executed independently.
@@ -162,8 +168,8 @@ class OperationComposer:
 
     def suggest_compositions(
         self,
-        operations: List[MathOperation]
-    ) -> List[ComposedOperation]:
+        operations: list[MathOperation]
+    ) -> list[ComposedOperation]:
         """
         Suggest useful operation compositions.
 
@@ -281,7 +287,7 @@ class ThompsonSamplingLearner:
     def __init__(self):
         """Initialize Thompson Sampling learner."""
         # Statistics: (operation_name, intent) -> OperationStatistics
-        self.stats: Dict[Tuple[str, str], OperationStatistics] = {}
+        self.stats: dict[tuple[str, str], OperationStatistics] = {}
 
         # Prior parameters
         self.alpha_prior = 1.0  # Optimistic initialization
@@ -301,7 +307,7 @@ class ThompsonSamplingLearner:
 
     def select_operation(
         self,
-        candidates: List[MathOperation],
+        candidates: list[MathOperation],
         intent: QueryIntent
     ) -> MathOperation:
         """
@@ -365,7 +371,7 @@ class ThompsonSamplingLearner:
             f"Success: {success}, Rate: {stats.success_rate:.2%}"
         )
 
-    def get_leaderboard(self, intent: Optional[str] = None) -> List[Dict]:
+    def get_leaderboard(self, intent: str | None = None) -> list[dict]:
         """
         Get operation leaderboard sorted by success rate.
 
@@ -426,12 +432,12 @@ class RigorousTester:
     def __init__(self):
         """Initialize testing framework."""
         self.properties = self._build_property_catalog()
-        self.test_history: List[Dict] = []
+        self.test_history: list[dict] = []
 
         logger.info("RigorousTester initialized")
         logger.info(f"  Properties: {len(self.properties)}")
 
-    def _build_property_catalog(self) -> Dict[str, MathematicalProperty]:
+    def _build_property_catalog(self) -> dict[str, MathematicalProperty]:
         """Build catalog of mathematical properties to verify."""
         props = {}
 
@@ -492,7 +498,7 @@ class RigorousTester:
 
     # Property check functions
 
-    def _check_metric_symmetry(self, data: Dict) -> bool:
+    def _check_metric_symmetry(self, data: dict) -> bool:
         """Check metric symmetry."""
         if "distance_function" not in data:
             return True  # Skip if not applicable
@@ -508,7 +514,7 @@ class RigorousTester:
 
         return True
 
-    def _check_triangle_inequality(self, data: Dict) -> bool:
+    def _check_triangle_inequality(self, data: dict) -> bool:
         """Check triangle inequality."""
         if "distance_function" not in data:
             return True
@@ -525,7 +531,7 @@ class RigorousTester:
 
         return True
 
-    def _check_metric_identity(self, data: Dict) -> bool:
+    def _check_metric_identity(self, data: dict) -> bool:
         """Check d(x,x) = 0."""
         if "distance_function" not in data:
             return True
@@ -539,7 +545,7 @@ class RigorousTester:
 
         return True
 
-    def _check_gradient_descent(self, data: Dict) -> bool:
+    def _check_gradient_descent(self, data: dict) -> bool:
         """Check gradient descent convergence."""
         if "objective_values" not in data:
             return True
@@ -553,7 +559,7 @@ class RigorousTester:
 
         return True
 
-    def _check_orthogonality(self, data: Dict) -> bool:
+    def _check_orthogonality(self, data: dict) -> bool:
         """Check orthogonality."""
         if "vectors" not in data:
             return True
@@ -571,7 +577,7 @@ class RigorousTester:
 
         return True
 
-    def _check_normalization(self, data: Dict) -> bool:
+    def _check_normalization(self, data: dict) -> bool:
         """Check normalization."""
         if "vectors" not in data:
             return True
@@ -585,7 +591,7 @@ class RigorousTester:
 
         return True
 
-    def _check_numerical_stability(self, data: Dict) -> bool:
+    def _check_numerical_stability(self, data: dict) -> bool:
         """Check for NaN/Inf."""
         if "result" not in data:
             return True
@@ -602,9 +608,9 @@ class RigorousTester:
     def verify_operation(
         self,
         operation: MathOperation,
-        data: Dict,
-        properties: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        data: dict,
+        properties: list[str] | None = None
+    ) -> dict[str, Any]:
         """
         Verify operation satisfies mathematical properties.
 
@@ -666,7 +672,7 @@ class RigorousTester:
 
         return test_result
 
-    def _select_properties_for_operation(self, operation: MathOperation) -> List[str]:
+    def _select_properties_for_operation(self, operation: MathOperation) -> list[str]:
         """Auto-select relevant properties for operation."""
         properties = []
 
@@ -689,7 +695,7 @@ class RigorousTester:
 
         return properties
 
-    def get_test_report(self) -> Dict[str, Any]:
+    def get_test_report(self) -> dict[str, Any]:
         """Get comprehensive test report."""
         if not self.test_history:
             return {"total_tests": 0}
@@ -796,9 +802,9 @@ class SmartMathOperationSelector(MathOperationSelector):
     def plan_operations_smart(
         self,
         query_text: str,
-        query_embedding: Optional[np.ndarray] = None,
-        context: Optional[Dict] = None,
-        budget: Optional[int] = None,
+        query_embedding: np.ndarray | None = None,
+        context: dict | None = None,
+        budget: int | None = None,
         enable_expensive: bool = False,
         enable_learning: bool = True,
         enable_composition: bool = True
@@ -914,8 +920,8 @@ class SmartMathOperationSelector(MathOperationSelector):
     def execute_plan_with_verification(
         self,
         plan: OperationPlan,
-        data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        data: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Execute operation plan with rigorous testing.
 
@@ -976,7 +982,7 @@ class SmartMathOperationSelector(MathOperationSelector):
 
         return results
 
-    def _execute_operation(self, op: MathOperation, data: Dict) -> Any:
+    def _execute_operation(self, op: MathOperation, data: dict) -> Any:
         """Execute single operation (placeholder)."""
         # This would dynamically import and execute the actual operation
         logger.debug(f"Executing {op.name}")
@@ -1033,7 +1039,7 @@ class SmartMathOperationSelector(MathOperationSelector):
             f"Feedback recorded: Success={success}, Quality={quality:.2f}"
         )
 
-    def get_smart_statistics(self) -> Dict[str, Any]:
+    def get_smart_statistics(self) -> dict[str, Any]:
         """Get comprehensive statistics including RL and testing."""
         base_stats = super().get_statistics()
 
@@ -1074,7 +1080,7 @@ class SmartMathOperationSelector(MathOperationSelector):
     def _load_state(self):
         """Load learning state from disk."""
         try:
-            with open(self.state_file, 'r') as f:
+            with open(self.state_file) as f:
                 state = json.load(f)
 
             # Restore learner stats (using safe literal_eval instead of eval)
@@ -1166,15 +1172,15 @@ if __name__ == "__main__":
 
     stats = selector.get_smart_statistics()
 
-    print(f"\nRL Learning:")
+    print("\nRL Learning:")
     print(f"  Total feedback: {stats['rl_learning']['total_feedback']}")
-    print(f"\n  Top operations by success rate:")
+    print("\n  Top operations by success rate:")
 
     for i, op_stats in enumerate(stats['rl_learning']['leaderboard'][:5], 1):
         print(f"    {i}. {op_stats['operation_name']} ({op_stats['intent']})")
         print(f"       Success rate: {op_stats['successes']}/{op_stats['successes'] + op_stats['failures']}")
 
-    print(f"\nTesting:")
+    print("\nTesting:")
     test_stats = stats['testing']
     if test_stats.get('total_tests', 0) > 0:
         print(f"  Total tests: {test_stats['total_tests']}")

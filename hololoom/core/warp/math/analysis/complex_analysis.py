@@ -28,11 +28,11 @@ Author: HoloLoom Team
 Date: 2025-10-25
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Union
-from dataclasses import dataclass
 import logging
 import math
+from collections.abc import Callable
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class ComplexFunction:
         self.f = f
         self.name = name
 
-    def __call__(self, z: Union[complex, np.ndarray]) -> Union[complex, np.ndarray]:
+    def __call__(self, z: complex | np.ndarray) -> complex | np.ndarray:
         """Evaluate f(z)."""
         if isinstance(z, np.ndarray):
             return np.array([self.f(zi) for zi in z.flat]).reshape(z.shape)
@@ -223,7 +223,7 @@ class ResidueCalculator:
 
     @staticmethod
     def compute_integral_via_residues(f: Callable[[complex], complex],
-                                     poles: List[complex],
+                                     poles: list[complex],
                                      contour_encloses: Callable[[complex], bool] = None) -> complex:
         """
         Compute ∫_γ f(z) dz using residue theorem.
@@ -305,7 +305,7 @@ class ConformalMapper:
         return z + 1/z
 
     @staticmethod
-    def schwarz_christoffel_triangle(z: complex, vertices: List[complex], angles: List[float]) -> complex:
+    def schwarz_christoffel_triangle(z: complex, vertices: list[complex], angles: list[float]) -> complex:
         """
         Schwarz-Christoffel mapping for triangles.
 
@@ -332,7 +332,7 @@ class SeriesExpansion:
     @staticmethod
     def taylor_series(f: Callable[[complex], complex],
                      center: complex,
-                     order: int = 10) -> List[complex]:
+                     order: int = 10) -> list[complex]:
         """
         Compute Taylor series coefficients.
 
@@ -373,7 +373,7 @@ class SeriesExpansion:
             return (f_n_minus_1(z + h) - f_n_minus_1(z)) / h
 
     @staticmethod
-    def evaluate_series(coefficients: List[complex], z: complex, center: complex = 0) -> complex:
+    def evaluate_series(coefficients: list[complex], z: complex, center: complex = 0) -> complex:
         """
         Evaluate series Σ aₙ(z - center)^n.
         """
@@ -392,7 +392,7 @@ class SeriesExpansion:
                       inner_radius: float,
                       outer_radius: float,
                       order_positive: int = 10,
-                      order_negative: int = 10) -> Tuple[List[complex], List[complex]]:
+                      order_negative: int = 10) -> tuple[list[complex], list[complex]]:
         """
         Compute Laurent series in annulus.
 
@@ -431,10 +431,10 @@ class AnalyticContinuation:
     """
 
     @staticmethod
-    def power_series_continuation(series_coeffs: List[complex],
+    def power_series_continuation(series_coeffs: list[complex],
                                   old_center: complex,
                                   new_center: complex,
-                                  order: int = None) -> List[complex]:
+                                  order: int = None) -> list[complex]:
         """
         Continue power series to new center.
 

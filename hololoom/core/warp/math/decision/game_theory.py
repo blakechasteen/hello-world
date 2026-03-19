@@ -22,10 +22,11 @@ Applications:
 """
 
 import math
-import numpy as np
-from typing import List, Tuple, Dict, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
-from itertools import product, combinations
+from itertools import combinations, product
+
+import numpy as np
 
 
 @dataclass
@@ -59,7 +60,7 @@ class NormalFormGame:
     Represented by payoff matrices for each player.
     """
 
-    def __init__(self, payoff_matrices: List[np.ndarray], names: Optional[List[str]] = None):
+    def __init__(self, payoff_matrices: list[np.ndarray], names: list[str] | None = None):
         """
         Args:
             payoff_matrices: List of payoff matrices (one per player)
@@ -71,7 +72,7 @@ class NormalFormGame:
         self.n_actions = [matrix.shape[i] for i, matrix in enumerate(payoff_matrices)]
         self.names = names or [f"Player {i+1}" for i in range(self.n_players)]
 
-    def utility(self, player: int, action_profile: Tuple[int, ...]) -> float:
+    def utility(self, player: int, action_profile: tuple[int, ...]) -> float:
         """
         Utility for player given action profile.
 
@@ -81,7 +82,7 @@ class NormalFormGame:
         """
         return float(self.payoffs[player][action_profile])
 
-    def expected_utility(self, player: int, strategies: List[Strategy]) -> float:
+    def expected_utility(self, player: int, strategies: list[Strategy]) -> float:
         """
         Expected utility for player under mixed strategy profile.
 
@@ -100,7 +101,7 @@ class NormalFormGame:
 
         return expected_u
 
-    def best_response(self, player: int, opponent_strategies: List[Strategy]) -> int:
+    def best_response(self, player: int, opponent_strategies: list[Strategy]) -> int:
         """
         Best response: action maximizing expected utility.
 
@@ -228,7 +229,7 @@ class NashEquilibrium:
     """
 
     @staticmethod
-    def find_pure(game: NormalFormGame) -> List[Tuple[int, ...]]:
+    def find_pure(game: NormalFormGame) -> list[tuple[int, ...]]:
         """
         Find all pure strategy Nash equilibria.
 
@@ -262,7 +263,7 @@ class NashEquilibrium:
         return equilibria
 
     @staticmethod
-    def find_mixed_2player(game: NormalFormGame, tolerance: float = 1e-9) -> Optional[List[Strategy]]:
+    def find_mixed_2player(game: NormalFormGame, tolerance: float = 1e-9) -> list[Strategy] | None:
         """
         Find mixed strategy Nash equilibrium for 2-player game.
 
@@ -317,9 +318,9 @@ class NashEquilibrium:
     @staticmethod
     def _solve_support_pair(
         A: np.ndarray, B: np.ndarray,
-        supp1: Tuple[int, ...], supp2: Tuple[int, ...],
+        supp1: tuple[int, ...], supp2: tuple[int, ...],
         n1: int, n2: int, tolerance: float
-    ) -> Optional[Tuple[np.ndarray, np.ndarray]]:
+    ) -> tuple[np.ndarray, np.ndarray] | None:
         """
         Solve indifference conditions for a given support pair.
 
@@ -402,7 +403,7 @@ class NashEquilibrium:
         return p, q
 
     @staticmethod
-    def verify_equilibrium(game: NormalFormGame, strategies: List[Strategy],
+    def verify_equilibrium(game: NormalFormGame, strategies: list[Strategy],
                          tolerance: float = 1e-6) -> bool:
         """
         Verify if strategy profile is Nash equilibrium.
@@ -424,7 +425,7 @@ class NashEquilibrium:
         return True
 
     @staticmethod
-    def iterated_elimination_dominated(game: NormalFormGame) -> Tuple[NormalFormGame, Dict[int, List[int]]]:
+    def iterated_elimination_dominated(game: NormalFormGame) -> tuple[NormalFormGame, dict[int, list[int]]]:
         """
         Iteratively eliminate strictly dominated strategies (IESDS).
 
@@ -516,7 +517,7 @@ class MechanismDesign:
     """
 
     @staticmethod
-    def vcg_auction(values: np.ndarray) -> Tuple[int, np.ndarray]:
+    def vcg_auction(values: np.ndarray) -> tuple[int, np.ndarray]:
         """
         Vickrey-Clarke-Groves auction (truthful mechanism).
 
@@ -543,10 +544,10 @@ class MechanismDesign:
 
     @staticmethod
     def is_truthful(
-        mechanism: Callable[[np.ndarray], Tuple[int, np.ndarray]],
-        test_cases: List[np.ndarray],
+        mechanism: Callable[[np.ndarray], tuple[int, np.ndarray]],
+        test_cases: list[np.ndarray],
         n_misreport_samples: int = 10
-    ) -> Tuple[bool, Optional[Dict]]:
+    ) -> tuple[bool, dict | None]:
         """
         Check if mechanism is strategy-proof (truthful/incentive-compatible).
 
@@ -626,7 +627,7 @@ class AuctionTheory:
     """
 
     @staticmethod
-    def second_price_auction(bids: np.ndarray) -> Tuple[int, float]:
+    def second_price_auction(bids: np.ndarray) -> tuple[int, float]:
         """
         Second-price (Vickrey) auction: truthful bidding is dominant strategy.
 
@@ -638,7 +639,7 @@ class AuctionTheory:
         return winner, price
 
     @staticmethod
-    def first_price_auction(bids: np.ndarray) -> Tuple[int, float]:
+    def first_price_auction(bids: np.ndarray) -> tuple[int, float]:
         """
         First-price auction: winner pays own bid.
 
@@ -730,7 +731,7 @@ class CooperativeGame:
 
         return shapley
 
-    def core(self) -> List[np.ndarray]:
+    def core(self) -> list[np.ndarray]:
         """
         Core: allocations where no coalition can improve.
 
@@ -739,7 +740,7 @@ class CooperativeGame:
         # Simplified: return Shapley value (which may not be in core)
         return [self.shapley_value()]
 
-    def _all_coalitions(self, size: int) -> List[Tuple[int, ...]]:
+    def _all_coalitions(self, size: int) -> list[tuple[int, ...]]:
         """Generate all coalitions of given size."""
         from itertools import combinations
         return list(combinations(range(self.n), size))
@@ -862,14 +863,14 @@ if __name__ == "__main__":
     print("\n[Test 1] Prisoner's Dilemma")
     pd_eq = example_prisoners_dilemma()
     print(f"Pure Nash equilibria: {pd_eq}")
-    print(f"Expected: [(1, 1)] (both defect)")
+    print("Expected: [(1, 1)] (both defect)")
 
     # Test 2: Matching Pennies (no pure NE)
     print("\n[Test 2] Matching Pennies")
     mp = NormalFormGame.matching_pennies()
     mp_eq = NashEquilibrium.find_pure(mp)
     print(f"Pure Nash equilibria: {mp_eq}")
-    print(f"Expected: [] (no pure NE, only mixed)")
+    print("Expected: [] (no pure NE, only mixed)")
 
     # Test 3: VCG Auction
     print("\n[Test 3] VCG (Vickrey) Auction")

@@ -27,10 +27,11 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, Tuple, Optional, List
-from dataclasses import dataclass
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ class ConvexAnalysis:
     @staticmethod
     def is_convex_function(
         f: Callable[[np.ndarray], float],
-        domain: Tuple[np.ndarray, np.ndarray],
+        domain: tuple[np.ndarray, np.ndarray],
         samples: int = 100
     ) -> bool:
         """Check if function is convex via Jensen's inequality."""
@@ -104,8 +105,8 @@ class ConvexAnalysis:
 class ConstrainedProblem:
     """Constrained optimization problem."""
     objective: Callable[[np.ndarray], float]
-    constraints_eq: List[Callable[[np.ndarray], float]]  # g(x) = 0
-    constraints_ineq: List[Callable[[np.ndarray], float]]  # h(x) ≤ 0
+    constraints_eq: list[Callable[[np.ndarray], float]]  # g(x) = 0
+    constraints_ineq: list[Callable[[np.ndarray], float]]  # h(x) ≤ 0
 
 
 class LagrangeMultipliers:
@@ -131,7 +132,7 @@ class LagrangeMultipliers:
         problem: ConstrainedProblem,
         x0: np.ndarray,
         max_iter: int = 100
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Solve problem with equality constraints using augmented Lagrangian.
 
@@ -182,8 +183,8 @@ class KKTConditions:
         mus_ineq: np.ndarray,
         problem: ConstrainedProblem,
         grad_f: Callable[[np.ndarray], np.ndarray],
-        grads_g: List[Callable[[np.ndarray], np.ndarray]],
-        grads_h: List[Callable[[np.ndarray], np.ndarray]]
+        grads_g: list[Callable[[np.ndarray], np.ndarray]],
+        grads_h: list[Callable[[np.ndarray], np.ndarray]]
     ) -> bool:
         """
         Verify KKT conditions:
@@ -347,10 +348,10 @@ class VariationalCalculus:
     @staticmethod
     def euler_lagrange_1d(
         L: Callable[[float, float, float], float],
-        t_span: Tuple[float, float],
-        boundary_conditions: Tuple[float, float],
+        t_span: tuple[float, float],
+        boundary_conditions: tuple[float, float],
         n_points: int = 100
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Solve Euler-Lagrange equation for 1D problem.
 
@@ -373,7 +374,7 @@ class VariationalCalculus:
         return t, x
 
     @staticmethod
-    def brachistochrone() -> Tuple[np.ndarray, np.ndarray]:
+    def brachistochrone() -> tuple[np.ndarray, np.ndarray]:
         """
         Brachistochrone curve: fastest descent under gravity.
 

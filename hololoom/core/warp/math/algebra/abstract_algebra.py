@@ -38,11 +38,12 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, List, Set, Optional, Tuple, Any, FrozenSet
-from dataclasses import dataclass
-from collections import defaultdict
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class Group:
 
     def __init__(
         self,
-        elements: List,
+        elements: list,
         operation: Callable[[Any, Any], Any],
         identity: Any,
         name: str = "G"
@@ -138,7 +139,7 @@ class Group:
 
         return n
 
-    def subgroup(self, generators: List[Any]) -> 'Group':
+    def subgroup(self, generators: list[Any]) -> 'Group':
         """
         Generate subgroup from generators.
 
@@ -350,7 +351,7 @@ class Ring:
 
     def __init__(
         self,
-        elements: List,
+        elements: list,
         addition: Callable[[Any, Any], Any],
         multiplication: Callable[[Any, Any], Any],
         zero: Any,
@@ -414,7 +415,7 @@ class Ring:
 
         return True
 
-    def units(self) -> List[Any]:
+    def units(self) -> list[Any]:
         """
         Units: elements with multiplicative inverse.
 
@@ -477,7 +478,7 @@ class Ideal:
     Subset closed under addition and multiplication by ring elements.
     """
 
-    def __init__(self, ring: Ring, generators: List[Any]):
+    def __init__(self, ring: Ring, generators: list[Any]):
         """
         Initialize ideal from generators.
 
@@ -491,7 +492,7 @@ class Ideal:
 
         logger.info(f"Ideal with {len(self.elements)} elements")
 
-    def _generate_ideal(self) -> Set[Any]:
+    def _generate_ideal(self) -> set[Any]:
         """Generate all elements of ideal"""
         ideal_set = set([self.ring.zero])
         ideal_set.update(self.generators)
@@ -580,7 +581,7 @@ class Field(Ring):
 
     def __init__(
         self,
-        elements: List,
+        elements: list,
         addition: Callable[[Any, Any], Any],
         multiplication: Callable[[Any, Any], Any],
         zero: Any,
@@ -679,7 +680,7 @@ class Polynomial:
 
     f(x) = a₀ + a₁x + a₂x² + ... + aₙxⁿ
     """
-    coefficients: List[Any]  # [a₀, a₁, a₂, ..., aₙ]
+    coefficients: list[Any]  # [a₀, a₁, a₂, ..., aₙ]
     ring: Ring
 
     def __repr__(self) -> str:

@@ -16,72 +16,70 @@ See PHYSICS_INTEGRATION_ROADMAP.md for complete details.
 """
 
 # Gradient Flow (Phase 1)
+from .adaptive_packer import AdaptivePacker, PackedContext
+from .fluid_dynamics import ContextFlowEngine, FlowState
 from .gradient_flow import (
     GradientFlowEngine,
     RouteDecision,
     Target,
     combined_loss,
-    create_tool_selection_loss,
-    load_loss,
-    latency_loss,
     cost_loss,
-    quality_loss
+    create_tool_selection_loss,
+    latency_loss,
+    load_loss,
+    quality_loss,
+)
+
+# Multi-Physics Integration (Phases 1+2)
+from .multi_physics_packer import (
+    ComponentAllocation,
+    MultiPhysicsPacker,
+    MultiPhysicsResult,
+    pack_context_multiphysics,
 )
 
 # Fluid Dynamics (Phase 2)
 from .pressure_field import PressureField, PressureSource
-from .velocity_field import VelocityField, FlowVector
-from .fluid_dynamics import ContextFlowEngine, FlowState
-from .adaptive_packer import AdaptivePacker, PackedContext
 
-# Multi-Physics Integration (Phases 1+2)
-from .multi_physics_packer import (
-    MultiPhysicsPacker,
-    MultiPhysicsResult,
-    ComponentAllocation,
-    pack_context_multiphysics
+# Statistical Mechanics (Phase 5)
+from .statistical_mechanics import (
+    BOLTZMANN_CONSTANT,
+    CanonicalEnsemble,
+    EntropyCalculator,
+    Macrostate,
+    Microstate,
+    PhaseTransition,
+    PhaseTransitionDetector,
+    PhaseType,
+    PowerLawFitter,
+    SelfOrganizedCriticality,
+    StatisticalMechanicsEngine,
 )
 
 # Thermodynamics (Phase 3)
 from .thermodynamics import (
-    ThermodynamicOptimizer,
-    TemperatureScheduler,
+    CoolingSchedule,
     EnergyCalculator,
     EntropyCalculator,
-    CoolingSchedule,
+    TemperatureScheduler,
+    TemperatureState,
+    ThermodynamicOptimizer,
     ThermodynamicState,
-    TemperatureState
-)
-
-# Wave Mechanics (Phase 4)
-from .wave_mechanics import (
-    WaveMechanicsEngine,
-    WaveField,
-    InterferenceCalculator,
-    ResonanceDetector,
-    WaveState,
-    InterferencePattern,
-    ResonancePattern
 )
 
 # Unified Physics (All Phases Integrated)
-from .unified_physics import (
-    UnifiedPhysicsEngine,
-    UnifiedPhysicsResult,
-    PhysicsMode
-)
+from .unified_physics import PhysicsMode, UnifiedPhysicsEngine, UnifiedPhysicsResult
+from .velocity_field import FlowVector, VelocityField
 
-# Statistical Mechanics (Phase 5)
-from .statistical_mechanics import (
-    StatisticalMechanicsEngine,
-    CanonicalEnsemble,
-    EntropyCalculator,
-    PhaseTransitionDetector,
-    Microstate,
-    Macrostate,
-    PhaseTransition,
-    PhaseType,
-    BOLTZMANN_CONSTANT
+# Wave Mechanics (Phase 4)
+from .wave_mechanics import (
+    InterferenceCalculator,
+    InterferencePattern,
+    ResonanceDetector,
+    ResonancePattern,
+    WaveField,
+    WaveMechanicsEngine,
+    WaveState,
 )
 
 __all__ = [
@@ -151,4 +149,6 @@ __all__ = [
     "PhaseTransition",
     "PhaseType",
     "BOLTZMANN_CONSTANT",
+    "SelfOrganizedCriticality",
+    "PowerLawFitter",
 ]

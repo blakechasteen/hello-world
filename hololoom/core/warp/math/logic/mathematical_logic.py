@@ -20,8 +20,7 @@ Applications:
     - Foundations of mathematics
 """
 
-import numpy as np
-from typing import List, Tuple, Dict, Set, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 
@@ -38,9 +37,9 @@ class LogicOperator(Enum):
 @dataclass
 class Proposition:
     """Propositional formula."""
-    operator: Optional[LogicOperator]
-    operands: List['Proposition']
-    variable: Optional[str] = None
+    operator: LogicOperator | None
+    operands: list['Proposition']
+    variable: str | None = None
 
     def __str__(self):
         if self.variable:
@@ -75,7 +74,7 @@ class PropositionalLogic:
     """
 
     @staticmethod
-    def evaluate(formula: Proposition, assignment: Dict[str, bool]) -> bool:
+    def evaluate(formula: Proposition, assignment: dict[str, bool]) -> bool:
         """Evaluate formula under truth assignment."""
         if formula.variable:
             return assignment.get(formula.variable, False)
@@ -100,7 +99,7 @@ class PropositionalLogic:
         return False
 
     @staticmethod
-    def is_tautology(formula: Proposition, variables: List[str]) -> bool:
+    def is_tautology(formula: Proposition, variables: list[str]) -> bool:
         """Check if formula is tautology (true under all assignments)."""
         # Try all 2^n assignments
         n = len(variables)
@@ -115,7 +114,7 @@ class PropositionalLogic:
         return True
 
     @staticmethod
-    def is_satisfiable(formula: Proposition, variables: List[str]) -> Optional[Dict[str, bool]]:
+    def is_satisfiable(formula: Proposition, variables: list[str]) -> dict[str, bool] | None:
         """
         Check satisfiability (SAT problem).
 
@@ -151,17 +150,17 @@ class FirstOrderLogic:
     """
 
     @staticmethod
-    def universal_quantifier(predicate: Callable, domain: List) -> bool:
+    def universal_quantifier(predicate: Callable, domain: list) -> bool:
         """∀x P(x): predicate holds for all x in domain."""
         return all(predicate(x) for x in domain)
 
     @staticmethod
-    def existential_quantifier(predicate: Callable, domain: List) -> bool:
+    def existential_quantifier(predicate: Callable, domain: list) -> bool:
         """∃x P(x): predicate holds for some x in domain."""
         return any(predicate(x) for x in domain)
 
     @staticmethod
-    def de_morgan_laws() -> Dict[str, str]:
+    def de_morgan_laws() -> dict[str, str]:
         """De Morgan's laws for quantifiers."""
         return {
             "¬∀x P(x)": "∃x ¬P(x)",
@@ -189,7 +188,7 @@ class ModelTheory:
     """
 
     @staticmethod
-    def satisfaction(model: Dict, formula: str) -> bool:
+    def satisfaction(model: dict, formula: str) -> bool:
         """
         M ⊨ φ: model M satisfies formula φ.
 
@@ -349,7 +348,7 @@ class SetTheory:
     """
 
     @staticmethod
-    def zfc_axioms() -> Dict[str, str]:
+    def zfc_axioms() -> dict[str, str]:
         """Axioms of ZFC set theory."""
         return {
             "Extensionality": "Sets with same elements are equal: ∀x(x∈A ↔ x∈B) → A=B",
@@ -499,7 +498,7 @@ if __name__ == "__main__":
     formula = p & ~p  # P ∧ ¬P (unsatisfiable)
     assignment = PropositionalLogic.is_satisfiable(formula, ["P", "Q"])
     print(f"P ∧ ¬P satisfiable: {assignment is not None}")
-    print(f"Expected: False (contradiction)")
+    print("Expected: False (contradiction)")
 
     # Test 3: First-order logic
     print("\n[Test 3] First-order quantifiers")

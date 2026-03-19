@@ -16,24 +16,23 @@ Usage:
 
 import asyncio
 import logging
-from typing import List
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from hololoom.apps.server.api.middleware.rate_limiter import RateLimiter, ServerStats
 from hololoom.agentic.ml_logic_detector import MLLogicDetector
+from hololoom.alignment.audit_trail import AuditTrail
+from hololoom.alignment.deception_detection import DeceptionDetector
+from hololoom.alignment.safety_guardrails import SafetyGuardrails
+from hololoom.apps.server.api.middleware.rate_limiter import RateLimiter, ServerStats
 from hololoom.config import Config
 from hololoom.protocols.types import MemoryShard
-from hololoom.alignment.audit_trail import AuditTrail
-from hololoom.alignment.safety_guardrails import SafetyGuardrails
-from hololoom.alignment.deception_detection import DeceptionDetector
 
 # SaaS API Components (Dec 2025)
 try:
-    from hololoom.saas import create_saas_backend, SaaSBackend
-    from hololoom.saas.routes import customers_router, api_keys_router
+    from hololoom.saas import SaaSBackend, create_saas_backend
     from hololoom.saas.auth import add_rate_limit_headers
+    from hololoom.saas.routes import api_keys_router, customers_router
     SAAS_AVAILABLE = True
 except ImportError as e:
     SAAS_AVAILABLE = False
@@ -59,8 +58,12 @@ except ImportError:
 # Policy Governance / RBAC (Phase 5 - Routing & RBAC)
 try:
     from hololoom.agents.policy_governance import (
-        GovernancePolicy, PolicyDecision, PolicyEngine,
-        RoleBasedAccessControl, TopicGovernance, PolicyTemplates
+        GovernancePolicy,
+        PolicyDecision,
+        PolicyEngine,
+        PolicyTemplates,
+        RoleBasedAccessControl,
+        TopicGovernance,
     )
     GOVERNANCE_AVAILABLE = True
 except ImportError:
@@ -75,7 +78,6 @@ logger = logging.getLogger(__name__)
 # Shared server state (extracted to server_state.py)
 from hololoom.apps.server.server_state import state
 
-
 # ============================================================================
 # FastAPI App
 # ============================================================================
@@ -89,6 +91,7 @@ app = FastAPI(
 # CORS for VS Code extension
 # SECURITY: Use environment variable for allowed origins (no wildcard in production)
 import os as _cors_os
+
 _cors_origins = _cors_os.environ.get(
     "CORS_ORIGINS",
     "http://localhost:3000,http://localhost:8080,vscode-webview://*"
@@ -106,7 +109,8 @@ app.add_middleware(
 # ChatOps Observability Routers (Prometheus metrics + WebSocket progress)
 try:
     from hololoom.apps.chatops.handlers.prometheus_metrics import (
-        create_metrics_router, get_metrics_collector
+        create_metrics_router,
+        get_metrics_collector,
     )
     _metrics_router = create_metrics_router(get_metrics_collector())
     if _metrics_router:
@@ -117,7 +121,8 @@ except ImportError:
 
 try:
     from hololoom.apps.chatops.handlers.websocket_progress import (
-        create_progress_router, get_global_manager
+        create_progress_router,
+        get_global_manager,
     )
     _progress_router = create_progress_router(get_global_manager())
     if _progress_router:
@@ -140,25 +145,27 @@ if SAAS_AVAILABLE:
 # Extracted Modular Routers (Dec 2025 - W2 SWOT Remediation)
 try:
     from hololoom.apps.server.routers import (
+        capabilities_router,
+        detection_router,
         health_router,
         memory_router,
-        detection_router,
         monitor_router,
     )
     app.include_router(health_router)
+    app.include_router(capabilities_router)
     app.include_router(memory_router)
     app.include_router(detection_router)
     app.include_router(monitor_router)
-    logger.info("Modular routers mounted (health, memory, detection, monitor)")
+    logger.info("Modular routers mounted (health, capabilities, memory, detection, monitor)")
 except ImportError as e:
     logger.warning(f"Failed to mount modular routers: {e}")
 
 # Extracted endpoint routers (March 2026 Refactor)
 try:
-    from hololoom.apps.server.routers.query import router as query_router
-    from hololoom.apps.server.routers.ingest import router as ingest_router
     from hololoom.apps.server.routers.codebase import router as codebase_router
     from hololoom.apps.server.routers.graph import router as graph_router
+    from hololoom.apps.server.routers.ingest import router as ingest_router
+    from hololoom.apps.server.routers.query import router as query_router
     app.include_router(query_router)
     app.include_router(ingest_router)
     app.include_router(codebase_router)
@@ -215,9 +222,50 @@ try:
 except ImportError as e:
     logger.warning(f"Failed to mount department federation router: {e}")
 
+# Department Head — LLM judge for department inbox curation (Mar 2026)
+try:
+    from hololoom.apps.server.department_head import router as dept_head_router
+    app.include_router(dept_head_router)
+    logger.info("Department Head router mounted at /department/{dept}/evaluate")
+except ImportError as e:
+    logger.warning(f"Failed to mount Department Head router: {e}")
+
+# Dual Oversight — SecOps + EA gate for dept-to-vault promotion (Mar 2026)
+try:
+    from hololoom.apps.server.oversight import router as oversight_router
+    app.include_router(oversight_router)
+    logger.info("Oversight router mounted at /oversight/*")
+except ImportError as e:
+    logger.warning(f"Failed to mount Oversight router: {e}")
+
+# Physics Integration — gradient flow, fluid dynamics, thermodynamics, waves, stat mech (Mar 2026)
+try:
+    from hololoom.apps.server.physics_integration import router as physics_router
+    app.include_router(physics_router)
+    logger.info("Physics integration router mounted at /physics/*")
+except ImportError as e:
+    logger.warning(f"Failed to mount Physics integration router: {e}")
+
+# Belief Communities — spectral clustering on department knowledge graphs (Mar 2026)
+try:
+    from hololoom.apps.server.belief_communities import router as communities_router
+    app.include_router(communities_router)
+    logger.info("Belief Communities router mounted at /department/{dept}/communities")
+except ImportError as e:
+    logger.warning(f"Failed to mount Belief Communities router: {e}")
+
+# Promotion Causal — justification chains for promotion decisions (Mar 2026)
+try:
+    from hololoom.apps.server.promotion_causal import router as causal_router
+    app.include_router(causal_router)
+    logger.info("Promotion Causal router mounted at /department/{dept}/explain")
+except ImportError as e:
+    logger.warning(f"Failed to mount Promotion Causal router: {e}")
+
 # Jenny Generative UI (adaptive visualization runtime)
 try:
-    from hololoom.apps.server.jenny_api import router as jenny_router, shutdown_runtime as jenny_shutdown
+    from hololoom.apps.server.jenny_api import router as jenny_router
+    from hololoom.apps.server.jenny_api import shutdown_runtime as jenny_shutdown
     app.include_router(jenny_router)
     logger.info("Jenny UI router mounted at /jenny/*")
 except ImportError as e:
@@ -226,6 +274,7 @@ except ImportError as e:
 
 # Spatial WebSocket (Stage 3 — conversation visualization in AR/XR)
 import os as _os
+
 if _os.environ.get("PROMPTLY_JENNY_SPATIAL", "").lower() == "true":
     try:
         from hololoom.apps.server.spatial_websocket import setup_spatial_routes
@@ -236,6 +285,7 @@ if _os.environ.get("PROMPTLY_JENNY_SPATIAL", "").lower() == "true":
 
 # Spatial Inspector (Stage 4 — debug consumer for spatial WebSocket)
 from pathlib import Path as _Path
+
 _inspector_path = _Path(__file__).parent / "static" / "spatial_inspector.html"
 if _inspector_path.exists():
     from fastapi.responses import HTMLResponse as _HTMLResponse
@@ -307,7 +357,7 @@ async def rate_limit_middleware(request: Request, call_next):
         return JSONResponse(
             status_code=429,
             content={
-                "detail": f"Rate limit exceeded. Try again later.",
+                "detail": "Rate limit exceeded. Try again later.",
                 "remaining": remaining,
                 "retry_after": state.rate_limiter.window_seconds
             }
@@ -333,6 +383,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     """
     import os
     import traceback
+
     from fastapi.responses import JSONResponse
 
     environment = os.environ.get("ENVIRONMENT", "production").lower()
@@ -378,6 +429,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     """
     import os
     import re
+
     from fastapi.responses import JSONResponse
 
     environment = os.environ.get("ENVIRONMENT", "production").lower()
@@ -474,11 +526,11 @@ async def startup():
 
     # ✅ Create persistent memory backend
     try:
-        from hololoom.memory.backend_factory import create_memory_backend
-        from hololoom.config import MemoryBackend
-
         # Use INMEMORY if Neo4j/Qdrant unavailable; override with HOLOLOOM_MEMORY env var
         import os
+
+        from hololoom.config import MemoryBackend
+        from hololoom.memory.backend_factory import create_memory_backend
         _mem_override = os.environ.get("HOLOLOOM_MEMORY", "").lower()
         if _mem_override == "inmemory":
             state.config.memory_backend = MemoryBackend.INMEMORY
@@ -576,8 +628,11 @@ async def startup():
     try:
         from hololoom.apps.server.governance import GovernancePipeline
         from hololoom.apps.server.governance.middleware import (
-            RBACMiddleware, SafetyGateMiddleware, ReasoningMiddleware,
-            AuditTrailMiddleware, DeceptionMonitorMiddleware,
+            AuditTrailMiddleware,
+            DeceptionMonitorMiddleware,
+            RBACMiddleware,
+            ReasoningMiddleware,
+            SafetyGateMiddleware,
         )
         from hololoom.apps.server.routers.query import get_orchestrator as _get_orchestrator_fn
 
@@ -690,7 +745,7 @@ async def shutdown():
 # Helper Functions
 # ============================================================================
 
-def _load_memory_shards() -> List[MemoryShard]:
+def _load_memory_shards() -> list[MemoryShard]:
     """
     Load memory shards from data source (fallback when persistent backend unavailable).
 
@@ -709,7 +764,7 @@ def _load_memory_shards() -> List[MemoryShard]:
     ]
 
 
-async def _load_from_persistent_backend() -> List[MemoryShard]:
+async def _load_from_persistent_backend() -> list[MemoryShard]:
     """
     Load memories from persistent backend (Neo4j/Qdrant).
 

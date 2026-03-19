@@ -31,10 +31,11 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional
-from dataclasses import dataclass
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

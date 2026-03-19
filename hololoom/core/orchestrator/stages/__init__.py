@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Weaving Pipeline Stages - Pure Function Implementations
 ========================================================
@@ -41,41 +40,51 @@ Date: 2025-12-09
 from .steps_0_3 import (
     # Step 0: Meta-Prompt Enhancement
     execute_step0_meta_prompt,
-
     # Step 1: Pattern Selection (Loom Command)
     execute_step1_pattern_selection,
-
     # Step 2: Chrono Trigger (Temporal Window)
     execute_step2_chrono_trigger,
-
     # Step 3: Thread Selection (Yarn Graph / Shuttle)
     execute_step3_thread_selection,
 )
-
 from .steps_4_6 import (
     # Component creation
     create_resonance_shed,
     create_warp_space,
-    select_pattern_embedder,
-
-    # Steps 4-6: Parallel execution
-    execute_steps_4_6_parallel,
-
     # Post-parallel steps
     execute_step5_5_warp_compute,
     execute_step6_5_beta_wave_packing,
+    # Steps 4-6: Parallel execution
+    execute_steps_4_6_parallel,
+    select_pattern_embedder,
 )
-
 from .steps_7_9 import (
     # Step 7: Convergence Engine (Decision Collapse)
     execute_step7_convergence,
-
     # Step 8: Tool Execution (Safety Gating)
     execute_step8_tool_execution,
-
     # Step 9: Spacetime Fabric (Result Assembly)
     execute_step9_spacetime_fabric,
 )
+
+# ============================================================================
+# Stage Registry — metaphor names + human-readable aliases
+# ============================================================================
+
+WEAVING_STAGES: list[dict[str, str | int]] = [
+    {"id": 1, "name": "Loom Command",      "description": "Complexity mode selection",   "key": "pattern_selection"},
+    {"id": 2, "name": "Chrono Trigger",     "description": "Temporal window setup",       "key": "temporal_setup"},
+    {"id": 3, "name": "Yarn Graph",         "description": "Memory node activation",      "key": "thread_selection"},
+    {"id": 4, "name": "Resonance Shed",     "description": "Feature extraction",          "key": "resonance"},
+    {"id": 5, "name": "Warp Space",         "description": "Similarity ranking",          "key": "warp_tensioning"},
+    {"id": 6, "name": "Memory Crawl",       "description": "Multi-pass retrieval",        "key": "memory_retrieval"},
+    {"id": 7, "name": "Convergence Engine", "description": "Decision collapse",           "key": "convergence"},
+    {"id": 8, "name": "Tool Execution",     "description": "Action execution",            "key": "tool_execution"},
+    {"id": 9, "name": "Spacetime Fabric",   "description": "Result synthesis",            "key": "spacetime"},
+]
+
+STAGE_BY_ID: dict[int, dict[str, str | int]] = {s["id"]: s for s in WEAVING_STAGES}  # type: ignore[misc]
+
 
 __all__ = [
     # Steps 0-3
@@ -100,4 +109,8 @@ __all__ = [
     'execute_step7_convergence',
     'execute_step8_tool_execution',
     'execute_step9_spacetime_fabric',
+
+    # Stage registry
+    'WEAVING_STAGES',
+    'STAGE_BY_ID',
 ]

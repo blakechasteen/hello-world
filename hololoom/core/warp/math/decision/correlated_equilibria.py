@@ -26,16 +26,16 @@ Author: Claude Code
 Date: December 2025 (Math Module Expansion)
 """
 
-import numpy as np
-from typing import List, Tuple, Dict, Optional
 from dataclasses import dataclass
 from enum import Enum
+
+import numpy as np
 
 # Import from game_theory module
 try:
     from .game_theory import NormalFormGame, Strategy
 except ImportError:
-    from hololoom.warp.math.decision.game_theory import NormalFormGame, Strategy
+    from hololoom.warp.math.decision.game_theory import NormalFormGame
 
 
 class EquilibriumType(Enum):
@@ -55,14 +55,14 @@ class CorrelatedSignal:
         action_profiles: List of action profiles (tuples)
     """
     distribution: np.ndarray
-    action_profiles: List[Tuple[int, ...]]
+    action_profiles: list[tuple[int, ...]]
 
     @property
     def support_size(self) -> int:
         """Number of action profiles with positive probability."""
         return np.sum(self.distribution > 1e-10)
 
-    def sample(self) -> Tuple[int, ...]:
+    def sample(self) -> tuple[int, ...]:
         """Sample an action profile from the distribution."""
         idx = np.random.choice(len(self.action_profiles), p=self.distribution)
         return self.action_profiles[idx]
@@ -104,7 +104,7 @@ class CorrelatedEquilibrium:
     def find(
         game: NormalFormGame,
         objective: str = "social_welfare"
-    ) -> Optional[CorrelatedSignal]:
+    ) -> CorrelatedSignal | None:
         """
         Find a correlated equilibrium via linear programming.
 
@@ -218,7 +218,7 @@ class CorrelatedEquilibrium:
         return None
 
     @staticmethod
-    def _find_simple(game: NormalFormGame, objective: str) -> Optional[CorrelatedSignal]:
+    def _find_simple(game: NormalFormGame, objective: str) -> CorrelatedSignal | None:
         """
         Simple fallback: try Nash equilibria as correlated equilibria.
 
@@ -303,7 +303,7 @@ class CorrelatedEquilibrium:
         return total
 
     @staticmethod
-    def compare_to_nash(game: NormalFormGame) -> Dict:
+    def compare_to_nash(game: NormalFormGame) -> dict:
         """
         Compare correlated equilibrium to Nash equilibria.
 
@@ -429,7 +429,7 @@ if __name__ == "__main__":
     ce = CorrelatedEquilibrium.find(game, objective="social_welfare")
 
     if ce:
-        print(f"\nCorrelated Equilibrium found!")
+        print("\nCorrelated Equilibrium found!")
         print(f"Distribution: {ce.distribution}")
         print(f"Support size: {ce.support_size}")
 

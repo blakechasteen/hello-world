@@ -33,11 +33,12 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, List, Set, Optional, Tuple, Any
-from dataclasses import dataclass
-from .abstract_algebra import Field, Polynomial, Group
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
+
+from .abstract_algebra import Field, Group, Polynomial
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ class MinimalPolynomial:
         alpha: Any,
         base_field: Field,
         max_degree: int = 10
-    ) -> Optional[Polynomial]:
+    ) -> Polynomial | None:
         """
         Find minimal polynomial of α over F.
 
@@ -198,7 +199,7 @@ class GaloisGroup(Group):
 
         logger.info(f"Galois group has order {len(automorphisms)}")
 
-    def _find_automorphisms(self) -> List[Callable]:
+    def _find_automorphisms(self) -> list[Callable]:
         """
         Find all field automorphisms K → K fixing F.
 
@@ -230,7 +231,7 @@ class GaloisGroup(Group):
         # General case: would need to find all automorphisms
         return [lambda x: x]  # Just identity
 
-    def fixed_field(self, subgroup: List[Callable]) -> Field:
+    def fixed_field(self, subgroup: list[Callable]) -> Field:
         """
         Fixed field K^H of subgroup H ≤ Gal(K/F).
 
@@ -261,7 +262,7 @@ class GaloisGroup(Group):
             multiplication=K.mul,
             zero=K.zero,
             one=K.one,
-            name=f"K^H"
+            name="K^H"
         )
 
 
@@ -284,7 +285,7 @@ class FundamentalTheoremGalois:
         extension: FieldExtension,
         galois_group: GaloisGroup,
         subfield: Field
-    ) -> List[Callable]:
+    ) -> list[Callable]:
         """
         Map subfield E to Gal(K/E) ≤ Gal(K/F).
 
@@ -311,7 +312,7 @@ class FundamentalTheoremGalois:
     def subgroup_to_subfield(
         extension: FieldExtension,
         galois_group: GaloisGroup,
-        subgroup: List[Callable]
+        subgroup: list[Callable]
     ) -> Field:
         """
         Map subgroup H to fixed field K^H.
@@ -497,7 +498,7 @@ class FiniteFieldTheory:
         return pow(element, p, field_size)
 
     @staticmethod
-    def primitive_element(p: int, n: int) -> Optional[int]:
+    def primitive_element(p: int, n: int) -> int | None:
         """
         Find primitive element (generator) of 𝔽_{p^n}*.
 

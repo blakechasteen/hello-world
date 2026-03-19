@@ -27,10 +27,10 @@ Author: Claude Code
 Date: December 2025 (Math Module Expansion)
 """
 
-import numpy as np
-from typing import Optional, Tuple, Union, List
 from dataclasses import dataclass
 from enum import Enum
+
+import numpy as np
 
 
 class DivergenceType(Enum):
@@ -52,8 +52,8 @@ class DistributionPair:
         marginal_y: P(Y) marginal distribution
     """
     joint: np.ndarray
-    marginal_x: Optional[np.ndarray] = None
-    marginal_y: Optional[np.ndarray] = None
+    marginal_x: np.ndarray | None = None
+    marginal_y: np.ndarray | None = None
 
     def __post_init__(self):
         """Compute marginals if not provided."""
@@ -438,7 +438,7 @@ def memory_similarity_score(embedding1: np.ndarray, embedding2: np.ndarray) -> f
 def find_duplicate_memories(
     embeddings: np.ndarray,
     threshold: float = 0.9
-) -> List[Tuple[int, int, float]]:
+) -> list[tuple[int, int, float]]:
     """
     Find duplicate/near-duplicate memories using information theory.
 
@@ -459,6 +459,272 @@ def find_duplicate_memories(
                 duplicates.append((i, j, sim))
 
     return duplicates
+
+
+# ============================================================================
+# INFORMATION BOTTLENECK
+# ============================================================================
+
+
+class InformationBottleneck:
+    """Information Bottleneck method — optimal lossy compression.
+
+    Find compressed representation T of X that preserves maximum
+    information about Y: max I(T;Y) subject to I(T;X) <= R.
+
+    The IB Lagrangian:  L[p(t|x)] = I(T;X) - beta * I(T;Y)
+
+    At beta=0, T is trivial (one cluster). As beta -> inf, T preserves
+    all information about Y. The IB curve traces optimal tradeoffs.
+
+    References:
+        Tishby, Pereira & Bialek (1999) "The Information Bottleneck Method"
+    """
+
+    @staticmethod
+    def compress(
+        joint_XY: np.ndarray,
+        beta: float,
+        n_clusters: int,
+        max_iter: int = 100,
+        tol: float = 1e-6,
+    ) -> tuple[np.ndarray, float, float]:
+        """IB compression via iterative Blahut-Arimoto style algorithm.
+
+        Finds p(t|x) that minimizes I(T;X) - beta * I(T;Y).
+
+        Args:
+            joint_XY: Joint distribution P(X,Y), shape (|X|, |Y|).
+            beta: Tradeoff parameter (high = preserve more info about Y).
+            n_clusters: Number of compressed states |T|.
+            max_iter: Maximum iterations.
+            tol: Convergence tolerance on I(T;Y).
+
+        Returns:
+            (assignment_probs, I_TX, I_TY) where assignment_probs is
+            p(t|x) of shape (|X|, |T|).
+        """
+        joint_XY = np.asarray(joint_XY, dtype=np.float64)
+        n_x, n_y = joint_XY.shape
+        eps = 1e-15
+
+        # Marginals
+        p_x = joint_XY.sum(axis=1)  # (|X|,)
+        p_y = joint_XY.sum(axis=0)  # (|Y|,)
+
+        # p(y|x) = p(x,y) / p(x)
+        p_y_given_x = joint_XY / (p_x[:, None] + eps)  # (|X|, |Y|)
+
+        # Initialize p(t|x) randomly (soft assignment)
+        rng = np.random.default_rng(42)
+        p_t_given_x = rng.dirichlet(np.ones(n_clusters), size=n_x)  # (|X|, |T|)
+
+        prev_i_ty = -1.0
+
+        for _ in range(max_iter):
+            # p(t) = sum_x p(t|x) * p(x)
+            p_t = p_t_given_x.T @ p_x  # (|T|,)
+            p_t = np.maximum(p_t, eps)
+
+            # p(y|t) = sum_x p(y|x) * p(t|x) * p(x) / p(t)
+            # Numerator: (|T|, |Y|) = (|T|, |X|) @ (|X|, |Y|) element-weighted by p(x)
+            weighted = p_t_given_x.T * p_x[None, :]  # (|T|, |X|)
+            p_y_given_t = (weighted @ p_y_given_x) / (p_t[:, None] + eps)  # (|T|, |Y|)
+            p_y_given_t = np.maximum(p_y_given_t, eps)
+            p_y_given_t /= p_y_given_t.sum(axis=1, keepdims=True)
+
+            # Update p(t|x) via IB self-consistent equation:
+            # p(t|x) ∝ p(t) * exp(-beta * D_KL[p(y|x) || p(y|t)])
+            log_ratio = np.zeros((n_x, n_clusters))
+            for t in range(n_clusters):
+                # D_KL(p(y|x) || p(y|t)) for each x
+                ratio = p_y_given_x / (p_y_given_t[t][None, :] + eps)
+                kl = np.sum(
+                    p_y_given_x * np.log(np.maximum(ratio, eps)), axis=1
+                )
+                log_ratio[:, t] = np.log(p_t[t] + eps) - beta * kl
+
+            # Normalize (softmax for numerical stability)
+            log_ratio -= log_ratio.max(axis=1, keepdims=True)
+            p_t_given_x = np.exp(log_ratio)
+            p_t_given_x /= p_t_given_x.sum(axis=1, keepdims=True)
+
+            # Compute I(T;Y) for convergence check
+            p_t = p_t_given_x.T @ p_x
+            p_t = np.maximum(p_t, eps)
+            weighted = p_t_given_x.T * p_x[None, :]
+            p_y_given_t = (weighted @ p_y_given_x) / (p_t[:, None] + eps)
+            p_y_given_t = np.maximum(p_y_given_t, eps)
+            p_y_given_t /= p_y_given_t.sum(axis=1, keepdims=True)
+
+            # I(T;Y) = sum_t p(t) * D_KL(p(y|t) || p(y))
+            i_ty = 0.0
+            for t in range(n_clusters):
+                if p_t[t] > eps:
+                    kl_t = np.sum(
+                        p_y_given_t[t]
+                        * np.log(p_y_given_t[t] / (p_y + eps) + eps)
+                    )
+                    i_ty += p_t[t] * kl_t
+
+            if abs(i_ty - prev_i_ty) < tol:
+                break
+            prev_i_ty = i_ty
+
+        # Compute I(T;X) = sum_x p(x) * D_KL(p(t|x) || p(t))
+        i_tx = 0.0
+        for x in range(n_x):
+            if p_x[x] > eps:
+                kl_x = np.sum(
+                    p_t_given_x[x]
+                    * np.log(p_t_given_x[x] / (p_t + eps) + eps)
+                )
+                i_tx += p_x[x] * kl_x
+
+        return p_t_given_x, float(i_tx), float(i_ty)
+
+    @staticmethod
+    def ib_curve(
+        joint_XY: np.ndarray,
+        betas: np.ndarray | None = None,
+        n_clusters: int = 2,
+    ) -> list[tuple[float, float, float]]:
+        """Compute the Information Bottleneck curve: I(T;X) vs I(T;Y).
+
+        Sweeps beta from low (maximum compression) to high (maximum
+        preservation) and records the tradeoff at each point.
+
+        Args:
+            joint_XY: Joint distribution P(X,Y), shape (|X|, |Y|).
+            betas: Array of beta values to evaluate. If None, uses
+                logspace from 0.1 to 100 with 20 points.
+            n_clusters: Number of compressed states |T|.
+
+        Returns:
+            List of (I_TX, I_TY, beta) tuples, one per beta value.
+        """
+        if betas is None:
+            betas = np.logspace(-1, 2, 20)
+
+        curve = []
+        for b in betas:
+            _, i_tx, i_ty = InformationBottleneck.compress(
+                joint_XY, beta=b, n_clusters=n_clusters
+            )
+            curve.append((i_tx, i_ty, float(b)))
+
+        return curve
+
+    @staticmethod
+    def deterministic_ib(
+        joint_XY: np.ndarray,
+        n_clusters: int,
+        max_iter: int = 100,
+    ) -> np.ndarray:
+        """Hard clustering version of the Information Bottleneck.
+
+        Each x is assigned to exactly one cluster t, maximizing I(T;Y).
+
+        Args:
+            joint_XY: Joint distribution P(X,Y), shape (|X|, |Y|).
+            n_clusters: Number of clusters.
+            max_iter: Maximum iterations.
+
+        Returns:
+            Cluster assignments array of shape (|X|,), values in [0, n_clusters).
+        """
+        joint_XY = np.asarray(joint_XY, dtype=np.float64)
+        n_x, n_y = joint_XY.shape
+        eps = 1e-15
+
+        p_x = joint_XY.sum(axis=1)
+        p_y_given_x = joint_XY / (p_x[:, None] + eps)
+
+        # Initialize with random assignment
+        rng = np.random.default_rng(42)
+        assignments = rng.integers(0, n_clusters, size=n_x)
+
+        for _ in range(max_iter):
+            # Compute p(y|t) for each cluster
+            p_y_given_t = np.zeros((n_clusters, n_y))
+            p_t = np.zeros(n_clusters)
+            for t in range(n_clusters):
+                mask = assignments == t
+                if mask.any():
+                    p_t[t] = p_x[mask].sum()
+                    p_y_given_t[t] = (joint_XY[mask].sum(axis=0)) / (p_t[t] + eps)
+            p_y_given_t = np.maximum(p_y_given_t, eps)
+            p_y_given_t /= p_y_given_t.sum(axis=1, keepdims=True)
+            p_t = np.maximum(p_t, eps)
+
+            # Reassign each x to the cluster with smallest KL(p(y|x) || p(y|t))
+            new_assignments = np.zeros(n_x, dtype=int)
+            for x in range(n_x):
+                best_t = 0
+                best_kl = np.inf
+                for t in range(n_clusters):
+                    kl = np.sum(
+                        p_y_given_x[x]
+                        * np.log(p_y_given_x[x] / (p_y_given_t[t] + eps) + eps)
+                    )
+                    if kl < best_kl:
+                        best_kl = kl
+                        best_t = t
+                new_assignments[x] = best_t
+
+            if np.array_equal(new_assignments, assignments):
+                break
+            assignments = new_assignments
+
+        return assignments
+
+    @staticmethod
+    def sufficient_statistic_test(
+        joint_XY: np.ndarray,
+        T_given_X: np.ndarray,
+        tol: float = 1e-4,
+    ) -> tuple[bool, float]:
+        """Test if T is approximately sufficient for Y given X.
+
+        A statistic T(X) is sufficient for Y if I(X;Y|T) approx 0,
+        meaning T captures all the information X has about Y.
+
+        I(X;Y|T) = I(X;Y) - I(T;Y)
+
+        Args:
+            joint_XY: Joint distribution P(X,Y), shape (|X|, |Y|).
+            T_given_X: Conditional p(t|x), shape (|X|, |T|).
+            tol: Tolerance for "approximately zero".
+
+        Returns:
+            (is_sufficient, residual_info) where residual_info = I(X;Y|T).
+        """
+        joint_XY = np.asarray(joint_XY, dtype=np.float64)
+        T_given_X = np.asarray(T_given_X, dtype=np.float64)
+        eps = 1e-15
+
+        n_x, n_y = joint_XY.shape
+        n_t = T_given_X.shape[1]
+
+        p_x = joint_XY.sum(axis=1)
+        p_y = joint_XY.sum(axis=0)
+
+        # I(X;Y) via mutual_information
+        pair_xy = DistributionPair(joint_XY)
+        i_xy = mutual_information(pair_xy, base=np.e)
+
+        # I(T;Y): build joint P(T,Y)
+        # p(t,y) = sum_x p(t|x) * p(x,y)
+        p_ty = T_given_X.T @ joint_XY  # (|T|, |Y|)
+        p_ty_sum = p_ty.sum()
+        if p_ty_sum > eps:
+            p_ty /= p_ty_sum
+
+        pair_ty = DistributionPair(p_ty)
+        i_ty = mutual_information(pair_ty, base=np.e)
+
+        residual = max(0.0, i_xy - i_ty)
+        return residual < tol, float(residual)
 
 
 if __name__ == "__main__":

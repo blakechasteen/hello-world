@@ -34,11 +34,10 @@ Author: HoloLoom Team
 Date: 2025-10-25
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Union
-from dataclasses import dataclass, field
-from abc import ABC, abstractmethod
 import logging
+from collections.abc import Callable
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class MetricSpace:
     Provides foundation for topological reasoning about embeddings.
     """
 
-    def __init__(self, elements: Optional[List] = None, metric: Optional[Callable] = None, name: str = "X"):
+    def __init__(self, elements: list | None = None, metric: Callable | None = None, name: str = "X"):
         """
         Initialize metric space.
 
@@ -125,12 +124,12 @@ class MetricSpace:
                     d_yz = self.distance(y, z)
 
                     if d_xz > d_xy + d_yz + 1e-10:
-                        logger.error(f"Triangle inequality violated")
+                        logger.error("Triangle inequality violated")
                         return False
 
         return True
 
-    def open_ball(self, center, radius: float) -> List:
+    def open_ball(self, center, radius: float) -> list:
         """
         Open ball B(center, radius) = {x : d(x, center) < radius}.
         """
@@ -139,7 +138,7 @@ class MetricSpace:
 
         return [x for x in self.elements if self.distance(x, center) < radius]
 
-    def closed_ball(self, center, radius: float) -> List:
+    def closed_ball(self, center, radius: float) -> list:
         """
         Closed ball B̄(center, radius) = {x : d(x, center) ≤ radius}.
         """
@@ -148,7 +147,7 @@ class MetricSpace:
 
         return [x for x in self.elements if self.distance(x, center) <= radius]
 
-    def is_cauchy(self, sequence: List, epsilon: float = 1e-6) -> bool:
+    def is_cauchy(self, sequence: list, epsilon: float = 1e-6) -> bool:
         """
         Check if sequence is Cauchy.
 
@@ -199,7 +198,7 @@ class SequenceAnalyzer:
     """
 
     @staticmethod
-    def limit(sequence: Union[List[float], np.ndarray], tolerance: float = 1e-10) -> Optional[float]:
+    def limit(sequence: list[float] | np.ndarray, tolerance: float = 1e-10) -> float | None:
         """
         Compute limit of sequence if it exists.
 
@@ -220,7 +219,7 @@ class SequenceAnalyzer:
             return None
 
     @staticmethod
-    def is_convergent(sequence: Union[List[float], np.ndarray], tolerance: float = 1e-6) -> bool:
+    def is_convergent(sequence: list[float] | np.ndarray, tolerance: float = 1e-6) -> bool:
         """
         Determine if sequence converges.
         """
@@ -228,7 +227,7 @@ class SequenceAnalyzer:
         return limit_val is not None
 
     @staticmethod
-    def is_monotone(sequence: Union[List[float], np.ndarray]) -> Tuple[bool, str]:
+    def is_monotone(sequence: list[float] | np.ndarray) -> tuple[bool, str]:
         """
         Check if sequence is monotone.
 
@@ -249,7 +248,7 @@ class SequenceAnalyzer:
             return (False, "none")
 
     @staticmethod
-    def is_bounded(sequence: Union[List[float], np.ndarray]) -> Tuple[bool, Optional[float], Optional[float]]:
+    def is_bounded(sequence: list[float] | np.ndarray) -> tuple[bool, float | None, float | None]:
         """
         Check if sequence is bounded.
 
@@ -267,7 +266,7 @@ class SequenceAnalyzer:
         return (is_bounded, lower if is_bounded else None, upper if is_bounded else None)
 
     @staticmethod
-    def series_sum(terms: Union[List[float], np.ndarray], method: str = "direct") -> Tuple[Optional[float], bool]:
+    def series_sum(terms: list[float] | np.ndarray, method: str = "direct") -> tuple[float | None, bool]:
         """
         Compute sum of series if convergent.
 
@@ -398,7 +397,7 @@ class ContinuityChecker:
 
         return False
 
-    def lipschitz_constant(self, sample_size: int = 100) -> Optional[float]:
+    def lipschitz_constant(self, sample_size: int = 100) -> float | None:
         """
         Compute Lipschitz constant L.
 
@@ -552,7 +551,7 @@ class Differentiator:
     @staticmethod
     def is_frechet_differentiable(f: Callable,
                                     point: np.ndarray,
-                                    tolerance: float = 1e-4) -> Tuple[bool, Optional[np.ndarray]]:
+                                    tolerance: float = 1e-4) -> tuple[bool, np.ndarray | None]:
         """
         Check if f is Fréchet differentiable at point.
 
@@ -648,7 +647,7 @@ class RiemannIntegrator:
 
     @staticmethod
     def integrate_nd(f: Callable,
-                     bounds: List[Tuple[float, float]],
+                     bounds: list[tuple[float, float]],
                      n_per_dim: int = 50) -> float:
         """
         Compute multi-dimensional integral via Monte Carlo.
@@ -678,6 +677,232 @@ class RiemannIntegrator:
 # ============================================================================
 # Example Usage
 # ============================================================================
+
+# ============================================================================
+# LASALLE INVARIANCE PRINCIPLE
+# ============================================================================
+
+class LaSalleInvariance:
+    """LaSalle's invariance principle for asymptotic stability.
+
+    If V(x) is a Lyapunov function with V_dot(x) <= 0 (not necessarily < 0),
+    then trajectories converge to the largest invariant set where V_dot = 0.
+
+    This extends classical Lyapunov theory: we don't need V_dot to be strictly
+    negative definite — only negative semidefinite. The invariant set M where
+    V_dot = 0 determines the limiting behavior.
+    """
+
+    @staticmethod
+    def invariant_set(V_dot_fn: Callable, domain_points: np.ndarray,
+                      tol: float = 1e-6) -> np.ndarray:
+        """Find points where V_dot = 0 (the invariant set).
+
+        Evaluates V_dot at each point in domain_points and returns
+        those where |V_dot(x)| < tol.
+
+        Args:
+            V_dot_fn: Time derivative of Lyapunov function, V_dot: R^n -> R.
+            domain_points: Array of shape (m, n) — candidate points.
+            tol: Tolerance for considering V_dot = 0.
+
+        Returns:
+            Array of points where |V_dot(x)| < tol (subset of domain_points).
+        """
+        if domain_points.ndim == 1:
+            domain_points = domain_points.reshape(-1, 1)
+
+        mask = np.array([abs(V_dot_fn(x)) < tol for x in domain_points])
+        return domain_points[mask]
+
+    @staticmethod
+    def asymptotic_stability(V_fn: Callable, V_dot_fn: Callable,
+                              equilibrium: np.ndarray, domain_radius: float = 1.0,
+                              n_test: int = 100) -> dict:
+        """Check asymptotic stability via LaSalle's invariance principle.
+
+        Tests three conditions:
+        1. V(x) > 0 for x != equilibrium (positive definite in domain)
+        2. V_dot(x) <= 0 in the domain (negative semidefinite)
+        3. The invariant set {x : V_dot(x) = 0} contains only the equilibrium
+
+        Args:
+            V_fn: Lyapunov candidate function, V: R^n -> R.
+            V_dot_fn: Time derivative V_dot: R^n -> R.
+            equilibrium: The equilibrium point to test.
+            domain_radius: Radius around equilibrium to sample.
+            n_test: Number of test points.
+
+        Returns:
+            {stable: bool, invariant_set_size: int, v_decrease_rate: float,
+             v_positive_definite: bool, v_dot_nonpositive: bool}
+        """
+        dim = len(equilibrium)
+        rng = np.random.RandomState(42)
+
+        # Generate test points in a ball around equilibrium
+        directions = rng.randn(n_test, dim)
+        norms = np.linalg.norm(directions, axis=1, keepdims=True)
+        norms = np.maximum(norms, 1e-10)
+        directions = directions / norms
+        radii = rng.uniform(0.05 * domain_radius, domain_radius, size=(n_test, 1))
+        test_points = equilibrium + directions * radii
+
+        # Check V positive definite (V(x) > 0 for x != eq)
+        v_at_eq = V_fn(equilibrium)
+        v_positive = True
+        for x in test_points:
+            if V_fn(x) <= v_at_eq + 1e-10:
+                v_positive = False
+                break
+
+        # Check V_dot <= 0
+        v_dot_values = np.array([V_dot_fn(x) for x in test_points])
+        v_dot_nonpositive = bool(np.all(v_dot_values <= 1e-10))
+
+        # Average decrease rate
+        v_decrease_rate = float(-np.mean(v_dot_values)) if len(v_dot_values) > 0 else 0.0
+
+        # Find invariant set
+        invariant = LaSalleInvariance.invariant_set(V_dot_fn, test_points, tol=1e-6)
+        invariant_set_size = len(invariant)
+
+        # Stable if V is positive definite, V_dot is nonpositive,
+        # and invariant set is small (ideally just the equilibrium)
+        stable = v_positive and v_dot_nonpositive and invariant_set_size <= max(1, n_test // 20)
+
+        return {
+            'stable': stable,
+            'invariant_set_size': invariant_set_size,
+            'v_decrease_rate': v_decrease_rate,
+            'v_positive_definite': v_positive,
+            'v_dot_nonpositive': v_dot_nonpositive,
+        }
+
+
+class BarbashinKrasovskii:
+    """Barbashin-Krasovskii theorem: global asymptotic stability.
+
+    If V is radially unbounded AND V_dot is negative definite,
+    then the equilibrium is GLOBALLY asymptotically stable.
+
+    This is the strongest stability result: not just local convergence,
+    but convergence from ANY initial condition in R^n.
+    """
+
+    @staticmethod
+    def global_stability(V_fn: Callable, V_dot_fn: Callable,
+                         test_radii: list[float] | None = None,
+                         n_directions: int = 20) -> dict:
+        """Check global asymptotic stability.
+
+        Tests two conditions:
+        1. V(x) is radially unbounded: V(x) -> inf as ||x|| -> inf
+        2. V_dot(x) < 0 for all x != 0 (negative definite)
+
+        Args:
+            V_fn: Lyapunov candidate function.
+            V_dot_fn: Time derivative.
+            test_radii: Radii at which to test radial unboundedness.
+            n_directions: Number of random directions per radius.
+
+        Returns:
+            {globally_stable: bool, radially_unbounded: bool,
+             v_dot_negative_definite: bool, min_v_at_radii: list,
+             max_v_dot: float}
+        """
+        if test_radii is None:
+            test_radii = [1.0, 5.0, 10.0, 50.0]
+
+        # Infer dimension from V_fn: try 2D first, then 1D
+        dim = 2
+        try:
+            V_fn(np.zeros(2))
+        except (ValueError, IndexError, TypeError):
+            dim = 1
+
+        radially_unbounded = BarbashinKrasovskii.is_radially_unbounded(
+            V_fn, test_radii, n_directions, dim
+        )
+
+        # Check V_dot negative definite at multiple scales
+        rng = np.random.RandomState(42)
+        max_v_dot = -np.inf
+        v_dot_negative = True
+
+        for r in test_radii:
+            for _ in range(n_directions):
+                direction = rng.randn(dim)
+                direction = direction / (np.linalg.norm(direction) + 1e-10)
+                x = direction * r
+                vd = V_dot_fn(x)
+                max_v_dot = max(max_v_dot, vd)
+                if vd >= -1e-10:
+                    v_dot_negative = False
+
+        # Also test small radii for local behavior
+        for _ in range(n_directions):
+            direction = rng.randn(dim)
+            direction = direction / (np.linalg.norm(direction) + 1e-10)
+            x = direction * 0.01
+            vd = V_dot_fn(x)
+            max_v_dot = max(max_v_dot, vd)
+            if vd >= -1e-10:
+                v_dot_negative = False
+
+        globally_stable = radially_unbounded and v_dot_negative
+
+        return {
+            'globally_stable': globally_stable,
+            'radially_unbounded': radially_unbounded,
+            'v_dot_negative_definite': v_dot_negative,
+            'max_v_dot': float(max_v_dot),
+        }
+
+    @staticmethod
+    def is_radially_unbounded(V_fn: Callable, test_radii: list[float],
+                               n_directions: int, dim: int) -> bool:
+        """Check V(x) -> inf as ||x|| -> inf.
+
+        Tests that the minimum of V over random directions is strictly
+        increasing with radius — a necessary condition for radial
+        unboundedness.
+
+        Args:
+            V_fn: Lyapunov function.
+            test_radii: Radii to test at.
+            n_directions: Directions to sample per radius.
+            dim: Dimensionality of the state space.
+
+        Returns:
+            True if V appears radially unbounded.
+        """
+        rng = np.random.RandomState(42)
+        min_v_per_radius = []
+
+        for r in sorted(test_radii):
+            v_values = []
+            for _ in range(n_directions):
+                direction = rng.randn(dim)
+                direction = direction / (np.linalg.norm(direction) + 1e-10)
+                x = direction * r
+                v_values.append(V_fn(x))
+            min_v_per_radius.append(min(v_values))
+
+        # Check monotonically increasing minimum V with radius
+        if len(min_v_per_radius) < 2:
+            return True
+
+        for i in range(1, len(min_v_per_radius)):
+            if min_v_per_radius[i] <= min_v_per_radius[i - 1]:
+                return False
+
+        # Check that V grows substantially
+        if min_v_per_radius[-1] < 10 * min_v_per_radius[0]:
+            return False
+
+        return True
+
 
 if __name__ == "__main__":
     print("="*80)

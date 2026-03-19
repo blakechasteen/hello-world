@@ -15,12 +15,14 @@ Router Organization:
 - monitor.py: Agent monitoring, sessions, metrics, WebSocket
 """
 
+from .capabilities import router as capabilities_router
+from .detection import router as detection_router
 from .health import router as health_router
 from .memory import router as memory_router
-from .detection import router as detection_router
 from .monitor import router as monitor_router
 
 __all__ = [
+    "capabilities_router",
     "health_router",
     "memory_router",
     "detection_router",

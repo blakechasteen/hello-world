@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Mathematical Operation Selector
 ================================
@@ -28,9 +27,10 @@ Date: 2025-10-26
 """
 
 import logging
-from typing import Dict, List, Any, Optional, Set, Callable
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
+
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -95,8 +95,8 @@ class MathOperation:
     domain: MathDomain
     level: OperationLevel
     description: str
-    use_cases: List[QueryIntent]
-    prerequisites: List[str] = field(default_factory=list)
+    use_cases: list[QueryIntent]
+    prerequisites: list[str] = field(default_factory=list)
     module_path: str = ""
     function_name: str = ""
     estimated_cost: int = 1
@@ -118,24 +118,24 @@ class OperationPlan:
         domains_used: Set of mathematical domains involved
         metadata: Additional planning metadata
     """
-    operations: List[MathOperation]
-    justifications: Dict[str, str]
+    operations: list[MathOperation]
+    justifications: dict[str, str]
     total_cost: int
-    domains_used: Set[MathDomain]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    domains_used: set[MathDomain]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def get_execution_order(self) -> List[str]:
+    def get_execution_order(self) -> list[str]:
         """Get operation names in execution order."""
         return [op.name for op in self.operations]
 
     def summarize(self) -> str:
         """Get human-readable summary."""
         lines = [
-            f"Mathematical Operation Plan:",
+            "Mathematical Operation Plan:",
             f"  Operations: {len(self.operations)}",
             f"  Domains: {', '.join(d.value for d in self.domains_used)}",
             f"  Est. Cost: {self.total_cost}",
-            f"\nExecution Order:"
+            "\nExecution Order:"
         ]
         for i, op in enumerate(self.operations, 1):
             lines.append(f"  {i}. {op.name} ({op.domain.value})")
@@ -181,14 +181,14 @@ class MathOperationSelector:
     def __init__(self):
         """Initialize operation selector with operation catalog."""
         self.operations = self._build_operation_catalog()
-        self.planning_history: List[OperationPlan] = []
+        self.planning_history: list[OperationPlan] = []
         self.intent_keywords = self._build_intent_keywords()
 
         logger.info("MathOperationSelector initialized")
         logger.info(f"  Operations available: {len(self.operations)}")
         logger.info(f"  Domains: {len(set(op.domain for op in self.operations.values()))}")
 
-    def _build_operation_catalog(self) -> Dict[str, MathOperation]:
+    def _build_operation_catalog(self) -> dict[str, MathOperation]:
         """
         Build catalog of all available mathematical operations.
 
@@ -446,7 +446,7 @@ class MathOperationSelector:
 
         return ops
 
-    def _build_intent_keywords(self) -> Dict[QueryIntent, List[str]]:
+    def _build_intent_keywords(self) -> dict[QueryIntent, list[str]]:
         """
         Build keyword mappings for intent classification.
 
@@ -487,8 +487,8 @@ class MathOperationSelector:
     def classify_intent(
         self,
         query_text: str,
-        context: Optional[Dict] = None
-    ) -> List[QueryIntent]:
+        context: dict | None = None
+    ) -> list[QueryIntent]:
         """
         Classify query intent using keyword matching.
 
@@ -500,7 +500,7 @@ class MathOperationSelector:
             List of detected intents (ordered by confidence)
         """
         query_lower = query_text.lower()
-        intent_scores = {intent: 0 for intent in QueryIntent}
+        intent_scores = dict.fromkeys(QueryIntent, 0)
 
         # Keyword matching
         for intent, keywords in self.intent_keywords.items():
@@ -536,9 +536,9 @@ class MathOperationSelector:
     def plan_operations(
         self,
         query_text: str,
-        query_embedding: Optional[np.ndarray] = None,
-        context: Optional[Dict] = None,
-        budget: Optional[int] = None,
+        query_embedding: np.ndarray | None = None,
+        context: dict | None = None,
+        budget: int | None = None,
         enable_expensive: bool = False
     ) -> OperationPlan:
         """
@@ -630,7 +630,7 @@ class MathOperationSelector:
 
         return plan
 
-    def _topological_sort(self, operations: List[MathOperation]) -> List[MathOperation]:
+    def _topological_sort(self, operations: list[MathOperation]) -> list[MathOperation]:
         """
         Sort operations respecting prerequisites (topological sort).
 
@@ -671,7 +671,7 @@ class MathOperationSelector:
 
         return sorted_ops
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """
         Get selector statistics.
 
@@ -776,10 +776,10 @@ if __name__ == "__main__":
     print(f"Total plans: {stats['total_plans']}")
     print(f"Avg operations/plan: {stats['avg_operations_per_plan']:.1f}")
     print(f"Avg cost/plan: {stats['avg_cost_per_plan']:.1f}")
-    print(f"\nMost common operations:")
+    print("\nMost common operations:")
     for op_name, count in stats['most_common_operations'].items():
         print(f"  {op_name}: {count}")
-    print(f"\nIntent distribution:")
+    print("\nIntent distribution:")
     for intent, count in stats['intent_distribution'].items():
         print(f"  {intent}: {count}")
 

@@ -20,9 +20,9 @@ Applications:
     - Geometric mechanics for robotics
 """
 
+from collections.abc import Callable
+
 import numpy as np
-from typing import Callable, List, Tuple, Optional, Dict
-from dataclasses import dataclass
 
 
 class LagrangianMechanics:
@@ -136,7 +136,7 @@ class HamiltonianMechanics:
         self.dim = dim
 
     def hamiltons_equations(self, q: np.ndarray, p: np.ndarray, t: float,
-                           h: float = 1e-6) -> Tuple[np.ndarray, np.ndarray]:
+                           h: float = 1e-6) -> tuple[np.ndarray, np.ndarray]:
         """
         Hamilton's equations:
         dq_i/dt = ∂H/∂p_i
@@ -161,7 +161,7 @@ class HamiltonianMechanics:
         return q_dot, p_dot
 
     def integrate(self, q0: np.ndarray, p0: np.ndarray, t_final: float,
-                 dt: float = 0.01) -> Tuple[np.ndarray, np.ndarray]:
+                 dt: float = 0.01) -> tuple[np.ndarray, np.ndarray]:
         """
         Integrate Hamilton's equations (symplectic Euler method).
 
@@ -382,7 +382,7 @@ class CanonicalTransformation:
 
     @staticmethod
     def generating_function_type1(F: Callable, q: np.ndarray, Q: np.ndarray,
-                                  dim: int) -> Tuple[np.ndarray, np.ndarray]:
+                                  dim: int) -> tuple[np.ndarray, np.ndarray]:
         """
         Type-1 generating function: F(q, Q).
         p = ∂F/∂q, P = -∂F/∂Q
@@ -564,7 +564,7 @@ if __name__ == "__main__":
     print(f"Trajectory length: {len(q_traj)} points")
     print(f"Initial: q={q_traj[0][0]:.4f}, p={p_traj[0][0]:.4f}")
     print(f"Final: q={q_traj[-1][0]:.4f}, p={p_traj[-1][0]:.4f}")
-    print(f"(Should be periodic: final ≈ initial)")
+    print("(Should be periodic: final ≈ initial)")
 
     # Test 3: Energy conservation
     print("\n[Test 3] Energy conservation")

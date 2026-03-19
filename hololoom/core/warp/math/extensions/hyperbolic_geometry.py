@@ -20,9 +20,8 @@ Applications:
     - Geometric deep learning
 """
 
+
 import numpy as np
-from typing import Callable, List, Tuple, Optional, Dict
-from dataclasses import dataclass
 
 
 class PoincareBall:
@@ -170,7 +169,7 @@ class PoincareBall:
         return result
 
     @staticmethod
-    def gyrovector_properties() -> Dict[str, str]:
+    def gyrovector_properties() -> dict[str, str]:
         """Properties of gyrovector space."""
         return {
             "associativity": "x ⊕ (y ⊕ z) ≠ (x ⊕ y) ⊕ z (not associative!)",
@@ -481,7 +480,7 @@ if __name__ == "__main__":
     print("\n[Test 3] Exponential map")
     y = example_exponential_map()
     print(f"exp_0((1,0)) = ({y[0]:.4f}, {y[1]:.4f})")
-    print(f"Expected: along x-axis, ||y|| < 1")
+    print("Expected: along x-axis, ||y|| < 1")
 
     # Test 4: Model conversion
     print("\n[Test 4] Model conversion")

@@ -26,10 +26,11 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, Tuple, Optional, List
-from dataclasses import dataclass
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class RootFinder:
         b: float,
         tol: float = 1e-6,
         max_iter: int = 100
-    ) -> Tuple[float, int]:
+    ) -> tuple[float, int]:
         """
         Bisection method for root finding.
 
@@ -98,7 +99,7 @@ class RootFinder:
         x0: float,
         tol: float = 1e-6,
         max_iter: int = 100
-    ) -> Tuple[float, int]:
+    ) -> tuple[float, int]:
         """
         Newton's method for root finding.
 
@@ -132,7 +133,7 @@ class RootFinder:
         x1: float,
         tol: float = 1e-6,
         max_iter: int = 100
-    ) -> Tuple[float, int]:
+    ) -> tuple[float, int]:
         """
         Secant method (Newton without derivative).
 
@@ -164,7 +165,7 @@ class RootFinder:
         x0: np.ndarray,
         tol: float = 1e-6,
         max_iter: int = 100
-    ) -> Tuple[np.ndarray, int]:
+    ) -> tuple[np.ndarray, int]:
         """
         Multidimensional Newton's method.
 
@@ -206,7 +207,7 @@ class NumericalLinearAlgebra:
     """
 
     @staticmethod
-    def lu_decomposition(A: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def lu_decomposition(A: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         LU decomposition: A = LU
 
@@ -228,7 +229,7 @@ class NumericalLinearAlgebra:
         return L, U
 
     @staticmethod
-    def qr_decomposition(A: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def qr_decomposition(A: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         QR decomposition using Gram-Schmidt: A = QR
 
@@ -258,10 +259,10 @@ class NumericalLinearAlgebra:
     def conjugate_gradient(
         A: np.ndarray,
         b: np.ndarray,
-        x0: Optional[np.ndarray] = None,
+        x0: np.ndarray | None = None,
         tol: float = 1e-6,
-        max_iter: Optional[int] = None
-    ) -> Tuple[np.ndarray, int]:
+        max_iter: int | None = None
+    ) -> tuple[np.ndarray, int]:
         """
         Conjugate Gradient method for solving Ax = b.
 
@@ -304,7 +305,7 @@ class NumericalLinearAlgebra:
         A: np.ndarray,
         max_iter: int = 100,
         tol: float = 1e-6
-    ) -> Tuple[float, np.ndarray]:
+    ) -> tuple[float, np.ndarray]:
         """
         Power iteration for finding largest eigenvalue.
 
@@ -353,7 +354,7 @@ class ODESolver:
     @staticmethod
     def euler(
         f: Callable[[float, np.ndarray], np.ndarray],
-        t_span: Tuple[float, float],
+        t_span: tuple[float, float],
         y0: np.ndarray,
         n_steps: int
     ) -> ODESolution:
@@ -380,7 +381,7 @@ class ODESolver:
     @staticmethod
     def rk4(
         f: Callable[[float, np.ndarray], np.ndarray],
-        t_span: Tuple[float, float],
+        t_span: tuple[float, float],
         y0: np.ndarray,
         n_steps: int
     ) -> ODESolution:
@@ -416,7 +417,7 @@ class ODESolver:
     @staticmethod
     def rk45_adaptive(
         f: Callable[[float, np.ndarray], np.ndarray],
-        t_span: Tuple[float, float],
+        t_span: tuple[float, float],
         y0: np.ndarray,
         tol: float = 1e-6,
         h_init: float = 0.01,
@@ -572,7 +573,7 @@ class NumericalOptimization:
         learning_rate: float = 0.01,
         max_iter: int = 1000,
         tol: float = 1e-6
-    ) -> Tuple[np.ndarray, List[float]]:
+    ) -> tuple[np.ndarray, list[float]]:
         """
         Gradient descent optimization.
 
@@ -605,7 +606,7 @@ class NumericalOptimization:
         x0: np.ndarray,
         max_iter: int = 100,
         tol: float = 1e-6
-    ) -> Tuple[np.ndarray, List[float]]:
+    ) -> tuple[np.ndarray, list[float]]:
         """
         BFGS quasi-Newton method.
 
@@ -627,7 +628,7 @@ class NumericalOptimization:
         beta2: float = 0.999,
         epsilon: float = 1e-8,
         max_iter: int = 1000
-    ) -> Tuple[np.ndarray, int]:
+    ) -> tuple[np.ndarray, int]:
         """
         Adam optimizer (adaptive moment estimation).
 

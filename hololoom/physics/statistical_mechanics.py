@@ -40,13 +40,11 @@ Phase: 5 - Statistical Mechanics
 
 from __future__ import annotations
 
-import math
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
-from collections import defaultdict
 from enum import Enum
+from typing import Any
 
+import numpy as np
 
 # ============================================================================
 # Statistical Mechanics Constants
@@ -66,14 +64,14 @@ class Microstate:
     id: str                          # Unique identifier
     state_vector: np.ndarray         # State representation (embedding)
     energy: float                    # Energy of this state
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class Macrostate:
     """Macroscopic state (emergent from microstates)."""
     label: str                       # Cluster/pattern label
-    microstates: List[Microstate]    # Constituent microstates
+    microstates: list[Microstate]    # Constituent microstates
     average_energy: float            # <E> = Σ p_i E_i
     entropy: float                   # S = -k Σ p_i ln(p_i)
     free_energy: float               # F = <E> - T*S
@@ -102,7 +100,7 @@ class CanonicalEnsemble:
         self.temperature = temperature
         self.kT = BOLTZMANN_CONSTANT * temperature
 
-    def partition_function(self, energies: List[float]) -> float:
+    def partition_function(self, energies: list[float]) -> float:
         """
         Compute partition function Z = Σ exp(-E_i/kT).
 
@@ -120,7 +118,7 @@ class CanonicalEnsemble:
         Z = sum(np.exp(-E / self.kT) for E in energies)
         return Z
 
-    def gibbs_probabilities(self, energies: List[float]) -> np.ndarray:
+    def gibbs_probabilities(self, energies: list[float]) -> np.ndarray:
         """
         Compute Gibbs probability distribution P(i) = exp(-E_i/kT) / Z.
 
@@ -144,7 +142,7 @@ class CanonicalEnsemble:
 
         return probabilities
 
-    def ensemble_average(self, values: List[float], energies: List[float]) -> float:
+    def ensemble_average(self, values: list[float], energies: list[float]) -> float:
         """
         Compute ensemble average <A> = Σ A_i P(i).
 
@@ -165,7 +163,7 @@ class CanonicalEnsemble:
 
         return average
 
-    def free_energy(self, energies: List[float]) -> float:
+    def free_energy(self, energies: list[float]) -> float:
         """
         Compute Helmholtz free energy F = -kT ln(Z).
 
@@ -243,7 +241,7 @@ class EntropyCalculator:
         return S
 
     @staticmethod
-    def mixing_entropy(fractions: List[float]) -> float:
+    def mixing_entropy(fractions: list[float]) -> float:
         """
         Compute mixing entropy S_mix = -k Σ x_i ln(x_i).
 
@@ -297,7 +295,7 @@ class PhaseTransitionDetector:
         """
         self.history_window = history_window
 
-    def compute_order_parameter(self, microstates: List[Microstate]) -> float:
+    def compute_order_parameter(self, microstates: list[Microstate]) -> float:
         """
         Compute order parameter (measure of system organization).
 
@@ -331,9 +329,9 @@ class PhaseTransitionDetector:
 
     def detect_transition(
         self,
-        history: List[List[Microstate]],
-        temperature_history: List[float]
-    ) -> Optional[PhaseTransition]:
+        history: list[list[Microstate]],
+        temperature_history: list[float]
+    ) -> PhaseTransition | None:
         """
         Detect phase transition in state history.
 
@@ -392,8 +390,8 @@ class PhaseTransitionDetector:
 
     def _estimate_critical_exponent(
         self,
-        order_params: List[float],
-        temperatures: List[float]
+        order_params: list[float],
+        temperatures: list[float]
     ) -> float:
         """
         Estimate critical exponent β from power law scaling.
@@ -453,10 +451,10 @@ class StatisticalMechanicsEngine:
         self.entropy_calc = EntropyCalculator()
         self.phase_detector = PhaseTransitionDetector()
 
-        self.state_history: List[List[Microstate]] = []
-        self.temperature_history: List[float] = []
+        self.state_history: list[list[Microstate]] = []
+        self.temperature_history: list[float] = []
 
-    def compute_energy(self, state: Microstate, context: Optional[List[Microstate]] = None) -> float:
+    def compute_energy(self, state: Microstate, context: list[Microstate] | None = None) -> float:
         """
         Compute energy of a microstate.
 
@@ -486,9 +484,9 @@ class StatisticalMechanicsEngine:
 
     def consolidate_memories(
         self,
-        microstates: List[Microstate],
-        num_clusters: Optional[int] = None
-    ) -> List[Macrostate]:
+        microstates: list[Microstate],
+        num_clusters: int | None = None
+    ) -> list[Macrostate]:
         """
         Consolidate memories via Gibbs distribution clustering.
 
@@ -558,10 +556,10 @@ class StatisticalMechanicsEngine:
 
     def _cluster_by_energy(
         self,
-        microstates: List[Microstate],
-        energies: List[float],
-        num_clusters: Optional[int] = None
-    ) -> List[List[Microstate]]:
+        microstates: list[Microstate],
+        energies: list[float],
+        num_clusters: int | None = None
+    ) -> list[list[Microstate]]:
         """
         Cluster microstates by energy landscape.
 
@@ -597,7 +595,7 @@ class StatisticalMechanicsEngine:
 
         return clusters
 
-    def detect_phase_transition(self) -> Optional[PhaseTransition]:
+    def detect_phase_transition(self) -> PhaseTransition | None:
         """
         Detect phase transition in state history.
 
@@ -618,7 +616,7 @@ class StatisticalMechanicsEngine:
         self.ensemble.temperature = self.temperature
         self.ensemble.kT = BOLTZMANN_CONSTANT * self.temperature
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get statistical mechanics statistics."""
         if len(self.state_history) == 0:
             return {
@@ -650,6 +648,430 @@ class StatisticalMechanicsEngine:
 
 
 # ============================================================================
+# SELF-ORGANIZED CRITICALITY
+# ============================================================================
+
+class SelfOrganizedCriticality:
+    """
+    Bak-Tang-Wiesenfeld sandpile model and avalanche dynamics.
+
+    Systems that naturally evolve to a critical state where small
+    perturbations can trigger avalanches of all sizes. The hallmark
+    of SOC is a power-law distribution of avalanche sizes:
+
+        P(s) ~ s^{-tau}
+
+    with tau typically between 1.0 and 2.0 for 2D sandpiles.
+
+    The BTW model:
+    - A grid of integer heights (grains of sand)
+    - Add one grain at a random site each step
+    - If any site >= threshold, it topples: loses threshold grains,
+      each neighbor gains 1
+    - Toppling can cascade (avalanche)
+    - The system self-organizes to the critical state where the
+      average slope is just at the toppling threshold
+    """
+
+    @staticmethod
+    def bak_tang_wiesenfeld(
+        grid_size: int = 50,
+        n_grains: int = 10000,
+        threshold: int = 4,
+    ) -> tuple[np.ndarray, list[int]]:
+        """
+        Simulate the BTW sandpile model.
+
+        Drops n_grains one at a time onto random sites. When a site
+        reaches the threshold, it topples and distributes grains to
+        its 4 neighbors (von Neumann neighborhood). Grains that fall
+        off the edge are lost.
+
+        Args:
+            grid_size: Side length of square grid
+            n_grains: Number of grains to drop
+            threshold: Toppling threshold (4 for standard BTW)
+
+        Returns:
+            (final_grid, avalanche_sizes) where avalanche_sizes[i] is
+            the number of topplings triggered by grain i
+        """
+        grid = np.zeros((grid_size, grid_size), dtype=np.int64)
+        avalanche_sizes: list[int] = []
+
+        for _ in range(n_grains):
+            # Drop a grain at a random site
+            r = np.random.randint(0, grid_size)
+            c = np.random.randint(0, grid_size)
+            grid[r, c] += 1
+
+            # Cascade toppling
+            topplings = 0
+            while True:
+                unstable = grid >= threshold
+                if not np.any(unstable):
+                    break
+
+                # Count topplings this round
+                n_unstable = int(np.sum(unstable))
+                topplings += n_unstable
+
+                # Topple all unstable sites simultaneously
+                topple_amount = (grid // threshold) * threshold
+                grid -= topple_amount
+                distribute = topple_amount // threshold
+
+                # Distribute to 4 neighbors
+                # Up
+                grid[1:, :] += distribute[:-1, :]
+                # Down
+                grid[:-1, :] += distribute[1:, :]
+                # Left
+                grid[:, 1:] += distribute[:, :-1]
+                # Right
+                grid[:, :-1] += distribute[:, 1:]
+
+                # Grains falling off edges are lost (already not added)
+
+            avalanche_sizes.append(topplings)
+
+        return grid, avalanche_sizes
+
+    @staticmethod
+    def avalanche_distribution(sizes: list[int]) -> tuple[np.ndarray, float]:
+        """
+        Fit power law P(s) ~ s^{-tau} to avalanche sizes.
+
+        Filters out zero-size avalanches (no toppling occurred),
+        bins the non-zero sizes into a histogram, and estimates
+        the power-law exponent tau via maximum likelihood.
+
+        Args:
+            sizes: List of avalanche sizes (number of topplings)
+
+        Returns:
+            (histogram, tau_exponent) where histogram has shape (n_bins, 2)
+            with columns [size, count] and tau is the MLE exponent
+        """
+        # Filter to non-zero avalanches
+        nonzero = np.array([s for s in sizes if s > 0], dtype=np.float64)
+
+        if len(nonzero) == 0:
+            return np.empty((0, 2)), 0.0
+
+        # Log-spaced bins for power law
+        s_min = nonzero.min()
+        s_max = nonzero.max()
+
+        if s_min == s_max:
+            hist = np.array([[s_min, len(nonzero)]])
+            return hist, 0.0
+
+        n_bins = min(50, int(np.sqrt(len(nonzero))))
+        bin_edges = np.logspace(np.log10(s_min), np.log10(s_max), n_bins + 1)
+        counts, edges = np.histogram(nonzero, bins=bin_edges)
+
+        # Bin centers (geometric mean of edges)
+        centers = np.sqrt(edges[:-1] * edges[1:])
+
+        # Filter empty bins
+        mask = counts > 0
+        hist = np.column_stack([centers[mask], counts[mask]])
+
+        # MLE for power law exponent
+        # alpha = 1 + n / sum(ln(x_i / x_min))
+        x_min = nonzero.min()
+        n = len(nonzero)
+        log_ratios = np.log(nonzero / x_min)
+        sum_log = np.sum(log_ratios)
+
+        if sum_log > 0:
+            tau = 1.0 + n / sum_log
+        else:
+            tau = 0.0
+
+        return hist, tau
+
+    @staticmethod
+    def is_critical(sizes: list[int], tau_range: tuple[float, float] = (1.0, 3.0)) -> bool:
+        """
+        Check if the avalanche distribution follows a power law
+        consistent with self-organized criticality.
+
+        A system is at criticality if the avalanche size distribution
+        follows a power law with exponent in the expected range.
+
+        Args:
+            sizes: Avalanche size list
+            tau_range: Acceptable range for the power-law exponent
+
+        Returns:
+            True if the distribution is consistent with SOC
+        """
+        nonzero = [s for s in sizes if s > 0]
+        if len(nonzero) < 10:
+            return False
+
+        _, tau = SelfOrganizedCriticality.avalanche_distribution(sizes)
+
+        return tau_range[0] <= tau <= tau_range[1]
+
+
+# ============================================================================
+# POWER LAW FITTER
+# ============================================================================
+
+class PowerLawFitter:
+    """
+    Fit power law distributions via maximum likelihood estimation.
+
+    Power laws P(x) ~ x^{-alpha} arise in many natural systems:
+    earthquake magnitudes, city sizes, word frequencies, neural
+    avalanches, and self-organized critical systems.
+
+    Proper fitting requires:
+    1. Estimating x_min (the lower bound where the power law holds)
+    2. MLE for alpha given x_min
+    3. Goodness-of-fit testing (KS statistic)
+    4. Comparison with alternative distributions
+    """
+
+    @staticmethod
+    def fit(
+        data: np.ndarray,
+        x_min: float | None = None,
+    ) -> tuple[float, float]:
+        """
+        Maximum likelihood estimation for power law exponent.
+
+        For continuous data: alpha = 1 + n / sum(ln(x_i / x_min))
+        (Clauset, Shalizi, Newman 2009)
+
+        If x_min is not provided, it is estimated as the value that
+        minimizes the KS statistic between the data and the fitted
+        power law.
+
+        Args:
+            data: Observed values (must be positive)
+            x_min: Lower cutoff (estimated if None)
+
+        Returns:
+            (alpha, x_min) — the exponent and lower bound
+        """
+        data = np.asarray(data, dtype=np.float64)
+        data = data[data > 0]
+
+        if len(data) == 0:
+            return 0.0, 0.0
+
+        if x_min is None:
+            x_min = PowerLawFitter._estimate_x_min(data)
+
+        # Filter to data above x_min
+        tail = data[data >= x_min]
+
+        if len(tail) < 2:
+            return 0.0, x_min
+
+        # MLE: alpha = 1 + n / sum(ln(x_i / x_min))
+        n = len(tail)
+        log_ratios = np.log(tail / x_min)
+        sum_log = np.sum(log_ratios)
+
+        if sum_log > 0:
+            alpha = 1.0 + n / sum_log
+        else:
+            alpha = 0.0
+
+        return alpha, x_min
+
+    @staticmethod
+    def ks_test(
+        data: np.ndarray,
+        alpha: float,
+        x_min: float,
+    ) -> float:
+        """
+        Kolmogorov-Smirnov statistic for power law goodness of fit.
+
+        Compares the empirical CDF of the data (above x_min) with
+        the theoretical CDF of a power law with the given exponent.
+
+        CDF_powerlaw(x) = 1 - (x / x_min)^{-(alpha - 1)}
+
+        Args:
+            data: Observed values
+            alpha: Power law exponent
+            x_min: Lower cutoff
+
+        Returns:
+            KS statistic D (lower = better fit). Typically D < 0.1
+            indicates a plausible power law.
+        """
+        data = np.asarray(data, dtype=np.float64)
+        tail = np.sort(data[data >= x_min])
+
+        if len(tail) < 2 or alpha <= 1.0:
+            return 1.0
+
+        n = len(tail)
+
+        # Empirical CDF
+        ecdf = np.arange(1, n + 1) / n
+
+        # Theoretical CDF: 1 - (x / x_min)^{-(alpha - 1)}
+        tcdf = 1.0 - (tail / x_min) ** (-(alpha - 1.0))
+
+        # KS statistic: max absolute difference
+        D = np.max(np.abs(ecdf - tcdf))
+
+        return float(D)
+
+    @staticmethod
+    def compare_distributions(
+        data: np.ndarray,
+        dist1: str = 'powerlaw',
+        dist2: str = 'exponential',
+    ) -> dict:
+        """
+        Log-likelihood ratio test between power law and alternative.
+
+        Computes R = ln(L_1 / L_2) where L_i is the likelihood of
+        distribution i. R > 0 favors dist1, R < 0 favors dist2.
+
+        Supported distributions:
+        - 'powerlaw': P(x) ~ x^{-alpha}
+        - 'exponential': P(x) ~ exp(-lambda * x)
+        - 'lognormal': P(x) ~ exp(-(ln(x) - mu)^2 / (2*sigma^2)) / x
+
+        Args:
+            data: Observed values
+            dist1: First distribution name
+            dist2: Second distribution name
+
+        Returns:
+            dict with keys: 'R' (log-likelihood ratio), 'favors' (which
+            distribution), 'dist1_params', 'dist2_params'
+        """
+        data = np.asarray(data, dtype=np.float64)
+        data = data[data > 0]
+
+        if len(data) < 5:
+            return {
+                'R': 0.0,
+                'favors': 'insufficient_data',
+                'dist1_params': {},
+                'dist2_params': {},
+            }
+
+        # Fit both distributions
+        params1 = PowerLawFitter._fit_distribution(data, dist1)
+        params2 = PowerLawFitter._fit_distribution(data, dist2)
+
+        # Compute log-likelihoods
+        ll1 = PowerLawFitter._log_likelihood(data, dist1, params1)
+        ll2 = PowerLawFitter._log_likelihood(data, dist2, params2)
+
+        R = ll1 - ll2
+        favors = dist1 if R > 0 else dist2
+
+        return {
+            'R': float(R),
+            'favors': favors,
+            'dist1_params': params1,
+            'dist2_params': params2,
+        }
+
+    @staticmethod
+    def _estimate_x_min(data: np.ndarray) -> float:
+        """Estimate x_min by minimizing KS statistic over candidate values."""
+        sorted_data = np.sort(data)
+        # Candidates: unique values in the data (subsample if too many)
+        candidates = np.unique(sorted_data)
+        if len(candidates) > 100:
+            indices = np.linspace(0, len(candidates) - 1, 100, dtype=int)
+            candidates = candidates[indices]
+
+        best_xmin = sorted_data[0]
+        best_ks = float('inf')
+
+        for xmin in candidates:
+            tail = sorted_data[sorted_data >= xmin]
+            if len(tail) < 5:
+                continue
+
+            n = len(tail)
+            log_ratios = np.log(tail / xmin)
+            sum_log = np.sum(log_ratios)
+            if sum_log <= 0:
+                continue
+
+            alpha = 1.0 + n / sum_log
+            ks = PowerLawFitter.ks_test(data, alpha, xmin)
+
+            if ks < best_ks:
+                best_ks = ks
+                best_xmin = xmin
+
+        return float(best_xmin)
+
+    @staticmethod
+    def _fit_distribution(data: np.ndarray, dist: str) -> dict:
+        """Fit a named distribution to data, return parameters."""
+        if dist == 'powerlaw':
+            alpha, x_min = PowerLawFitter.fit(data)
+            return {'alpha': alpha, 'x_min': x_min}
+
+        elif dist == 'exponential':
+            # MLE: lambda = 1 / mean(x)
+            lam = 1.0 / data.mean() if data.mean() > 0 else 1.0
+            return {'lambda': lam}
+
+        elif dist == 'lognormal':
+            log_data = np.log(data)
+            mu = log_data.mean()
+            sigma = log_data.std()
+            return {'mu': mu, 'sigma': max(sigma, 1e-10)}
+
+        return {}
+
+    @staticmethod
+    def _log_likelihood(data: np.ndarray, dist: str, params: dict) -> float:
+        """Compute log-likelihood of data under a distribution."""
+        if dist == 'powerlaw':
+            alpha = params.get('alpha', 2.0)
+            x_min = params.get('x_min', data.min())
+            tail = data[data >= x_min]
+            if len(tail) == 0 or alpha <= 1.0:
+                return -np.inf
+            # log P(x) = log(alpha-1) - log(x_min) - alpha * log(x/x_min)
+            ll = len(tail) * (np.log(alpha - 1) - np.log(x_min))
+            ll -= alpha * np.sum(np.log(tail / x_min))
+            return float(ll)
+
+        elif dist == 'exponential':
+            lam = params.get('lambda', 1.0)
+            if lam <= 0:
+                return -np.inf
+            # log P(x) = log(lambda) - lambda * x
+            ll = len(data) * np.log(lam) - lam * np.sum(data)
+            return float(ll)
+
+        elif dist == 'lognormal':
+            mu = params.get('mu', 0.0)
+            sigma = params.get('sigma', 1.0)
+            if sigma <= 0:
+                return -np.inf
+            log_data = np.log(data)
+            ll = -np.sum((log_data - mu) ** 2) / (2 * sigma ** 2)
+            ll -= len(data) * np.log(sigma * np.sqrt(2 * np.pi))
+            ll -= np.sum(log_data)  # Jacobian term
+            return float(ll)
+
+        return -np.inf
+
+
+# ============================================================================
 # Exports
 # ============================================================================
 
@@ -663,4 +1085,6 @@ __all__ = [
     "PhaseTransitionDetector",
     "StatisticalMechanicsEngine",
     "BOLTZMANN_CONSTANT",
+    "SelfOrganizedCriticality",
+    "PowerLawFitter",
 ]

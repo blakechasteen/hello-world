@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Weaving Pipeline Steps 4-6: Parallel Feature Extraction
 ========================================================
@@ -22,21 +21,22 @@ Date: 2025-12-09
 from __future__ import annotations
 
 import asyncio
-import time
 import logging
+import time
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable, Optional, Any, Dict, List, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 if TYPE_CHECKING:
-    from hololoom.orchestrator.context import WeavingContext
+    from hololoom.alignment.safety_guardrails import SafetyGuardrails
     from hololoom.config import Config
-    from hololoom.loom.command import PatternSpec
     from hololoom.embedding.spectral import MatryoshkaEmbeddings
+    from hololoom.loom.command import PatternSpec
+    from hololoom.orchestrator.context import WeavingContext
     from hololoom.resonance.shed import ResonanceShed
     from hololoom.warp.space import WarpSpace
-    from hololoom.alignment.safety_guardrails import SafetyGuardrails
 
 logger = logging.getLogger(__name__)
 
@@ -46,13 +46,13 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 def create_resonance_shed(
-    ctx: 'WeavingContext',
-    cfg: 'Config',
+    ctx: WeavingContext,
+    cfg: Config,
     pattern_embedder: Any,
-    linguistic_gate: Optional[Any] = None,
-    guardrails: Optional['SafetyGuardrails'] = None,
-    log: Optional[logging.Logger] = None,
-) -> 'ResonanceShed':
+    linguistic_gate: Any | None = None,
+    guardrails: SafetyGuardrails | None = None,
+    log: logging.Logger | None = None,
+) -> ResonanceShed:
     """
     Create Resonance Shed based on pattern spec.
 
@@ -76,8 +76,8 @@ def create_resonance_shed(
 
     # Import required components
     from hololoom.resonance.motif_detector import create_motif_detector
-    from hololoom.resonance.spectral_fusion import SpectralFusion
     from hololoom.resonance.shed import ResonanceShed
+    from hololoom.resonance.spectral_fusion import SpectralFusion
 
     # Create components based on pattern spec
     motif_detector = create_motif_detector(mode=pattern_spec.motif_mode)
@@ -116,10 +116,10 @@ def create_resonance_shed(
 
 
 def create_warp_space(
-    ctx: 'WeavingContext',
-    embedder: 'MatryoshkaEmbeddings',
-    guardrails: Optional['SafetyGuardrails'] = None,
-) -> 'WarpSpace':
+    ctx: WeavingContext,
+    embedder: MatryoshkaEmbeddings,
+    guardrails: SafetyGuardrails | None = None,
+) -> WarpSpace:
     """
     Create Warp Space based on pattern spec.
 
@@ -151,10 +151,10 @@ def create_warp_space(
 
 
 def select_pattern_embedder(
-    cfg: 'Config',
-    pattern_spec: 'PatternSpec',
-    linguistic_gate: Optional[Any] = None,
-    log: Optional[logging.Logger] = None,
+    cfg: Config,
+    pattern_spec: PatternSpec,
+    linguistic_gate: Any | None = None,
+    log: logging.Logger | None = None,
 ) -> Any:
     """
     Select the appropriate embedder based on configuration.
@@ -210,11 +210,11 @@ def select_pattern_embedder(
 # ============================================================================
 
 async def _step4_feature_extraction(
-    ctx: 'WeavingContext',
-    resonance_shed: 'ResonanceShed',
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
-) -> Tuple[Dict[str, Any], float]:
+    ctx: WeavingContext,
+    resonance_shed: ResonanceShed,
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
+) -> tuple[dict[str, Any], float]:
     """
     Step 4: Extract features through Resonance Shed.
 
@@ -255,11 +255,11 @@ async def _step4_feature_extraction(
 
 
 async def _step5_warp_tensioning(
-    ctx: 'WeavingContext',
-    warp_space: 'WarpSpace',
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
-) -> Tuple[List[Tuple[str, str, Any]], float]:
+    ctx: WeavingContext,
+    warp_space: WarpSpace,
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
+) -> tuple[list[tuple[str, str, Any]], float]:
     """
     Step 5: Tension threads into continuous manifold.
 
@@ -296,15 +296,15 @@ async def _step5_warp_tensioning(
 
 
 async def _step6_memory_retrieval(
-    ctx: 'WeavingContext',
-    memory: Optional[Any],
-    retriever: Optional[Any],
+    ctx: WeavingContext,
+    memory: Any | None,
+    retriever: Any | None,
     complexity: Any,
     provenance: Any,
-    multipass_memory_crawl: Optional[Callable] = None,
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
-) -> Tuple[List[Any], List[str], List[Tuple[Any, float]], float]:
+    multipass_memory_crawl: Callable | None = None,
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
+) -> tuple[list[Any], list[str], list[tuple[Any, float]], float]:
     """
     Step 6: Retrieve context with multipass memory crawling.
 
@@ -370,19 +370,19 @@ async def _step6_memory_retrieval(
 # ============================================================================
 
 async def execute_steps_4_6_parallel(
-    ctx: 'WeavingContext',
-    cfg: 'Config',
-    embedder: 'MatryoshkaEmbeddings',
-    memory: Optional[Any] = None,
-    retriever: Optional[Any] = None,
-    complexity: Optional[Any] = None,
-    provenance: Optional[Any] = None,
-    linguistic_gate: Optional[Any] = None,
-    guardrails: Optional['SafetyGuardrails'] = None,
-    multipass_memory_crawl: Optional[Callable] = None,
-    emit_stage_event: Optional[Callable[[int, str, Optional[float]], None]] = None,
-    log: Optional[logging.Logger] = None,
-) -> 'WeavingContext':
+    ctx: WeavingContext,
+    cfg: Config,
+    embedder: MatryoshkaEmbeddings,
+    memory: Any | None = None,
+    retriever: Any | None = None,
+    complexity: Any | None = None,
+    provenance: Any | None = None,
+    linguistic_gate: Any | None = None,
+    guardrails: SafetyGuardrails | None = None,
+    multipass_memory_crawl: Callable | None = None,
+    emit_stage_event: Callable[[int, str, float | None], None] | None = None,
+    log: logging.Logger | None = None,
+) -> WeavingContext:
     """
     Steps 4-6: Parallelized feature extraction, warp tensioning, retrieval.
 
@@ -487,9 +487,9 @@ async def execute_steps_4_6_parallel(
 # ============================================================================
 
 async def execute_step5_5_warp_compute(
-    ctx: 'WeavingContext',
-    log: Optional[logging.Logger] = None,
-) -> 'WeavingContext':
+    ctx: WeavingContext,
+    log: logging.Logger | None = None,
+) -> WeavingContext:
     """
     Step 5.5: WarpSpace Compute Operations.
 
@@ -555,6 +555,34 @@ async def execute_step5_5_warp_compute(
         ctx.add_warning(f"Warp compute failed: {e}")
         ctx.record_timing('warp_compute', 0.0)
 
+    # Step 5.5b: Math Pipeline Analysis (the second door)
+    # All 127 math modules are accessible here via MathPipelineIntegration.
+    # This runs REAL math (not mocks) — inner products, eigenvalues, entropy,
+    # spectral clustering, KL divergence, Thompson Sampling, etc.
+    try:
+        from hololoom.core.warp.math_pipeline_integration import MathPipelineIntegration
+        math_pipeline = MathPipelineIntegration(
+            enabled=True,
+            budget=50,
+            enable_rl=True,
+            enable_composition=False,
+            use_contextual_bandit=True,
+        )
+        math_result = math_pipeline.analyze(
+            query_text=ctx.query or "",
+            query_embedding=query_embedding if isinstance(query_embedding, np.ndarray) and len(query_embedding) > 0 else None,
+            context={"warp_results": ctx.warp_compute_results} if ctx.warp_compute_results else None,
+        )
+        if math_result:
+            ctx.math_pipeline_result = math_result
+            log.info(
+                f"  [5.5b] Math Pipeline: {len(math_result.operations_used)} ops, "
+                f"confidence={math_result.confidence:.2f}, "
+                f"{math_result.execution_time_ms:.1f}ms"
+            )
+    except Exception as e:
+        log.debug(f"  [5.5b] Math Pipeline unavailable: {e}")
+
     return ctx
 
 
@@ -563,11 +591,11 @@ async def execute_step5_5_warp_compute(
 # ============================================================================
 
 async def execute_step6_5_beta_wave_packing(
-    ctx: 'WeavingContext',
-    cfg: 'Config',
-    memory: Optional[Any] = None,
-    log: Optional[logging.Logger] = None,
-) -> 'WeavingContext':
+    ctx: WeavingContext,
+    cfg: Config,
+    memory: Any | None = None,
+    log: logging.Logger | None = None,
+) -> WeavingContext:
     """
     Step 6.5: Beta Wave Context Packing (optional).
 
@@ -601,9 +629,7 @@ async def execute_step6_5_beta_wave_packing(
     step_start = ctx.start_timer()
 
     try:
-        from hololoom.awareness.beta_wave_packer import (
-            BetaWaveContextPacker, TokenBudget
-        )
+        from hololoom.awareness.beta_wave_packer import BetaWaveContextPacker, TokenBudget
 
         # Create token budget from config
         packing_budget = TokenBudget(

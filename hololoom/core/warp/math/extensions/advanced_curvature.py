@@ -19,9 +19,9 @@ Applications:
     - Shape analysis
 """
 
+from collections.abc import Callable
+
 import numpy as np
-from typing import Callable, List, Tuple, Optional, Dict
-from dataclasses import dataclass
 
 
 class SectionalCurvature:
@@ -77,7 +77,7 @@ class SectionalCurvature:
         return numerator / denominator
 
     @staticmethod
-    def constant_curvature_manifolds() -> Dict[str, str]:
+    def constant_curvature_manifolds() -> dict[str, str]:
         """Examples of constant curvature manifolds."""
         return {
             "sphere_S^n": "K = 1/R² (positive constant)",
@@ -195,7 +195,7 @@ class RicciFlowAdvanced:
         r_avg = scalar_curvature  # Simplified
         return -2 * ricci + (2 * r_avg / self.dim) * metric
 
-    def singularity_types(self) -> Dict[str, str]:
+    def singularity_types(self) -> dict[str, str]:
         """Types of singularities in Ricci flow."""
         return {
             "Type I": "Curvature blows up at rate ~ 1/(T-t)",
@@ -309,7 +309,7 @@ class GeometricInvariants:
     """
 
     @staticmethod
-    def euler_characteristic() -> Dict[str, int]:
+    def euler_characteristic() -> dict[str, int]:
         """Euler characteristic χ(M) for common surfaces."""
         return {
             "sphere_S2": 2,

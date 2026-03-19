@@ -20,8 +20,7 @@ Applications:
     - Complexity theory
 """
 
-import numpy as np
-from typing import List, Tuple, Dict, Set, Optional, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 
@@ -37,7 +36,7 @@ class Direction(Enum):
 class TuringState:
     """State of Turing machine."""
     state: str
-    tape: List[str]
+    tape: list[str]
     head_position: int
     is_accept: bool = False
     is_reject: bool = False
@@ -50,7 +49,7 @@ class TuringMachine:
     M = (Q, Σ, Γ, δ, q_0, q_accept, q_reject)
     """
 
-    def __init__(self, states: Set[str], alphabet: Set[str], tape_alphabet: Set[str],
+    def __init__(self, states: set[str], alphabet: set[str], tape_alphabet: set[str],
                  transition: Callable, start_state: str, accept_state: str, reject_state: str):
         """
         Args:
@@ -70,7 +69,7 @@ class TuringMachine:
         self.accept_state = accept_state
         self.reject_state = reject_state
 
-    def run(self, input_string: str, max_steps: int = 1000) -> Tuple[bool, List[TuringState]]:
+    def run(self, input_string: str, max_steps: int = 1000) -> tuple[bool, list[TuringState]]:
         """
         Simulate Turing machine on input.
 
@@ -123,7 +122,7 @@ class TuringMachine:
 
         Example: 101 -> 110
         """
-        def delta(state: str, symbol: str) -> Tuple[str, str, Direction]:
+        def delta(state: str, symbol: str) -> tuple[str, str, Direction]:
             if state == "q0":
                 if symbol == '0' or symbol == '1':
                     return ("q0", symbol, Direction.RIGHT)
@@ -197,7 +196,7 @@ class Decidability:
     """
 
     @staticmethod
-    def decidable_languages() -> List[str]:
+    def decidable_languages() -> list[str]:
         """Examples of decidable languages."""
         return [
             "Regular languages (DFA)",
@@ -208,7 +207,7 @@ class Decidability:
         ]
 
     @staticmethod
-    def undecidable_problems() -> List[str]:
+    def undecidable_problems() -> list[str]:
         """Famous undecidable problems."""
         return [
             "Halting problem",
@@ -359,7 +358,7 @@ class ComplexityClasses:
         )
 
     @staticmethod
-    def complexity_hierarchy() -> Dict[str, str]:
+    def complexity_hierarchy() -> dict[str, str]:
         """Complexity class hierarchy."""
         return {
             "P": "Polynomial time (deterministic)",
@@ -412,7 +411,7 @@ class NPCompleteness:
         )
 
     @staticmethod
-    def np_complete_problems() -> List[str]:
+    def np_complete_problems() -> list[str]:
         """Famous NP-complete problems."""
         return [
             "SAT (Boolean satisfiability) - Cook-Levin",
@@ -471,7 +470,7 @@ if __name__ == "__main__":
     # Test 1: Turing machine
     print("\n[Test 1] Turing machine (binary increment)")
     accepted, result = example_turing_machine()
-    print(f"Input: 101 (binary 5)")
+    print("Input: 101 (binary 5)")
     print(f"Output: {result} (expect 110 = binary 6)")
     print(f"Accepted: {accepted}")
 

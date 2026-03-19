@@ -19,9 +19,9 @@ Applications:
     - Transportation networks
 """
 
-import numpy as np
-from typing import List, Tuple, Dict, Optional
 from collections import defaultdict, deque
+
+import numpy as np
 
 
 class LinearProgramming:
@@ -32,7 +32,7 @@ class LinearProgramming:
     """
 
     @staticmethod
-    def solve_2d_graphical(c: np.ndarray, A: np.ndarray, b: np.ndarray) -> Tuple[np.ndarray, float]:
+    def solve_2d_graphical(c: np.ndarray, A: np.ndarray, b: np.ndarray) -> tuple[np.ndarray, float]:
         """
         Solve 2D LP graphically (enumerate vertices).
 
@@ -165,7 +165,7 @@ class NetworkFlows:
 
         return max_flow_value
 
-    def min_cut(self, source: int, sink: int) -> Tuple[int, List[Tuple[int, int]]]:
+    def min_cut(self, source: int, sink: int) -> tuple[int, list[tuple[int, int]]]:
         """
         Minimum s-t cut (max-flow min-cut theorem).
 
@@ -197,7 +197,7 @@ class IntegerProgramming:
 
     @staticmethod
     def branch_and_bound(c: np.ndarray, A: np.ndarray, b: np.ndarray,
-                        depth: int = 0, max_depth: int = 10) -> Tuple[Optional[np.ndarray], float]:
+                        depth: int = 0, max_depth: int = 10) -> tuple[np.ndarray | None, float]:
         """
         Branch and bound for integer LP (simplified).
 
@@ -232,7 +232,7 @@ class Scheduling:
     """
 
     @staticmethod
-    def earliest_deadline_first(jobs: List[Tuple[int, int]]) -> List[int]:
+    def earliest_deadline_first(jobs: list[tuple[int, int]]) -> list[int]:
         """
         EDF scheduling: minimize maximum lateness.
 
@@ -291,7 +291,7 @@ class DynamicProgramming:
     """
 
     @staticmethod
-    def knapsack_01(values: np.ndarray, weights: np.ndarray, capacity: int) -> Tuple[float, List[int]]:
+    def knapsack_01(values: np.ndarray, weights: np.ndarray, capacity: int) -> tuple[float, list[int]]:
         """
         0-1 knapsack problem: maximize value subject to weight constraint.
 
@@ -345,7 +345,7 @@ class InventoryTheory:
     """
 
     @staticmethod
-    def eoq(demand_rate: float, order_cost: float, holding_cost: float) -> Tuple[float, float]:
+    def eoq(demand_rate: float, order_cost: float, holding_cost: float) -> tuple[float, float]:
         """
         Economic Order Quantity: optimal batch size.
 

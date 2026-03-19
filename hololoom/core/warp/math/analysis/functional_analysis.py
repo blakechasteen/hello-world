@@ -31,10 +31,10 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Any, Callable, List, Tuple, Optional, Union
-from dataclasses import dataclass
 import logging
+from collections.abc import Callable
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class NormedSpace:
     Banach space if complete (all Cauchy sequences converge).
     """
 
-    def __init__(self, elements: Optional[List] = None, norm: Optional[Callable] = None, name: str = "X"):
+    def __init__(self, elements: list | None = None, norm: Callable | None = None, name: str = "X"):
         self.elements = elements or []
         self.norm = norm or self._l2_norm
         self.name = name
@@ -82,13 +82,13 @@ class NormedSpace:
 
         return None  # Cannot determine in general
 
-    def unit_ball(self) -> List:
+    def unit_ball(self) -> list:
         """Return elements in closed unit ball B̄ = {x : ||x|| ≤ 1}"""
         if not self.elements:
             return []
         return [x for x in self.elements if self.norm(x) <= 1.0]
 
-    def unit_sphere(self) -> List:
+    def unit_sphere(self) -> list:
         """Return elements on unit sphere S = {x : ||x|| = 1}"""
         if not self.elements:
             return []
@@ -107,8 +107,8 @@ class HilbertSpace:
     """
 
     def __init__(self,
-                 elements: Optional[List] = None,
-                 inner_product: Optional[Callable] = None,
+                 elements: list | None = None,
+                 inner_product: Callable | None = None,
                  name: str = "H"):
         self.elements = elements or []
         self.inner_product = inner_product or self._standard_inner_product
@@ -149,7 +149,7 @@ class HilbertSpace:
         """Check if ⟨x,y⟩ = 0"""
         return abs(self.inner_product(x, y)) < tolerance
 
-    def gram_schmidt(self, vectors: List) -> List:
+    def gram_schmidt(self, vectors: list) -> list:
         """
         Gram-Schmidt orthogonalization.
 
@@ -171,7 +171,7 @@ class HilbertSpace:
 
         return orthonormal
 
-    def projection_onto_subspace(self, x, basis: List) -> np.ndarray:
+    def projection_onto_subspace(self, x, basis: list) -> np.ndarray:
         """
         Project x onto subspace spanned by orthonormal basis.
 
@@ -329,7 +329,7 @@ class SpectralAnalyzer:
     """
 
     @staticmethod
-    def eigendecomposition(operator_matrix: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def eigendecomposition(operator_matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Compute eigendecomposition for finite-dimensional operator.
 
@@ -345,7 +345,7 @@ class SpectralAnalyzer:
         return eigenvalues, eigenvectors
 
     @staticmethod
-    def spectral_decomposition(operator_matrix: np.ndarray) -> Tuple[List[float], List[np.ndarray]]:
+    def spectral_decomposition(operator_matrix: np.ndarray) -> tuple[list[float], list[np.ndarray]]:
         """
         Spectral theorem: T = Σ λᵢ Pᵢ where Pᵢ are projection operators.
 
@@ -376,7 +376,7 @@ class SpectralAnalyzer:
             return None
 
     @staticmethod
-    def spectrum(operator_matrix: np.ndarray) -> List[complex]:
+    def spectrum(operator_matrix: np.ndarray) -> list[complex]:
         """
         Compute spectrum (set of eigenvalues).
         """
@@ -420,7 +420,7 @@ class SobolevSpace:
         logger.info(f"Sobolev space W^{order},{p}(R^{domain_dim})")
 
     def sobolev_norm(self, function_values: np.ndarray,
-                     derivatives: List[np.ndarray],
+                     derivatives: list[np.ndarray],
                      grid_spacing: float = 1.0) -> float:
         """
         Compute Sobolev norm ||u||_{W^{k,p}}.
@@ -438,7 +438,7 @@ class SobolevSpace:
 
     def weak_derivative(self,
                        function_values: np.ndarray,
-                       test_functions: List[np.ndarray],
+                       test_functions: list[np.ndarray],
                        grid_spacing: float = 1.0) -> np.ndarray:
         """
         Compute weak derivative via integration by parts.
@@ -497,7 +497,7 @@ class CompactOperator:
         return rank < min(operator_matrix.shape)
 
     @staticmethod
-    def singular_value_decomposition(operator_matrix: np.ndarray) -> Tuple:
+    def singular_value_decomposition(operator_matrix: np.ndarray) -> tuple:
         """
         SVD: T = UΣV* for compact operators.
 

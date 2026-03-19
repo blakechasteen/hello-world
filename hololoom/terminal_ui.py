@@ -21,42 +21,32 @@ Usage:
 
 import asyncio
 import time
-from typing import Dict, List, Optional, Any
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
-from rich.live import Live
-from rich.layout import Layout
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
-from rich.syntax import Syntax
-from rich.markdown import Markdown
-from rich.tree import Tree
-from rich.prompt import Prompt, Confirm
 from rich import box
-from rich.text import Text
+from rich.console import Console
+from rich.layout import Layout
+from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
+from rich.prompt import Confirm, Prompt
+from rich.table import Table
+from rich.tree import Tree
 
-from hololoom.weaving_orchestrator import WeavingOrchestrator, Query
 from hololoom.loom.command import PatternCard
 from hololoom.protocols import ComplexityLevel, ProvenanceTrace
+from hololoom.weaving_orchestrator import Query, WeavingOrchestrator
 
 # Awareness layer imports (graceful degradation if not available)
 try:
     from hololoom.awareness.compositional_awareness import (
         CompositionalAwarenessLayer,
         UnifiedAwarenessContext,
-        format_awareness_for_prompt
+        format_awareness_for_prompt,
     )
-    from hololoom.awareness.dual_stream import (
-        DualStreamGenerator,
-        DualStreamResponse
-    )
-    from hololoom.awareness.meta_awareness import (
-        MetaAwarenessLayer,
-        SelfReflectionResult
-    )
+    from hololoom.awareness.dual_stream import DualStreamGenerator, DualStreamResponse
+    from hololoom.awareness.meta_awareness import MetaAwarenessLayer, SelfReflectionResult
     AWARENESS_AVAILABLE = True
 except ImportError:
     AWARENESS_AVAILABLE = False
@@ -75,12 +65,12 @@ class ConversationEntry:
     response: str
     confidence: float
     duration_ms: float
-    trace: Optional[ProvenanceTrace] = None
+    trace: ProvenanceTrace | None = None
 
     # Awareness context (optional)
-    awareness_context: Optional[Any] = None
-    dual_stream: Optional[Any] = None
-    meta_reflection: Optional[Any] = None
+    awareness_context: Any | None = None
+    dual_stream: Any | None = None
+    meta_reflection: Any | None = None
 
 
 class TerminalUI:
@@ -93,10 +83,10 @@ class TerminalUI:
     - Conversation history
     - Detailed trace exploration
     """
-    
+
     def __init__(
         self,
-        orchestrator: Optional[WeavingOrchestrator] = None,
+        orchestrator: WeavingOrchestrator | None = None,
         enable_awareness: bool = True
     ):
         """
@@ -108,7 +98,7 @@ class TerminalUI:
         """
         self.console = Console()
         self.orchestrator = orchestrator
-        self.conversation_history: List[ConversationEntry] = []
+        self.conversation_history: list[ConversationEntry] = []
 
         # Awareness layer integration
         self.enable_awareness = enable_awareness and AWARENESS_AVAILABLE
@@ -127,19 +117,26 @@ class TerminalUI:
                 self.console.print(f"[yellow]⚠ Awareness disabled: {e}[/]")
                 self.enable_awareness = False
 
-        # Stage names for progress display
-        self.stages = [
-            ("1", "Loom Command", "Pattern selection"),
-            ("2", "Chrono Trigger", "Temporal window"),
-            ("3", "Yarn Graph", "Thread selection"),
-            ("4", "Resonance Shed", "Feature extraction"),
-            ("5", "Warp Space", "Tensor manifold"),
-            ("6", "Memory Crawl", "Multipass retrieval"),
-            ("7", "Convergence", "Decision engine"),
-            ("8", "Tool Execution", "Action execution"),
-            ("9", "Spacetime", "Result synthesis"),
-        ]
-    
+        # Stage names for progress display — sourced from canonical registry
+        try:
+            from hololoom.core.orchestrator.stages import WEAVING_STAGES
+            self.stages = [
+                (str(s["id"]), str(s["name"]), str(s["description"]))
+                for s in WEAVING_STAGES
+            ]
+        except ImportError:
+            self.stages = [
+                ("1", "Loom Command", "Complexity mode selection"),
+                ("2", "Chrono Trigger", "Temporal window setup"),
+                ("3", "Yarn Graph", "Memory node activation"),
+                ("4", "Resonance Shed", "Feature extraction"),
+                ("5", "Warp Space", "Similarity ranking"),
+                ("6", "Memory Crawl", "Multi-pass retrieval"),
+                ("7", "Convergence Engine", "Decision collapse"),
+                ("8", "Tool Execution", "Action execution"),
+                ("9", "Spacetime Fabric", "Result synthesis"),
+            ]
+
     def print_banner(self):
         """Display HoloLoom banner"""
         banner = """
@@ -149,7 +146,7 @@ class TerminalUI:
 [bold cyan]╚═══════════════════════════════════════════════════════════════╝[/]
 """
         self.console.print(banner)
-    
+
     def show_pattern_selection_menu(self) -> PatternCard:
         """
         Interactive pattern card selection.
@@ -158,31 +155,31 @@ class TerminalUI:
             Selected PatternCard
         """
         self.console.print("\n[bold]Select Pattern Card:[/]\n")
-        
+
         patterns = {
             "1": (PatternCard.BARE, "LITE complexity", "50ms", "Greetings, simple commands"),
             "2": (PatternCard.FAST, "FAST complexity", "150ms", "Standard queries, questions"),
             "3": (PatternCard.FUSED, "FULL complexity", "300ms", "Detailed analysis, research"),
         }
-        
+
         table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
         table.add_column("#", style="cyan", width=3)
         table.add_column("Pattern", style="bold")
         table.add_column("Complexity", style="yellow")
         table.add_column("Target", style="green")
         table.add_column("Best For", style="dim")
-        
+
         for key, (pattern, complexity, target, use_case) in patterns.items():
             table.add_row(key, pattern.value.upper(), complexity, target, use_case)
-        
+
         self.console.print(table)
-        
+
         choice = Prompt.ask(
             "\n[bold cyan]Choose pattern[/]",
             choices=["1", "2", "3", "auto"],
             default="auto"
         )
-        
+
         if choice == "auto":
             self.console.print("[dim]Using automatic complexity detection[/]")
             return None
@@ -190,11 +187,11 @@ class TerminalUI:
             pattern = patterns[choice][0]
             self.console.print(f"[green]Selected: {pattern.value.upper()}[/]")
             return pattern
-    
+
     async def weave_with_display(
         self,
         query: str,
-        pattern: Optional[PatternCard] = None,
+        pattern: PatternCard | None = None,
         show_trace: bool = True
     ) -> Any:
         """
@@ -209,10 +206,10 @@ class TerminalUI:
             Spacetime result from weaving
         """
         start_time = time.perf_counter()
-        
+
         # Create query object
         query_obj = Query(text=query)
-        
+
         # Progress display - show spinner during weaving
         with Progress(
             SpinnerColumn(),
@@ -257,12 +254,12 @@ class TerminalUI:
                     if key not in ('parallel_speedup',):  # Skip non-timing fields
                         name = stage_name_map.get(key, key)
                         self.console.print(f"  [dim]•[/] {name}: [cyan]{duration:.1f}ms[/]")
-        
+
         duration_ms = (time.perf_counter() - start_time) * 1000
-        
+
         # Display result
         self._display_result(result, duration_ms)
-        
+
         # Store in history
         entry = ConversationEntry(
             timestamp=datetime.now(),
@@ -275,20 +272,20 @@ class TerminalUI:
             trace=result.trace if hasattr(result, 'trace') else None
         )
         self.conversation_history.append(entry)
-        
+
         # Show trace if requested
         if show_trace and hasattr(result, 'trace'):
             self.show_trace(result.trace)
-        
+
         return result
-    
+
     def _display_result(self, result: Any, duration_ms: float):
         """Display weaving result in a panel"""
         # Extract key information
         answer = result.answer if hasattr(result, 'answer') else str(result)
         confidence = result.confidence if hasattr(result, 'confidence') else 0.0
         complexity = result.complexity.name if hasattr(result, 'complexity') else "UNKNOWN"
-        
+
         # Build result display
         result_text = f"""
 [bold]Answer:[/] {answer}
@@ -298,7 +295,7 @@ class TerminalUI:
   • Confidence: [{'green' if confidence > 0.7 else 'yellow' if confidence > 0.5 else 'red'}]{'✓ HIGH' if confidence > 0.7 else '⚠ MED' if confidence > 0.5 else '✗ LOW'} {confidence:.2%}[/]
   • Duration: [cyan]{duration_ms:.1f}ms[/]
 """
-        
+
         panel = Panel(
             result_text.strip(),
             title="[bold green]Weaving Complete[/]",
@@ -306,7 +303,7 @@ class TerminalUI:
             box=box.DOUBLE
         )
         self.console.print("\n", panel)
-    
+
     def show_trace(self, trace: ProvenanceTrace):
         """
         Display detailed provenance trace.
@@ -500,7 +497,7 @@ class TerminalUI:
     async def weave_with_awareness(
         self,
         query: str,
-        pattern: Optional[PatternCard] = None,
+        pattern: PatternCard | None = None,
         show_awareness_live: bool = False
     ) -> Any:
         """
@@ -611,23 +608,23 @@ class TerminalUI:
         if not self.conversation_history:
             self.console.print("[yellow]No conversation history yet[/]")
             return
-        
+
         self.console.print(f"\n[bold]Conversation History[/] [dim](last {limit})[/]\n")
-        
+
         table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
         table.add_column("Time", style="cyan", width=8)
         table.add_column("Query", style="white", width=40)
         table.add_column("Complexity", style="yellow", width=12)
         table.add_column("Confidence", style="green", width=10)
         table.add_column("Duration", style="blue", width=10)
-        
+
         for entry in self.conversation_history[-limit:]:
             time_str = entry.timestamp.strftime("%H:%M:%S")
             query_str = entry.query[:37] + "..." if len(entry.query) > 40 else entry.query
             complexity_str = entry.complexity.name
             confidence_str = f"{entry.confidence:.1%}"
             duration_str = f"{entry.duration_ms:.1f}ms"
-            
+
             table.add_row(
                 time_str,
                 query_str,
@@ -635,25 +632,25 @@ class TerminalUI:
                 confidence_str,
                 duration_str
             )
-        
+
         self.console.print(table)
-    
+
     def show_stats(self):
         """Display session statistics"""
         if not self.conversation_history:
             self.console.print("[yellow]No statistics available yet[/]")
             return
-        
+
         total_queries = len(self.conversation_history)
         avg_duration = sum(e.duration_ms for e in self.conversation_history) / total_queries
         avg_confidence = sum(e.confidence for e in self.conversation_history) / total_queries
-        
+
         # Count by complexity
         complexity_counts = {}
         for entry in self.conversation_history:
             level = entry.complexity.name
             complexity_counts[level] = complexity_counts.get(level, 0) + 1
-        
+
         stats_text = f"""
 [bold]Session Statistics:[/]
 
@@ -666,7 +663,7 @@ Average Confidence: [{'green' if avg_confidence > 0.7 else 'yellow'}]{'✓ HIGH'
         for level, count in sorted(complexity_counts.items()):
             pct = (count / total_queries) * 100
             stats_text += f"  • {level}: [cyan]{count}[/] [dim]({pct:.0f}%)[/]\n"
-        
+
         panel = Panel(
             stats_text.strip(),
             title="[bold blue]Performance Metrics[/]",
@@ -674,39 +671,39 @@ Average Confidence: [{'green' if avg_confidence > 0.7 else 'yellow'}]{'✓ HIGH'
             box=box.ROUNDED
         )
         self.console.print("\n", panel)
-    
+
     async def interactive_session(self):
         """
         Run interactive Q&A session with rich UI.
         """
         self.print_banner()
-        
+
         # Pattern selection
         use_pattern = Confirm.ask(
             "\n[bold]Use specific pattern card?[/]",
             default=False
         )
-        
+
         pattern = None
         if use_pattern:
             pattern = self.show_pattern_selection_menu()
-        
+
         commands_help = "[dim]Commands: 'quit', 'history', 'stats'"
         if self.enable_awareness:
             commands_help += ", 'awareness' (show last awareness context)"
         commands_help += "[/]\n"
         self.console.print("\n", commands_help)
-        
+
         while True:
             try:
                 # Get query
                 query = Prompt.ask("\n[bold cyan]>[/]")
-                
+
                 if not query:
                     continue
-                
+
                 query_lower = query.lower().strip()
-                
+
                 # Handle special commands
                 if query_lower in ('quit', 'exit', 'q'):
                     self.console.print("[yellow]Goodbye![/]")
@@ -724,13 +721,13 @@ Average Confidence: [{'green' if avg_confidence > 0.7 else 'yellow'}]{'✓ HIGH'
                 elif query_lower == 'awareness' and self.enable_awareness:
                     self._show_last_awareness()
                     continue
-                
+
                 # Execute weaving (awareness mode if enabled)
                 if self.enable_awareness:
                     await self.weave_with_awareness(query, pattern=pattern, show_awareness_live=False)
                 else:
                     await self.weave_with_display(query, pattern=pattern, show_trace=False)
-                
+
             except KeyboardInterrupt:
                 self.console.print("\n[yellow]Session interrupted. Type 'quit' to exit.[/]")
             except Exception as e:
@@ -742,14 +739,14 @@ Average Confidence: [{'green' if avg_confidence > 0.7 else 'yellow'}]{'✓ HIGH'
 async def main():
     """Demo of terminal UI"""
     from hololoom.config import Config
-    
+
     # Create orchestrator
     config = Config.fast()
     orchestrator = WeavingOrchestrator(cfg=config)
-    
+
     # Create UI
     ui = TerminalUI(orchestrator)
-    
+
     # Run interactive session
     await ui.interactive_session()
 

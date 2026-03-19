@@ -36,17 +36,15 @@ Phase: Unified Physics (Integration of Phases 1-4)
 
 from __future__ import annotations
 
-import asyncio
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 # Import all physics engines
 from .gradient_flow import GradientFlowEngine, RouteDecision, Target
 from .multi_physics_packer import MultiPhysicsPacker, MultiPhysicsResult
-from .thermodynamics import ThermodynamicOptimizer, EnergyCalculator
-from .wave_mechanics import WaveMechanicsEngine, InterferencePattern, ResonancePattern
-
+from .thermodynamics import EnergyCalculator, ThermodynamicOptimizer
+from .wave_mechanics import InterferencePattern, ResonancePattern, WaveMechanicsEngine
 
 # ============================================================================
 # Unified Physics Result
@@ -57,22 +55,22 @@ class UnifiedPhysicsResult:
     """Result from unified physics processing."""
 
     # Phase 1: Gradient Flow Routing
-    routing_decision: Optional[RouteDecision] = None
+    routing_decision: RouteDecision | None = None
     routing_loss: float = 0.0
 
     # Phase 2: Fluid Dynamics Context Packing
-    packing_result: Optional[MultiPhysicsResult] = None
+    packing_result: MultiPhysicsResult | None = None
     context_efficiency: float = 0.0
 
     # Phase 3: Thermodynamics Action Selection
-    selected_action: Optional[str] = None
+    selected_action: str | None = None
     exploration_temperature: float = 1.0
     free_energy: float = 0.0
 
     # Phase 4: Wave Mechanics Pattern Detection
-    constructive_patterns: List[InterferencePattern] = field(default_factory=list)
-    destructive_patterns: List[InterferencePattern] = field(default_factory=list)
-    resonances: List[ResonancePattern] = field(default_factory=list)
+    constructive_patterns: list[InterferencePattern] = field(default_factory=list)
+    destructive_patterns: list[InterferencePattern] = field(default_factory=list)
+    resonances: list[ResonancePattern] = field(default_factory=list)
 
     # Unified metrics
     total_energy: float = 0.0      # Total system energy
@@ -182,10 +180,10 @@ class UnifiedPhysicsEngine:
     async def process(
         self,
         query: str,
-        actions: List[str],
-        action_metrics: Optional[Dict[str, Dict[str, float]]] = None,
-        components: Optional[Dict[str, Any]] = None,
-        graph_structure: Optional[List[Tuple[str, str]]] = None
+        actions: list[str],
+        action_metrics: dict[str, dict[str, float]] | None = None,
+        components: dict[str, Any] | None = None,
+        graph_structure: list[tuple[str, str]] | None = None
     ) -> UnifiedPhysicsResult:
         """
         Process query through all physics layers.
@@ -346,7 +344,7 @@ class UnifiedPhysicsEngine:
 
         return result
 
-    def get_statistics(self) -> Dict:
+    def get_statistics(self) -> dict:
         """Get unified physics statistics."""
         stats = {
             "total_queries": self.total_queries,

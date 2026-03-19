@@ -19,11 +19,11 @@ Key Features:
 Expected improvement: 2-3x better operation selection vs non-contextual TS.
 """
 
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass, field
-from collections import defaultdict
 import logging
+from dataclasses import dataclass, field
+from typing import Any
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -314,7 +314,7 @@ class GaussianLinearBandit:
             weights = self.mu + np.random.randn(self.dim) * np.sqrt(np.abs(diag_var))
             return weights
 
-    def predict_reward(self, context: np.ndarray) -> Tuple[float, float]:
+    def predict_reward(self, context: np.ndarray) -> tuple[float, float]:
         """
         Predict reward with uncertainty.
 
@@ -382,7 +382,7 @@ class FeelGoodThompsonSampling:
     3. Choose arm with highest UCB
     """
 
-    def __init__(self, operations: List[str], dim: int = 470,
+    def __init__(self, operations: list[str], dim: int = 470,
                  exploration_coef: float = 1.0):
         """
         Args:
@@ -402,13 +402,13 @@ class FeelGoodThompsonSampling:
 
         self.t = 0  # time step
 
-        logger.info(f"FeelGoodThompsonSampling initialized")
+        logger.info("FeelGoodThompsonSampling initialized")
         logger.info(f"  Operations: {len(operations)}")
         logger.info(f"  Context dim: {dim}")
         logger.info(f"  Exploration: {exploration_coef}")
 
     def select_operation(self, context: np.ndarray,
-                        candidates: List[str] = None) -> Tuple[str, Dict[str, Any]]:
+                        candidates: list[str] = None) -> tuple[str, dict[str, Any]]:
         """
         Select operation using FGTS.
 
@@ -474,7 +474,7 @@ class FeelGoodThompsonSampling:
         """
         self.bandits[operation].update(context, reward)
 
-    def get_stats(self, operation: str = None) -> Dict[str, Any]:
+    def get_stats(self, operation: str = None) -> dict[str, Any]:
         """Get statistics for operation(s)."""
         if operation:
             bandit = self.bandits[operation]
@@ -504,7 +504,7 @@ class ContextualOperationSelector:
     - Bayesian updates: (Context, Reward) → Better future selections
     """
 
-    def __init__(self, operations: List[str], exploration_coef: float = 1.0):
+    def __init__(self, operations: list[str], exploration_coef: float = 1.0):
         self.context_extractor = ContextExtractor()
         self.fgts = FeelGoodThompsonSampling(
             operations=operations,
@@ -512,13 +512,13 @@ class ContextualOperationSelector:
             exploration_coef=exploration_coef
         )
 
-        logger.info(f"ContextualOperationSelector initialized")
+        logger.info("ContextualOperationSelector initialized")
         logger.info(f"  Operations: {len(operations)}")
-        logger.info(f"  Context dim: 470")
-        logger.info(f"  Algorithm: Feel-Good Thompson Sampling")
+        logger.info("  Context dim: 470")
+        logger.info("  Algorithm: Feel-Good Thompson Sampling")
 
     def select(self, query_text: str, intent: str = None,
-              candidates: List[str] = None, **kwargs) -> Tuple[str, Dict[str, Any]]:
+              candidates: list[str] = None, **kwargs) -> tuple[str, dict[str, Any]]:
         """
         Select operation based on context.
 
@@ -574,7 +574,7 @@ class ContextualOperationSelector:
         # Update history
         self.context_extractor.update_history(operation, intent, cost, reward)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get statistics."""
         return {
             "fgts_stats": self.fgts.get_stats(),

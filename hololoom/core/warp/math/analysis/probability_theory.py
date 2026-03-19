@@ -28,11 +28,12 @@ Author: HoloLoom Team
 Date: 2025-10-26
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Union
-from dataclasses import dataclass
-from scipy import stats
 import logging
+from collections.abc import Callable
+from dataclasses import dataclass
+
+import numpy as np
+from scipy import stats
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class ProbabilitySpace:
     - P: Probability measure (P(Ω) = 1)
     """
 
-    def __init__(self, outcomes: List, probabilities: Optional[List[float]] = None):
+    def __init__(self, outcomes: list, probabilities: list[float] | None = None):
         """
         Initialize discrete probability space.
 
@@ -72,7 +73,7 @@ class ProbabilitySpace:
         self.probabilities = {outcome: p for outcome, p in zip(outcomes, probabilities)}
         logger.info(f"Probability space with {n} outcomes")
 
-    def probability(self, event: Union[List, set]) -> float:
+    def probability(self, event: list | set) -> float:
         """
         Compute P(event) for a subset of outcomes.
         """
@@ -82,7 +83,7 @@ class ProbabilitySpace:
                 prob += self.probabilities[outcome]
         return prob
 
-    def sample(self, size: int = 1) -> List:
+    def sample(self, size: int = 1) -> list:
         """
         Sample from the probability space.
         """
@@ -103,11 +104,11 @@ class Distribution:
     Probability distribution specification.
     """
     name: str
-    pdf: Optional[Callable[[float], float]] = None
-    cdf: Optional[Callable[[float], float]] = None
-    mean: Optional[float] = None
-    variance: Optional[float] = None
-    support: Optional[Tuple[float, float]] = None
+    pdf: Callable[[float], float] | None = None
+    cdf: Callable[[float], float] | None = None
+    mean: float | None = None
+    variance: float | None = None
+    support: tuple[float, float] | None = None
 
 
 class RandomVariable:
@@ -122,8 +123,8 @@ class RandomVariable:
         self,
         distribution: Distribution,
         discrete: bool = False,
-        values: Optional[np.ndarray] = None,
-        probabilities: Optional[np.ndarray] = None
+        values: np.ndarray | None = None,
+        probabilities: np.ndarray | None = None
     ):
         """
         Initialize random variable.
@@ -167,7 +168,7 @@ class RandomVariable:
             else:
                 raise NotImplementedError(f"Sampling for {self.distribution.name} not implemented")
 
-    def expectation(self, g: Optional[Callable[[float], float]] = None) -> float:
+    def expectation(self, g: Callable[[float], float] | None = None) -> float:
         """
         Compute E[g(X)].
 
@@ -324,7 +325,7 @@ class LimitTheorems:
         rv: RandomVariable,
         n_samples: int = 1000,
         n_trials: int = 100
-    ) -> Tuple[bool, float]:
+    ) -> tuple[bool, float]:
         """
         Verify Weak Law of Large Numbers empirically.
 
@@ -353,7 +354,7 @@ class LimitTheorems:
         rv: RandomVariable,
         n_samples: int = 100,
         n_trials: int = 1000
-    ) -> Tuple[bool, np.ndarray]:
+    ) -> tuple[bool, np.ndarray]:
         """
         Verify Central Limit Theorem empirically.
 
@@ -395,7 +396,7 @@ class MaximumLikelihoodEstimation:
     """
 
     @staticmethod
-    def mle_normal(data: np.ndarray) -> Tuple[float, float]:
+    def mle_normal(data: np.ndarray) -> tuple[float, float]:
         """
         MLE for normal distribution parameters.
 
@@ -436,7 +437,7 @@ class BayesianInference:
         trials: int,
         prior_alpha: float = 1,
         prior_beta: float = 1
-    ) -> Tuple[float, float, Callable[[float], float]]:
+    ) -> tuple[float, float, Callable[[float], float]]:
         """
         Beta-Binomial conjugate pair.
 
@@ -466,7 +467,7 @@ class BayesianInference:
         prior_mu: float,
         prior_sigma2: float,
         likelihood_sigma2: float
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Normal-Normal conjugate pair (known variance).
 
@@ -506,7 +507,7 @@ class HypothesisTesting:
         data: np.ndarray,
         null_mean: float,
         alpha: float = 0.05
-    ) -> Tuple[bool, float, float]:
+    ) -> tuple[bool, float, float]:
         """
         One-sample t-test.
 
@@ -527,7 +528,7 @@ class HypothesisTesting:
         data1: np.ndarray,
         data2: np.ndarray,
         alpha: float = 0.05
-    ) -> Tuple[bool, float, float]:
+    ) -> tuple[bool, float, float]:
         """
         Two-sample t-test (independent samples).
 
@@ -548,7 +549,7 @@ class HypothesisTesting:
         observed: np.ndarray,
         expected: np.ndarray,
         alpha: float = 0.05
-    ) -> Tuple[bool, float, float]:
+    ) -> tuple[bool, float, float]:
         """
         Chi-square goodness of fit test.
 
@@ -576,7 +577,7 @@ class MarkovChain:
     State space S, transition matrix P where P[i,j] = P(X_{n+1}=j | X_n=i)
     """
 
-    def __init__(self, transition_matrix: np.ndarray, states: Optional[List] = None):
+    def __init__(self, transition_matrix: np.ndarray, states: list | None = None):
         """
         Initialize Markov chain.
 
@@ -598,7 +599,7 @@ class MarkovChain:
 
         logger.info(f"Markov chain with {n} states")
 
-    def simulate(self, initial_state: int, n_steps: int) -> List[int]:
+    def simulate(self, initial_state: int, n_steps: int) -> list[int]:
         """
         Simulate Markov chain for n_steps.
 

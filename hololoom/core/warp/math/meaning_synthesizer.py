@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Mathematical Meaning Synthesizer
 =================================
@@ -28,16 +27,17 @@ Date: 2025-10-26
 """
 
 import logging
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
+from typing import Any
+
 import numpy as np
 
 try:
-    from .smart_operation_selector import SmartMathOperationSelector, OperationPlan
-    from .operation_selector import QueryIntent, MathOperation
+    from .operation_selector import MathOperation, QueryIntent
+    from .smart_operation_selector import OperationPlan, SmartMathOperationSelector
 except ImportError:
-    from smart_operation_selector import SmartMathOperationSelector, OperationPlan
-    from operation_selector import QueryIntent, MathOperation
+    from operation_selector import QueryIntent
+    from smart_operation_selector import OperationPlan, SmartMathOperationSelector
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class MeaningTemplates:
     """
 
     @staticmethod
-    def get_templates() -> Dict[str, MeaningTemplate]:
+    def get_templates() -> dict[str, MeaningTemplate]:
         """Get all meaning templates."""
         templates = {}
 
@@ -224,11 +224,11 @@ class MeaningResult:
         provenance: Complete computational trace
     """
     summary: str
-    details: List[str]
-    key_insights: List[str]
-    recommendations: List[str] = field(default_factory=list)
+    details: list[str]
+    key_insights: list[str]
+    recommendations: list[str] = field(default_factory=list)
     confidence: float = 1.0
-    provenance: Dict[str, Any] = field(default_factory=dict)
+    provenance: dict[str, Any] = field(default_factory=dict)
 
     def to_text(self, style: str = "concise") -> str:
         """
@@ -323,7 +323,7 @@ class MeaningSynthesizer:
             use_data_understanding: Enable 5-stage NLG pipeline with data understanding
         """
         self.templates = MeaningTemplates.get_templates()
-        self.synthesis_history: List[MeaningResult] = []
+        self.synthesis_history: list[MeaningResult] = []
 
         # Data understanding layer (5-stage NLG pipeline)
         self.use_data_understanding = use_data_understanding
@@ -346,10 +346,10 @@ class MeaningSynthesizer:
 
     def synthesize(
         self,
-        results: Dict[str, Any],
+        results: dict[str, Any],
         intent: QueryIntent,
         plan: OperationPlan,
-        context: Optional[Dict] = None
+        context: dict | None = None
     ) -> MeaningResult:
         """
         Synthesize natural language meaning from mathematical results.
@@ -376,7 +376,7 @@ class MeaningSynthesizer:
                     logger.warning(f"Failed to enhance {op_name}: {e}")
                     enhanced_results[op_name] = None
         else:
-            enhanced_results = {k: None for k in results.keys()}
+            enhanced_results = dict.fromkeys(results.keys())
 
         # Generate detail explanations (using enhanced results if available)
         details = []
@@ -436,7 +436,7 @@ class MeaningSynthesizer:
     def _generate_summary(
         self,
         intent: QueryIntent,
-        results: Dict[str, Any],
+        results: dict[str, Any],
         plan: OperationPlan
     ) -> str:
         """Generate high-level summary based on intent."""
@@ -480,9 +480,9 @@ class MeaningSynthesizer:
 
     def _extract_insights(
         self,
-        results: Dict[str, Any],
+        results: dict[str, Any],
         intent: QueryIntent
-    ) -> List[str]:
+    ) -> list[str]:
         """Extract key insights from results."""
         insights = []
 
@@ -525,10 +525,10 @@ class MeaningSynthesizer:
 
     def _extract_insights_enhanced(
         self,
-        results: Dict[str, Any],
+        results: dict[str, Any],
         intent: QueryIntent,
-        enhanced_results: Dict[str, Any]
-    ) -> List[str]:
+        enhanced_results: dict[str, Any]
+    ) -> list[str]:
         """
         Extract key insights using data understanding layer.
 
@@ -564,10 +564,10 @@ class MeaningSynthesizer:
 
     def _generate_recommendations(
         self,
-        results: Dict[str, Any],
+        results: dict[str, Any],
         intent: QueryIntent,
         plan: OperationPlan
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate actionable recommendations."""
         recommendations = []
 
@@ -604,7 +604,7 @@ class MeaningSynthesizer:
 
     def _compute_confidence(
         self,
-        results: Dict[str, Any],
+        results: dict[str, Any],
         plan: OperationPlan
     ) -> float:
         """Compute confidence in the meaning."""
@@ -683,7 +683,7 @@ class CompleteMathMeaningPipeline:
     def process(
         self,
         query: str,
-        context: Optional[Dict] = None,
+        context: dict | None = None,
         budget: int = 50,
         style: str = "detailed"
     ) -> MeaningResult:
@@ -748,7 +748,7 @@ class CompleteMathMeaningPipeline:
 
         return meaning
 
-    def _generate_mock_results(self, operation: str) -> Dict[str, Any]:
+    def _generate_mock_results(self, operation: str) -> dict[str, Any]:
         """Generate mock results for demo (would be actual results in production)."""
         if operation == "inner_product":
             return {"similarities": [0.85, 0.72, 0.68, 0.55, 0.42], "success": True}

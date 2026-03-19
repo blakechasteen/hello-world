@@ -1,22 +1,23 @@
 """
-Vault Bridge — Read-only search + federation write for Promptly.
+Vault Bridge — Search + federation write for Promptly.
 
 Gives Promptly direct filesystem access to Blake's PARA vault for context,
 and federation protocol access for proposing notes to the inbox.
 
 Read path: keyword search + file read (no external dependencies)
-Write path: propose_note() drops into 00_Inbox/{agent}/
+Write path: propose_note() drops into 00_Inbox/{agent}/ or departments/{dept}/inbox/{agent}/
 Federation v2: quality scoring, promotion tracking, adaptive frequency.
+Department support: multi-tier promotion (dept inbox → dept PARA → vault inbox).
 """
 
 import logging
 import os
 import re
+import shutil
 import sqlite3
 import uuid
 from datetime import date, datetime
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,11 @@ VAULT_ROOT = Path(
 SKIP_DIRS = {
     ".git", ".obsidian", ".claude", ".vault_cache", "__pycache__",
     "node_modules", ".venv", "vault_mcp", "components", "services",
+    "scratch",  # department worker ephemeral output
 }
+
+# Department name validation: lowercase, alphanumeric + hyphens, 1-32 chars
+DEPT_NAME_RE = re.compile(r'^[a-z][a-z0-9-]{0,31}$')
 
 SKIP_FILES = {"notes_app.py", "db_handler.py", "setup_schema.py", "requirements.txt"}
 
@@ -106,7 +111,7 @@ def search(query: str, top_k: int = 5) -> list[dict]:
     return scored[:top_k]
 
 
-def read_note(rel_path: str) -> Optional[str]:
+def read_note(rel_path: str) -> str | None:
     """Read a vault note by relative path. Returns None if not found."""
     if not _is_available():
         return None
@@ -125,7 +130,7 @@ def read_note(rel_path: str) -> Optional[str]:
     return full.read_text(encoding="utf-8", errors="replace")
 
 
-def list_notes(section: Optional[str] = None) -> list[dict]:
+def list_notes(section: str | None = None) -> list[dict]:
     """List vault notes, optionally filtered by PARA section."""
     if not _is_available():
         return []
@@ -148,20 +153,23 @@ def list_notes(section: Optional[str] = None) -> list[dict]:
 def propose_note(
     title: str,
     content: str,
-    links: Optional[list[str]] = None,
+    links: list[str] | None = None,
     agent: str = "promptly",
+    department: str | None = None,
 ) -> dict:
-    """Propose a note to the vault inbox via federation protocol.
+    """Propose a note to the vault inbox (or department inbox) via federation protocol.
 
-    Writes to 00_Inbox/{agent}/ for human review and promotion.
-    Follows vault conventions: claim-style titles, substantive content,
-    wiki links woven into prose.
+    When department is None: writes to 00_Inbox/{agent}/ (original behavior).
+    When department is set: writes to departments/{dept}/inbox/{agent}/.
 
     Quality-scored (0-1). Rejected if score < 0.3. Rate-limited if
     agent's promotion rate is below 10%.
 
     Returns: {"status": "proposed", "path": "..."} or {"error": "..."}
     """
+    # Validate department name if provided
+    if department and not DEPT_NAME_RE.match(department):
+        return {"error": f"Invalid department name: {department}", "code": "invalid_department"}
     if not _is_available():
         return {"error": "Vault not available", "code": "unavailable"}
 
@@ -191,8 +199,11 @@ def propose_note(
             "code": "insufficient_content",
         }
 
-    # Federation v2: quality scoring
-    inbox = VAULT_ROOT / "00_Inbox" / agent
+    # Compute inbox path: department inbox or vault inbox
+    if department:
+        inbox = VAULT_ROOT / "departments" / department / "inbox" / agent
+    else:
+        inbox = VAULT_ROOT / "00_Inbox" / agent
     existing_titles = []
     if inbox.is_dir():
         existing_titles = [f.stem.replace("-", " ") for f in inbox.glob("*.md")]
@@ -224,9 +235,10 @@ def propose_note(
             counter += 1
 
     # Build note
+    dept_line = f"department: {department}\n" if department else ""
     frontmatter = (
         f"---\ncreated: {date.today().isoformat()}\n"
-        f"proposed_by: {agent}\n---\n\n"
+        f"proposed_by: {agent}\n{dept_line}---\n\n"
     )
     heading = f"# {title.strip()}\n\n"
     note = frontmatter + heading + content.strip() + "\n"
@@ -237,12 +249,59 @@ def propose_note(
     # Track proposal
     if tracker:
         try:
-            tracker.record_proposal(agent, title, rel, score)
+            tracker.record_proposal(agent, title, rel, score, department=department)
         except Exception:
             pass  # Don't fail the write because tracking broke
 
     logger.info("Proposed vault note: %s (score=%.2f, agent=%s)", rel, score, agent)
     return {"status": "proposed", "path": rel, "title": title, "quality_score": score}
+
+
+def promote_within_department(dept: str, source_rel: str, dest_subdir: str = "observations") -> dict:
+    """Move a note from department inbox to department PARA.
+
+    source_rel: path relative to VAULT_ROOT (e.g. "departments/farm/inbox/farm-worker/note.md")
+    dest_subdir: target subdir under para/ (e.g. "observations", "resources")
+    """
+    if not _is_available():
+        return {"error": "Vault not available", "code": "unavailable"}
+    if not DEPT_NAME_RE.match(dept):
+        return {"error": f"Invalid department name: {dept}", "code": "invalid_department"}
+
+    source = VAULT_ROOT / source_rel
+    if not source.exists():
+        return {"error": f"Source not found: {source_rel}", "code": "not_found"}
+
+    dest_dir = VAULT_ROOT / "departments" / dept / "para" / dest_subdir
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / source.name
+    shutil.move(str(source), str(dest))
+    rel = str(dest.relative_to(VAULT_ROOT)).replace("\\", "/")
+    logger.info("Promoted within dept %s: %s → %s", dept, source_rel, rel)
+    return {"status": "promoted", "path": rel}
+
+
+def promote_to_vault(dept: str, source_rel: str) -> dict:
+    """Move a note from department PARA to vault inbox for human review.
+
+    Destination: 00_Inbox/{dept}-head/{filename}
+    """
+    if not _is_available():
+        return {"error": "Vault not available", "code": "unavailable"}
+    if not DEPT_NAME_RE.match(dept):
+        return {"error": f"Invalid department name: {dept}", "code": "invalid_department"}
+
+    source = VAULT_ROOT / source_rel
+    if not source.exists():
+        return {"error": f"Source not found: {source_rel}", "code": "not_found"}
+
+    dest_dir = VAULT_ROOT / "00_Inbox" / f"{dept}-head"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / source.name
+    shutil.move(str(source), str(dest))
+    rel = str(dest.relative_to(VAULT_ROOT)).replace("\\", "/")
+    logger.info("Promoted to vault: %s → %s", source_rel, rel)
+    return {"status": "promoted_to_vault", "path": rel}
 
 
 def vault_context_block(query: str, max_notes: int = 3) -> str:
@@ -302,6 +361,31 @@ _ACTION_WORDS = frozenset(
 )
 
 
+def _log2(x: float) -> float:
+    """Safe log2 that returns 0 for x <= 0."""
+    import math
+    return math.log2(x) if x > 0 else 0.0
+
+
+def _term_entropy(words: list[str]) -> float:
+    """Shannon entropy of term frequency distribution.
+
+    Higher entropy = more diverse vocabulary = less repetitive content.
+    Uses natural log2 (bits).
+    """
+    if not words:
+        return 0.0
+    from collections import Counter
+    counts = Counter(words)
+    total = len(words)
+    entropy = 0.0
+    for count in counts.values():
+        p = count / total
+        if p > 0:
+            entropy -= p * _log2(p)
+    return entropy
+
+
 def _quality_score(title: str, content: str, existing_titles: list[str]) -> float:
     """Score a proposal 0.0-1.0 based on length, novelty, and actionability."""
     body = content.strip()
@@ -321,11 +405,23 @@ def _quality_score(title: str, content: str, existing_titles: list[str]) -> floa
     else:
         length_score = 0.3
 
-    # Novelty component (0-0.4): Jaccard distance from existing inbox notes
+    # Novelty component (0-0.4): Shannon entropy of term distribution
+    # High entropy = diverse vocabulary = more novel content
+    # Low overlap with existing titles = higher novelty
     title_words = set(re.split(r'\W+', title.lower())) - {""}
+    body_words_list = [w for w in re.split(r'\W+', body.lower()) if len(w) >= 2]
+
     if not existing_titles or not title_words:
         novelty_score = 0.3  # No comparisons = moderate novelty
     else:
+        # Term frequency entropy of the candidate body
+        body_entropy = _term_entropy(body_words_list) if body_words_list else 0.0
+        # Normalize to [0, 1] — max entropy is log2(vocab_size)
+        vocab_size = len(set(body_words_list)) if body_words_list else 1
+        max_entropy = _log2(vocab_size) if vocab_size > 1 else 1.0
+        normalized_entropy = min(1.0, body_entropy / max_entropy) if max_entropy > 0 else 0.0
+
+        # Title overlap penalty (Jaccard, kept for near-duplicate detection)
         max_overlap = 0.0
         for existing in existing_titles:
             existing_words = set(re.split(r'\W+', existing.lower())) - {""}
@@ -335,7 +431,9 @@ def _quality_score(title: str, content: str, existing_titles: list[str]) -> floa
             union = title_words | existing_words
             jaccard = len(intersection) / len(union) if union else 0.0
             max_overlap = max(max_overlap, jaccard)
-        novelty_score = 0.4 * (1.0 - max_overlap)
+
+        # Blend: 60% entropy (vocabulary diversity) + 40% title novelty (duplicate detection)
+        novelty_score = 0.4 * (0.6 * normalized_entropy + 0.4 * (1.0 - max_overlap))
 
     # Actionability component (0-0.3): action verbs, numbers, dates
     body_lower = body.lower()
@@ -387,13 +485,26 @@ class FederationTracker:
         """)
         self._conn.commit()
 
-    def record_proposal(self, agent: str, title: str, path: str, score: float) -> str:
+        # Migration for existing DBs: add department column
+        try:
+            self._conn.execute(
+                "ALTER TABLE federation_proposals ADD COLUMN department TEXT DEFAULT NULL"
+            )
+            self._conn.commit()
+        except Exception:
+            pass  # Column already exists
+
+    def record_proposal(
+        self, agent: str, title: str, path: str, score: float,
+        department: str | None = None,
+    ) -> str:
         """Record a new proposal. Returns proposal ID."""
         prop_id = str(uuid.uuid4())[:12]
         self._conn.execute(
             "INSERT INTO federation_proposals "
-            "(id, agent, title, path, quality_score, proposed_at) VALUES (?, ?, ?, ?, ?, ?)",
-            (prop_id, agent, title, path, score, datetime.now().isoformat()),
+            "(id, agent, title, path, quality_score, proposed_at, department) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (prop_id, agent, title, path, score, datetime.now().isoformat(), department),
         )
         self._conn.execute(
             "INSERT INTO federation_stats (agent, total_proposed) VALUES (?, 1) "
@@ -505,7 +616,7 @@ class FederationTracker:
 
 
 # Federation tracker singleton
-_tracker: Optional[FederationTracker] = None
+_tracker: FederationTracker | None = None
 
 
 def get_tracker() -> FederationTracker:

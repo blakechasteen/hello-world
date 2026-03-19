@@ -30,11 +30,11 @@ Author: Claude Code
 Date: December 2025 (Math Module Expansion)
 """
 
-import numpy as np
-from typing import List, Optional, Tuple, Dict, Any, Set
 from dataclasses import dataclass, field
 from enum import Enum
-import heapq
+from typing import Any
+
+import numpy as np
 
 
 class HomologyDimension(Enum):
@@ -57,7 +57,7 @@ class PersistenceInterval:
     birth: float
     death: float
     dimension: int = 0
-    generator: Optional[Any] = None  # The simplex that created this feature
+    generator: Any | None = None  # The simplex that created this feature
 
     @property
     def persistence(self) -> float:
@@ -86,7 +86,7 @@ class PersistenceDiagram:
     The diagram encodes the complete topological signature of a
     filtration. Points far from the diagonal are significant features.
     """
-    intervals: List[PersistenceInterval] = field(default_factory=list)
+    intervals: list[PersistenceInterval] = field(default_factory=list)
     dimension: int = 0
 
     def add(self, birth: float, death: float, generator: Any = None) -> None:
@@ -236,7 +236,7 @@ class VietorisRipsComplex:
 
         return dists
 
-    def get_filtration(self) -> List[Tuple[float, Tuple[int, ...]]]:
+    def get_filtration(self) -> list[tuple[float, tuple[int, ...]]]:
         """
         Get simplices sorted by filtration value.
 
@@ -289,7 +289,7 @@ class PersistentHomology:
         self.max_dimension = max_dimension
         self.max_radius = max_radius
 
-    def compute(self, points: np.ndarray) -> Dict[int, PersistenceDiagram]:
+    def compute(self, points: np.ndarray) -> dict[int, PersistenceDiagram]:
         """
         Compute persistent homology of point cloud.
 
@@ -312,7 +312,7 @@ class PersistentHomology:
 
         # H0: Use Union-Find for efficiency
         uf = UnionFind(n)
-        component_birth = {i: 0.0 for i in range(n)}
+        component_birth = dict.fromkeys(range(n), 0.0)
 
         for radius, simplex in filtration:
             if len(simplex) == 2:  # Edge
@@ -353,7 +353,7 @@ class PersistentHomology:
         self,
         points: np.ndarray,
         complex: VietorisRipsComplex,
-        filtration: List[Tuple[float, Tuple[int, ...]]]
+        filtration: list[tuple[float, tuple[int, ...]]]
     ) -> PersistenceDiagram:
         """
         Simplified loop detection using cycle detection.
@@ -368,11 +368,11 @@ class PersistentHomology:
         from collections import defaultdict
 
         # Adjacency list for cycle detection
-        adj: Dict[int, Set[int]] = defaultdict(set)
-        edge_times: Dict[Tuple[int, int], float] = {}
+        adj: dict[int, set[int]] = defaultdict(set)
+        edge_times: dict[tuple[int, int], float] = {}
 
         # Active loops: (birth_time, frozenset of vertices in cycle)
-        active_loops: List[Tuple[float, Tuple[int, int, int]]] = []
+        active_loops: list[tuple[float, tuple[int, int, int]]] = []
 
         # Union-Find for detecting when edges create cycles
         uf = UnionFind(n)
@@ -426,7 +426,7 @@ def compute_persistence(
     points: np.ndarray,
     max_dimension: int = 1,
     max_radius: float = float('inf')
-) -> Dict[int, PersistenceDiagram]:
+) -> dict[int, PersistenceDiagram]:
     """
     Convenience function to compute persistent homology.
 
@@ -622,8 +622,8 @@ class EmbeddingTopologyAnalyzer:
     def analyze(
         self,
         embeddings: np.ndarray,
-        labels: Optional[np.ndarray] = None
-    ) -> Dict[str, Any]:
+        labels: np.ndarray | None = None
+    ) -> dict[str, Any]:
         """
         Analyze embedding topology.
 
@@ -702,8 +702,8 @@ class EmbeddingTopologyAnalyzer:
         self,
         embeddings: np.ndarray,
         labels: np.ndarray,
-        diagrams: Dict[int, PersistenceDiagram]
-    ) -> Dict[str, Any]:
+        diagrams: dict[int, PersistenceDiagram]
+    ) -> dict[str, Any]:
         """Validate clustering using topological features."""
         n_clusters = len(np.unique(labels))
 
@@ -732,7 +732,7 @@ class EmbeddingTopologyAnalyzer:
         self,
         embeddings1: np.ndarray,
         embeddings2: np.ndarray
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Compare topological structure of two embedding spaces.
 

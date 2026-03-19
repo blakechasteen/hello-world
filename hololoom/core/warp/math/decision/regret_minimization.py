@@ -28,11 +28,11 @@ Author: Claude Code
 Date: December 2025 (Math Module Expansion)
 """
 
-import numpy as np
-from typing import List, Optional, Callable, Tuple, Protocol
-from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from enum import Enum
+
+import numpy as np
 
 
 class FeedbackType(Enum):
@@ -112,7 +112,7 @@ class Hedge(RegretMinimizer):
     def __init__(
         self,
         n_actions: int,
-        learning_rate: Optional[float] = None,
+        learning_rate: float | None = None,
         time_horizon: int = 1000
     ):
         """
@@ -137,8 +137,8 @@ class Hedge(RegretMinimizer):
         self.t = 0
         self.cumulative_loss = 0.0
         self.losses_per_action = np.zeros(n_actions)
-        self.chosen_actions: List[int] = []
-        self.observed_losses: List[np.ndarray] = []
+        self.chosen_actions: list[int] = []
+        self.observed_losses: list[np.ndarray] = []
 
     def get_distribution(self) -> np.ndarray:
         """Get current probability distribution."""
@@ -224,7 +224,7 @@ class EXP3(RegretMinimizer):
     def __init__(
         self,
         n_actions: int,
-        exploration_rate: Optional[float] = None,
+        exploration_rate: float | None = None,
         time_horizon: int = 1000
     ):
         """
@@ -252,7 +252,7 @@ class EXP3(RegretMinimizer):
         self.t = 0
         self.cumulative_loss = 0.0
         self.estimated_losses = np.zeros(n_actions)
-        self.last_chosen: Optional[int] = None
+        self.last_chosen: int | None = None
 
     def get_distribution(self) -> np.ndarray:
         """
@@ -349,7 +349,7 @@ class FollowTheRegularizedLeader(RegretMinimizer):
         self.cumulative_losses = np.zeros(n_actions)
         self.t = 0
         self.cumulative_loss = 0.0
-        self.last_chosen: Optional[int] = None
+        self.last_chosen: int | None = None
 
     def get_distribution(self) -> np.ndarray:
         """
@@ -411,7 +411,7 @@ class OptimisticHedge(Hedge):
     def __init__(
         self,
         n_actions: int,
-        learning_rate: Optional[float] = None,
+        learning_rate: float | None = None,
         time_horizon: int = 1000
     ):
         super().__init__(n_actions, learning_rate, time_horizon)

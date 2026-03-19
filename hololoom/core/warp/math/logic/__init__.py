@@ -12,28 +12,27 @@ Sprint 6: Logic & Foundations
 """
 
 # Mathematical Logic
-from .mathematical_logic import (
-    LogicOperator,
-    Proposition,
-    PropositionalLogic,
-    FirstOrderLogic,
-    ModelTheory,
-    ProofTheory,
-    GodelTheorems,
-    SetTheory,
-    TypeTheory,
-)
-
 # Computability Theory
 from .computability_theory import (
-    Direction,
-    TuringState,
-    TuringMachine,
     ChurchTuringThesis,
-    Decidability,
-    HaltingProblem,
     ComplexityClasses,
+    Decidability,
+    Direction,
+    HaltingProblem,
     NPCompleteness,
+    TuringMachine,
+    TuringState,
+)
+from .mathematical_logic import (
+    FirstOrderLogic,
+    GodelTheorems,
+    LogicOperator,
+    ModelTheory,
+    ProofTheory,
+    Proposition,
+    PropositionalLogic,
+    SetTheory,
+    TypeTheory,
 )
 
 __all__ = [

@@ -24,12 +24,11 @@ Usage:
     packed = await packer.pack_all(allocations, graph=kg)
 """
 
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
-import asyncio
+from typing import Any
 
-from .gradient_flow import GradientFlowEngine, RouteDecision
 from .adaptive_packer import AdaptivePacker, PackedContext
+from .gradient_flow import GradientFlowEngine
 
 try:
     from ..memory.graph import KG
@@ -50,8 +49,8 @@ class ComponentAllocation:
 @dataclass
 class MultiPhysicsResult:
     """Result from multi-physics packing."""
-    allocations: List[ComponentAllocation]
-    packed_contexts: Dict[str, PackedContext]
+    allocations: list[ComponentAllocation]
+    packed_contexts: dict[str, PackedContext]
     total_tokens_used: int
     total_tokens_available: int
     gradient_iterations: int
@@ -112,7 +111,7 @@ class MultiPhysicsPacker:
         self.fluid_steps = fluid_steps
 
         # Phase 1: Gradient flow for allocation
-        def allocation_loss(metrics: Dict[str, float]) -> float:
+        def allocation_loss(metrics: dict[str, float]) -> float:
             """Loss = inverse importance × allocation gap."""
             importance = metrics.get("importance", 0.5)
             current = metrics.get("current_allocation", 0.0)
@@ -135,10 +134,10 @@ class MultiPhysicsPacker:
 
     def allocate_budget(
         self,
-        components: List[str],
-        importance: Dict[str, float],
-        constraints: Optional[Dict[str, Tuple[int, int]]] = None
-    ) -> List[ComponentAllocation]:
+        components: list[str],
+        importance: dict[str, float],
+        constraints: dict[str, tuple[int, int]] | None = None
+    ) -> list[ComponentAllocation]:
         """
         Allocate token budget across components via gradient flow.
 
@@ -203,8 +202,8 @@ class MultiPhysicsPacker:
         self,
         component: str,
         token_budget: int,
-        graph: Optional[Any] = None,
-        initial_nodes: Optional[List[str]] = None
+        graph: Any | None = None,
+        initial_nodes: list[str] | None = None
     ) -> PackedContext:
         """
         Pack a single component via fluid dynamics.
@@ -242,8 +241,8 @@ class MultiPhysicsPacker:
 
     async def pack(
         self,
-        components: Dict[str, Dict[str, Any]],
-        constraints: Optional[Dict[str, Tuple[int, int]]] = None
+        components: dict[str, dict[str, Any]],
+        constraints: dict[str, tuple[int, int]] | None = None
     ) -> MultiPhysicsResult:
         """
         Complete multi-physics packing pipeline.
@@ -327,9 +326,9 @@ class MultiPhysicsPacker:
 # Helper function for easy integration
 
 async def pack_context_multiphysics(
-    cache_graph: Optional[Any] = None,
-    knowledge_graph: Optional[Any] = None,
-    embedding_graph: Optional[Any] = None,
+    cache_graph: Any | None = None,
+    knowledge_graph: Any | None = None,
+    embedding_graph: Any | None = None,
     cache_importance: float = 0.9,
     graph_importance: float = 0.7,
     embedding_importance: float = 0.8,

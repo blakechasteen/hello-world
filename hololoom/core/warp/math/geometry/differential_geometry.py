@@ -20,9 +20,10 @@ Applications:
     - Control theory on manifolds
 """
 
-import numpy as np
-from typing import Callable, List, Tuple, Optional, Dict
+from collections.abc import Callable
 from dataclasses import dataclass
+
+import numpy as np
 
 
 @dataclass
@@ -53,7 +54,7 @@ class SmoothManifold:
     def __init__(self, dimension: int, name: str = "M"):
         self.dimension = dimension
         self.name = name
-        self.atlas: List[Chart] = []
+        self.atlas: list[Chart] = []
 
     def add_chart(self, chart: Chart):
         """Add coordinate chart to atlas."""
@@ -191,7 +192,7 @@ class TangentVector:
     def __mul__(self, scalar: float) -> 'TangentVector':
         return TangentVector(self.tangent_space, scalar * self.components)
 
-    def norm(self, metric: Optional[np.ndarray] = None) -> float:
+    def norm(self, metric: np.ndarray | None = None) -> float:
         """Norm of tangent vector (requires Riemannian metric)."""
         if metric is None:
             metric = np.eye(len(self.components))  # Euclidean metric
@@ -326,7 +327,7 @@ class DifferentialForm:
 
             # Alternating sum over permutations (simplified)
             # For production: use proper antisymmetrization
-            from itertools import permutations, combinations
+            from itertools import combinations
 
             result = 0.0
             for indices_omega in combinations(range(k+l), k):
@@ -392,7 +393,7 @@ class ExteriorCalculus:
 
     @staticmethod
     def stokes_theorem(omega: DifferentialForm, manifold: SmoothManifold,
-                      boundary: Optional[SmoothManifold] = None) -> str:
+                      boundary: SmoothManifold | None = None) -> str:
         """
         Stokes' theorem: ∫_M dω = ∫_{∂M} ω
 
@@ -437,7 +438,7 @@ class ExteriorCalculus:
         return integral * volume / n_samples
 
     @staticmethod
-    def closed_vs_exact(omega: DifferentialForm) -> Dict[str, str]:
+    def closed_vs_exact(omega: DifferentialForm) -> dict[str, str]:
         """
         Classification of differential forms.
 
@@ -575,7 +576,7 @@ if __name__ == "__main__":
     # Test 3: Vector fields
     print("\n[Test 3] Vector field on circle")
     X, theta_t = example_vector_field_on_circle()
-    print(f"Initial: θ=0")
+    print("Initial: θ=0")
     print(f"After flow t=π/2: θ={theta_t[0]:.4f} (expect ~1.571)")
 
     # Test 4: Differential forms
