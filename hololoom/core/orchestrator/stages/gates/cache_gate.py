@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from hololoom.orchestrator.protocols.stage import GateExecutor
 
@@ -25,7 +25,7 @@ class CacheGateExecutor(GateExecutor):
         )
         self.cache = cache
 
-    async def evaluate(self, ctx: 'WeavingContext') -> Optional[Any]:
+    async def evaluate(self, ctx: WeavingContext) -> Any | None:
         if not self.cache:
             return None
 
