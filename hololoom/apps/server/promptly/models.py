@@ -9,7 +9,14 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 # Re-export shared models so existing imports still work
-from ..kit.models import ChatRequest, ChatResponse, RefinementInfo, RoutingInfo  # noqa: F401
+from ..kit.models import (  # noqa: F401
+    ChatRequest,
+    ChatResponse,
+    MemoryContext,
+    MemoryHit,
+    RefinementInfo,
+    RoutingInfo,
+)
 
 
 class RefinementResponse(BaseModel):

@@ -555,33 +555,60 @@ async def execute_step5_5_warp_compute(
         ctx.add_warning(f"Warp compute failed: {e}")
         ctx.record_timing('warp_compute', 0.0)
 
-    # Step 5.5b: Math Pipeline Analysis (the second door)
-    # All 127 math modules are accessible here via MathPipelineIntegration.
-    # This runs REAL math (not mocks) — inner products, eigenvalues, entropy,
-    # spectral clustering, KL divergence, Thompson Sampling, etc.
+    # Step 5.5b: MathLoom — adaptive math injection (the second door, evolved)
+    # 151 math modules selectable per-step with adaptive budget.
+    # Budget scales with query complexity (BARE=20, FAST=50, FUSED=100, RESEARCH=200).
     try:
-        from hololoom.core.warp.math_pipeline_integration import MathPipelineIntegration
-        math_pipeline = MathPipelineIntegration(
-            enabled=True,
-            budget=50,
-            enable_rl=True,
-            enable_composition=False,
-            use_contextual_bandit=True,
+        from hololoom.core.warp.math.loom import create_math_loom
+
+        # Compute adaptive budget from attention entropy
+        attention_entropy = warp_compute_results.get("attention_entropy", 0.3) if warp_compute_results else 0.3
+        query_text = getattr(ctx, "query", "") or ""
+        pattern_card = ctx.pattern_spec.card.value if ctx.pattern_spec else "fast"
+
+        math_loom = create_math_loom(
+            query_length=len(query_text),
+            entity_count=len([w for w in query_text.split() if w and w[0].isupper()]),
+            attention_entropy=attention_entropy,
+            n_intents=1,
+            pattern_card=pattern_card,
         )
-        math_result = math_pipeline.analyze(
-            query_text=ctx.query or "",
-            query_embedding=query_embedding if isinstance(query_embedding, np.ndarray) and len(query_embedding) > 0 else None,
-            context={"warp_results": ctx.warp_compute_results} if ctx.warp_compute_results else None,
+        ctx.math_loom = math_loom
+
+        # Run math for Step 5.5b (unrestricted, primary injection point)
+        loom_result = math_loom.request(
+            step_id=56,
+            query_text=query_text,
         )
-        if math_result:
-            ctx.math_pipeline_result = math_result
+        if loom_result and loom_result.operations_used:
+            ctx.math_operations_applied.extend(loom_result.operations_used)
             log.info(
-                f"  [5.5b] Math Pipeline: {len(math_result.operations_used)} ops, "
-                f"confidence={math_result.confidence:.2f}, "
-                f"{math_result.execution_time_ms:.1f}ms"
+                f"  [5.5b] MathLoom: {len(loom_result.operations_used)} ops, "
+                f"cost={loom_result.total_cost}, budget={math_loom._total_budget} "
+                f"({math_loom._budget.tier.name}), {loom_result.execution_ms:.1f}ms"
             )
+
+        # Also try legacy MathPipelineIntegration (backward compat)
+        try:
+            from hololoom.core.warp.math_pipeline_integration import MathPipelineIntegration
+            math_pipeline = MathPipelineIntegration(
+                enabled=True,
+                budget=math_loom._total_budget,
+                enable_rl=True,
+                use_contextual_bandit=True,
+            )
+            math_result = math_pipeline.analyze(
+                query_text=query_text,
+                query_embedding=query_embedding if isinstance(query_embedding, np.ndarray) and len(query_embedding) > 0 else None,
+                context={"warp_results": ctx.warp_compute_results} if ctx.warp_compute_results else None,
+            )
+            if math_result:
+                ctx.math_pipeline_result = math_result
+        except Exception:
+            pass
+
     except Exception as e:
-        log.debug(f"  [5.5b] Math Pipeline unavailable: {e}")
+        log.debug(f"  [5.5b] MathLoom unavailable: {e}")
 
     return ctx
 

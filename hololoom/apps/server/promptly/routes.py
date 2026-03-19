@@ -25,7 +25,11 @@ from .config import (
     OLLAMA_URL,
     REFINEMENT_ENABLED,
 )
-from .hololoom_bridge import is_hololoom_available
+from .hololoom_bridge import (
+    _get_hololoom,
+    _recall_memories_structured,
+    is_hololoom_available,
+)
 from .jenny import (
     _gc_conversation_graphs,
     _gc_spatial_dispatchers,
@@ -41,6 +45,8 @@ from .memory import conv_memory
 from .models import (
     ChatRequest,
     ChatResponse,
+    MemoryContext,
+    MemoryHit,
     ProposeRequest,
     RefinementInfo,
     RefinementResponse,
@@ -107,6 +113,28 @@ async def chat(request: ChatRequest):
     except Exception as e:
         logger.debug("Vault context unavailable: %s", e)
 
+    # Recall memories from HoloLoomLite (pass 1 — lightweight, optional)
+    memory_ctx = None
+    if is_hololoom_available() is not False:
+        try:
+            loom = await _get_hololoom()
+            if loom:
+                recall_start = time.time()
+                mem_text, mem_hits = await _recall_memories_structured(loom, request.text)
+                recall_ms = (time.time() - recall_start) * 1000
+                if mem_text:
+                    system_prompt += mem_text
+                    logger.debug("Memory context injected (%d hits, %.0fms)",
+                                 len(mem_hits), recall_ms)
+                memory_ctx = MemoryContext(
+                    hits=[MemoryHit(**h) for h in mem_hits],
+                    recall_ms=round(recall_ms, 1),
+                    backend="hololoom_lite" if mem_hits else "none",
+                )
+        except Exception as e:
+            logger.debug("Memory recall unavailable: %s", e)
+            memory_ctx = MemoryContext(backend="degraded")
+
     messages = [{"role": "system", "content": system_prompt}]
     messages.extend(history)
     messages.append({"role": "user", "content": request.text})
@@ -152,6 +180,7 @@ async def chat(request: ChatRequest):
             reason=decision.reason,
             fallback_model=decision.fallback.id if decision.fallback else None,
             speed_weight=0.7,
+            health_status=decision.health_status,
         )
 
     # Decide whether to fire refinement passes
@@ -256,6 +285,7 @@ async def chat(request: ChatRequest):
         jenny_id=jenny_id,
         routing=routing_info,
         refinement_info=refinement_info,
+        memory_context=memory_ctx,
     )
 
 

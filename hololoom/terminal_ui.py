@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 Terminal UI Integration for HoloLoom
 ====================================

@@ -35,6 +35,20 @@ class RefinementInfo(BaseModel):
     max_passes: int | None = None
 
 
+class MemoryHit(BaseModel):
+    """A single recalled memory with provenance."""
+    text: str
+    relevance: float | None = None
+    source: str | None = None  # Episode or entity origin
+
+
+class MemoryContext(BaseModel):
+    """Structured memory recall metadata."""
+    hits: list[MemoryHit] = Field(default_factory=list)
+    recall_ms: float | None = None
+    backend: str = "none"  # "hololoom_lite" | "none" | "degraded"
+
+
 class ChatResponse(BaseModel):
     response: str
     room_id: str
@@ -48,3 +62,4 @@ class ChatResponse(BaseModel):
     jenny_id: str | None = None
     routing: RoutingInfo | None = None
     refinement_info: RefinementInfo | None = None
+    memory_context: MemoryContext | None = None

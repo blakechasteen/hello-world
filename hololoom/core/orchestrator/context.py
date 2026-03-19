@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Weaving Context - Pipeline State Container
 ==========================================
@@ -27,20 +26,20 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 if TYPE_CHECKING:
-    from hololoom.protocols.types import Query, Features, Context, MemoryShard
-    from hololoom.protocols import ComplexityLevel, ProvenanceTrace
-    from hololoom.loom.command import PatternCard, PatternSpec
+    from hololoom.alignment.safety_guardrails import ActionRequest, SafetyDecision
     from hololoom.chrono.trigger import ChronoTrigger, TemporalWindow
+    from hololoom.convergence.engine import CollapseResult, ConvergenceEngine
+    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
+    from hololoom.loom.command import PatternCard, PatternSpec
+    from hololoom.protocols import ComplexityLevel, ProvenanceTrace
+    from hololoom.protocols.types import Context, Features, MemoryShard, Query
     from hololoom.resonance.shed import ResonanceShed
     from hololoom.warp.space import WarpSpace
-    from hololoom.convergence.engine import ConvergenceEngine, CollapseResult
-    from hololoom.fabric.spacetime import Spacetime, WeavingTrace
-    from hololoom.alignment.safety_guardrails import SafetyDecision, ActionRequest
 
 
 @dataclass
@@ -81,109 +80,113 @@ class WeavingContext:
     # ========================================================================
     # Input (immutable after creation)
     # ========================================================================
-    query: 'Query'
-    pattern_override: Optional['PatternCard'] = None
-    complexity_override: Optional['ComplexityLevel'] = None
-    auto_enhance: Optional[bool] = None
+    query: Query
+    pattern_override: PatternCard | None = None
+    complexity_override: ComplexityLevel | None = None
+    auto_enhance: bool | None = None
 
     # ========================================================================
     # Step 0: Meta-Prompt Enhancement (optional)
     # ========================================================================
-    enhanced_query: Optional['Query'] = None
-    original_query_text: Optional[str] = None
+    enhanced_query: Query | None = None
+    original_query_text: str | None = None
     enhancement_applied: bool = False
 
     # ========================================================================
     # Step 1: Pattern Selection (Loom Command)
     # ========================================================================
-    pattern_spec: Optional['PatternSpec'] = None
-    complexity: Optional['ComplexityLevel'] = None
+    pattern_spec: PatternSpec | None = None
+    complexity: ComplexityLevel | None = None
 
     # ========================================================================
     # Step 2: Chrono Trigger (Temporal Window)
     # ========================================================================
-    chrono: Optional['ChronoTrigger'] = None
-    temporal_window: Optional['TemporalWindow'] = None
+    chrono: ChronoTrigger | None = None
+    temporal_window: TemporalWindow | None = None
 
     # ========================================================================
     # Step 3: Thread Selection (Yarn Graph / Shuttle)
     # ========================================================================
-    threads: List['MemoryShard'] = field(default_factory=list)
-    thread_ids: List[str] = field(default_factory=list)
-    thread_texts: List[str] = field(default_factory=list)
+    threads: list[MemoryShard] = field(default_factory=list)
+    thread_ids: list[str] = field(default_factory=list)
+    thread_texts: list[str] = field(default_factory=list)
     shuttle_used: bool = False
 
     # ========================================================================
     # Step 4: Resonance Shed (Feature Extraction)
     # ========================================================================
-    dot_plasma: Optional[Dict[str, Any]] = None
-    resonance_shed: Optional['ResonanceShed'] = None
-    features: Optional['Features'] = None
-    pattern_embedder: Optional[Any] = None  # MatryoshkaEmbeddings or LinguisticGate
-    semantic_calculus: Optional[Any] = None
+    dot_plasma: dict[str, Any] | None = None
+    resonance_shed: ResonanceShed | None = None
+    features: Features | None = None
+    pattern_embedder: Any | None = None  # MatryoshkaEmbeddings or LinguisticGate
+    semantic_calculus: Any | None = None
 
     # ========================================================================
     # Step 5: Warp Space (Tensor Manifold)
     # ========================================================================
-    warp_space: Optional['WarpSpace'] = None
-    warp_operations: List[Tuple[str, str, Any]] = field(default_factory=list)
-    warp_compute_results: Optional[Dict[str, Any]] = None
+    warp_space: WarpSpace | None = None
+    warp_operations: list[tuple[str, str, Any]] = field(default_factory=list)
+    warp_compute_results: dict[str, Any] | None = None
 
     # ========================================================================
     # Step 6: Memory Retrieval (Context Assembly)
     # ========================================================================
-    shards: List['MemoryShard'] = field(default_factory=list)
-    shard_texts: List[str] = field(default_factory=list)
-    hits: List[Tuple[Any, float]] = field(default_factory=list)
-    retrieval_context: Optional['Context'] = None
-    packed_context: Optional[Any] = None  # BetaWaveContextPacker result
+    shards: list[MemoryShard] = field(default_factory=list)
+    shard_texts: list[str] = field(default_factory=list)
+    hits: list[tuple[Any, float]] = field(default_factory=list)
+    retrieval_context: Context | None = None
+    packed_context: Any | None = None  # BetaWaveContextPacker result
 
     # ========================================================================
     # Step 7: Convergence Engine (Tool Selection)
     # ========================================================================
-    policy: Optional[Any] = None
-    action_plan: Optional[Any] = None  # ActionPlan
-    convergence_engine: Optional['ConvergenceEngine'] = None
-    collapse_result: Optional['CollapseResult'] = None
-    neural_probs: Optional[np.ndarray] = None
-    gradient_decision: Optional[Any] = None  # GradientDecision
+    policy: Any | None = None
+    action_plan: Any | None = None  # ActionPlan
+    convergence_engine: ConvergenceEngine | None = None
+    collapse_result: CollapseResult | None = None
+    neural_probs: np.ndarray | None = None
+    gradient_decision: Any | None = None  # GradientDecision
 
     # ========================================================================
     # Step 8: Tool Execution (Safety Gating)
     # ========================================================================
-    action_request: Optional['ActionRequest'] = None
-    safety_decision: Optional['SafetyDecision'] = None
-    tool_result: Optional[Dict[str, Any]] = None
+    action_request: ActionRequest | None = None
+    safety_decision: SafetyDecision | None = None
+    tool_result: dict[str, Any] | None = None
     safety_blocked: bool = False
 
     # ========================================================================
     # Step 9: Spacetime Fabric (Result Assembly)
     # ========================================================================
-    spacetime: Optional['Spacetime'] = None
-    trace: Optional['WeavingTrace'] = None
+    spacetime: Spacetime | None = None
+    trace: WeavingTrace | None = None
 
     # ========================================================================
     # Metadata & Timing
     # ========================================================================
-    stage_timings: Dict[str, float] = field(default_factory=dict)
-    errors: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
+    stage_timings: dict[str, float] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
 
     # Awareness/Consciousness Integration (Phase 1 - November 2025)
-    awareness_context: Optional[Dict[str, Any]] = None
+    awareness_context: dict[str, Any] | None = None
 
     # Conscience Integration (Phase 2C - December 2025)
-    conscience_decision: Optional[Any] = None
+    conscience_decision: Any | None = None
     conscience_blocked: bool = False
 
+    # Math-as-Substrate Integration (March 2026)
+    math_loom: Any | None = None  # WeavingMathLoom — any step can request math
+    math_operations_applied: list[str] = field(default_factory=list)
+
     # Provenance & Tracing
-    provenance: Optional['ProvenanceTrace'] = None
+    provenance: ProvenanceTrace | None = None
 
     # Timing
-    start_time: Optional[datetime] = None
+    start_time: datetime | None = None
 
     # Query routing (for fast path detection)
-    query_classification: Optional[Any] = None
+    query_classification: Any | None = None
     fast_path_used: bool = False
 
     # Cache
@@ -239,7 +242,7 @@ class WeavingContext:
         self,
         operation: str,
         details: Any = None,
-        timestamp: Optional[str] = None
+        timestamp: str | None = None
     ) -> None:
         """
         Record a warp space operation.
@@ -261,7 +264,7 @@ class WeavingContext:
         return (datetime.now() - self.start_time).total_seconds() * 1000
 
     @property
-    def current_query(self) -> 'Query':
+    def current_query(self) -> Query:
         """Get the current query (enhanced or original)."""
         return self.enhanced_query if self.enhanced_query else self.query
 
@@ -285,7 +288,7 @@ class WeavingContext:
         """Check if processing was blocked (safety or conscience)."""
         return self.safety_blocked or self.conscience_blocked
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert to dictionary for debugging/serialization.
 
@@ -346,10 +349,10 @@ class WeavingContext:
 
 
 def create_weaving_context(
-    query: 'Query',
-    pattern_override: Optional['PatternCard'] = None,
-    complexity: Optional['ComplexityLevel'] = None,
-    auto_enhance: Optional[bool] = None
+    query: Query,
+    pattern_override: PatternCard | None = None,
+    complexity: ComplexityLevel | None = None,
+    auto_enhance: bool | None = None
 ) -> WeavingContext:
     """
     Factory function to create a WeavingContext with proper initialization.
