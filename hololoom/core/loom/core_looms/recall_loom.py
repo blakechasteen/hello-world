@@ -18,17 +18,17 @@ Date: December 2025
 Author: HoloLoom Architecture Team
 """
 
-from datetime import datetime
-from typing import Any, Dict, List, Optional
 import logging
+from datetime import datetime
+from typing import Any
+from uuid import uuid4
 
 from hololoom.loom.base_loom import BaseLoom
-from hololoom.loom.protocol import RECALL, PatternInsight, CorrectionInsight
-from hololoom.fabric.fabric import Fabric
+from hololoom.loom.protocol import RECALL
 from hololoom.protocols.department import (
+    ConfidenceMetadata,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class RecallLoom(BaseLoom):
         temperature: float = 0.2,
         trust_memory_weight: float = 0.9,
         trust_inference_weight: float = 0.1,
-        memory_backend: Optional[Any] = None,
+        memory_backend: Any | None = None,
         **kwargs
     ):
         """
@@ -80,7 +80,7 @@ class RecallLoom(BaseLoom):
         self._memory = memory_backend
 
         # Track memory gaps for learning
-        self._memory_gaps: List[str] = []
+        self._memory_gaps: list[str] = []
 
     @property
     def perspective(self) -> str:
@@ -88,7 +88,7 @@ class RecallLoom(BaseLoom):
         return RECALL
 
     @property
-    def blind_spots(self) -> List[str]:
+    def blind_spots(self) -> list[str]:
         """What the Librarian cannot see."""
         return [
             "novel connections not in memory",
@@ -99,7 +99,7 @@ class RecallLoom(BaseLoom):
             "context beyond the archive",
         ]
 
-    def admits_ignorance(self, query: str) -> List[str]:
+    def admits_ignorance(self, query: str) -> list[str]:
         """
         What the Librarian knows it doesn't know about this query.
 
@@ -131,7 +131,7 @@ class RecallLoom(BaseLoom):
 
         return ignorance
 
-    def falsifiable_by(self, claim: str) -> List[str]:
+    def falsifiable_by(self, claim: str) -> list[str]:
         """
         What evidence would change the Librarian's claim.
 
@@ -211,11 +211,12 @@ class RecallLoom(BaseLoom):
         )
 
         return DepartmentResponse(
+            task_id=getattr(request, 'task_id', uuid4()),
             result=memory_response,
-            confidence=ConfidenceMetadata(
-                score=confidence,
-                source="recall_loom",
-                reasoning=f"Based on {len(threads)} memory threads",
+            confidence=ConfidenceMetadata.from_score(
+                confidence,
+                justification=[f"Based on {len(threads)} memory threads"],
+                sources=["recall_loom"],
             ),
             metadata={
                 "perspective": self.perspective,
@@ -225,7 +226,7 @@ class RecallLoom(BaseLoom):
             },
         )
 
-    async def _retrieve_memories(self, query: str) -> List[Dict[str, Any]]:
+    async def _retrieve_memories(self, query: str) -> list[dict[str, Any]]:
         """
         Retrieve relevant memories from backend.
 
@@ -260,7 +261,7 @@ class RecallLoom(BaseLoom):
             logger.warning(f"Memory retrieval failed: {e}")
             return []
 
-    def _compile_memory_response(self, threads: List[Dict[str, Any]]) -> str:
+    def _compile_memory_response(self, threads: list[dict[str, Any]]) -> str:
         """
         Compile retrieved threads into a response.
 
@@ -295,8 +296,8 @@ class RecallLoom(BaseLoom):
     def _identify_memory_gaps(
         self,
         query: str,
-        threads: List[Dict[str, Any]]
-    ) -> List[str]:
+        threads: list[dict[str, Any]]
+    ) -> list[str]:
         """
         Identify gaps in memory coverage.
 
@@ -323,7 +324,7 @@ class RecallLoom(BaseLoom):
 
         return gaps
 
-    def _compute_confidence(self, threads: List[Dict[str, Any]]) -> float:
+    def _compute_confidence(self, threads: list[dict[str, Any]]) -> float:
         """
         Compute confidence based on memory coverage.
 
@@ -350,8 +351,8 @@ class RecallLoom(BaseLoom):
 
     def _compute_epistemic_confidence(
         self,
-        gaps: List[str],
-        threads: List[Dict[str, Any]]
+        gaps: list[str],
+        threads: list[dict[str, Any]]
     ) -> float:
         """
         Compute epistemic confidence (confidence in confidence).

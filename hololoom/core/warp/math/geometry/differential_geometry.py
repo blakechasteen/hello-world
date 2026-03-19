@@ -20,6 +20,7 @@ Applications:
     - Control theory on manifolds
 """
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -343,7 +344,7 @@ class DifferentialForm:
                 eta_val = other.form_function(point, *vecs_eta)
                 result += sign * omega_val * eta_val
 
-            return result / np.math.factorial(k) / np.math.factorial(l)
+            return result / math.factorial(k) / math.factorial(l)
 
         return DifferentialForm(self.manifold, k + l, wedge_function)
 

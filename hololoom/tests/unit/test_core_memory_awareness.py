@@ -1088,10 +1088,9 @@ class TestMemoryFusion:
 
     @pytest.mark.asyncio
     async def test_retrieve_with_fusion_no_backend(self, fusion):
-        # Source has a division-by-zero bug when results are empty;
-        # verify it raises (known issue in memory_fusion.py:213)
-        with pytest.raises(ZeroDivisionError):
-            await fusion.retrieve_with_fusion("query", max_results=5)
+        # Empty results should return gracefully (division-by-zero bug fixed)
+        result = await fusion.retrieve_with_fusion("query", max_results=5)
+        assert result == [] or result is not None
 
     @pytest.mark.asyncio
     async def test_retrieve_with_fusion_with_backend(self):

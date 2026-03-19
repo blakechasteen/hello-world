@@ -123,38 +123,88 @@ class ConvergenceDetectorProtocol:
     pass
 
 
+_SHIM_NAMES = {
+    "RefinementStrategy": RefinementStrategy,
+    "RefinementStep": RefinementStep,
+    "DecompositionTree": DecompositionTree,
+    "ReasoningStrategy": ReasoningStrategy,
+    "StopCondition": StopCondition,
+    "ReasoningJournal": ReasoningJournal,
+    "RecursiveConfig": RecursiveConfig,
+    "RecursiveResult": RecursiveResult,
+    "StrategySelectorProtocol": StrategySelectorProtocol,
+    "QueryDecomposerProtocol": QueryDecomposerProtocol,
+    "ConvergenceDetectorProtocol": ConvergenceDetectorProtocol,
+}
+
+_MOD_NAMES = (
+    "hololoom.protocols.recursive_reasoning",
+    "hololoom.core.protocols.recursive_reasoning",
+)
+
+# Save original state so we can restore on cleanup
+_original_modules: dict[str, Any] = {}
+
+
 def _patch_protocol_shim():
-    """Inject stubs into protocol module slots."""
-    for mod_name in (
-        "hololoom.protocols.recursive_reasoning",
-        "hololoom.core.protocols.recursive_reasoning",
-    ):
-        existing = sys.modules.get(mod_name)
-        names = {
-            "RefinementStrategy": RefinementStrategy,
-            "RefinementStep": RefinementStep,
-            "DecompositionTree": DecompositionTree,
-            "ReasoningStrategy": ReasoningStrategy,
-            "StopCondition": StopCondition,
-            "ReasoningJournal": ReasoningJournal,
-            "RecursiveConfig": RecursiveConfig,
-            "RecursiveResult": RecursiveResult,
-            "StrategySelectorProtocol": StrategySelectorProtocol,
-            "QueryDecomposerProtocol": QueryDecomposerProtocol,
-            "ConvergenceDetectorProtocol": ConvergenceDetectorProtocol,
-        }
-        if existing is None:
-            shim = types.ModuleType(mod_name)
-            for k, v in names.items():
-                setattr(shim, k, v)
-            sys.modules[mod_name] = shim
-        else:
-            for k, v in names.items():
+    """Inject stubs into protocol module slots.
+
+    Try to load the real module first so other convergence modules that import
+    from it get the full set of names. Only fall back to a minimal shim when the
+    real module cannot be loaded (missing deps like fabric.spacetime).
+    """
+    # Try loading the real module if not already in sys.modules
+    existing = sys.modules.get(_MOD_NAMES[0]) or sys.modules.get(_MOD_NAMES[1])
+    if existing is None:
+        try:
+            import importlib
+            existing = importlib.import_module("hololoom.core.protocols.recursive_reasoning")
+        except (ImportError, Exception):
+            existing = None
+
+    for mod_name in _MOD_NAMES:
+        _original_modules[mod_name] = sys.modules.get(mod_name)
+        current = sys.modules.get(mod_name)
+        if current is not None:
+            for k, v in _SHIM_NAMES.items():
+                if not hasattr(current, k):
+                    setattr(current, k, v)
+        elif existing is not None:
+            for k, v in _SHIM_NAMES.items():
                 if not hasattr(existing, k):
                     setattr(existing, k, v)
+            sys.modules[mod_name] = existing
+        else:
+            shim = types.ModuleType(mod_name)
+            for k, v in _SHIM_NAMES.items():
+                setattr(shim, k, v)
+            sys.modules[mod_name] = shim
+
+
+def _unpatch_protocol_shim():
+    """Restore sys.modules to pre-shim state."""
+    for mod_name in _MOD_NAMES:
+        original = _original_modules.get(mod_name)
+        if original is None:
+            sys.modules.pop(mod_name, None)
+        else:
+            sys.modules[mod_name] = original
 
 
 _patch_protocol_shim()
+
+# Re-import shimmed types from the protocol module so this test uses the same
+# class objects as the code under test (avoids isinstance mismatches when another
+# test file loaded its own shim first).
+import hololoom.core.protocols.recursive_reasoning as _proto_mod  # noqa: E402
+
+RefinementStrategy = _proto_mod.RefinementStrategy  # noqa: F811
+RefinementStep = _proto_mod.RefinementStep  # noqa: F811
+RecursiveConfig = _proto_mod.RecursiveConfig  # noqa: F811
+RecursiveResult = getattr(_proto_mod, "RecursiveResult", RecursiveResult)  # noqa: F811
+ReasoningStrategy = _proto_mod.ReasoningStrategy  # noqa: F811
+StopCondition = _proto_mod.StopCondition  # noqa: F811
+ReasoningJournal = _proto_mod.ReasoningJournal  # noqa: F811
 
 
 # Now safe to import modules under test

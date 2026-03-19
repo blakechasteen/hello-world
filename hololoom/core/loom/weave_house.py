@@ -14,19 +14,20 @@ Author: HoloLoom Architecture Team
 """
 
 import asyncio
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
 import logging
+from dataclasses import dataclass
+from datetime import datetime
+from uuid import uuid4
 
-from hololoom.loom.base_loom import BaseLoom
-from hololoom.loom.protocol import Loom, COLLECTIVE, DreamInsight
-from hololoom.loom.consensus import LoomConsensus, Tension, Resolution
 from hololoom.fabric.fabric import Fabric
+from hololoom.fabric.spacetime import WeavingTrace
+from hololoom.loom.base_loom import BaseLoom
+from hololoom.loom.consensus import LoomConsensus, Resolution, Tension
+from hololoom.loom.protocol import COLLECTIVE, DreamInsight, Loom
 from hololoom.protocols.department import (
+    ConfidenceMetadata,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class ExplorationResult:
     """Result of exploring a tension zone."""
     tension: Tension
     resolution: Resolution
-    exploration_fabrics: List[Fabric]
+    exploration_fabrics: list[Fabric]
     depth_reached: int
     resolved: bool
 
@@ -46,10 +47,10 @@ class ExplorationResult:
 class WeaveResult:
     """Complete result of a WeaveHouse weaving cycle."""
     final_fabric: Fabric
-    individual_fabrics: List[Fabric]
-    explorations: List[ExplorationResult]
+    individual_fabrics: list[Fabric]
+    explorations: list[ExplorationResult]
     total_duration_ms: float
-    looms_used: List[str]
+    looms_used: list[str]
 
 
 class WeaveHouse(BaseLoom):
@@ -69,8 +70,8 @@ class WeaveHouse(BaseLoom):
 
     def __init__(
         self,
-        looms: List[Loom],
-        consensus: Optional[LoomConsensus] = None,
+        looms: list[Loom],
+        consensus: LoomConsensus | None = None,
         exploration_depth: int = 2,
         tension_threshold: float = 0.3,
         enable_parallel: bool = True,
@@ -99,7 +100,7 @@ class WeaveHouse(BaseLoom):
         self._collective_blind_spots = self._compute_collective_blind_spots()
 
         # Track exploration history for learning
-        self._exploration_history: List[ExplorationResult] = []
+        self._exploration_history: list[ExplorationResult] = []
 
     @property
     def perspective(self) -> str:
@@ -107,7 +108,7 @@ class WeaveHouse(BaseLoom):
         return COLLECTIVE
 
     @property
-    def blind_spots(self) -> List[str]:
+    def blind_spots(self) -> list[str]:
         """
         Collective blind spots - intersection of all loom blind spots.
 
@@ -115,7 +116,7 @@ class WeaveHouse(BaseLoom):
         """
         return self._collective_blind_spots
 
-    def _compute_collective_blind_spots(self) -> List[str]:
+    def _compute_collective_blind_spots(self) -> list[str]:
         """
         Compute intersection of all loom blind spots.
 
@@ -126,7 +127,7 @@ class WeaveHouse(BaseLoom):
             return []
 
         # Start with first loom's blind spots
-        common: Set[str] = set(self.looms[0].blind_spots)
+        common: set[str] = set(self.looms[0].blind_spots)
 
         # Intersect with each subsequent loom
         for loom in self.looms[1:]:
@@ -134,7 +135,7 @@ class WeaveHouse(BaseLoom):
 
         return list(common)
 
-    def admits_ignorance(self, query: str) -> List[str]:
+    def admits_ignorance(self, query: str) -> list[str]:
         """
         Collect ignorance admissions from all looms.
 
@@ -159,7 +160,7 @@ class WeaveHouse(BaseLoom):
 
         return all_ignorance
 
-    def falsifiable_by(self, claim: str) -> List[str]:
+    def falsifiable_by(self, claim: str) -> list[str]:
         """
         Collect falsifiers from all looms.
 
@@ -270,11 +271,12 @@ class WeaveHouse(BaseLoom):
         )
 
         return DepartmentResponse(
+            task_id=getattr(request, 'task_id', uuid4()),
             result=synthesis.response,
-            confidence=ConfidenceMetadata(
-                score=synthesis.confidence,
-                source="weave_house",
-                reasoning=f"Collective of {len(fabrics)} looms, {len(explorations)} explorations",
+            confidence=ConfidenceMetadata.from_score(
+                synthesis.confidence,
+                justification=[f"Collective of {len(fabrics)} looms, {len(explorations)} explorations"],
+                sources=["weave_house"],
             ),
             metadata={
                 "perspective": self.perspective,
@@ -289,10 +291,10 @@ class WeaveHouse(BaseLoom):
     async def _explore_tensions(
         self,
         synthesis: Fabric,
-        fabrics: List[Fabric],
+        fabrics: list[Fabric],
         request: DepartmentRequest,
         depth: int
-    ) -> Tuple[Fabric, List[ExplorationResult]]:
+    ) -> tuple[Fabric, list[ExplorationResult]]:
         """
         Recursively explore disagreement zones.
 
@@ -403,8 +405,8 @@ class WeaveHouse(BaseLoom):
     def _get_disagreeing_looms(
         self,
         tension: Tension,
-        fabrics: List[Fabric]
-    ) -> List[Loom]:
+        fabrics: list[Fabric]
+    ) -> list[Loom]:
         """
         Get looms involved in a tension.
 
@@ -456,7 +458,10 @@ class WeaveHouse(BaseLoom):
         ]
 
         return Fabric(
+            query_text=synthesis.query_text,
             response=updated_response,
+            tool_used=synthesis.tool_used,
+            trace=synthesis.trace,
             perspective=synthesis.perspective,
             confidence=new_confidence,
             epistemic_confidence=synthesis.epistemic_confidence,
@@ -492,7 +497,10 @@ class WeaveHouse(BaseLoom):
         new_epistemic = max(synthesis.epistemic_confidence - 0.1, 0.3)
 
         return Fabric(
+            query_text=synthesis.query_text,
             response=synthesis.response,
+            tool_used=synthesis.tool_used,
+            trace=synthesis.trace,
             perspective=synthesis.perspective,
             confidence=synthesis.confidence,
             epistemic_confidence=new_epistemic,
@@ -522,10 +530,14 @@ class WeaveHouse(BaseLoom):
         Returns:
             Fabric wrapping the response
         """
+        now = datetime.now()
         return Fabric(
+            query_text=response.metadata.get("query", "") if response.metadata else "",
             response=response.result,
-            perspective=perspective,
+            tool_used=perspective,
             confidence=response.confidence.score if response.confidence else 0.5,
+            trace=WeavingTrace(start_time=now, end_time=now, duration_ms=0.0),
+            perspective=perspective,
             epistemic_confidence=0.5,
             blind_spots=[],
             admits_ignorance=[],
@@ -538,11 +550,11 @@ class WeaveHouse(BaseLoom):
     def _create_collective_fabric(
         self,
         synthesis: Fabric,
-        individual_fabrics: List[Fabric],
-        explorations: List[ExplorationResult],
+        individual_fabrics: list[Fabric],
+        explorations: list[ExplorationResult],
         query: str,
         duration_ms: float,
-        failed_looms: List[str]
+        failed_looms: list[str]
     ) -> Fabric:
         """
         Create the final collective fabric with full provenance.
@@ -559,9 +571,12 @@ class WeaveHouse(BaseLoom):
             Complete collective fabric
         """
         return Fabric(
+            query_text=query,
             response=synthesis.response,
-            perspective=COLLECTIVE,
+            tool_used="weave_house",
             confidence=synthesis.confidence,
+            trace=synthesis.trace,
+            perspective=COLLECTIVE,
             epistemic_confidence=synthesis.epistemic_confidence,
             blind_spots=self.blind_spots,
             admits_ignorance=synthesis.admits_ignorance,
@@ -590,7 +605,7 @@ class WeaveHouse(BaseLoom):
     def _create_error_response(
         self,
         error_message: str,
-        failed_looms: List[str],
+        failed_looms: list[str],
         start_time: datetime
     ) -> DepartmentResponse:
         """
@@ -608,11 +623,12 @@ class WeaveHouse(BaseLoom):
         duration_ms = (end_time - start_time).total_seconds() * 1000
 
         return DepartmentResponse(
+            task_id=uuid4(),
             result=f"Error: {error_message}",
-            confidence=ConfidenceMetadata(
-                score=0.0,
-                source="weave_house",
-                reasoning=f"All looms failed: {', '.join(failed_looms)}",
+            confidence=ConfidenceMetadata.from_score(
+                0.0,
+                justification=[f"All looms failed: {', '.join(failed_looms)}"],
+                sources=["weave_house"],
             ),
             metadata={
                 "perspective": self.perspective,
@@ -624,7 +640,7 @@ class WeaveHouse(BaseLoom):
 
     # Dreaming interface
 
-    async def dream_share(self) -> List[DreamInsight]:
+    async def dream_share(self) -> list[DreamInsight]:
         """
         Share exploration insights during collective dreaming.
 
@@ -674,7 +690,7 @@ class WeaveHouse(BaseLoom):
             if insight.source_loom != loom.perspective:
                 await loom.dream_receive(insight)
 
-    def get_loom(self, perspective: str) -> Optional[Loom]:
+    def get_loom(self, perspective: str) -> Loom | None:
         """
         Get a specific loom by perspective.
 
@@ -718,7 +734,7 @@ class WeaveHouse(BaseLoom):
 
 
 def create_weave_house(
-    looms: Optional[List[Loom]] = None,
+    looms: list[Loom] | None = None,
     exploration_depth: int = 2,
     tension_threshold: float = 0.3,
     **kwargs

@@ -18,19 +18,19 @@ Date: December 2025
 Author: HoloLoom Architecture Team
 """
 
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
 import logging
 import random
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+from uuid import uuid4
 
 from hololoom.loom.base_loom import BaseLoom
-from hololoom.loom.protocol import REACH, DiscoveryInsight, PatternInsight
-from hololoom.fabric.fabric import Fabric
+from hololoom.loom.protocol import REACH
 from hololoom.protocols.department import (
+    ConfidenceMetadata,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,14 +42,14 @@ class Association:
     source: str
     target: str
     strength: float  # 0-1, lower = weaker tie
-    path: List[str]  # How we got here
+    path: list[str]  # How we got here
     novelty: float  # How novel this connection is
 
 
 @dataclass
 class CreativeInsight:
     """A creative insight combining concepts."""
-    concepts: List[str]
+    concepts: list[str]
     combination: str
     novelty_score: float
     plausibility_score: float
@@ -77,7 +77,7 @@ class ReachLoom(BaseLoom):
         association_hops: int = 3,
         prefer_weak_ties: bool = True,
         novelty_threshold: float = 0.5,
-        memory_backend: Optional[Any] = None,
+        memory_backend: Any | None = None,
         **kwargs
     ):
         """
@@ -105,7 +105,7 @@ class ReachLoom(BaseLoom):
         self._memory = memory_backend
 
         # Track creative insights for learning
-        self._recent_insights: List[CreativeInsight] = []
+        self._recent_insights: list[CreativeInsight] = []
 
     @property
     def perspective(self) -> str:
@@ -113,7 +113,7 @@ class ReachLoom(BaseLoom):
         return REACH
 
     @property
-    def blind_spots(self) -> List[str]:
+    def blind_spots(self) -> list[str]:
         """What the Artist cannot see."""
         return [
             "factual accuracy",
@@ -124,7 +124,7 @@ class ReachLoom(BaseLoom):
             "verification of claims",
         ]
 
-    def admits_ignorance(self, query: str) -> List[str]:
+    def admits_ignorance(self, query: str) -> list[str]:
         """
         What the Artist knows it doesn't know about this query.
 
@@ -153,7 +153,7 @@ class ReachLoom(BaseLoom):
 
         return ignorance
 
-    def falsifiable_by(self, claim: str) -> List[str]:
+    def falsifiable_by(self, claim: str) -> list[str]:
         """
         What evidence would change the Artist's claim.
 
@@ -238,11 +238,12 @@ class ReachLoom(BaseLoom):
         )
 
         return DepartmentResponse(
+            task_id=getattr(request, 'task_id', uuid4()),
             result=response,
-            confidence=ConfidenceMetadata(
-                score=confidence,
-                source="reach_loom",
-                reasoning=f"Generated {len(insights)} creative insights",
+            confidence=ConfidenceMetadata.from_score(
+                confidence,
+                justification=[f"Generated {len(insights)} creative insights"],
+                sources=["reach_loom"],
             ),
             metadata={
                 "perspective": self.perspective,
@@ -252,7 +253,7 @@ class ReachLoom(BaseLoom):
             },
         )
 
-    async def _extract_concepts(self, query: str) -> List[str]:
+    async def _extract_concepts(self, query: str) -> list[str]:
         """
         Extract seed concepts from query.
 
@@ -282,8 +283,8 @@ class ReachLoom(BaseLoom):
 
     async def _explore_weak_ties(
         self,
-        seeds: List[str]
-    ) -> List[Association]:
+        seeds: list[str]
+    ) -> list[Association]:
         """
         Explore weak ties from seed concepts.
 
@@ -294,7 +295,7 @@ class ReachLoom(BaseLoom):
             List of associations found
         """
         associations = []
-        visited: Set[str] = set(seeds)
+        visited: set[str] = set(seeds)
 
         for seed in seeds:
             # Simulate exploring weak ties (would use memory graph in production)
@@ -336,8 +337,8 @@ class ReachLoom(BaseLoom):
     def _generate_distant_association(
         self,
         concept: str,
-        visited: Set[str]
-    ) -> Optional[str]:
+        visited: set[str]
+    ) -> str | None:
         """
         Generate a distant but plausible association.
 
@@ -385,9 +386,9 @@ class ReachLoom(BaseLoom):
 
     def _generate_combinations(
         self,
-        seeds: List[str],
-        associations: List[Association]
-    ) -> List[CreativeInsight]:
+        seeds: list[str],
+        associations: list[Association]
+    ) -> list[CreativeInsight]:
         """
         Generate novel combinations from seeds and associations.
 
@@ -438,7 +439,7 @@ class ReachLoom(BaseLoom):
         self,
         concept1: str,
         concept2: str,
-        path: List[str]
+        path: list[str]
     ) -> str:
         """
         Create a creative combination statement.
@@ -467,8 +468,8 @@ class ReachLoom(BaseLoom):
 
     def _format_creative_response(
         self,
-        insights: List[CreativeInsight],
-        associations: List[Association]
+        insights: list[CreativeInsight],
+        associations: list[Association]
     ) -> str:
         """
         Format creative insights as response.
@@ -501,7 +502,7 @@ class ReachLoom(BaseLoom):
 
     def _compute_creative_confidence(
         self,
-        insights: List[CreativeInsight]
+        insights: list[CreativeInsight]
     ) -> float:
         """
         Compute confidence for creative output.
@@ -523,7 +524,7 @@ class ReachLoom(BaseLoom):
 
     def _compute_epistemic_confidence(
         self,
-        insights: List[CreativeInsight]
+        insights: list[CreativeInsight]
     ) -> float:
         """
         Compute epistemic confidence.

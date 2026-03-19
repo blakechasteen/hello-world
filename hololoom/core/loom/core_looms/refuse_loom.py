@@ -18,20 +18,20 @@ Date: December 2025
 Author: HoloLoom Architecture Team
 """
 
+import logging
+import random
+import re
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
-import logging
-import re
-import random
+from typing import Any
+from uuid import uuid4
 
 from hololoom.loom.base_loom import BaseLoom
-from hololoom.loom.protocol import REFUSE, CorrectionInsight, DiscoveryInsight
-from hololoom.fabric.fabric import Fabric
+from hololoom.loom.protocol import REFUSE
 from hololoom.protocols.department import (
+    ConfidenceMetadata,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ class Vulnerability:
     attack: Attack
     confirmed: bool
     impact: str
-    mitigation: Optional[str] = None
+    mitigation: str | None = None
 
 
 class RefuseLoom(BaseLoom):
@@ -94,7 +94,7 @@ class RefuseLoom(BaseLoom):
         attack_intensity: float = 0.7,
         assumption_depth: int = 3,
         min_attack_severity: float = 0.3,
-        attack_backend: Optional[Any] = None,
+        attack_backend: Any | None = None,
         **kwargs
     ):
         """
@@ -118,7 +118,7 @@ class RefuseLoom(BaseLoom):
         self._attacker = attack_backend
 
         # Track vulnerabilities for learning
-        self._vulnerabilities: List[Vulnerability] = []
+        self._vulnerabilities: list[Vulnerability] = []
 
     @property
     def perspective(self) -> str:
@@ -126,7 +126,7 @@ class RefuseLoom(BaseLoom):
         return REFUSE
 
     @property
-    def blind_spots(self) -> List[str]:
+    def blind_spots(self) -> list[str]:
         """What the Skeptic cannot see."""
         return [
             "constructive solutions",
@@ -137,7 +137,7 @@ class RefuseLoom(BaseLoom):
             "positive aspects of arguments",
         ]
 
-    def admits_ignorance(self, query: str) -> List[str]:
+    def admits_ignorance(self, query: str) -> list[str]:
         """
         What the Skeptic knows it doesn't know about this query.
 
@@ -169,7 +169,7 @@ class RefuseLoom(BaseLoom):
 
         return ignorance
 
-    def falsifiable_by(self, claim: str) -> List[str]:
+    def falsifiable_by(self, claim: str) -> list[str]:
         """
         What evidence would change the Skeptic's claim.
 
@@ -259,11 +259,12 @@ class RefuseLoom(BaseLoom):
         )
 
         return DepartmentResponse(
+            task_id=getattr(request, 'task_id', uuid4()),
             result=response,
-            confidence=ConfidenceMetadata(
-                score=confidence,
-                source="refuse_loom",
-                reasoning=f"Found {len(vulnerabilities)} vulnerabilities in {len(attacks)} attacks",
+            confidence=ConfidenceMetadata.from_score(
+                confidence,
+                justification=[f"Found {len(vulnerabilities)} vulnerabilities in {len(attacks)} attacks"],
+                sources=["refuse_loom"],
             ),
             metadata={
                 "perspective": self.perspective,
@@ -274,7 +275,7 @@ class RefuseLoom(BaseLoom):
             },
         )
 
-    def _extract_claims(self, text: str) -> List[str]:
+    def _extract_claims(self, text: str) -> list[str]:
         """
         Extract claims from text.
 
@@ -298,8 +299,8 @@ class RefuseLoom(BaseLoom):
     def _extract_assumptions(
         self,
         text: str,
-        claims: List[str]
-    ) -> List[Assumption]:
+        claims: list[str]
+    ) -> list[Assumption]:
         """
         Extract hidden assumptions from text and claims.
 
@@ -348,7 +349,7 @@ class RefuseLoom(BaseLoom):
 
         return assumptions[:self.assumption_depth * 3]  # Limit based on depth
 
-    def _find_domain_assumptions(self, text: str) -> List[Assumption]:
+    def _find_domain_assumptions(self, text: str) -> list[Assumption]:
         """
         Find domain-specific assumptions.
 
@@ -389,9 +390,9 @@ class RefuseLoom(BaseLoom):
 
     def _generate_attacks(
         self,
-        claims: List[str],
-        assumptions: List[Assumption]
-    ) -> List[Attack]:
+        claims: list[str],
+        assumptions: list[Assumption]
+    ) -> list[Attack]:
         """
         Generate adversarial attacks.
 
@@ -424,7 +425,7 @@ class RefuseLoom(BaseLoom):
 
         return attacks
 
-    def _generate_claim_attacks(self, claim: str) -> List[Attack]:
+    def _generate_claim_attacks(self, claim: str) -> list[Attack]:
         """
         Generate attacks for a specific claim.
 
@@ -488,8 +489,8 @@ class RefuseLoom(BaseLoom):
 
     async def _execute_attacks(
         self,
-        attacks: List[Attack]
-    ) -> List[Vulnerability]:
+        attacks: list[Attack]
+    ) -> list[Vulnerability]:
         """
         Execute attacks and determine vulnerabilities.
 
@@ -588,8 +589,8 @@ class RefuseLoom(BaseLoom):
 
     def _format_attack_report(
         self,
-        vulnerabilities: List[Vulnerability],
-        assumptions: List[Assumption]
+        vulnerabilities: list[Vulnerability],
+        assumptions: list[Assumption]
     ) -> str:
         """
         Format attack results as report.
@@ -635,7 +636,7 @@ class RefuseLoom(BaseLoom):
 
     def _compute_attack_confidence(
         self,
-        vulnerabilities: List[Vulnerability]
+        vulnerabilities: list[Vulnerability]
     ) -> float:
         """
         Compute confidence in attack results.
@@ -660,8 +661,8 @@ class RefuseLoom(BaseLoom):
 
     def _compute_epistemic_confidence(
         self,
-        vulnerabilities: List[Vulnerability],
-        assumptions: List[Assumption]
+        vulnerabilities: list[Vulnerability],
+        assumptions: list[Assumption]
     ) -> float:
         """
         Compute epistemic confidence.

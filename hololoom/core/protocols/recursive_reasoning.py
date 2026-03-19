@@ -10,13 +10,13 @@ Created: 2025-11-15
 Integration: Promptly → HoloLoom convergence layer
 """
 
-from typing import Protocol, List, Optional, Dict, Any, Callable
+from abc import abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from abc import abstractmethod
+from typing import Any, Protocol
 
-from hololoom.protocols.types import Features, Query
 from hololoom.fabric.spacetime import Spacetime
+from hololoom.protocols.types import Features, Query
 
 
 class ReasoningStrategy(Enum):
@@ -55,7 +55,7 @@ class ReasoningTrace:
     observation: str                # Result of action
     confidence: float               # Quality score (0.0-1.0)
     features_extracted: Features    # Features at this iteration
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_text(self) -> str:
         """Human-readable representation"""
@@ -72,9 +72,9 @@ class ReasoningTrace:
 @dataclass
 class ReasoningJournal:
     """Complete reasoning provenance (Promptly's Scratchpad)"""
-    traces: List[ReasoningTrace] = field(default_factory=list)
-    final_spacetime: Optional[Spacetime] = None
-    strategy_used: Optional[ReasoningStrategy] = None
+    traces: list[ReasoningTrace] = field(default_factory=list)
+    final_spacetime: Spacetime | None = None
+    strategy_used: ReasoningStrategy | None = None
 
     def add_trace(self, trace: ReasoningTrace):
         """Add iteration trace"""
@@ -84,11 +84,11 @@ class ReasoningJournal:
         """Full reasoning history"""
         return "\n".join(t.to_text() for t in self.traces)
 
-    def get_latest(self) -> Optional[ReasoningTrace]:
+    def get_latest(self) -> ReasoningTrace | None:
         """Most recent iteration"""
         return self.traces[-1] if self.traces else None
 
-    def get_confidence_trajectory(self) -> List[float]:
+    def get_confidence_trajectory(self) -> list[float]:
         """Confidence over time"""
         return [t.confidence for t in self.traces]
 
@@ -109,13 +109,19 @@ class RecursiveConfig:
     max_iterations: int = 5
     quality_threshold: float = 0.9
     min_improvement: float = 0.05
-    time_budget_ms: Optional[float] = None
-    cost_budget: Optional[float] = None
+    time_budget_ms: float | None = None
+    cost_budget: float | None = None
     enable_journal: bool = True  # Track provenance
 
     # Advanced settings
     parallel_explore_branches: int = 3  # For EXPLORE strategy
     hofstadter_depth: int = 3           # For HOFSTADTER strategy
+
+    # Enhanced reasoner settings
+    enable_decomposition: bool = True       # Allow query decomposition
+    enable_learning: bool = True            # Enable Thompson Sampling strategy learning
+    refinement_threshold: float = 0.8       # Confidence threshold to skip refinement
+    max_refinement_iterations: int = 10     # Max iterations in refinement loop
 
 
 class RecursiveReasoningProtocol(Protocol):
@@ -209,6 +215,35 @@ class QualityScoringProtocol(Protocol):
             Quality score 0.0 (poor) to 1.0 (excellent)
         """
         ...
+
+
+@dataclass
+class RefinementStep:
+    """A single step in the iterative refinement process."""
+    iteration: int
+    query: str
+    response: str
+    confidence: float
+    improvement: float
+    strategy_used: str
+    reasoning: str
+    timestamp: Any = None  # datetime, kept as Any to avoid circular import issues
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class RecursiveResult:
+    """Complete result of recursive reasoning."""
+    final_response: str
+    final_confidence: float
+    iterations: int
+    refinement_steps: list[RefinementStep] = field(default_factory=list)
+    convergence_reason: str = ""
+    total_latency_ms: float = 0.0
+    improvement_trajectory: list[float] = field(default_factory=list)
+    journal: ReasoningJournal | None = None
+    decomposition: Any = None  # DecompositionTree if used
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 # Type aliases for convenience

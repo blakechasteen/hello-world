@@ -18,19 +18,19 @@ Date: December 2025
 Author: HoloLoom Architecture Team
 """
 
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
 import logging
 import re
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+from uuid import uuid4
 
 from hololoom.loom.base_loom import BaseLoom
-from hololoom.loom.protocol import REFLECT, CorrectionInsight, PatternInsight
-from hololoom.fabric.fabric import Fabric
+from hololoom.loom.protocol import REFLECT, CorrectionInsight
 from hololoom.protocols.department import (
+    ConfidenceMetadata,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,15 +52,15 @@ class VerificationResult:
     claim: Claim
     verified: bool
     confidence: float
-    evidence: List[str]
-    contradictions: List[str]
+    evidence: list[str]
+    contradictions: list[str]
 
 
 @dataclass
 class ConsistencyCheck:
     """Result of internal consistency checking."""
     consistent: bool
-    contradictions: List[Tuple[str, str]]  # Pairs of contradicting claims
+    contradictions: list[tuple[str, str]]  # Pairs of contradicting claims
     confidence: float
 
 
@@ -82,7 +82,7 @@ class ReflectLoom(BaseLoom):
         verification_passes: int = 2,
         consistency_threshold: float = 0.8,
         require_evidence: bool = True,
-        verification_backend: Optional[Any] = None,
+        verification_backend: Any | None = None,
         **kwargs
     ):
         """
@@ -106,7 +106,7 @@ class ReflectLoom(BaseLoom):
         self._verifier = verification_backend
 
         # Track corrections for learning
-        self._corrections: List[CorrectionInsight] = []
+        self._corrections: list[CorrectionInsight] = []
 
     @property
     def perspective(self) -> str:
@@ -114,7 +114,7 @@ class ReflectLoom(BaseLoom):
         return REFLECT
 
     @property
-    def blind_spots(self) -> List[str]:
+    def blind_spots(self) -> list[str]:
         """What the Auditor cannot see."""
         return [
             "generating new content",
@@ -125,7 +125,7 @@ class ReflectLoom(BaseLoom):
             "when verification is impossible",
         ]
 
-    def admits_ignorance(self, query: str) -> List[str]:
+    def admits_ignorance(self, query: str) -> list[str]:
         """
         What the Auditor knows it doesn't know about this query.
 
@@ -161,7 +161,7 @@ class ReflectLoom(BaseLoom):
 
         return ignorance
 
-    def falsifiable_by(self, claim: str) -> List[str]:
+    def falsifiable_by(self, claim: str) -> list[str]:
         """
         What evidence would change the Auditor's claim.
 
@@ -257,11 +257,12 @@ class ReflectLoom(BaseLoom):
         )
 
         return DepartmentResponse(
+            task_id=getattr(request, 'task_id', uuid4()),
             result=response,
-            confidence=ConfidenceMetadata(
-                score=confidence,
-                source="reflect_loom",
-                reasoning=f"Verified {len(verification_results)} claims, {len(contradictions)} contradictions",
+            confidence=ConfidenceMetadata.from_score(
+                confidence,
+                justification=[f"Verified {len(verification_results)} claims, {len(contradictions)} contradictions"],
+                sources=["reflect_loom"],
             ),
             metadata={
                 "perspective": self.perspective,
@@ -272,7 +273,7 @@ class ReflectLoom(BaseLoom):
             },
         )
 
-    def _extract_claims(self, text: str) -> List[Claim]:
+    def _extract_claims(self, text: str) -> list[Claim]:
         """
         Extract verifiable claims from text.
 
@@ -341,8 +342,8 @@ class ReflectLoom(BaseLoom):
 
     async def _verify_claims(
         self,
-        claims: List[Claim]
-    ) -> List[VerificationResult]:
+        claims: list[Claim]
+    ) -> list[VerificationResult]:
         """
         Verify a list of claims.
 
@@ -387,7 +388,7 @@ class ReflectLoom(BaseLoom):
     async def _external_verify(
         self,
         claim: Claim
-    ) -> Tuple[bool, List[str]]:
+    ) -> tuple[bool, list[str]]:
         """
         Verify claim using external backend.
 
@@ -404,7 +405,7 @@ class ReflectLoom(BaseLoom):
             logger.warning(f"External verification failed: {e}")
             return self._self_verify(claim)
 
-    def _self_verify(self, claim: Claim) -> Tuple[bool, List[str]]:
+    def _self_verify(self, claim: Claim) -> tuple[bool, list[str]]:
         """
         Self-verify a claim using internal logic.
 
@@ -432,7 +433,7 @@ class ReflectLoom(BaseLoom):
 
         return verified, evidence
 
-    def _check_consistency(self, claims: List[Claim]) -> ConsistencyCheck:
+    def _check_consistency(self, claims: list[Claim]) -> ConsistencyCheck:
         """
         Check internal consistency of claims.
 
@@ -499,9 +500,9 @@ class ReflectLoom(BaseLoom):
 
     def _find_contradictions(
         self,
-        claims: List[Claim],
-        results: List[VerificationResult]
-    ) -> List[Tuple[str, str]]:
+        claims: list[Claim],
+        results: list[VerificationResult]
+    ) -> list[tuple[str, str]]:
         """
         Find contradictions between claims and verification results.
 
@@ -524,9 +525,9 @@ class ReflectLoom(BaseLoom):
 
     def _format_verification_report(
         self,
-        results: List[VerificationResult],
+        results: list[VerificationResult],
         consistency: ConsistencyCheck,
-        contradictions: List[Tuple[str, str]]
+        contradictions: list[tuple[str, str]]
     ) -> str:
         """
         Format verification results as report.
@@ -572,7 +573,7 @@ class ReflectLoom(BaseLoom):
 
     def _compute_verification_confidence(
         self,
-        results: List[VerificationResult],
+        results: list[VerificationResult],
         consistency: ConsistencyCheck
     ) -> float:
         """
@@ -598,9 +599,9 @@ class ReflectLoom(BaseLoom):
 
     def _compute_epistemic_confidence(
         self,
-        results: List[VerificationResult],
+        results: list[VerificationResult],
         consistency: ConsistencyCheck,
-        contradictions: List[Tuple[str, str]]
+        contradictions: list[tuple[str, str]]
     ) -> float:
         """
         Compute epistemic confidence.

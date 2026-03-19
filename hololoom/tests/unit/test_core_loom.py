@@ -769,28 +769,26 @@ class TestWeaveHouse:
         assert house.remove_loom("nonexistent") is False
 
     @pytest.mark.asyncio
-    async def test_execute_parallel_hits_fabric_bug(self):
-        """execute() hits _create_collective_fabric which constructs Fabric
-        without required Spacetime args (query_text, tool_used, trace).
-        Documents latent bug in weave_house.py."""
+    async def test_execute_parallel_succeeds(self):
+        """execute() with parallel looms returns a valid DepartmentResponse."""
         house = self._make_house(3)
         req = _make_request("What is TS?")
-        with pytest.raises(TypeError):
-            await house.execute(req)
+        response = await house.execute(req)
+        assert response.result is not None
+        assert response.confidence.score >= 0.0
 
     @pytest.mark.asyncio
-    async def test_execute_sequential_hits_fabric_bug(self):
-        """Same latent bug path as parallel execution."""
+    async def test_execute_sequential_succeeds(self):
+        """execute() with sequential looms returns a valid DepartmentResponse."""
         house = self._make_house(2, enable_parallel=False)
         req = _make_request("test")
-        with pytest.raises(TypeError):
-            await house.execute(req)
+        response = await house.execute(req)
+        assert response.result is not None
+        assert response.confidence.score >= 0.0
 
     @pytest.mark.asyncio
     async def test_execute_all_looms_fail(self):
-        """When all looms raise, WeaveHouse tries to return error response.
-        Due to a latent bug in _create_error_response (invalid ConfidenceMetadata kwargs),
-        this currently raises TypeError."""
+        """When all looms raise, WeaveHouse returns an error response."""
 
         class FailLoom(StubLoom):
             async def execute(self, request):
@@ -799,8 +797,9 @@ class TestWeaveHouse:
         looms = [FailLoom(name=f"fail_{i}") for i in range(2)]
         house = WeaveHouse(looms=looms)
         req = _make_request("test")
-        with pytest.raises(TypeError):
-            await house.execute(req)
+        response = await house.execute(req)
+        assert "Error" in response.result
+        assert response.confidence.score == 0.0
 
     def test_generate_tension_query(self):
         house = self._make_house()
@@ -828,17 +827,17 @@ class TestWeaveHouse:
         perspectives = {l.perspective for l in disagreeing}
         assert perspectives == {"recall", "reason"}
 
-    def test_create_fabric_from_response_missing_args(self):
-        """_create_fabric_from_response constructs Fabric without query_text/tool_used/trace.
-        Documents the same latent Fabric constructor bug."""
+    def test_create_fabric_from_response_succeeds(self):
+        """_create_fabric_from_response constructs a valid Fabric."""
         house = self._make_house()
         resp = _make_response(result="test result", score=0.7)
-        with pytest.raises(TypeError):
-            house._create_fabric_from_response(resp, "test_perspective")
+        fabric = house._create_fabric_from_response(resp, "test_perspective")
+        assert fabric.perspective == "test_perspective"
+        assert fabric.response == "test result"
+        assert fabric.tool_used == "test_perspective"
 
-    def test_incorporate_resolution_missing_fabric_args(self):
-        """_incorporate_resolution constructs Fabric without query_text/tool_used/trace.
-        This documents a latent bug in weave_house.py (missing required Spacetime args)."""
+    def test_incorporate_resolution_succeeds(self):
+        """_incorporate_resolution returns a Fabric with resolution applied."""
         house = self._make_house()
         synthesis = _make_fabric(
             perspective=COLLECTIVE,
@@ -852,12 +851,12 @@ class TestWeaveHouse:
             confidence=0.85,
             supporting_looms=["recall", "reason"],
         )
-        with pytest.raises(TypeError):
-            house._incorporate_resolution(synthesis, resolution)
+        result = house._incorporate_resolution(synthesis, resolution)
+        assert "Both X and Y are true" in result.response
+        assert result.confidence > synthesis.confidence
 
-    def test_mark_irreducible_missing_fabric_args(self):
-        """_mark_irreducible constructs Fabric without query_text/tool_used/trace.
-        This documents a latent bug in weave_house.py (missing required Spacetime args)."""
+    def test_mark_irreducible_succeeds(self):
+        """_mark_irreducible returns a Fabric with irreducible tension noted."""
         house = self._make_house()
         synthesis = _make_fabric(
             perspective=COLLECTIVE,
@@ -868,15 +867,16 @@ class TestWeaveHouse:
             loom_a="recall", loom_b="reason",
             claim_a="X", claim_b="Y", severity=0.5,
         )
-        with pytest.raises(TypeError):
-            house._mark_irreducible(synthesis, tension)
+        result = house._mark_irreducible(synthesis, tension)
+        assert any("Irreducible" in ig for ig in result.admits_ignorance)
+        assert result.epistemic_confidence < synthesis.epistemic_confidence
 
-    def test_create_error_response_missing_confidence_level(self):
-        """_create_error_response constructs ConfidenceMetadata with invalid kwargs.
-        This documents a latent bug in weave_house.py."""
+    def test_create_error_response_succeeds(self):
+        """_create_error_response returns a valid DepartmentResponse."""
         house = self._make_house()
-        with pytest.raises(TypeError):
-            house._create_error_response("all failed", ["a", "b"], datetime.now())
+        response = house._create_error_response("all failed", ["a", "b"], datetime.now())
+        assert "Error" in response.result
+        assert response.confidence.score == 0.0
 
     @pytest.mark.asyncio
     async def test_dream_share_includes_exploration_insights(self):
@@ -1296,14 +1296,15 @@ class TestRecallLoom:
         assert result == []
 
     @pytest.mark.asyncio
-    async def test_execute_hits_confidence_metadata_bug(self):
-        """execute() constructs ConfidenceMetadata with invalid kwargs.
-        Documents latent bug shared by all core looms."""
+    async def test_execute_succeeds(self):
+        """execute() returns a valid DepartmentResponse with ConfidenceMetadata."""
         from hololoom.loom.core_looms.recall_loom import RecallLoom
         loom = RecallLoom()
         req = _make_request("What is TS?")
-        with pytest.raises(TypeError):
-            await loom.execute(req)
+        response = await loom.execute(req)
+        assert response.result is not None
+        assert response.confidence.score >= 0.0
+        assert response.confidence.level is not None
 
 
 class TestReasonLoom:

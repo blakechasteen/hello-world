@@ -50,29 +50,58 @@ class StrategySelectorProtocol:
 
 
 def _patch_protocol_shim():
-    """Inject stubs into the sys.modules slot that refinement_strategies.py imports."""
-    for mod_name in (
+    """Inject stubs into the sys.modules slot that refinement_strategies.py imports.
+
+    Try to load the real module first so other convergence modules that import
+    from it get the full set of names. Only fall back to a minimal shim when the
+    real module cannot be loaded (missing deps like fabric.spacetime).
+    """
+    _mod_names = (
         "hololoom.protocols.recursive_reasoning",
         "hololoom.core.protocols.recursive_reasoning",
-    ):
-        existing = sys.modules.get(mod_name)
-        if existing is None:
-            shim = types.ModuleType(mod_name)
-            shim.RefinementStrategy = RefinementStrategy
-            shim.RefinementStep = RefinementStep
-            shim.StrategySelectorProtocol = StrategySelectorProtocol
-            sys.modules[mod_name] = shim
+    )
+    _stub_names = {
+        "RefinementStrategy": RefinementStrategy,
+        "RefinementStep": RefinementStep,
+        "StrategySelectorProtocol": StrategySelectorProtocol,
+    }
+
+    # Try loading the real module if it hasn't been loaded yet
+    existing = sys.modules.get(_mod_names[0]) or sys.modules.get(_mod_names[1])
+    if existing is None:
+        try:
+            import importlib
+            existing = importlib.import_module("hololoom.core.protocols.recursive_reasoning")
+        except (ImportError, Exception):
+            existing = None
+
+    for mod_name in _mod_names:
+        current = sys.modules.get(mod_name)
+        if current is not None:
+            for k, v in _stub_names.items():
+                if not hasattr(current, k):
+                    setattr(current, k, v)
+        elif existing is not None:
+            for k, v in _stub_names.items():
+                if not hasattr(existing, k):
+                    setattr(existing, k, v)
+            sys.modules[mod_name] = existing
         else:
-            # Module already loaded — add any missing names
-            if not hasattr(existing, "RefinementStrategy"):
-                existing.RefinementStrategy = RefinementStrategy
-            if not hasattr(existing, "RefinementStep"):
-                existing.RefinementStep = RefinementStep
-            if not hasattr(existing, "StrategySelectorProtocol"):
-                existing.StrategySelectorProtocol = StrategySelectorProtocol
+            shim = types.ModuleType(mod_name)
+            for k, v in _stub_names.items():
+                setattr(shim, k, v)
+            sys.modules[mod_name] = shim
 
 
 _patch_protocol_shim()
+
+# Re-import shimmed types from the protocol module so this test uses the same
+# class objects as the code under test (avoids isinstance/enum identity mismatches
+# when another test file loaded its own shim first).
+import hololoom.core.protocols.recursive_reasoning as _proto_mod  # noqa: E402
+
+RefinementStrategy = _proto_mod.RefinementStrategy  # noqa: F811
+RefinementStep = _proto_mod.RefinementStep  # noqa: F811
 
 # Now safe to import the module under test
 from hololoom.core.convergence.refinement_strategies import (  # noqa: E402

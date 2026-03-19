@@ -18,19 +18,19 @@ Date: December 2025
 Author: HoloLoom Architecture Team
 """
 
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
 import logging
 import re
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+from uuid import uuid4
 
 from hololoom.loom.base_loom import BaseLoom
-from hololoom.loom.protocol import REASON, MathInsight, CorrectionInsight
-from hololoom.fabric.fabric import Fabric
+from hololoom.loom.protocol import REASON
 from hololoom.protocols.department import (
+    ConfidenceMetadata,
     DepartmentRequest,
     DepartmentResponse,
-    ConfidenceMetadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -44,13 +44,13 @@ class LogicalStep:
     rule: str  # e.g., "modus_ponens", "transitivity"
     confidence: float
     valid: bool
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 @dataclass
 class InferenceChain:
     """A complete chain of logical inferences."""
-    steps: List[LogicalStep]
+    steps: list[LogicalStep]
     goal_reached: bool
     total_confidence: float
 
@@ -83,7 +83,7 @@ class ReasonLoom(BaseLoom):
         max_inference_depth: int = 5,
         require_explicit_links: bool = True,
         min_step_confidence: float = 0.6,
-        knowledge_graph: Optional[Any] = None,
+        knowledge_graph: Any | None = None,
         **kwargs
     ):
         """
@@ -107,7 +107,7 @@ class ReasonLoom(BaseLoom):
         self._kg = knowledge_graph
 
         # Track invalid steps for learning
-        self._invalid_steps: List[LogicalStep] = []
+        self._invalid_steps: list[LogicalStep] = []
 
     @property
     def perspective(self) -> str:
@@ -115,7 +115,7 @@ class ReasonLoom(BaseLoom):
         return REASON
 
     @property
-    def blind_spots(self) -> List[str]:
+    def blind_spots(self) -> list[str]:
         """What the Logician cannot see."""
         return [
             "intuitive leaps",
@@ -126,7 +126,7 @@ class ReasonLoom(BaseLoom):
             "probabilistic reasoning beyond chains",
         ]
 
-    def admits_ignorance(self, query: str) -> List[str]:
+    def admits_ignorance(self, query: str) -> list[str]:
         """
         What the Logician knows it doesn't know about this query.
 
@@ -162,7 +162,7 @@ class ReasonLoom(BaseLoom):
 
         return ignorance
 
-    def falsifiable_by(self, claim: str) -> List[str]:
+    def falsifiable_by(self, claim: str) -> list[str]:
         """
         What evidence would change the Logician's claim.
 
@@ -250,11 +250,12 @@ class ReasonLoom(BaseLoom):
         )
 
         return DepartmentResponse(
+            task_id=getattr(request, 'task_id', uuid4()),
             result=response,
-            confidence=ConfidenceMetadata(
-                score=confidence,
-                source="reason_loom",
-                reasoning=f"Chain of {len(valid_steps)} valid logical steps",
+            confidence=ConfidenceMetadata.from_score(
+                confidence,
+                justification=[f"Chain of {len(valid_steps)} valid logical steps"],
+                sources=["reason_loom"],
             ),
             metadata={
                 "perspective": self.perspective,
@@ -268,7 +269,7 @@ class ReasonLoom(BaseLoom):
     def _extract_logical_structure(
         self,
         query: str
-    ) -> Tuple[List[str], str]:
+    ) -> tuple[list[str], str]:
         """
         Extract premises and goal from a query.
 
@@ -311,7 +312,7 @@ class ReasonLoom(BaseLoom):
 
     async def _build_inference_chain(
         self,
-        premises: List[str],
+        premises: list[str],
         goal: str
     ) -> InferenceChain:
         """
@@ -372,9 +373,9 @@ class ReasonLoom(BaseLoom):
     def _try_inference_rule(
         self,
         rule_name: str,
-        knowledge: List[str],
+        knowledge: list[str],
         goal: str
-    ) -> Optional[LogicalStep]:
+    ) -> LogicalStep | None:
         """
         Try to apply an inference rule to current knowledge.
 
@@ -439,7 +440,7 @@ class ReasonLoom(BaseLoom):
     def _validate_chain(
         self,
         chain: InferenceChain
-    ) -> Tuple[List[LogicalStep], List[LogicalStep]]:
+    ) -> tuple[list[LogicalStep], list[LogicalStep]]:
         """
         Validate each step in the chain.
 
@@ -465,8 +466,8 @@ class ReasonLoom(BaseLoom):
     def _format_reasoning(
         self,
         chain: InferenceChain,
-        valid_steps: List[LogicalStep],
-        invalid_steps: List[LogicalStep]
+        valid_steps: list[LogicalStep],
+        invalid_steps: list[LogicalStep]
     ) -> str:
         """
         Format the reasoning chain as text.
@@ -504,7 +505,7 @@ class ReasonLoom(BaseLoom):
     def _compute_chain_confidence(
         self,
         chain: InferenceChain,
-        valid_steps: List[LogicalStep]
+        valid_steps: list[LogicalStep]
     ) -> float:
         """
         Compute overall chain confidence.
@@ -533,7 +534,7 @@ class ReasonLoom(BaseLoom):
     def _compute_epistemic_confidence(
         self,
         chain: InferenceChain,
-        invalid_steps: List[LogicalStep]
+        invalid_steps: list[LogicalStep]
     ) -> float:
         """
         Compute epistemic confidence.
@@ -563,7 +564,7 @@ class ReasonLoom(BaseLoom):
     def _generate_specific_falsifiers(
         self,
         chain: InferenceChain
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Generate specific falsifiers for this chain.
 

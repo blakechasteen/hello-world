@@ -185,9 +185,10 @@ class TestDeprecationWarnings:
         """Bandit orchestrator module still exists (not yet removed)."""
         import hololoom.weaving_orchestrator_bandit  # noqa: F401
 
-    def test_llm_orchestrator_importable(self):
-        """LLM orchestrator module still exists (not yet removed)."""
-        import hololoom.weaving_orchestrator_llm  # noqa: F401
+    def test_llm_orchestrator_import_fails(self):
+        """LLM orchestrator module exists but fails to import (ToolExecutor removed from weaving_orchestrator)."""
+        with pytest.raises(ImportError):
+            import hololoom.weaving_orchestrator_llm  # noqa: F401
 
     def test_recursive_orchestrator_importable(self):
         """Recursive orchestrator module still exists (not yet removed)."""

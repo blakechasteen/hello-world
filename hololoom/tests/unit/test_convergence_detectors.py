@@ -39,22 +39,40 @@ class _ConvergenceDetectorProtocol:
     pass
 
 
-# Patch the missing names into the protocols module so detectors.py can import
+# Patch the missing names into the protocols module so detectors.py can import.
+# Try loading the real module first to get all names; only create a minimal shim
+# if the real module fails to import (missing deps like fabric.spacetime).
 _real_mod = sys.modules.get("hololoom.protocols.recursive_reasoning") or \
             sys.modules.get("hololoom.core.protocols.recursive_reasoning")
+
+if _real_mod is None:
+    try:
+        import hololoom.core.protocols.recursive_reasoning as _real_mod  # noqa: F811
+    except (ImportError, Exception):
+        _real_mod = None
 
 if _real_mod is not None:
     if not hasattr(_real_mod, "RefinementStep"):
         _real_mod.RefinementStep = RefinementStep
     if not hasattr(_real_mod, "ConvergenceDetectorProtocol"):
         _real_mod.ConvergenceDetectorProtocol = _ConvergenceDetectorProtocol
+    # Ensure both module paths point to the same module
+    sys.modules.setdefault("hololoom.protocols.recursive_reasoning", _real_mod)
+    sys.modules.setdefault("hololoom.core.protocols.recursive_reasoning", _real_mod)
 else:
-    # Module hasn't been imported yet — create a temporary shim
+    # Real module failed to import — create a minimal shim
     _shim = types.ModuleType("hololoom.protocols.recursive_reasoning")
     _shim.RefinementStep = RefinementStep
     _shim.ConvergenceDetectorProtocol = _ConvergenceDetectorProtocol
     sys.modules["hololoom.protocols.recursive_reasoning"] = _shim
     sys.modules["hololoom.core.protocols.recursive_reasoning"] = _shim
+
+# Re-import shimmed types from the protocol module so this test uses the same
+# class objects as the code under test (avoids identity mismatches when another
+# test file loaded its own shim first).
+import hololoom.core.protocols.recursive_reasoning as _proto_mod2  # noqa: E402
+
+RefinementStep = _proto_mod2.RefinementStep  # noqa: F811
 
 # Now safe to import detectors
 from hololoom.core.convergence.detectors import (  # noqa: E402
